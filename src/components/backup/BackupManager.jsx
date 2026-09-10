@@ -34,7 +34,7 @@ export function validateBackupFile(data) {
   const knownKeys = ['incomes', 'expenses', 'budgets', 'debts', 'goals']
   const hasKnownKey = knownKeys.some(k => k in data)
   if (!hasKnownKey)
-    errors.push('El archivo no parece ser un respaldo válido de FinanceOS.')
+    errors.push('El archivo no parece ser un respaldo válido de MOY IQ.')
 
   // Las colecciones deben ser arrays
   knownKeys.forEach(k => {
@@ -53,7 +53,7 @@ export function validateBackupFile(data) {
 
   // Verificar versión si existe
   if (data._meta?.version && !data._meta.version.startsWith('1.'))
-    errors.push('Este respaldo fue creado con una versión diferente de FinanceOS. Puede tener problemas de compatibilidad.')
+    errors.push('Este respaldo fue creado con una versión diferente de MOY IQ. Puede tener problemas de compatibilidad.')
 
   return { valid: errors.length === 0, errors, isDemoBackup }
 }
@@ -78,13 +78,13 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = fa
           <button onClick={onCancel} style={{
             background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
             borderRadius: 6, padding: '8px 16px', fontSize: 12,
-            cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--syne, sans-serif)',
+            cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>Cancelar</button>
           <button onClick={onConfirm} style={{
-            background: danger ? '#8a2020' : 'var(--grn)', color: '#fff',
+            background: danger ? 'var(--red)' : 'var(--laton)', color: danger ? '#fff' : 'var(--navy)',
             border: 'none', borderRadius: 6, padding: '8px 18px',
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            fontFamily: 'var(--syne, sans-serif)',
+            fontFamily: 'var(--sans)',
           }}>Confirmar</button>
         </div>
       </div>
@@ -103,9 +103,9 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#faeeda', borderRadius: compact ? 20 : 8,
-        border: '0.5px solid rgba(133,79,11,.2)',
-        fontSize: compact ? 10 : 11, color: '#854f0b',
+        background: '#F3E4CE', borderRadius: compact ? 20 : 8,
+        border: '0.5px solid rgba(156,84,25,.25)',
+        fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
         <span>⚠</span>
@@ -119,9 +119,9 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#fdf0ee', borderRadius: compact ? 20 : 8,
-        border: '0.5px solid rgba(138,32,32,.2)',
-        fontSize: compact ? 10 : 11, color: '#8a2020',
+        background: '#F5E6E3', borderRadius: compact ? 20 : 8,
+        border: '0.5px solid rgba(162,62,46,.25)',
+        fontSize: compact ? 10 : 11, color: 'var(--red)',
         fontFamily: 'var(--mono)',
       }}>
         <span>⚠</span>
@@ -135,9 +135,9 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#faeeda', borderRadius: compact ? 20 : 8,
-        border: '0.5px solid rgba(133,79,11,.2)',
-        fontSize: compact ? 10 : 11, color: '#854f0b',
+        background: '#F3E4CE', borderRadius: compact ? 20 : 8,
+        border: '0.5px solid rgba(156,84,25,.25)',
+        fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
         <span>◑</span>
@@ -150,9 +150,9 @@ export function BackupStatusBadge({ compact = false }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 7,
       padding: compact ? '4px 10px' : '10px 12px',
-      background: 'var(--grn-bg)', borderRadius: compact ? 20 : 8,
-      border: '0.5px solid rgba(26,163,104,.2)',
-      fontSize: compact ? 10 : 11, color: 'var(--grn)',
+      background: 'var(--pos-bg)', borderRadius: compact ? 20 : 8,
+      border: '0.5px solid rgba(53,110,87,.25)',
+      fontSize: compact ? 10 : 11, color: 'var(--pos)',
       fontFamily: 'var(--mono)',
     }}>
       <span>✓</span>
@@ -195,23 +195,23 @@ export function BackupReminderBanner() {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
       padding: '12px 16px', marginBottom: 16, borderRadius: 10,
-      background: !lastBackup ? '#faeeda' : '#faeeda',
+      background: !lastBackup ? '#F3E4CE' : '#F3E4CE',
       border: '0.5px solid rgba(133,79,11,.25)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
         <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
-        <div style={{ fontSize: 12, color: '#854f0b', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
           {!lastBackup ? 'Todavía no tenés un respaldo de tus datos.' : `Tu último respaldo fue hace ${days} días.`}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
         <button onClick={handleBackupNow} disabled={exporting} style={{
-          background: '#854f0b', color: '#fff', border: 'none', borderRadius: 6,
+          background: 'var(--amb)', color: '#fff', border: 'none', borderRadius: 6,
           padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: exporting ? 'default' : 'pointer',
           opacity: exporting ? 0.6 : 1,
         }}>{exporting ? 'Creando…' : '↓ Crear respaldo ahora'}</button>
         <button onClick={() => setDismissed(true)} aria-label="Cerrar aviso" style={{
-          background: 'none', border: 'none', color: '#854f0b', fontSize: 13, cursor: 'pointer', minWidth: 32, minHeight: 32,
+          background: 'none', border: 'none', color: 'var(--amb)', fontSize: 13, cursor: 'pointer', minWidth: 32, minHeight: 32,
         }}>✕</button>
       </div>
     </div>
@@ -311,7 +311,7 @@ export default function BackupManager() {
       try {
         data = JSON.parse(text)
       } catch {
-        setStatus({ type: 'error', msg: 'El archivo no es un JSON válido. Verifica que sea un respaldo de FinanceOS.' })
+        setStatus({ type: 'error', msg: 'El archivo no es un JSON válido. Verifica que sea un respaldo de MOY IQ.' })
         setImporting(false)
         return
       }
@@ -335,7 +335,7 @@ export default function BackupManager() {
         await doImport(data)
       }
     } catch (e) {
-      setStatus({ type: 'error', msg: 'Error al leer el archivo. Verifica que sea un respaldo válido de FinanceOS.' })
+      setStatus({ type: 'error', msg: 'Error al leer el archivo. Verifica que sea un respaldo válido de MOY IQ.' })
     } finally {
       setImporting(false)
     }
@@ -375,11 +375,11 @@ export default function BackupManager() {
   const ssub = { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2, lineHeight: 1.5 }
   const btn = (variant = 'default') => ({
     padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-    cursor: 'pointer', border: 'none', fontFamily: 'var(--syne, sans-serif)',
+    cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
     flexShrink: 0, transition: 'all .15s',
-    ...(variant === 'primary' ? { background: 'var(--grn)', color: '#fff' } : {}),
+    ...(variant === 'primary' ? { background: 'var(--laton)', color: 'var(--navy)' } : {}),
     ...(variant === 'default' ? { background: 'var(--sur2)', color: 'var(--tx)', border: '0.5px solid var(--brd2)' } : {}),
-    ...(variant === 'danger'  ? { background: 'transparent', color: '#8a2020', border: '0.5px solid #c8a0a0' } : {}),
+    ...(variant === 'danger'  ? { background: 'transparent', color: 'var(--red)', border: '0.5px solid rgba(162,62,46,.35)' } : {}),
   })
 
   return (
@@ -422,7 +422,7 @@ export default function BackupManager() {
             Tus datos se guardan en este navegador, en este dispositivo — el servidor nunca puede
             leerlos en claro. Si borras el navegador, limpias la caché o cambias de
             dispositivo <strong style={{ color: 'var(--tx)' }}>sin un respaldo previo, los datos se perderán permanentemente</strong>.
-            FinanceOS no puede recuperarlos.
+            MOY IQ no puede recuperarlos.
           </div>
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
             Recomendación: crear un respaldo mensual y guardarlo en Google Drive, iCloud o enviarlo por email.
@@ -453,7 +453,7 @@ export default function BackupManager() {
             <div style={slbl}>Restaurar respaldo</div>
             <div style={ssub}>
               Importa un archivo JSON de respaldo previo<br />
-              <span style={{ color: '#854f0b' }}>⚠ Esto reemplazará todos los datos actuales</span>
+              <span style={{ color: 'var(--amb)' }}>⚠ Esto reemplazará todos los datos actuales</span>
             </div>
           </div>
           <label style={{ flexShrink: 0 }}>
@@ -518,9 +518,9 @@ export default function BackupManager() {
           <div style={{
             padding: '10px 14px', borderRadius: 8, fontSize: 11,
             fontFamily: 'var(--mono)', lineHeight: 1.5,
-            background: status.type === 'ok' ? 'var(--grn-bg)' : status.type === 'error' ? '#fdf0ee' : '#faeeda',
-            color: status.type === 'ok' ? 'var(--grn)' : status.type === 'error' ? '#8a2020' : '#854f0b',
-            border: `0.5px solid ${status.type === 'ok' ? 'rgba(26,163,104,.2)' : status.type === 'error' ? 'rgba(138,32,32,.2)' : 'rgba(133,79,11,.2)'}`,
+            background: status.type === 'ok' ? 'var(--pos-bg)' : status.type === 'error' ? '#F5E6E3' : '#F3E4CE',
+            color: status.type === 'ok' ? 'var(--pos)' : status.type === 'error' ? 'var(--red)' : 'var(--amb)',
+            border: `0.5px solid ${status.type === 'ok' ? 'rgba(53,110,87,.25)' : status.type === 'error' ? 'rgba(162,62,46,.25)' : 'rgba(156,84,25,.25)'}`,
           }}>
             {status.type === 'ok' ? '✓' : '⚠'} {status.msg}
           </div>

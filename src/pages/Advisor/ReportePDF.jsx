@@ -15,14 +15,14 @@ const C = {
   ink4:    '#b0ae9e',
   paper:   '#faf9f5',
   card:    '#f5f4f0',
-  grn:     '#0a5c3e',
-  grn2:    '#127a50',
-  grn3:    '#1aa368',
-  grnL:    '#e4f5ec',
-  amb:     '#854f0b',
-  ambL:    '#faeeda',
-  red:     '#8a2020',
-  redL:    '#fdf0ee',
+  grn:     '#356E57',   // --pos / verde-800
+  grn2:    '#5FA98C',   // --verde
+  grn3:    '#74C2A3',   // --verde-dark
+  grnL:    '#E7F0EA',
+  amb:     '#9C5419',   // --warning-800
+  ambL:    '#F3E4CE',
+  red:     '#A23E2E',   // --error
+  redL:    '#F5E6E3',
   brd:     '#e8e4d8',
   white:   '#ffffff',
 }
@@ -118,7 +118,7 @@ const s = StyleSheet.create({
   // Notas del asesor
   notesBox: {
     backgroundColor: C.grnL, borderRadius: 8, padding: '12 14',
-    borderWidth: 0.5, borderColor: '#c8e8d8',
+    borderWidth: 0.5, borderColor: '#C7DBD0',
   },
   notesLabel: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.grn2, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
   notesText:  { fontSize: 9, color: C.grn, lineHeight: 1.6 },
@@ -162,9 +162,9 @@ const s = StyleSheet.create({
 })
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-const STATUS_COLORS = { green: C.grn3, yellow: '#d4982a', red: C.red }
+const STATUS_COLORS = { green: C.grn3, yellow: '#9C5419', red: C.red }
 const STATUS_BG     = { green: C.grnL, yellow: C.ambL,    red: C.redL }
-const STATUS_LABEL  = { green: 'Saludable', yellow: 'Atención', red: 'Riesgo' }
+const STATUS_LABEL  = { green: 'Bien', yellow: 'Atención', red: 'Riesgo' }
 
 function today() {
   return new Date().toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
@@ -202,7 +202,7 @@ export function ReporteFinancieroPDF({ data }) {
       title={`Reporte Financiero — ${clientName || 'Cliente'} — ${monthLabel(activeMonth)}`}
       author={brandName}
       subject="Diagnóstico financiero personal"
-      creator="FinanceOS · MAXNOVA & LUCI Global LLC"
+      creator="MOY IQ · MAXNOVA & LUCI Global LLC"
     >
       {/* ── PÁGINA 1 — Resumen ejecutivo ── */}
       <Page size="A4" style={s.page}>
@@ -264,12 +264,12 @@ export function ReporteFinancieroPDF({ data }) {
             </View>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>Tasa de ahorro</Text>
-              <Text style={[s.kpiValue, { color: savingRate >= 0.2 ? C.grn : savingRate >= 0.1 ? '#d4982a' : C.red }]}>{fmtPct(savingRate)}</Text>
+              <Text style={[s.kpiValue, { color: savingRate >= 0.2 ? C.grn : savingRate >= 0.1 ? '#9C5419' : C.red }]}>{fmtPct(savingRate)}</Text>
               <Text style={s.kpiSub}>Meta: 20%+</Text>
             </View>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>Deuda total</Text>
-              <Text style={[s.kpiValue, { color: totalDebt > 0 ? '#d4982a' : C.grn }]}>{fmtMoney(totalDebt, sym)}</Text>
+              <Text style={[s.kpiValue, { color: totalDebt > 0 ? '#9C5419' : C.grn }]}>{fmtMoney(totalDebt, sym)}</Text>
               {totalDebt > 0 && <Text style={s.kpiSub}>Min: {fmtMoney(totalMinPayments, sym)}/mes</Text>}
             </View>
             <View style={s.kpiBox}>
@@ -312,8 +312,8 @@ export function ReporteFinancieroPDF({ data }) {
             {alerts.slice(0, 5).map((a, i) => {
               const alertColors = {
                 danger: { bg: C.redL, border: C.red, icon: '⚠' },
-                warn:   { bg: C.ambL, border: '#d4982a', icon: '→' },
-                info:   { bg: '#e6f1fb', border: '#4a9ad4', icon: 'ℹ' },
+                warn:   { bg: C.ambL, border: '#9C5419', icon: '→' },
+                info:   { bg: '#E9EEF2', border: '#5B7A99', icon: 'ℹ' },
               }
               const ac = alertColors[a.type] || alertColors.info
               return (
@@ -329,7 +329,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Footer pág 1 */}
         <View style={s.footer} fixed>
           <Text style={s.footerLeft}>
-            {brandName} · Reporte generado por FinanceOS · {today()}
+            {brandName} · Reporte generado por MOY IQ · {today()}
           </Text>
           <Text style={s.footerRight} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
@@ -368,7 +368,7 @@ export function ReporteFinancieroPDF({ data }) {
                 return (
                   <View key={d.id} style={isLast ? s.tableRowLast : s.tableRow}>
                     <Text style={[s.tdCell, { flex: 3, fontFamily: 'Helvetica-Bold', color: C.ink }]}>{d.creditor}</Text>
-                    <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: '#d4982a', fontFamily: 'Helvetica-Bold' }]}>{fmtMoney(d.balance, sym)}</Text>
+                    <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: '#9C5419', fontFamily: 'Helvetica-Bold' }]}>{fmtMoney(d.balance, sym)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{fmtMoney(d.minPayment || 0, sym)}/mes</Text>
                     <Text style={[s.tdCell, { flex: 1, textAlign: 'right', color: d.rate > 15 ? C.red : C.ink2 }]}>{d.rate}%</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: C.grn2 }]}>{fmtPct(pct)}</Text>
@@ -507,10 +507,10 @@ export function ReporteFinancieroPDF({ data }) {
         <View style={s.disclaimer}>
           <Text style={s.disclaimerText}>
             AVISO LEGAL: Este reporte es una herramienta de organización, diagnóstico y seguimiento financiero personal.
-            Ha sido generado con FinanceOS a partir de los datos ingresados por el usuario. No constituye asesoría
+            Ha sido generado con MOY IQ a partir de los datos ingresados por el usuario. No constituye asesoría
             financiera, tributaria, contable ni de inversión. No reemplaza la consulta con profesionales certificados.
             Las señales, alertas y métricas presentadas son orientativas y se basan exclusivamente en los datos
-            registrados. {brandName !== 'FinanceOS' ? `Elaborado con FinanceOS · MAXNOVA & LUCI Global LLC. ` : ''}
+            registrados. {brandName !== 'MOY IQ' ? `Elaborado con MOY IQ · MAXNOVA & LUCI Global LLC. ` : ''}
             Para consultas: {config.app.supportEmail}
           </Text>
         </View>
@@ -518,7 +518,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Footer pág 2 */}
         <View style={s.footer} fixed>
           <Text style={s.footerLeft}>
-            {brandName} · Reporte generado por FinanceOS · {today()}
+            {brandName} · Reporte generado por MOY IQ · {today()}
           </Text>
           <Text style={s.footerRight} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>

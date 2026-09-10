@@ -9,6 +9,8 @@ import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import QuickAdd from '../QuickAdd.jsx'
 import PrivacySeal from '../PrivacySeal.jsx'
 import CountryBadge from '../CountryBadge.jsx'
+import Logo, { Monogram } from '../Logo.jsx'
+import { NAV_ICONS } from '../icons/Icons.jsx'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -165,7 +167,13 @@ export default function Shell({ page, setPage, children }) {
                 onClick={() => onNavigate(it.id)}
                 aria-current={page === it.id ? 'page' : undefined}
               >
-                <span className={s.ic} aria-hidden="true">{SHOW_FIRMA && it.cc ? <CountryBadge code={it.cc} /> : it.ic}</span>
+                <span className={s.ic} aria-hidden="true">
+                  {SHOW_FIRMA && it.cc
+                    ? <CountryBadge code={it.cc} />
+                    : NAV_ICONS[it.id]
+                      ? (() => { const Ic = NAV_ICONS[it.id]; return <Ic size={15} /> })()
+                      : it.ic}
+                </span>
                 {t(it.lb)}
                 {it.proOnly && (
                   <span style={{ marginLeft:'auto', fontSize:8, fontFamily:'var(--mono)', background:'color-mix(in srgb, var(--warn) 18%, transparent)', color:'var(--amb)', borderRadius:4, padding:'1px 5px', letterSpacing:'.5px', fontWeight:700 }}>PRO</span>
@@ -185,7 +193,7 @@ export default function Shell({ page, setPage, children }) {
       {/* ── SIDEBAR DESKTOP (oculto en móvil) ── */}
       <nav className={s.sb}>
         <div className={s.logo}>
-          <div className={s.logoName}>FinanceOS</div>
+          <Logo size={19} />
           <div className={s.logoSub}>v1.5</div>
         </div>
 
@@ -208,7 +216,7 @@ export default function Shell({ page, setPage, children }) {
             </div>
           )}
           <div className={s.appVersion}>
-            FinanceOS v1.5 · MAXNOVA & LUCI Global LLC<br/>
+            MOY IQ v1.5 · MAXNOVA & LUCI Global LLC<br/>
             <span style={{opacity:.5}}>{t('nav.noServerTag')}</span>
           </div>
           <div style={{marginTop:6}}><BackupStatusBadge compact /></div>
@@ -225,7 +233,7 @@ export default function Shell({ page, setPage, children }) {
         className={s.drawer + (drawerOpen ? ' ' + s.drawerOpen : '')}>
         <div className={s.drawerHeader}>
           <div className={s.logo} style={{border:'none', padding:0, margin:0}}>
-            <div className={s.logoName}>FinanceOS</div>
+            <Logo size={19} />
             <div className={s.logoSub}>v1.5</div>
           </div>
           <button className={s.drawerClose} onClick={() => setDrawerOpen(false)} aria-label={t('nav.closeMenu')}><span style={{fontSize:18}}>✕</span></button>
@@ -264,7 +272,7 @@ export default function Shell({ page, setPage, children }) {
             )}
           </div>
           <span className={s.crumb}>{t(pageLabel(page))}</span>
-          <span className={s.topRight}>FinanceOS · {settings.currency || 'CLP'}</span>
+          <span className={s.topRight}>MOY IQ · {settings.currency || 'CLP'}</span>
         </div>
 
         <main className={s.content} ref={contentRef} tabIndex={-1} style={{ outline: 'none' }} aria-label={t(pageLabel(page))}>

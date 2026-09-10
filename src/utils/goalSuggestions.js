@@ -24,7 +24,7 @@ export const GOAL_TEMPLATES = [
       return Math.round(base * 3)
     },
     contributionPct: 0.10,
-    color: '#1a6b4a',
+    color: '#14213D',
     goalPriority: 'Alta',
     hint: 'gs.emergency.hint',
   },
@@ -42,7 +42,7 @@ export const GOAL_TEMPLATES = [
       return Math.round(base * 1)
     },
     contributionPct: 0.05,
-    color: '#2563eb',
+    color: '#5B7A99',
     goalPriority: 'Media',
     hint: 'gs.vacations.hint',
   },
@@ -57,7 +57,7 @@ export const GOAL_TEMPLATES = [
       return Math.round(base * 0.5)
     },
     contributionPct: 0.04,
-    color: '#d4982a',
+    color: '#B8863B',
     goalPriority: 'Media',
     hint: 'gs.yearEnd.hint',
   },
@@ -69,7 +69,7 @@ export const GOAL_TEMPLATES = [
     priority: 4,
     targetFn: ({ ingresoNeto }) => Math.round(ingresoNeto * 0.5),
     contributionPct: 0.03,
-    color: '#7c3aed',
+    color: '#8B7A55',
     goalPriority: 'Media',
     hint: 'gs.education.hint',
   },
@@ -87,7 +87,7 @@ export const GOAL_TEMPLATES = [
       return Math.round(base * 1)
     },
     contributionPct: 0.03,
-    color: '#0891b2',
+    color: '#356E57',
     goalPriority: 'Baja',
     hint: 'gs.opportunity.hint',
   },

@@ -54,7 +54,7 @@ export default function Reports({ setPage }) {
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `FinanceOS-Reporte-${activeMonth}.pdf`
+      a.download = `MOY-IQ-Reporte-${activeMonth}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } finally {

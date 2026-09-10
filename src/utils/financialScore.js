@@ -68,7 +68,7 @@ export function calcFinancialScore({ savingRate, budgets, expenses, debts, goals
   breakdown.push({ label: tr('score.subs'), pts: subPts, max: 20 })
 
   const label = score >= 80 ? tr('score.excellent') : score >= 60 ? tr('score.good') : score >= 40 ? tr('score.fair') : tr('score.critical')
-  const color = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--grn2)' : score >= 40 ? 'var(--amb)' : 'var(--red)'
+  const color = score >= 80 ? 'var(--pos)' : score >= 60 ? 'var(--pos)' : score >= 40 ? 'var(--amb)' : 'var(--red)'
 
   return { score, label, color, breakdown }
 }

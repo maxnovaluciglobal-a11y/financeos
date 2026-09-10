@@ -82,7 +82,7 @@ function DemoBottomCTA() {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
-      background: 'linear-gradient(135deg, #0a5c3e, #0d7244)',
+      background: 'linear-gradient(135deg, var(--navy), var(--navy-700))',
       color: '#fff',
       padding: '12px 16px',
       display: 'flex',
@@ -98,12 +98,12 @@ function DemoBottomCTA() {
       <button
         onClick={() => window.open('https://financeospro.com/#pricing', '_blank')}
         style={{
-          background: '#fff', color: '#0a5c3e', border: 'none',
+          background: 'var(--laton)', color: 'var(--navy)', border: 'none',
           borderRadius: 8, padding: '9px 18px',
           fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
         }}
       >
-        Comprar FinanceOS →
+        Comprar MOY IQ →
       </button>
       <button
         onClick={dismiss}
@@ -128,7 +128,7 @@ function DemoInner() {
   // propio title/canonical, no el genérico heredado de index.html.
   useEffect(() => {
     if (typeof window === 'undefined' || window.location.hostname !== 'demo.financeospro.com') return
-    document.title = 'Demo — FinanceOS · Prueba la app sin registrarte'
+    document.title = 'Demo — MOY IQ · Prueba la app sin registrarte'
     let link = document.querySelector('link[rel="canonical"]')
     if (!link) {
       link = document.createElement('link')

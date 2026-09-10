@@ -17,9 +17,9 @@ export default function DemoBanner() {
       position: 'sticky',
       top: 0,
       zIndex: 200,
-      background: 'linear-gradient(135deg, #0a5c3e, #127a50)',
+      background: 'linear-gradient(135deg, var(--navy), var(--navy-700))',
       color: '#fff',
-      boxShadow: '0 2px 12px rgba(10,92,62,.3)',
+      boxShadow: '0 2px 12px rgba(20,33,61,.3)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', minHeight: 40, flexWrap: 'wrap' }}>
 
@@ -71,9 +71,9 @@ export default function DemoBanner() {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            background: '#fff',
+            background: 'var(--laton)',
             border: 'none',
-            color: '#0a5c3e',
+            color: 'var(--navy)',
             borderRadius: 6,
             padding: '8px 14px',
             minHeight: 40,

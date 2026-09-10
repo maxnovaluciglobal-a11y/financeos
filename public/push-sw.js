@@ -8,7 +8,7 @@
 // esos siguen cifrados de extremo a extremo y el servidor no puede leerlos.
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'FinanceOS', body: 'Tenés una notificación nueva.' };
+  let data = { title: 'MOY IQ', body: 'Tenés una notificación nueva.' };
   try { if (event.data) data = { ...data, ...event.data.json() } } catch {}
 
   const options = {

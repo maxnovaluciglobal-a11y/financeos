@@ -14,6 +14,7 @@ import { calcFinancialScore } from '../../utils/financialScore.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import CountUp from '../../components/CountUp.jsx'
+import { IconIQScore } from '../../components/icons/Icons.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import MonthVerdict from './MonthVerdict.jsx'
 import CountryTool from './CountryTool.jsx'
@@ -380,7 +381,7 @@ export default function Dashboard({ setPage }) {
           <div style={{ display:'flex', gap:10, flexDirection:'column' }}>
             <button
               onClick={goNextMonth}
-              style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--mono)' }}
+              style={{ background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--mono)' }}
             >
               {t('dash.close.next')}
             </button>
@@ -489,7 +490,7 @@ export default function Dashboard({ setPage }) {
       {/* Header — título + toggle de vista */}
       <div style={{ marginBottom:16, display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
         <div>
-          <div style={{ fontFamily:'var(--mono)', fontSize:11, letterSpacing:'1.2px', textTransform:'uppercase', color:'var(--grn2)', marginBottom:6 }}>Dashboard · {activeMonth}</div>
+          <div style={{ fontFamily:'var(--mono)', fontSize:11, letterSpacing:'1.2px', textTransform:'uppercase', color:'var(--grn)', marginBottom:6 }}>Dashboard · {activeMonth}</div>
           <h1 className="display" style={{ fontSize:26, fontWeight:700, color:'var(--tx)', marginBottom:4 }}>{t('dash.title')}</h1>
         </div>
         <button onClick={toggleCompact} title={compact ? t('dash.view.show') : t('dash.view.hide')} aria-expanded={!compact}
@@ -550,7 +551,7 @@ export default function Dashboard({ setPage }) {
               pasos manuales, que quedan como alternativa. */}
           <button onClick={() => setPage?.('import')} style={{
             display:'flex', alignItems:'center', gap:10, width:'100%', textAlign:'left',
-            background:'var(--accent)', color:'#fff', border:'none', borderRadius:'var(--r2)',
+            background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:'var(--r)',
             padding:'12px 14px', marginBottom:14, cursor:'pointer', fontFamily:'var(--mono)',
           }}>
             <span style={{ fontSize:18, lineHeight:1, flexShrink:0 }}>⇪</span>
@@ -564,7 +565,7 @@ export default function Dashboard({ setPage }) {
               { n:'3', txt:t('dash.start.s3'),        btn:t('dash.start.s3btn'),  page:'budgets',  color:'var(--amb)' },
             ].map((s,i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:24, height:24, borderRadius:'50%', background:'var(--accent)', color:'#fff', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.n}</div>
+                <div style={{ width:24, height:24, borderRadius:'50%', background:'var(--laton)', color:'var(--navy)', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.n}</div>
                 <span style={{ flex:1, fontSize:13, color:'var(--tx)' }}>{s.txt}</span>
                 <button onClick={() => setPage?.(s.page)} style={{ background:'none', border:`.5px solid ${s.color}`, borderRadius:7, padding:'5px 12px', fontSize:12, fontWeight:600, color:s.color, cursor:'pointer', fontFamily:'var(--mono)', whiteSpace:'nowrap' }}>{s.btn}</button>
               </div>
@@ -653,18 +654,23 @@ export default function Dashboard({ setPage }) {
         </div>
       )}
 
-      {/* Puntaje de salud financiera */}
+      {/* IQ Score — puntaje 0-100 de salud financiera */}
       {healthScore && (
         <div className="card rise" style={{ padding:'16px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
           <div style={{ display:'flex', alignItems:'center', gap:14, flex:1, minWidth:180 }}>
             <div style={{ textAlign:'center', flexShrink:0 }}>
               <div className="num" style={{ fontSize:34, fontWeight:700, color:healthScore.color, lineHeight:1 }}>
-                <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={800} />
+                {/* instrument-settle: barrido con resorte 900ms — nunca vuelve a
+                    cero al re-renderizar, ver token --dur-instrument-settle */}
+                <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
               </div>
               <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginTop:2 }}>/ 100</div>
             </div>
             <div>
-              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:2 }}>{t('dash.health.title')}</div>
+              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:2 }}>
+                <IconIQScore size={13} />
+                {t('dash.health.title')}
+              </div>
               <div style={{ fontSize:14, fontWeight:700, color:healthScore.color, marginBottom:4 }}>{healthScore.label}</div>
               <ScoreSparkline history={scoreHistory} currentColor={healthScore.color} />
             </div>

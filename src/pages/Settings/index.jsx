@@ -272,7 +272,7 @@ export default function Settings() {
         </Card>
       )}
       <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
-        FinanceOS v1.5 · MAXNOVA & LUCI Global LLC · Datos locales · Cifrado de extremo a extremo · No asesoría financiera certificada
+        MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Datos locales · Cifrado de extremo a extremo · No asesoría financiera certificada
       </div>
     </div>
   )
@@ -300,9 +300,9 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
     if (result.valid === true) {
       feedback = { text: t('settings.taxId.valid', { label }), color: 'var(--pos, #2e7d32)' }
     } else if (result.reason === 'checkDigit') {
-      feedback = { text: t('settings.taxId.invalidCheckDigit'), color: 'var(--neg, #c0392b)' }
+      feedback = { text: t('settings.taxId.invalidCheckDigit'), color: 'var(--neg, #A23E2E)' }
     } else if (result.reason === 'format') {
-      feedback = { text: t('settings.taxId.invalidFormat', { label }), color: 'var(--neg, #c0392b)' }
+      feedback = { text: t('settings.taxId.invalidFormat', { label }), color: 'var(--neg, #A23E2E)' }
     }
   }
 
@@ -436,7 +436,7 @@ function PushSection() {
               {busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')}
             </Btn>
           </div>
-          {msg && <div style={{ ...sub, color: '#c0392b', marginTop: 8 }}>{msg}</div>}
+          {msg && <div style={{ ...sub, color: '#A23E2E', marginTop: 8 }}>{msg}</div>}
         </>
       )}
     </div>

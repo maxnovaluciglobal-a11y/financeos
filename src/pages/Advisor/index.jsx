@@ -124,8 +124,8 @@ function calcAlerts(metrics, t) {
 // ── SEMÁFORO VISUAL ──────────────────────────────────────────────────────────
 function TrafficLight({ signals }) {
   const { t } = useT()
-  const colors = { green: '#1aa368', yellow: '#d4982a', red: '#e05a4a' }
-  const bg     = { green: '#e4f5ec', yellow: '#faeeda', red: '#fdf0ee' }
+  const colors = { green: '#356E57', yellow: '#9C5419', red: '#A23E2E' }
+  const bg     = { green: '#E7F0EA', yellow: '#F3E4CE', red: '#F5E6E3' }
   const labels = { green: t('adv.status.green'), yellow: t('adv.status.yellow'), red: t('adv.status.red') }
 
   return (
@@ -198,13 +198,13 @@ function AdvisorNotes({ notes, onSave }) {
     width: '100%', minHeight: 80, resize: 'vertical',
     background: 'var(--sur)', border: '0.5px solid var(--brd2)',
     borderRadius: 6, padding: '10px 12px', fontSize: 12,
-    color: 'var(--tx)', fontFamily: 'var(--syne, sans-serif)',
+    color: 'var(--tx)', fontFamily: 'var(--sans)',
     lineHeight: 1.6,
   }
   const inp = {
     width: '100%', background: 'var(--sur)', border: '0.5px solid var(--brd2)',
     borderRadius: 6, padding: '8px 12px', fontSize: 12,
-    color: 'var(--tx)', fontFamily: 'var(--syne, sans-serif)',
+    color: 'var(--tx)', fontFamily: 'var(--sans)',
   }
   const lbl = { fontSize: 11, fontWeight: 600, color: 'var(--tx)', marginBottom: 5, display: 'block' }
 
@@ -248,9 +248,9 @@ function AdvisorNotes({ notes, onSave }) {
         <button
           onClick={handleSave}
           style={{
-            background: 'var(--grn)', color: '#fff', border: 'none',
+            background: 'var(--laton)', color: 'var(--navy)', border: 'none',
             borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600,
-            cursor: 'pointer', fontFamily: 'var(--syne, sans-serif)',
+            cursor: 'pointer', fontFamily: 'var(--sans)',
           }}
         >
           {saved ? t('adv.notes.saved') : t('adv.notes.save')}
@@ -359,7 +359,7 @@ export default function Advisor() {
   // Score general (0-100) basado en semáforos
   const scoreMap = { green: 100, yellow: 50, red: 0 }
   const score = signals.length > 0 ? Math.round(signals.reduce((s, sig) => s + scoreMap[sig.status], 0) / signals.length) : 0
-  const scoreColor = score >= 70 ? '#1aa368' : score >= 40 ? '#d4982a' : '#e05a4a'
+  const scoreColor = score >= 70 ? '#356E57' : score >= 40 ? '#9C5419' : '#A23E2E'
   const scoreLabel = score >= 70 ? t('adv.score.healthy') : score >= 40 ? t('adv.score.attention') : t('adv.score.risk')
 
   // Patrimonio neto (stock a hoy) — opcional: solo si hay datos que lo alimenten.
@@ -450,9 +450,9 @@ export default function Advisor() {
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {[
-                  { c: '#1aa368', l: t('adv.status.green') },
-                  { c: '#d4982a', l: t('adv.status.yellow') },
-                  { c: '#e05a4a', l: t('adv.status.red') },
+                  { c: '#356E57', l: t('adv.status.green') },
+                  { c: '#9C5419', l: t('adv.status.yellow') },
+                  { c: '#A23E2E', l: t('adv.status.red') },
                 ].map(i => (
                   <div key={i.l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: i.c }} />
@@ -466,13 +466,13 @@ export default function Advisor() {
           {/* KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
             <AdvisorKPI label={t('adv.kpi.income')} value={fmtMoney(mIncome, sym)} color="var(--grn)" />
-            <AdvisorKPI label={t('adv.kpi.expense')} value={fmtMoney(mExpense, sym)} color={mExpense > mIncome ? '#e05a4a' : 'var(--tx)'} />
-            <AdvisorKPI label={t('adv.kpi.flow')} value={fmtMoney(mBalance, sym)} color={mBalance >= 0 ? 'var(--grn)' : '#e05a4a'} />
-            <AdvisorKPI label={t('adv.kpi.savingRate')} value={fmtPct(savingRate)} color={savingRate >= 0.2 ? 'var(--grn)' : savingRate >= 0.1 ? '#d4982a' : '#e05a4a'} sub={t('adv.kpi.savingGoal')} />
-            <AdvisorKPI label={t('adv.kpi.debt')} value={fmtMoney(totalDebt, sym)} color={totalDebt > 0 ? '#d4982a' : 'var(--grn)'} sub={totalDebt > 0 ? t('adv.kpi.minPerMonth', { v: fmtMoney(totalMinPayments, sym) }) : t('adv.kpi.noDebts')} />
+            <AdvisorKPI label={t('adv.kpi.expense')} value={fmtMoney(mExpense, sym)} color={mExpense > mIncome ? '#A23E2E' : 'var(--tx)'} />
+            <AdvisorKPI label={t('adv.kpi.flow')} value={fmtMoney(mBalance, sym)} color={mBalance >= 0 ? 'var(--grn)' : '#A23E2E'} />
+            <AdvisorKPI label={t('adv.kpi.savingRate')} value={fmtPct(savingRate)} color={savingRate >= 0.2 ? 'var(--grn)' : savingRate >= 0.1 ? '#9C5419' : '#A23E2E'} sub={t('adv.kpi.savingGoal')} />
+            <AdvisorKPI label={t('adv.kpi.debt')} value={fmtMoney(totalDebt, sym)} color={totalDebt > 0 ? '#9C5419' : 'var(--grn)'} sub={totalDebt > 0 ? t('adv.kpi.minPerMonth', { v: fmtMoney(totalMinPayments, sym) }) : t('adv.kpi.noDebts')} />
             <AdvisorKPI label={t('adv.kpi.goals')} value={goals.length} sub={t('adv.kpi.avgProgress', { pct: fmtPct(avgGoalPct) })} />
-            <AdvisorKPI label={t('adv.kpi.budgets')} value={overBudgetCount > 0 ? t('adv.kpi.budgetsOver', { n: overBudgetCount }) : t('adv.kpi.budgetsOk')} color={overBudgetCount > 0 ? '#e05a4a' : 'var(--grn)'} />
-            {nw.hasData && <AdvisorKPI label={t('adv.kpi.netWorth')} value={fmtMoney(nw.netWorth, sym)} color={nw.netWorth >= 0 ? 'var(--grn)' : '#e05a4a'} sub={t('adv.kpi.netWorthSub', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })} />}
+            <AdvisorKPI label={t('adv.kpi.budgets')} value={overBudgetCount > 0 ? t('adv.kpi.budgetsOver', { n: overBudgetCount }) : t('adv.kpi.budgetsOk')} color={overBudgetCount > 0 ? '#A23E2E' : 'var(--grn)'} />
+            {nw.hasData && <AdvisorKPI label={t('adv.kpi.netWorth')} value={fmtMoney(nw.netWorth, sym)} color={nw.netWorth >= 0 ? 'var(--grn)' : '#A23E2E'} sub={t('adv.kpi.netWorthSub', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })} />}
           </div>
 
           {/* Semáforo */}
@@ -516,7 +516,7 @@ export default function Advisor() {
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#d4982a', fontFamily: 'var(--mono)' }}>{fmtMoney(d.balance, sym)}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#9C5419', fontFamily: 'var(--mono)' }}>{fmtMoney(d.balance, sym)}</div>
                           <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('adv.debts.pending')}</div>
                         </div>
                       </div>
@@ -581,13 +581,13 @@ export default function Advisor() {
         <div style={{background:'#fff',padding:'16px 20px',borderBottom:'0.5px solid rgba(0,0,0,.08)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:700,color:'#1a1a1a',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
-            <div style={{fontSize:9,color:'#888',fontFamily:'monospace'}}>FinanceOS Pro</div>
+            <div style={{fontSize:9,color:'#888',fontFamily:'monospace'}}>MOY IQ Pro</div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             {[
-              {l:t('adv.pdf.income'),    v:fmtMoney(mIncome, sym), c:'#1a6b4a'},
-              {l:t('adv.pdf.expense'),      v:fmtMoney(mExpense, sym), c:'#e05a4a'},
-              {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'#1a6b4a'},
+              {l:t('adv.pdf.income'),    v:fmtMoney(mIncome, sym), c:'#356E57'},
+              {l:t('adv.pdf.expense'),      v:fmtMoney(mExpense, sym), c:'#A23E2E'},
+              {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'#356E57'},
             ].map((item,i) => (
               <div key={i} style={{background:'#f8f9fa',borderRadius:6,padding:'8px 10px',minWidth:0,overflow:'hidden'}}>
                 <div style={{fontSize:8,color:'#888',marginBottom:2,textTransform:'uppercase',letterSpacing:.5}}>{item.l}</div>
@@ -597,7 +597,7 @@ export default function Advisor() {
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {t('adv.pdf.chips').split('|').map((chip,i) => (
-              <span key={i} style={{fontSize:9,padding:'2px 8px',borderRadius:10,background:'rgba(26,107,74,.08)',color:'#1a6b4a',fontFamily:'monospace'}}>{chip}</span>
+              <span key={i} style={{fontSize:9,padding:'2px 8px',borderRadius:10,background:'rgba(53,110,87,.08)',color:'#356E57',fontFamily:'monospace'}}>{chip}</span>
             ))}
           </div>
         </div>
@@ -606,12 +606,12 @@ export default function Advisor() {
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{t('adv.pdf.ctaTitle')}</div>
             <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('adv.pdf.ctaSub')}</div>
-            {pdfError && <div style={{fontSize:11,color:'#e05a4a',fontFamily:'var(--mono)',marginTop:4}}>{pdfError}</div>}
+            {pdfError && <div style={{fontSize:11,color:'#A23E2E',fontFamily:'var(--mono)',marginTop:4}}>{pdfError}</div>}
           </div>
           <button
             onClick={handleExportPDF}
             disabled={pdfLoading || noData}
-            style={{background:pdfLoading?'var(--sur)':'var(--grn)',color:pdfLoading?'var(--th)':'#fff',border:'none',borderRadius:6,padding:'10px 20px',fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--syne, sans-serif)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
+            style={{background:pdfLoading?'var(--sur)':'var(--laton)',color:pdfLoading?'var(--th)':'var(--navy)',border:'none',borderRadius:6,padding:'10px 20px',fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
           >
             {pdfLoading ? t('adv.pdf.generating') : t('adv.pdf.export')}
           </button>

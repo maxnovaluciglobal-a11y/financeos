@@ -110,15 +110,15 @@ const h1s = { fontSize: 22, fontWeight: 700, color: 'var(--tx)', marginBottom: 5
 const subs = { fontSize: 12.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.55, marginBottom: 18 }
 const btnP = (disabled = false) => ({
   width: '100%', padding: '10px', borderRadius: 8, border: 'none',
-  background: disabled ? 'var(--brd2)' : 'var(--grn)', color: '#fff',
+  background: disabled ? 'var(--brd2)' : 'var(--laton)', color: disabled ? 'var(--th)' : 'var(--navy)',
   fontSize: 12, fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
-  fontFamily: 'var(--syne, sans-serif)', marginTop: 7, transition: 'all .15s',
+  fontFamily: 'var(--sans)', marginTop: 7, transition: 'all .15s',
 })
 const btnG = {
   width: '100%', padding: '8px', borderRadius: 8,
   border: '0.5px solid var(--brd2)', background: 'transparent',
   color: 'var(--th)', fontSize: 11, cursor: 'pointer',
-  fontFamily: 'var(--syne, sans-serif)', marginTop: 5,
+  fontFamily: 'var(--sans)', marginTop: 5,
 }
 
 export default function Onboarding({ onComplete }) {
@@ -377,7 +377,7 @@ export default function Onboarding({ onComplete }) {
               border: answers.hasDebts === o.id ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
               background: answers.hasDebts === o.id ? 'var(--grn-bg)' : 'var(--sur2)',
               color: answers.hasDebts === o.id ? 'var(--grn)' : 'var(--tm)',
-              fontFamily: 'var(--syne, sans-serif)', fontWeight: answers.hasDebts === o.id ? 600 : 400,
+              fontFamily: 'var(--sans)', fontWeight: answers.hasDebts === o.id ? 600 : 400,
             }}>{o.label}</button>
           ))}
         </div>
@@ -440,7 +440,7 @@ export default function Onboarding({ onComplete }) {
             border: answers.experience === e.id ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
             background: answers.experience === e.id ? 'var(--grn-bg)' : 'var(--sur2)',
             color: answers.experience === e.id ? 'var(--grn)' : 'var(--tm)',
-            fontFamily: 'var(--syne, sans-serif)', fontWeight: answers.experience === e.id ? 600 : 400,
+            fontFamily: 'var(--sans)', fontWeight: answers.experience === e.id ? 600 : 400,
             textAlign: 'center',
           }}>{t(e.label)}</button>
         ))}

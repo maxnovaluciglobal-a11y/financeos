@@ -236,7 +236,7 @@ export default function Budgets() {
                   </div>
                 </div>
                 <div style={{marginTop:16,paddingTop:16,borderTop:'0.5px solid var(--brd)'}}>
-                  <div style={{fontFamily:'var(--mono)',fontSize:10,letterSpacing:'1px',textTransform:'uppercase',color:'var(--grn2)',marginBottom:10}}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</div>
+                  <div style={{fontFamily:'var(--mono)',fontSize:10,letterSpacing:'1px',textTransform:'uppercase',color:'var(--grn)',marginBottom:10}}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))',gap:10}}>
                     {budgets.map(b => {
                       const spent    = expByCat[b.category] || 0

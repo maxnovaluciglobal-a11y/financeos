@@ -12,8 +12,10 @@
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 .btn:active { transform: scale(0.97); }
-.btn_primary { background: var(--grn); color: #fff; border-color: var(--grn); box-shadow: var(--sh-1); }
-.btn_primary:hover { opacity: 0.92; box-shadow: var(--sh-2); }
+/* CTA primario en Latón (acento de marca) + texto Navy — nunca oscurecer el fill
+   en hover/pressed (cae bajo AA), en cambio se agrega un anillo interior Navy. */
+.btn_primary { background: var(--laton); color: var(--navy); border-color: var(--laton); box-shadow: var(--sh-1); }
+.btn_primary:hover { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
 .btn_ghost { background: transparent; color: var(--tm); }
 .btn_ghost:hover { background: var(--sur2); }
 .btn_danger { background: transparent; color: var(--red); border-color: var(--red); }
@@ -42,17 +44,18 @@
 }
 .kpiLbl { font-size: 11px; color: var(--tm); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 .kpiVal { font-size: 22px; font-weight: 700; font-family: var(--display); letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; color: var(--tx); }
-.kpi_green { color: var(--grn); }
+/* "green" acá es semántico de DATO (positivo), no de marca → --pos (Verde), no --grn (Navy). */
+.kpi_green { color: var(--pos); }
 .kpi_red   { color: var(--red); }
 .kpi_amber { color: var(--amb); }
 .kpiSub { font-size: 11px; color: var(--th); font-family: var(--mono); margin-top: 2px; }
 
-/* BADGE */
+/* BADGE — radios chicos y técnicos a propósito, nunca pill (ver globals.css). */
 .badge {
   font-size: 11px; font-family: var(--mono); padding: 2px 7px;
-  border-radius: 20px; font-weight: 500; display: inline-block;
+  border-radius: var(--rs); font-weight: 500; display: inline-block;
 }
-.badge_green { background: var(--grn-bg); color: var(--grn); }
+.badge_green { background: var(--pos-bg); color: var(--pos); }
 .badge_red   { background: var(--red-bg); color: var(--red); }
 .badge_amber { background: var(--amb-bg); color: var(--amb); }
 .badge_blue  { background: var(--blu-bg); color: var(--blu); }
@@ -60,7 +63,7 @@
 /* PROGRESS */
 .progBg { background: var(--sur3); border-radius: 3px; overflow: hidden; }
 .progFill { height: 100%; width: 100%; border-radius: 3px; transform-origin: left; transition: transform 0.4s; will-change: transform; }
-.prog_green { background: var(--grn); }
+.prog_green { background: var(--pos); }
 .prog_red   { background: var(--red); }
 .prog_amber { background: var(--amb); }
 .prog_blue  { background: var(--blu); }
@@ -74,10 +77,10 @@
 
 /* ALERT */
 .alert { border-radius: var(--r); padding: 10px 12px; font-size: 11px; display: flex; align-items: flex-start; gap: 6px; }
-.alert_warn   { background: var(--amb-bg); color: var(--amb); border: 0.5px solid rgba(154,101,0,.2); }
-.alert_danger { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(192,57,43,.2); }
-.alert_ok     { background: var(--grn-bg); color: var(--grn); border: 0.5px solid rgba(26,107,74,.2); }
-.alert_info   { background: var(--blu-bg); color: var(--blu); border: 0.5px solid rgba(26,90,138,.2); }
+.alert_warn   { background: var(--amb-bg); color: var(--amb); border: 0.5px solid rgba(156,84,25,.25); }
+.alert_danger { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(162,62,46,.25); }
+.alert_ok     { background: var(--pos-bg); color: var(--pos); border: 0.5px solid rgba(53,110,87,.25); }
+.alert_info   { background: var(--blu-bg); color: var(--blu); border: 0.5px solid rgba(62,90,120,.25); }
 
 /* EMPTY */
 /* Estados vacíos: son una invitación a actuar, se leen como lenguaje → sans */
@@ -91,7 +94,7 @@
 .txName { font-size: 12px; color: var(--tx); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txMeta { font-size: 11px; color: var(--th); font-family: var(--mono); }
 .txAmt  { font-size: 12px; font-family: var(--mono); font-weight: 500; flex-shrink: 0; }
-.txInc  { color: var(--grn); }
+.txInc  { color: var(--pos); }
 .txExp  { color: var(--red); }
 .delBtn { background: transparent; border: none; color: var(--th); font-size: 11px; padding: 2px 5px; border-radius: 4px; transition: background .15s ease, color .15s ease, transform .16s var(--ease-out, ease-out); }
 .delBtn:hover { background: var(--red-bg); color: var(--red); }

@@ -50,35 +50,38 @@ export const fmtDate = (iso) => {
   return `${d}/${m}`
 }
 
+// Paleta derivada de la familia de marca MOY IQ (navy/latón/verde/ceniza/info/
+// warning/error + variantes) — cosmético (dots/badges de categoría), sin
+// relación con datos financieros reales.
 export const CAT_COLORS = {
-  Vivienda: '#1a6b4a',
-  Alimentación: '#3dbe7a',
-  Transporte: '#d4982a',
-  Salud: '#4a9ad4',
-  Educación: '#7f77dd',
-  Entretenimiento: '#e05a4a',
-  Entretención: '#e05a4a', // alias — algunos registros históricos usan esta grafía
-  Servicios: '#0f6e56',
-  Ropa: '#d4537e',
-  Otro: '#888780', // categorías de INGRESO usan singular (ver CATS_INCOME)
-  Otros: '#888780', // categorías de GASTO usan plural (ver CATS_EXPENSE)
-  Salario: '#1a6b4a',
-  Freelance: '#4a9ad4',
-  Inversión: '#7f77dd',
-  Arriendo: '#d4982a',
-  Bono: '#3dbe7a',
-  Tecnología: '#818cf8',
-  Deporte: '#4ade80',
-  Viajes: '#f472b6',
-  Streaming: '#00b8d9',
-  Música: '#a78bfa',
-  Software: '#60a5fa',
-  Gimnasio: '#4ade80',
-  Seguro: '#f5a623',
-  Cloud: '#818cf8',
-  Delivery: '#fb923c',
-  Suscripción: '#00d4aa',
-  Productividad: '#34d399',
+  Vivienda: '#14213D',       // navy
+  Alimentación: '#5FA98C',   // verde
+  Transporte: '#B8863B',     // laton
+  Salud: '#5B7A99',          // info
+  Educación: '#8B7A55',      // ceniza
+  Entretenimiento: '#A23E2E', // error
+  Entretención: '#A23E2E',   // alias — algunos registros históricos usan esta grafía
+  Servicios: '#356E57',      // verde-800
+  Ropa: '#C97A3D',           // warning
+  Otro: '#5F5236',           // categorías de INGRESO usan singular (ver CATS_INCOME)
+  Otros: '#5F5236',          // categorías de GASTO usan plural (ver CATS_EXPENSE)
+  Salario: '#14213D',        // navy
+  Freelance: '#3E5A78',      // info-800
+  Inversión: '#8A6329',      // laton-700
+  Arriendo: '#B8863B',       // laton
+  Bono: '#5FA98C',           // verde
+  Tecnología: '#4A5875',     // navy-400
+  Deporte: '#74C2A3',        // verde-dark
+  Viajes: '#CC9A52',         // accent-dark
+  Streaming: '#5B7A99',      // info
+  Música: '#B8AC91',         // ceniza-300
+  Software: '#4A5875',       // navy-400
+  Gimnasio: '#356E57',       // verde-800
+  Seguro: '#9C5419',         // warning-800
+  Cloud: '#E3C592',          // laton-300
+  Delivery: '#C97A3D',       // warning
+  Suscripción: '#3E5A78',    // info-800
+  Productividad: '#5FA98C',  // verde
 }
 
 // Emoji por categoría — hace el registro más ágil y amigable. Fallback: solo el nombre.
@@ -187,7 +190,7 @@ export const SEED_DEBTS = [
 ]
 
 export const SEED_GOALS = [
-  { id: uid(), name: 'Fondo de emergencia', target: 7200000, saved: 4200000, targetDate: '2025-12-31', priority: 'Alta', color: '#d4982a' },
-  { id: uid(), name: 'Viaje a Europa', target: 5000000, saved: 1400000, targetDate: '2026-03-01', priority: 'Media', color: '#1a6b4a' },
-  { id: uid(), name: 'Pie departamento', target: 5800000, saved: 1200000, targetDate: '2027-06-01', priority: 'Alta', color: '#4a9ad4' },
+  { id: uid(), name: 'Fondo de emergencia', target: 7200000, saved: 4200000, targetDate: '2025-12-31', priority: 'Alta', color: '#B8863B' },
+  { id: uid(), name: 'Viaje a Europa', target: 5000000, saved: 1400000, targetDate: '2026-03-01', priority: 'Media', color: '#14213D' },
+  { id: uid(), name: 'Pie departamento', target: 5800000, saved: 1200000, targetDate: '2027-06-01', priority: 'Alta', color: '#5B7A99' },
 ]
