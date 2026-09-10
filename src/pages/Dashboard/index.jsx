@@ -11,6 +11,7 @@ import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
 import { calcFinancialScore } from '../../utils/financialScore.js'
+import { isSyncEnabled, syncAvailable, syncMeta } from '../../core/sync.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import CountUp from '../../components/CountUp.jsx'
@@ -205,15 +206,17 @@ export default function Dashboard({ setPage }) {
     return evaluateCoach(metrics, t).slice(0, 2)
   }, [incomes, expenses, budgets, debts, goals, subs, settings, kpis.incCount, kpis.expCount])
 
-  // ── Puntaje de salud financiera ───────────────────────────────────────────
+  // ── IQ Score — 5 factores del brand book MOY IQ (ver utils/financialScore.js) ──
   const healthScore = useMemo(() => {
     if (kpis.incCount === 0 && kpis.expCount === 0) return null
+    const meta = syncMeta()
     return calcFinancialScore({
       savingRate: kpis.savingRate,
-      budgets, expenses, debts, goals, subs, incomes,
-      activeMonth, settings,
+      expenses, debts, goals, incomes, activeMonth,
+      syncEnabled: isSyncEnabled() && syncAvailable(),
+      lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
     }, t)
-  }, [kpis.savingRate, kpis.incCount, kpis.expCount, budgets, expenses, debts, goals, subs, incomes, activeMonth, settings.language])
+  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, settings.language])
 
   // ── Historial de score semanal (localStorage) ────────────────────────────
   const SCORE_KEY = 'fos_score_history'
