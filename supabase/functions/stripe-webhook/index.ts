@@ -32,7 +32,7 @@ const config: WebhookConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: Deno.env.get("RESEND_API_KEY"),
-  fromEmail: Deno.env.get("FROM_EMAIL") ?? "FinanceOS <licencias@financeospro.com>",
+  fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
   alertEmail: Deno.env.get("ALERT_EMAIL") ?? "maxnovaluciglobal@gmail.com",
 };
 

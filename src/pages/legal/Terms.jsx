@@ -140,7 +140,7 @@ function EsContent() {
 
         <div className={s.section}>
           <h2>11. Contacto</h2>
-          <p>Para consultas sobre estos términos: <strong>support@financeospro.com</strong></p>
+          <p>Para consultas sobre estos términos: <strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.section}>
@@ -148,7 +148,7 @@ function EsContent() {
           <p>
             El incumplimiento de estos términos o de los términos de licencia puede resultar
             en la revocación del derecho de uso sin reembolso. Para regularizar situaciones
-            fuera de los límites del plan adquirido, contactar <strong>support@financeospro.com</strong>{' '}
+            fuera de los límites del plan adquirido, contactar <strong>support@moyiq.app</strong>{' '}
             antes de que ocurra el incumplimiento.
           </p>
         </div>
@@ -295,7 +295,7 @@ function EnContent() {
 
         <div className={s.section}>
           <h2>11. Contact</h2>
-          <p>For inquiries about these terms: <strong>support@financeospro.com</strong></p>
+          <p>For inquiries about these terms: <strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.section}>
@@ -303,7 +303,7 @@ function EnContent() {
           <p>
             Non-compliance with these terms or the license terms may result in revocation of the
             right of use without refund. To regularize situations outside the limits of the
-            purchased plan, contact <strong>support@financeospro.com</strong> before the
+            purchased plan, contact <strong>support@moyiq.app</strong> before the
             non-compliance occurs.
           </p>
         </div>
@@ -450,7 +450,7 @@ function PtContent() {
 
         <div className={s.section}>
           <h2>11. Contato</h2>
-          <p>Para questões sobre estes termos: <strong>support@financeospro.com</strong></p>
+          <p>Para questões sobre estes termos: <strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.section}>
@@ -458,7 +458,7 @@ function PtContent() {
           <p>
             O descumprimento destes termos ou dos termos de licença pode resultar na revogação
             do direito de uso sem reembolso. Para regularizar situações fora dos limites do
-            plano adquirido, contacte <strong>support@financeospro.com</strong> antes que o
+            plano adquirido, contacte <strong>support@moyiq.app</strong> antes que o
             descumprimento ocorra.
           </p>
         </div>

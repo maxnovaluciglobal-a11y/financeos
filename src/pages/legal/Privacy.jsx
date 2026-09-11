@@ -142,7 +142,7 @@ function EsContent() {
 
         <div className={s.section}>
           <h2>11. Contacto</h2>
-          <p>Para consultas relacionadas con privacidad: <strong>support@financeospro.com</strong></p>
+          <p>Para consultas relacionadas con privacidad: <strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.legalNotice}>
@@ -285,7 +285,7 @@ function EnContent() {
 
         <div className={s.section}>
           <h2>11. Contact</h2>
-          <p>For privacy-related inquiries: <strong>support@financeospro.com</strong></p>
+          <p>For privacy-related inquiries: <strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.legalNotice}>
@@ -431,7 +431,7 @@ function PtContent() {
 
         <div className={s.section}>
           <h2>11. Contato</h2>
-          <p>Para questões relacionadas com privacidade: <strong>support@financeospro.com</strong></p>
+          <p>Para questões relacionadas com privacidade: <strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.legalNotice}>

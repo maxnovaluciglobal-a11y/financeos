@@ -116,7 +116,7 @@ const COPY = {
     allowed: '✓ Permitido',
     notAllowed: '✗ No permitido',
     enterpriseTitle: 'Enterprise / marca blanca',
-    enterpriseText: 'La redistribución de FinanceOS bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@financeospro.com para una propuesta.',
+    enterpriseText: 'La redistribución de FinanceOS bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@moyiq.app para una propuesta.',
     warrantyTitle: 'Garantías y limitaciones',
     warranty1: 'El software se proporciona "tal cual", sin garantía de ningún tipo, expresa o implícita. En ningún caso MAXNOVA & LUCI Global LLC será responsable de daños directos, indirectos, incidentales o consecuentes que surjan del uso o imposibilidad de uso del software.',
     warranty2: 'Las funcionalidades de análisis financiero de FinanceOS son de orientación general y no constituyen asesoría financiera, tributaria ni legal certificada.',
@@ -131,7 +131,7 @@ const COPY = {
     allowed: '✓ Allowed',
     notAllowed: '✗ Not allowed',
     enterpriseTitle: 'Enterprise / white-label',
-    enterpriseText: 'Redistributing FinanceOS under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@financeospro.com for a proposal.',
+    enterpriseText: 'Redistributing FinanceOS under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@moyiq.app for a proposal.',
     warrantyTitle: 'Warranties and limitations',
     warranty1: 'The software is provided "as is", without warranty of any kind, express or implied. In no event shall MAXNOVA & LUCI Global LLC be liable for direct, indirect, incidental, or consequential damages arising from the use or inability to use the software.',
     warranty2: "FinanceOS's financial analysis features provide general guidance and do not constitute certified financial, tax, or legal advice.",
@@ -146,7 +146,7 @@ const COPY = {
     allowed: '✓ Permitido',
     notAllowed: '✗ Não permitido',
     enterpriseTitle: 'Enterprise / marca branca',
-    enterpriseText: 'A redistribuição do FinanceOS sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@financeospro.com para uma proposta.',
+    enterpriseText: 'A redistribuição do FinanceOS sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@moyiq.app para uma proposta.',
     warrantyTitle: 'Garantias e limitações',
     warranty1: 'O software é fornecido "tal como está", sem garantia de qualquer tipo, expressa ou implícita. Em nenhum caso a MAXNOVA & LUCI Global LLC será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso ou impossibilidade de uso do software.',
     warranty2: 'As funcionalidades de análise financeira do FinanceOS são de orientação geral e não constituem aconselhamento financeiro, tributário nem jurídico certificado.',
@@ -201,7 +201,7 @@ export default function License() {
 
         <div className={s.section}>
           <h2>{c.contactTitle}</h2>
-          <p>{c.contactText}<strong>support@financeospro.com</strong></p>
+          <p>{c.contactText}<strong>support@moyiq.app</strong></p>
         </div>
 
         <div className={s.legalNotice}>{c.notice}</div>

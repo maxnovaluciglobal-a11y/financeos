@@ -80,7 +80,7 @@ function EsContent() {
         </div>
 
         <div className={s.legalNotice}>
-          Para consultas: <strong>support@financeospro.com</strong> ·
+          Para consultas: <strong>support@moyiq.app</strong> ·
           Revisado por MAXNOVA & LUCI Global LLC · 2026
         </div>
       </div>
@@ -162,7 +162,7 @@ function EnContent() {
         </div>
 
         <div className={s.legalNotice}>
-          Inquiries: <strong>support@financeospro.com</strong> ·
+          Inquiries: <strong>support@moyiq.app</strong> ·
           Reviewed by MAXNOVA & LUCI Global LLC · 2026
         </div>
       </div>
@@ -246,7 +246,7 @@ function PtContent() {
         </div>
 
         <div className={s.legalNotice}>
-          Para questões: <strong>support@financeospro.com</strong> ·
+          Para questões: <strong>support@moyiq.app</strong> ·
           Revisado pela MAXNOVA & LUCI Global LLC · 2026
         </div>
       </div>

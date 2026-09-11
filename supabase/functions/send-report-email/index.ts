@@ -24,7 +24,7 @@ const config: EmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: Deno.env.get("RESEND_API_KEY"),
-  fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@financeospro.com>",
+  fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
 };
 
 // Orígenes conocidos del frontend — no es el control de seguridad real (eso
