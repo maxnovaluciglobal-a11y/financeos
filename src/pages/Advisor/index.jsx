@@ -17,6 +17,7 @@ import config from '../../config.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { personalDebtRatio, personalDebts } from '../../utils/personal.js'
+import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 
 // ── SEMÁFORO — reglas de cálculo ─────────────────────────────────────────────
@@ -109,7 +110,7 @@ function calcAlerts(metrics, t) {
   if (urgentDebts.length > 0)
     alerts.push({ type: 'warn', text: t('adv.alert.dueSoon', { n: urgentDebts.length, names: urgentDebts.map(d => d.creditor).join(', ') }) })
 
-  const emergencyGoal = metrics.goals.find(g => { const n = g.name?.toLowerCase() || ''; return n.includes('emergencia') || n.includes('emergency') || n.includes('emergên') })
+  const emergencyGoal = findEmergencyGoal(metrics.goals)
   if (!emergencyGoal)
     alerts.push({ type: 'info', text: t('adv.alert.noEmergency') })
   else if (emergencyGoal.saved / emergencyGoal.target < 0.5)
