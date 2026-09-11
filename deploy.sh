@@ -43,19 +43,22 @@ npx vercel alias "$URL" demo.moyiq.app
 
 echo "==> Smoke test — contenido real, no solo status (el rewrite catch-all de"
 echo "    vercel.json devuelve 200 para CUALQUIER ruta bajo /app/, incluida una"
-echo "    que no existe — un 200 solo no prueba que sirva el deploy correcto)"
+echo "    que no existe — un 200 solo no prueba que sirva el deploy correcto)."
+echo "    app.financeospro.com/demo.financeospro.com redirigen (308) a su"
+echo "    equivalente moyiq.app desde el 11-sep (decommission de FinanceOS) —"
+echo "    -L sigue el redirect y valida el contenido final, no el código del salto."
 for domain in app.financeospro.com demo.financeospro.com app.moyiq.app demo.moyiq.app; do
-  status=$(curl -s -o /dev/null -w "%{http_code}" "https://$domain/app/")
+  status=$(curl -sL -o /dev/null -w "%{http_code}" "https://$domain/app/")
   if [[ "$status" != "200" ]]; then
-    echo "ERROR: https://$domain/app/ devolvió $status, no 200" >&2
+    echo "ERROR: https://$domain/app/ devolvió $status tras seguir redirects, no 200" >&2
     exit 1
   fi
-  fonts_css=$(curl -s "https://$domain/app/fonts.css")
+  fonts_css=$(curl -sL "https://$domain/app/fonts.css")
   if [[ "$fonts_css" != *"@font-face"* ]]; then
     echo "ERROR: https://$domain/app/fonts.css no es el CSS real (¿cayó en el rewrite catch-all → alias apunta al deploy viejo?)" >&2
     exit 1
   fi
-  echo "    https://$domain/app/ → 200 OK, fonts.css real"
+  echo "    https://$domain/app/ → 200 OK (siguiendo redirect si aplica), fonts.css real"
 done
 
 echo "==> Deploy completo y verificado en los cuatro dominios."
