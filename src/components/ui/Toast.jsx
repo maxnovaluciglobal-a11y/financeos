@@ -12,6 +12,7 @@ export default function Toast() {
     <div
       role="status"
       aria-live="polite"
+      className="fos-toast"
       style={{
         position: 'fixed',
         bottom: 'calc(20px + env(safe-area-inset-bottom))',
@@ -30,7 +31,7 @@ export default function Toast() {
         color: '#fff',
         boxShadow: 'var(--sh-3, 0 8px 24px rgba(0,0,0,.25))',
         maxWidth: 'min(92vw, 420px)',
-        animation: 'fadeInUp 0.2s ease',
+        animation: 'fos-toast-in var(--dur-surface-enter, 220ms) var(--ease, ease) both',
       }}
     >
       <span>{isError ? '⚠ ' : '✓ '}{toast.msg}</span>
@@ -54,7 +55,13 @@ export default function Toast() {
           {action.label}
         </button>
       )}
-      <style>{`@keyframes fadeInUp { from { opacity:0; transform:translateX(-50%) translateY(8px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }`}</style>
+      <style>{`
+        @keyframes fos-toast-in { from { opacity:0; transform:translateX(-50%) translateY(8px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
+        @media (prefers-reduced-motion: reduce) {
+          .fos-toast { animation: fos-toast-fade 200ms ease both !important; }
+        }
+        @keyframes fos-toast-fade { from { opacity:0 } to { opacity:1 } }
+      `}</style>
     </div>
   )
 }

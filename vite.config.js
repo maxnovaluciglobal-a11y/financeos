@@ -24,8 +24,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'FinanceOS', short_name: 'FinanceOS', lang: 'es',
-        theme_color: '#1a6b4a', background_color: '#f4f3ef',
+        name: 'MOY IQ', short_name: 'MOY IQ', lang: 'es',
+        theme_color: '#14213D', background_color: '#F1EEE6',
         display: 'standalone', start_url: '/app/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },

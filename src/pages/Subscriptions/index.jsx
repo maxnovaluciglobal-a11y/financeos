@@ -326,7 +326,7 @@ export default function Subscriptions() {
       {/* ACCIONES */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => setShowForm(true)} style={{
-          background: 'var(--grn)', color: '#fff', border: 'none', borderRadius: 'var(--r)',
+          background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 'var(--r)',
           padding: '7px 14px', fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, cursor: 'pointer',
         }}>{t('subs.addBtn')}</button>
         {['all', 'active', 'inactive'].map(f => (
@@ -380,7 +380,7 @@ export default function Subscriptions() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={save} style={{ background: 'var(--grn)', color: '#fff', border: 'none', borderRadius: 'var(--r)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={save} style={{ background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 'var(--r)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               {editing ? t('subs.form.saveChanges') : t('subs.form.submit')}
             </button>
             <button onClick={closeForm} style={{ background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)', borderRadius: 'var(--r)', padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}>
@@ -397,7 +397,7 @@ export default function Subscriptions() {
             {subs.length === 0 ? t('subs.empty.none') : t('subs.empty.filtered')}
           </div>
           {subs.length === 0 && (
-            <button onClick={() => setShowForm(true)} style={{ background: 'var(--grn)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => setShowForm(true)} style={{ background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               {t('subs.addBtn')}
             </button>
           )}

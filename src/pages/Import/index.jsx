@@ -17,7 +17,7 @@ import {
 const s = {
   page: {},
   header: { marginBottom: 24 },
-  eyebrow: { fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn2)', marginBottom: 6 },
+  eyebrow: { fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)', marginBottom: 6 },
   h1: { fontSize: 24, fontWeight: 700, color: 'var(--tx)', fontFamily: 'var(--display)', letterSpacing: '-.02em', marginBottom: 4 },
   sub: { fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)' },
   card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: 20, marginBottom: 16 },
@@ -63,7 +63,7 @@ const s = {
   summaryLabel: { fontSize: 9, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 3 },
   summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--tx)' },
   btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: '.15s' },
-  btnPrimary: { background: 'var(--grn)', color: '#fff' },
+  btnPrimary: { background: 'var(--laton)', color: 'var(--navy)' },
   btnSecondary: { background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)' },
   btnRow: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 },
   disclaimer: { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' },

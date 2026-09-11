@@ -176,12 +176,12 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
         <button onClick={onClose} style={{
           background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
           borderRadius: 6, padding: '8px 16px', fontSize: 12,
-          cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--syne, sans-serif)',
+          cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
         }}>Cancelar</button>
         <button onClick={() => onApply(template)} style={{
           background: template.color, color: '#fff', border: 'none',
           borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600,
-          cursor: 'pointer', fontFamily: 'var(--syne, sans-serif)',
+          cursor: 'pointer', fontFamily: 'var(--sans)',
         }}>Aplicar plantilla</button>
       </div>
     </Modal>
@@ -213,12 +213,12 @@ function ConfirmModal({ template, hasExistingConfig, onConfirm, onCancel }) {
           <button onClick={onCancel} style={{
             background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
             borderRadius: 6, padding: '8px 16px', fontSize: 12,
-            cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--syne, sans-serif)',
+            cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>Cancelar</button>
           <button onClick={onConfirm} style={{
             background: template.color, color: '#fff', border: 'none',
             borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600,
-            cursor: 'pointer', fontFamily: 'var(--syne, sans-serif)',
+            cursor: 'pointer', fontFamily: 'var(--sans)',
           }}>Confirmar</button>
         </div>
       </div>
@@ -405,7 +405,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                     flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 10,
                     cursor: 'pointer', border: '0.5px solid var(--brd2)',
                     background: 'var(--sur2)', color: 'var(--tm)',
-                    fontFamily: 'var(--syne, sans-serif)',
+                    fontFamily: 'var(--sans)',
                   }}
                 >Ver más</button>
                 <button
@@ -414,7 +414,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                   style={{
                     flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 10,
                     fontWeight: 600, cursor: isActive ? 'default' : 'pointer',
-                    border: 'none', fontFamily: 'var(--syne, sans-serif)',
+                    border: 'none', fontFamily: 'var(--sans)',
                     background: isActive ? 'var(--sur2)' : t.color,
                     color: isActive ? 'var(--th)' : '#fff',
                     opacity: isActive ? 0.7 : 1,

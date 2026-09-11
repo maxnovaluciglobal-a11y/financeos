@@ -279,7 +279,7 @@ function ElsterExport({ desglose, year, t }) {
     '',
     `Total Werbungskosten: ${fmtEUR(total)}`,
     '',
-    'Generado con FinanceOS — verificar cifras antes de declarar.',
+    'Generado con MOY IQ — verificar cifras antes de declarar.',
   ].join('\n')
 
   async function copiar() {

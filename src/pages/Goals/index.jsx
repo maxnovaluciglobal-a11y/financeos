@@ -15,7 +15,7 @@ export default function Goals({ setPage }) {
   const incomes = (_incAll || []).filter(r => !r?.inv)   // "disponible para ahorrar" personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const [show, setShow]               = useState(false)
-  const [f, setF]                     = useState({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#1a6b4a' })
+  const [f, setF]                     = useState({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#14213D' })
   const [err, setErr]                 = useState('')
   const [savingId, setSavingId]       = useState(null)
   const [addAmt, setAddAmt]           = useState('')
@@ -71,7 +71,7 @@ export default function Goals({ setPage }) {
     if (!f.name.trim() || !f.target || Number(f.target) <= 0) { setErr(t('goals.err.required')); return }
     setErr('')
     await addGoal({ ...f, target:Number(f.target), saved:Number(f.saved)||0 })
-    setF({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#1a6b4a' })
+    setF({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#14213D' })
     setShow(false)
   }
 
@@ -190,7 +190,7 @@ export default function Goals({ setPage }) {
       {goals.length === 0 && !show && (
         <Card><div style={{textAlign:'center',padding:'24px 0'}}>
           <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12}}>{t('goals.empty')}</div>
-          <button onClick={()=>setShow(true)} style={{background:'var(--grn)',color:'#fff',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('goals.emptyBtn')}</button>
+          <button onClick={()=>setShow(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('goals.emptyBtn')}</button>
         </div></Card>
       )}
 
@@ -198,7 +198,7 @@ export default function Goals({ setPage }) {
         {goals.map(g => {
           const p    = g.target > 0 ? Math.min(g.saved/g.target, 1) : 0
           const done = g.saved >= g.target
-          const clr  = done ? 'var(--grn)' : p >= 0.5 ? '#d4982a' : p < 0.25 ? 'var(--red)' : 'var(--tm)'
+          const clr  = done ? 'var(--grn)' : p >= 0.5 ? '#B8863B' : p < 0.25 ? 'var(--red)' : 'var(--tm)'
           const isEditing = editingId === g.id
           return (
             <div key={g.id} style={{background:'var(--sur2)',borderRadius:10,padding:'14px 16px',border:`0.5px solid ${isEditing?'rgba(10,92,62,.4)':done?'rgba(10,92,62,.25)':'var(--brd)'}`}}>

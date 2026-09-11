@@ -6,11 +6,11 @@ import {
 } from '@react-pdf/renderer'
 import { moneyLocale } from '../../utils/index.js'
 
-const ACCENT  = '#08795f'  // --accent (positivo/ingreso), no la marca
-const BRAND   = '#3dbe7a'  // --grn en su variante dark: header del PDF es oscuro, y --grn claro (#1a6b4a) da 2.74:1 sobre #0f1923 (falla AA)
-const RED     = '#ff4d6a'
-const AMBER   = '#f5a623'
-const DARK    = '#0f1923'
+const ACCENT  = '#356E57'  // --pos / verde-800 (positivo/ingreso), no la marca
+const BRAND   = '#CC9A52'  // --accent-dark (Latón sobre fondo Navy) — header del PDF es oscuro
+const RED     = '#A23E2E'  // --error
+const AMBER   = '#9C5419'  // --warning-800
+const DARK    = '#14213D'  // --navy
 const GRAY    = '#64748b'
 const LGRAY   = '#f1f5f9'
 const WHITE   = '#ffffff'
@@ -104,17 +104,17 @@ export default function ReportPDF({ data }) {
     recs.push({ type: 'info', text: `Suscripciones recurrentes: ${fmt(totalSubs, sym)}/mes → ${fmt(totalSubs * 12, sym)}/año.` })
   }
 
-  const recColors = { ok: { bg: '#f0fdf4', txt: '#166534' }, warn: { bg: '#fffbeb', txt: '#92400e' }, danger: { bg: '#fef2f2', txt: '#991b1b' }, info: { bg: '#f0f9ff', txt: '#075985' } }
+  const recColors = { ok: { bg: '#EAF3EF', txt: '#356E57' }, warn: { bg: '#F7EDE0', txt: '#9C5419' }, danger: { bg: '#F5E6E3', txt: '#A23E2E' }, info: { bg: '#E9EEF2', txt: '#3E5A78' } }
 
   return (
-    <Document title={`FinanceOS — Reporte ${monthLabel}`} author="FinanceOS" creator="FinanceOS v1.5">
+    <Document title={`MOY IQ — Reporte ${monthLabel}`} author="MOY IQ" creator="MOY IQ v1.5">
       <Page size="A4" style={s.page}>
 
         {/* Header */}
         <View style={s.header}>
           <View style={s.hRow}>
             <View>
-              <Text style={s.hTitle}>FinanceOS</Text>
+              <Text style={s.hTitle}>MOY IQ</Text>
               <Text style={s.hSub}>Reporte financiero personal · {monthLabel}</Text>
             </View>
             <View>
@@ -241,7 +241,7 @@ export default function ReportPDF({ data }) {
                   <View style={s.ruleTrack}>
                     <View style={[s.barFill, { width: `${Math.min(ap / r.ideal, 1) * 100}%`, backgroundColor: ok ? r.color : RED }]} />
                   </View>
-                  <Text style={[s.rulePct, { color: ok ? '#166534' : RED }]}>
+                  <Text style={[s.rulePct, { color: ok ? '#356E57' : RED }]}>
                     {pct(ap)} / {pct(r.ideal)} {ok ? '✓' : '⚠'}
                   </Text>
                 </View>
@@ -264,7 +264,7 @@ export default function ReportPDF({ data }) {
         <View style={s.footer} fixed>
           <View style={s.divider} />
           <Text style={s.footTxt}>
-            FinanceOS v1.5 · MAXNOVA {'&'} LUCI Global LLC · Datos procesados localmente · Cifrado de extremo a extremo.{'\n'}
+            MOY IQ v1.5 · MAXNOVA {'&'} LUCI Global LLC · Datos procesados localmente · Cifrado de extremo a extremo.{'\n'}
             Este reporte es de carácter orientativo y NO constituye asesoría financiera, tributaria, legal ni de inversión.
             Consulta a un profesional certificado para decisiones financieras formales.
           </Text>

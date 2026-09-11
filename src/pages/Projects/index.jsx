@@ -111,7 +111,7 @@ export default function Projects() {
                         <input type="number" inputMode="decimal" min="0" value={draft} autoFocus placeholder="0"
                           onChange={e => setDraft(e.target.value)}
                           style={{ flex: 1, minWidth: 0, padding: '6px 9px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--mono)', fontSize: 12 }} />
-                        <button onClick={() => saveValue(g.name)} style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--grn)', color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{t('projects.saveBtn')}</button>
+                        <button onClick={() => saveValue(g.name)} style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--laton)', color: 'var(--navy)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{t('projects.saveBtn')}</button>
                         <button onClick={() => setEditing(null)} style={{ padding: '6px 10px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'transparent', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>{t('projects.cancelBtn')}</button>
                       </div>
                     </div>

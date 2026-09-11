@@ -419,7 +419,7 @@ export function AppProvider({ children }) {
       const backup = {
         _meta: {
           version:    '1.5',
-          app:        'FinanceOS',
+          app:        'MOY IQ',
           createdAt:  new Date().toISOString(),
           recordCount: {
             incomes:       (data.incomes       || []).length,
@@ -460,7 +460,7 @@ export function AppProvider({ children }) {
           showToast('Datos importados correctamente.', 'ok')
           resolve()
         } catch (err) {
-          showToast('Error al importar. Verifica que el archivo sea un backup válido de FinanceOS.', 'error')
+          showToast('Error al importar. Verifica que el archivo sea un backup válido de MOY IQ.', 'error')
           reject(err)
         }
       }

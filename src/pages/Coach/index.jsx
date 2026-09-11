@@ -42,7 +42,7 @@ function SignalCard({ signal }) {
       {signal.action && (
         <div style={{
           marginTop: 8, fontSize: 11, fontFamily: 'var(--mono)',
-          color: 'var(--grn2)', background: 'var(--grn-bg)',
+          color: 'var(--grn)', background: 'var(--grn-bg)',
           padding: '5px 9px', borderRadius: 6,
           borderLeft: '2px solid var(--grn)',
         }}>

@@ -7,11 +7,11 @@ export const TEMPLATES = [
   {
     id: 'personal',
     icon: '◈',
-    color: '#1aa368',
+    color: '#356E57',
     name: 'Persona natural',
     tagline: 'Para quién controla sus finanzas personales por primera vez',
     description: 'Ideal para comenzar. Cubre los gastos del día a día, una meta de ahorro y control básico del presupuesto mensual.',
-    bestFor: ['Primer usuario de FinanceOS', 'Personas sin deudas complejas', 'Quienes quieren orden básico'],
+    bestFor: ['Primer usuario de MOY IQ', 'Personas sin deudas complejas', 'Quienes quieren orden básico'],
     categoriesIncome: ['Salario', 'Bono', 'Freelance', 'Inversión', 'Otro'],
     categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Salud', 'Entretenimiento', 'Servicios', 'Ropa', 'Otro'],
     suggestedBudgets: [
@@ -37,7 +37,7 @@ export const TEMPLATES = [
   {
     id: 'pareja',
     icon: '◑',
-    color: '#4a9ad4',
+    color: '#5B7A99',
     name: 'Pareja o familia',
     tagline: 'Para dos personas con finanzas compartidas o mixtas',
     description: 'Contempla ingresos múltiples, gastos del hogar compartidos y metas familiares como viaje, casa o educación de hijos.',
@@ -68,7 +68,7 @@ export const TEMPLATES = [
   {
     id: 'freelancer',
     icon: '⟶',
-    color: '#7f77dd',
+    color: '#8B7A55',
     name: 'Freelancer',
     tagline: 'Para quienes tienen ingresos variables o múltiples fuentes',
     description: 'Diseñado para gestionar ingresos irregulares, separar gastos personales de profesionales y provisionar impuestos.',
@@ -99,7 +99,7 @@ export const TEMPLATES = [
   {
     id: 'pyme',
     icon: '▤',
-    color: '#d4982a',
+    color: '#B8863B',
     name: 'Pyme o negocio pequeño',
     tagline: 'Para dueños que mezclan finanzas personales y del negocio',
     description: 'Ayuda a separar claramente lo personal de lo empresarial, controlar el "sueldo del dueño" y detectar fugas entre ambos mundos.',
@@ -129,7 +129,7 @@ export const TEMPLATES = [
   {
     id: 'deudas',
     icon: '⊖',
-    color: '#e05a4a',
+    color: '#A23E2E',
     name: 'Cliente con deuda',
     tagline: 'Para quienes priorizan salir de deudas de forma ordenada',
     description: 'Enfocado en visibilizar la deuda total, los pagos mínimos, las tasas y el progreso de amortización. Incluye estrategia de bola de nieve o avalancha.',
@@ -160,7 +160,7 @@ export const TEMPLATES = [
   {
     id: 'ahorro',
     icon: '◎',
-    color: '#1aa368',
+    color: '#356E57',
     name: 'Cliente con meta de ahorro',
     tagline: 'Para quienes tienen un objetivo de ahorro específico y concreto',
     description: 'Centrado en alcanzar una meta concreta: viaje, pie de casa, educación, retiro anticipado. Calcula cuánto ahorrar por mes para lograrlo.',
@@ -189,7 +189,7 @@ export const TEMPLATES = [
   {
     id: 'educador',
     icon: '⊞',
-    color: '#7f77dd',
+    color: '#8B7A55',
     name: 'Educador financiero',
     tagline: 'Para talleres y clases de educación financiera',
     description: 'Plantilla para uso en contextos educativos. Categorías simples, conceptos básicos visibles, sin complejidad innecesaria. Ideal para primer contacto con finanzas personales.',

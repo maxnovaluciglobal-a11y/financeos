@@ -145,7 +145,7 @@ export default function Income({ setPage }) {
           {filtered.length === 0
             ? <div style={{textAlign:'center',padding:'24px 0'}}>
                 <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12}}>{t('income.emptyText')}</div>
-                <button onClick={() => setF(p => ({...p, recurrence:'Mensual'}))} style={{background:'var(--grn)',color:'#fff',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('income.emptyBtn')}</button>
+                <button onClick={() => setF(p => ({...p, recurrence:'Mensual'}))} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('income.emptyBtn')}</button>
               </div>
             : <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                 {filtered.map(r => editingId === r.id ? (

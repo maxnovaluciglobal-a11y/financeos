@@ -160,9 +160,9 @@ export const DEMO_DEBTS = [
 
 // ── METAS ─────────────────────────────────────────────────────────────────────
 export const DEMO_GOALS = [
-  { id: d('g1'), name: 'Fondo de emergencia (3 meses)', target: 5_000_000, saved: 1_200_000, targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#d4982a', notes: '~24% del objetivo' },
-  { id: d('g2'), name: 'Viaje a México en diciembre',   target: 3_500_000, saved:   450_000, targetDate: nextYearDate(12, 15), priority: 'Media', color: '#1a6b4a', notes: 'Vuelos + 7 noches' },
-  { id: d('g3'), name: 'Equipo de diseño (Mac)',        target: 8_200_000, saved: 2_100_000, targetDate: nextYearDate(6, 1),  priority: 'Alta',  color: '#4a9ad4', notes: 'MacBook Pro M3' },
+  { id: d('g1'), name: 'Fondo de emergencia (3 meses)', target: 5_000_000, saved: 1_200_000, targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B8863B', notes: '~24% del objetivo' },
+  { id: d('g2'), name: 'Viaje a México en diciembre',   target: 3_500_000, saved:   450_000, targetDate: nextYearDate(12, 15), priority: 'Media', color: '#14213D', notes: 'Vuelos + 7 noches' },
+  { id: d('g3'), name: 'Equipo de diseño (Mac)',        target: 8_200_000, saved: 2_100_000, targetDate: nextYearDate(6, 1),  priority: 'Alta',  color: '#5B7A99', notes: 'MacBook Pro M3' },
 ]
 
 // ── SUSCRIPCIONES ──────────────────────────────────────────────────────────────

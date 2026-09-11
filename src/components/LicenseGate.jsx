@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { validateLicense, setLicenseEmail } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
+import Logo from './Logo.jsx'
 
 function usePlans(t) {
   return [
@@ -89,17 +90,8 @@ export default function LicenseGate({ onActivate }) {
 
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
-            <svg viewBox="0 0 200 200" role="img" aria-label="FinanceOS" style={{ display: 'block', width: '100%', height: '100%' }}>
-              <rect width="200" height="200" fill="#1a6b4a" />
-              <path d="M159.56 71.56A66 66 0 1 1 128.44 40.44L113.01 55.88A46 46 0 1 0 144.12 86.99Z" fill="#ffffff" />
-              <circle cx="88.69" cy="111.31" r="22" fill="#D4B863" />
-            </svg>
-          </div>
-          <div>
-            <div style={{ fontFamily: 'var(--display)', fontSize: 17, fontWeight: 600, color: 'var(--tx)', letterSpacing: '-.3px' }}>FinanceOS</div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', marginTop: 1 }}>{t('licenseGate.version')}</div>
-          </div>
+          <Logo size={22} />
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)' }}>{t('licenseGate.version')}</div>
         </div>
 
         {/* Activate */}
@@ -141,7 +133,7 @@ export default function LicenseGate({ onActivate }) {
           )}
 
           <button
-            style={{ width: '100%', padding: 12, background: 'var(--grn)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: loading || !key.trim() ? 'not-allowed' : 'pointer', opacity: loading || !key.trim() ? 0.55 : 1, fontFamily: 'var(--sans)', transition: 'opacity .15s' }}
+            style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: loading || !key.trim() ? 'not-allowed' : 'pointer', opacity: loading || !key.trim() ? 0.55 : 1, fontFamily: 'var(--sans)', transition: 'opacity .15s' }}
             onClick={handleActivate}
             disabled={loading || !key.trim()}
           >

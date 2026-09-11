@@ -38,21 +38,21 @@ export default class ErrorBoundary extends Component {
 
     const wrap = {
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#f4f3ef', padding: 20, fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: '#F1EEE6', padding: 20, fontFamily: 'system-ui, -apple-system, sans-serif',
     }
     const card = {
-      background: '#fff', border: '0.5px solid #e2e0d8', borderRadius: 16,
+      background: '#FAF8F2', border: '0.5px solid #E4DFD1', borderRadius: 12,
       padding: '28px 24px', maxWidth: 380, width: '100%', textAlign: 'center',
-      boxShadow: '0 20px 50px rgba(0,0,0,.08)',
+      boxShadow: '0 20px 50px rgba(20,33,61,.10)',
     }
     const btnP = {
       width: '100%', padding: '11px', borderRadius: 8, border: 'none',
-      background: '#1a6b4a', color: '#fff', fontSize: 14, fontWeight: 600,
+      background: '#B8863B', color: '#14213D', fontSize: 14, fontWeight: 600,
       cursor: 'pointer', marginTop: 14,
     }
     const btnG = {
-      width: '100%', padding: '9px', borderRadius: 8, border: '0.5px solid #d8d5cc',
-      background: 'transparent', color: '#6b6a63', fontSize: 12, cursor: 'pointer', marginTop: 8,
+      width: '100%', padding: '9px', borderRadius: 8, border: '0.5px solid #E4DFD1',
+      background: 'transparent', color: '#63604F', fontSize: 12, cursor: 'pointer', marginTop: 8,
     }
 
     return (

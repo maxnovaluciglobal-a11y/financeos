@@ -108,8 +108,8 @@ export function Empty({ text = 'Sin registros aún', cta, onCta }) {
         <div style={{ marginTop: 12 }}>
           <button type="button" onClick={onCta} style={{
             fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600,
-            color: '#fff', background: 'var(--grn)', border: 'none',
-            borderRadius: 8, padding: '8px 16px', cursor: 'pointer',
+            color: 'var(--navy)', background: 'var(--laton)', border: 'none',
+            borderRadius: 'var(--r)', padding: '8px 16px', cursor: 'pointer',
           }}>{cta}</button>
         </div>
       )}

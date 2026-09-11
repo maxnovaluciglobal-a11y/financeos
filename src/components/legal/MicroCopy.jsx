@@ -21,7 +21,7 @@ export function FinancialDisclaimer({ compact = false }) {
       lineHeight: 1.6, padding: '8px 12px', background: 'var(--sur2)',
       borderRadius: 6, borderLeft: '2px solid var(--brd2)', marginTop: 8,
     }}>
-      FinanceOS es una herramienta de organización financiera personal. Los datos y
+      MOY IQ es una herramienta de organización financiera personal. Los datos y
       proyecciones mostrados se basan en la información ingresada por el usuario y
       no constituyen asesoría financiera, tributaria ni de inversión.
     </div>
@@ -34,7 +34,7 @@ export function BackupWarning({ variant = 'full' }) {
   if (variant === 'inline') {
     return (
       <p style={{
-        fontSize: 11, color: '#854f0b', fontFamily: 'var(--mono)',
+        fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)',
         lineHeight: 1.5, marginTop: 6,
       }}>
         ⚠ Exporta un respaldo JSON periódicamente. Los datos locales pueden perderse
@@ -45,9 +45,9 @@ export function BackupWarning({ variant = 'full' }) {
   return (
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
-      padding: '12px 14px', background: '#faeeda',
-      border: '0.5px solid rgba(133,79,11,.2)', borderRadius: 8,
-      fontSize: 12, color: '#854f0b', lineHeight: 1.6,
+      padding: '12px 14px', background: 'var(--amb-bg)',
+      border: '0.5px solid rgba(156,84,25,.25)', borderRadius: 8,
+      fontSize: 12, color: 'var(--amb)', lineHeight: 1.6,
     }}>
       <span style={{ flexShrink: 0, fontSize: 16, marginTop: 1 }}>⚠</span>
       <div>

@@ -8,13 +8,16 @@
 const config = {
 
   // ── IDENTIDAD ──────────────────────────────────────────────────────────────
+  // Rebranding MOY IQ (rama rebrand/moy-iq, NO desplegado — falta búsqueda de
+  // marca paga confirmada). website/supportEmail quedan sin tocar a propósito:
+  // dominios/cuentas reales todavía registrados bajo financeospro.com.
   app: {
-    name:        'FinanceOS',           // Nombre que aparece en sidebar y título
+    name:        'MOY IQ',              // Nombre que aparece en sidebar y título
     tagline:     'Tu dinero, bajo control total',
     version:     '1.5.0',
     supportEmail:'support@financeospro.com',  // Aparece en Ajustes > soporte
     website:     'https://www.financeospro.com',
-    logoText:    'FO',                  // Iniciales para favicon SVG si no hay imagen
+    logoText:    'MI',                  // Iniciales para favicon SVG si no hay imagen
   },
 
   // ── DEFAULTS DEL USUARIO ───────────────────────────────────────────────────
@@ -73,26 +76,28 @@ const config = {
   // ── COLORES POR CATEGORÍA ──────────────────────────────────────────────────
   // Asigna un color hex a cada categoría. Si una categoría no tiene color
   // asignado aquí, usa el fallback '#888780'.
+  // Paleta derivada de la familia de marca MOY IQ (navy/latón/verde/ceniza +
+  // variantes) — cosmético, sin relación con datos financieros reales.
   categoryColors: {
-    Vivienda:        '#1a6b4a',
-    Alimentación:    '#3dbe7a',
-    Transporte:      '#d4982a',
-    Salud:           '#4a9ad4',
-    Educación:       '#7f77dd',
-    Entretención:    '#e05a4a',
-    Servicios:       '#0f6e56',
-    Ropa:            '#d4537e',
-    Tecnología:      '#1a5a8a',
-    Mascota:         '#9a6500',
-    Propiedad:       '#7a5cc0',
-    Otros:           '#888780',
-    Salario:         '#1a6b4a',
-    Freelance:       '#4a9ad4',
-    Inversión:       '#7f77dd',
-    Arriendo:        '#d4982a',
-    Bono:            '#3dbe7a',
-    Pensión:         '#888780',
-    'Negocio propio':'#0f6e56',
+    Vivienda:        '#14213D',   // navy
+    Alimentación:    '#5FA98C',   // verde
+    Transporte:      '#B8863B',   // laton
+    Salud:           '#5B7A99',   // info
+    Educación:       '#8B7A55',   // ceniza
+    Entretención:    '#A23E2E',   // error
+    Servicios:       '#356E57',   // verde-800
+    Ropa:            '#C97A3D',   // warning
+    Tecnología:      '#4A5875',   // navy-400
+    Mascota:         '#8A6329',   // laton-700
+    Propiedad:       '#3E5A78',   // info-800
+    Otros:           '#5F5236',   // ceniza-700
+    Salario:         '#14213D',
+    Freelance:       '#5B7A99',
+    Inversión:       '#8B7A55',
+    Arriendo:        '#B8863B',
+    Bono:            '#5FA98C',
+    Pensión:         '#5F5236',
+    'Negocio propio':'#356E57',
   },
 
   // ── EMOJIS POR CATEGORÍA (opcional) ────────────────────────────────────────
@@ -144,9 +149,9 @@ const config = {
   // Luego copia los mismos valores en src/styles/globals.css → :root
   // para que afecten también los estilos CSS que no usan este config.
   brand: {
-    primary:      '#1a6b4a', // Color principal (botones, sidebar activo, acentos)
-    primaryLight: '#e8f5ef', // Fondo claro del color principal
-    primaryMid:   '#1d9e75', // Versión media para barras y gráficos
+    primary:      '#14213D', // Navy — color principal (sidebar activo, estructura)
+    primaryLight: 'rgba(20,33,61,0.07)', // Fondo claro del color principal
+    primaryMid:   '#B8863B', // Latón — acento de CTAs, barras destacadas
   },
 
   // ── FEATURES ON/OFF ────────────────────────────────────────────────────────
@@ -167,7 +172,7 @@ const config = {
   // ── ONBOARDING ─────────────────────────────────────────────────────────────
   onboarding: {
     enabled:       true,
-    welcomeTitle:  'Bienvenido a FinanceOS',
+    welcomeTitle:  'Bienvenido a MOY IQ',
     welcomeText:   'Tus datos se guardan en este dispositivo. Cifrado de extremo a extremo, sin suscripciones.',
     steps: [
       { id: 'currency',    title: 'Elige tu moneda',         desc: '¿Con qué moneda trabajas día a día?' },

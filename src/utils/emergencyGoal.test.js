@@ -1,11 +1,11 @@
 // Cobertura de src/utils/emergencyGoal.js — fuente única de detección de
 // "esta meta ES el fondo de emergencia" por nombre, usada por Coach
-// (coachRules.js), Modo Asesor y Goals. Antes de la extracción, 3 copias
-// divergentes del mismo regex: la de coachRules.js matcheaba la palabra
-// suelta "fund"/"fondo", lo que contaba "Travel fund"/"Car fund"/"Wedding
-// fund"/"College fund" como fondo de emergencia. Este archivo fija el
-// criterio correcto: solo la raíz "emergenc*", nunca "fund"/"fondo"/"fundo"
-// sueltos.
+// (coachRules.js), Modo Asesor, Goals y el IQ Score (financialScore.js).
+// Antes de la extracción, 4 copias divergentes del mismo regex: la de
+// financialScore.js/coachRules.js matcheaba la palabra suelta "fund"/"fondo",
+// lo que contaba "Travel fund"/"Car fund"/"Wedding fund"/"College fund" como
+// fondo de emergencia. Este archivo fija el criterio correcto: solo la raíz
+// "emergenc*", nunca "fund"/"fondo"/"fundo" sueltos.
 import { describe, it, expect } from 'vitest'
 import { isEmergencyGoalName, findEmergencyGoal } from './emergencyGoal.js'
 
