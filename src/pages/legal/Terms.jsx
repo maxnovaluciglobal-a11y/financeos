@@ -1,5 +1,5 @@
 // src/pages/legal/Terms.jsx
-// Términos de Uso — FinanceOS (es/en/pt)
+// Términos de Uso — MOY IQ (es/en/pt)
 // AVISO: Revisar con abogado antes de uso comercial definitivo.
 // ACTUALIZADO 2026-07: referencia a planes vigentes (Personal / Pro).
 
@@ -13,7 +13,7 @@ function EsContent() {
       <PageHeader title="Términos de Uso" sub="Última actualización: julio 2026 · MAXNOVA & LUCI Global LLC" />
       <div className={s.legalWrap}>
         <div className={s.highlight}>
-          <strong>Importante:</strong> FinanceOS es una herramienta de organización y
+          <strong>Importante:</strong> MOY IQ es una herramienta de organización y
           seguimiento financiero personal. No es un asesor financiero, tributario ni de
           inversión. No reemplaza la consulta con profesionales certificados.
         </div>
@@ -21,7 +21,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>1. Aceptación de los términos</h2>
           <p>
-            Al acceder y usar FinanceOS, el usuario acepta estos Términos de Uso en su
+            Al acceder y usar MOY IQ, el usuario acepta estos Términos de Uso en su
             totalidad. Si no está de acuerdo con alguna parte, debe dejar de usar la herramienta.
           </p>
         </div>
@@ -29,11 +29,11 @@ function EsContent() {
         <div className={s.section}>
           <h2>2. Naturaleza del servicio</h2>
           <p>
-            FinanceOS es una herramienta de software para <strong>organización, diagnóstico y
+            MOY IQ es una herramienta de software para <strong>organización, diagnóstico y
             seguimiento financiero personal</strong>. Su propósito es ayudar a los usuarios a
             registrar, visualizar y comprender sus finanzas personales.
           </p>
-          <p>FinanceOS <strong>no es</strong> y no debe interpretarse como:</p>
+          <p>MOY IQ <strong>no es</strong> y no debe interpretarse como:</p>
           <ul className={s.list}>
             <li>Asesor financiero, tributario, contable ni de inversión</li>
             <li>Institución bancaria, financiera ni entidad regulada</li>
@@ -62,7 +62,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>4. Almacenamiento local y pérdida de datos</h2>
           <p>
-            FinanceOS almacena los datos localmente en el navegador del usuario. Salvo que el
+            MOY IQ almacena los datos localmente en el navegador del usuario. Salvo que el
             usuario active la sincronización cifrada opcional,
             <strong> MAXNOVA & LUCI Global LLC no almacena ni puede recuperar los datos del usuario</strong>
             (y aun con sincronización activa, solo almacena datos cifrados que no puede leer).
@@ -94,8 +94,8 @@ function EsContent() {
         <div className={s.section}>
           <h2>6. Propiedad intelectual</h2>
           <p>
-            El código fuente, diseño y contenido de FinanceOS son propiedad de MAXNOVA & LUCI Global LLC
-            y están protegidos por derechos de autor. El uso de FinanceOS está sujeto a los
+            El código fuente, diseño y contenido de MOY IQ son propiedad de MAXNOVA & LUCI Global LLC
+            y están protegidos por derechos de autor. El uso de MOY IQ está sujeto a los
             términos de la licencia adquirida (Personal o Pro), detallados en el documento de
             Licencia correspondiente.
           </p>
@@ -103,7 +103,7 @@ function EsContent() {
 
         <div className={s.section}>
           <h2>7. Uso permitido</h2>
-          <p>El usuario se compromete a no utilizar FinanceOS para:</p>
+          <p>El usuario se compromete a no utilizar MOY IQ para:</p>
           <ul className={s.list}>
             <li>Actividades ilegales o fraudulentas</li>
             <li>Evadir obligaciones fiscales o legales</li>
@@ -115,7 +115,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>8. Disponibilidad del servicio</h2>
           <p>
-            FinanceOS es una PWA (Progressive Web App) que funciona offline una vez cargada.
+            MOY IQ es una PWA (Progressive Web App) que funciona offline una vez cargada.
             La disponibilidad inicial depende de la plataforma de hosting utilizada.
             MAXNOVA & LUCI Global LLC no garantiza disponibilidad ininterrumpida del servicio de hosting.
           </p>
@@ -169,7 +169,7 @@ function EnContent() {
       <PageHeader title="Terms of Use" sub="Last updated: July 2026 · MAXNOVA & LUCI Global LLC" />
       <div className={s.legalWrap}>
         <div className={s.highlight}>
-          <strong>Important:</strong> FinanceOS is a personal finance organization and tracking
+          <strong>Important:</strong> MOY IQ is a personal finance organization and tracking
           tool. It is not a financial, tax, or investment advisor. It does not replace
           consultation with certified professionals.
         </div>
@@ -177,7 +177,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>1. Acceptance of the terms</h2>
           <p>
-            By accessing and using FinanceOS, the user accepts these Terms of Use in full.
+            By accessing and using MOY IQ, the user accepts these Terms of Use in full.
             If you disagree with any part, you must stop using the tool.
           </p>
         </div>
@@ -185,11 +185,11 @@ function EnContent() {
         <div className={s.section}>
           <h2>2. Nature of the service</h2>
           <p>
-            FinanceOS is a software tool for <strong>personal financial organization, diagnosis,
+            MOY IQ is a software tool for <strong>personal financial organization, diagnosis,
             and tracking</strong>. Its purpose is to help users record, visualize, and understand
             their personal finances.
           </p>
-          <p>FinanceOS <strong>is not</strong>, and must not be construed as:</p>
+          <p>MOY IQ <strong>is not</strong>, and must not be construed as:</p>
           <ul className={s.list}>
             <li>A financial, tax, accounting, or investment advisor</li>
             <li>A bank, financial institution, or regulated entity</li>
@@ -218,7 +218,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>4. Local storage and data loss</h2>
           <p>
-            FinanceOS stores data locally in the user's browser. Unless the user enables the
+            MOY IQ stores data locally in the user's browser. Unless the user enables the
             optional encrypted sync,
             <strong> MAXNOVA & LUCI Global LLC does not store and cannot recover user data</strong>
             (and even with sync enabled, it only stores encrypted data it cannot read).
@@ -249,8 +249,8 @@ function EnContent() {
         <div className={s.section}>
           <h2>6. Intellectual property</h2>
           <p>
-            The source code, design, and content of FinanceOS are the property of
-            MAXNOVA & LUCI Global LLC and are protected by copyright. Use of FinanceOS is subject
+            The source code, design, and content of MOY IQ are the property of
+            MAXNOVA & LUCI Global LLC and are protected by copyright. Use of MOY IQ is subject
             to the terms of the purchased license (Personal or Pro), detailed in the
             corresponding License document.
           </p>
@@ -258,7 +258,7 @@ function EnContent() {
 
         <div className={s.section}>
           <h2>7. Permitted use</h2>
-          <p>The user agrees not to use FinanceOS for:</p>
+          <p>The user agrees not to use MOY IQ for:</p>
           <ul className={s.list}>
             <li>Illegal or fraudulent activities</li>
             <li>Evading tax or legal obligations</li>
@@ -270,7 +270,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>8. Service availability</h2>
           <p>
-            FinanceOS is a PWA (Progressive Web App) that works offline once loaded. Initial
+            MOY IQ is a PWA (Progressive Web App) that works offline once loaded. Initial
             availability depends on the hosting platform used. MAXNOVA & LUCI Global LLC does not
             guarantee uninterrupted availability of the hosting service.
           </p>
@@ -324,7 +324,7 @@ function PtContent() {
       <PageHeader title="Termos de Uso" sub="Última atualização: julho 2026 · MAXNOVA & LUCI Global LLC" />
       <div className={s.legalWrap}>
         <div className={s.highlight}>
-          <strong>Importante:</strong> O FinanceOS é uma ferramenta de organização e
+          <strong>Importante:</strong> O MOY IQ é uma ferramenta de organização e
           acompanhamento financeiro pessoal. Não é um consultor financeiro, tributário nem de
           investimentos. Não substitui a consulta a profissionais certificados.
         </div>
@@ -332,7 +332,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>1. Aceitação dos termos</h2>
           <p>
-            Ao acessar e usar o FinanceOS, o usuário aceita estes Termos de Uso na sua
+            Ao acessar e usar o MOY IQ, o usuário aceita estes Termos de Uso na sua
             totalidade. Se não concordar com alguma parte, deve deixar de usar a ferramenta.
           </p>
         </div>
@@ -340,11 +340,11 @@ function PtContent() {
         <div className={s.section}>
           <h2>2. Natureza do serviço</h2>
           <p>
-            O FinanceOS é uma ferramenta de software para <strong>organização, diagnóstico e
+            O MOY IQ é uma ferramenta de software para <strong>organização, diagnóstico e
             acompanhamento financeiro pessoal</strong>. Seu propósito é ajudar os usuários a
             registrar, visualizar e compreender suas finanças pessoais.
           </p>
-          <p>O FinanceOS <strong>não é</strong> e não deve ser interpretado como:</p>
+          <p>O MOY IQ <strong>não é</strong> e não deve ser interpretado como:</p>
           <ul className={s.list}>
             <li>Consultor financeiro, tributário, contábil nem de investimentos</li>
             <li>Instituição bancária, financeira nem entidade regulada</li>
@@ -373,7 +373,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>4. Armazenamento local e perda de dados</h2>
           <p>
-            O FinanceOS armazena os dados localmente no navegador do usuário. Salvo se o usuário
+            O MOY IQ armazena os dados localmente no navegador do usuário. Salvo se o usuário
             ativar a sincronização criptografada opcional,
             <strong> a MAXNOVA & LUCI Global LLC não armazena nem pode recuperar os dados do usuário</strong>
             (e mesmo com a sincronização ativa, armazena apenas dados criptografados que não pode ler).
@@ -404,8 +404,8 @@ function PtContent() {
         <div className={s.section}>
           <h2>6. Propriedade intelectual</h2>
           <p>
-            O código-fonte, o design e o conteúdo do FinanceOS são propriedade da
-            MAXNOVA & LUCI Global LLC e estão protegidos por direitos autorais. O uso do FinanceOS
+            O código-fonte, o design e o conteúdo do MOY IQ são propriedade da
+            MAXNOVA & LUCI Global LLC e estão protegidos por direitos autorais. O uso do MOY IQ
             está sujeito aos termos da licença adquirida (Personal ou Pro), detalhados no
             documento de Licença correspondente.
           </p>
@@ -413,7 +413,7 @@ function PtContent() {
 
         <div className={s.section}>
           <h2>7. Uso permitido</h2>
-          <p>O usuário compromete-se a não usar o FinanceOS para:</p>
+          <p>O usuário compromete-se a não usar o MOY IQ para:</p>
           <ul className={s.list}>
             <li>Atividades ilegais ou fraudulentas</li>
             <li>Evadir obrigações fiscais ou legais</li>
@@ -425,7 +425,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>8. Disponibilidade do serviço</h2>
           <p>
-            O FinanceOS é uma PWA (Progressive Web App) que funciona offline depois de carregada.
+            O MOY IQ é uma PWA (Progressive Web App) que funciona offline depois de carregada.
             A disponibilidade inicial depende da plataforma de hosting utilizada.
             A MAXNOVA & LUCI Global LLC não garante disponibilidade ininterrupta do serviço de hosting.
           </p>

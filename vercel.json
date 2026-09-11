@@ -1,6 +1,18 @@
 {
   "redirects": [
     {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "app.financeospro.com" }],
+      "destination": "https://app.moyiq.app/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "demo.financeospro.com" }],
+      "destination": "https://demo.moyiq.app/$1",
+      "permanent": true
+    },
+    {
       "source": "/",
       "destination": "https://www.moyiq.app/",
       "permanent": true

@@ -1,5 +1,5 @@
 // src/pages/legal/License.jsx
-// Términos de Licencia por Plan — FinanceOS (es/en/pt)
+// Términos de Licencia por Plan — MOY IQ (es/en/pt)
 // ACTUALIZADO 2026-07: modelo vigente (Personal US$19 / Pro US$29, pago único,
 // app web, sin redistribución). El texto anterior
 // describía los planes white-label antiguos ($29/$79/$299), retirados.
@@ -38,7 +38,7 @@ const PLANS = {
       notAllowed: [
         'Compartir la clave de licencia con terceros (cada asesor necesita su propia licencia)',
         'Revender el acceso o cobrarle a terceros por usar tu instancia',
-        'Usar el nombre o la marca "FinanceOS" como propios',
+        'Usar el nombre o la marca "MOY IQ" como propios',
       ],
     },
   ],
@@ -70,7 +70,7 @@ const PLANS = {
       notAllowed: [
         'Sharing the license key with third parties (each advisor needs their own license)',
         'Reselling access or charging third parties to use your instance',
-        'Using the "FinanceOS" name or brand as your own',
+        'Using the "MOY IQ" name or brand as your own',
       ],
     },
   ],
@@ -102,7 +102,7 @@ const PLANS = {
       notAllowed: [
         'Compartilhar a chave de licença com terceiros (cada consultor precisa da sua própria licença)',
         'Revender o acesso ou cobrar de terceiros pelo uso da sua instância',
-        'Usar o nome ou a marca "FinanceOS" como próprios',
+        'Usar o nome ou a marca "MOY IQ" como próprios',
       ],
     },
   ],
@@ -112,14 +112,14 @@ const COPY = {
   es: {
     title: 'Términos de Licencia',
     sub: 'Derechos y restricciones por plan · MAXNOVA & LUCI Global LLC · julio 2026',
-    intro: 'La licencia adquirida determina cómo puedes usar FinanceOS. Lee con atención el plan correspondiente a tu compra. Ambos planes son de pago único: sin mensualidades ni renovaciones.',
+    intro: 'La licencia adquirida determina cómo puedes usar MOY IQ. Lee con atención el plan correspondiente a tu compra. Ambos planes son de pago único: sin mensualidades ni renovaciones.',
     allowed: '✓ Permitido',
     notAllowed: '✗ No permitido',
     enterpriseTitle: 'Enterprise / marca blanca',
-    enterpriseText: 'La redistribución de FinanceOS bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@moyiq.app para una propuesta.',
+    enterpriseText: 'La redistribución de MOY IQ bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@moyiq.app para una propuesta.',
     warrantyTitle: 'Garantías y limitaciones',
     warranty1: 'El software se proporciona "tal cual", sin garantía de ningún tipo, expresa o implícita. En ningún caso MAXNOVA & LUCI Global LLC será responsable de daños directos, indirectos, incidentales o consecuentes que surjan del uso o imposibilidad de uso del software.',
-    warranty2: 'Las funcionalidades de análisis financiero de FinanceOS son de orientación general y no constituyen asesoría financiera, tributaria ni legal certificada.',
+    warranty2: 'Las funcionalidades de análisis financiero de MOY IQ son de orientación general y no constituyen asesoría financiera, tributaria ni legal certificada.',
     contactTitle: 'Contacto para licencias',
     contactText: 'Para consultas sobre upgrade de plan, uso no contemplado o licencias personalizadas: ',
     notice: '⚠ Este documento fue redactado como punto de partida informativo. No constituye asesoría legal. Se recomienda revisión por un abogado antes de uso comercial definitivo.',
@@ -127,14 +127,14 @@ const COPY = {
   en: {
     title: 'License Terms',
     sub: 'Rights and restrictions per plan · MAXNOVA & LUCI Global LLC · July 2026',
-    intro: 'The purchased license determines how you may use FinanceOS. Read carefully the plan corresponding to your purchase. Both plans are one-time payments: no monthly fees, no renewals.',
+    intro: 'The purchased license determines how you may use MOY IQ. Read carefully the plan corresponding to your purchase. Both plans are one-time payments: no monthly fees, no renewals.',
     allowed: '✓ Allowed',
     notAllowed: '✗ Not allowed',
     enterpriseTitle: 'Enterprise / white-label',
-    enterpriseText: 'Redistributing FinanceOS under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@moyiq.app for a proposal.',
+    enterpriseText: 'Redistributing MOY IQ under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@moyiq.app for a proposal.',
     warrantyTitle: 'Warranties and limitations',
     warranty1: 'The software is provided "as is", without warranty of any kind, express or implied. In no event shall MAXNOVA & LUCI Global LLC be liable for direct, indirect, incidental, or consequential damages arising from the use or inability to use the software.',
-    warranty2: "FinanceOS's financial analysis features provide general guidance and do not constitute certified financial, tax, or legal advice.",
+    warranty2: "MOY IQ's financial analysis features provide general guidance and do not constitute certified financial, tax, or legal advice.",
     contactTitle: 'License contact',
     contactText: 'For inquiries about plan upgrades, uses not covered here, or custom licenses: ',
     notice: '⚠ This document was drafted as an informational starting point. It does not constitute legal advice. Review by an attorney is recommended before definitive commercial use.',
@@ -142,14 +142,14 @@ const COPY = {
   pt: {
     title: 'Termos de Licença',
     sub: 'Direitos e restrições por plano · MAXNOVA & LUCI Global LLC · julho 2026',
-    intro: 'A licença adquirida determina como você pode usar o FinanceOS. Leia com atenção o plano correspondente à sua compra. Ambos os planos são de pagamento único: sem mensalidades nem renovações.',
+    intro: 'A licença adquirida determina como você pode usar o MOY IQ. Leia com atenção o plano correspondente à sua compra. Ambos os planos são de pagamento único: sem mensalidades nem renovações.',
     allowed: '✓ Permitido',
     notAllowed: '✗ Não permitido',
     enterpriseTitle: 'Enterprise / marca branca',
-    enterpriseText: 'A redistribuição do FinanceOS sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@moyiq.app para uma proposta.',
+    enterpriseText: 'A redistribuição do MOY IQ sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@moyiq.app para uma proposta.',
     warrantyTitle: 'Garantias e limitações',
     warranty1: 'O software é fornecido "tal como está", sem garantia de qualquer tipo, expressa ou implícita. Em nenhum caso a MAXNOVA & LUCI Global LLC será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso ou impossibilidade de uso do software.',
-    warranty2: 'As funcionalidades de análise financeira do FinanceOS são de orientação geral e não constituem aconselhamento financeiro, tributário nem jurídico certificado.',
+    warranty2: 'As funcionalidades de análise financeira do MOY IQ são de orientação geral e não constituem aconselhamento financeiro, tributário nem jurídico certificado.',
     contactTitle: 'Contato para licenças',
     contactText: 'Para questões sobre upgrade de plano, uso não contemplado ou licenças personalizadas: ',
     notice: '⚠ Este documento foi redigido como ponto de partida informativo. Não constitui aconselhamento jurídico. Recomenda-se revisão por um advogado antes de uso comercial definitivo.',

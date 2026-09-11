@@ -1,5 +1,5 @@
 // src/pages/legal/Privacy.jsx
-// Política de Privacidad — FinanceOS (es/en/pt, seleccionada por settings.language)
+// Política de Privacidad — MOY IQ (es/en/pt, seleccionada por settings.language)
 // AVISO: Este texto fue redactado como punto de partida.
 // Debe ser revisado por un abogado antes de uso comercial definitivo.
 // ACTUALIZADO 2026-07: refleja las funciones opcionales de sync cifrado E2E,
@@ -17,7 +17,7 @@ function EsContent() {
       <div className={s.legalWrap}>
         <div className={s.highlight}>
           <strong>Resumen ejecutivo:</strong> Tus datos financieros viven en tu dispositivo.
-          FinanceOS no puede leerlos: si activas la sincronización opcional, viajan y se
+          MOY IQ no puede leerlos: si activas la sincronización opcional, viajan y se
           almacenan <strong>cifrados de extremo a extremo</strong> con una llave que solo tú tienes.
           No hay cuentas de usuario, no hay tracking, no conectas tu banco.
         </div>
@@ -25,7 +25,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>1. Quién opera esta herramienta</h2>
           <p>
-            FinanceOS es desarrollado y distribuido por MAXNOVA & LUCI Global LLC. Esta política describe
+            MOY IQ es desarrollado y distribuido por MAXNOVA & LUCI Global LLC. Esta política describe
             cómo funciona el almacenamiento de datos dentro de la herramienta y qué información,
             si alguna, puede ser recopilada en relación con su uso.
           </p>
@@ -34,7 +34,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>2. Datos financieros — almacenamiento local</h2>
           <p>
-            Todos los datos financieros que el usuario ingresa en FinanceOS — ingresos, gastos,
+            Todos los datos financieros que el usuario ingresa en MOY IQ — ingresos, gastos,
             presupuestos, deudas, metas, propiedades y configuraciones — se almacenan en el
             navegador del dispositivo del usuario mediante IndexedDB, un estándar de
             almacenamiento local. Por defecto, <strong>no se transmiten a ningún servidor</strong> y
@@ -56,7 +56,7 @@ function EsContent() {
           <h2>3. Sincronización entre dispositivos (opcional, cifrada de extremo a extremo)</h2>
           <p>
             Si el usuario activa la sincronización en Ajustes, sus datos se almacenan en los
-            servidores de FinanceOS <strong>únicamente en forma cifrada</strong> (AES-GCM). La llave
+            servidores de MOY IQ <strong>únicamente en forma cifrada</strong> (AES-GCM). La llave
             de cifrado se deriva de la clave de licencia del usuario y <strong>nunca se envía al
             servidor</strong>: ni MAXNOVA & LUCI Global LLC ni el proveedor de infraestructura pueden
             descifrar ni leer el contenido. La sincronización es estrictamente opt-in y puede
@@ -67,7 +67,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>4. Datos de licencia, email y notificaciones</h2>
           <p>
-            Para validar el acceso, FinanceOS almacena en sus servidores un <strong>hash
+            Para validar el acceso, MOY IQ almacena en sus servidores un <strong>hash
             irreversible</strong> de la clave de licencia (nunca la clave en texto plano), el plan
             adquirido y las fechas de activación/vencimiento. El usuario puede asociar
             opcionalmente un email a su licencia, usado solo para avisos de vencimiento y soporte.
@@ -83,7 +83,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>5. Datos de uso y analítica</h2>
           <p>
-            FinanceOS <strong>no incluye</strong> Google Analytics, Mixpanel, Hotjar ni ningún
+            MOY IQ <strong>no incluye</strong> Google Analytics, Mixpanel, Hotjar ni ningún
             sistema de seguimiento de comportamiento. No se registran eventos, sesiones, clics
             ni patrones de uso.
           </p>
@@ -97,7 +97,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>6. Cookies y almacenamiento del navegador</h2>
           <p>
-            FinanceOS utiliza IndexedDB y localStorage para persistir los datos localmente.
+            MOY IQ utiliza IndexedDB y localStorage para persistir los datos localmente.
             No utiliza cookies de seguimiento ni de terceros. El único almacenamiento usado
             es el estrictamente necesario para el funcionamiento de la aplicación.
           </p>
@@ -107,7 +107,7 @@ function EsContent() {
           <h2>7. Exportación e importación de datos</h2>
           <p>
             El usuario puede exportar todos sus datos en formato JSON o CSV desde Ajustes.
-            La exportación queda bajo su control exclusivo — FinanceOS no recibe copia.
+            La exportación queda bajo su control exclusivo — MOY IQ no recibe copia.
             La importación de respaldos ocurre íntegramente en el dispositivo.
           </p>
         </div>
@@ -125,7 +125,7 @@ function EsContent() {
         <div className={s.section}>
           <h2>9. Menores de edad</h2>
           <p>
-            FinanceOS no está dirigido a menores de 18 años. No recopilamos intencionalmente
+            MOY IQ no está dirigido a menores de 18 años. No recopilamos intencionalmente
             información de menores. Si un menor utiliza la herramienta bajo supervisión de un
             adulto, la responsabilidad recae en ese adulto.
           </p>
@@ -163,7 +163,7 @@ function EnContent() {
       <div className={s.legalWrap}>
         <div className={s.highlight}>
           <strong>Executive summary:</strong> Your financial data lives on your device.
-          FinanceOS cannot read it: if you enable the optional sync, it travels and is stored{' '}
+          MOY IQ cannot read it: if you enable the optional sync, it travels and is stored{' '}
           <strong>end-to-end encrypted</strong> with a key only you hold. There are no user
           accounts, no tracking, and you never connect your bank.
         </div>
@@ -171,7 +171,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>1. Who operates this tool</h2>
           <p>
-            FinanceOS is developed and distributed by MAXNOVA & LUCI Global LLC. This policy describes
+            MOY IQ is developed and distributed by MAXNOVA & LUCI Global LLC. This policy describes
             how data storage works inside the tool and what information, if any, may be collected
             in connection with its use.
           </p>
@@ -180,7 +180,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>2. Financial data — local storage</h2>
           <p>
-            All financial data the user enters in FinanceOS — income, expenses, budgets, debts,
+            All financial data the user enters in MOY IQ — income, expenses, budgets, debts,
             goals, properties, and settings — is stored in the browser of the user's device using
             IndexedDB, a local storage standard. By default it is{' '}
             <strong>not transmitted to any server</strong> and is not accessible to
@@ -201,7 +201,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>3. Cross-device sync (optional, end-to-end encrypted)</h2>
           <p>
-            If the user enables sync in Settings, their data is stored on FinanceOS servers{' '}
+            If the user enables sync in Settings, their data is stored on MOY IQ servers{' '}
             <strong>only in encrypted form</strong> (AES-GCM). The encryption key is derived from
             the user's license key and <strong>is never sent to the server</strong>: neither
             MAXNOVA & LUCI Global LLC nor the infrastructure provider can decrypt or read the
@@ -212,7 +212,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>4. License data, email, and notifications</h2>
           <p>
-            To validate access, FinanceOS stores on its servers an <strong>irreversible hash</strong>{' '}
+            To validate access, MOY IQ stores on its servers an <strong>irreversible hash</strong>{' '}
             of the license key (never the plain-text key), the purchased plan, and
             activation/expiration dates. The user may optionally associate an email with their
             license, used only for expiration notices and support.
@@ -228,7 +228,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>5. Usage data and analytics</h2>
           <p>
-            FinanceOS <strong>does not include</strong> Google Analytics, Mixpanel, Hotjar, or any
+            MOY IQ <strong>does not include</strong> Google Analytics, Mixpanel, Hotjar, or any
             behavior-tracking system. No events, sessions, clicks, or usage patterns are recorded.
           </p>
           <p>
@@ -240,7 +240,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>6. Cookies and browser storage</h2>
           <p>
-            FinanceOS uses IndexedDB and localStorage to persist data locally. It does not use
+            MOY IQ uses IndexedDB and localStorage to persist data locally. It does not use
             tracking or third-party cookies. The only storage used is strictly what the
             application needs to function.
           </p>
@@ -250,7 +250,7 @@ function EnContent() {
           <h2>7. Data export and import</h2>
           <p>
             The user can export all their data in JSON or CSV format from Settings. The export
-            remains under their exclusive control — FinanceOS receives no copy. Backup imports
+            remains under their exclusive control — MOY IQ receives no copy. Backup imports
             happen entirely on the device.
           </p>
         </div>
@@ -268,7 +268,7 @@ function EnContent() {
         <div className={s.section}>
           <h2>9. Minors</h2>
           <p>
-            FinanceOS is not directed at people under 18. We do not knowingly collect information
+            MOY IQ is not directed at people under 18. We do not knowingly collect information
             from minors. If a minor uses the tool under adult supervision, responsibility rests
             with that adult.
           </p>
@@ -306,7 +306,7 @@ function PtContent() {
       <div className={s.legalWrap}>
         <div className={s.highlight}>
           <strong>Resumo executivo:</strong> Seus dados financeiros vivem no seu dispositivo.
-          O FinanceOS não pode lê-los: se você ativar a sincronização opcional, eles viajam e são
+          O MOY IQ não pode lê-los: se você ativar a sincronização opcional, eles viajam e são
           armazenados <strong>criptografados de ponta a ponta</strong> com uma chave que só você
           tem. Não há contas de usuário, não há rastreamento, você não conecta seu banco.
         </div>
@@ -314,7 +314,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>1. Quem opera esta ferramenta</h2>
           <p>
-            O FinanceOS é desenvolvido e distribuído pela MAXNOVA & LUCI Global LLC. Esta política
+            O MOY IQ é desenvolvido e distribuído pela MAXNOVA & LUCI Global LLC. Esta política
             descreve como funciona o armazenamento de dados dentro da ferramenta e que
             informações, se houver, podem ser recolhidas em relação ao seu uso.
           </p>
@@ -323,7 +323,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>2. Dados financeiros — armazenamento local</h2>
           <p>
-            Todos os dados financeiros que o usuário insere no FinanceOS — receitas, despesas,
+            Todos os dados financeiros que o usuário insere no MOY IQ — receitas, despesas,
             orçamentos, dívidas, metas, propriedades e configurações — são armazenados no
             navegador do dispositivo do usuário via IndexedDB, um padrão de armazenamento local.
             Por padrão, <strong>não são transmitidos a nenhum servidor</strong> e não são
@@ -345,7 +345,7 @@ function PtContent() {
           <h2>3. Sincronização entre dispositivos (opcional, criptografada de ponta a ponta)</h2>
           <p>
             Se o usuário ativar a sincronização em Configurações, seus dados são armazenados nos
-            servidores do FinanceOS <strong>apenas em forma criptografada</strong> (AES-GCM). A
+            servidores do MOY IQ <strong>apenas em forma criptografada</strong> (AES-GCM). A
             chave de criptografia é derivada da chave de licença do usuário e{' '}
             <strong>nunca é enviada ao servidor</strong>: nem a MAXNOVA & LUCI Global LLC nem o
             provedor de infraestrutura podem descriptografar ou ler o conteúdo. A sincronização é
@@ -356,7 +356,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>4. Dados de licença, email e notificações</h2>
           <p>
-            Para validar o acesso, o FinanceOS armazena em seus servidores um{' '}
+            Para validar o acesso, o MOY IQ armazena em seus servidores um{' '}
             <strong>hash irreversível</strong> da chave de licença (nunca a chave em texto plano),
             o plano adquirido e as datas de ativação/vencimento. O usuário pode associar
             opcionalmente um email à sua licença, usado apenas para avisos de vencimento e suporte.
@@ -372,7 +372,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>5. Dados de uso e analytics</h2>
           <p>
-            O FinanceOS <strong>não inclui</strong> Google Analytics, Mixpanel, Hotjar nem nenhum
+            O MOY IQ <strong>não inclui</strong> Google Analytics, Mixpanel, Hotjar nem nenhum
             sistema de rastreamento de comportamento. Não são registrados eventos, sessões,
             cliques nem padrões de uso.
           </p>
@@ -386,7 +386,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>6. Cookies e armazenamento do navegador</h2>
           <p>
-            O FinanceOS usa IndexedDB e localStorage para persistir os dados localmente. Não usa
+            O MOY IQ usa IndexedDB e localStorage para persistir os dados localmente. Não usa
             cookies de rastreamento nem de terceiros. O único armazenamento usado é o estritamente
             necessário para o funcionamento da aplicação.
           </p>
@@ -396,7 +396,7 @@ function PtContent() {
           <h2>7. Exportação e importação de dados</h2>
           <p>
             O usuário pode exportar todos os seus dados em formato JSON ou CSV a partir de
-            Configurações. A exportação fica sob seu controle exclusivo — o FinanceOS não recebe
+            Configurações. A exportação fica sob seu controle exclusivo — o MOY IQ não recebe
             cópia. A importação de backups ocorre integralmente no dispositivo.
           </p>
         </div>
@@ -414,7 +414,7 @@ function PtContent() {
         <div className={s.section}>
           <h2>9. Menores de idade</h2>
           <p>
-            O FinanceOS não é dirigido a menores de 18 anos. Não recolhemos intencionalmente
+            O MOY IQ não é dirigido a menores de 18 anos. Não recolhemos intencionalmente
             informações de menores. Se um menor usar a ferramenta sob supervisão de um adulto, a
             responsabilidade recai sobre esse adulto.
           </p>
