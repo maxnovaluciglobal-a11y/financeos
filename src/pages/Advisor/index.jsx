@@ -11,7 +11,7 @@ import { Card, CardHeader, Alert } from '../../components/ui/index.jsx'
 import { fmtMoney, fmtPct, moneyLocale, dateLocale } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
-import { downloadReportePDF } from './ReportePDF.jsx'
+import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import config from '../../config.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
@@ -286,38 +286,65 @@ export default function Advisor() {
   const advisorNotes = settings.advisorNotes || {}
   const [pdfLoading, setPdfLoading] = useState(false)
   const [pdfError, setPdfError]     = useState(null)
+  const [emailTo, setEmailTo]           = useState('')
+  const [emailStatus, setEmailStatus]   = useState('idle') // idle | sending | sent | error
+  const [emailErrorMsg, setEmailErrorMsg] = useState(null)
 
   function saveNotes(notes) {
     updateSettings({ ...settings, advisorNotes: notes })
+  }
+
+  function buildReportData() {
+    const expByCat = {}
+    monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + e.amount })
+    return {
+      brandName:        config.app.name,
+      clientName:       advisorNotes.clientName || 'Cliente',
+      activeMonth,
+      sym,
+      mIncome, mExpense, mBalance, savingRate,
+      totalDebt, totalMinPayments,
+      signals, alerts, goals, debts,
+      overBudgetCount, score, scoreLabel, scoreColor,
+      advisorNotes,
+      expByCategory:    expByCat,
+      subMonthly, subAnnual, subCount,
+      subAlerts:        subAlerts.slice(0, 3),
+      subByCategory:    subMetrics?.byCategory || [],
+      netWorth:         nw.hasData ? nw : null,
+    }
   }
 
   async function handleExportPDF() {
     setPdfLoading(true)
     setPdfError(null)
     try {
-      const expByCat = {}
-      monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + e.amount })
-      await downloadReportePDF({
-        brandName:        config.app.name,
-        clientName:       advisorNotes.clientName || 'Cliente',
-        activeMonth,
-        sym,
-        mIncome, mExpense, mBalance, savingRate,
-        totalDebt, totalMinPayments,
-        signals, alerts, goals, debts,
-        overBudgetCount, score, scoreLabel, scoreColor,
-        advisorNotes,
-        expByCategory:    expByCat,
-        subMonthly, subAnnual, subCount,
-        subAlerts:        subAlerts.slice(0, 3),
-        subByCategory:    subMetrics?.byCategory || [],
-        netWorth:         nw.hasData ? nw : null,
-      })
+      await downloadReportePDF(buildReportData())
     } catch (e) {
       console.error('PDF error:', e)
       setPdfError(t('adv.pdf.error'))
     } finally {
       setPdfLoading(false)
+    }
+  }
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  async function handleSendEmail() {
+    if (!EMAIL_RE.test(emailTo)) {
+      setEmailStatus('error')
+      setEmailErrorMsg(t('adv.pdf.emailInvalid'))
+      return
+    }
+    setEmailStatus('sending')
+    setEmailErrorMsg(null)
+    try {
+      await sendReportePDFByEmail(buildReportData(), emailTo)
+      setEmailStatus('sent')
+      setTimeout(() => setEmailStatus('idle'), 3000)
+    } catch (e) {
+      console.error('send-report-email error:', e)
+      setEmailStatus('error')
+      setEmailErrorMsg(t('adv.pdf.emailErrorGeneric'))
     }
   }
 
@@ -616,6 +643,31 @@ export default function Advisor() {
           >
             {pdfLoading ? t('adv.pdf.generating') : t('adv.pdf.export')}
           </button>
+        </div>
+        {/* Envío por correo — acción manual y explícita, no un cron automático (ver ReportePDF.jsx) */}
+        <div style={{padding:'14px 20px',borderTop:'0.5px solid rgba(26,163,104,.15)',display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{fontSize:12,fontWeight:600,color:'var(--tx)'}}>{t('adv.pdf.emailLabel')}</div>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            <input
+              type="email"
+              value={emailTo}
+              onChange={e => { setEmailTo(e.target.value); if (emailStatus === 'error') setEmailStatus('idle') }}
+              placeholder={t('adv.pdf.emailPlaceholder')}
+              disabled={noData}
+              style={{flex:'1 1 200px',fontSize:12,padding:'9px 12px',borderRadius:6,border:'0.5px solid var(--brd2)',background:'var(--sur)',color:'var(--tx)',fontFamily:'var(--sans)'}}
+            />
+            <button
+              onClick={handleSendEmail}
+              disabled={emailStatus === 'sending' || noData}
+              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'#fff',border:'none',borderRadius:6,padding:'9px 18px',fontSize:12,fontWeight:600,cursor:emailStatus==='sending'||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1}}
+            >
+              {emailStatus === 'sending' ? t('adv.pdf.emailSending') : emailStatus === 'sent' ? t('adv.pdf.emailSent') : t('adv.pdf.emailSend')}
+            </button>
+          </div>
+          {emailStatus === 'error' && emailErrorMsg && (
+            <div style={{fontSize:11,color:'#A23E2E',fontFamily:'var(--mono)'}}>{emailErrorMsg}</div>
+          )}
+          <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.5}}>{t('adv.pdf.emailConsent')}</div>
         </div>
       </div>
 

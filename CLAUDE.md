@@ -40,6 +40,8 @@ El navegador integrado tiene bloqueado `*.financeospro.com` por política: verif
 
 **Nada de datos financieros al servidor sin cifrar.** El sync empuja blobs cifrados con AES-GCM en el cliente. El servidor nunca ve montos ni categorías.
 
+**Única excepción explícita y consentida (11-sep-2026): envío por correo del reporte de Modo Asesor.** `Advisor/index.jsx` + `ReportePDF.jsx` (`sendReportePDFByEmail`) mandan el PDF SIN CIFRAR a `supabase/functions/send-report-email/` (Resend, reusa `RESEND_API_KEY`/`FROM_EMAIL` ya configurados para `stripe-webhook`), que lo entrega por correo. Es un botón manual junto a "Exportar PDF" — nunca un cron automático: un reporte que se genera y manda solo, sin que el usuario abra la app, necesitaría que el servidor tuviera acceso a datos sin cifrar, lo cual rompe la regla de arriba. La función edge revalida server-side que la licencia sea Pro/Enterprise contra `validate_license` (RPC ya existente) antes de enviar — el `ProGate` del frontend es solo cosmético, no un límite de seguridad real. Tests en `reportEmailLogic.test.ts` (17 tests, mismo patrón que `webhookLogic.test.ts`). No hay rate-limiting propio todavía (se apoya en el gate de licencia + los límites de cuenta de Resend) — si el volumen de Modo Asesor crece, es lo primero a agregar.
+
 **Al importar movimientos hay que refrescar el modelo.** `dbAdd` solo escribe en IndexedDB; sin `rehydrate()` los datos no aparecen hasta recargar. Y sin `markLocalChange()` no suben a la nube. Ver `src/pages/Import/index.jsx`.
 
 ## Supabase

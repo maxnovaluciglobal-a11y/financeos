@@ -528,14 +528,34 @@ export function ReporteFinancieroPDF({ data }) {
   )
 }
 
-// ── FUNCIÓN PARA DESCARGAR EL PDF ─────────────────────────────────────────────
-export async function downloadReportePDF(data) {
-  const { clientName, activeMonth } = data
+// ── HELPERS COMPARTIDOS (descarga local + envío por correo) ──────────────────
+function reportFilename({ clientName, activeMonth }) {
   const monthStr = activeMonth ? activeMonth.replace('-', '-') : 'reporte'
   const clientStr = clientName ? clientName.replace(/\s+/g, '-').toLowerCase() : 'cliente'
-  const filename = `reporte-financiero-${clientStr}-${monthStr}.pdf`
+  return `reporte-financiero-${clientStr}-${monthStr}.pdf`
+}
 
-  const blob = await pdf(<ReporteFinancieroPDF data={data} />).toBlob()
+async function buildReportePDFBlob(data) {
+  return pdf(<ReporteFinancieroPDF data={data} />).toBlob()
+}
+
+// Convierte un Blob a base64 en chunks — spreadear el array completo en
+// String.fromCharCode revienta el call stack en PDFs de varias páginas.
+async function blobToBase64(blob) {
+  const buf = await blob.arrayBuffer()
+  const bytes = new Uint8Array(buf)
+  const CHUNK = 0x8000
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK))
+  }
+  return btoa(binary)
+}
+
+// ── FUNCIÓN PARA DESCARGAR EL PDF ─────────────────────────────────────────────
+export async function downloadReportePDF(data) {
+  const filename = reportFilename(data)
+  const blob = await buildReportePDFBlob(data)
   const url  = URL.createObjectURL(blob)
   const a    = document.createElement('a')
   a.href     = url
@@ -544,4 +564,42 @@ export async function downloadReportePDF(data) {
   URL.revokeObjectURL(url)
 
   return filename
+}
+
+// ── FUNCIÓN PARA ENVIAR EL PDF POR CORREO ─────────────────────────────────────
+// Envío manual, a pedido explícito del asesor — NO es un cron automático.
+// Un reporte automático "corre solo, sin abrir la app" necesitaría que el
+// servidor tuviera acceso a datos financieros sin cifrar (esta app es
+// local-first, ver CLAUDE.md "Nada de datos financieros al servidor sin
+// cifrar") — esta acción es la excepción explícita y consentida a esa regla,
+// análoga a "Exportar PDF" pero mandada por correo en vez de guardada local.
+// El PDF viaja SIN cifrar por la red (Resend, bandeja del destinatario) — por
+// eso requiere un clic explícito, nunca dispararla sin que el usuario la pida.
+const FUNCTIONS_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '') + '/functions/v1/send-report-email'
+
+export async function sendReportePDFByEmail(data, to) {
+  const { getLicenseKey } = await import('../../utils/licenseValidator.js')
+  const filename = reportFilename(data)
+  const blob = await buildReportePDFBlob(data)
+  const pdfBase64 = await blobToBase64(blob)
+
+  const res = await fetch(FUNCTIONS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      licenseKey: getLicenseKey(),
+      to,
+      clientName: data.clientName,
+      month: data.activeMonth,
+      pdfBase64,
+      filename,
+    }),
+  })
+
+  let result = {}
+  try { result = await res.json() } catch { /* respuesta no-JSON, cae al error genérico de abajo */ }
+  if (!res.ok || !result.ok) {
+    throw new Error(result.error || `http_${res.status}`)
+  }
+  return true
 }
