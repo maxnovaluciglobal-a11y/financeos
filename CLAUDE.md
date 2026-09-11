@@ -54,9 +54,9 @@ Ya pasó una vez: volver a correr `supabase-sync.sql` **pisó** esa versión bue
 
 **Migraciones nuevas van en `supabase/migrations/`, no como archivo suelto en la raíz** (desde 2026-08-27, ver `supabase/migrations/README.md`). Los 7 `.sql` de la raíz siguen siendo la fuente de verdad del estado histórico — no se tocan.
 
-## Sistema visual — rebranding MOY IQ (rama `rebrand/moy-iq`, NO desplegado)
+## Sistema visual — rebranding MOY IQ (mergeado y desplegado)
 
-**Estado (2026-09-10): sistema nuevo aplicado en `main` de esta rama, NO mergeado a producción.** El nombre "MOY IQ" no tiene búsqueda de marca paga confirmada — vive en código/copy pero no se despliega ni se anuncia externamente hasta que Walter lo autorice. Ver PR del rebrand para el detalle completo de qué se tocó y qué quedó abierto.
+**Estado (10-sep-2026): mergeado a `main` y en producción** en `app.financeospro.com`/`demo.financeospro.com` — decisión explícita de Walter. ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; no comprar `moyiq.com` ni registrar la marca hasta que Walter confirme esa búsqueda. Dominio real sigue siendo `financeospro.com` (por eso `supportEmail`/`website` en `config.js` no se tocaron). Ver memoria `financeos_moy_iq_rebranding_ejecucion` para el detalle completo de qué se tocó.
 
 Tokens en `src/styles/globals.css`.
 

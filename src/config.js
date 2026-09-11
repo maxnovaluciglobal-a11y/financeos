@@ -8,9 +8,10 @@
 const config = {
 
   // ── IDENTIDAD ──────────────────────────────────────────────────────────────
-  // Rebranding MOY IQ (rama rebrand/moy-iq, NO desplegado — falta búsqueda de
-  // marca paga confirmada). website/supportEmail quedan sin tocar a propósito:
-  // dominios/cuentas reales todavía registrados bajo financeospro.com.
+  // Rebranding MOY IQ: mergeado y en producción (10-sep-2026). Falta búsqueda
+  // de marca paga confirmada (alcance legal, no de código). website/supportEmail
+  // quedan sin tocar a propósito: dominios/cuentas reales todavía registrados
+  // bajo financeospro.com — no comprar moyiq.com hasta que Walter lo confirme.
   app: {
     name:        'MOY IQ',              // Nombre que aparece en sidebar y título
     tagline:     'Tu dinero, bajo control total',
