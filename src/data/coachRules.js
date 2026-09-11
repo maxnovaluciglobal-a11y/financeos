@@ -3,6 +3,7 @@ import { translations } from '../i18n/translations.js'
 import { effectiveBudgetLimits } from '../utils/budgets.js'
 import { moneyLocale } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
+import { findEmergencyGoal } from '../utils/emergencyGoal.js'
 // Motor de reglas del FinanceOS Coach
 // Configurable sin tocar componentes React
 // Cada regla: id, categoría, condición, severidad, mensaje, acción sugerida
@@ -342,11 +343,7 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
   const { totalDebt, ratio: debtLoad } = personalDebtRatio(debts, annualIncome)
 
   // Fondo de emergencia
-  const emergencyGoal = goals.find(g => {
-    const n = g.name?.toLowerCase() || ''
-    return n.includes('emergencia') || n.includes('emergency') || n.includes('emergên') ||
-           n.includes('fondo') || n.includes('fundo') || n.includes('fund')
-  })
+  const emergencyGoal = findEmergencyGoal(goals)
   const emergencyFundMonths = emergencyGoal && monthlyExpense > 0
     ? (emergencyGoal.saved || 0) / monthlyExpense
     : 0

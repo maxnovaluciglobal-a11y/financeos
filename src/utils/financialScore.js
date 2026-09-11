@@ -12,20 +12,9 @@
 import { translations } from '../i18n/translations.js'
 import { personalDebtRatio } from './personal.js'
 import { COACH_CONFIG } from '../data/coachRules.js'
+import { findEmergencyGoal } from './emergencyGoal.js'
 
 function esFallback(key) { return translations.es?.[key] ?? key }
-
-// Mismo criterio de detección "por nombre" que ya usan Coach/Advisor/Goals
-// (coachRules.js calcCoachMetrics, Advisor/index.jsx, Goals/index.jsx):
-// no existe un campo de tipo dedicado en el modelo de metas, así que una
-// meta se reconoce como "fondo de emergencia" por su nombre.
-function findEmergencyGoal(goals) {
-  return (Array.isArray(goals) ? goals : []).find(g => {
-    const n = (g?.name || '').toLowerCase()
-    return n.includes('emergencia') || n.includes('emergency') || n.includes('emergên') ||
-           n.includes('fondo') || n.includes('fundo') || n.includes('fund')
-  })
-}
 
 export function calcFinancialScore({
   savingRate, expenses, debts, goals, incomes, activeMonth,
@@ -57,8 +46,8 @@ export function calcFinancialScore({
 
   // 2. Colchón de emergencia (0-20) — factor NUEVO del brand book, sin
   // equivalente en el modelo anterior. Reusa la detección de meta de
-  // emergencia por nombre (findEmergencyGoal, arriba) y los mismos
-  // umbrales de "meses de gasto cubiertos" que ya usa el Coach
+  // emergencia por nombre (findEmergencyGoal, utils/emergencyGoal.js) y los
+  // mismos umbrales de "meses de gasto cubiertos" que ya usa el Coach
   // (emergencyFundMonthsGood/Warn) — así el Coach y el score nunca dicen
   // cosas distintas sobre el mismo fondo.
   const emergencyGoal = findEmergencyGoal(goals)

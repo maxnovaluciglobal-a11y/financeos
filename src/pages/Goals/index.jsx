@@ -7,6 +7,7 @@ import { fmtMoney, fmtPct, prioEmoji } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
+import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 
 export default function Goals({ setPage }) {
   const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo } = useApp()
@@ -41,10 +42,7 @@ export default function Goals({ setPage }) {
     const { avgExp } = projectEndOfMonth({ incomes, expenses, activeMonth })
     return avgExp > 0 ? avgExp : (gastoMensualGoals > 0 ? gastoMensualGoals : ingresoNetoGoals)
   }, [incomes, expenses, activeMonth, gastoMensualGoals, ingresoNetoGoals])
-  const isEmergencyGoal = (g) => {
-    const n = (g.name || '').toLowerCase()
-    return n.includes('emergencia') || n.includes('emergency') || n.includes('emergên') || n.includes('fondo') || n.includes('fundo')
-  }
+  const isEmergencyGoal = (g) => isEmergencyGoalName(g.name)
 
   const totalTarget = useMemo(() => goals.reduce((s,g) => s+g.target, 0), [goals])
   const totalSaved  = useMemo(() => goals.reduce((s,g) => s+g.saved, 0), [goals])

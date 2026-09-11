@@ -138,6 +138,20 @@ describe('calcFinancialScore — Colchón de emergencia (0-20)', () => {
     expect(en.breakdown[1].pts).toBe(20)
     expect(pt.breakdown[1].pts).toBe(20)
   })
+
+  it('una meta "Travel fund" NO cuenta como fondo de emergencia (regresión: "fund" suelto daba falso positivo)', () => {
+    const r = calcFinancialScore(baseInput({
+      expenses, goals: [{ name: 'Travel fund', saved: 4000 }],
+    }), rawT)
+    expect(r.breakdown[1].pts).toBe(0)
+  })
+
+  it('"Car fund"/"Wedding fund"/"College fund" tampoco cuentan como fondo de emergencia', () => {
+    for (const name of ['Car fund', 'Wedding fund', 'College fund']) {
+      const r = calcFinancialScore(baseInput({ expenses, goals: [{ name, saved: 4000 }] }), rawT)
+      expect(r.breakdown[1].pts).toBe(0)
+    }
+  })
 })
 
 describe('calcFinancialScore — Carga de deuda (0-20, sin cambios respecto al modelo anterior)', () => {
