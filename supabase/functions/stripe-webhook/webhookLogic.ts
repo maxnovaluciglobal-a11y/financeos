@@ -118,7 +118,7 @@ export async function notifyKeyDeliveryFailure(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "FinanceOS: cliente pagó y no recibió su clave", html,
+        subject: "MOY IQ: cliente pagó y no recibió su clave", html,
       }),
     });
     if (!res.ok) console.error(`notifyKeyDeliveryFailure: Resend error ${res.status} ${await res.text()}`);
@@ -212,7 +212,7 @@ export async function sendKeyEmail(
   const appUrl = "https://app.moyiq.app/app/";
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#0a5c3e">Tu licencia de FinanceOS</h2>
+      <h2 style="color:#14213D">Tu licencia de MOY IQ</h2>
       <p>¡Gracias por tu compra! Tu plan: <strong>${plan === "pro" ? "Pro" : "Personal"}</strong>.</p>
       <p>Tu clave de acceso:</p>
       <p style="font-family:monospace;font-size:20px;font-weight:700;background:#f0f7f3;
@@ -223,7 +223,7 @@ export async function sendKeyEmail(
   const attempt = async () => fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: config.fromEmail, to, subject: "Tu licencia de FinanceOS 🔑", html }),
+    body: JSON.stringify({ from: config.fromEmail, to, subject: "Tu licencia de MOY IQ 🔑", html }),
   });
   let res = await attempt();
   if (!res.ok) {

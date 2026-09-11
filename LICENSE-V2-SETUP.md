@@ -33,7 +33,7 @@ supabase secrets set STRIPE_SECRET_KEY=sk_live_...
 supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...        # lo da Stripe en el Paso 4
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=...          # Dashboard → Settings → API → service_role
 supabase secrets set RESEND_API_KEY=re_...                  # tu cuenta Resend (envío de email)
-supabase secrets set FROM_EMAIL="FinanceOS <licencias@financeospro.com>"
+supabase secrets set FROM_EMAIL="MOY IQ <licencias@moyiq.app>"
 ```
 > `SUPABASE_URL` ya lo inyecta Supabase automáticamente en Edge Functions.
 > Si no usas Resend, deja `RESEND_API_KEY` sin setear: la clave se genera y guarda igual,
