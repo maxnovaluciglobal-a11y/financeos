@@ -207,7 +207,7 @@ export default function Shell({ page, setPage, children }) {
             <button type="button" onClick={() => navigate('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
             <button type="button" onClick={() => navigate('terms')} className={s.legalLink}>{t('nav.legal.terms')}</button>
             <button type="button" onClick={() => navigate('disclaimer')} className={s.legalLink}>{t('nav.legal.disclaimer')}</button>
-            <a href='https://www.financeospro.com/docs/' target='_blank' className={s.legalLink} style={{textDecoration:'none'}}>{t('nav.legal.help')}</a>
+            <a href='https://www.moyiq.app/docs/' target='_blank' className={s.legalLink} style={{textDecoration:'none'}}>{t('nav.legal.help')}</a>
           </div>
           {SHOW_FIRMA && (
             <div style={{ display:'flex', justifyContent:'center', padding:'8px 0 2px' }}

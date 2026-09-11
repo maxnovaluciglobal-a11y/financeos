@@ -19,7 +19,7 @@
 
 export const config = { runtime: 'edge' };
 
-const ALLOWED_ORIGINS = ['https://app.financeospro.com', 'https://demo.financeospro.com', 'https://financeospro.com'];
+const ALLOWED_ORIGINS = ['https://app.moyiq.app', 'https://demo.moyiq.app', 'https://moyiq.app', 'https://app.financeospro.com', 'https://demo.financeospro.com', 'https://financeospro.com'];
 
 // Every currency DEFAULT_USD_RATES covers, plus USD itself as the pivot.
 // EUR is deliberately NOT requested: it's the (forced, free-tier) base

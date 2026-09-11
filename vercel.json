@@ -2,7 +2,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "https://www.financeospro.com/",
+      "destination": "https://www.moyiq.app/",
       "permanent": true
     }
   ],
@@ -16,6 +16,16 @@
     {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "app.financeospro.com" }],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "app.moyiq.app" }],
       "headers": [
         {
           "key": "X-Robots-Tag",

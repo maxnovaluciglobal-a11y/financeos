@@ -96,7 +96,7 @@ function DemoBottomCTA() {
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>El tuyo es privado, local y sin suscripción mensual — pago único de US$19.</div>
       </div>
       <button
-        onClick={() => window.open('https://financeospro.com/#pricing', '_blank')}
+        onClick={() => window.open('https://moyiq.app/#pricing', '_blank')}
         style={{
           background: 'var(--laton)', color: 'var(--navy)', border: 'none',
           borderRadius: 8, padding: '9px 18px',
@@ -122,12 +122,12 @@ function DemoBottomCTA() {
 function DemoInner() {
   const [page, setPage] = useState('dashboard')
 
-  // SEO (auditoría 2026-08-27): demo.financeospro.com comparte el mismo build
-  // que app.financeospro.com (sin valor SEO, ya bloqueado con X-Robots-Tag en
+  // SEO (auditoría 2026-08-27): demo.moyiq.app comparte el mismo build
+  // que app.moyiq.app (sin valor SEO, ya bloqueado con X-Robots-Tag en
   // vercel.json) pero SÍ está en el sitemap con priority 0.8 — necesitaba su
   // propio title/canonical, no el genérico heredado de index.html.
   useEffect(() => {
-    if (typeof window === 'undefined' || window.location.hostname !== 'demo.financeospro.com') return
+    if (typeof window === 'undefined' || window.location.hostname !== 'demo.moyiq.app') return
     document.title = 'Demo — MOY IQ · Prueba la app sin registrarte'
     let link = document.querySelector('link[rel="canonical"]')
     if (!link) {
@@ -135,7 +135,7 @@ function DemoInner() {
       link.setAttribute('rel', 'canonical')
       document.head.appendChild(link)
     }
-    link.setAttribute('href', 'https://demo.financeospro.com/app/?demo=true')
+    link.setAttribute('href', 'https://demo.moyiq.app/app/?demo=true')
   }, [])
 
   function renderPage(page) {

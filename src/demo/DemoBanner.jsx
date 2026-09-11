@@ -67,7 +67,7 @@ export default function DemoBanner() {
 
         {/* CTA inmediato */}
         <a
-          href="https://financeospro.com/#pricing"
+          href="https://moyiq.app/#pricing"
           target="_blank"
           rel="noopener noreferrer"
           style={{

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Deploy de financeos-app a producción — build + deploy + los DOS alias +
-# smoke test. Antes esto eran 4 comandos manuales, y aliasear solo uno de los
-# dos dominios (fácil de olvidar) deja al otro sirviendo la versión vieja
-# indefinidamente y sin ningún aviso (ver PLAN_REMEDIACION_TECNICA_CARLOS_FINANCEOS.md,
-# punto 7).
+# Deploy de financeos-app a producción — build + deploy + los CUATRO alias +
+# smoke test (app./demo. × financeospro.com/moyiq.app, moyiq.app primario
+# desde 11-sep-2026). Aliasear solo alguno de los cuatro (fácil de olvidar)
+# deja al resto sirviendo la versión vieja indefinidamente y sin ningún aviso
+# (ver PLAN_REMEDIACION_TECNICA_CARLOS_FINANCEOS.md, punto 7).
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -32,14 +32,19 @@ if [[ -z "$URL" ]]; then
 fi
 echo "    Deployado: $URL"
 
-echo "==> Aliaseando los dos dominios"
+echo "==> Aliaseando los cuatro dominios (moyiq.app es el primario desde 11-sep,"
+echo "    financeospro.com sigue vivo — aliasear solo dos de los cuatro deja a"
+echo "    los otros dos sirviendo la versión vieja indefinidamente, mismo riesgo"
+echo "    documentado arriba para el par financeospro.com)"
 npx vercel alias "$URL" app.financeospro.com
 npx vercel alias "$URL" demo.financeospro.com
+npx vercel alias "$URL" app.moyiq.app
+npx vercel alias "$URL" demo.moyiq.app
 
 echo "==> Smoke test — contenido real, no solo status (el rewrite catch-all de"
 echo "    vercel.json devuelve 200 para CUALQUIER ruta bajo /app/, incluida una"
 echo "    que no existe — un 200 solo no prueba que sirva el deploy correcto)"
-for domain in app.financeospro.com demo.financeospro.com; do
+for domain in app.financeospro.com demo.financeospro.com app.moyiq.app demo.moyiq.app; do
   status=$(curl -s -o /dev/null -w "%{http_code}" "https://$domain/app/")
   if [[ "$status" != "200" ]]; then
     echo "ERROR: https://$domain/app/ devolvió $status, no 200" >&2
@@ -53,4 +58,4 @@ for domain in app.financeospro.com demo.financeospro.com; do
   echo "    https://$domain/app/ → 200 OK, fonts.css real"
 done
 
-echo "==> Deploy completo y verificado en ambos dominios."
+echo "==> Deploy completo y verificado en los cuatro dominios."

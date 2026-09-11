@@ -31,6 +31,8 @@ const config: EmailConfig = {
 // es checkProLicense), pero evita que cualquier página random del navegador
 // dispare este endpoint por error/curiosidad.
 const ALLOWED_ORIGINS = new Set([
+  "https://app.moyiq.app",
+  "https://demo.moyiq.app",
   "https://app.financeospro.com",
   "https://demo.financeospro.com",
   "http://localhost:5173",
@@ -38,7 +40,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 function corsHeaders(origin: string | null) {
-  const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://app.financeospro.com";
+  const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://app.moyiq.app";
   return {
     "Access-Control-Allow-Origin": allow,
     "Access-Control-Allow-Methods": "POST, OPTIONS",

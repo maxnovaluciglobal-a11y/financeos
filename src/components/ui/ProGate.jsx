@@ -27,7 +27,7 @@ export default function ProGate({ children, feature = 'esta función' }) {
         Actualiza tu licencia a Pro por un pago único de <strong>US$29</strong> para acceder a Modo Asesor, reportes PDF, proyección de flujo, simulador de deudas, APV Chile e importación CSV.
       </p>
       <a
-        href="https://financeospro.com/#pricing"
+        href="https://moyiq.app/#pricing"
         target="_blank"
         rel="noopener noreferrer"
         style={{

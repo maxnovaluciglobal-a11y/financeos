@@ -18,7 +18,7 @@ const CHECKOUT_LINKS = {
 }
 
 async function startCheckout(product) {
-  const url = CHECKOUT_LINKS[product] || 'https://financeospro.com/#pricing'
+  const url = CHECKOUT_LINKS[product] || 'https://moyiq.app/#pricing'
   window.location.href = url
 }
 
@@ -147,7 +147,7 @@ export default function LicenseGate({ onActivate }) {
               2. {t('licenseGate.helpStep2')}<br />
               3. {t('licenseGate.helpStep3')}<br /><br />
               {t('licenseGate.helpNoEmail')}{' '}
-              <a href="https://financeospro.com/activate.html" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)' }}>
+              <a href="https://moyiq.app/activate.html" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)' }}>
                 {t('licenseGate.helpLink')}
               </a>
             </div>
@@ -194,7 +194,7 @@ export default function LicenseGate({ onActivate }) {
 
         {/* Demo link */}
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
-          <a href="https://demo.financeospro.com/app/?demo=true" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)', textDecoration: 'none' }}>
+          <a href="https://demo.moyiq.app/app/?demo=true" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)', textDecoration: 'none' }}>
             {t('licenseGate.demoLink')}
           </a>
         </div>

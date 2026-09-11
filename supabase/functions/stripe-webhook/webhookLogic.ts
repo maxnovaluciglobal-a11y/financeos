@@ -209,7 +209,7 @@ export async function sendKeyEmail(
     console.error(`CRITICO: RESEND_API_KEY no configurada — el cliente pago y NO recibio su clave. session=${sessionRef}`);
     return false;
   }
-  const appUrl = "https://app.financeospro.com/app/";
+  const appUrl = "https://app.moyiq.app/app/";
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
       <h2 style="color:#0a5c3e">Tu licencia de FinanceOS</h2>

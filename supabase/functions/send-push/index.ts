@@ -9,7 +9,7 @@
 // http_ece (la misma que usa el paquete oficial "web-push") antes de portarla acá.
 //
 // Secrets requeridos (Supabase → Edge Functions → Secrets):
-//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (ej. "mailto:support@financeospro.com")
+//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (ej. "mailto:support@moyiq.app")
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 //
 // Se invoca por cron (ver supabase-push.sql, sección CRON) — corre 1 vez al día.
@@ -18,7 +18,7 @@ const SUPABASE_URL   = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VAPID_PUBLIC    = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE   = Deno.env.get("VAPID_PRIVATE_KEY")!;
-const VAPID_SUBJECT    = Deno.env.get("VAPID_SUBJECT") ?? "mailto:support@financeospro.com";
+const VAPID_SUBJECT    = Deno.env.get("VAPID_SUBJECT") ?? "mailto:support@moyiq.app";
 
 const subtle = crypto.subtle;
 const enc = new TextEncoder();

@@ -14,7 +14,7 @@ npm test         # vitest run — src/**/*.test.js y api/**/*.test.js (desde 202
 
 Push a git **no** actualiza el dominio.
 
-**`./deploy.sh`** (desde 2026-09-06): tests + build local (gate) + deploy + los DOS alias + smoke test de `curl` a `/app/` en ambos dominios. Aborta si algo falla en cualquier paso — no llega a aliasear con una build rota. Es el camino recomendado; reemplaza la secuencia manual de abajo.
+**`./deploy.sh`** (desde 2026-09-06, actualizado a 4 dominios el 11-sep): tests + build local (gate) + deploy + los CUATRO alias + smoke test de `curl` a `/app/` en los cuatro dominios. Aborta si algo falla en cualquier paso — no llega a aliasear con una build rota. Es el camino recomendado; reemplaza la secuencia manual de abajo.
 
 Manual, si hace falta un paso suelto:
 
@@ -22,15 +22,15 @@ Manual, si hace falta un paso suelto:
 npx vercel --prod --yes
 ```
 
-Con la URL que devuelve, aliasear **los dos** dominios:
+Con la URL que devuelve, aliasear **los cuatro** dominios (`moyiq.app` es el primario desde 11-sep-2026, `financeospro.com` sigue vivo sin redirect):
 
 ```bash
 npx vercel alias <url-nueva> app.financeospro.com
 ```
 
-Y repetir con `demo.financeospro.com`. Si solo se aliasea uno, el otro se queda en la versión vieja.
+Y repetir con `demo.financeospro.com`, `app.moyiq.app`, `demo.moyiq.app`. Si solo se aliasean algunos, el resto se queda en la versión vieja.
 
-El navegador integrado tiene bloqueado `*.financeospro.com` por política: verificar producción con `curl` por contenido, o en `localhost` con el servidor de desarrollo.
+El navegador integrado tiene bloqueado `*.financeospro.com`/`*.moyiq.app` por política: verificar producción con `curl` por contenido, o en `localhost` con el servidor de desarrollo.
 
 ## Reglas que no son negociables
 
@@ -58,7 +58,7 @@ Ya pasó una vez: volver a correr `supabase-sync.sql` **pisó** esa versión bue
 
 ## Sistema visual — rebranding MOY IQ (mergeado y desplegado)
 
-**Estado (10-sep-2026): mergeado a `main` y en producción** en `app.financeospro.com`/`demo.financeospro.com` — decisión explícita de Walter. ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; no comprar `moyiq.com` ni registrar la marca hasta que Walter confirme esa búsqueda. Dominio real sigue siendo `financeospro.com` (por eso `supportEmail`/`website` en `config.js` no se tocaron). Ver memoria `financeos_moy_iq_rebranding_ejecucion` para el detalle completo de qué se tocó.
+**Estado (11-sep-2026): mergeado a `main` y en producción**, ahora en `app.moyiq.app`/`demo.moyiq.app` (dominio primario) además de `app.financeospro.com`/`demo.financeospro.com` (siguen vivos, sin redirect) — decisión explícita de Walter. ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
 
 Tokens en `src/styles/globals.css`.
 

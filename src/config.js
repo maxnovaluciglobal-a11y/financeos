@@ -11,15 +11,16 @@ const config = {
   // Rebranding MOY IQ: mergeado y en producción (10-sep-2026). Falta búsqueda
   // de marca paga confirmada (alcance legal, no de código) — ver memoria
   // financeos_renaming_moy_ronda. Walter compró moyiq.app el 11-sep sin
-  // esperar esa confirmación; supportEmail ya apunta ahí (Resend validó el
-  // dominio para envío). website sigue en financeospro.com a propósito — es
-  // el dominio con el hosting real, moyiq.app por ahora es solo para correo.
+  // esperar esa confirmación. moyiq.app es ahora el dominio PRIMARIO (11-sep):
+  // DNS + hosting en Vercel (app./demo. incluidos) + Resend para envío.
+  // financeospro.com sigue funcionando (mismo deploy, alias vigente) — no se
+  // agregó redirect 301, es decisión aparte si se quiere más adelante.
   app: {
     name:        'MOY IQ',              // Nombre que aparece en sidebar y título
     tagline:     'Tu dinero, bajo control total',
     version:     '1.5.0',
     supportEmail:'support@moyiq.app',  // Aparece en Ajustes > soporte
-    website:     'https://www.financeospro.com',
+    website:     'https://www.moyiq.app',
     logoText:    'MI',                  // Iniciales para favicon SVG si no hay imagen
   },
 
