@@ -3,7 +3,7 @@
 // esto, cero tests; cada cambio se probaba en producción con dinero real.
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
-  verifyStripeSignature, generateKey, planFromAmount, isTestModeCheckout, shouldSkipCheckout,
+  verifyStripeSignature, generateKey, planFromAmount, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
   notifyKeyDeliveryFailure,
 } from './webhookLogic.ts'
@@ -91,6 +91,26 @@ describe('planFromAmount', () => {
   })
 })
 
+describe('planFromSession — clasifica por Payment Link real, con fallback a monto', () => {
+  it('Payment Link real de Personal → personal, sin importar el monto', () => {
+    expect(planFromSession({ payment_link: 'plink_1TsMlSRxn4y6AU3r6CkGfuhO', amount_total: 999999 })).toBe('personal')
+  })
+
+  it('Payment Link real de Pro → pro, sin importar el monto', () => {
+    expect(planFromSession({ payment_link: 'plink_1TsMlpRxn4y6AU3rcPN5urIw', amount_total: 1 })).toBe('pro')
+  })
+
+  it('Payment Link desconocido cae al umbral de monto (fallback)', () => {
+    expect(planFromSession({ payment_link: 'plink_no_registrado', amount_total: 2900 })).toBe('pro')
+    expect(planFromSession({ payment_link: 'plink_no_registrado', amount_total: 1900 })).toBe('personal')
+  })
+
+  it('sin payment_link (checkout fuera de Payment Links) cae al umbral de monto', () => {
+    expect(planFromSession({ amount_total: 2400 })).toBe('pro')
+    expect(planFromSession({ amount_total: 0 })).toBe('personal')
+  })
+})
+
 describe('isTestModeCheckout — guard de livemode', () => {
   it('ignora checkout.session.completed en modo test', () => {
     expect(isTestModeCheckout({ type: 'checkout.session.completed', livemode: false })).toBe(true)
@@ -114,12 +134,16 @@ describe('shouldSkipCheckout', () => {
     expect(shouldSkipCheckout({ payment_status: 'unpaid', amount_total: 2900 })).toBe(true)
   })
 
-  it('salta si el monto es menor a US$19 — descarta el pago en silencio (ver punto 3 del plan)', () => {
-    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 1899 })).toBe(true)
+  it('YA NO salta un pago real por debajo de US$19 — precio regional (fix 2026-09-11, ver planFromSession)', () => {
+    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 999 })).toBe(false)
   })
 
   it('no salta con el mínimo exacto pagado', () => {
     expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 1900 })).toBe(false)
+  })
+
+  it('salta si el monto pagado es $0', () => {
+    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 0 })).toBe(true)
   })
 
   it('salta si falta amount_total (trata como 0)', () => {

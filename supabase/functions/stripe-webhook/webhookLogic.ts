@@ -52,6 +52,23 @@ export function planFromAmount(amountTotal: number | null): "personal" | "pro" {
   return (amountTotal ?? 0) >= 2400 ? "pro" : "personal";
 }
 
+// Payment Links reales de producción (dashboard.stripe.com → Payment Links,
+// ambos "Active" desde 12-jul-2026). Clasificar por acá primero es lo que de
+// verdad habilita precio regional LATAM: un precio nuevo o un monto convertido
+// a otra moneda para el MISMO Payment Link sigue resolviendo al plan correcto
+// sin importar cuánto termine cobrándose — el umbral fijo en centavos de
+// planFromAmount (arriba) rompía justo eso. Si se crea un Payment Link nuevo
+// (otra región/moneda), agregarlo acá; hasta entonces cae al fallback de monto.
+export const PAYMENT_LINK_PLAN: Record<string, "personal" | "pro"> = {
+  plink_1TsMlSRxn4y6AU3r6CkGfuhO: "personal", // https://buy.stripe.com/dRmeVf64WdSR85HgvD3wQ02
+  plink_1TsMlpRxn4y6AU3rcPN5urIw: "pro",      // https://buy.stripe.com/fZu5kFctk5ml1Hj3IR3wQ03
+};
+
+export function planFromSession(session: { payment_link?: string | null; amount_total?: number | null }): "personal" | "pro" {
+  const byLink = session.payment_link ? PAYMENT_LINK_PLAN[session.payment_link] : undefined;
+  return byLink ?? planFromAmount(session.amount_total ?? null);
+}
+
 // Blindaje: solo eventos LIVE reales emiten licencia. Un evento de TEST (o un
 // endpoint de test todavía conectado) NO debe mintear una clave real en
 // producción. CHECKOUT_EVENT_TYPES cubre los dos tipos que pueden emitir
@@ -65,11 +82,14 @@ export function isTestModeCheckout(event: { type?: string; livemode?: boolean })
 }
 
 // Solo checkouts realmente pagados y con un monto válido (evita $0 / pruebas).
-// NOTA: amount < 1900 descarta EN SILENCIO cualquier pago menor a US$19 — es
-// el punto 3 del plan (migrar a price_id), no tocar acá sin ese contexto.
+// Antes descartaba en silencio cualquier pago menor a US$19 en centavos fijos
+// — con planFromSession clasificando por Payment Link, un precio regional más
+// bajo para el mismo plan ya no debe perderse acá. Sigue rechazando $0 (link
+// con cupón 100% u otro caso degenerado, ninguno esperado hoy: "Allow
+// promotion codes" está apagado en los 2 Payment Links reales).
 export function shouldSkipCheckout(session: { payment_status?: string; amount_total?: number | null }): boolean {
   const amount = session.amount_total ?? 0;
-  return session.payment_status !== "paid" || amount < 1900;
+  return session.payment_status !== "paid" || amount <= 0;
 }
 
 // session.payment_intent / charge.payment_intent vienen como string simple o

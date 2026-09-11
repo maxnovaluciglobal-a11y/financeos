@@ -17,7 +17,7 @@
 //   evento: checkout.session.completed
 
 import {
-  verifyStripeSignature, generateKey, planFromAmount, isTestModeCheckout, shouldSkipCheckout,
+  verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
   notifyKeyDeliveryFailure, CHECKOUT_EVENT_TYPES, type WebhookConfig,
 } from "./webhookLogic.ts";
@@ -79,8 +79,7 @@ Deno.serve(async (req) => {
       });
     }
     const email = session.customer_details?.email ?? session.customer_email ?? null;
-    const amount = session.amount_total ?? 0;
-    const plan = planFromAmount(amount);
+    const plan = planFromSession(session);
     const key = generateKey();
     // session.payment_intent viene en el propio evento para checkouts de pago
     // único (mode:'payment') — se guarda para poder revocar más adelante si
