@@ -81,7 +81,7 @@ export function isLicenseActive() {
 
 export function saveLicense(_key) {}                       // no-op: validateLicense persiste
 export function getLicenseKey()  { return readCache()?.key  || '' }
-export function getLicensePlan() { return readCache()?.plan || 'personal' }
+export function getLicensePlan() { return readCache()?.plan || 'starter' }
 export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch {} }
 
 // Asocia un email a la licencia activa (best-effort: no bloquea la activación si falla).
