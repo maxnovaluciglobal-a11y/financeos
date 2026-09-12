@@ -7,6 +7,7 @@ import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
 import { clearLicense, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
+import { getSession, signOutAuth } from '../../core/auth.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
 import { pushSupported, isPushEnabled, enablePush, disablePush } from '../../core/push.js'
 import { useT } from '../../i18n/useT.js'
@@ -18,6 +19,8 @@ export default function Settings() {
   const { settings, updateSettings, clearAll, loadDemo, exportCSV, enableSync, disableSync } = useApp()
   const { t } = useT()
   const [installPrompt, setInstallPrompt] = useState(null)
+  const [accountEmail, setAccountEmail] = useState(null)
+  useEffect(() => { getSession().then(s => setAccountEmail(s?.user?.email || null)) }, [])
   const [installed, setInstalled] = useState(false)
   const [fx, setFx] = useState(null) // { rates, source: 'fixer'|'fallback' } — null mientras carga
 
@@ -235,6 +238,12 @@ export default function Settings() {
           <div><div style={slbl}>{t('settings.resetOnboarding.label')}</div><div style={ssub}>{t('settings.resetOnboarding.sub')}</div></div>
           <Btn variant="ghost" size="sm" onClick={()=>updateSettings({...settings,onboardingDone:false})}>{t('settings.resetOnboarding.btn')}</Btn>
         </div>
+        {!isDemo && accountEmail && (
+          <div style={srow}>
+            <div><div style={slbl}>{t('settings.account.label')}</div><div style={ssub}>{accountEmail}</div></div>
+            <Btn variant="ghost" size="sm" onClick={() => signOutAuth()}>{t('settings.account.logoutBtn')}</Btn>
+          </div>
+        )}
         {!isDemo && (
           <div style={srow}>
             <div><div style={slbl}>{t('settings.license.label', { plan: getLicensePlan() === 'pro' ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
