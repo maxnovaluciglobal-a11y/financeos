@@ -62,8 +62,10 @@ export function planFromAmount(amountTotal: number | null): "personal" | "pro" {
 export const PAYMENT_LINK_PLAN: Record<string, "personal" | "pro"> = {
   plink_1TsMlSRxn4y6AU3r6CkGfuhO: "personal", // https://buy.stripe.com/dRmeVf64WdSR85HgvD3wQ02 (pago único, en retiro)
   plink_1TsMlpRxn4y6AU3rcPN5urIw: "pro",      // https://buy.stripe.com/fZu5kFctk5ml1Hj3IR3wQ03 (pago único, en retiro)
-  plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "pro",      // https://buy.stripe.com/00w8wR3WOcON85Ha7f3wQ04 Pro mensual US$4.99
-  plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "pro",      // https://buy.stripe.com/6oU5kF3WO2a90Dfa7f3wQ05 Pro anual US$39.99
+  plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "pro",      // https://buy.stripe.com/00w8wR3WOcON85Ha7f3wQ04 Pro mensual US$4.99 (cuenta compartida Maxnova Luci, en retiro 12-sep — separación de cuentas Stripe)
+  plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "pro",      // https://buy.stripe.com/6oU5kF3WO2a90Dfa7f3wQ05 Pro anual US$39.99 (cuenta compartida Maxnova Luci, en retiro 12-sep)
+  plink_1UEgvJ2L52ZuuTMr1Agq0t4b: "pro",      // https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00 Pro mensual US$4.99 (cuenta propia MOY IQ, acct_1UEffP2L52ZuuTMr — activo desde 12-sep)
+  plink_1UEgve2L52ZuuTMrdS1OE9fh: "pro",      // https://buy.stripe.com/3cI14gbTF7qwbeYaz7fnO01 Pro anual US$39.99 (cuenta propia MOY IQ — activo desde 12-sep)
 };
 
 export function planFromSession(session: { payment_link?: string | null; amount_total?: number | null }): "personal" | "pro" {
@@ -78,6 +80,8 @@ export function planFromSession(session: { payment_link?: string | null; amount_
 const SUBSCRIPTION_INTERVAL: Record<string, "month" | "year"> = {
   plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "month",
   plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "year",
+  plink_1UEgvJ2L52ZuuTMr1Agq0t4b: "month",
+  plink_1UEgve2L52ZuuTMrdS1OE9fh: "year",
 };
 
 export function subscriptionIntervalFromSession(session: { payment_link?: string | null }): "month" | "year" | null {
