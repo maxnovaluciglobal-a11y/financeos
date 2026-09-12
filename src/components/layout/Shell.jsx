@@ -177,7 +177,14 @@ export default function Shell({ page, setPage, children }) {
                 </span>
                 {t(it.lb)}
                 {it.proOnly && (
-                  <span style={{ marginLeft:'auto', fontSize:8, fontFamily:'var(--mono)', background:'color-mix(in srgb, var(--warn) 18%, transparent)', color:'var(--amb)', borderRadius:4, padding:'1px 5px', letterSpacing:'.5px', fontWeight:700 }}>PRO</span>
+                  // Contraste: un color-mix(var(--warn) 18%) diluye el mismo tono que el
+                  // texto (--warn === --amb) y queda en ~4.17:1 en claro (bajo AA 4.5:1) —
+                  // subir el % empeora el contraste porque converge hacia el color del
+                  // texto (verificado: 28% da ~3.59:1 en claro y baja el oscuro de 5.11:1
+                  // a 4.14:1, rompiéndolo también). --amb-bg ya es el tono claro correcto
+                  // para este par (mismo que usa .badge_amber en ui.module.css): ~4.74:1
+                  // en claro, ~5.32:1 en oscuro sobre el fondo real del sidebar (--sur).
+                  <span style={{ marginLeft:'auto', fontSize:8, fontFamily:'var(--mono)', background:'var(--amb-bg)', color:'var(--amb)', borderRadius:4, padding:'1px 5px', letterSpacing:'.5px', fontWeight:700 }}>PRO</span>
                 )}
               </button>
             ))}

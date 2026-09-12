@@ -31,8 +31,15 @@ export default function ProGate({ children, feature = 'esta función', feminine 
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          display: 'inline-block', background: 'var(--accent)',
-          color: '#0f1923', borderRadius: 8, padding: '10px 22px',
+          // Contraste: texto #0f1923 sobre var(--accent) daba ~2.98:1 en claro (falla AA).
+          // Pasar el texto a blanco/casi-blanco sin más arreglaba claro (~5.97:1) pero
+          // rompía oscuro (var(--accent) ahí es --verde-dark, un verde pálido — ~2.10:1,
+          // peor que el bug original). Por eso el fondo se fija a --verde-800 (el mismo
+          // valor que --accent ya tiene en claro, cero cambio visual ahí) en vez de la
+          // variable que cambia por tema — así el texto claro pasa AA en los dos modos
+          // (~5.62:1, verificado con la fórmula de contraste relativo de WCAG).
+          display: 'inline-block', background: 'var(--verde-800)',
+          color: 'var(--papel-000)', borderRadius: 8, padding: '10px 22px',
           fontWeight: 700, fontSize: 13, textDecoration: 'none',
           fontFamily: 'var(--mono)',
         }}
