@@ -1,20 +1,22 @@
 // src/components/LicenseGate.jsx
 import { useState } from 'react'
-import { validateLicense, setLicenseEmail } from '../utils/licenseValidator.js'
+import { validateLicense, setLicenseEmail, acknowledgeStarter } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 
 function usePlans(t) {
   return [
-    { name: 'Personal', price: 'US$19', desc: t('licenseGate.planPersonalDesc'), product: 'personal', highlight: false },
-    { name: 'Pro',      price: 'US$29', desc: t('licenseGate.planProDesc'),      product: 'pro',      highlight: true },
+    { name: 'Starter', price: t('licenseGate.free'), suffix: '',                     desc: t('licenseGate.planStarterDesc'), product: 'starter', highlight: false },
+    { name: 'Pro',      price: 'US$4.99',              suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc'),      product: 'pro',      highlight: true },
   ]
 }
 
-// Stripe Payment Links (Live) — Personal US$19 / Pro US$29
+// Stripe Payment Links (Live) — cuenta propia MOY IQ (acct_1UEffP2L52ZuuTMr,
+// separada de la cuenta compartida Maxnova Luci el 12-sep-2026). Pro es
+// suscripción mensual; el anual (US$39.99) se ofrece en moyiq.app/#pricing,
+// no acá — este modal es la vía rápida, no el pricing completo.
 const CHECKOUT_LINKS = {
-  personal: 'https://buy.stripe.com/dRmeVf64WdSR85HgvD3wQ02',
-  pro:      'https://buy.stripe.com/fZu5kFctk5ml1Hj3IR3wQ03',
+  pro: 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00',
 }
 
 async function startCheckout(product) {
@@ -61,6 +63,11 @@ export default function LicenseGate({ onActivate }) {
       setError(t('licenseGate.errorPayment'))
       setBuying(null)
     }
+  }
+
+  function handleStarter() {
+    acknowledgeStarter()
+    onActivate()
   }
 
   const s = {
@@ -166,7 +173,7 @@ export default function LicenseGate({ onActivate }) {
           {PLANS.map(p => (
             <button
               key={p.name}
-              onClick={() => handleBuy(p.product)}
+              onClick={() => p.product === 'starter' ? handleStarter() : handleBuy(p.product)}
               disabled={buying !== null}
               style={{
                 flex: 1,
@@ -183,7 +190,9 @@ export default function LicenseGate({ onActivate }) {
               onMouseOut={e => { e.currentTarget.style.transform = 'none' }}
             >
               <div style={{ fontFamily: 'var(--display)', fontSize: 13, fontWeight: 600, color: p.highlight ? 'var(--grn)' : 'var(--tx)', marginBottom: 3 }}>{p.name}</div>
-              <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>{p.price}</div>
+              <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>
+                {p.price}{p.suffix && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--th)' }}>{p.suffix}</span>}
+              </div>
               <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)', lineHeight: 1.45 }}>{p.desc}</div>
               {buying === p.product && (
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--grn)', marginTop: 6 }}>{t('licenseGate.redirecting')}</div>

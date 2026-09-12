@@ -84,6 +84,15 @@ export function getLicenseKey()  { return readCache()?.key  || '' }
 export function getLicensePlan() { return readCache()?.plan || 'starter' }
 export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch {} }
 
+// Starter (gratis, sin clave): un flag propio, separado de fnos_license_v2 a
+// propósito — isLicenseActive() exige un `key` real y no debe empezar a
+// aceptar "sin clave" como sesión válida, eso rompería la semántica de
+// "licencia activa" para todo lo que ya la usa. LicenseGate llama a esto
+// cuando el usuario elige "Empezar gratis" en vez de comprar o activar.
+const LS_STARTER = 'fnos_starter_ack'
+export function isStarterAcknowledged() { try { return localStorage.getItem(LS_STARTER) === '1' } catch { return false } }
+export function acknowledgeStarter()    { try { localStorage.setItem(LS_STARTER, '1') } catch {} }
+
 // Asocia un email a la licencia activa (best-effort: no bloquea la activación si falla).
 // Se usa en el momento de activar la clave, para poder contactar al cliente
 // (avisos de vencimiento en pruebas, novedades, soporte).

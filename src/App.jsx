@@ -1,7 +1,7 @@
 // src/App.jsx
 import { lazy, Suspense } from 'react'
 import LicenseGate from './components/LicenseGate.jsx'
-import { isLicenseActive } from './utils/licenseValidator.js'
+import { isLicenseActive, isStarterAcknowledged } from './utils/licenseValidator.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
@@ -61,7 +61,14 @@ function isDemoMode() {
 
 function Inner() {
   const [page, setPage] = usePersistedPage('dashboard')
-  const [licensed, setLicensed] = useState(isLicenseActive())
+  const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
+  // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
+  // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
+  // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
+  // cantidad de hooks llamados entre un render y el siguiente del mismo Inner
+  // montado. React lo tolera con un warning en vez de romper visiblemente, por
+  // eso pasó desapercibido — pero es un bug real, no cosmético.
+  const { settings, loading } = useApp()
 
   // Demo bypass: si URL tiene ?demo=true no se pide licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
@@ -69,7 +76,6 @@ function Inner() {
   if (!licensed && !isDemo) {
     return <LicenseGate onActivate={() => setLicensed(true)} />
   }
-  const { settings, loading } = useApp()
 
   function renderPage(page) {
     switch (page) {
