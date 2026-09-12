@@ -70,6 +70,15 @@ function Inner() {
   // consulta si la cuenta ya eligió plan en otro dispositivo (ver el efecto
   // de más abajo y getServerEntitlement).
   const [entitlementChecked, setEntitlementChecked] = useState(false)
+  // getSession/getServerEntitlement/verifyOnline ya tienen timeout propio
+  // (10s/8s/10s, ver auth.js y licenseValidator.js) así que en el camino
+  // normal `session` y `entitlementChecked` siempre terminan resolviendo.
+  // Este es un segundo cinturón de seguridad: cubre también un reject no
+  // capturado u otro modo de falla que deje esos dos colgados igual. Si a
+  // los 12s seguimos sin saber si hay sesión o si la cuenta ya eligió plan,
+  // mostramos LicenseGate (reintentable) en vez de la pantalla en blanco
+  // indefinida que hoy deja `Inner()` devolviendo null.
+  const [bootTimedOut, setBootTimedOut] = useState(false)
   // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
   // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
   // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
@@ -86,6 +95,13 @@ function Inner() {
     if (isDemo) return
     getSession().then(setSession)
     return onAuthChange(setSession)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (isDemo) return
+    const timer = setTimeout(() => setBootTimedOut(true), 12000)
+    return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -114,9 +130,19 @@ function Inner() {
   }, [session, licensed])
 
   if (!isDemo) {
-    if (session === undefined) return null // verificando — evita flash del gate
+    if (session === undefined) {
+      // Verificando sesión (evita flash del gate). Si bootTimedOut ya se
+      // cumplió, dejamos de esperar y mostramos LicenseGate en vez de null
+      // — el usuario puede reintentar en lugar de ver blanco para siempre.
+      if (bootTimedOut) return <LicenseGate onActivate={() => setLicensed(true)} />
+      return null
+    }
     if (!session) return <AuthGate onAuthenticated={() => {}} />
-    if (!licensed && !entitlementChecked) return null // verificando entitlement de cuenta
+    if (!licensed && !entitlementChecked) {
+      // Mismo criterio mientras se verifica el entitlement de la cuenta.
+      if (bootTimedOut) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />
+      return null
+    }
     if (!licensed) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />
   }
 

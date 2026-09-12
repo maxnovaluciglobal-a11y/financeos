@@ -9,8 +9,13 @@ export function isAuthConfigured() {
 
 export async function getSession() {
   if (!authClient) return null
-  const { data } = await authClient.auth.getSession()
-  return data?.session || null
+  // Sin timeout, un getSession() colgado (red rara, Supabase caído) deja el
+  // useEffect de App.jsx esperando para siempre — Inner() devuelve null y la
+  // pantalla queda en blanco sin salida. Si no sabemos la sesión a tiempo,
+  // tratamos como "no logueado" en vez de colgar (AuthGate deja reintentar).
+  const timeout = new Promise(resolve => setTimeout(() => resolve(null), 10000))
+  const result = await Promise.race([authClient.auth.getSession(), timeout])
+  return result?.data?.session || null
 }
 
 export function onAuthChange(callback) {

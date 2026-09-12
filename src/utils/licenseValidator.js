@@ -25,6 +25,18 @@ export const PRO_CHECKOUT_URL = 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00'
 function readCache()  { try { return JSON.parse(localStorage.getItem(LS_V2) || 'null') } catch { return null } }
 function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch {} }
 
+// Sin esto, una llamada colgada (red rara, Supabase caído) deja a quien la
+// espera sin resolver nunca — App.jsx usa el resultado para decidir si
+// mostrar la app, y sin timeout el usuario ve pantalla en blanco para
+// siempre. Resuelve a `null` (mismo criterio en los dos call sites de abajo:
+// "no sabemos" en vez de colgar) sin abortar la promesa original, que sigue
+// corriendo en segundo plano por si el caller igual la usa (p.ej. writeCache
+// en isLicenseActive, que no espera este helper).
+function withTimeout(promiseLike, ms) {
+  const timeout = new Promise(resolve => setTimeout(() => resolve(null), ms))
+  return Promise.race([promiseLike, timeout])
+}
+
 // Migración v1 → v2 (no desloguear a quien ya activó en v1.x offline)
 ;(function migrateV1() {
   try {
@@ -37,7 +49,7 @@ function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } 
 async function verifyOnline(key) {
   if (!SUPABASE_URL || !SUPABASE_ANON) return { offline: true }
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/validate_license`, {
+    const res = await withTimeout(fetch(`${SUPABASE_URL}/rest/v1/rpc/validate_license`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_ANON,
@@ -45,7 +57,8 @@ async function verifyOnline(key) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ p_key: await licenseKeyHash(key) }),
-    })
+    }), 10000)
+    if (!res) return { offline: true } // timeout: mismo criterio que el catch de abajo, tratar como sin red
     if (!res.ok) return { offline: true, httpError: res.status } // RPC 404 / red → tratar como offline
     const data = await res.json()
     if (data && data.valid) return { valid: true, plan: data.plan || 'personal', exp: data.expires_at ? Number(data.expires_at) : null }
@@ -157,11 +170,12 @@ export async function registerStarterLead(email) {
 export async function getServerEntitlement(userId) {
   if (!authClient || !userId) return null
   try {
-    const { data, error } = await authClient
-      .from('user_entitlements')
-      .select('plan, license_key')
-      .eq('user_id', userId)
-      .maybeSingle()
+    const result = await withTimeout(
+      authClient.from('user_entitlements').select('plan, license_key').eq('user_id', userId).maybeSingle(),
+      8000
+    )
+    if (!result) return null // timeout: no sabemos el entitlement, App.jsx lo trata como "sin plan todavía"
+    const { data, error } = result
     if (error || !data) return null
     return data
   } catch { return null }
