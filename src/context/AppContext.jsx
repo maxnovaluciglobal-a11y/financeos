@@ -403,7 +403,7 @@ export function AppProvider({ children }) {
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `financeos-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `moyiq-${new Date().toISOString().slice(0, 10)}.csv`
       a.click()
       URL.revokeObjectURL(url)
       showToast('CSV exportado correctamente.', 'ok')
@@ -436,7 +436,7 @@ export function AppProvider({ children }) {
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `financeos-backup-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `moyiq-backup-${new Date().toISOString().slice(0, 10)}.json`
       a.click()
       URL.revokeObjectURL(url)
       showToast('Respaldo creado correctamente.', 'ok')

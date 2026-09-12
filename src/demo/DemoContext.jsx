@@ -118,7 +118,7 @@ export function DemoProvider({ children }) {
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'financeos-demo-data.csv'
+    a.download = 'moyiq-demo-data.csv'
     a.click()
     URL.revokeObjectURL(url)
     showToast('CSV demo exportado — solo datos ficticios.', 'ok')
@@ -129,7 +129,7 @@ export function DemoProvider({ children }) {
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'financeos-demo-backup.json'
+    a.download = 'moyiq-demo-backup.json'
     a.click()
     URL.revokeObjectURL(url)
     showToast('JSON demo exportado — solo datos ficticios.', 'ok')
