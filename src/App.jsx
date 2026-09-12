@@ -1,14 +1,16 @@
 // src/App.jsx
 import { lazy, Suspense } from 'react'
 import LicenseGate from './components/LicenseGate.jsx'
+import AuthGate from './components/AuthGate.jsx'
 import { isLicenseActive, isStarterAcknowledged } from './utils/licenseValidator.js'
+import { getSession, onAuthChange } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -62,19 +64,31 @@ function isDemoMode() {
 function Inner() {
   const [page, setPage] = usePersistedPage('dashboard')
   const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
+  // undefined = todavía verificando sesión, null = sin sesión, objeto = autenticado.
+  const [session, setSession] = useState(undefined)
   // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
   // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
   // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
   // cantidad de hooks llamados entre un render y el siguiente del mismo Inner
   // montado. React lo tolera con un warning en vez de romper visiblemente, por
-  // eso pasó desapercibido — pero es un bug real, no cosmético.
+  // eso pasó desapercibido — pero es un bug real, no cosmético. Mismo motivo
+  // por el que este useEffect va acá arriba, antes de cualquier return.
   const { settings, loading } = useApp()
 
-  // Demo bypass: si URL tiene ?demo=true no se pide licencia
+  // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
 
-  if (!licensed && !isDemo) {
-    return <LicenseGate onActivate={() => setLicensed(true)} />
+  useEffect(() => {
+    if (isDemo) return
+    getSession().then(setSession)
+    return onAuthChange(setSession)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (!isDemo) {
+    if (session === undefined) return null // verificando — evita flash del gate
+    if (!session) return <AuthGate onAuthenticated={() => {}} />
+    if (!licensed) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} />
   }
 
   function renderPage(page) {

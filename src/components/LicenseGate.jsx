@@ -20,11 +20,10 @@ async function startCheckout(product) {
   window.location.href = url
 }
 
-export default function LicenseGate({ onActivate }) {
+export default function LicenseGate({ onActivate, userEmail }) {
   const { t } = useT()
   const PLANS = usePlans(t)
   const [key, setKey]           = useState('')
-  const [email, setEmail]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [buying, setBuying]     = useState(null)
   const [error, setError]       = useState('')
@@ -38,8 +37,9 @@ export default function LicenseGate({ onActivate }) {
     try {
       const valid = await validateLicense(clean)
       if (valid) {
-        // Best-effort: asocia el email para avisos/soporte. No bloquea la activación si falla.
-        if (email.trim()) setLicenseEmail(email).catch(() => {})
+        // Best-effort: asocia el email de la cuenta ya autenticada (AuthGate)
+        // para avisos/soporte. No bloquea la activación si falla.
+        if (userEmail) setLicenseEmail(userEmail).catch(() => {})
         onActivate()
       } else {
         setError(t('licenseGate.errorInvalid'))
@@ -63,10 +63,11 @@ export default function LicenseGate({ onActivate }) {
 
   function handleStarter() {
     acknowledgeStarter()
-    // Best-effort, igual que setLicenseEmail en handleActivate: Starter no
-    // tiene clave, así que sin esto nadie que arranca gratis quedaba
-    // registrado en ningún lado (ver registerStarterLead).
-    if (email.trim()) registerStarterLead(email).catch(() => {})
+    // Best-effort, mismo criterio que handleActivate: Starter no tiene
+    // clave, así que sin esto nadie que arranca gratis quedaba registrado
+    // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
+    // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
+    if (userEmail) registerStarterLead(userEmail).catch(() => {})
     onActivate()
   }
 
@@ -118,20 +119,6 @@ export default function LicenseGate({ onActivate }) {
             autoFocus
             spellCheck={false}
           />
-
-          <input
-            style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 4, boxSizing: 'border-box', outline: 'none' }}
-            type="email"
-            inputMode="email"
-            placeholder={t('licenseGate.emailPlaceholder')}
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleActivate()}
-            spellCheck={false}
-          />
-          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 10, lineHeight: 1.5 }}>
-            {t('licenseGate.emailNote')}
-          </div>
 
           {error && (
             <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
