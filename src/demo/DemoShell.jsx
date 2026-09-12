@@ -93,7 +93,7 @@ function DemoBottomCTA() {
     }}>
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>¿Te convence lo que ves?</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>El tuyo es privado, local y sin suscripción mensual — pago único de US$19.</div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>El tuyo es privado y local — plan gratis, o Pro desde US$4.99/mes.</div>
       </div>
       <button
         onClick={() => window.open('https://moyiq.app/#pricing', '_blank')}

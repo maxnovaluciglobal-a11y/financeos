@@ -177,7 +177,7 @@ const config = {
   onboarding: {
     enabled:       true,
     welcomeTitle:  'Bienvenido a MOY IQ',
-    welcomeText:   'Tus datos se guardan en este dispositivo. Cifrado de extremo a extremo, sin suscripciones.',
+    welcomeText:   'Tus datos se guardan en este dispositivo. Cifrado de extremo a extremo.',
     steps: [
       { id: 'currency',    title: 'Elige tu moneda',         desc: '¿Con qué moneda trabajas día a día?' },
       { id: 'income',      title: 'Tu ingreso principal',    desc: '¿Cuánto recibes este mes?' },
@@ -191,8 +191,11 @@ const config = {
 
   // ── PLAN / TIER (fallback para features gating) ───────────────────────────
   // El plan REAL viene de la licencia validada (usePlan → getLicensePlan()).
-  // Esto es solo el fallback si no hay licencia cacheada. 'personal' | 'pro' | 'enterprise'
-  plan: 'personal',
+  // Esto es solo el fallback si no hay licencia cacheada — o sea, el plan de
+  // cualquiera que nunca compró Pro. Desde el 12-sep-2026 ese es el plan
+  // gratis real (Starter), no un remanente del viejo "Personal" de pago único.
+  // 'starter' | 'pro' | 'enterprise'
+  plan: 'starter',
 
 }
 

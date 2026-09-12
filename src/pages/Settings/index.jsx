@@ -237,7 +237,7 @@ export default function Settings() {
         </div>
         {!isDemo && (
           <div style={srow}>
-            <div><div style={slbl}>{t('settings.license.label', { plan: getLicensePlan() === 'pro' ? 'Pro' : 'Personal' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
+            <div><div style={slbl}>{t('settings.license.label', { plan: getLicensePlan() === 'pro' ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
             <Btn variant="ghost" size="sm" onClick={handleDeactivate}>{t('settings.license.btn')}</Btn>
           </div>
         )}

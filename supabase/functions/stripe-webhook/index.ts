@@ -19,7 +19,8 @@
 import {
   verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
-  notifyKeyDeliveryFailure, CHECKOUT_EVENT_TYPES, type WebhookConfig,
+  notifyKeyDeliveryFailure, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
+  subscriptionIdFromSession, extendLicenseExpiry, periodEndFromInvoice, type WebhookConfig,
 } from "./webhookLogic.ts";
 
 // Acepta firma de TEST y de LIVE: prueba contra ambos secrets (los que existan).
@@ -84,10 +85,14 @@ Deno.serve(async (req) => {
     // session.payment_intent viene en el propio evento para checkouts de pago
     // único (mode:'payment') — se guarda para poder revocar más adelante si
     // Stripe manda un charge.refunded/charge.dispute.created (ver revokeLicense).
+    // Para mode:'subscription' viene null (la suscripción no tiene payment_intent
+    // propio, cada invoice tiene el suyo) — subscriptionId cubre ese caso.
     const paymentIntent = extractPaymentIntent(session);
+    const subscriptionId = subscriptionIdFromSession(session);
+    const interval = subscriptionIntervalFromSession(session);
     try {
-      await issueLicense(key, plan, email, session.id ?? null, paymentIntent, config);
-      const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config) : false;
+      await issueLicense(key, plan, email, session.id ?? null, paymentIntent, config, subscriptionId);
+      const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config, interval) : false;
       // Sin `key` a propósito — ver el comentario de sendKeyEmail(). session.id
       // identifica la fila igual de bien y no es material criptografico.
       console.log(`Licencia emitida: plan=${plan} email=${email ?? "(sin email)"} session=${session.id} payment_intent=${paymentIntent} email_enviado=${emailSent}`);
@@ -116,6 +121,28 @@ Deno.serve(async (req) => {
       console.log(`${event.type}: payment_intent=${paymentIntent} revoke_result=${JSON.stringify(result)}`);
     } else {
       console.warn(`${event.type} sin payment_intent en el payload — no se puede revocar automáticamente, charge=${charge.id}`);
+    }
+  }
+
+  // Suscripciones (MOY IQ Pro mensual/anual, desde 2026-09-12): cada invoice
+  // pagada — alta o renovación, mismo handler para las dos — fija hasta cuándo
+  // vale el acceso. OJO: este endpoint recibe invoice.payment_succeeded de
+  // TODA la cuenta de Stripe compartida (DypOS, Alika, FinanceOS Invest, no
+  // solo MOY IQ) — un subscription id que no matchea ninguna licencia nuestra
+  // es el caso esperado para esos eventos ajenos, no un error, por eso no hay
+  // log de "not found" acá.
+  if (event?.type === "invoice.payment_succeeded") {
+    const invoice = event.data?.object ?? {};
+    const subscriptionId = subscriptionIdFromSession(invoice);
+    const periodEnd = periodEndFromInvoice(invoice);
+    if (subscriptionId && periodEnd) {
+      try {
+        await extendLicenseExpiry(subscriptionId, periodEnd, config);
+        console.log(`Invoice pagada: subscription=${subscriptionId} expires_at=${periodEnd}`);
+      } catch (err) {
+        console.error("Error extendiendo vencimiento de suscripción:", err);
+        return new Response("error extending subscription", { status: 500 });
+      }
     }
   }
 

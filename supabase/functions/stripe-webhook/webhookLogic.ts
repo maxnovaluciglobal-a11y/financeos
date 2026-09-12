@@ -60,13 +60,34 @@ export function planFromAmount(amountTotal: number | null): "personal" | "pro" {
 // planFromAmount (arriba) rompía justo eso. Si se crea un Payment Link nuevo
 // (otra región/moneda), agregarlo acá; hasta entonces cae al fallback de monto.
 export const PAYMENT_LINK_PLAN: Record<string, "personal" | "pro"> = {
-  plink_1TsMlSRxn4y6AU3r6CkGfuhO: "personal", // https://buy.stripe.com/dRmeVf64WdSR85HgvD3wQ02
-  plink_1TsMlpRxn4y6AU3rcPN5urIw: "pro",      // https://buy.stripe.com/fZu5kFctk5ml1Hj3IR3wQ03
+  plink_1TsMlSRxn4y6AU3r6CkGfuhO: "personal", // https://buy.stripe.com/dRmeVf64WdSR85HgvD3wQ02 (pago único, en retiro)
+  plink_1TsMlpRxn4y6AU3rcPN5urIw: "pro",      // https://buy.stripe.com/fZu5kFctk5ml1Hj3IR3wQ03 (pago único, en retiro)
+  plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "pro",      // https://buy.stripe.com/00w8wR3WOcON85Ha7f3wQ04 Pro mensual US$4.99
+  plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "pro",      // https://buy.stripe.com/6oU5kF3WO2a90Dfa7f3wQ05 Pro anual US$39.99
 };
 
 export function planFromSession(session: { payment_link?: string | null; amount_total?: number | null }): "personal" | "pro" {
   const byLink = session.payment_link ? PAYMENT_LINK_PLAN[session.payment_link] : undefined;
   return byLink ?? planFromAmount(session.amount_total ?? null);
+}
+
+// Solo para decidir el texto del email de bienvenida (mensual/anual/pago único)
+// y, si hace falta, un fallback de expiración inicial — el vencimiento real
+// SIEMPRE lo fija extendLicenseExpiry() desde invoice.payment_succeeded, esto
+// es solo cosmético/best-effort mientras esa invoice llega (segundos después).
+const SUBSCRIPTION_INTERVAL: Record<string, "month" | "year"> = {
+  plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "month",
+  plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "year",
+};
+
+export function subscriptionIntervalFromSession(session: { payment_link?: string | null }): "month" | "year" | null {
+  return session.payment_link ? SUBSCRIPTION_INTERVAL[session.payment_link] ?? null : null;
+}
+
+export function subscriptionIdFromSession(session: { subscription?: string | { id?: string } | null }): string | null {
+  const sub = session?.subscription;
+  if (typeof sub === "string") return sub;
+  return sub?.id ?? null;
 }
 
 // Blindaje: solo eventos LIVE reales emiten licencia. Un evento de TEST (o un
@@ -149,7 +170,7 @@ export async function notifyKeyDeliveryFailure(
 
 export async function issueLicense(
   key: string, plan: string, email: string | null, session: string | null, paymentIntent: string | null,
-  config: WebhookConfig,
+  config: WebhookConfig, subscriptionId: string | null = null,
 ) {
   const res = await fetch(`${config.supabaseUrl}/rest/v1/rpc/issue_license`, {
     method: "POST",
@@ -158,9 +179,44 @@ export async function issueLicense(
       Authorization: `Bearer ${config.serviceRole}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ p_key: key, p_plan: plan, p_email: email, p_session: session, p_payment_intent: paymentIntent }),
+    body: JSON.stringify({
+      p_key: key, p_plan: plan, p_email: email, p_session: session,
+      p_payment_intent: paymentIntent, p_subscription: subscriptionId,
+    }),
   });
   if (!res.ok) throw new Error(`issue_license failed: ${res.status} ${await res.text()}`);
+}
+
+// Fija/extiende el vencimiento de una suscripción — se llama desde
+// invoice.payment_succeeded, tanto en el alta (primera invoice) como en cada
+// renovación. No hay revocación explícita al cancelar: si no llega una
+// invoice.payment_succeeded nueva, expires_at ya fijado por la renovación
+// anterior vence solo y validate_license empieza a rechazar — no hace falta
+// escuchar customer.subscription.deleted para el control de acceso en sí.
+// Gap conocido, documentado a propósito: un reembolso de una invoice de
+// suscripción no revoca al instante (a diferencia de FISC-1 para pago único)
+// porque el charge/payment_intent de una invoice no es el que se guardó en
+// checkout — revisar si esto importa una vez haya suscriptores reales.
+export async function extendLicenseExpiry(subscriptionId: string, expiresAtIso: string, config: WebhookConfig): Promise<void> {
+  const res = await fetch(`${config.supabaseUrl}/rest/v1/rpc/extend_license_expiry`, {
+    method: "POST",
+    headers: {
+      apikey: config.serviceRole,
+      Authorization: `Bearer ${config.serviceRole}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ p_subscription: subscriptionId, p_expires_at: expiresAtIso }),
+  });
+  if (!res.ok) throw new Error(`extend_license_expiry failed: ${res.status} ${await res.text()}`);
+}
+
+// El campo que de verdad manda para "hasta cuándo vale el acceso" es
+// lines.data[0].period.end (unix seconds) — es el mismo en la invoice de alta
+// y en cada renovación, así que un solo handler cubre ambos casos sin mirar
+// billing_reason.
+export function periodEndFromInvoice(invoice: { lines?: { data?: Array<{ period?: { end?: number } }> } }): string | null {
+  const end = invoice?.lines?.data?.[0]?.period?.end;
+  return typeof end === "number" ? new Date(end * 1000).toISOString() : null;
 }
 
 // Auditoría 2026-08-27: issue_license NO era idempotente por sesión — un
@@ -224,12 +280,16 @@ export async function revokeLicense(paymentIntent: string, config: WebhookConfig
 // realmente no entregada, y ambos casos requerían reemitir la licencia a mano.
 export async function sendKeyEmail(
   to: string, key: string, plan: string, sessionRef: string | null, config: WebhookConfig,
+  interval: "month" | "year" | null = null,
 ): Promise<boolean> {
   if (!config.resendApiKey) {
     console.error(`CRITICO: RESEND_API_KEY no configurada — el cliente pago y NO recibio su clave. session=${sessionRef}`);
     return false;
   }
   const appUrl = "https://app.moyiq.app/app/";
+  const billingNote = interval
+    ? `<p>Es una suscripción con renovación automática ${interval === "month" ? "mensual" : "anual"}. Para cancelarla, escribinos a <a href="mailto:support@moyiq.app">support@moyiq.app</a>.</p>`
+    : "";
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
       <h2 style="color:#14213D">Tu licencia de MOY IQ</h2>
@@ -238,6 +298,7 @@ export async function sendKeyEmail(
       <p style="font-family:monospace;font-size:20px;font-weight:700;background:#f0f7f3;
                 padding:14px;border-radius:8px;text-align:center;letter-spacing:2px">${key}</p>
       <p>Actívala aquí: <a href="${appUrl}">${appUrl}</a></p>
+      ${billingNote}
       <p style="color:#888;font-size:12px">Tus datos financieros se guardan solo en tu dispositivo.</p>
     </div>`;
   const attempt = async () => fetch("https://api.resend.com/emails", {

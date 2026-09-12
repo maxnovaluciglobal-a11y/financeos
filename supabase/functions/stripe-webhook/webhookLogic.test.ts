@@ -5,7 +5,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
   verifyStripeSignature, generateKey, planFromAmount, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
-  notifyKeyDeliveryFailure,
+  notifyKeyDeliveryFailure, subscriptionIntervalFromSession, subscriptionIdFromSession,
+  extendLicenseExpiry, periodEndFromInvoice,
 } from './webhookLogic.ts'
 
 const CONFIG = { supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key', resendApiKey: 're_key', fromEmail: 'a@b.com', alertEmail: 'admin@x.com' }
@@ -109,6 +110,48 @@ describe('planFromSession — clasifica por Payment Link real, con fallback a mo
     expect(planFromSession({ amount_total: 2400 })).toBe('pro')
     expect(planFromSession({ amount_total: 0 })).toBe('personal')
   })
+
+  it('Payment Links de suscripción (mensual/anual) → pro, agregados 2026-09-11', () => {
+    expect(planFromSession({ payment_link: 'plink_1UEfHBRxn4y6AU3r2Cd9SAmi', amount_total: 499 })).toBe('pro')
+    expect(planFromSession({ payment_link: 'plink_1UEfI7Rxn4y6AU3rgSX3eaOQ', amount_total: 3999 })).toBe('pro')
+  })
+})
+
+describe('subscriptionIntervalFromSession', () => {
+  it('month para el Payment Link de Pro mensual', () => {
+    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEfHBRxn4y6AU3r2Cd9SAmi' })).toBe('month')
+  })
+  it('year para el Payment Link de Pro anual', () => {
+    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEfI7Rxn4y6AU3rgSX3eaOQ' })).toBe('year')
+  })
+  it('null para pago único o sin payment_link (no es una suscripción)', () => {
+    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1TsMlpRxn4y6AU3rcPN5urIw' })).toBeNull()
+    expect(subscriptionIntervalFromSession({})).toBeNull()
+  })
+})
+
+describe('subscriptionIdFromSession', () => {
+  it('devuelve el string directo', () => {
+    expect(subscriptionIdFromSession({ subscription: 'sub_123' })).toBe('sub_123')
+  })
+  it('devuelve el .id de un objeto expandido', () => {
+    expect(subscriptionIdFromSession({ subscription: { id: 'sub_456' } })).toBe('sub_456')
+  })
+  it('null si no hay subscription (checkout de pago único)', () => {
+    expect(subscriptionIdFromSession({})).toBeNull()
+    expect(subscriptionIdFromSession({ subscription: null })).toBeNull()
+  })
+})
+
+describe('periodEndFromInvoice', () => {
+  it('convierte lines.data[0].period.end (unix seconds) a ISO', () => {
+    expect(periodEndFromInvoice({ lines: { data: [{ period: { end: 1735689600 } }] } }))
+      .toBe(new Date(1735689600 * 1000).toISOString())
+  })
+  it('null si la invoice no trae period.end (forma inesperada, no debe romper el webhook)', () => {
+    expect(periodEndFromInvoice({})).toBeNull()
+    expect(periodEndFromInvoice({ lines: { data: [] } })).toBeNull()
+  })
 })
 
 describe('isTestModeCheckout — guard de livemode', () => {
@@ -168,7 +211,7 @@ describe('llamadas HTTP (fetch mockeado)', () => {
   afterEach(() => { vi.unstubAllGlobals() })
 
   describe('issueLicense', () => {
-    it('llama al RPC con los params correctos y no lanza si Supabase responde ok', async () => {
+    it('llama al RPC con los params correctos (sin subscriptionId, pago único) y no lanza si Supabase responde ok', async () => {
       const fetchMock = vi.fn().mockResolvedValue({ ok: true })
       vi.stubGlobal('fetch', fetchMock)
       await issueLicense('FNOS-AAAA-BBBB-CCCC', 'pro', 'a@b.com', 'sess_1', 'pi_1', CONFIG)
@@ -177,12 +220,40 @@ describe('llamadas HTTP (fetch mockeado)', () => {
         expect.objectContaining({ method: 'POST' }),
       )
       const body = JSON.parse(fetchMock.mock.calls[0][1].body)
-      expect(body).toEqual({ p_key: 'FNOS-AAAA-BBBB-CCCC', p_plan: 'pro', p_email: 'a@b.com', p_session: 'sess_1', p_payment_intent: 'pi_1' })
+      expect(body).toEqual({ p_key: 'FNOS-AAAA-BBBB-CCCC', p_plan: 'pro', p_email: 'a@b.com', p_session: 'sess_1', p_payment_intent: 'pi_1', p_subscription: null })
+    })
+
+    it('incluye p_subscription cuando es una suscripción (2026-09-11)', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await issueLicense('FNOS-AAAA-BBBB-CCCC', 'pro', 'a@b.com', 'sess_1', null, CONFIG, 'sub_1')
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+      expect(body.p_subscription).toBe('sub_1')
     })
 
     it('lanza si Supabase responde error', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'boom' }))
       await expect(issueLicense('K', 'personal', null, null, null, CONFIG)).rejects.toThrow('issue_license failed')
+    })
+  })
+
+  describe('extendLicenseExpiry (renovación de suscripción, 2026-09-11)', () => {
+    it('llama al RPC con subscription y expires_at, no lanza si Supabase responde ok', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      const iso = new Date('2026-10-12T00:00:00.000Z').toISOString()
+      await extendLicenseExpiry('sub_1', iso, CONFIG)
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${CONFIG.supabaseUrl}/rest/v1/rpc/extend_license_expiry`,
+        expect.objectContaining({ method: 'POST' }),
+      )
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+      expect(body).toEqual({ p_subscription: 'sub_1', p_expires_at: iso })
+    })
+
+    it('lanza si Supabase responde error (el handler en index.ts debe devolver 500 para que Stripe reintente)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'boom' }))
+      await expect(extendLicenseExpiry('sub_1', '2026-10-12T00:00:00.000Z', CONFIG)).rejects.toThrow('extend_license_expiry failed')
     })
   })
 
@@ -242,6 +313,27 @@ describe('llamadas HTTP (fetch mockeado)', () => {
       vi.stubGlobal('fetch', fetchMock)
       expect(await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'sess_1', CONFIG)).toBe(false)
       expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+
+    it('sin interval (pago único) no menciona renovación ni cancelación', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'sess_1', CONFIG)
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+      expect(body.html).not.toContain('renovación')
+    })
+
+    it('con interval month/year avisa la renovación automática y cómo cancelar (2026-09-11)', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'sess_1', CONFIG, 'month')
+      const bodyMonth = JSON.parse(fetchMock.mock.calls[0][1].body)
+      expect(bodyMonth.html).toContain('renovación automática mensual')
+      expect(bodyMonth.html).toContain('support@moyiq.app')
+
+      await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'sess_1', CONFIG, 'year')
+      const bodyYear = JSON.parse(fetchMock.mock.calls[1][1].body)
+      expect(bodyYear.html).toContain('renovación automática anual')
     })
   })
 
