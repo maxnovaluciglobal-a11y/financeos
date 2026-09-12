@@ -11,6 +11,7 @@ import PrivacySeal from '../PrivacySeal.jsx'
 import CountryBadge from '../CountryBadge.jsx'
 import Logo, { Monogram } from '../Logo.jsx'
 import { NAV_ICONS } from '../icons/Icons.jsx'
+import { signOutAuth } from '../../core/auth.js'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -203,6 +204,9 @@ export default function Shell({ page, setPage, children }) {
           <button className={s.themeBtn} onClick={toggleTheme}>
             {isDark ? '☀ ' + t('settings.theme.light') : '◑ ' + t('settings.theme.dark')}
           </button>
+          <button className={s.themeBtn} onClick={() => signOutAuth()}>
+            ⏻ {t('settings.account.logoutBtn')}
+          </button>
           <div className={s.legalLinks}>
             <button type="button" onClick={() => navigate('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
             <button type="button" onClick={() => navigate('terms')} className={s.legalLink}>{t('nav.legal.terms')}</button>
@@ -246,6 +250,9 @@ export default function Shell({ page, setPage, children }) {
         <div className={s.drawerFooter}>
           <button className={s.themeBtn} onClick={toggleTheme}>
             {isDark ? '☀ ' + t('settings.theme.light') : '◑ ' + t('settings.theme.dark')}
+          </button>
+          <button className={s.themeBtn} onClick={() => signOutAuth()}>
+            ⏻ {t('settings.account.logoutBtn')}
           </button>
           <div style={{marginTop:8}}><BackupStatusBadge compact /></div>
         </div>
