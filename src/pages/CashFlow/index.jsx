@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
+import ProGate from '../../components/ui/ProGate.jsx'
 import { fmtMoney, fmtPct, moneyLocale } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -149,6 +150,7 @@ export default function CashFlow({ setPage }) {
   const hasData = monthsWithData.length > 0
 
   return (
+    <ProGate feature={t('cf.proGateFeature')} feminine>
     <div className="stack">
       <PageHeader
         title={t('cf.title')}
@@ -415,5 +417,6 @@ export default function CashFlow({ setPage }) {
         {t('cf.disclaimer')}
       </div>
     </div>
+    </ProGate>
   )
 }

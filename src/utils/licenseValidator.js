@@ -15,6 +15,12 @@ const KEY_RE = /^FNOS-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Stripe Payment Link (Live) — cuenta propia MOY IQ (acct_1UEffP2L52ZuuTMr,
+// separada de la cuenta compartida Maxnova Luci el 12-sep-2026). Pro mensual;
+// el anual (US$39.99) se ofrece en moyiq.app/#pricing. Usado por LicenseGate
+// y por el CTA de upgrade en Settings — un solo lugar para no desincronizar.
+export const PRO_CHECKOUT_URL = 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00'
+
 function readCache()  { try { return JSON.parse(localStorage.getItem(LS_V2) || 'null') } catch { return null } }
 function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch {} }
 
@@ -110,6 +116,28 @@ export async function setLicenseEmail(email) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ p_key: await licenseKeyHash(key), p_email: clean }),
+    })
+    if (!res.ok) return false
+    const data = await res.json()
+    return !!(data && data.ok)
+  } catch { return false }
+}
+
+// Registra el email de quien elige Starter (best-effort: no bloquea la
+// activación si falla). Starter no tiene clave, así que no puede pasar por
+// setLicenseEmail — sin esto, nadie que arranca gratis quedaba registrado.
+export async function registerStarterLead(email) {
+  const clean = String(email || '').trim()
+  if (!clean || !SUPABASE_URL || !SUPABASE_ANON) return false
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_starter_lead`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_email: clean }),
     })
     if (!res.ok) return false
     const data = await res.json()

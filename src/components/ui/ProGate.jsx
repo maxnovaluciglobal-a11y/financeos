@@ -5,7 +5,7 @@
 
 import { usePlan } from '../../hooks/usePlan.js'
 
-export default function ProGate({ children, feature = 'esta función' }) {
+export default function ProGate({ children, feature = 'esta función', feminine = false }) {
   const { isPro } = usePlan()
 
   if (isPro) return children
@@ -21,7 +21,7 @@ export default function ProGate({ children, feature = 'esta función' }) {
         Función Pro
       </div>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--tx)', marginBottom: 8 }}>
-        {feature} es exclusivo del plan Pro
+        {feature} es exclusiv{feminine ? 'a' : 'o'} del plan Pro
       </h2>
       <p style={{ fontSize: 13, color: 'var(--th)', lineHeight: 1.7, marginBottom: 20 }}>
         Actualiza a Pro desde <strong>US$4.99/mes</strong> (o US$39.99/año) para acceder a Modo Asesor, reportes PDF, proyección de flujo, simulador de deudas, APV Chile e importación CSV.

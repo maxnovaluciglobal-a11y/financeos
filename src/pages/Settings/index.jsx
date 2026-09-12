@@ -6,7 +6,7 @@ import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
-import { clearLicense, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
+import { clearLicense, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
 import { pushSupported, isPushEnabled, enablePush, disablePush } from '../../core/push.js'
 import { useT } from '../../i18n/useT.js'
@@ -239,6 +239,15 @@ export default function Settings() {
           <div style={srow}>
             <div><div style={slbl}>{t('settings.license.label', { plan: getLicensePlan() === 'pro' ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
             <Btn variant="ghost" size="sm" onClick={handleDeactivate}>{t('settings.license.btn')}</Btn>
+          </div>
+        )}
+        {!isDemo && getLicensePlan() !== 'pro' && (
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border:'1px solid var(--laton)',borderRadius:'var(--r)'}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('settings.upgrade.title')}</div>
+              <div style={ssub}>{t('settings.upgrade.sub')}</div>
+            </div>
+            <Btn variant="primary" size="sm" onClick={()=>window.location.href=PRO_CHECKOUT_URL} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
           </div>
         )}
         <div style={{...srow,borderBottom:'none'}}>

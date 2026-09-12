@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, PageHeader, Empty } from '../../components/ui/index.jsx'
+import ProGate from '../../components/ui/ProGate.jsx'
 import { fmtMoney } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 
@@ -59,6 +60,7 @@ export default function Projects() {
   }
 
   return (
+    <ProGate feature={t('projects.proGateFeature')}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <PageHeader title={t('projects.title')} sub={t('projects.sub')} />
 
@@ -152,6 +154,7 @@ export default function Projects() {
         </>
       )}
     </div>
+    </ProGate>
   )
 }
 

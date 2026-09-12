@@ -1,6 +1,6 @@
 // src/components/LicenseGate.jsx
 import { useState } from 'react'
-import { validateLicense, setLicenseEmail, acknowledgeStarter } from '../utils/licenseValidator.js'
+import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 
@@ -11,12 +11,8 @@ function usePlans(t) {
   ]
 }
 
-// Stripe Payment Links (Live) — cuenta propia MOY IQ (acct_1UEffP2L52ZuuTMr,
-// separada de la cuenta compartida Maxnova Luci el 12-sep-2026). Pro es
-// suscripción mensual; el anual (US$39.99) se ofrece en moyiq.app/#pricing,
-// no acá — este modal es la vía rápida, no el pricing completo.
 const CHECKOUT_LINKS = {
-  pro: 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00',
+  pro: PRO_CHECKOUT_URL,
 }
 
 async function startCheckout(product) {
@@ -67,6 +63,10 @@ export default function LicenseGate({ onActivate }) {
 
   function handleStarter() {
     acknowledgeStarter()
+    // Best-effort, igual que setLicenseEmail en handleActivate: Starter no
+    // tiene clave, así que sin esto nadie que arranca gratis quedaba
+    // registrado en ningún lado (ver registerStarterLead).
+    if (email.trim()) registerStarterLead(email).catch(() => {})
     onActivate()
   }
 
