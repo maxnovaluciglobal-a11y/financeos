@@ -70,6 +70,11 @@ export default function AuthGate({ onAuthenticated }) {
       fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)',
       marginBottom: 10, boxSizing: 'border-box', outline: 'none',
     },
+    // Mismo criterio visual que .fl en ui.module.css (label chico mono mayúsculas).
+    label: {
+      fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--tm)',
+      textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 4,
+    },
     tabBtn: (active) => ({
       flex: 1, padding: '9px', border: 'none', borderRadius: 7,
       background: active ? 'var(--sur)' : 'transparent',
@@ -105,16 +110,16 @@ export default function AuthGate({ onAuthenticated }) {
           <Logo size={22} />
         </div>
 
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
+        <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
           {t('authGate.title')}
-        </div>
+        </h1>
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
           {t('authGate.subtitle')}
         </div>
 
         <div style={{ display: 'flex', gap: 4, background: 'var(--sur2)', borderRadius: 9, padding: 4, marginBottom: 18 }}>
-          <button style={s.tabBtn(tab === 'login')} onClick={() => { setTab('login'); setError('') }}>{t('authGate.tabLogin')}</button>
-          <button style={s.tabBtn(tab === 'signup')} onClick={() => { setTab('signup'); setError('') }}>{t('authGate.tabSignup')}</button>
+          <button style={s.tabBtn(tab === 'login')} aria-selected={tab === 'login'} onClick={() => { setTab('login'); setError('') }}>{t('authGate.tabLogin')}</button>
+          <button style={s.tabBtn(tab === 'signup')} aria-selected={tab === 'signup'} onClick={() => { setTab('signup'); setError('') }}>{t('authGate.tabSignup')}</button>
         </div>
 
         <button
@@ -141,7 +146,9 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
         </div>
 
+        <label htmlFor="authgate-email" style={s.label}>{t('authGate.emailPlaceholder')}</label>
         <input
+          id="authgate-email"
           style={s.input}
           type="email"
           inputMode="email"
@@ -151,18 +158,22 @@ export default function AuthGate({ onAuthenticated }) {
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           spellCheck={false}
           autoFocus
+          autoComplete="email"
         />
+        <label htmlFor="authgate-password" style={s.label}>{tab === 'signup' ? t('authGate.passwordPlaceholderSignup') : t('authGate.passwordPlaceholder')}</label>
         <input
+          id="authgate-password"
           style={s.input}
           type="password"
           placeholder={tab === 'signup' ? t('authGate.passwordPlaceholderSignup') : t('authGate.passwordPlaceholder')}
           value={password}
           onChange={e => setPassword(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
         />
 
         {error && (
-          <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
             ⚠ {error}
           </div>
         )}

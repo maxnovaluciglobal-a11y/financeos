@@ -111,7 +111,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
 
         {/* Activate */}
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>{t('licenseGate.title')}</div>
+          <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>{t('licenseGate.title')}</h1>
           <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14, fontFamily: 'var(--sans)' }}>
             {t('licenseGate.subtitle')}{' '}
             <span style={{ fontFamily: 'var(--mono)', background: 'var(--sur3)', padding: '1px 6px', borderRadius: 4 }}>{t('licenseGate.keyFormat')}</span>
@@ -128,7 +128,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           />
 
           {error && (
-            <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
               ⚠ {error}
             </div>
           )}
