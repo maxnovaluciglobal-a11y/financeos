@@ -96,7 +96,7 @@ function EsContent() {
           <p>
             El código fuente, diseño y contenido de MOY IQ son propiedad de MAXNOVA & LUCI Global LLC
             y están protegidos por derechos de autor. El uso de MOY IQ está sujeto a los
-            términos de la licencia adquirida (Personal o Pro), detallados en el documento de
+            términos de la licencia adquirida (Starter o Pro), detallados en el documento de
             Licencia correspondiente.
           </p>
         </div>
@@ -251,7 +251,7 @@ function EnContent() {
           <p>
             The source code, design, and content of MOY IQ are the property of
             MAXNOVA & LUCI Global LLC and are protected by copyright. Use of MOY IQ is subject
-            to the terms of the purchased license (Personal or Pro), detailed in the
+            to the terms of the purchased license (Starter or Pro), detailed in the
             corresponding License document.
           </p>
         </div>
@@ -406,7 +406,7 @@ function PtContent() {
           <p>
             O código-fonte, o design e o conteúdo do MOY IQ são propriedade da
             MAXNOVA & LUCI Global LLC e estão protegidos por direitos autorais. O uso do MOY IQ
-            está sujeito aos termos da licença adquirida (Personal ou Pro), detalhados no
+            está sujeito aos termos da licença adquirida (Starter ou Pro), detalhados no
             documento de Licença correspondente.
           </p>
         </div>
