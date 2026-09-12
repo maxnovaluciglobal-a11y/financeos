@@ -1,6 +1,6 @@
 // src/components/LicenseGate.jsx
 import { useState } from 'react'
-import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
+import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 
@@ -20,7 +20,7 @@ async function startCheckout(product) {
   window.location.href = url
 }
 
-export default function LicenseGate({ onActivate, userEmail }) {
+export default function LicenseGate({ onActivate, userEmail, userId }) {
   const { t } = useT()
   const PLANS = usePlans(t)
   const [key, setKey]           = useState('')
@@ -40,6 +40,10 @@ export default function LicenseGate({ onActivate, userEmail }) {
         // Best-effort: asocia el email de la cuenta ya autenticada (AuthGate)
         // para avisos/soporte. No bloquea la activación si falla.
         if (userEmail) setLicenseEmail(userEmail).catch(() => {})
+        // Guarda la key ya validada contra la cuenta para que un login en
+        // otro dispositivo la revalide solo (ver App.jsx) en vez de volver
+        // a pedirla.
+        if (userId) setServerEntitlement(userId, 'pro', clean).catch(() => {})
         onActivate()
       } else {
         setError(t('licenseGate.errorInvalid'))
@@ -68,6 +72,9 @@ export default function LicenseGate({ onActivate, userEmail }) {
     // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
     // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
     if (userEmail) registerStarterLead(userEmail).catch(() => {})
+    // Recuerda la elección contra la cuenta — sin esto, loguearse desde otro
+    // dispositivo volvía a mostrar esta misma pantalla de elegir plan.
+    if (userId) setServerEntitlement(userId, 'starter').catch(() => {})
     onActivate()
   }
 

@@ -1,6 +1,7 @@
 // src/utils/licenseValidator.js
 // VALIDADOR v2.0 — Supabase. ACTIVO en producción (lo usan App.jsx, LicenseGate, Settings).
 import { licenseKeyHash } from './syncCrypto.js'
+import { authClient } from '../core/authClient.js'
 // Valida la clave contra la RPC `validate_license` de Supabase y cachea en localStorage
 // (fnos_license_v2). VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY están en Vercel.
 //
@@ -142,5 +143,36 @@ export async function registerStarterLead(email) {
     if (!res.ok) return false
     const data = await res.json()
     return !!(data && data.ok)
+  } catch { return false }
+}
+
+// ── Entitlement por cuenta (user_entitlements) ──────────────────────────
+// El login es obligatorio desde el 12-sep-2026, pero Starter/Pro seguían
+// viviendo solo en localStorage (arriba) — por dispositivo, no por cuenta.
+// Estas dos funciones sincronizan la elección de plan contra la cuenta
+// autenticada (authClient, con el JWT real del usuario — no el anon key
+// suelto que usa el resto de este archivo) para que un login en un
+// dispositivo nuevo no vuelva a preguntar. Best-effort: si fallan, el
+// usuario simplemente ve LicenseGate como si fuera la primera vez.
+export async function getServerEntitlement(userId) {
+  if (!authClient || !userId) return null
+  try {
+    const { data, error } = await authClient
+      .from('user_entitlements')
+      .select('plan, license_key')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error || !data) return null
+    return data
+  } catch { return null }
+}
+
+export async function setServerEntitlement(userId, plan, licenseKey) {
+  if (!authClient || !userId) return false
+  try {
+    const { error } = await authClient
+      .from('user_entitlements')
+      .upsert({ user_id: userId, plan, license_key: licenseKey || null, updated_at: new Date().toISOString() })
+    return !error
   } catch { return false }
 }

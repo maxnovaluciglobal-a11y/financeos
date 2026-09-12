@@ -2,7 +2,7 @@
 import { lazy, Suspense } from 'react'
 import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
-import { isLicenseActive, isStarterAcknowledged } from './utils/licenseValidator.js'
+import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter } from './utils/licenseValidator.js'
 import { getSession, onAuthChange } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
@@ -66,6 +66,10 @@ function Inner() {
   const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
   // undefined = todavía verificando sesión, null = sin sesión, objeto = autenticado.
   const [session, setSession] = useState(undefined)
+  // Evita el flash de LicenseGate en un dispositivo nuevo mientras se
+  // consulta si la cuenta ya eligió plan en otro dispositivo (ver el efecto
+  // de más abajo y getServerEntitlement).
+  const [entitlementChecked, setEntitlementChecked] = useState(false)
   // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
   // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
   // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
@@ -85,10 +89,35 @@ function Inner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Sincroniza Starter/Pro contra la cuenta (user_entitlements) — sin esto,
+  // loguearse desde un dispositivo nuevo repetía la pantalla de elegir plan
+  // aunque la cuenta ya la hubiera elegido antes en otro dispositivo. Pro se
+  // revalida con la misma validateLicense() de siempre (respeta una licencia
+  // revocada); Starter solo marca el ack local — ninguno de los dos toca
+  // isLicenseActive()/getLicensePlan() directamente.
+  useEffect(() => {
+    if (isDemo || !session?.user?.id) return
+    if (licensed) { setEntitlementChecked(true); return }
+    let cancelled = false
+    getServerEntitlement(session.user.id).then(async (ent) => {
+      if (!cancelled && ent?.plan === 'pro' && ent.license_key) {
+        const ok = await validateLicense(ent.license_key)
+        if (!cancelled && ok) setLicensed(true)
+      } else if (!cancelled && ent?.plan === 'starter') {
+        acknowledgeStarter()
+        setLicensed(true)
+      }
+      if (!cancelled) setEntitlementChecked(true)
+    })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, licensed])
+
   if (!isDemo) {
     if (session === undefined) return null // verificando — evita flash del gate
     if (!session) return <AuthGate onAuthenticated={() => {}} />
-    if (!licensed) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} />
+    if (!licensed && !entitlementChecked) return null // verificando entitlement de cuenta
+    if (!licensed) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />
   }
 
   function renderPage(page) {
