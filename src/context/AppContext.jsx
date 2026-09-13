@@ -7,7 +7,7 @@
 //   5. activeMonth en settings para filtro por mes
 //   6. Loading states para acciones async
 
-import { createContext, useContext, useReducer, useEffect, useCallback, useState, useRef } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useState, useRef } from 'react'
 import {
   dbGetAll, dbAdd, dbDelete, clearAllData,
   getSettings, saveSettings, exportAllData, importAllData,
@@ -473,27 +473,27 @@ export function AppProvider({ children }) {
   }, [showToast])
 
   // ── Subscriptions ─────────────────────────────────────────────
-  async function addSubscription(item) {
+  const addSubscription = useCallback(async (item) => {
     try {
       const newItem = { ...item, id: item.id || uid(), createdAt: item.createdAt || new Date().toISOString() }
       await dbAdd('subscriptions', newItem)
       dispatch({ type: 'ADD_SUB', item: newItem })
     } catch (e) { showToast('Error al guardar suscripción. Intenta de nuevo.', 'error') }
-  }
-  async function deleteSubscription(id) {
+  }, [showToast])
+  const deleteSubscription = useCallback(async (id) => {
     try {
       await dbDelete('subscriptions', id)
       dispatch({ type: 'DEL_SUB', id })
     } catch (e) { showToast('Error al eliminar suscripción.', 'error') }
-  }
-  async function updateSubscription(item) {
+  }, [showToast])
+  const updateSubscription = useCallback(async (item) => {
     try {
       await dbAdd('subscriptions', item)
       dispatch({ type: 'UPDATE_SUB', item })
     } catch (e) { showToast('Error al actualizar suscripción.', 'error') }
-  }
+  }, [showToast])
 
-  const value = {
+  const value = useMemo(() => ({
     ...state,
     addIncome,  delIncome,  updateIncome,
     addExpense, delExpense,   updateExpense,
@@ -507,7 +507,21 @@ export function AppProvider({ children }) {
     enableSync, disableSync,
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
-  }
+  }), [
+    state,
+    addIncome, delIncome, updateIncome,
+    addExpense, delExpense, updateExpense,
+    addBudget, delBudget, updateBudget,
+    addDebt, delDebt, updateDebt,
+    addGoal, delGoal, updateGoal,
+    addSubscription, deleteSubscription, updateSubscription,
+    updateSettings,
+    clearAll, loadDemo,
+    exportData, exportCSV, importData,
+    enableSync, disableSync,
+    showToast, dismissToast, deleteWithUndo,
+    rehydrate,
+  ])
 
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
