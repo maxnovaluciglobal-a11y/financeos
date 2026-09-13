@@ -202,7 +202,7 @@ export const en = {
     'adv.badge': "PROFESSIONAL VIEW",
     'adv.sub': "Diagnosis · Alerts · Notes · Meeting prep · {month}",
     'adv.empty.title': "No data to analyze",
-    'adv.empty.sub': "Record income, expenses, and debts to see the client's full diagnosis.",
+    'adv.empty.sub': "Record income, expenses, and debts to see the full financial diagnosis.",
     'adv.score.healthy': "Healthy situation",
     'adv.score.attention': "Needs attention",
     'adv.score.risk': "At-risk situation",

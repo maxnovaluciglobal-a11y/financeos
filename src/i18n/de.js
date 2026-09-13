@@ -202,7 +202,7 @@ export const de = {
     'adv.badge': "PROFI-ANSICHT",
     'adv.sub': "Diagnose · Warnungen · Notizen · Meeting-Vorbereitung · {month}",
     'adv.empty.title': "Keine Daten zur Auswertung",
-    'adv.empty.sub': "Erfassen Sie Einnahmen, Ausgaben und Schulden, um die vollständige Kundendiagnose zu sehen.",
+    'adv.empty.sub': "Erfassen Sie Einnahmen, Ausgaben und Schulden, um die vollständige Finanzdiagnose zu sehen.",
     'adv.score.healthy': "Gesunde Situation",
     'adv.score.attention': "Erfordert Aufmerksamkeit",
     'adv.score.risk': "Risikosituation",

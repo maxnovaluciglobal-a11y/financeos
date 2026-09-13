@@ -202,7 +202,7 @@ export const es = {
     'adv.badge': "VISTA PROFESIONAL",
     'adv.sub': "Diagnóstico · Alertas · Notas · Preparación de reunión · {month}",
     'adv.empty.title': "Sin datos para analizar",
-    'adv.empty.sub': "Registra ingresos, gastos y deudas para ver el diagnóstico completo del cliente.",
+    'adv.empty.sub': "Registra ingresos, gastos y deudas para ver el diagnóstico financiero completo.",
     'adv.score.healthy': "Situación saludable",
     'adv.score.attention': "Requiere atención",
     'adv.score.risk': "Situación de riesgo",
