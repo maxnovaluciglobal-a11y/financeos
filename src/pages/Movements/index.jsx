@@ -499,7 +499,7 @@ export default function Movements({ setPage }) {
         {[
           { label:t('mov.kpi.income'),      value:fmtM(totalInc, sym),      color:'var(--accent)', sub: invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : null },
           { label:t('mov.kpi.oneOff'), value:fmtM(totalExp, sym),      color:'var(--red)', sub: invExp > 0 ? t('mov.kpi.invTag', { v: fmtM(invExp, sym) }) : null },
-          { label:t('mov.kpi.recurring'),   value:fmtM(totalSubs, sym),     color:'var(--amb,#f5a623)' },
+          { label:t('mov.kpi.recurring'),   value:fmtM(totalSubs, sym),     color:'var(--amb)' },
           { label:t('mov.kpi.totalOut'), value:fmtM(totalEgresos, sym),  color:'var(--red)' },
           { label:t('mov.kpi.available'),    value:fmtM(balance, sym),       color: balance >= 0 ? 'var(--accent)' : 'var(--red)', sub: (invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('mov.kpi.afterDebts') },
         ].map((k,i) => (
@@ -519,19 +519,19 @@ export default function Movements({ setPage }) {
         <div style={{ marginBottom:16, padding:'12px 16px', borderRadius:'var(--r)',
           background: totalSubs > totalInc * 0.15
             ? 'rgba(255,77,106,.08)' : 'rgba(245,166,35,.07)',
-          border: `.5px solid ${totalSubs > totalInc * 0.15 ? 'var(--red)' : 'var(--amb,#f5a623)'}`,
+          border: `.5px solid ${totalSubs > totalInc * 0.15 ? 'var(--red)' : 'var(--amb)'}`,
           display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
           <div style={{ fontSize:20 }}>
             {totalSubs > totalInc * 0.15 ? '⚠️' : '💡'}
           </div>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:12, fontWeight:600, fontFamily:'var(--mono)',
-              color: totalSubs > totalInc * 0.15 ? 'var(--red)' : 'var(--amb,#f5a623)',
+              color: totalSubs > totalInc * 0.15 ? 'var(--red)' : 'var(--amb)',
               marginBottom:3 }}>
               {t('mov.banner.title')}
             </div>
             <div style={{ fontSize:13, color:'var(--tx)', fontFamily:'var(--mono)' }}>
-              <strong style={{ color:'var(--amb,#f5a623)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
+              <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
               {' → '}
               <strong style={{ color:'var(--red)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
               {t('mov.banner.inServices', { n: activeSubs.length })}
@@ -567,8 +567,8 @@ export default function Movements({ setPage }) {
                 </div>
               </button>
               <button onClick={() => { setShowAdd(false); setShowSub(true) }}
-                style={{ background:'var(--sur)', border:'.5px solid var(--amb,#f5a623)', borderRadius:8,
-                  padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--amb,#f5a623)',
+                style={{ background:'var(--sur)', border:'.5px solid var(--amb)', borderRadius:8,
+                  padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--amb)',
                   cursor:'pointer', flex:1, minWidth:140, textAlign:'left' }}>
                 {t('mov.addSub')}
                 <div style={{ fontSize:10, fontWeight:400, color:'var(--th)', marginTop:3 }}>
@@ -607,7 +607,7 @@ export default function Movements({ setPage }) {
             <div key={i} style={{ padding:'8px 12px', borderRadius:8, fontSize:12,
               fontFamily:'var(--mono)', color:'var(--tx)',
               background: a.type==='upcoming' ? 'rgba(245,166,35,.08)' : 'rgba(0,184,217,.06)',
-              border: `.5px solid ${a.type==='upcoming' ? 'var(--amb,#f5a623)' : 'var(--brd)'}` }}>
+              border: `.5px solid ${a.type==='upcoming' ? 'var(--amb)' : 'var(--brd)'}` }}>
               {a.type==='upcoming' ? '📅 ' : a.type==='income' ? '⚠️ ' : '💡 '}{a.msg}
             </div>
           ))}
@@ -721,11 +721,11 @@ export default function Movements({ setPage }) {
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div style={{ fontSize:11, fontWeight:600, color:'var(--amb,#f5a623)',
+            <div style={{ fontSize:11, fontWeight:600, color:'var(--amb)',
               fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>
               {t('mov.list.subs', { n: activeSubs.length })}
             </div>
-            <div style={{ fontSize:11, fontWeight:700, color:'var(--amb,#f5a623)',
+            <div style={{ fontSize:11, fontWeight:700, color:'var(--amb)',
               fontFamily:'var(--mono)' }}>{t('mov.list.perMonth', { v: fmtM(totalSubs, sym) })}</div>
           </div>
           <div style={{ maxHeight:460, overflowY:'auto' }}>
@@ -778,7 +778,7 @@ export default function Movements({ setPage }) {
                         {sub.category} · {freq}
                       </div>
                     </div>
-                    <div style={{ fontSize:12, fontWeight:600, color:'var(--amb,#f5a623)',
+                    <div style={{ fontSize:12, fontWeight:600, color:'var(--amb)',
                       fontFamily:'var(--mono)', flexShrink:0 }}>
                       {t('mov.list.perMonth', { v: fmtM(monthly, sym) })}
                     </div>

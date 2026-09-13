@@ -213,7 +213,7 @@ export default function Budgets() {
             const r = 60, cx = 80, cy = 80
             const circ = 2*Math.PI*r
             const dash = Math.min(pct,1)*circ
-            const strokeColor = pct >= 1 ? '#e84142' : pct >= 0.8 ? 'var(--amber,#f5a623)' : 'var(--grn)'
+            const strokeColor = pct >= 1 ? '#e84142' : pct >= 0.8 ? 'var(--amb)' : 'var(--grn)'
             return (
               <div>
                 <div style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
@@ -245,7 +245,7 @@ export default function Budgets() {
                       const p        = effLimit > 0 ? spent / effLimit : 0
                       const over     = spent > effLimit
                       const warn     = !over && p >= 0.8
-                      const clr      = over ? '#e84142' : warn ? 'var(--amber,#f5a623)' : 'var(--grn)'
+                      const clr      = over ? '#e84142' : warn ? 'var(--amb)' : 'var(--grn)'
                       const r2=32,cx2=45,cy2=45,circ2=2*Math.PI*r2,dash2=Math.min(p,1)*circ2
                       return (
                         <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'#e84142':warn?'rgba(245,166,35,.3)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>

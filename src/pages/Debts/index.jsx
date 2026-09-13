@@ -280,7 +280,7 @@ export default function Debts() {
           {isChile && ufValue > 0 && (
             <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', margin:'0 0 10px', lineHeight:1.4 }}>
               <input type="checkbox" checked={!!f.ufDebt} onChange={e => setF(p=>({...p, ufDebt:e.target.checked}))} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />
-              <span style={{ minWidth:0 }}>{t('debts.uf.check')} <span style={{ fontSize:10, color: ufIsFallback ? 'var(--amb,#f5a623)' : 'var(--th)', fontFamily:'var(--mono)' }}>({t('debts.uf.rate', { v: '$'+Math.round(ufValue).toLocaleString(moneyLocale()) })}{ufIsFallback ? ' · ' + t('debts.uf.stale') : ''})</span></span>
+              <span style={{ minWidth:0 }}>{t('debts.uf.check')} <span style={{ fontSize:10, color: ufIsFallback ? 'var(--amb)' : 'var(--th)', fontFamily:'var(--mono)' }}>({t('debts.uf.rate', { v: '$'+Math.round(ufValue).toLocaleString(moneyLocale()) })}{ufIsFallback ? ' · ' + t('debts.uf.stale') : ''})</span></span>
             </label>
           )}
           <FormRow>
@@ -441,7 +441,7 @@ export default function Debts() {
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',marginTop:3,fontSize:10,fontFamily:'var(--mono)'}}>
                   <span style={{color:'var(--accent)'}}>{t('debts.card.instPaid', { n: paidInst })}</span>
-                  <span style={{color:'var(--amb,#f5a623)'}}>{t('debts.card.instPending', { n: pendInst })}</span>
+                  <span style={{color:'var(--amb)'}}>{t('debts.card.instPending', { n: pendInst })}</span>
                 </div>
               </div>
             )}

@@ -16,7 +16,7 @@ function fmtV(v, sym) {
 const COLORS = {
   income:  { fill: 'var(--pos)', stroke: '#00b896', text: '#004d3e' },
   gastos:  { fill: 'var(--neg)', stroke: '#e03558', text: '#4a0010' },
-  subs:    { fill: '#f5a623', stroke: '#d48a0a', text: '#3d2200' },
+  subs:    { fill: 'var(--amb)', stroke: '#d48a0a', text: '#3d2200' },
   deudas:  { fill: 'var(--accent2)', stroke: '#0099b8', text: '#002d3d' },
   libre:   { fill: 'var(--pos)', stroke: '#00b896', text: '#004d3e' },
 }
