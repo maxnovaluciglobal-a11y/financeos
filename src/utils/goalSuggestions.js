@@ -1,5 +1,15 @@
 // src/utils/goalSuggestions.js
-import { translations } from '../i18n/translations.js'
+// Import estático de es/en/pt (NO del agregador translations.js completo, que
+// también trae de.js): la detección de metas duplicadas compara el nombre
+// existente contra el nombre traducido en varios idiomas a la vez — no solo el
+// idioma activo — así que necesita acceso simultáneo a más de un diccionario.
+// 'de' queda afuera a propósito (el array localizedNames de abajo nunca lo
+// incluyó, ver comentario ahí) — eso deja el chunk de alemán fuera de este
+// bundle y permite que se cargue por separado vía useT.js cuando corresponda.
+import { es } from '../i18n/es.js'
+import { en } from '../i18n/en.js'
+import { pt } from '../i18n/pt.js'
+const langDicts = { es, en, pt }
 // Sugerencias de metas financieras básicas — v1.4
 // Basadas en principios financieros generales
 // NO constituyen asesoría financiera certificada
@@ -101,7 +111,7 @@ export const GOAL_TEMPLATES = [
  * @param {Array}  params.existingGoals - metas ya existentes
  * @returns {Array} sugerencias con montos calculados
  */
-function esFallback(key) { return translations.es?.[key] ?? key }
+function esFallback(key) { return es?.[key] ?? key }
 
 export function generateGoalSuggestions({ ingresoNeto, gastoMensual = 0, existingGoals = [] }, t) {
   const tr = t || esFallback
@@ -122,7 +132,7 @@ export function generateGoalSuggestions({ ingresoNeto, gastoMensual = 0, existin
       const displayName = tr(template.name)
       // Detectar si ya existe una meta similar (en cualquier idioma soportado)
       const localizedNames = ['es', 'en', 'pt']
-        .map(l => (translations[l]?.[template.name] || '').toLowerCase())
+        .map(l => (langDicts[l]?.[template.name] || '').toLowerCase())
         .filter(Boolean)
       const alreadyExists = existingNames.some(name =>
         name.includes(template.id.replace('_', ' ')) ||

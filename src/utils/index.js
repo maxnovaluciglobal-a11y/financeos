@@ -1,6 +1,15 @@
 // src/utils/index.js
 
-import { translations } from '../i18n/translations.js'
+// Import de solo es.js (estático, para el fallback síncrono) + la caché
+// compartida de idiomas cargados dinámicamente (langCache.js, la misma que usa
+// useT.js) — NO el agregador translations.js con los 4 idiomas. translateOrRaw()
+// de abajo solo necesita el idioma ACTIVO del usuario (siempre `lang` viene de
+// useT() en el caller, ver CategoryDonut/Income/Movements/Import/Budgets) + el
+// fallback a español, nunca los 4 a la vez — mismo patrón que useT.js: si el
+// idioma activo todavía no terminó de cargar (justo tras un cambio de idioma),
+// cae a español hasta que el efecto de useT() dispare un re-render.
+import { es } from '../i18n/es.js'
+import { langCache } from '../i18n/langCache.js'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -102,7 +111,7 @@ export const catEmoji = (c) => CAT_EMOJIS[c] || ''
 // forma de traducir texto arbitrario sin inventar contenido.
 function translateOrRaw(prefix, value, lang) {
   const key = prefix + value
-  const translated = translations[lang]?.[key] ?? translations.es?.[key]
+  const translated = langCache[lang]?.[key] ?? es?.[key]
   return translated ?? value ?? ''
 }
 // Devuelve "emoji nombre" (o solo el nombre si no hay emoji), traducido si `lang`

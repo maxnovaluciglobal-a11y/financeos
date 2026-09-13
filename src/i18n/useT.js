@@ -11,43 +11,11 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { es } from './es.js'
-
-// Caché de idiomas ya cargados, en memoria (persiste mientras dure la sesión de la app).
-// 'es' arranca precargado: es el fallback que useT() necesita siempre disponible
-// de forma síncrona, y además es el idioma por defecto de la app.
-const langCache = { es }
-const langPromises = {}
-
-// Mapa explícito en vez de import(`./${lang}.js`): con la variable, el plugin
-// vite:dynamic-import-vars no puede resolver el chunk por separado (falla con
-// "Variable imports cannot import their own directory" al estar en el mismo
-// directorio) y termina metiendo los 4 idiomas en el bundle principal igual.
-// Con una entrada literal por idioma, Vite sí genera un chunk propio por cada uno.
-const loaders = {
-  es: () => import('./es.js'),
-  en: () => import('./en.js'),
-  pt: () => import('./pt.js'),
-  de: () => import('./de.js'),
-}
-
-function loadLang(lang) {
-  if (langCache[lang]) return Promise.resolve(langCache[lang])
-  if (!langPromises[lang]) {
-    const loader = loaders[lang]
-    langPromises[lang] = (loader ? loader() : Promise.resolve({}))
-      .then((mod) => {
-        langCache[lang] = mod[lang] ?? mod.default ?? es
-        return langCache[lang]
-      })
-      .catch(() => {
-        // Si falla la carga (red, chunk viejo tras deploy, etc.), no rompemos la UI:
-        // nos quedamos en el fallback español hasta que un reintento (cambio de
-        // idioma, recarga) consiga cargarlo.
-        return es
-      })
-  }
-  return langPromises[lang]
-}
+// Caché de idiomas ya cargados, ahora compartida con utils/index.js (ver
+// langCache.js) — antes vivía solo acá, pero utils/index.js (catLabel/
+// recurrenceLabel) necesitaba el mismo diccionario del idioma activo y no
+// puede usar este hook (se llama fuera de componentes React).
+import { langCache, loadLang } from './langCache.js'
 
 function interpolate(str, vars) {
   if (!vars) return str

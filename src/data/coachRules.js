@@ -1,5 +1,9 @@
 // src/data/coachRules.js
-import { translations } from '../i18n/translations.js'
+// Import de solo es.js (no del agregador translations.js con los 4 idiomas):
+// esFallback de abajo solo se usa si evaluateCoach() se llama sin `t` (fallback
+// de seguridad; en la app real siempre se pasa t() de useT()), así que nunca
+// necesita otro idioma que español.
+import { es } from '../i18n/es.js'
 import { effectiveBudgetLimits } from '../utils/budgets.js'
 import { moneyLocale } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
@@ -274,7 +278,7 @@ function pct(n) { return ((n || 0) * 100).toFixed(1) + '%' }
 // ── EVALUADOR DE REGLAS ───────────────────────────────────────────────────────
 // Fallback: si no se pasa t (p.ej. llamadas antiguas), resuelve las keys en español.
 function esFallback(key, vars) {
-  const str = translations.es?.[key] ?? key
+  const str = es?.[key] ?? key
   if (!vars) return str
   return str.replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : `{${k}}`))
 }

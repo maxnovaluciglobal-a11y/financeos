@@ -9,12 +9,16 @@
 //   5. Consistencia de datos  — 15 pts
 // Resultado es orientativo — no constituye asesoría financiera.
 
-import { translations } from '../i18n/translations.js'
+// Import de solo es.js (no del agregador translations.js con los 4 idiomas):
+// esFallback solo se usa cuando el caller no pasa `t` (fallback de seguridad,
+// en la práctica todos los callers reales pasan t() de useT()), así que nunca
+// necesita otro idioma que no sea español.
+import { es } from '../i18n/es.js'
 import { personalDebtRatio } from './personal.js'
 import { COACH_CONFIG } from '../data/coachRules.js'
 import { findEmergencyGoal } from './emergencyGoal.js'
 
-function esFallback(key) { return translations.es?.[key] ?? key }
+function esFallback(key) { return es?.[key] ?? key }
 
 export function calcFinancialScore({
   savingRate, expenses, debts, goals, incomes, activeMonth,
