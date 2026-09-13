@@ -121,21 +121,52 @@ const btnG = {
   fontFamily: 'var(--sans)', marginTop: 5,
 }
 
+// Progreso del onboarding en localStorage — mismo prefijo `fos_` que el
+// resto de claves per-device del repo (ver core/db/index.js, Dashboard).
+// La app es single-user por dispositivo (una licencia, una IndexedDB, sin
+// selector de perfiles — ver licenseValidator.js/core/db/index.js): no hay
+// hoy un id de perfil/cuenta local con el que namespacear la key sin
+// inventar un concepto que no existe en el resto del código. Si en el
+// futuro se agrega multi-perfil, esta key debe pasar a incluir ese id.
+const ONBOARDING_LS_KEY = 'fos_onboarding_progress'
+
+function loadOnboardingProgress() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ONBOARDING_LS_KEY) || 'null')
+    if (raw && typeof raw === 'object' && typeof raw.step === 'number' && raw.answers) return raw
+  } catch {}
+  return null
+}
+function saveOnboardingProgress(step, answers) {
+  try { localStorage.setItem(ONBOARDING_LS_KEY, JSON.stringify({ step, answers })) } catch {}
+}
+function clearOnboardingProgress() {
+  try { localStorage.removeItem(ONBOARDING_LS_KEY) } catch {}
+}
+
 export default function Onboarding({ onComplete }) {
   const { settings, updateSettings } = useApp()
   const { t } = useT()
   const TOTAL = 8
-  const [step, setStep] = useState(0)
+  const saved = useMemo(() => loadOnboardingProgress(), [])
+  const [step, setStep] = useState(() => saved?.step ?? 0)
   const [loading, setLoading] = useState(false)
   const [deLangDismissed, setDeLangDismissed] = useState(false)
-  const [answers, setAnswers] = useState({
+  const [answers, setAnswers] = useState(() => ({
     useType: '', profileId: '',
     country: settings.country || 'CL',
     currency: settings.currency || 'CLP',
     savingGoal: 20, hasDebts: '', mainGoal: '', experience: '',
     estimatedMonthlyIncome: '',
-  })
+    ...(saved?.answers || {}),
+  }))
   const set = (k, v) => setAnswers(a => ({ ...a, [k]: v }))
+
+  // Persiste paso + respuestas en cada cambio, para retomar si el usuario
+  // cierra la app a mitad del flujo (auditoría UX #10).
+  useEffect(() => {
+    saveOnboardingProgress(step, answers)
+  }, [step, answers])
 
   const recommendedId = useMemo(() => recommendTemplate(answers), [answers])
   const activeTemplate = TEMPLATES.find(t => t.id === (answers.profileId || recommendedId)) || TEMPLATES[0]
@@ -188,6 +219,7 @@ export default function Onboarding({ onComplete }) {
       templateSuggestedBudgets: tpl.suggestedBudgets,
       templateAdvisorTip: tpl.advisorTip, templateAlerts: tpl.alerts,
     })
+    clearOnboardingProgress()
     onComplete(goTo)
   }
 
