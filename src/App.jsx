@@ -9,6 +9,7 @@ import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
+import AdminCRM from './admin/AdminCRM.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
 import { useState, useEffect } from 'react'
 
@@ -202,6 +203,12 @@ function Inner() {
 }
 
 export default function App() {
+  // Si URL tiene ?admin=crm, cargar el panel CRM interno (sin AppProvider, sin
+  // IndexedDB, sin onboarding/licencia) — solo Walter puede leer datos reales,
+  // la policy RLS de crm_contacts hace el gate real, no esta condición.
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('admin') === 'crm') {
+    return <AdminCRM />
+  }
   // Si URL tiene ?demo=true, cargar DemoShell (sin AppProvider, sin IndexedDB)
   if (isDemoMode()) {
     return <DemoShell />
