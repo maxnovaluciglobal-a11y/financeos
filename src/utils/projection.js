@@ -25,7 +25,15 @@ export function projectEndOfMonth({ incomes, expenses, activeMonth }) {
   // IMPORTANTE: cada promedio usa SOLO meses que tienen datos de ese tipo —
   // un mes con ingresos pero sin gastos registrados NO diluye el promedio de
   // gastos (típico al empezar a usar la app), y viceversa.
-  const nowMonth = new Date().toISOString().slice(0, 7)
+  // BUG FIX: antes esto usaba new Date().toISOString().slice(0,7) (mes en UTC),
+  // mientras que `now`/`today` arriba se calculan en hora LOCAL. Para usuarios
+  // al oeste de UTC (todo LATAM), cerca de medianoche UTC el mes en UTC ya
+  // avanzó al mes siguiente mientras localmente todavía es el último día del
+  // mes anterior — el mes activo (aún incompleto) se clasificaba como "mes
+  // previo completo" en completeOrAll() y contaminaba el promedio histórico
+  // con datos parciales. Se deriva del mismo `now` local para que ambos
+  // cálculos coincidan siempre.
+  const nowMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const monthsOf = (arr) => [...new Set((arr || []).map(r => r?.date?.slice(0, 7)).filter(Boolean))].sort()
   const completeOrAll = (ms) => { const prev = ms.filter(m => m < nowMonth); return (prev.length ? prev : ms).slice(-3) }
   const avg = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0
