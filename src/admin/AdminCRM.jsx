@@ -61,11 +61,57 @@ function Row({ row, onSave }) {
   )
 }
 
+function exportRowsToCsv(rows) {
+  const headers = ['email', 'producto_origen', 'fuente', 'score', 'estado', 'notas', 'ultimo_contacto', 'creado_en']
+  const escapeCsv = (v) => {
+    const s = v === null || v === undefined ? '' : String(v)
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  }
+  const lines = [headers.join(',')]
+  for (const row of rows) {
+    lines.push(headers.map((h) => escapeCsv(row[h])).join(','))
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `crm_contacts_${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+function FunnelSummary({ funnel }) {
+  if (!funnel || funnel.length === 0) return null
+  const porProducto = funnel.reduce((acc, f) => {
+    acc[f.producto_origen] = acc[f.producto_origen] || {}
+    acc[f.producto_origen][f.estado] = f.total
+    return acc
+  }, {})
+  return (
+    <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+      {Object.entries(porProducto).map(([producto, estados]) => (
+        <div key={producto} style={{ border: '1px solid var(--bd, #e5e5e5)', borderRadius: 6, padding: '8px 12px', fontSize: 12 }}>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>{producto}</div>
+          {ESTADOS.map((s) => (
+            <span key={s} style={{ marginRight: 10, color: '#888' }}>
+              {s}: <strong style={{ color: 'inherit' }}>{estados[s] || 0}</strong>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function CRMPanel({ session, onSignOut }) {
   const [rows, setRows] = useState(null)
+  const [funnel, setFunnel] = useState(null)
   const [error, setError] = useState('')
   const [filtroProducto, setFiltroProducto] = useState('todos')
   const [filtroEstado, setFiltroEstado] = useState('todos')
+  const [soloSinContactoReciente, setSoloSinContactoReciente] = useState(false)
 
   const load = useCallback(async () => {
     setError('')
@@ -75,9 +121,19 @@ function CRMPanel({ session, onSignOut }) {
     const { data, error: err } = await query
     if (err) { setError(err.message); setRows([]); return }
     setRows(data || [])
+
+    const { data: funnelData, error: funnelErr } = await authClient.from('crm_funnel').select('*')
+    if (!funnelErr) setFunnel(funnelData || [])
   }, [filtroProducto, filtroEstado])
 
   useEffect(() => { load() }, [load])
+
+  const visibleRows = (rows || []).filter((row) => {
+    if (!soloSinContactoReciente) return true
+    if (!row.ultimo_contacto) return true
+    const dias = (Date.now() - new Date(row.ultimo_contacto).getTime()) / 86400000
+    return dias >= 14
+  })
 
   async function handleSaveRow(id, patch) {
     const { error: err } = await authClient
@@ -97,7 +153,9 @@ function CRMPanel({ session, onSignOut }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+      <FunnelSummary funnel={funnel} />
+
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
         <select value={filtroProducto} onChange={(e) => setFiltroProducto(e.target.value)} style={{ fontSize: 12, padding: '6px 8px' }}>
           <option value="todos">Todos los productos</option>
           {PRODUCTOS.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -106,13 +164,28 @@ function CRMPanel({ session, onSignOut }) {
           <option value="todos">Todos los estados</option>
           {ESTADOS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input
+            type="checkbox"
+            checked={soloSinContactoReciente}
+            onChange={(e) => setSoloSinContactoReciente(e.target.checked)}
+          />
+          Sin contacto hace 14+ días
+        </label>
+        <button
+          onClick={() => exportRowsToCsv(visibleRows)}
+          disabled={visibleRows.length === 0}
+          style={{ fontSize: 12, padding: '6px 10px', marginLeft: 'auto' }}
+        >
+          Exportar CSV
+        </button>
       </div>
 
       {error && <div style={{ color: '#c00', fontSize: 13, marginBottom: 12 }}>Error: {error}</div>}
 
       {rows === null ? (
         <div style={{ fontSize: 13, color: '#888' }}>Cargando...</div>
-      ) : rows.length === 0 ? (
+      ) : visibleRows.length === 0 ? (
         <div style={{ fontSize: 13, color: '#888' }}>Sin contactos con estos filtros.</div>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -129,7 +202,7 @@ function CRMPanel({ session, onSignOut }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => <Row key={row.id} row={row} onSave={handleSaveRow} />)}
+            {visibleRows.map((row) => <Row key={row.id} row={row} onSave={handleSaveRow} />)}
           </tbody>
         </table>
       )}
