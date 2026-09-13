@@ -201,7 +201,7 @@ export function BackupReminderBanner() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
         <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
         <div style={{ fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
-          {!lastBackup ? 'Todavía no tenés un respaldo de tus datos.' : `Tu último respaldo fue hace ${days} días.`}
+          {!lastBackup ? 'Todavía no tienes un respaldo de tus datos.' : `Tu último respaldo fue hace ${days} días.`}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
