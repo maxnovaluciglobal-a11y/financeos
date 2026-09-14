@@ -6,7 +6,7 @@ import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
-import { clearLicense, clearStarterAck, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
+import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
 import { pushSupported, isPushEnabled, enablePush, disablePush } from '../../core/push.js'
@@ -20,7 +20,8 @@ export default function Settings() {
   const { t } = useT()
   const [installPrompt, setInstallPrompt] = useState(null)
   const [accountEmail, setAccountEmail] = useState(null)
-  useEffect(() => { getSession().then(s => setAccountEmail(s?.user?.email || null)) }, [])
+  const [accountUserId, setAccountUserId] = useState(null)
+  useEffect(() => { getSession().then(s => { setAccountEmail(s?.user?.email || null); setAccountUserId(s?.user?.id || null) }) }, [])
   const [installed, setInstalled] = useState(false)
   const [fx, setFx] = useState(null) // { rates, source: 'fixer'|'fallback' } — null mientras carga
 
@@ -64,10 +65,14 @@ export default function Settings() {
   }
 
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
-  function handleDeactivate() {
+  async function handleDeactivate() {
     if (window.confirm('¿Desactivar la licencia en este dispositivo?\n\nTendrás que volver a ingresar tu clave para entrar.\nTus datos financieros NO se borran.')) {
       clearLicense()
       clearStarterAck()
+      // Sin esto, el useEffect de sincronización de App.jsx repone el plan
+      // desde user_entitlements apenas recarga — "Desactivar" quedaba sin
+      // efecto real mientras la cuenta siguiera teniendo un entitlement.
+      if (accountUserId) await clearServerEntitlement(accountUserId)
       window.location.reload()
     }
   }

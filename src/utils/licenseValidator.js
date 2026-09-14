@@ -191,3 +191,16 @@ export async function setServerEntitlement(userId, plan, licenseKey) {
     return !error
   } catch { return false }
 }
+
+// Borra el entitlement de la cuenta (no solo el local storage del
+// dispositivo). Necesario para que "Desactivar licencia" en Settings
+// funcione de verdad — sin esto, el useEffect de sincronización de App.jsx
+// repone el plan viejo desde el servidor antes de que el usuario llegue a
+// ver LicenseGate. Requiere la policy DELETE de user_entitlements.
+export async function clearServerEntitlement(userId) {
+  if (!authClient || !userId) return false
+  try {
+    const { error } = await authClient.from('user_entitlements').delete().eq('user_id', userId)
+    return !error
+  } catch { return false }
+}
