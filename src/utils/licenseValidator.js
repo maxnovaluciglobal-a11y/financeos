@@ -112,6 +112,7 @@ export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch 
 const LS_STARTER = 'fnos_starter_ack'
 export function isStarterAcknowledged() { try { return localStorage.getItem(LS_STARTER) === '1' } catch { return false } }
 export function acknowledgeStarter()    { try { localStorage.setItem(LS_STARTER, '1') } catch {} }
+export function clearStarterAck()       { try { localStorage.removeItem(LS_STARTER) } catch {} }
 
 // Asocia un email a la licencia activa (best-effort: no bloquea la activación si falla).
 // Se usa en el momento de activar la clave, para poder contactar al cliente
