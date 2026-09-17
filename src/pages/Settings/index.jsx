@@ -24,6 +24,9 @@ export default function Settings() {
   useEffect(() => { getSession().then(s => { setAccountEmail(s?.user?.email || null); setAccountUserId(s?.user?.id || null) }) }, [])
   const [installed, setInstalled] = useState(false)
   const [fx, setFx] = useState(null) // { rates, source: 'fixer'|'fallback' } — null mientras carga
+  // Confirmación inline para acciones destructivas — reemplaza window.confirm() nativo
+  // (no respetaba idioma/tema). { type: 'clearAll'|'loadDemo'|'deactivate'|'currency', payload? } | null
+  const [confirmAction, setConfirmAction] = useState(null)
 
   useEffect(() => { loadFixerRates().then(setFx) }, [])
   // Tasa a usar: la de Fixer si ya cargó, si no el hardcodeado de siempre —
@@ -53,28 +56,32 @@ export default function Settings() {
   }
 
   async function handleClear() {
-    if (window.confirm('¿Borrar TODOS los datos? Esta acción no se puede deshacer.')) {
-      await clearAll()
-    }
+    setConfirmAction(null)
+    await clearAll()
   }
 
   async function handleLoadDemo() {
-    if (window.confirm('¿Cargar datos demo?\n\nEsto BORRA todos tus datos financieros reales de este dispositivo y los reemplaza con datos de ejemplo. No se puede deshacer.')) {
-      await loadDemo()
-    }
+    setConfirmAction(null)
+    await loadDemo()
   }
 
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
   async function handleDeactivate() {
-    if (window.confirm('¿Desactivar la licencia en este dispositivo?\n\nTendrás que volver a ingresar tu clave para entrar.\nTus datos financieros NO se borran.')) {
-      clearLicense()
-      clearStarterAck()
-      // Sin esto, el useEffect de sincronización de App.jsx repone el plan
-      // desde user_entitlements apenas recarga — "Desactivar" quedaba sin
-      // efecto real mientras la cuenta siguiera teniendo un entitlement.
-      if (accountUserId) await clearServerEntitlement(accountUserId)
-      window.location.reload()
-    }
+    setConfirmAction(null)
+    clearLicense()
+    clearStarterAck()
+    // Sin esto, el useEffect de sincronización de App.jsx repone el plan
+    // desde user_entitlements apenas recarga — "Desactivar" quedaba sin
+    // efecto real mientras la cuenta siguiera teniendo un entitlement.
+    if (accountUserId) await clearServerEntitlement(accountUserId)
+    window.location.reload()
+  }
+
+  function handleConfirmChangeCurrency() {
+    if (!confirmAction || confirmAction.type !== 'currency') return
+    const { nextCurrency, nextRate } = confirmAction.payload
+    setConfirmAction(null)
+    updateSettings({ ...settings, currency: nextCurrency, usdRate: nextRate })
   }
 
   const srow = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 0', borderBottom:'0.5px solid var(--brd)' }
@@ -91,18 +98,28 @@ export default function Settings() {
           <select aria-label={t('settings.currency.label')} style={{width:'auto'}} value={settings.currency||'CLP'} onChange={e=>{
             const nextCurrency = e.target.value
             if (nextCurrency === settings.currency) return
-            if (!window.confirm('¿Cambiar de moneda?\n\nLos montos ya cargados NO se convierten — solo cambia el símbolo. Si tenías $1.000.000 en CLP, vas a ver $1.000.000 en ' + nextCurrency + ' sin ninguna conversión real.')) return
             // La tasa vieja no sirve para la moneda nueva (bug ya arreglado una vez:
             // "usdRate carried over numerically across currency changes"). Pero
             // resetear a 0 sin más apaga la moneda dual en el Dashboard en silencio
             // (dualOn exige usdRate > 0) — recomputamos ya mismo si el toggle está
             // activo, en vez de dejar un 0 a la espera de que el usuario vuelva acá.
             const nextRate = settings.showDualCurrency ? (liveRate(nextCurrency) || 0) : 0
-            updateSettings({...settings, currency: nextCurrency, usdRate: nextRate})
+            setConfirmAction({ type: 'currency', payload: { nextCurrency, nextRate } })
           }}>
             {CURRENCY_OPTIONS.map(c=><option key={c.code} value={c.code}>{c.label}</option>)}
           </select>
         </div>
+        {confirmAction?.type === 'currency' && (
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>
+              {t('settings.confirmChangeCurrency', { currency: confirmAction.payload.nextCurrency })}
+            </span>
+            <div style={{display:'flex',gap:6}}>
+              <Btn variant="primary" size="xs" onClick={handleConfirmChangeCurrency}>{t('debts.card.confirm')}</Btn>
+              <Btn variant="ghost"   size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
+            </div>
+          </div>
+        )}
         <div style={srow}>
           <div><div style={slbl}>{t('settings.language.label')}</div><div style={ssub}>{t('settings.language.sub')}</div></div>
           <select aria-label={t('settings.language.label')} style={{width:'auto'}} value={settings.language||'es'} onChange={e=>updateSettings({...settings,language:e.target.value})}>
@@ -177,6 +194,7 @@ export default function Settings() {
             <div style={{display:'flex', alignItems:'center', gap:8, width:'100%'}}>
               <input
                 type="number" inputMode="decimal" min="0" step="any"
+                aria-label={t('settings.exchangeRate.label', { currency: settings.currency || 'CLP' })}
                 value={settings.usdRate || liveRate(settings.currency) || ''}
                 placeholder={String(liveRate(settings.currency) || '')}
                 onChange={e => updateSettings({...settings, usdRate: parseFloat(e.target.value) || 0})}
@@ -236,10 +254,20 @@ export default function Settings() {
           <div><div style={slbl}>{t('settings.exportCsv.label')}</div><div style={ssub}>{t('settings.exportCsv.sub')}</div></div>
           <Btn variant="ghost" size="sm" onClick={exportCSV}>{t('settings.exportCsv.btn')}</Btn>
         </div>
-        <div style={srow}>
-          <div><div style={slbl}>{t('settings.loadDemo.label')}</div><div style={ssub}>{t('settings.loadDemo.sub')}</div></div>
-          <Btn variant="danger" size="sm" onClick={handleLoadDemo}>{t('settings.loadDemo.btn')}</Btn>
-        </div>
+        {confirmAction?.type === 'loadDemo' ? (
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmLoadDemo')}</span>
+            <div style={{display:'flex',gap:6}}>
+              <Btn variant="danger" size="xs" onClick={handleLoadDemo}>{t('debts.card.confirm')}</Btn>
+              <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
+            </div>
+          </div>
+        ) : (
+          <div style={srow}>
+            <div><div style={slbl}>{t('settings.loadDemo.label')}</div><div style={ssub}>{t('settings.loadDemo.sub')}</div></div>
+            <Btn variant="danger" size="sm" onClick={()=>setConfirmAction({type:'loadDemo'})}>{t('settings.loadDemo.btn')}</Btn>
+          </div>
+        )}
         <div style={srow}>
           <div><div style={slbl}>{t('settings.resetOnboarding.label')}</div><div style={ssub}>{t('settings.resetOnboarding.sub')}</div></div>
           <Btn variant="ghost" size="sm" onClick={()=>updateSettings({...settings,onboardingDone:false})}>{t('settings.resetOnboarding.btn')}</Btn>
@@ -250,12 +278,20 @@ export default function Settings() {
             <Btn variant="ghost" size="sm" onClick={() => signOutAuth()}>{t('settings.account.logoutBtn')}</Btn>
           </div>
         )}
-        {!isDemo && (
+        {!isDemo && (confirmAction?.type === 'deactivate' ? (
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmDeactivateLicense')}</span>
+            <div style={{display:'flex',gap:6}}>
+              <Btn variant="primary" size="xs" onClick={handleDeactivate}>{t('debts.card.confirm')}</Btn>
+              <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
+            </div>
+          </div>
+        ) : (
           <div style={srow}>
             <div><div style={slbl}>{t('settings.license.label', { plan: getLicensePlan() === 'pro' ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
-            <Btn variant="ghost" size="sm" onClick={handleDeactivate}>{t('settings.license.btn')}</Btn>
+            <Btn variant="ghost" size="sm" onClick={()=>setConfirmAction({type:'deactivate'})}>{t('settings.license.btn')}</Btn>
           </div>
-        )}
+        ))}
         {!isDemo && getLicensePlan() !== 'pro' && (
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border:'1px solid var(--laton)',borderRadius:'var(--r)'}}>
             <div>
@@ -265,10 +301,20 @@ export default function Settings() {
             <Btn variant="primary" size="sm" onClick={()=>window.location.href=PRO_CHECKOUT_URL} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
           </div>
         )}
-        <div style={{...srow,borderBottom:'none'}}>
-          <div><div style={slbl}>{t('settings.clearAll.label')}</div><div style={ssub}>{t('settings.clearAll.sub')}</div></div>
-          <Btn variant="danger" size="sm" onClick={handleClear}>{t('settings.clearAll.btn')}</Btn>
-        </div>
+        {confirmAction?.type === 'clearAll' ? (
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmDeleteAll')}</span>
+            <div style={{display:'flex',gap:6}}>
+              <Btn variant="danger" size="xs" onClick={handleClear}>{t('debts.card.confirm')}</Btn>
+              <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
+            </div>
+          </div>
+        ) : (
+          <div style={{...srow,borderBottom:'none'}}>
+            <div><div style={slbl}>{t('settings.clearAll.label')}</div><div style={ssub}>{t('settings.clearAll.sub')}</div></div>
+            <Btn variant="danger" size="sm" onClick={()=>setConfirmAction({type:'clearAll'})}>{t('settings.clearAll.btn')}</Btn>
+          </div>
+        )}
       </Card>
       <Card>
         <CardHeader title={t('settings.dataStorage.title')} />
@@ -338,6 +384,7 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
       </div>
       <input
         type="text"
+        aria-label={t('settings.taxId.title', { label })}
         value={taxId || ''}
         placeholder={t('settings.taxId.placeholder', { label })}
         onChange={e => updateSettings({ ...settings, taxId: e.target.value })}
