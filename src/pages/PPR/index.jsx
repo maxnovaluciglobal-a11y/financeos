@@ -90,6 +90,7 @@ export default function PPRPage() {
     <ProGate feature={t('ppr.proGateFeature')}>
     <div className="stack">
       <PageHeader title={t('ppr.title')} sub={t('ppr.sub')} />
+      <Alert type="info">⚠ {t('ppr.disclaimer')}</Alert>
       <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: -4, marginBottom: 8, lineHeight: 1.6 }}>
         {t('ppr.intro')}
       </p>
