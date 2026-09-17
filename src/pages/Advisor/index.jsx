@@ -18,7 +18,7 @@ import { calcNetWorth } from '../../utils/netWorth.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { personalDebtRatio, personalDebts } from '../../utils/personal.js'
 import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
-import { CURRENCY_SYMBOLS } from '../shared/constants.js'
+import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
 
 // ── SEMÁFORO — reglas de cálculo ─────────────────────────────────────────────
 // Verde:    condición saludable
@@ -125,8 +125,8 @@ function calcAlerts(metrics, t) {
 // ── SEMÁFORO VISUAL ──────────────────────────────────────────────────────────
 function TrafficLight({ signals }) {
   const { t } = useT()
-  const colors = { green: '#356E57', yellow: '#9C5419', red: '#A23E2E' }
-  const bg     = { green: '#E7F0EA', yellow: '#F3E4CE', red: '#F5E6E3' }
+  const colors = { green: 'var(--pos)', yellow: 'var(--warn)', red: 'var(--neg)' }
+  const bg     = { green: 'var(--pos-bg)', yellow: 'var(--warn-bg)', red: 'var(--neg-bg)' }
   const labels = { green: t('adv.status.green'), yellow: t('adv.status.yellow'), red: t('adv.status.red') }
 
   return (
@@ -135,12 +135,12 @@ function TrafficLight({ signals }) {
         <div key={s.id} style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '10px 14px', borderRadius: 8,
-          background: bg[s.status], border: `0.5px solid ${colors[s.status]}22`,
+          background: bg[s.status], border: `0.5px solid color-mix(in srgb, ${colors[s.status]} 22%, transparent)`,
         }}>
           <div style={{
             width: 10, height: 10, borderRadius: '50%',
             background: colors[s.status], flexShrink: 0,
-            boxShadow: `0 0 6px ${colors[s.status]}66`,
+            boxShadow: `0 0 6px color-mix(in srgb, ${colors[s.status]} 66%, transparent)`,
           }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 1 }}>{s.label}</div>
@@ -149,7 +149,7 @@ function TrafficLight({ signals }) {
           <div style={{
             fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 600,
             color: colors[s.status], flexShrink: 0,
-            background: `${colors[s.status]}18`, padding: '2px 8px', borderRadius: 20,
+            background: bg[s.status], padding: '2px 8px', borderRadius: 20,
           }}>
             {labels[s.status]}
           </div>
@@ -289,6 +289,7 @@ export default function Advisor() {
   const [emailTo, setEmailTo]           = useState('')
   const [emailStatus, setEmailStatus]   = useState('idle') // idle | sending | sent | error
   const [emailErrorMsg, setEmailErrorMsg] = useState(null)
+  const [emailConsentChecked, setEmailConsentChecked] = useState(false)
 
   function saveNotes(notes) {
     updateSettings({ ...settings, advisorNotes: notes })
@@ -350,10 +351,6 @@ export default function Advisor() {
 
   // Mes activo
   const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
-  const monthLabel = (m) => {
-    const [y, mo] = m.split('-')
-    return `${['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo]} ${y}`
-  }
 
   // Métricas del mes activo
   const monthIncomes  = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)),  [incomes,  activeMonth])
@@ -387,7 +384,7 @@ export default function Advisor() {
   // Score general (0-100) basado en semáforos
   const scoreMap = { green: 100, yellow: 50, red: 0 }
   const score = signals.length > 0 ? Math.round(signals.reduce((s, sig) => s + scoreMap[sig.status], 0) / signals.length) : 0
-  const scoreColor = score >= 70 ? '#356E57' : score >= 40 ? '#9C5419' : '#A23E2E'
+  const scoreColor = score >= 70 ? 'var(--pos)' : score >= 40 ? 'var(--warn)' : 'var(--neg)'
   const scoreLabel = score >= 70 ? t('adv.score.healthy') : score >= 40 ? t('adv.score.attention') : t('adv.score.risk')
 
   // Patrimonio neto (stock a hoy) — opcional: solo si hay datos que lo alimenten.
@@ -478,9 +475,9 @@ export default function Advisor() {
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {[
-                  { c: '#356E57', l: t('adv.status.green') },
-                  { c: '#9C5419', l: t('adv.status.yellow') },
-                  { c: '#A23E2E', l: t('adv.status.red') },
+                  { c: 'var(--pos)', l: t('adv.status.green') },
+                  { c: 'var(--warn)', l: t('adv.status.yellow') },
+                  { c: 'var(--neg)', l: t('adv.status.red') },
                 ].map(i => (
                   <div key={i.l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: i.c }} />
@@ -494,13 +491,13 @@ export default function Advisor() {
           {/* KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
             <AdvisorKPI label={t('adv.kpi.income')} value={fmtMoney(mIncome, sym)} color="var(--grn)" />
-            <AdvisorKPI label={t('adv.kpi.expense')} value={fmtMoney(mExpense, sym)} color={mExpense > mIncome ? '#A23E2E' : 'var(--tx)'} />
-            <AdvisorKPI label={t('adv.kpi.flow')} value={fmtMoney(mBalance, sym)} color={mBalance >= 0 ? 'var(--grn)' : '#A23E2E'} />
-            <AdvisorKPI label={t('adv.kpi.savingRate')} value={fmtPct(savingRate)} color={savingRate >= 0.2 ? 'var(--grn)' : savingRate >= 0.1 ? '#9C5419' : '#A23E2E'} sub={t('adv.kpi.savingGoal')} />
-            <AdvisorKPI label={t('adv.kpi.debt')} value={fmtMoney(totalDebt, sym)} color={totalDebt > 0 ? '#9C5419' : 'var(--grn)'} sub={totalDebt > 0 ? t('adv.kpi.minPerMonth', { v: fmtMoney(totalMinPayments, sym) }) : t('adv.kpi.noDebts')} />
+            <AdvisorKPI label={t('adv.kpi.expense')} value={fmtMoney(mExpense, sym)} color={mExpense > mIncome ? 'var(--neg)' : 'var(--tx)'} />
+            <AdvisorKPI label={t('adv.kpi.flow')} value={fmtMoney(mBalance, sym)} color={mBalance >= 0 ? 'var(--grn)' : 'var(--neg)'} />
+            <AdvisorKPI label={t('adv.kpi.savingRate')} value={fmtPct(savingRate)} color={savingRate >= 0.2 ? 'var(--grn)' : savingRate >= 0.1 ? 'var(--warn)' : 'var(--neg)'} sub={t('adv.kpi.savingGoal')} />
+            <AdvisorKPI label={t('adv.kpi.debt')} value={fmtMoney(totalDebt, sym)} color={totalDebt > 0 ? 'var(--warn)' : 'var(--grn)'} sub={totalDebt > 0 ? t('adv.kpi.minPerMonth', { v: fmtMoney(totalMinPayments, sym) }) : t('adv.kpi.noDebts')} />
             <AdvisorKPI label={t('adv.kpi.goals')} value={goals.length} sub={t('adv.kpi.avgProgress', { pct: fmtPct(avgGoalPct) })} />
-            <AdvisorKPI label={t('adv.kpi.budgets')} value={overBudgetCount > 0 ? t('adv.kpi.budgetsOver', { n: overBudgetCount }) : t('adv.kpi.budgetsOk')} color={overBudgetCount > 0 ? '#A23E2E' : 'var(--grn)'} />
-            {nw.hasData && <AdvisorKPI label={t('adv.kpi.netWorth')} value={fmtMoney(nw.netWorth, sym)} color={nw.netWorth >= 0 ? 'var(--grn)' : '#A23E2E'} sub={t('adv.kpi.netWorthSub', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })} />}
+            <AdvisorKPI label={t('adv.kpi.budgets')} value={overBudgetCount > 0 ? t('adv.kpi.budgetsOver', { n: overBudgetCount }) : t('adv.kpi.budgetsOk')} color={overBudgetCount > 0 ? 'var(--neg)' : 'var(--grn)'} />
+            {nw.hasData && <AdvisorKPI label={t('adv.kpi.netWorth')} value={fmtMoney(nw.netWorth, sym)} color={nw.netWorth >= 0 ? 'var(--grn)' : 'var(--neg)'} sub={t('adv.kpi.netWorthSub', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })} />}
           </div>
 
           {/* Semáforo */}
@@ -544,7 +541,7 @@ export default function Advisor() {
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#9C5419', fontFamily: 'var(--mono)' }}>{fmtMoney(d.balance, sym)}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--warn)', fontFamily: 'var(--mono)' }}>{fmtMoney(d.balance, sym)}</div>
                           <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('adv.debts.pending')}</div>
                         </div>
                       </div>
@@ -613,9 +610,9 @@ export default function Advisor() {
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             {[
-              {l:t('adv.pdf.income'),    v:fmtMoney(mIncome, sym), c:'#356E57'},
-              {l:t('adv.pdf.expense'),      v:fmtMoney(mExpense, sym), c:'#A23E2E'},
-              {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'#356E57'},
+              {l:t('adv.pdf.income'),    v:fmtMoney(mIncome, sym), c:'var(--pos)'},
+              {l:t('adv.pdf.expense'),      v:fmtMoney(mExpense, sym), c:'var(--neg)'},
+              {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'var(--pos)'},
             ].map((item,i) => (
               <div key={i} style={{background:'#f8f9fa',borderRadius:6,padding:'8px 10px',minWidth:0,overflow:'hidden'}}>
                 <div style={{fontSize:8,color:'#888',marginBottom:2,textTransform:'uppercase',letterSpacing:.5}}>{item.l}</div>
@@ -625,7 +622,7 @@ export default function Advisor() {
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {t('adv.pdf.chips').split('|').map((chip,i) => (
-              <span key={i} style={{fontSize:9,padding:'2px 8px',borderRadius:10,background:'rgba(53,110,87,.08)',color:'#356E57',fontFamily:'monospace'}}>{chip}</span>
+              <span key={i} style={{fontSize:9,padding:'2px 8px',borderRadius:10,background:'var(--pos-bg)',color:'var(--pos)',fontFamily:'monospace'}}>{chip}</span>
             ))}
           </div>
         </div>
@@ -634,7 +631,7 @@ export default function Advisor() {
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{t('adv.pdf.ctaTitle')}</div>
             <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('adv.pdf.ctaSub')}</div>
-            {pdfError && <div style={{fontSize:11,color:'#A23E2E',fontFamily:'var(--mono)',marginTop:4}}>{pdfError}</div>}
+            {pdfError && <div style={{fontSize:11,color:'var(--neg)',fontFamily:'var(--mono)',marginTop:4}}>{pdfError}</div>}
           </div>
           <button
             onClick={handleExportPDF}
@@ -658,16 +655,28 @@ export default function Advisor() {
             />
             <button
               onClick={handleSendEmail}
-              disabled={emailStatus === 'sending' || noData}
-              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'#fff',border:'none',borderRadius:6,padding:'9px 18px',fontSize:12,fontWeight:600,cursor:emailStatus==='sending'||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1}}
+              disabled={emailStatus === 'sending' || noData || !emailConsentChecked}
+              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'#fff',border:'none',borderRadius:6,padding:'9px 18px',fontSize:12,fontWeight:600,cursor:emailStatus==='sending'||noData||!emailConsentChecked?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData||!emailConsentChecked?0.5:1}}
             >
               {emailStatus === 'sending' ? t('adv.pdf.emailSending') : emailStatus === 'sent' ? t('adv.pdf.emailSent') : t('adv.pdf.emailSend')}
             </button>
           </div>
           {emailStatus === 'error' && emailErrorMsg && (
-            <div style={{fontSize:11,color:'#A23E2E',fontFamily:'var(--mono)'}}>{emailErrorMsg}</div>
+            <div style={{fontSize:11,color:'var(--neg)',fontFamily:'var(--mono)'}}>{emailErrorMsg}</div>
           )}
-          <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.5}}>{t('adv.pdf.emailConsent')}</div>
+          <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
+            <input
+              id="adv-pdf-email-consent"
+              type="checkbox"
+              checked={emailConsentChecked}
+              onChange={e => setEmailConsentChecked(e.target.checked)}
+              disabled={noData}
+              style={{width:16,height:16,flexShrink:0,marginTop:1}}
+            />
+            <label htmlFor="adv-pdf-email-consent" style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.5,cursor:noData?'default':'pointer'}}>
+              {t('adv.pdf.emailConsent')}
+            </label>
+          </div>
         </div>
       </div>
 
