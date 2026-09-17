@@ -522,7 +522,7 @@ export default function Movements({ setPage }) {
           border: `.5px solid ${totalSubs > totalInc * 0.15 ? 'var(--red)' : 'var(--amb)'}`,
           display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
           <div style={{ fontSize:20 }}>
-            {totalSubs > totalInc * 0.15 ? '⚠️' : '💡'}
+            {totalSubs > totalInc * 0.15 ? '⊗' : '◑'}
           </div>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:12, fontWeight:600, fontFamily:'var(--mono)',
@@ -608,7 +608,7 @@ export default function Movements({ setPage }) {
               fontFamily:'var(--mono)', color:'var(--tx)',
               background: a.type==='upcoming' ? 'rgba(245,166,35,.08)' : 'rgba(0,184,217,.06)',
               border: `.5px solid ${a.type==='upcoming' ? 'var(--amb)' : 'var(--brd)'}` }}>
-              {a.type==='upcoming' ? '📅 ' : a.type==='income' ? '⚠️ ' : '💡 '}{a.msg}
+              {a.type==='upcoming' ? '◈ ' : a.type==='income' ? '⊗ ' : '◑ '}{a.msg}
             </div>
           ))}
         </div>
@@ -682,7 +682,7 @@ export default function Movements({ setPage }) {
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:12, color:'var(--tx)', fontWeight:500,
                     overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {e.inv ? '💼 ' : ''}{e.description || e.category}
+                    {e.inv ? '◈ ' : ''}{e.description || e.category}
                   </div>
                   <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
                     {e.subcategory

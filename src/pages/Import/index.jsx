@@ -268,11 +268,15 @@ export default function ImportMovements({ setPage } = {}) {
           <div style={s.card}>
             <div style={s.cardTitle}>{t('imp.upload.title')}</div>
             <div
+              role="button"
+              tabIndex={0}
+              aria-label={t('imp.upload.drop')}
               style={s.dropzone(drag)}
               onDragOver={e => { e.preventDefault(); setDrag(true) }}
               onDragLeave={() => setDrag(false)}
               onDrop={onDrop}
               onClick={() => document.getElementById('csv-input').click()}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('csv-input').click() } }}
             >
               {loading
                 ? <div style={{ color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>{t('imp.upload.reading')}</div>
@@ -283,7 +287,7 @@ export default function ImportMovements({ setPage } = {}) {
                   </>
               }
             </div>
-            <input id="csv-input" type="file" accept=".csv,.xlsx,.xls,.pdf" style={{ display: 'none' }}
+            <input id="csv-input" type="file" accept=".csv,.xlsx,.xls,.pdf" aria-hidden="true" style={{ display: 'none' }}
               onChange={e => e.target.files[0] && handleFile(e.target.files[0])} />
             <div style={s.privacy}>
               <span>◑</span>
@@ -384,7 +388,7 @@ export default function ImportMovements({ setPage } = {}) {
             {[{ key: 'date', label: t('imp.map.date') }, { key: 'description', label: t('imp.map.desc') }].map(({ key, label }) => (
               <div key={key}>
                 <div style={s.label}>{label}</div>
-                <select style={s.select} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
+                <select style={s.select} aria-label={label} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
                   <option value="">{t('imp.map.unassigned')}</option>
                   {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
                 </select>
@@ -408,14 +412,14 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <div style={s.label}>{t('imp.map.amountCol')}</div>
-                  <select style={s.select} value={mapping.amount || ''} onChange={e => setMapping(m => ({ ...m, amount: e.target.value }))}>
+                  <select style={s.select} aria-label={t('imp.map.amountCol')} value={mapping.amount || ''} onChange={e => setMapping(m => ({ ...m, amount: e.target.value }))}>
                     <option value="">{t('imp.map.unassigned')}</option>
                     {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                 </div>
                 <div>
                   <div style={s.label}>{t('imp.map.negativeIs')}</div>
-                  <select style={s.select} value={modeConfig.negativeIsExpense ? 'expense' : 'income'}
+                  <select style={s.select} aria-label={t('imp.map.negativeIs')} value={modeConfig.negativeIsExpense ? 'expense' : 'income'}
                     onChange={e => setModeConfig(c => ({ ...c, negativeIsExpense: e.target.value === 'expense' }))}>
                     <option value="expense">{t('imp.map.expense')}</option>
                     <option value="income">{t('imp.map.income')}</option>
@@ -428,14 +432,14 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <div style={s.label}>{t('imp.map.debitCol')}</div>
-                  <select style={s.select} value={mapping.debit || ''} onChange={e => setMapping(m => ({ ...m, debit: e.target.value }))}>
+                  <select style={s.select} aria-label={t('imp.map.debitCol')} value={mapping.debit || ''} onChange={e => setMapping(m => ({ ...m, debit: e.target.value }))}>
                     <option value="">{t('imp.map.unassigned')}</option>
                     {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                 </div>
                 <div>
                   <div style={s.label}>{t('imp.map.creditCol')}</div>
-                  <select style={s.select} value={mapping.credit || ''} onChange={e => setMapping(m => ({ ...m, credit: e.target.value }))}>
+                  <select style={s.select} aria-label={t('imp.map.creditCol')} value={mapping.credit || ''} onChange={e => setMapping(m => ({ ...m, credit: e.target.value }))}>
                     <option value="">{t('imp.map.unassigned')}</option>
                     {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
@@ -448,7 +452,7 @@ export default function ImportMovements({ setPage } = {}) {
             {[{ key: 'category', label: t('imp.map.categoryOpt') }, { key: 'account', label: t('imp.map.accountOpt') }].map(({ key, label }) => (
               <div key={key}>
                 <div style={s.label}>{label}</div>
-                <select style={s.select} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
+                <select style={s.select} aria-label={label} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
                   <option value="">{t('imp.map.noImport')}</option>
                   {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
                 </select>
@@ -511,7 +515,7 @@ export default function ImportMovements({ setPage } = {}) {
               </tr></thead>
               <tbody>{rows.map((row, i) => (
                 <tr key={i} style={{ opacity: row._include ? 1 : .45 }}>
-                  <td style={s.td}><input type="checkbox" style={{width:16,height:16,flexShrink:0}} checked={!!row._include} onChange={e => setRows(r => r.map((x, j) => j === i ? { ...x, _include: e.target.checked } : x))} /></td>
+                  <td style={s.td}><input type="checkbox" aria-label={t('imp.review.includeRow', { desc: row.description || row.date })} style={{width:16,height:16,flexShrink:0}} checked={!!row._include} onChange={e => setRows(r => r.map((x, j) => j === i ? { ...x, _include: e.target.checked } : x))} /></td>
                   <td style={{ ...s.td, color: 'var(--th)' }}>{row.date || '—'}</td>
                   <td style={{ ...s.td, color: 'var(--tx)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.description || '—'}</td>
                   <td style={{ ...s.td, color: row.type === 'income' ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{row.type === 'income' ? '+' : '−'}{sym}{fmt(row.amount)}</td>
