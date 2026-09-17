@@ -443,7 +443,7 @@ export default function Subscriptions() {
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={() => openEdit(sub)} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>✎</button>
+                          <button onClick={() => openEdit(sub)} aria-label={`Editar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>✎</button>
                           <button onClick={() => remove(sub.id)} aria-label={`Eliminar ${sub.name}`} title="Eliminar" style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}><span aria-hidden="true">✕</span></button>
                         </div>
                       </td>
