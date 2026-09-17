@@ -108,10 +108,11 @@ function DebtPayoffSimulator({ debts, sym }) {
 
       {/* Input pago extra */}
       <div style={{marginBottom:16}}>
-        <label style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',display:'block',marginBottom:4}}>
+        <label htmlFor="debt-extra-payment" style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',display:'block',marginBottom:4}}>
           {t('debts.sim.extraLabel', { sym })}
         </label>
         <input
+          id="debt-extra-payment"
           type="number" inputMode="decimal" min="0" value={extra}
           onChange={e => setExtra(e.target.value)}
           placeholder={t('debts.sim.extraPh')}
