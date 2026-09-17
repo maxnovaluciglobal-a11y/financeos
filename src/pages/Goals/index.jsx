@@ -247,7 +247,7 @@ export default function Goals({ setPage }) {
                     <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
                       <span style={{fontSize:13,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}>{(p*100).toFixed(0)}%</span>
                       <button onClick={()=>{setEditingId(g.id);setEditForm({name:g.name,target:g.target,targetDate:g.targetDate||'',priority:g.priority||'Media'})}}
-                        style={{background:'none',border:'none',color:'var(--th)',fontSize:12,cursor:'pointer',padding:'2px 5px'}} title={t('goals.card.editTitle')}>✏️</button>
+                        style={{background:'none',border:'none',color:'var(--th)',fontSize:12,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}} title={t('goals.card.editTitle')} aria-label={t('goals.card.editTitle')}>✏️</button>
                       <button onClick={()=>deleteWithUndo('goals', g, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}}>✕</button>
                     </div>
                   </div>
@@ -284,7 +284,7 @@ export default function Goals({ setPage }) {
                               onChange={e=>setAddAmt(e.target.value)}
                               onKeyDown={e=>e.key==='Enter'&&confirmAddSaving(g)} />
                             <Btn variant="primary" size="xs" onClick={()=>confirmAddSaving(g)}>OK</Btn>
-                            <Btn variant="ghost"   size="xs" onClick={()=>{setSavingId(null);setAddAmt('')}}>×</Btn>
+                            <Btn variant="ghost"   size="xs" onClick={()=>{setSavingId(null);setAddAmt('')}} aria-label={t('common.cancel')}>×</Btn>
                           </div>
                         : <Btn variant="ghost" size="xs" onClick={()=>{setSavingId(g.id);setAddAmt('')}}>{t('goals.card.addSaving')}</Btn>
                     )}

@@ -77,6 +77,8 @@ export default function Budgets() {
         <button
           onClick={toggleRollover}
           title={t('budgets.rollover.title')}
+          role="switch"
+          aria-checked={rolloverOn}
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             background: rolloverOn ? 'var(--accent-bg)' : 'var(--sur2)',
@@ -249,7 +251,7 @@ export default function Budgets() {
                       const r2=32,cx2=45,cy2=45,circ2=2*Math.PI*r2,dash2=Math.min(p,1)*circ2
                       return (
                         <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'#e84142':warn?'rgba(245,166,35,.3)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>
-                          <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:10,cursor:'pointer',padding:'1px 4px'}}>✕</button>
+                          <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:10,cursor:'pointer',padding:'1px 4px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
                           <div style={{fontSize:10,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
                           {carry > 0 && (
                             <div style={{fontSize:8,fontFamily:'var(--mono)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
