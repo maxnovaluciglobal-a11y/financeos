@@ -32,6 +32,7 @@ export default function Reports({ setPage }) {
   const subMetrics = useSubscriptionMetrics()
   const { isPro }  = usePlan()
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [pdfError, setPdfError] = useState(null)
   const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
 
   // Patrimonio neto (stock a HOY) — cálculo compartido con la página Patrimonio
@@ -40,6 +41,7 @@ export default function Reports({ setPage }) {
 
   async function downloadPDF() {
     setPdfLoading(true)
+    setPdfError(null)
     try {
       const data = {
         sym, month: activeMonth, monthLabel: monthLabel(activeMonth),
@@ -57,6 +59,9 @@ export default function Reports({ setPage }) {
       a.download = `MOY-IQ-Reporte-${activeMonth}.pdf`
       a.click()
       URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('PDF error:', e)
+      setPdfError(t('adv.pdf.error'))
     } finally {
       setPdfLoading(false)
     }
@@ -119,6 +124,7 @@ export default function Reports({ setPage }) {
       <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:8}}>
         <PageHeader title={t('reports.title')} sub={t('reports.sub', { month: monthLabel(activeMonth) })} />
         <MonthSelector incomes={incomes} expenses={expenses} />
+        {pdfError && <Alert type="danger">{pdfError}</Alert>}
         {isPro ? (
           <button
             onClick={downloadPDF}

@@ -150,6 +150,7 @@ export default function Coach() {
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
         {/* Score circle */}
         <div style={{ textAlign: 'center', padding: '0 12px' }}>
+          <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('coach.score.label')}</div>
           <div style={{ fontSize: 42, fontWeight: 800, color: scoreColor, fontFamily: 'var(--mono)', lineHeight: 1, letterSpacing: '-2px' }}>
             {score}
           </div>
