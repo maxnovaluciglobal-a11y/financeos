@@ -10,6 +10,7 @@ import { uid, subEmoji, subLabel, moneyLocale, dateLocale } from '../../utils/in
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
+import { PageHeader, Card, CardHeader, KPI, Btn, Badge, Alert, Empty, FormGroup, FormRow } from '../../components/ui/index.jsx'
 
 // ── CONSTANTES ──────────────────────────────────────────────────────────────────
 export const SUB_CATEGORIES = [
@@ -268,30 +269,15 @@ export default function Subscriptions() {
 
   return (
     <div>
-      {/* HEADER */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 className="display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>
-          {t('subs.title')}
-        </h2>
-        <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
-          {t('subs.sub')}
-        </p>
-      </div>
+      <PageHeader title={t('subs.title')} sub={t('subs.sub')} />
 
       {/* KPIs */}
       <div className="kpi-row" style={{ marginBottom: 16 }}>
-        {[
-          { label: t('subs.kpi.monthly'), value: `${currency} ${fmt(totalMonthly)}`,  color: 'var(--grn)' },
-          { label: t('subs.kpi.annual'),   value: `${currency} ${fmt(totalAnnual)}`,   color: 'var(--tx)' },
-          { label: t('subs.kpi.active'),       value: activeSubs.length,                   color: 'var(--tx)' },
-          { label: t('subs.kpi.mostExpensive'),   value: mostExpensive ? mostExpensive.name : '—', color: 'var(--amb)' },
-          { label: t('subs.kpi.nextPay'),  value: nextSub ? new Date(nextSub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—', color: 'var(--tx)' },
-        ].map(k => (
-          <div key={k.label} style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rl)', padding: '14px 16px', boxShadow: 'var(--sh-1)' }}>
-            <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 4 }}>{k.label}</div>
-            <div style={{ fontSize: 19, fontWeight: 700, color: k.color, fontFamily: 'var(--display)', letterSpacing: '-.01em', fontFeatureSettings: "'tnum' 1", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.value}</div>
-          </div>
-        ))}
+        <KPI label={t('subs.kpi.monthly')} value={`${currency} ${fmt(totalMonthly)}`} color="green" />
+        <KPI label={t('subs.kpi.annual')} value={`${currency} ${fmt(totalAnnual)}`} />
+        <KPI label={t('subs.kpi.active')} value={activeSubs.length} />
+        <KPI label={t('subs.kpi.mostExpensive')} value={mostExpensive ? mostExpensive.name : '—'} color="amber" />
+        <KPI label={t('subs.kpi.nextPay')} value={nextSub ? new Date(nextSub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—'} />
       </div>
 
       {/* VISUAL INSIGHTS */}
@@ -310,103 +296,71 @@ export default function Subscriptions() {
       {alerts.length > 0 && (
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {alerts.map((a, i) => (
-            <div key={i} style={{
-              padding: '9px 12px', borderRadius: 'var(--r)', fontSize: 11,
-              fontFamily: 'var(--mono)', lineHeight: 1.5,
-              background: a.type === 'duplicate' || a.type === 'priceIncrease' ? 'var(--amb-bg)' : a.type === 'upcoming' ? 'var(--grn-bg)' : 'var(--sur2)',
-              border: `.5px solid ${a.type === 'duplicate' || a.type === 'priceIncrease' ? 'var(--amb)' : a.type === 'upcoming' ? 'var(--grn)' : 'var(--brd)'}`,
-              color: a.type === 'duplicate' || a.type === 'priceIncrease' ? 'var(--amb)' : a.type === 'upcoming' ? 'var(--grn)' : 'var(--tm)',
-            }}>
-              {a.type === 'duplicate' || a.type === 'priceIncrease' ? '⚠ ' : a.type === 'upcoming' ? '📅 ' : 'ℹ '}{a.msg}
-            </div>
+            <Alert key={i} type={a.type === 'duplicate' || a.type === 'priceIncrease' ? 'warn' : a.type === 'upcoming' ? 'ok' : 'info'}>
+              {a.msg}
+            </Alert>
           ))}
         </div>
       )}
 
       {/* ACCIONES */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => setShowForm(true)} style={{
-          background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 'var(--r)',
-          padding: '7px 14px', fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, cursor: 'pointer',
-        }}>{t('subs.addBtn')}</button>
+        <Btn variant="primary" onClick={() => setShowForm(true)}>{t('subs.addBtn')}</Btn>
         {['all', 'active', 'inactive'].map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{
-            background: filter === f ? 'var(--sur2)' : 'transparent',
-            border: `.5px solid ${filter === f ? 'var(--brd2)' : 'var(--brd)'}`,
-            borderRadius: 'var(--r)', padding: '6px 12px', fontSize: 11,
-            fontFamily: 'var(--mono)', cursor: 'pointer', color: filter === f ? 'var(--tx)' : 'var(--tm)',
-          }}>{f === 'all' ? t('subs.filter.all') : f === 'active' ? t('subs.filter.active') : t('subs.filter.inactive')}</button>
+          <Btn key={f} variant="ghost" size="sm" aria-pressed={filter === f} onClick={() => setFilter(f)}
+            style={filter === f ? { background: 'var(--sur2)', borderColor: 'var(--brd2)', color: 'var(--tx)' } : undefined}>
+            {f === 'all' ? t('subs.filter.all') : f === 'active' ? t('subs.filter.active') : t('subs.filter.inactive')}
+          </Btn>
         ))}
       </div>
 
       {/* FORM */}
       {showForm && (
-        <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 12 }}>
-            {editing ? t('subs.form.edit') : t('subs.form.new')}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-            {[
-              { label: t('subs.form.name'), key: 'name', type: 'text', placeholder: t('subs.form.namePh') },
-              { label: t('subs.form.amount'), key: 'amount', type: 'number', placeholder: '0' },
-            ].map(({ label, key, type, placeholder }) => (
-              <div key={key}>
-                <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 4 }}>{label}</div>
-                <input type={type} value={form[key]} placeholder={placeholder}
-                  onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                  style={{ width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' }} />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
-            <div>
-              <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 4 }}>{t('subs.form.category')}</div>
-              <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-                style={{ width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' }}>
+        <Card style={{ marginBottom: 16 }}>
+          <CardHeader title={editing ? t('subs.form.edit') : t('subs.form.new')} />
+          <FormRow>
+            <FormGroup label={t('subs.form.name')}>
+              <input type="text" value={form.name} placeholder={t('subs.form.namePh')}
+                onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+            </FormGroup>
+            <FormGroup label={t('subs.form.amount')}>
+              <input type="number" value={form.amount} placeholder="0"
+                onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} />
+            </FormGroup>
+          </FormRow>
+          <FormRow>
+            <FormGroup label={t('subs.form.category')}>
+              <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
                 {SUB_CATEGORIES.map(c => <option key={c} value={c}>{subLabel(c)}</option>)}
               </select>
-            </div>
-            <div>
-              <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 4 }}>{t('subs.form.freq')}</div>
-              <select value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))}
-                style={{ width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' }}>
+            </FormGroup>
+            <FormGroup label={t('subs.form.freq')}>
+              <select value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))}>
                 {Object.keys(FREQ_LABELS).map(v => <option key={v} value={v}>{t('mov.freq.' + v)}</option>)}
               </select>
-            </div>
-            <div>
-              <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 4 }}>{t('subs.form.nextPay')}</div>
-              <input type="date" value={form.nextPaymentDate} onChange={e => setForm(p => ({ ...p, nextPaymentDate: e.target.value }))}
-                style={{ width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' }} />
-            </div>
-          </div>
+            </FormGroup>
+            <FormGroup label={t('subs.form.nextPay')}>
+              <input type="date" value={form.nextPaymentDate}
+                onChange={e => setForm(p => ({ ...p, nextPaymentDate: e.target.value }))} />
+            </FormGroup>
+          </FormRow>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={save} style={{ background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 'var(--r)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-              {editing ? t('subs.form.saveChanges') : t('subs.form.submit')}
-            </button>
-            <button onClick={closeForm} style={{ background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)', borderRadius: 'var(--r)', padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}>
-              {t('common.cancel')}
-            </button>
+            <Btn variant="primary" onClick={save}>{editing ? t('subs.form.saveChanges') : t('subs.form.submit')}</Btn>
+            <Btn variant="secondary" onClick={closeForm}>{t('common.cancel')}</Btn>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* LISTA vacía */}
-      {displayed.length === 0 && (
-        <div style={{ padding: '32px 0', textAlign: 'center' }}>
-          <div style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 12 }}>
-            {subs.length === 0 ? t('subs.empty.none') : t('subs.empty.filtered')}
-          </div>
-          {subs.length === 0 && (
-            <button onClick={() => setShowForm(true)} style={{ background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              {t('subs.addBtn')}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* TABLA */}
-      {displayed.length > 0 && (
-        <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', overflow: 'hidden', marginBottom: 16 }}>
+      {/* LISTA / TABLA */}
+      <Card>
+        <CardHeader title={t('subs.title')} />
+        {displayed.length === 0 ? (
+          <Empty
+            text={subs.length === 0 ? t('subs.empty.none') : t('subs.empty.filtered')}
+            cta={subs.length === 0 ? t('subs.addBtn') : undefined}
+            onCta={subs.length === 0 ? () => setShowForm(true) : undefined}
+          />
+        ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -425,7 +379,7 @@ export default function Subscriptions() {
                     <tr key={sub.id} style={{ borderBottom: i < displayed.length - 1 ? '.5px solid var(--brd)' : 'none', opacity: isActive ? 1 : 0.5 }}>
                       <td style={{ padding: '9px 12px', fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{sub.name}</td>
                       <td style={{ padding: '9px 12px' }}>
-                        <span style={{ fontSize: 10, fontFamily: 'var(--mono)', background: 'var(--sur2)', padding: '2px 7px', borderRadius: 20, color: 'var(--tm)', border: '.5px solid var(--brd)' }}>{subLabel(sub.category)}</span>
+                        <Badge color="blue">{subLabel(sub.category)}</Badge>
                       </td>
                       <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly)}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual)}</td>
@@ -434,8 +388,8 @@ export default function Subscriptions() {
                         {sub.nextPaymentDate ? new Date(sub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—'}
                       </td>
                       <td style={{ padding: '9px 12px' }}>
-                        <button onClick={() => toggleStatus(sub)} style={{
-                          fontSize: 10, fontFamily: 'var(--mono)', padding: '2px 8px', borderRadius: 20, cursor: 'pointer',
+                        <button onClick={() => toggleStatus(sub)} aria-pressed={isActive} style={{
+                          fontSize: 10, fontFamily: 'var(--mono)', padding: '2px 8px', borderRadius: 'var(--rs)', cursor: 'pointer',
                           background: isActive ? 'var(--grn-bg)' : 'var(--sur2)',
                           color: isActive ? 'var(--grn)' : 'var(--th)',
                           border: `.5px solid ${isActive ? 'var(--grn)' : 'var(--brd)'}`,
@@ -443,8 +397,8 @@ export default function Subscriptions() {
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={() => openEdit(sub)} aria-label={`Editar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>✎</button>
-                          <button onClick={() => remove(sub.id)} aria-label={`Eliminar ${sub.name}`} title="Eliminar" style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}><span aria-hidden="true">✕</span></button>
+                          <button onClick={() => openEdit(sub)} aria-label={`Editar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}>✎</button>
+                          <button onClick={() => remove(sub.id)} aria-label={`Eliminar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}><span aria-hidden="true">✕</span></button>
                         </div>
                       </td>
                     </tr>
@@ -453,10 +407,10 @@ export default function Subscriptions() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </Card>
 
-      <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6 }}>
+      <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 16 }}>
         {t('subs.disclaimer')}
       </div>
     </div>
