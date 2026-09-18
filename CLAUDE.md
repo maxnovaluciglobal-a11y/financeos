@@ -168,6 +168,16 @@ Después: `bubblewrap build` genera `app-release-signed.aab` (subir a Play Conso
 
 Pendiente de Walter, no delegable: crear la cuenta de Google Play Console (pago propio, US$25 único) y la publicación pública en sí.
 
-## iOS (Capacitor) — sin empezar
+## iOS (Capacitor, scaffold armado y funcionando — 17-sep-2026)
 
-TWA no existe en iOS. El camino es Capacitor (WKWebView nativo) + cuenta de Apple Developer (US$99/año, no delegable). Riesgo real a tener en cuenta antes de invertir tiempo: Apple rechaza más fácil que Google las apps que son "solo una web envuelta" (guideline 4.2, mínimo esfuerzo) si no aportan algo nativo real (push, biometría, etc.) — vale la pena decidir esto ANTES de armar el proyecto, no después. Sin scaffold, sin decisión tomada todavía.
+Proyecto en `../ios-capacitor-moyiq/` (fuera de git, sibling de este repo, mismo criterio que `android-twa`). `npx cap init` + `npx cap add ios`, **sin CocoaPods** — Capacitor 7 usa Swift Package Manager por defecto para el template de iOS, evitó ese dolor de cabeza clásico.
+
+**Modo "servidor remoto"**, igual que el TWA de Android: `capacitor.config.json` tiene `server.url: "https://app.moyiq.app/app/"` — la app nativa carga la PWA real en vivo dentro de un `WKWebView`, no empaqueta el código en el binario. Mismo modelo de privacidad que hoy: los datos financieros siguen viviendo solo en el dispositivo vía IndexedDB dentro del WebView, nunca en el servidor. Ventaja extra sobre bundlear el build: actualizar la app no requiere subir una versión nueva a App Store, el usuario ve el cambio la próxima vez que abre (mismo mecanismo que la PWA/TWA).
+
+**Verificado end-to-end**: `xcodebuild -project ios/App/App.xcodeproj -scheme App -destination 'generic/platform=iOS Simulator' build` → `BUILD SUCCEEDED`. Corrido en el iOS Simulator (iPhone 17 Pro): abre, carga `app.moyiq.app` real, muestra el login de MOY IQ con logo/marca correctos. No es una maqueta — es la app real corriendo nativa.
+
+**Falta para publicar** (todo bloqueado en Walter, no delegable):
+1. Cuenta Apple Developer (US$99/año) — sin esto no se puede firmar para dispositivo real ni subir a App Store, solo correr en Simulator como ahora.
+2. Bundle ID a reservar en App Store Connect: `com.moyiq.app.ios` (ya usado en el scaffold, coherente con el Android `com.moyiq.app.twa`).
+3. Ícono real de App Store (1024×1024, sin canal alpha) — todavía no generado, el scaffold usa el ícono placeholder de Capacitor. Se puede generar del mismo SVG fuente que el maskable de Android (`financeos-app/public/icon-maskable-source.svg`) en cuanto haga falta.
+4. **Riesgo real de review, evaluar antes de someter**: Apple rechaza más fácil que Google las apps "solo una web envuelta" sin funcionalidad nativa real (App Store Review Guideline 4.2, "Minimum Functionality"). Hoy el scaffold es 100% WebView sin ningún plugin nativo — biometría (Face ID para desbloquear, encaja natural con "privacy-first"), notificaciones push, o compartir nativo son los candidatos más obvios si hace falta reforzar el caso ante Apple. Decisión de producto, no técnica — evaluar cuando se llegue a este paso, no antes.
