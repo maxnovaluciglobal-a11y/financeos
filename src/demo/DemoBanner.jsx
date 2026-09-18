@@ -21,7 +21,7 @@ export default function DemoBanner() {
       color: '#fff',
       boxShadow: '0 2px 12px rgba(20,33,61,.3)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', minHeight: 40, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', paddingTop: 'max(8px, env(safe-area-inset-top))', minHeight: 40, flexWrap: 'wrap' }}>
 
         <div style={{
           background: 'rgba(255,255,255,.2)',
