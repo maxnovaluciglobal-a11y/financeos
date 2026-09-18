@@ -56,6 +56,17 @@ Ya pasó una vez: volver a correr `supabase-sync.sql` **pisó** esa versión bue
 
 **Migraciones nuevas van en `supabase/migrations/`, no como archivo suelto en la raíz** (desde 2026-08-27, ver `supabase/migrations/README.md`). Los 7 `.sql` de la raíz siguen siendo la fuente de verdad del estado histórico — no se tocan.
 
+## Auth compartido MOY IQ + Invest (14-sep-2026)
+
+Este proyecto Supabase (`nelwgbcddwiaimzbcuas`) es compartido con `invest-web` (mismo `auth.users`, mismo RLS). Infra de auth que vive en ESTE repo pero sirve a los dos productos:
+
+- **CRM interno** (`?admin=crm`, `src/admin/AdminCRM.jsx`): acceso restringido a `walterlamadriz@gmail.com` y `maxnovaluciglobal@gmail.com` vía RLS de `crm_contacts`/`diagnostico_leads`/`starter_leads` — la ruta en sí no está protegida, cualquiera puede abrirla, RLS devuelve 0 filas sin error revelador a cualquier otra cuenta.
+- **`supabase/functions/auth-email-hook/`**: Send Email Hook de Supabase Auth — reemplaza la plantilla nativa (sin marca) para reset/confirmación en los dos productos, detectando cuál por el host de `redirect_to`. **Usa `NURTURE_RESEND_API_KEY`, no `RESEND_API_KEY`** (esa da 403, parece scopeada a otro remitente). Habilitado vía Management API (`PATCH /v1/projects/{ref}/config/auth`), no por dashboard.
+- **`supabase/functions/notify-admin-signup/`**: notifica altas nuevas (Starter, Invest) a `maxnovaluciglobal@gmail.com`. Starter dispara desde un trigger SQL (`pg_net`); Invest llama a la RPC pública `notify_invest_signup` desde su propio cliente (no hay tabla server-side de "nuevo signup" en Invest, `profiles` es compartida con MOY IQ).
+- **`register_starter_lead`** ahora devuelve `id` — el cliente (`licenseValidator.js`) lo usa para disparar el email 1 (bienvenida) de la secuencia de nurture de Starter justo al registrarse, mismo patrón que `diagnostico.html`.
+
+Detalle completo, gotchas de debug y decisiones: memoria `financeos_moy_iq_invest_crm_20260914`, `financeos_moy_iq_auth_email_hook_20260914`, `financeos_moy_iq_admin_notify_20260914`.
+
 ## Sistema visual — rebranding MOY IQ (mergeado y desplegado)
 
 **Estado (11-sep-2026): mergeado a `main` y en producción**, ahora en `app.moyiq.app`/`demo.moyiq.app` (dominio primario) además de `app.financeospro.com`/`demo.financeospro.com` (siguen vivos, sin redirect) — decisión explícita de Walter. ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
@@ -84,7 +95,7 @@ Tokens en `src/styles/globals.css`.
 ## Archivos delicados
 
 - `src/core/db/migrations.js` — `DB_VERSION` y los pasos de esquema versionados (fuente de verdad; `index.js` solo hace wiring)
-- `src/utils/licenseValidator.js` — formato `FNOS-XXXX-XXXX-XXXX`
+- `src/utils/licenseValidator.js` — formato `FNOS-XXXX-XXXX-XXXX`. También tiene `clearServerEntitlement`/`resetPasswordForEmail`/`registerStarterLead` — el `useEffect` de sincronización de entitlement en `App.jsx` repone el plan server-side en cada carga, así que "desactivar" algo acá SIEMPRE necesita limpiar el lado server (`user_entitlements`), no solo localStorage (ver memoria `financeos_moy_iq_licencia_root_cause_fix_20260914` si este bug reaparece)
 - `src/utils/taxCalcCL.js` — UTM de Chile hardcodeada, se queda vieja
 - `src/utils/taxCalcDE.js` — Beitragsbemessungsgrenze DE + Grundfreibetrag hardcodeados
 - `src/utils/apvCalc.js` — fórmula de valor futuro
@@ -127,12 +138,36 @@ El commit `205228d` (17-ago) agregó conectar banco vía Plaid (solo EEUU). Una 
 - **Service worker cachea agresivamente**. Post-deploy, para verificar cambios: `navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()))` + `caches.keys().then(ks => ks.forEach(k => caches.delete(k)))` + hard reload.
 - **`~/Documents/.claude/launch.json`** es la config raíz de preview servers (fuera del repo). Si la ruta canónica del repo cambia, ese archivo también.
 
-## Android (TWA, 2026-08-22)
+## Android (TWA)
 
-Empaquetado con PWABuilder (Bubblewrap por debajo) a partir del manifest de producción, sin tocar código de la app — la PWA existente es el input. Paquete generado en `../android-twa/package/` (fuera de git, sibling de este repo): `FinanceOS.aab` (subir a Play Console), `FinanceOS.apk` (sideload de prueba), `signing.keystore` + `signing-key-info.txt` (alias `financeos-upload`, org "MAXNOVA & LUCI Global LLC").
+**Paquete viejo (22-ago-2026, OBSOLETO — no usar)**: generado bajo el nombre "FinanceOS" antes del rename a MOY IQ, package ID `com.financeospro.app.twa`, en `../android-twa/package/` (fuera de git). Nunca se publicó. El bloqueo original (marca "FINANCEOS®" de Datarails viva en USPTO, ver `financeos_android_twa_20260822`) ya no aplica — el rename a MOY IQ lo resolvió.
 
-`public/.well-known/assetlinks.json` (commit `9ef882d`) verifica ese paquete contra el dominio — sin esto la app abre con barra de URL como cualquier PWA. Vite copia `public/` solo a `dist/app/`, así que `build.js` lo saca a mano a `dist/.well-known/` (raíz del dominio, no bajo `/app/`). Si se regenera el paquete con una clave nueva, hay que actualizar este archivo con el fingerprint nuevo y redeployar, o la verificación queda rota.
+**Decisión 17-sep-2026**: regenerar desde cero bajo `com.moyiq.app.twa` (Walter confirmó explícitamente — nunca se publicó nada bajo el ID viejo, así que no había continuidad que preservar, y era la última oportunidad de corregirlo sin costo). El paquete viejo y su keystore quedan sin usar, no borrar por las dudas.
 
-**`signing.keystore` es irrecuperable si se pierde** — sin él no se puede subir nunca más una actualización bajo el mismo Package ID (`com.financeospro.app.twa`) en Play Store. Falta respaldarlo fuera de esta máquina (mismo criterio que las claves de backup de GastroCore).
+**Tooling instalado en esta Mac (17-sep-2026)**: `brew install openjdk@17` + `npm install -g @bubblewrap/cli`. Bubblewrap está listo para correr — pero su wizard (`bubblewrap init`) es 100% interactivo (pide JDK path, package ID, colores, keystore) y **no se puede automatizar por Bash/agente** (se probó: el prompt se rompe sin una TTY real). Hay que correrlo a mano en Terminal.app:
 
-Pendiente de Walter, no delegable: crear la cuenta de Google Play Console (pago propio, US$25 único) y la publicación pública en sí — ver memoria `financeos_audit_plaid_valor_20260821` y el punto pendiente de marca en `STATE.md` antes de ese paso.
+```bash
+export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+mkdir -p "../android-twa-moyiq" && cd "../android-twa-moyiq"
+bubblewrap init --manifest="https://app.moyiq.app/app/manifest.webmanifest"
+```
+
+Respuestas a dar en el wizard:
+- JDK: "No" (usar la propia) → path: `/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`
+- SDK de Android: dejar que Bubblewrap lo instale (Sí) — primera vez tarda, descarga ~1-2GB.
+- Package ID: `com.moyiq.app.twa`
+- App name / Launcher name: `MOY IQ`
+- El resto (colores, ícono) ya sale bien solo porque los toma del manifest real, que ya tiene el maskable icon nuevo (ver abajo).
+- Al final pide datos para el keystore NUEVO (nombre, org "MAXNOVA & LUCI Global LLC", país US) — guardalos igual que la vez pasada.
+
+Después: `bubblewrap build` genera `app-release-signed.aab` (subir a Play Console) y el `.apk` de prueba. **Respaldar el keystore nuevo fuera de esta Mac apenas se genere** (mismo criterio que el de GastroCore) — sin él, ninguna actualización futura se puede subir bajo este package ID nunca más.
+
+**`public/.well-known/assetlinks.json`** tiene que apuntar al fingerprint del keystore NUEVO y al package ID `com.moyiq.app.twa` (hoy todavía dice `com.financeospro.app.twa` con el fingerprint viejo — quedó desactualizado a propósito hasta que exista el paquete nuevo). Bubblewrap imprime el fingerprint SHA-256 al final del build; actualizar este archivo y redeployar (`./deploy.sh`) antes de instalar el `.apk` de prueba, o la app abre con barra de URL en vez de pantalla completa.
+
+**Íconos maskable ya listos** (17-sep-2026, `public/icon-{192,512}-maskable.png` + `manifest`) — Bubblewrap los toma solos del manifest, no hace falta generarlos de nuevo.
+
+Pendiente de Walter, no delegable: crear la cuenta de Google Play Console (pago propio, US$25 único) y la publicación pública en sí.
+
+## iOS (Capacitor) — sin empezar
+
+TWA no existe en iOS. El camino es Capacitor (WKWebView nativo) + cuenta de Apple Developer (US$99/año, no delegable). Riesgo real a tener en cuenta antes de invertir tiempo: Apple rechaza más fácil que Google las apps que son "solo una web envuelta" (guideline 4.2, mínimo esfuerzo) si no aportan algo nativo real (push, biometría, etc.) — vale la pena decidir esto ANTES de armar el proyecto, no después. Sin scaffold, sin decisión tomada todavía.
