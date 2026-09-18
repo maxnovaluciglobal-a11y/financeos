@@ -220,7 +220,8 @@ export default function Budgets() {
               <div>
                 <div style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
                   <div style={{flexShrink:0}}>
-                    <svg width="160" height="160" viewBox="0 0 160 160">
+                    <svg width="160" height="160" viewBox="0 0 160 160" role="img"
+                      aria-label={`${(pct*100).toFixed(0)}% ${t('budgets.donut.used')} — ${fmtMoney(gastado,sym)} ${t('budgets.donut.ofTotal')} ${fmtMoney(total,sym)}`}>
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--brd)" strokeWidth="16"/>
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke={strokeColor} strokeWidth="16" strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ/4} strokeLinecap="round"/>
                       <text x={cx} y={cy-10} textAnchor="middle" fontSize="18" fill={strokeColor} fontWeight="700" fontFamily="var(--mono)">{(pct*100).toFixed(0)}%</text>
@@ -258,7 +259,8 @@ export default function Budgets() {
                               ↻ +{fmtMoney(carry,sym)}
                             </div>
                           )}
-                          <svg width="90" height="90" viewBox="0 0 90 90">
+                          <svg width="90" height="90" viewBox="0 0 90 90" role="img"
+                            aria-label={`${catLabel(b.category, lang)}: ${(p*100).toFixed(0)}% ${over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')} — ${fmtMoney(spent,sym)} ${t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}`}>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke="var(--brd)" strokeWidth="9"/>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke={clr} strokeWidth="9" strokeDasharray={`${dash2} ${circ2}`} strokeDashoffset={circ2/4} strokeLinecap="round"/>
                             <text x={cx2} y={cy2-4} textAnchor="middle" fontSize="10" fill={clr} fontWeight="700" fontFamily="var(--mono)">{(p*100).toFixed(0)}%</text>

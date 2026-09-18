@@ -10,8 +10,9 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../c
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcDividendoUF, proyeccionCLP, calcPrepago, CRECIMIENTO_UF_DEFAULT } from '../../utils/hipotecaCL.js'
 import { loadIndicadores } from '../../utils/indicadores.js'
+import { fmtFixed } from '../../utils/index.js'
 
-const fmtCLP = (n) => `$${Math.round(Number(n) || 0).toLocaleString('es-CL')}`
+const fmtCLP = (n) => fmtFixed(n, 'es-CL')
 const fmtUF = (n) => `${(Number(n) || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} UF`
 
 export default function HipotecaUF() {

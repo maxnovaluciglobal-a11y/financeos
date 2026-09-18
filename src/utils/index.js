@@ -40,6 +40,14 @@ export function setDateLocale(language) {
 }
 export const dateLocale = () => _dateLocale
 
+// Formateo de moneda con locale/símbolo FIJOS, para las calculadoras fiscales
+// por país (AhorroFiscal, HipotecaUF, ResicoMX, IRSPortugal, IRPFEspana,
+// MultiDolarAR, Multimoneda...) — a diferencia de fmtMoney/_moneyLocale, acá
+// el locale no sigue la moneda de la cuenta del usuario: una calculadora de
+// Chile siempre muestra CLP en es-CL, aunque el usuario tenga la cuenta en USD.
+export const fmtFixed = (n, locale, symbol = '$') =>
+  `${symbol}${Math.round(Number(n) || 0).toLocaleString(locale)}`
+
 export const fmtMoney = (n, symbol = '$') => {
   const abs = Math.abs(Math.round(n || 0))
   return symbol + abs.toLocaleString(_moneyLocale)

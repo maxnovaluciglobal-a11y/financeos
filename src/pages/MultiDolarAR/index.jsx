@@ -11,8 +11,9 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../c
 import ProGate from '../../components/ui/ProGate.jsx'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { calcRendimiento, TNA_DEFAULTS } from '../../utils/rendimientosAR.js'
+import { fmtFixed } from '../../utils/index.js'
 
-const fmtARS = (n) => `$${Math.round(Number(n) || 0).toLocaleString('es-AR')}`
+const fmtARS = (n) => fmtFixed(n, 'es-AR')
 const fmtUSD = (n) => `US$${(Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
 
 const DOLARES = [

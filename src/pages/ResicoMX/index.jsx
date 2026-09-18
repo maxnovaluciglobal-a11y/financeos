@@ -10,8 +10,9 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcResico, TRAMOS_RESICO, TOPE_ANUAL_RESICO, RETENCION_PERSONA_MORAL } from '../../utils/resicoMX.js'
+import { fmtFixed } from '../../utils/index.js'
 
-const fmtMXN = (n) => `$${Math.round(Number(n) || 0).toLocaleString('es-MX')}`
+const fmtMXN = (n) => fmtFixed(n, 'es-MX')
 
 // RESICO personas físicas cubre actividad empresarial, profesional y
 // arrendamiento (Art. 113-E LISR). El sueldo de nómina tributa por sueldos y

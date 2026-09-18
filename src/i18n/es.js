@@ -30,6 +30,7 @@ export const es = {
     'common.importShortcut': "⇪ ¿Muchos movimientos? Importa el extracto de tu banco →",
     'debts.linkProject': "🏢 Vincular a propiedad",
     'debts.linkProjectHint': "Si esta deuda es de una propiedad en arriendo, vincúlala: su cuota dejará de restarse de tu disponible personal (ya vive en el flujo de la propiedad).",
+    'debts.card.confirmLink': "Confirmar vínculo a propiedad",
     'debts.uf.check': "🇨🇱 Deuda en UF (crédito hipotecario) — ingreso los montos en UF",
     'debts.uf.balance': "Saldo: UF {uf} ≈ {clp}",
     'debts.uf.rate': "UF hoy: {v}",

@@ -30,6 +30,7 @@ export const en = {
     'common.importShortcut': "⇪ Lots of transactions? Import your bank statement →",
     'debts.linkProject': "🏢 Link to property",
     'debts.linkProjectHint': "If this debt belongs to a rental property, link it: its installment will stop being subtracted from your personal available (it already lives in the property's flow).",
+    'debts.card.confirmLink': "Confirm link to property",
     'debts.uf.check': "🇨🇱 Debt in UF (mortgage) — I enter amounts in UF",
     'debts.uf.balance': "Balance: UF {uf} ≈ {clp}",
     'debts.uf.rate': "UF today: {v}",

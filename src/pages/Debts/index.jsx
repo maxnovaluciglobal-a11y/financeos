@@ -406,8 +406,8 @@ export default function Debts() {
                     <input type="text" list="fnos-debt-projects" value={linkValue} placeholder={t('debts.projectPlaceholder')}
                       onChange={e=>setLinkValue(e.target.value)}
                       style={{flex:1,minWidth:160,padding:'5px 9px',fontSize:12,borderRadius:6,border:'.5px solid var(--brd2)',background:'var(--bg)',color:'var(--tx)'}}/>
-                    <Btn variant="primary" size="xs" onClick={async()=>{ if(linkValue.trim()){ await updateDebt({...d, project:linkValue.trim()}); setLinkingId(null); setLinkValue('') } }}>✓</Btn>
-                    <Btn variant="ghost" size="xs" onClick={()=>{setLinkingId(null);setLinkValue('')}}>✕</Btn>
+                    <Btn variant="primary" size="xs" aria-label={t('debts.card.confirmLink')} onClick={async()=>{ if(linkValue.trim()){ await updateDebt({...d, project:linkValue.trim()}); setLinkingId(null); setLinkValue('') } }}>✓</Btn>
+                    <Btn variant="ghost" size="xs" aria-label={t('common.cancel')} onClick={()=>{setLinkingId(null);setLinkValue('')}}>✕</Btn>
                   </div>
                 </div>
               ) : (

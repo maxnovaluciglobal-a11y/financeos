@@ -8,6 +8,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getAporteConfig, calcAporte } from '../../utils/aporteEngine.js'
+import { fmtFixed } from '../../utils/index.js'
 import {
   compararRothTraditional, calcHSA, tasaMarginalDesdeBruto,
   limite401k, limiteIRA, limiteHSA, LIMITES_2026,
@@ -58,7 +59,7 @@ export default function AhorroFiscal() {
   const locale = { MX: 'es-MX', CO: 'es-CO', US: 'en-US', ES: 'es-ES' }[config.pais] || 'es'
   const esUS = config.pais === 'US'
 
-  const fmt = (n) => `${sym}${(Number(n) || 0).toLocaleString(locale, { maximumFractionDigits: 0 })}`
+  const fmt = (n) => fmtFixed(n, locale, sym)
 
   return (
     <ProGate feature={t('ahorroFiscal.proGateFeature')}>

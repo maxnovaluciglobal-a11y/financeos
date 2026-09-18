@@ -11,8 +11,9 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRSEmpregado, calcIRSRecibosVerdes, ESCALOES_IRS_2026, MINIMO_EXISTENCIA } from '../../utils/irsPT.js'
+import { fmtFixed } from '../../utils/index.js'
 
-const fmtEUR = (n) => `€${Math.round(Number(n) || 0).toLocaleString('pt-PT')}`
+const fmtEUR = (n) => fmtFixed(n, 'pt-PT', '€')
 
 export default function IRSPortugal() {
   const { settings } = useApp()

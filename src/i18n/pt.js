@@ -30,6 +30,7 @@ export const pt = {
     'common.importShortcut': "⇪ Muitos movimentos? Importe seu extrato bancário →",
     'debts.linkProject': "🏢 Vincular a propriedade",
     'debts.linkProjectHint': "Se esta dívida é de uma propriedade alugada, vincule-a: sua parcela deixará de ser subtraída do seu disponível pessoal (ela já vive no fluxo da propriedade).",
+    'debts.card.confirmLink': "Confirmar vínculo à propriedade",
     'debts.uf.check': "🇨🇱 Dívida em UF (crédito hipotecário) — insiro os valores em UF",
     'debts.uf.balance': "Saldo: UF {uf} ≈ {clp}",
     'debts.uf.rate': "UF hoje: {v}",

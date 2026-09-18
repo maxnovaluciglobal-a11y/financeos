@@ -12,8 +12,9 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRPFEmpleado, calcIRPFAutonomo, TRAMOS_IRPF_2026 } from '../../utils/irpfES.js'
+import { fmtFixed } from '../../utils/index.js'
 
-const fmtEUR = (n) => `€${Math.round(Number(n) || 0).toLocaleString('es-ES')}`
+const fmtEUR = (n) => fmtFixed(n, 'es-ES', '€')
 
 export default function IRPFEspana() {
   const { settings } = useApp()

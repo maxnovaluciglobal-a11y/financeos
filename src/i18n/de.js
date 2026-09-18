@@ -30,6 +30,7 @@ export const de = {
     'common.importShortcut': "⇪ Viele Buchungen? Importieren Sie Ihren Kontoauszug →",
     'debts.linkProject': "🏢 Mit Immobilie verknüpfen",
     'debts.linkProjectHint': "Wenn diese Schuld zu einer vermieteten Immobilie gehört, verknüpfen Sie sie: Die Rate wird dann nicht mehr von Ihrem verfügbaren Budget abgezogen (sie läuft bereits im Cashflow der Immobilie).",
+    'debts.card.confirmLink': "Verknüpfung mit Immobilie bestätigen",
     'debts.uf.check': "🇨🇱 Schuld in UF (Hypothek Chile) — Beträge in UF eingeben",
     'debts.uf.balance': "Saldo: UF {uf} ≈ {clp}",
     'debts.uf.rate': "UF heute: {v}",
