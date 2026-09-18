@@ -22,6 +22,7 @@ import CountryTool from './CountryTool.jsx'
 import { moneyLocale } from '../../utils/index.js'
 import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
+import { Card, CardHeader } from '../../components/ui/index.jsx'
 
 const fmt  = (n) => (Number(n) || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
 const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
@@ -659,7 +660,7 @@ export default function Dashboard({ setPage }) {
 
       {/* IQ Score — puntaje 0-100 de salud financiera */}
       {healthScore && (
-        <div className="card rise" style={{ padding:'16px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+        <Card className="rise" style={{ padding:'16px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
           <div style={{ display:'flex', alignItems:'center', gap:14, flex:1, minWidth:180 }}>
             <div style={{ textAlign:'center', flexShrink:0 }}>
               <div className="num" style={{ fontSize:34, fontWeight:700, color:healthScore.color, lineHeight:1 }}>
@@ -686,21 +687,21 @@ export default function Dashboard({ setPage }) {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Señales del Diagnóstico */}
       {topSignals.length > 0 && (
-        <div className="card rise" style={{ padding:'16px 18px', marginBottom:16 }}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-            <h2 style={{ margin:0, fontFamily:'var(--mono)', fontSize:10, fontWeight:600, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px' }}>{t('dash.signals.title')}</h2>
-            {setPage && (
+        <Card className="rise" style={{ padding:'16px 18px', marginBottom:16 }}>
+          <CardHeader
+            title={t('dash.signals.title')}
+            right={setPage && (
               <button type="button" onClick={() => setPage('coach')}
                 style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
                 {t('dash.signals.viewAll')}
               </button>
             )}
-          </div>
+          />
           {topSignals.map((s, i) => (
             <div key={i} style={{ borderLeft:`3px solid ${SEV_COLOR[s.severity]}`, paddingLeft:10, marginBottom: i < topSignals.length - 1 ? 10 : 0 }}>
               <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2 }}>
@@ -712,7 +713,7 @@ export default function Dashboard({ setPage }) {
               {(() => { const a = signalAction(s); return <InlineCTA label={a.label} page={a.page} tone={a.tone} /> })()}
             </div>
           ))}
-        </div>
+        </Card>
       )}
 
       {/* Proyección fin de mes */}
@@ -723,11 +724,11 @@ export default function Dashboard({ setPage }) {
         const pctMonth = (today / daysInMonth * 100).toFixed(0)
         const over     = projBal < 0
         return (
-          <div style={{ background:'var(--sur)', border:`.5px solid ${over ? 'color-mix(in srgb, var(--neg) 32%, transparent)' : 'var(--brd)'}`, borderRadius:'var(--r)', padding:'14px 16px', marginBottom:16 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10, flexWrap:'wrap', gap:6 }}>
-              <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px' }}>{t('dash.proj.title')}</div>
-              <div style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</div>
-            </div>
+          <Card style={{ border: over ? '.5px solid color-mix(in srgb, var(--neg) 32%, transparent)' : undefined, padding:'14px 16px', marginBottom:16 }}>
+            <CardHeader
+              title={t('dash.proj.title')}
+              right={<span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'none', letterSpacing:'normal' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</span>}
+            />
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:10 }}>
               {[
                 { label:t('dash.proj.exp'),   value:`${sym}${fmt(projExp)}`,            color:'var(--red)',                                  rawVal: projExp },
@@ -756,7 +757,7 @@ export default function Dashboard({ setPage }) {
               {setPage && <button type="button" onClick={() => setPage('cashflow')} style={{ color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0, font:'inherit' }}>{t('dash.proj.viewFull')}</button>}
             </div>
             {over && <InlineCTA label={t('dash.proj.reviewExpenses')} page="movements" tone="red" />}
-          </div>
+          </Card>
         )
       })()}
 
