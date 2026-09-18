@@ -169,3 +169,21 @@ export function PageHeader({ title, sub }) {
     </div>
   )
 }
+
+export function SegmentedControl({ value, onChange, options }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+      {options.map(opt => {
+        const active = value === opt.value
+        return (
+          <button key={opt.value} type="button" onClick={() => onChange(opt.value)} aria-pressed={active} style={{
+            flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+            border: active ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
+            background: active ? 'var(--grn-bg)' : 'var(--sur2)',
+            color: active ? 'var(--grn)' : 'var(--tx)',
+          }}>{opt.label}</button>
+        )
+      })}
+    </div>
+  )
+}

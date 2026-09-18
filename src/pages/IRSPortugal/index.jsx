@@ -8,7 +8,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
+import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRSEmpregado, calcIRSRecibosVerdes, ESCALOES_IRS_2026, MINIMO_EXISTENCIA } from '../../utils/irsPT.js'
 import { fmtFixed } from '../../utils/index.js'
@@ -43,20 +43,10 @@ export default function IRSPortugal() {
           ⚠ {t('irsPT.disclaimer')}
         </Alert>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-          <button type="button" onClick={() => setModo('empregado')} aria-pressed={modo === 'empregado'} style={{
-            flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
-            border: modo === 'empregado' ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
-            background: modo === 'empregado' ? 'var(--grn-bg)' : 'var(--sur2)',
-            color: modo === 'empregado' ? 'var(--grn)' : 'var(--tx)',
-          }}>{t('irsPT.tab.employed')}</button>
-          <button type="button" onClick={() => setModo('verdes')} aria-pressed={modo === 'verdes'} style={{
-            flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
-            border: modo === 'verdes' ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
-            background: modo === 'verdes' ? 'var(--grn-bg)' : 'var(--sur2)',
-            color: modo === 'verdes' ? 'var(--grn)' : 'var(--tx)',
-          }}>{t('irsPT.tab.greenReceipts')}</button>
-        </div>
+        <SegmentedControl value={modo} onChange={setModo} options={[
+          { value: 'empregado', label: t('irsPT.tab.employed') },
+          { value: 'verdes', label: t('irsPT.tab.greenReceipts') },
+        ]} />
 
         {modo === 'empregado' ? <EmpregadoCard t={t} /> : <RecibosVerdesCard t={t} />}
 

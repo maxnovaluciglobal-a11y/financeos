@@ -9,7 +9,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
+import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRPFEmpleado, calcIRPFAutonomo, TRAMOS_IRPF_2026 } from '../../utils/irpfES.js'
 import { fmtFixed } from '../../utils/index.js'
@@ -44,20 +44,10 @@ export default function IRPFEspana() {
           ⚠ {t('irpfes.disclaimer')}
         </Alert>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-          <button type="button" onClick={() => setModo('empleado')} aria-pressed={modo === 'empleado'} style={{
-            flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
-            border: modo === 'empleado' ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
-            background: modo === 'empleado' ? 'var(--grn-bg)' : 'var(--sur2)',
-            color: modo === 'empleado' ? 'var(--grn)' : 'var(--tx)',
-          }}>{t('irpfes.mode.empleado')}</button>
-          <button type="button" onClick={() => setModo('autonomo')} aria-pressed={modo === 'autonomo'} style={{
-            flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
-            border: modo === 'autonomo' ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
-            background: modo === 'autonomo' ? 'var(--grn-bg)' : 'var(--sur2)',
-            color: modo === 'autonomo' ? 'var(--grn)' : 'var(--tx)',
-          }}>{t('irpfes.mode.autonomo')}</button>
-        </div>
+        <SegmentedControl value={modo} onChange={setModo} options={[
+          { value: 'empleado', label: t('irpfes.mode.empleado') },
+          { value: 'autonomo', label: t('irpfes.mode.autonomo') },
+        ]} />
 
         {modo === 'empleado' ? <EmpleadoCard /> : <AutonomoCard />}
 
