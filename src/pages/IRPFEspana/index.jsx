@@ -35,7 +35,7 @@ export default function IRPFEspana() {
   }
 
   return (
-    <ProGate feature={t('irpfes.title')}>
+    <ProGate feature={t('irpfes.proGateFeature')}>
       <div className="stack">
         <PageHeader title={t('irpfes.title')} sub={t('irpfes.sub')} />
 

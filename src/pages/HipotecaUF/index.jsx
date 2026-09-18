@@ -28,7 +28,13 @@ export default function HipotecaUF() {
   }
 
   const [uf, setUf] = useState(null)
-  useEffect(() => { loadIndicadores().then(ind => setUf(ind.uf)) }, [])
+  const [ufSource, setUfSource] = useState(null)
+  useEffect(() => {
+    // loadIndicadores() nunca rechaza — internamente cae a FALLBACK y marca
+    // source:'fallback' si la API/red falla. El error real a mostrar es ESE
+    // estado, no un catch (nunca dispararía).
+    loadIndicadores().then(ind => { setUf(ind.uf); setUfSource(ind.source) })
+  }, [])
 
   const [saldo, setSaldo] = useState('')
   const [tasa, setTasa] = useState('4.5')
@@ -59,6 +65,12 @@ export default function HipotecaUF() {
         <Alert type="info">
           {t('hipoteca.disclaimer')}
         </Alert>
+
+        {ufSource === 'fallback' && (
+          <Alert type="warn">
+            {t('hipoteca.ufFallback')}
+          </Alert>
+        )}
 
         <Card>
           <CardHeader title={t('hipoteca.card.credit')} right={uf && <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{t('hipoteca.ufToday', { uf: fmtUF(uf) })}</span>} />
