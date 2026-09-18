@@ -142,31 +142,17 @@ El commit `205228d` (17-ago) agregó conectar banco vía Plaid (solo EEUU). Una 
 
 **Paquete viejo (22-ago-2026, OBSOLETO — no usar)**: generado bajo el nombre "FinanceOS" antes del rename a MOY IQ, package ID `com.financeospro.app.twa`, en `../android-twa/package/` (fuera de git). Nunca se publicó. El bloqueo original (marca "FINANCEOS®" de Datarails viva en USPTO, ver `financeos_android_twa_20260822`) ya no aplica — el rename a MOY IQ lo resolvió.
 
-**Decisión 17-sep-2026**: regenerar desde cero bajo `com.moyiq.app.twa` (Walter confirmó explícitamente — nunca se publicó nada bajo el ID viejo, así que no había continuidad que preservar, y era la última oportunidad de corregirlo sin costo). El paquete viejo y su keystore quedan sin usar, no borrar por las dudas.
+**Estado (17-sep-2026): regenerado y firmado, listo para instalar/probar.** Proyecto real en `~/moyiq-android-twa/` (fuera de git, no-space path — un intento anterior con `cd` a `android-twa-moyiq/` con espacio en el path falló silenciosamente, ver historial de esa sesión). Package `com.moyiq.app.twa`, alias del keystore `moyiq-upload`, cert CN=Walter La Madriz / OU=Engineering / O=MAXNOVA & LUCI Global LLC / C=US.
 
-**Tooling instalado en esta Mac (17-sep-2026)**: `brew install openjdk@17` + `npm install -g @bubblewrap/cli`. Bubblewrap está listo para correr — pero su wizard (`bubblewrap init`) es 100% interactivo (pide JDK path, package ID, colores, keystore) y **no se puede automatizar por Bash/agente** (se probó: el prompt se rompe sin una TTY real). Hay que correrlo a mano en Terminal.app:
+- `bubblewrap build` (no `gradlew assembleRelease` directo — ese genera un APK sin firmar; `bubblewrap build` orquesta Gradle + firma con `apksigner`) generó `app-release-signed.apk` y `app-release-bundle.aab` en la raíz del proyecto. Requirió antes completar el SDK con `sdkmanager` (`bubblewrap init` solo había instalado los cmdline-tools, no `platform-tools`/`build-tools`/`platforms;android-34`) y un `local.properties` con `sdk.dir` apuntando a `~/.bubblewrap/android_sdk`.
+- Fingerprint SHA-256 sacado con `keytool -list -v -keystore android.keystore -alias moyiq-upload` (el subcomando `bubblewrap fingerprint` pide argumentos que no vienen documentados en la ayuda — usar `keytool` directo es más simple).
+- **`public/.well-known/assetlinks.json` ya actualizado y deployado en producción** (commit `9575951`, verificado con `curl https://app.moyiq.app/.well-known/assetlinks.json`) con `com.moyiq.app.twa` + el fingerprint real. Antes de instalar el `.apk` en un dispositivo, no hace falta ningún paso extra de este archivo — ya matchea.
 
-```bash
-export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
-mkdir -p "../android-twa-moyiq" && cd "../android-twa-moyiq"
-bubblewrap init --manifest="https://app.moyiq.app/app/manifest.webmanifest"
-```
+**Pendiente inmediato, no delegable**: respaldar `~/moyiq-android-twa/android.keystore` + sus dos contraseñas (Walter las generó sin pasarlas por chat, correcto) en algún lugar fuera de esta Mac. Sin ese archivo, ninguna actualización futura de la app se puede firmar bajo este package ID nunca más — es irrecuperable si se pierde.
 
-Respuestas a dar en el wizard:
-- JDK: "No" (usar la propia) → path: `/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`
-- SDK de Android: dejar que Bubblewrap lo instale (Sí) — primera vez tarda, descarga ~1-2GB.
-- Package ID: `com.moyiq.app.twa`
-- App name / Launcher name: `MOY IQ`
-- El resto (colores, ícono) ya sale bien solo porque los toma del manifest real, que ya tiene el maskable icon nuevo (ver abajo).
-- Al final pide datos para el keystore NUEVO (nombre, org "MAXNOVA & LUCI Global LLC", país US) — guardalos igual que la vez pasada.
+**Íconos maskable ya listos** (17-sep-2026, `public/icon-{192,512}-maskable.png` + `manifest`) — Bubblewrap los tomó solos del manifest.
 
-Después: `bubblewrap build` genera `app-release-signed.aab` (subir a Play Console) y el `.apk` de prueba. **Respaldar el keystore nuevo fuera de esta Mac apenas se genere** (mismo criterio que el de GastroCore) — sin él, ninguna actualización futura se puede subir bajo este package ID nunca más.
-
-**`public/.well-known/assetlinks.json`** tiene que apuntar al fingerprint del keystore NUEVO y al package ID `com.moyiq.app.twa` (hoy todavía dice `com.financeospro.app.twa` con el fingerprint viejo — quedó desactualizado a propósito hasta que exista el paquete nuevo). Bubblewrap imprime el fingerprint SHA-256 al final del build; actualizar este archivo y redeployar (`./deploy.sh`) antes de instalar el `.apk` de prueba, o la app abre con barra de URL en vez de pantalla completa.
-
-**Íconos maskable ya listos** (17-sep-2026, `public/icon-{192,512}-maskable.png` + `manifest`) — Bubblewrap los toma solos del manifest, no hace falta generarlos de nuevo.
-
-Pendiente de Walter, no delegable: crear la cuenta de Google Play Console (pago propio, US$25 único) y la publicación pública en sí.
+Pendiente de Walter, no delegable: crear la cuenta de Google Play Console (pago propio, US$25 único), instalar/probar el `.apk` en un dispositivo real, y la publicación pública en sí (subir el `.aab` a Play Console).
 
 ## iOS (Capacitor, scaffold armado y funcionando — 17-sep-2026)
 
@@ -176,8 +162,11 @@ Proyecto en `../ios-capacitor-moyiq/` (fuera de git, sibling de este repo, mismo
 
 **Verificado end-to-end**: `xcodebuild -project ios/App/App.xcodeproj -scheme App -destination 'generic/platform=iOS Simulator' build` → `BUILD SUCCEEDED`. Corrido en el iOS Simulator (iPhone 17 Pro): abre, carga `app.moyiq.app` real, muestra el login de MOY IQ con logo/marca correctos. No es una maqueta — es la app real corriendo nativa.
 
+**Notch/Dynamic Island (17-sep-2026, resuelto)**: overlap del banner de modo demo con el status bar/notch. Causa raíz investigada antes de tocar código (no fue el wrapper nativo — se descartó leyendo `CAPBridgeViewController.swift`/`CAPInstanceDescriptor.swift` reales y probando `contentInset: "never"` sin efecto): `src/demo/DemoBanner.jsx` no tenía el `env(safe-area-inset-top)` que sí tenía el header real de `Shell.jsx`. Fix de una línea (`paddingTop: 'max(8px, env(safe-area-inset-top))'`), commit `e4b8fc9`, deployado y verificado con screenshot real en Simulator.
+
+**Ícono de App Store (17-sep-2026, resuelto)**: `public/icon-1024-appstore.png` — 1024×1024, sin canal alpha, generado con `rsvg-convert` desde `icon-maskable-source.svg` (el mismo monograma que el maskable de Android). Copiado a `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png` en el scaffold, reemplazando el placeholder de Capacitor. Verificado con rebuild (`BUILD SUCCEEDED`) + screenshot del home screen del Simulator mostrando el ícono real.
+
 **Falta para publicar** (todo bloqueado en Walter, no delegable):
 1. Cuenta Apple Developer (US$99/año) — sin esto no se puede firmar para dispositivo real ni subir a App Store, solo correr en Simulator como ahora.
 2. Bundle ID a reservar en App Store Connect: `com.moyiq.app.ios` (ya usado en el scaffold, coherente con el Android `com.moyiq.app.twa`).
-3. Ícono real de App Store (1024×1024, sin canal alpha) — todavía no generado, el scaffold usa el ícono placeholder de Capacitor. Se puede generar del mismo SVG fuente que el maskable de Android (`financeos-app/public/icon-maskable-source.svg`) en cuanto haga falta.
-4. **Riesgo real de review, evaluar antes de someter**: Apple rechaza más fácil que Google las apps "solo una web envuelta" sin funcionalidad nativa real (App Store Review Guideline 4.2, "Minimum Functionality"). Hoy el scaffold es 100% WebView sin ningún plugin nativo — biometría (Face ID para desbloquear, encaja natural con "privacy-first"), notificaciones push, o compartir nativo son los candidatos más obvios si hace falta reforzar el caso ante Apple. Decisión de producto, no técnica — evaluar cuando se llegue a este paso, no antes.
+3. **Riesgo real de review, evaluar antes de someter**: Apple rechaza más fácil que Google las apps "solo una web envuelta" sin funcionalidad nativa real (App Store Review Guideline 4.2, "Minimum Functionality"). Hoy el scaffold es 100% WebView sin ningún plugin nativo — biometría (Face ID para desbloquear, encaja natural con "privacy-first"), notificaciones push, o compartir nativo son los candidatos más obvios si hace falta reforzar el caso ante Apple. Decisión de producto, no técnica — evaluar cuando se llegue a este paso, no antes.
