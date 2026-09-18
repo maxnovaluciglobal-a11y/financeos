@@ -1060,6 +1060,7 @@ export const es = {
     'nav.income': 'Ingresos',
     'nav.expenses': 'Gastos',
     'nav.import': 'Importar',
+    'nav.subscriptions': 'Suscripciones',
     'nav.budgets': 'Presupuestos',
     'nav.debts': 'Deudas',
     'nav.goals': 'Metas',

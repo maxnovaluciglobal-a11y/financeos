@@ -1060,6 +1060,7 @@ export const de = {
     'nav.income': 'Einnahmen',
     'nav.expenses': 'Ausgaben',
     'nav.import': 'Importieren',
+    'nav.subscriptions': 'Abos',
     'nav.budgets': 'Budgets',
     'nav.debts': 'Schulden',
     'nav.goals': 'Ziele',

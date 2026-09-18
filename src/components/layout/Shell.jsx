@@ -23,6 +23,7 @@ const NAV = [
     { id: 'income',    ic: '↑', lb: 'nav.income' },
     { id: 'movements', ic: '↓', lb: 'nav.expenses' },
     { id: 'import',    ic: '⇪', lb: 'nav.import' },
+    { id: 'subscriptions', ic: '↻', lb: 'nav.subscriptions' },
   ] },
   // #06 — "Tu país" como sección propia: eleva el diferenciador fiscal por país
   // (antes estaba diluido dentro de Planificación) y de-satura esa sección.
