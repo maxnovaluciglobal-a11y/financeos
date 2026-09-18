@@ -20,7 +20,7 @@ const s = {
   eyebrow: { fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)', marginBottom: 6 },
   h1: { fontSize: 24, fontWeight: 700, color: 'var(--tx)', fontFamily: 'var(--display)', letterSpacing: '-.02em', marginBottom: 4 },
   sub: { fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)' },
-  card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: 20, marginBottom: 16 },
+  card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
   cardTitle: { fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 12 },
   steps: { display: 'flex', gap: 8, marginBottom: 28 },
   step: (active, done) => ({
