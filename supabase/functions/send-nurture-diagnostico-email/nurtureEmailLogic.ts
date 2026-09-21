@@ -1,10 +1,15 @@
 // supabase/functions/send-nurture-diagnostico-email/nurtureEmailLogic.ts
 //
-// Lógica pura de la secuencia de 3 emails de nurture post-Diagnóstico Exprés
+// Lógica pura de la secuencia de 4 emails de nurture post-Diagnóstico Exprés
 // (ver financeos-landing/marketing/nurture-diagnostico-3-emails.md — ahí está
 // el copy exacto de donde sale este contenido). Separada de index.ts por el
 // mismo motivo que reportEmailLogic.ts: index.ts lee Deno.env.get() a nivel
 // de módulo y no se puede importar desde Node/vitest.
+//
+// Revisión 18-sep-2026: copy reforzado (asuntos con más tensión, miga de pan
+// entre email 1→2, email 3 recortado) + email 4 nuevo de reactivación (día
+// 12, solo para quien no convirtió en ninguno de los 3 anteriores). Ver el
+// .md para el detalle de qué cambió y por qué en cada email.
 //
 // Remitente: MOY IQ <hola@moyiq.app> — separado a propósito del transaccional
 // (licencias@moyiq.app, usado por stripe-webhook y send-report-email). Es
@@ -19,7 +24,7 @@
 // de medirlo todavía), se fija SIEMPRE la variante A. Documentado acá porque
 // es una decisión de producto, no un detalle de implementación.
 
-export type NurtureMode = "welcome" | "day2" | "day5";
+export type NurtureMode = "welcome" | "day2" | "day5" | "day12";
 
 export interface DiagnosticoLead {
   id: string;
@@ -98,7 +103,7 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
   const score = lead.score != null ? `${lead.score}/100` : "tu resultado";
 
   if (mode === "welcome") {
-    const subject = "Tu diagnóstico financiero completo"; // variante A fija, ver nota arriba
+    const subject = "Tu diagnóstico completo (y el dato que se quedó afuera)"; // variante A, revisión 18-sep
     const html = wrapHtml(
       `
       <h2 style="color:#14213D">Acá está tu diagnóstico completo</h2>
@@ -110,6 +115,7 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
       <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomás, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Crear cuenta gratis →</a></p>
       <p style="color:#666;font-size:13px">Sin tarjeta, sin trial que vencer. Starter no tiene fecha de corte.</p>
+      <p style="color:#666;font-size:13px">En dos días te cuento por qué la mayoría de los presupuestos armados en una hoja de cálculo no llegan al segundo mes — y no es por falta de disciplina.</p>
       `,
       unsub,
     );
@@ -117,12 +123,12 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
   }
 
   if (mode === "day2") {
-    const subject = "Por qué el presupuesto que armaste en una hoja de cálculo no dura"; // variante A
+    const subject = "El presupuesto no falló. El método, sí."; // variante A, revisión 18-sep
     const html = wrapHtml(
       `
       <h2 style="color:#14213D">El problema no es cuánto ganás</h2>
       <p>Hola,</p>
-      <p>Un dato que se repite en las encuestas de capacidad financiera en la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
+      <p>Como prometí, acá va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
       <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
       <p>Cuando importás tus movimientos en MOY IQ, no armás el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más plata este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
       <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
@@ -134,27 +140,39 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
     return { subject, html };
   }
 
-  // day5
-  const subject = "Qué diferencia a Starter de Pro en la práctica"; // variante A
+  if (mode === "day5") {
+    const subject = "Starter o Pro: la diferencia, sin vueltas"; // variante A, revisión 18-sep
+    const html = wrapHtml(
+      `
+      <h2 style="color:#14213D">Sin testimonios inventados</h2>
+      <p>Hola,</p>
+      <p>Sin testimonio inventado de "Fulano ahorró X% en 3 meses" — no tenemos ese caso documentado, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
+      <p>La diferencia real entre lo que ya podés usar gratis y lo que suma Pro:</p>
+      <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Dashboard con IQ Score, Movimientos y categorización automática, Presupuestos básicos, Metas simples.</p>
+      <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitás mostrarle tus números a otra persona.</p>
+      <p>Si tu situación es simple, Starter alcanza. Si tenés varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
+      <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Actualizar a Pro →</a></p>
+      <p style="color:#666;font-size:13px">Si no es para vos ahora, seguís en Starter sin perder nada de lo que ya armaste.</p>
+      `,
+      unsub,
+    );
+    return { subject, html };
+  }
+
+  // day12 — reactivación (nuevo, revisión 18-sep). No repite el pitch de
+  // Starter/Pro (ya lo vio dos veces) — vuelve a poner el propio resultado
+  // del diagnóstico adelante, no la app. Menciona unsubscribe en el cuerpo,
+  // no solo en el footer legal — el tono es "esto es para vos", ocultar la
+  // salida contradice eso.
+  const subject = "Tu IQ Score sigue ahí (no venció)"; // variante A
   const html = wrapHtml(
     `
-    <h2 style="color:#14213D">Sin testimonios inventados</h2>
+    <h2 style="color:#14213D">No te escribo por MOY IQ</h2>
     <p>Hola,</p>
-    <p>No te vamos a inventar un testimonio de "Fulano ahorró X% en 3 meses". No tenemos esos casos documentados todavía, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
-    <p>Lo que sí podemos ser específicos es en la diferencia real entre lo que ya estás usando (o podés usar gratis) y lo que suma Pro:</p>
-    <p><strong>Starter (gratis, sin fecha de vencimiento):</strong><br>
-    — Dashboard con IQ Score<br>
-    — Movimientos y categorización automática<br>
-    — Presupuestos básicos<br>
-    — Metas simples</p>
-    <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong><br>
-    — Coach: recomendaciones que se ajustan con cada movimiento nuevo<br>
-    — Advisor: proyección de escenarios antes de tomar una decisión grande<br>
-    — Goals con seguimiento de múltiples objetivos y ajuste automático<br>
-    — Reports exportables</p>
-    <p>Si tu situación es simple, Starter alcanza y no hace falta pagar nada. Si tenés varias metas corriendo en paralelo o decisiones grandes en el horizonte cercano, ahí es donde Pro paga solo.</p>
-    <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Actualizar a Pro →</a></p>
-    <p style="color:#666;font-size:13px">Si no es para vos, seguís en Starter sin perder nada de lo que ya armaste.</p>
+    <p>No te vengo a insistir con Starter o Pro — ya te los mostré. Esto es distinto: tu diagnóstico de hace 12 días sigue guardado, pero doce días es tiempo suficiente para que algo haya cambiado — un gasto grande, un ingreso nuevo, una deuda que se movió.</p>
+    <p><a href="${config.landingUrl.replace(/\/$/, "")}/diagnostico.html?ref=diagnostico-d12" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Volver a ver mi diagnóstico →</a></p>
+    <p>Si tu situación es la misma, no hace falta que hagas nada — el resultado sigue siendo válido. Si cambió algo, es un buen momento para volver a correrlo y ver qué mueve.</p>
+    <p style="color:#666;font-size:13px">Este es el último correo de esta secuencia. Si preferís no recibir más, date de baja <a href="${unsub}" style="color:#666">acá</a> — no hay problema.</p>
     `,
     unsub,
   );
@@ -252,22 +270,42 @@ export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promis
   );
 }
 
+// Email 4 (reactivación): solo si ya se mandó el 3 y pasaron >= 7 días desde
+// ESE envío (5+7=12, respeta el timing día 12 del plan). Mismo filtro común
+// que 2/3 — ver nota de diseño arriba sobre por qué no distingue apertura.
+export async function fetchEligibleForEmail4(config: NurtureEmailConfig): Promise<DiagnosticoLead[]> {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  return restGet<DiagnosticoLead[]>(
+    `diagnostico_leads?select=id,email,score,label` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
+      `&email4_sent_at=is.null&email3_sent_at=not.is.null&email3_sent_at=lte.${cutoff}` +
+      `&limit=${BATCH_LIMIT}`,
+    config,
+  );
+}
+
 export async function markSent(leadId: string, mode: NurtureMode, config: NurtureEmailConfig): Promise<void> {
-  const column = mode === "welcome" ? "email1_sent_at" : mode === "day2" ? "email2_sent_at" : "email3_sent_at";
+  const column =
+    mode === "welcome" ? "email1_sent_at" :
+    mode === "day2"    ? "email2_sent_at" :
+    mode === "day5"    ? "email3_sent_at" :
+                          "email4_sent_at";
   await restPatch(`diagnostico_leads?id=eq.${encodeURIComponent(leadId)}`, { [column]: new Date().toISOString() }, config);
 }
 
 export interface CronRunResult {
   email2: { attempted: number; sent: number; failed: number };
   email3: { attempted: number; sent: number; failed: number };
+  email4: { attempted: number; sent: number; failed: number };
 }
 
-// Corre el batch de emails 2 y 3. Se llama desde index.ts en modo "cron"
+// Corre el batch de emails 2, 3 y 4. Se llama desde index.ts en modo "cron"
 // (autenticado con CRON_SECRET, no con la llamada pública del navegador).
 export async function runCronBatch(config: NurtureEmailConfig): Promise<CronRunResult> {
   const result: CronRunResult = {
     email2: { attempted: 0, sent: 0, failed: 0 },
     email3: { attempted: 0, sent: 0, failed: 0 },
+    email4: { attempted: 0, sent: 0, failed: 0 },
   };
 
   const leads2 = await fetchEligibleForEmail2(config);
@@ -295,6 +333,20 @@ export async function runCronBatch(config: NurtureEmailConfig): Promise<CronRunR
     } else {
       result.email3.failed++;
       console.error(`send-nurture-diagnostico-email: día5 falló para lead ${lead.id}: ${sent.error}`);
+    }
+  }
+
+  const leads4 = await fetchEligibleForEmail4(config);
+  result.email4.attempted = leads4.length;
+  for (const lead of leads4) {
+    const rendered = renderEmail("day12", lead, config);
+    const sent = await sendViaResend(lead.email, rendered, config);
+    if (sent.ok) {
+      await markSent(lead.id, "day12", config);
+      result.email4.sent++;
+    } else {
+      result.email4.failed++;
+      console.error(`send-nurture-diagnostico-email: día12 falló para lead ${lead.id}: ${sent.error}`);
     }
   }
 

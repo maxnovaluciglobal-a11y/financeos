@@ -156,6 +156,45 @@ export async function registerStarterLead(email) {
     })
     if (!res.ok) return false
     const data = await res.json()
+    // Mismo patrón que diagnostico.html: si el registro devolvió id, se
+    // dispara el email 1 (bienvenida) de la secuencia de nurture de Starter
+    // sin bloquear la activación — best-effort, nunca puede tumbar el flujo
+    // de "Empezar gratis". Sin esto el gap era real: el cron (ver
+    // 20260918000500) solo manda los emails 2/3, nunca el 1.
+    if (data && data.ok && data.id) {
+      fetch(`${SUPABASE_URL}/functions/v1/send-nurture-starter-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'welcome', leadId: data.id }),
+      }).catch(() => {})
+    }
+    return !!(data && data.ok)
+  } catch { return false }
+}
+
+// Registra el lead del gate de demo (email + nombre, ver DemoGate.jsx).
+// Best-effort: si falla, DemoGate deja pasar igual — el gate es para
+// capturar el lead, no para bloquear a nadie por un problema de red.
+export async function registerDemoLead(email, nombre, consentMarketing) {
+  const cleanEmail = String(email || '').trim()
+  const cleanNombre = String(nombre || '').trim()
+  if (!cleanEmail || !cleanNombre || !SUPABASE_URL || !SUPABASE_ANON) return false
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_demo_lead`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        p_email: cleanEmail,
+        p_nombre: cleanNombre,
+        p_consent_marketing: !!consentMarketing,
+      }),
+    })
+    if (!res.ok) return false
+    const data = await res.json()
     return !!(data && data.ok)
   } catch { return false }
 }

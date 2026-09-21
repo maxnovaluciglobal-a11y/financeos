@@ -5,7 +5,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
   verifyStripeSignature, generateKey, planFromAmount, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
-  notifyKeyDeliveryFailure, subscriptionIntervalFromSession, subscriptionIdFromSession,
+  notifyKeyDeliveryFailure, notifyNewProPurchase, subscriptionIntervalFromSession, subscriptionIdFromSession,
   extendLicenseExpiry, periodEndFromInvoice,
 } from './webhookLogic.ts'
 
@@ -368,6 +368,45 @@ describe('llamadas HTTP (fetch mockeado)', () => {
     it('no lanza si fetch mismo rechaza (fallo de red)', async () => {
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
       await expect(notifyKeyDeliveryFailure(details, CONFIG)).resolves.toBeUndefined()
+    })
+  })
+
+  describe('notifyNewProPurchase', () => {
+    const details = { email: 'cliente@x.com', plan: 'pro', interval: 'month' }
+
+    it('manda el email de alerta a config.alertEmail con los datos de la venta', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await notifyNewProPurchase(details, CONFIG)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+      expect(body.to).toBe(CONFIG.alertEmail)
+      expect(body.subject).toBe('MOY IQ: nueva compra Pro')
+      expect(body.html).toContain('cliente@x.com')
+      expect(body.html).toContain('month')
+    })
+
+    it('pago único (interval null) no rompe', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await notifyNewProPurchase({ ...details, interval: null }, CONFIG)
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+      expect(body.html).toContain('pago único')
+    })
+
+    it('no hace nada si falta resendApiKey o alertEmail', async () => {
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+      await notifyNewProPurchase(details, { ...CONFIG, alertEmail: undefined })
+      await notifyNewProPurchase(details, { ...CONFIG, resendApiKey: undefined })
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('no lanza si Resend o la red fallan (best-effort)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'down' }))
+      await expect(notifyNewProPurchase(details, CONFIG)).resolves.toBeUndefined()
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+      await expect(notifyNewProPurchase(details, CONFIG)).resolves.toBeUndefined()
     })
   })
 })

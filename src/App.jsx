@@ -2,6 +2,7 @@
 import { lazy, Suspense } from 'react'
 import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
+import ResetPassword from './components/ResetPassword.jsx'
 import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter } from './utils/licenseValidator.js'
 import { getSession, onAuthChange } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
@@ -80,6 +81,11 @@ function Inner() {
   // mostramos LicenseGate (reintentable) en vez de la pantalla en blanco
   // indefinida que hoy deja `Inner()` devolviendo null.
   const [bootTimedOut, setBootTimedOut] = useState(false)
+  // true mientras el usuario vino desde el link del correo de "olvidé mi
+  // contraseña" (evento PASSWORD_RECOVERY de Supabase) — esa sesión ya es
+  // válida, así que sin este flag caería directo a LicenseGate/la app en
+  // vez de dejarlo elegir una contraseña nueva primero.
+  const [passwordRecovery, setPasswordRecovery] = useState(false)
   // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
   // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
   // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
@@ -95,7 +101,9 @@ function Inner() {
   useEffect(() => {
     if (isDemo) return
     getSession().then(setSession)
-    return onAuthChange(setSession)
+    return onAuthChange(setSession, (event) => {
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -139,6 +147,7 @@ function Inner() {
       return null
     }
     if (!session) return <AuthGate onAuthenticated={() => {}} />
+    if (passwordRecovery) return <ResetPassword onDone={() => setPasswordRecovery(false)} />
     if (!licensed && !entitlementChecked) {
       // Mismo criterio mientras se verifica el entitlement de la cuenta.
       if (bootTimedOut) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />

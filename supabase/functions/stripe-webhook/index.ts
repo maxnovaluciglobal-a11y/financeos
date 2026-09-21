@@ -19,7 +19,7 @@
 import {
   verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
-  notifyKeyDeliveryFailure, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
+  notifyKeyDeliveryFailure, notifyNewProPurchase, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
   subscriptionIdFromSession, extendLicenseExpiry, periodEndFromInvoice, type WebhookConfig,
 } from "./webhookLogic.ts";
 
@@ -96,6 +96,10 @@ Deno.serve(async (req) => {
       // Sin `key` a propósito — ver el comentario de sendKeyEmail(). session.id
       // identifica la fila igual de bien y no es material criptografico.
       console.log(`Licencia emitida: plan=${plan} email=${email ?? "(sin email)"} session=${session.id} payment_intent=${paymentIntent} email_enviado=${emailSent}`);
+      // Fire-and-forget: una falla acá no debe tumbar la respuesta 200 a
+      // Stripe (eso sí reintenta el webhook entero, con riesgo de doble
+      // emisión pese a sessionAlreadyProcessed).
+      notifyNewProPurchase({ email, plan, interval }, config).catch(() => {});
       if (!emailSent) {
         // Antes esto era invisible: la licencia quedaba emitida, el webhook
         // devolvia 200 y nadie se enteraba de que el cliente no tenia su clave.

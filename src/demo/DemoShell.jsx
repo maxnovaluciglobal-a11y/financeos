@@ -5,6 +5,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { DemoProvider, useDemo, DemoContext } from './DemoContext.jsx'
 import DemoBanner from './DemoBanner.jsx'
+import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import { AppContext } from '../context/AppContext.jsx'
@@ -190,6 +191,12 @@ function DemoInner() {
 }
 
 export default function DemoShell() {
+  const [gatePassed, setGatePassed] = useState(() => hasPassedDemoGate())
+
+  if (!gatePassed) {
+    return <DemoGate onPass={() => setGatePassed(true)} />
+  }
+
   return (
     <DemoProvider>
       <DemoBridge>

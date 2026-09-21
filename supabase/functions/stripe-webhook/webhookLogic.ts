@@ -172,6 +172,41 @@ export async function notifyKeyDeliveryFailure(
   }
 }
 
+// Notificación de venta (distinta de notifyKeyDeliveryFailure, que solo
+// avisa cuando algo salió MAL). Pedido de Walter 14-sep-2026: no le llegaba
+// ninguna señal de altas nuevas — Pro es la única de las tres (Starter, Pro,
+// Invest) que ya tenía un canal de alerta armado (config.alertEmail), solo
+// faltaba usarlo también en el camino feliz.
+export async function notifyNewProPurchase(
+  details: { email: string | null; plan: string; interval: string | null },
+  config: WebhookConfig,
+): Promise<void> {
+  if (!config.resendApiKey || !config.alertEmail) return;
+  const html = `
+    <div style="font-family:system-ui,sans-serif">
+      <p><strong>Nueva compra Pro en MOY IQ.</strong></p>
+      <ul>
+        <li>email: ${details.email ?? "(sin email)"}</li>
+        <li>plan: ${details.plan}</li>
+        <li>intervalo: ${details.interval ?? "(pago único)"}</li>
+      </ul>
+      <p style="color:#888;font-size:12px">Panel CRM: <a href="https://app.moyiq.app/app/?admin=crm">app.moyiq.app/app/?admin=crm</a></p>
+    </div>`;
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: config.fromEmail, to: config.alertEmail,
+        subject: "MOY IQ: nueva compra Pro", html,
+      }),
+    });
+    if (!res.ok) console.error(`notifyNewProPurchase: Resend error ${res.status} ${await res.text()}`);
+  } catch (err) {
+    console.error("notifyNewProPurchase: fallo de red", err);
+  }
+}
+
 export async function issueLicense(
   key: string, plan: string, email: string | null, session: string | null, paymentIntent: string | null,
   config: WebhookConfig, subscriptionId: string | null = null,
