@@ -5,7 +5,7 @@
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.
 import { useState } from 'react'
-import { signUpWithPassword, signInWithPassword, signInWithGoogle } from '../core/auth.js'
+import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 
@@ -27,6 +27,9 @@ export default function AuthGate({ onAuthenticated }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [checkEmail, setCheckEmail] = useState(false)
+  const [resendState, setResendState] = useState('idle') // 'idle' | 'sending' | 'sent' | 'error'
+  const [forgotMode, setForgotMode] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
 
   async function handleSubmit() {
     const cleanEmail = email.trim()
@@ -47,6 +50,30 @@ export default function AuthGate({ onAuthenticated }) {
       return
     }
     onAuthenticated(result.data.session.user)
+  }
+
+  async function handleForgotSubmit() {
+    const cleanEmail = email.trim()
+    if (!cleanEmail) { setError(t('authGate.errorMissingFields')); return }
+    setError('')
+    setLoading(true)
+    const result = await resetPasswordForEmail(cleanEmail)
+    setLoading(false)
+    // Nunca revela si el email existe o no (mismo criterio de seguridad que
+    // Supabase aplica server-side) — se muestra "revisa tu correo" incluso
+    // si resetPasswordForEmail falló por email inexistente.
+    if (result.error && !/network|fetch|timeout/i.test(String(result.error))) {
+      setForgotSent(true)
+      return
+    }
+    if (result.error) { setError(friendlyError(t, result.error)); return }
+    setForgotSent(true)
+  }
+
+  async function handleResend() {
+    setResendState('sending')
+    const result = await resendSignupConfirmation(email.trim())
+    setResendState(result.error ? 'error' : 'sent')
   }
 
   async function handleGoogle() {
@@ -84,6 +111,79 @@ export default function AuthGate({ onAuthenticated }) {
     }),
   }
 
+  if (forgotMode) {
+    if (forgotSent) {
+      return (
+        <div style={s.wrap}>
+          <div style={s.box}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+              <Logo size={22} />
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
+              {t('authGate.forgotSentTitle')}
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+              {t('authGate.forgotSentBody', { email: email.trim() })}
+            </div>
+            <button
+              onClick={() => { setForgotMode(false); setForgotSent(false); setError('') }}
+              style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+            >
+              {t('authGate.backToLogin')}
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div style={s.wrap}>
+        <div style={s.box}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+            <Logo size={22} />
+          </div>
+          <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
+            {t('authGate.forgotTitle')}
+          </h1>
+          <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+            {t('authGate.forgotSubtitle')}
+          </div>
+          <label htmlFor="authgate-forgot-email" style={s.label}>{t('authGate.emailPlaceholder')}</label>
+          <input
+            id="authgate-forgot-email"
+            style={s.input}
+            type="email"
+            inputMode="email"
+            placeholder={t('authGate.emailPlaceholder')}
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleForgotSubmit()}
+            spellCheck={false}
+            autoFocus
+            autoComplete="email"
+          />
+          {error && (
+            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+              ⚠ {error}
+            </div>
+          )}
+          <button
+            onClick={handleForgotSubmit}
+            disabled={loading}
+            style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4, marginBottom: 12 }}
+          >
+            {loading ? t('authGate.loading') : t('authGate.forgotSubmitBtn')}
+          </button>
+          <button
+            onClick={() => { setForgotMode(false); setError('') }}
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+          >
+            {t('authGate.backToLogin')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (checkEmail) {
     return (
       <div style={s.wrap}>
@@ -94,9 +194,23 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
             {t('authGate.checkEmailTitle')}
           </div>
-          <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6 }}>
+          <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 16 }}>
             {t('authGate.checkEmailBody', { email })}
           </div>
+          {resendState === 'sent' ? (
+            <div style={{ fontSize: 12, color: 'var(--pos)' }}>{t('authGate.resendSent')}</div>
+          ) : (
+            <button
+              onClick={handleResend}
+              disabled={resendState === 'sending'}
+              style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+            >
+              {t('authGate.resendButton')}
+            </button>
+          )}
+          {resendState === 'error' && (
+            <div style={{ fontSize: 12, color: 'var(--neg)', marginTop: 6 }}>{t('authGate.resendError')}</div>
+          )}
         </div>
       </div>
     )
@@ -171,6 +285,15 @@ export default function AuthGate({ onAuthenticated }) {
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
         />
+
+        {tab === 'login' && (
+          <button
+            onClick={() => { setForgotMode(true); setError('') }}
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0, marginBottom: 12, display: 'block' }}
+          >
+            {t('authGate.forgotLink')}
+          </button>
+        )}
 
         {error && (
           <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>

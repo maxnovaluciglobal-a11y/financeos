@@ -18,17 +18,69 @@ export async function getSession() {
   return result?.data?.session || null
 }
 
-export function onAuthChange(callback) {
+export function onAuthChange(callback, onEvent) {
   if (!authClient) return () => {}
-  const { data } = authClient.auth.onAuthStateChange((_event, session) => callback(session))
+  // onEvent es opcional — App.jsx lo usa para detectar PASSWORD_RECOVERY
+  // (el link del correo de reset abre la app con una sesión YA válida, así
+  // que mirar solo `session` no alcanza para distinguir "inició sesión
+  // normal" de "vino a poner una contraseña nueva").
+  const { data } = authClient.auth.onAuthStateChange((event, session) => {
+    callback(session)
+    onEvent?.(event)
+  })
   return () => data?.subscription?.unsubscribe()
+}
+
+// Manda el correo de recuperación (Supabase Auth). redirectTo vuelve al
+// mismo origen/path actual — App.jsx detecta el evento PASSWORD_RECOVERY
+// cuando ese link se abre y muestra la pantalla de "elegí una contraseña
+// nueva" en vez del flujo normal de login.
+export async function resetPasswordForEmail(email) {
+  if (!authClient) return { error: 'auth_not_configured' }
+  const { error } = await authClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname,
+  })
+  if (error) return { error: error.message }
+  return {}
+}
+
+// Se llama con la sesión de recuperación ya activa (ver PASSWORD_RECOVERY
+// arriba) — Supabase no pide la contraseña vieja en este flujo, el link del
+// correo ya es la prueba de identidad.
+export async function updatePassword(newPassword) {
+  if (!authClient) return { error: 'auth_not_configured' }
+  const { error } = await authClient.auth.updateUser({ password: newPassword })
+  if (error) return { error: error.message }
+  return {}
 }
 
 export async function signUpWithPassword(email, password) {
   if (!authClient) return { error: 'auth_not_configured' }
-  const { data, error } = await authClient.auth.signUp({ email, password })
+  // emailRedirectTo: sin esto, el correo de confirmación de signup usa el
+  // Site URL único del proyecto (compartido con Invest) en vez del origen
+  // real — auth-email-hook/emailHookLogic.ts detecta la marca (MOY IQ vs
+  // Invest) mirando este valor, igual que ya hacía resetPasswordForEmail.
+  const { data, error } = await authClient.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: window.location.origin + window.location.pathname },
+  })
   if (error) return { error: error.message }
   return { data }
+}
+
+// Reenvía el correo de confirmación de signup -- botón "reenviar" en la
+// pantalla de checkEmail de AuthGate.jsx. Mismo emailRedirectTo que signUp()
+// para que el hook siga detectando la marca correcta (ver signUpWithPassword).
+export async function resendSignupConfirmation(email) {
+  if (!authClient) return { error: 'auth_not_configured' }
+  const { error } = await authClient.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: window.location.origin + window.location.pathname },
+  })
+  if (error) return { error: error.message }
+  return {}
 }
 
 export async function signInWithPassword(email, password) {
