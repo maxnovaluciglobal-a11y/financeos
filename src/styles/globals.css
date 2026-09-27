@@ -245,9 +245,21 @@ button { cursor: pointer; font-family: var(--sans); }
 .rise { animation: var(--dur-surface-enter) var(--ease) fos-rise both; }
 @media (prefers-reduced-motion: reduce) { .rise { animation: none; } .card-hover { transition: none; } }
 
+/* Fundido entre pantallas (Shell.jsx navigate() usa document.startViewTransition) */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
 /* Utilidad: ocultar en móvil (≤700px) */
 @media (max-width: 700px) {
   .fos-hide-mobile { display: none !important; }
+}
+
+/* Utilidad: ocultar SOLO en móvil los KPIs secundarios del Dashboard — en móvil
+   la primera pantalla muestra solo Ingresos/Gastos, el resto vive en "Vista
+   detallada" (ya existente); en desktop siempre se ven todos. */
+@media (max-width: 700px) {
+  .fos-kpi-secondary { display: none; }
 }
 
 /* Fila de estado del Dashboard (verdicto + ritmo). Dos columnas solo desde 900px:

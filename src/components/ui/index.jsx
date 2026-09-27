@@ -3,6 +3,7 @@
 
 import { useId, Children, cloneElement, isValidElement } from 'react'
 import styles from './ui.module.css'
+import LargeTitle from '../layout/LargeTitle.jsx'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -162,12 +163,7 @@ export function SectionTitle({ children }) {
 }
 
 export function PageHeader({ title, sub }) {
-  return (
-    <div className={styles.pageHeader}>
-      <h1>{title}</h1>
-      {sub && <p>{sub}</p>}
-    </div>
-  )
+  return <LargeTitle title={title} sub={sub} />
 }
 
 export function SegmentedControl({ value, onChange, options }) {

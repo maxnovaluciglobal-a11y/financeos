@@ -42,7 +42,10 @@ export default function Shell({ page, setPage, children }) {
   }, [page])
 
   function navigate(id) {
-    setPage(id)
+    // startViewTransition() da el fundido nativo entre pantallas; sin soporte
+    // (Firefox, Safari < 18) cae directo a setPage sin transición — no rompe nada.
+    if (document.startViewTransition) document.startViewTransition(() => setPage(id))
+    else setPage(id)
   }
 
   function toggleTheme() {

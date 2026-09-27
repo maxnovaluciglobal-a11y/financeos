@@ -15,6 +15,7 @@ import {
 } from '../core/db/index.js'
 import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale } from '../utils/index.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
+import { hapticTap } from '../utils/haptics.js'
 
 export const AppContext = createContext(null)
 
@@ -97,6 +98,7 @@ export function AppProvider({ children }) {
     try {
       await dbDelete(store, item.id)
       await rehydrate()
+      hapticTap()
       showToast(deletedMsg, 'ok', {
         label: undoLabel,
         onAction: async () => { try { await dbAdd(store, item); await rehydrate() } catch (e) { showToast('No se pudo deshacer.', 'error') } },

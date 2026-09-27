@@ -8,6 +8,7 @@ import DemoBanner from './DemoBanner.jsx'
 import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
 import Toast from '../components/ui/Toast.jsx'
+import PageSkeleton from '../components/ui/PageSkeleton.jsx'
 import { AppContext } from '../context/AppContext.jsx'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
@@ -44,11 +45,7 @@ const License       = lazy(() => import('../pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('../pages/legal/Disclaimer.jsx'))
 const More          = lazy(() => import('../pages/More/index.jsx'))
 
-const PageLoader = () => (
-  <div style={{ padding: 24, color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 12 }}>
-    Cargando...
-  </div>
-)
+const PageLoader = () => <PageSkeleton />
 
 // Bridge: inyecta el valor de DemoContext en AppContext
 // → todos los módulos que llaman useApp() reciben los datos demo

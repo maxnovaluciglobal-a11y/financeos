@@ -6,6 +6,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { parseTransactionText } from '../utils/smsParser.js'
+import { hapticTap } from '../utils/haptics.js'
 import config from '../config.js'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
@@ -169,6 +170,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
       else await addIncome?.({ ...base })
       // 1.2 · aprende comercio→categoría (usa la descripción como comercio) para autoclasificar la próxima vez
       if (finalDesc && cat) learnRule(finalDesc, cat)
+      hapticTap()
       showToast?.(type === 'expense' ? t('qa.savedExpense') : t('qa.savedIncome'), 'ok')
       onClose?.()
     } catch {
