@@ -259,8 +259,41 @@
   .menuBtn { display: flex; align-items: center; justify-content: center; min-height: 44px; }
   .backBtn { display: inline-flex; align-items: center; }
   .overlay { display: block; }
-  .content { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }  /* aire para el FAB + home-indicator iOS */
+  .content { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }  /* aire para tabbar + FAB + home-indicator iOS */
   :global(.grid2), :global(.grid3), :global(.grid4) { grid-template-columns: 1fr; }
+}
+
+/* ── TABBAR — navegación primaria en móvil ── */
+.tabbar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 140;
+  background: var(--sur);
+  border-top: 0.5px solid var(--brd);
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+  transition: transform .2s ease, opacity .2s ease;
+}
+.tabbarHidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; min-height: 52px; padding: 4px 2px;
+  background: none; border: none; cursor: pointer;
+  color: var(--th); font-family: var(--sans);
+  transition: color .15s ease, transform .1s ease;
+}
+.tab:active { transform: scale(.94); }
+.tabActive  { color: var(--grn); }
+.tabIc { width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; }
+.tabLb { font-size: 10px; line-height: 1.2; }
+
+@media (max-width: 700px) {
+  .tabbar { display: flex; }
 }
 
 /* ── FAB — botón flotante para egreso rápido (solo móvil) ── */
@@ -291,12 +324,18 @@
 .fabWrap {
   display: none;
   position: fixed;
-  bottom: 20px;
+  bottom: calc(76px + env(safe-area-inset-bottom));  /* arriba del tabbar (52px + aire) */
   right: 20px;
   z-index: 150;
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.fabHidden {
+  transform: translateY(16px);
+  opacity: 0;
+  pointer-events: none;
 }
 .fabBackdrop {
   display: none;

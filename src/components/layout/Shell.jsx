@@ -12,6 +12,17 @@ import CountryBadge from '../CountryBadge.jsx'
 import Logo, { Monogram } from '../Logo.jsx'
 import { NAV_ICONS } from '../icons/Icons.jsx'
 import { signOutAuth } from '../../core/auth.js'
+import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
+
+// Tabs del tabbar móvil — subset de NAV con los flujos de mayor frecuencia.
+// "Menú" abre el drawer completo (resto de secciones, país, PRO, cuenta).
+const TABS = [
+  { id: 'dashboard',  lb: 'nav.dashboard' },
+  { id: 'movements',  lb: 'nav.expenses' },
+  { id: 'budgets',    lb: 'nav.budgets' },
+  { id: 'reports',    lb: 'nav.reports' },
+  { id: 'menu',       lb: 'nav.menuLabel' },
+]
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -92,6 +103,10 @@ export default function Shell({ page, setPage, children }) {
   // ── FAB speed-dial (Ingreso / Egreso) ────────────────────────────────────────
   const [fabOpen, setFabOpen] = useState(false)
   const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income'
+
+  // Con el teclado virtual abierto, tabbar y FAB quedan flotando arriba del
+  // teclado o lo tapan — se ocultan mientras se escribe (ver useKeyboardOpen).
+  const keyboardOpen = useKeyboardOpen()
 
   // Cerrar drawer al hacer clic fuera
   useEffect(() => {
@@ -296,8 +311,34 @@ export default function Shell({ page, setPage, children }) {
           </div>
         </main>
 
+        {/* TABBAR móvil — reemplaza al hamburguesa como navegación primaria */}
+        <nav
+          className={s.tabbar + (keyboardOpen ? ' ' + s.tabbarHidden : '')}
+          aria-label={t('nav.menuLabel')}
+        >
+          {TABS.map(tb => {
+            const isMenu = tb.id === 'menu'
+            const active = !isMenu && page === tb.id
+            const Ic = NAV_ICONS[tb.id]
+            return (
+              <button
+                key={tb.id}
+                type="button"
+                className={s.tab + (active ? ' ' + s.tabActive : '')}
+                onClick={() => isMenu ? setDrawerOpen(true) : navigate(tb.id)}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span className={s.tabIc} aria-hidden="true">
+                  {Ic ? <Ic size={19} /> : (isMenu ? '☰' : '•')}
+                </span>
+                <span className={s.tabLb}>{t(tb.lb)}</span>
+              </button>
+            )
+          })}
+        </nav>
+
         {/* FAB — abre captura rápida directa (1 tap), solo móvil */}
-        <div className={s.fabWrap}>
+        <div className={s.fabWrap + (keyboardOpen ? ' ' + s.fabHidden : '')}>
           <button
             className={s.fab}
             onClick={() => setQuickAdd('expense')}
