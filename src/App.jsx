@@ -46,6 +46,7 @@ const Privacy       = lazy(() => import('./pages/legal/Privacy.jsx'))
 const Terms         = lazy(() => import('./pages/legal/Terms.jsx'))
 const License       = lazy(() => import('./pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
+const More          = lazy(() => import('./pages/More/index.jsx'))
 
 const PageLoader = () => (
   <div style={{ padding: 24, color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 12 }}>
@@ -189,6 +190,7 @@ function Inner() {
       case 'steuer':        return <Steuer />
       case 'movements':     return <Movements setPage={setPage}/>
       case 'import':        return <ImportCSV setPage={setPage} />
+      case 'more':          return <More setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>
     }
   }

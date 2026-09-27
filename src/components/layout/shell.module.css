@@ -122,105 +122,6 @@
   gap: 6px;
 }
 
-/* ── BOTÓN HAMBURGUESA — solo visible en móvil ── */
-.menuBtn {
-  display: none;
-  background: var(--sur2);
-  border: 0.5px solid var(--brd2);
-  border-radius: var(--r);
-  padding: 5px 10px;
-  font-size: 15px;
-  cursor: pointer;
-  color: var(--tx);
-  line-height: 1;
-  transition: background .15s;
-  flex-shrink: 0;
-}
-.menuBtn:hover { background: var(--sur); }
-
-/* ── BOTÓN ATRÁS — solo visible en móvil ── */
-.backBtn {
-  display: none;
-  background: transparent;
-  border: none;
-  font-size: 13px;
-  color: var(--grn);
-  cursor: pointer;
-  font-family: var(--sans);
-  padding: 10px 12px;
-  min-height: 44px;
-  border-radius: var(--r);
-  transition: background .15s;
-  flex-shrink: 0;
-}
-.backBtn:hover { background: var(--grn-bg); }
-
-/* ── OVERLAY ── */
-.overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.45);
-  z-index: 200;
-}
-
-/* ── DRAWER MÓVIL ── */
-.drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 260px;
-  height: 100vh;
-  height: 100dvh;
-  padding-top: env(safe-area-inset-top);
-  background: var(--sur);
-  border-right: 0.5px solid var(--brd);
-  z-index: 201;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform .25s ease;
-  overflow: hidden;
-}
-.drawerOpen {
-  transform: translateX(0);
-}
-.drawerHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 14px 10px;
-  border-bottom: 0.5px solid var(--brd);
-  flex-shrink: 0;
-}
-.drawerClose {
-  background: var(--sur2);
-  border: 0.5px solid var(--brd2);
-  border-radius: var(--r);
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--tm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .15s;
-  flex-shrink: 0;
-}
-.drawerClose:hover { background: var(--sur); color: var(--tx); }
-.drawerNav {
-  flex: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;  /* el scroll del drawer no arrastra la página */
-  padding: 8px 0;
-}
-.drawerFooter {
-  padding: 10px 14px;
-  border-top: 0.5px solid var(--brd);
-  flex-shrink: 0;
-}
-
 /* ── TIP DE ROTACIÓN — solo móvil ── */
 .rotationTip {
   display: none;
@@ -256,126 +157,50 @@
 @media (max-width: 700px) {
   .shell { grid-template-columns: 1fr; }
   .sb    { display: none; }
-  .menuBtn { display: flex; align-items: center; justify-content: center; min-height: 44px; }
-  .backBtn { display: inline-flex; align-items: center; }
-  .overlay { display: block; }
-  .content { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }  /* aire para tabbar + FAB + home-indicator iOS */
+  .content { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }  /* aire para el tabbar + home-indicator iOS */
   :global(.grid2), :global(.grid3), :global(.grid4) { grid-template-columns: 1fr; }
 }
 
-/* ── TABBAR — navegación primaria en móvil ── */
+/* ── TABBAR — navegación primaria en móvil (reemplaza drawer + FAB) ── */
 .tabbar {
   display: none;
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 140;
-  background: var(--sur);
+  position: fixed; inset: auto 0 0 0;
+  z-index: 150;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--sur) 90%, transparent);
+  backdrop-filter: blur(18px);
   border-top: 0.5px solid var(--brd);
-  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
   transition: transform .2s ease, opacity .2s ease;
 }
-.tabbarHidden {
+.tabbarHidden .tabbar {
   transform: translateY(100%);
   opacity: 0;
   pointer-events: none;
 }
 .tab {
-  flex: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; min-height: 52px; padding: 4px 2px;
+  gap: 2px; min-height: 48px; padding: 4px 2px;
   background: none; border: none; cursor: pointer;
   color: var(--th); font-family: var(--sans);
   transition: color .15s ease, transform .1s ease;
 }
 .tab:active { transform: scale(.94); }
 .tabActive  { color: var(--grn); }
-.tabIc { width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; }
 .tabLb { font-size: 10px; line-height: 1.2; }
 
-@media (max-width: 700px) {
-  .tabbar { display: flex; }
-}
-
-/* ── FAB — botón flotante para egreso rápido (solo móvil) ── */
-.fab {
-  display: none;
-  position: fixed;
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  right: 20px;
-  width: 52px;
-  height: 52px;
+/* "+" central — reemplaza al FAB flotante, mismo acento (laton) bajo el pulgar */
+.tabAdd {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin: -8px auto 0;
   border-radius: 50%;
-  background: var(--laton);
-  color: var(--navy);
-  border: none;
-  font-size: 28px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,.25);
-  z-index: 150;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  transition: transform .15s, box-shadow .15s;
+  background: var(--laton); color: var(--navy);
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,.22);
+  transition: transform .15s ease, box-shadow .15s ease;
 }
-.fab:active { transform: scale(.93); }
+.tabAdd:active { transform: scale(.92); }
 
-/* Speed-dial wrapper + acciones */
-.fabWrap {
-  display: none;
-  position: fixed;
-  bottom: calc(76px + env(safe-area-inset-bottom));  /* arriba del tabbar (52px + aire) */
-  right: 20px;
-  z-index: 150;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-  transition: transform .2s ease, opacity .2s ease;
-}
-.fabHidden {
-  transform: translateY(16px);
-  opacity: 0;
-  pointer-events: none;
-}
-.fabBackdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.25);
-  z-index: 149;
-}
-.fabActions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-end;
-}
-.fabAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 16px;
-  border-radius: 22px;
-  background: var(--sur);
-  border: 0.5px solid var(--brd2);
-  box-shadow: 0 4px 16px rgba(0,0,0,.18);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tx);
-  font-family: var(--sans);
-  cursor: pointer;
-}
-.fabActionIc {
-  font-family: var(--mono);
-  font-size: 15px;
-  color: var(--grn);
-}
-.fab {
-  position: static;  /* ahora el wrapper posiciona */
-}
 @media (max-width: 700px) {
-  .fabWrap { display: flex; }
-  .fabBackdrop { display: block; }
-  .fab { display: flex; }
+  .tabbar { display: grid; }
 }
