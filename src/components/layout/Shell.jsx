@@ -5,69 +5,18 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import s from './shell.module.css'
 import { BackupStatusBadge } from '../backup/BackupManager.jsx'
-import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import QuickAdd from '../QuickAdd.jsx'
 import PrivacySeal from '../PrivacySeal.jsx'
 import CountryBadge from '../CountryBadge.jsx'
 import Logo, { Monogram } from '../Logo.jsx'
 import { NAV_ICONS } from '../icons/Icons.jsx'
 import { signOutAuth } from '../../core/auth.js'
+import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
+import { NAV, pageLabel } from './navConfig.js'
+import TabBar from './TabBar.jsx'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
-
-// lb = key de traducción (ver src/i18n/translations.js), no texto directo
-const NAV = [
-  { sec: 'nav.sec.main',    items: [{ id: 'dashboard', ic: '◈', lb: 'nav.dashboard' }] },
-  { sec: 'nav.sec.movements',  items: [
-    { id: 'income',    ic: '↑', lb: 'nav.income' },
-    { id: 'movements', ic: '↓', lb: 'nav.expenses' },
-    { id: 'import',    ic: '⇪', lb: 'nav.import' },
-    { id: 'subscriptions', ic: '↻', lb: 'nav.subscriptions' },
-  ] },
-  // #06 — "Tu país" como sección propia: eleva el diferenciador fiscal por país
-  // (antes estaba diluido dentro de Planificación) y de-satura esa sección.
-  { sec: 'nav.sec.country', items: [
-    { id: 'hipoteca', ic: '🇨🇱', cc: 'CL', lb: 'nav.hipotecaCL', countries: ['CL'], proOnly: true },
-    { id: 'apv',     ic: '🇨🇱', cc: 'CL', lb: 'nav.apvChile', countries: ['CL'], proOnly: true },
-    { id: 'irspt',    ic: '🇵🇹', cc: 'PT', lb: 'nav.irsPT', countries: ['PT'], proOnly: true },
-    { id: 'ppr',     ic: '🇵🇹', cc: 'PT', lb: 'nav.pprPortugal', countries: ['PT'], proOnly: true },
-    { id: 'deducciones', ic: '⊟', lb: 'nav.deductions', countries: ['EC', 'PE'], proOnly: true },
-    { id: 'resico',       ic: '🇲🇽', cc: 'MX', lb: 'nav.resicoMX', countries: ['MX'], proOnly: true },
-    { id: 'irpfes',   ic: '🇪🇸', cc: 'ES', lb: 'nav.irpfES', countries: ['ES'], proOnly: true },
-    { id: 'ahorrofiscal', ic: '⊡', lb: 'nav.taxSavings', countries: ['MX', 'CO', 'US', 'ES'], proOnly: true },
-    { id: 'multidolar',  ic: '🇦🇷', cc: 'AR', lb: 'nav.multidolarAR', countries: ['AR'], proOnly: true },
-    { id: 'inflacion',   ic: '↗', lb: 'nav.inflation', countries: ['AR'], proOnly: true },
-    { id: 'multimoneda', ic: '⇄', lb: 'nav.multicurrency', countries: ['VE'], proOnly: true },
-    { id: 'steuer',      ic: '🇩🇪', cc: 'DE', lb: 'nav.steuerDE', countries: ['DE'], proOnly: true },
-  ] },
-  { sec: 'nav.sec.planning', items: [
-    { id: 'budgets', ic: '▤', lb: 'nav.budgets' },
-    { id: 'debts',   ic: '⊖', lb: 'nav.debts' },
-    { id: 'goals',   ic: '◎', lb: 'nav.goals' },
-    { id: 'projects', ic: '⌂', lb: 'nav.properties', proOnly: true },
-  ] },
-  { sec: 'nav.sec.analysis', items: [
-    { id: 'networth', ic: '◆', lb: 'nav.netWorth' },
-    { id: 'coach',    ic: '⚕', lb: 'nav.diagnosis' },
-    { id: 'reports',  ic: '⊞', lb: 'nav.reports' },
-    { id: 'cashflow', ic: '⟶', lb: 'nav.projection', proOnly: true },
-  ] },
-  { sec: 'nav.sec.pro', items: [
-    { id: 'advisor',  ic: '◑', lb: 'nav.advisorMode', proOnly: true },
-  ] },
-  { sec: 'nav.sec.account', items: [
-    { id: 'settings', ic: '⊙', lb: 'nav.settings' },
-  ] },
-]
-
-// Todas las secciones planas para historial
-const ALL_ITEMS = NAV.flatMap(g => g.items)
-
-// Key de traducción para la topbar (pageLabel devuelve una KEY, no texto — se traduce con t() al usarla)
-function pageLabel(id) {
-  return ALL_ITEMS.find(it => it.id === id)?.lb || id
-}
 
 export default function Shell({ page, setPage, children }) {
   const { settings, updateSettings } = useApp()
@@ -75,44 +24,11 @@ export default function Shell({ page, setPage, children }) {
   const isChile = (settings.country || 'CL') === 'CL'
   const isDark = settings.theme === 'dark'
 
-  // ── Drawer móvil ────────────────────────────────────────────────────────────
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const drawerRef = useRef(null)
-  useDialogA11y(drawerOpen, () => setDrawerOpen(false), drawerRef)
-
-  // React 18 no serializa `inert` como prop JSX (llega hasta 19) — sin esto, el
-  // drawer cerrado queda navegable por teclado y visible para lectores de
-  // pantalla pese a estar fuera de pantalla vía transform. Seteo directo al DOM.
-  useEffect(() => {
-    if (!drawerRef.current) return
-    if (drawerOpen) drawerRef.current.removeAttribute('inert')
-    else drawerRef.current.setAttribute('inert', '')
-  }, [drawerOpen])
-
-  // ── FAB speed-dial (Ingreso / Egreso) ────────────────────────────────────────
-  const [fabOpen, setFabOpen] = useState(false)
   const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income'
 
-  // Cerrar drawer al hacer clic fuera
-  useEffect(() => {
-    function handleOutside(e) {
-      if (drawerOpen && drawerRef.current && !drawerRef.current.contains(e.target)) {
-        setDrawerOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleOutside)
-    document.addEventListener('touchstart', handleOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleOutside)
-      document.removeEventListener('touchstart', handleOutside)
-    }
-  }, [drawerOpen])
-
-  // Bloquear scroll del body cuando el drawer está abierto
-  useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [drawerOpen])
+  // Con el teclado virtual abierto, el TabBar queda flotando arriba de él o lo
+  // tapa — se oculta mientras se escribe (ver useKeyboardOpen).
+  const keyboardOpen = useKeyboardOpen()
 
   // ── Foco al cambiar de página ────────────────────────────────────────────────
   // Sin esto, un lector de pantalla no se entera de que la página cambió: el foco
@@ -125,25 +41,11 @@ export default function Shell({ page, setPage, children }) {
     return () => clearTimeout(id)
   }, [page])
 
-  // ── Historial de navegación ──────────────────────────────────────────────────
-  const [history, setHistory] = useState([])
-
   function navigate(id) {
-    if (id !== page) {
-      setHistory(h => [...h, page])
-    }
-    setPage(id)
-    setDrawerOpen(false)
-  }
-
-  function goBack() {
-    if (history.length > 0) {
-      const prev = history[history.length - 1]
-      setHistory(h => h.slice(0, -1))
-      setPage(prev)
-    } else {
-      setPage('dashboard')
-    }
+    // startViewTransition() da el fundido nativo entre pantallas; sin soporte
+    // (Firefox, Safari < 18) cae directo a setPage sin transición — no rompe nada.
+    if (document.startViewTransition) document.startViewTransition(() => setPage(id))
+    else setPage(id)
   }
 
   function toggleTheme() {
@@ -235,57 +137,13 @@ export default function Shell({ page, setPage, children }) {
         </div>
       </nav>
 
-      {/* ── OVERLAY del drawer (solo móvil) ── */}
-      {drawerOpen && <div className={s.overlay} onClick={() => setDrawerOpen(false)} />}
-
-      {/* ── DRAWER MÓVIL ── */}
-      {/* inert cuando está cerrado se setea vía ref más arriba, no como prop JSX
-          (ver comentario junto a drawerRef). */}
-      <nav ref={drawerRef} tabIndex={-1} role="dialog" aria-modal={drawerOpen} aria-label={t('nav.menuLabel')}
-        className={s.drawer + (drawerOpen ? ' ' + s.drawerOpen : '')}>
-        <div className={s.drawerHeader}>
-          <div className={s.logo} style={{border:'none', padding:0, margin:0}}>
-            <Logo size={19} />
-            <div className={s.logoSub}>v1.5</div>
-          </div>
-          <button className={s.drawerClose} onClick={() => setDrawerOpen(false)} aria-label={t('nav.closeMenu')}><span style={{fontSize:18}}>✕</span></button>
-        </div>
-
-        <div className={s.drawerNav}>
-          <NavItems onNavigate={navigate} />
-        </div>
-
-        <div className={s.drawerFooter}>
-          <button className={s.themeBtn} onClick={toggleTheme}>
-            {isDark ? '☀ ' + t('settings.theme.light') : '◑ ' + t('settings.theme.dark')}
-          </button>
-          <button className={s.themeBtn} onClick={() => signOutAuth()}>
-            ⏻ {t('settings.account.logoutBtn')}
-          </button>
-          <div style={{marginTop:8}}><BackupStatusBadge compact /></div>
-        </div>
-      </nav>
-
       {/* ── ÁREA PRINCIPAL ── */}
       <div className={s.main}>
 
-        {/* Topbar móvil — botón ☰ + atrás + título */}
+        {/* Topbar — título de la página + moneda. En móvil el TabBar es la
+            navegación primaria (ver más abajo); no hay hamburguesa ni "atrás". */}
         <div className={s.topbar}>
-          <div className={s.topLeft}>
-            {/* Botón hamburguesa — solo móvil */}
-            <button
-              className={s.menuBtn}
-              onClick={() => setDrawerOpen(true)} aria-label={t('nav.openMenu')}
-            >
-              <span style={{fontSize:18}}>☰</span><span style={{fontSize:10,fontFamily:"var(--mono)",display:"block",lineHeight:1,marginTop:2}}>{t('nav.menuLabel')}</span>
-            </button>
-            {/* Botón atrás — solo móvil, si no está en dashboard */}
-            {page !== 'dashboard' && (
-              <button className={s.backBtn} onClick={goBack} aria-label={t('nav.goBack')}>
-                {t('nav.back')}
-              </button>
-            )}
-          </div>
+          <div className={s.topLeft} />
           <span className={s.crumb}>{t(pageLabel(page))}</span>
           <span className={s.topRight}>MOY IQ · {settings.currency || 'CLP'}</span>
         </div>
@@ -296,15 +154,10 @@ export default function Shell({ page, setPage, children }) {
           </div>
         </main>
 
-        {/* FAB — abre captura rápida directa (1 tap), solo móvil */}
-        <div className={s.fabWrap}>
-          <button
-            className={s.fab}
-            onClick={() => setQuickAdd('expense')}
-            aria-label={t('qa.title')}
-          >
-            +
-          </button>
+        {/* TABBAR móvil — navegación primaria; "+" abre QuickAdd, "more" navega
+            a la página que lista el árbol completo de NAV. */}
+        <div className={keyboardOpen ? s.tabbarHidden : undefined}>
+          <TabBar page={page} onNavigate={navigate} onAdd={() => setQuickAdd('expense')} t={t} />
         </div>
       </div>
 

@@ -604,7 +604,7 @@ export default function Dashboard({ setPage }) {
       {/* KPI Cards */}
       <div aria-live="polite" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:12, marginBottom:16 }}>
         {KPIS.map((k, i) => (
-          <div key={i} className="card card-hover rise" style={{ padding:'14px 16px', position:'relative', overflow:'hidden', animationDelay:`${i*40}ms` }}>
+          <div key={i} className={'card card-hover rise' + (i >= 2 && compact ? ' fos-kpi-secondary' : '')} style={{ padding:'14px 16px', position:'relative', overflow:'hidden', animationDelay:`${i*40}ms` }}>
             <div style={{ position:'absolute', top:-16, right:-16, width:56, height:56, borderRadius:'50%', background:`${k.color}`, opacity:.08 }}/>
             <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>{k.label}</div>
             <div className="num" style={{ fontSize:22, fontWeight:700, color:k.color, marginBottom:3, display:'flex', alignItems:'center', flexWrap:'wrap', gap:4 }}>

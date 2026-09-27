@@ -1,0 +1,37 @@
+/* src/components/layout/largeTitle.module.css */
+
+/* Barra compacta — sticky al tope del contenedor con scroll (.content en
+   Shell.jsx tiene overflow-y:auto, por eso sticky funciona sin acoplarse a él). */
+.compactBar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: -14px -18px 0;
+  padding: 10px 18px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--sans);
+  color: var(--tx);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 0.5px solid transparent;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform .2s ease, opacity .2s ease, border-color .2s ease;
+  pointer-events: none;
+}
+.compactBarVisible {
+  transform: translateY(0);
+  opacity: 1;
+  border-bottom-color: var(--brd);
+}
+@media (prefers-reduced-motion: reduce) {
+  .compactBar { transition: opacity .15s ease; transform: none; }
+}
+
+/* Mismo tratamiento que .pageHeader de ui.module.css — vive acá para que
+   LargeTitle no dependa de otro CSS module. */
+.pageHeader { margin-bottom: 18px; }
+.pageHeader h1 { font-size: 24px; font-weight: 700; font-family: var(--display); letter-spacing: -0.02em; color: var(--tx); }
+.pageHeader p  { font-size: 12px; color: var(--th); font-family: var(--sans); margin-top: 5px; line-height: 1.5; }

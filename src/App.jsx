@@ -8,6 +8,7 @@ import { getSession, onAuthChange } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
+import PageSkeleton from './components/ui/PageSkeleton.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
@@ -46,12 +47,9 @@ const Privacy       = lazy(() => import('./pages/legal/Privacy.jsx'))
 const Terms         = lazy(() => import('./pages/legal/Terms.jsx'))
 const License       = lazy(() => import('./pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
+const More          = lazy(() => import('./pages/More/index.jsx'))
 
-const PageLoader = () => (
-  <div style={{ padding: 24, color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 12 }}>
-    Cargando...
-  </div>
-)
+const PageLoader = () => <PageSkeleton />
 
 // ── Detectar modo demo ────────────────────────────────────────────────────────
 function isDemoMode() {
@@ -189,6 +187,7 @@ function Inner() {
       case 'steuer':        return <Steuer />
       case 'movements':     return <Movements setPage={setPage}/>
       case 'import':        return <ImportCSV setPage={setPage} />
+      case 'more':          return <More setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>
     }
   }

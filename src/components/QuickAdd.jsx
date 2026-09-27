@@ -6,6 +6,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { parseTransactionText } from '../utils/smsParser.js'
+import { hapticTap } from '../utils/haptics.js'
 import config from '../config.js'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
@@ -13,6 +14,46 @@ const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300
 
 const SYM = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }
 const todayStr = () => new Date().toISOString().slice(0, 10)
+
+// Teclado numérico propio — evita el teclado del sistema (y su zoom) en el campo
+// más usado de la app. Controla `amount` como string directamente en vez de
+// depender de un <input> editable.
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
+function NumericKeypad({ setAmount, t }) {
+  function press(k) {
+    if (k === '⌫') { setAmount(a => a.slice(0, -1)); return }
+    if (k === ',') { setAmount(a => (a.includes(',') ? a : (a || '0') + ',')); return }
+    // dígito: máximo 2 decimales tras la coma, sin ceros a la izquierda repetidos
+    setAmount(a => {
+      const [, dec] = a.split(',')
+      if (dec != null && dec.length >= 2) return a
+      if (k === '0' && a === '0') return a
+      return a === '0' ? k : a + k
+    })
+  }
+  return (
+    <div
+      role="group" aria-label={t('qa.amount')}
+      style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 18 }}
+    >
+      {KEYS.map(k => (
+        <button
+          key={k}
+          type="button"
+          onClick={() => press(k)}
+          aria-label={k === '⌫' ? t('qa.keypadBackspace') : k === ',' ? t('qa.keypadDecimal') : k}
+          style={{
+            minHeight: 48, borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--mono)',
+            fontSize: 18, fontWeight: 600,
+          }}
+        >
+          {k}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
   const { addExpense, addIncome, expenses, incomes, settings, updateSettings, showToast } = useApp() || {}
@@ -129,6 +170,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
       else await addIncome?.({ ...base })
       // 1.2 · aprende comercio→categoría (usa la descripción como comercio) para autoclasificar la próxima vez
       if (finalDesc && cat) learnRule(finalDesc, cat)
+      hapticTap()
       showToast?.(type === 'expense' ? t('qa.savedExpense') : t('qa.savedIncome'), 'ok')
       onClose?.()
     } catch {
@@ -205,19 +247,20 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
           </div>
         )}
 
-        {/* Monto grande */}
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 6 }}>
+        {/* Monto grande — readOnly + inputMode="none": evita el teclado del sistema
+            (y su zoom) porque el teclado numérico propio de abajo escribe acá. */}
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
           <span style={{ fontFamily: 'var(--display)', fontSize: 26, fontWeight: 700, color: 'var(--th)' }}>{sym}</span>
           <input
-            ref={amountRef} type="text" inputMode="decimal" enterKeyHint="done" value={amount}
-            onChange={e => setAmount(e.target.value.replace(/[^\d.,]/g, ''))}
-            onKeyDown={e => e.key === 'Enter' && save()}
+            ref={amountRef} type="text" inputMode="none" readOnly value={amount}
             placeholder="0"
             aria-label={t('qa.amount')}
-            style={{ width: 'auto', minWidth: 60, maxWidth: '70%', border: 'none', background: 'transparent', textAlign: 'center',
+            style={{ width: 'auto', minWidth: 60, maxWidth: '70%', border: 'none', background: 'transparent', textAlign: 'center', caretColor: accent,
               fontFamily: 'var(--display)', fontSize: 44, fontWeight: 700, color: accent, padding: 0, letterSpacing: '-0.02em' }}
           />
         </div>
+
+        <NumericKeypad setAmount={setAmount} t={t} />
 
         {/* Descripción */}
         <input
