@@ -22,6 +22,10 @@ import {
   notifyKeyDeliveryFailure, notifyNewProPurchase, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
   subscriptionIdFromSession, extendLicenseExpiry, periodEndFromInvoice, type WebhookConfig,
 } from "./webhookLogic.ts";
+import { subscribeToNewsletter } from "../_shared/newsletterSubscribe.ts";
+
+const NEWSLETTER_PROXY_URL = Deno.env.get("NEWSLETTER_PROXY_URL");
+const NEWSLETTER_PROXY_TOKEN = Deno.env.get("NEWSLETTER_PROXY_TOKEN");
 
 // Acepta firma de TEST y de LIVE: prueba contra ambos secrets (los que existan).
 const WEBHOOK_SECRETS = [
@@ -100,6 +104,13 @@ Deno.serve(async (req) => {
       // Stripe (eso sí reintenta el webhook entero, con riesgo de doble
       // emisión pese a sessionAlreadyProcessed).
       notifyNewProPurchase({ email, plan, interval }, config).catch(() => {});
+      // Pedido de Walter 21-sep-2026: todo plan pago (Personal/Starter y Pro)
+      // se suscribe también a la publication MOY IQ del newsletter semanal —
+      // antes nadie quedaba suscrito automáticamente al pagar.
+      subscribeToNewsletter(email, "moyiq", {
+        proxyUrl: NEWSLETTER_PROXY_URL,
+        proxyToken: NEWSLETTER_PROXY_TOKEN,
+      }).catch(() => {});
       if (!emailSent) {
         // Antes esto era invisible: la licencia quedaba emitida, el webhook
         // devolvia 200 y nadie se enteraba de que el cliente no tenia su clave.

@@ -164,7 +164,11 @@ export async function registerStarterLead(email) {
     if (data && data.ok && data.id) {
       fetch(`${SUPABASE_URL}/functions/v1/send-nurture-starter-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          apikey: SUPABASE_ANON,
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ mode: 'welcome', leadId: data.id }),
       }).catch(() => {})
     }

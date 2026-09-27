@@ -11,11 +11,14 @@
 // mantener. No usa verify_jwt porque el caller es SQL (pg_net) o un cliente
 // anon, ninguno de los dos trae un JWT de servicio.
 import { sendAdminNotify, type SignupEvent, type SignupDetails } from './notifyLogic.ts';
+import { subscribeToNewsletter } from '../_shared/newsletterSubscribe.ts';
 
 const RESEND_API_KEY = Deno.env.get('NURTURE_RESEND_API_KEY') ?? Deno.env.get('RESEND_API_KEY') ?? '';
 const FROM_EMAIL = Deno.env.get('NURTURE_FROM_EMAIL') ?? 'MOY IQ <hola@moyiq.app>';
 const ALERT_EMAIL = Deno.env.get('ALERT_EMAIL') ?? 'maxnovaluciglobal@gmail.com';
 const INTERNAL_SECRET = Deno.env.get('CRON_SECRET') ?? '';
+const NEWSLETTER_PROXY_URL = Deno.env.get('NEWSLETTER_PROXY_URL');
+const NEWSLETTER_PROXY_TOKEN = Deno.env.get('NEWSLETTER_PROXY_TOKEN');
 
 const VALID_EVENTS: SignupEvent[] = ['starter_signup', 'invest_signup'];
 
@@ -45,5 +48,15 @@ Deno.serve(async (req) => {
     alertEmail: ALERT_EMAIL,
   });
   if (!sent.ok) return Response.json({ error: { message: sent.error ?? 'send_failed' } }, { status: 500 });
+
+  // Pedido de Walter 21-sep-2026: sumar también a Starter (y a Invest en su
+  // propia publication) a la suscripción del newsletter — antes ningún alta
+  // gratuita quedaba conectada a beehiiv.
+  const newsletterProduct = body.event === 'invest_signup' ? 'invest' : 'moyiq';
+  subscribeToNewsletter(body.email, newsletterProduct, {
+    proxyUrl: NEWSLETTER_PROXY_URL,
+    proxyToken: NEWSLETTER_PROXY_TOKEN,
+  }).catch(() => {});
+
   return Response.json({});
 });

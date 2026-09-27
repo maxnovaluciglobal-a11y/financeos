@@ -27,6 +27,7 @@ export default function AuthGate({ onAuthenticated }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [checkEmail, setCheckEmail] = useState(false)
+  const [emailExists, setEmailExists] = useState(false)
   const [resendState, setResendState] = useState('idle') // 'idle' | 'sending' | 'sent' | 'error'
   const [forgotMode, setForgotMode] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
@@ -45,6 +46,18 @@ export default function AuthGate({ onAuthenticated }) {
       return
     }
     if (tab === 'signup' && !result.data?.session) {
+      // Supabase nunca revela si un email ya está registrado (protección
+      // anti-enumeración): un signUp() sobre una cuenta YA confirmada
+      // responde ok, sin sesión, pero con identities:[] vacío — y NO manda
+      // ningún correo. Sin este chequeo, ese caso mostraba el mismo
+      // "confirma tu email" que un signup real, y la persona esperaba para
+      // siempre un correo que nunca se envía (ver caso pattytobusiness,
+      // 23-sep-2026 — su cuenta ya existía desde el 12-sep).
+      const identities = result.data?.user?.identities
+      if (Array.isArray(identities) && identities.length === 0) {
+        setEmailExists(true)
+        return
+      }
       // Confirmación de email requerida — sin sesión todavía, no se puede continuar.
       setCheckEmail(true)
       return
@@ -178,6 +191,36 @@ export default function AuthGate({ onAuthenticated }) {
             style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
           >
             {t('authGate.backToLogin')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (emailExists) {
+    return (
+      <div style={s.wrap}>
+        <div style={s.box}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+            <Logo size={22} />
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
+            {t('authGate.emailExistsTitle')}
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+            {t('authGate.emailExistsBody', { email: email.trim() })}
+          </div>
+          <button
+            onClick={() => { setEmailExists(false); setTab('login'); setPassword(''); setError('') }}
+            style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: 'pointer', marginBottom: 12 }}
+          >
+            {t('authGate.emailExistsLoginBtn')}
+          </button>
+          <button
+            onClick={() => { setEmailExists(false); setForgotMode(true); setPassword(''); setError('') }}
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+          >
+            {t('authGate.forgotLink')}
           </button>
         </div>
       </div>
