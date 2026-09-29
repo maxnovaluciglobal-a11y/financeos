@@ -35,3 +35,11 @@
 .pageHeader { margin-bottom: 18px; }
 .pageHeader h1 { font-size: 24px; font-weight: 700; font-family: var(--display); letter-spacing: -0.02em; color: var(--tx); }
 .pageHeader p  { font-size: 12px; color: var(--th); font-family: var(--sans); margin-top: 5px; line-height: 1.5; }
+
+/* Handoff "MOY IQ Nativo" Fase 02: título grande estilo iOS (34px), solo en el
+   ancho móvil que cubre el resto de esta feature — desktop se deja en 24px a
+   propósito para no arriesgar el layout de las 26 páginas que usan PageHeader
+   fuera del contexto móvil, que no fue parte del handoff. */
+@media (max-width: 700px) {
+  .pageHeader h1 { font-size: 34px; line-height: 1.1; letter-spacing: -0.025em; }
+}

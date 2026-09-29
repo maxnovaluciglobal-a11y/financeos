@@ -157,20 +157,24 @@
 @media (max-width: 700px) {
   .shell { grid-template-columns: 1fr; }
   .sb    { display: none; }
-  .content { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }  /* aire para el tabbar + home-indicator iOS */
+  .content { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }  /* aire para el tabbar flotante + home-indicator iOS */
   :global(.grid2), :global(.grid3), :global(.grid4) { grid-template-columns: 1fr; }
 }
 
-/* ── TABBAR — navegación primaria en móvil (reemplaza drawer + FAB) ── */
+/* ── TABBAR — navegación primaria en móvil (reemplaza drawer + FAB), flotante estilo Instagram ── */
 .tabbar {
   display: none;
-  position: fixed; inset: auto 0 0 0;
+  position: fixed;
+  left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom));
   z-index: 150;
   grid-template-columns: repeat(5, 1fr);
-  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--sur) 90%, transparent);
+  align-items: end;
+  padding: 6px 6px 7px;
+  border-radius: 30px;
+  border: 0.5px solid var(--brd);
+  background: color-mix(in srgb, var(--sur) 86%, transparent);
   backdrop-filter: blur(18px);
-  border-top: 0.5px solid var(--brd);
+  box-shadow: 0 10px 30px rgba(20,33,61,.16), 0 2px 6px rgba(20,33,61,.08);
   transition: transform .2s ease, opacity .2s ease;
 }
 .tabbarHidden .tabbar {
