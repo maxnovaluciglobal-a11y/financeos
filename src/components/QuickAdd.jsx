@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { parseTransactionText } from '../utils/smsParser.js'
 import { hapticTap } from '../utils/haptics.js'
+import Sheet from './ui/Sheet.jsx'
 import config from '../config.js'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
@@ -67,56 +68,19 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
   const [pasteText, setPasteText] = useState('')
   const [detected, setDetected] = useState(false)    // feedback "detectado"
   const amountRef = useRef(null)
-  const sheetRef = useRef(null)
-  const [dragY, setDragY] = useState(0)
-  const dragState = useRef({ startY: 0, dragging: false })
-
-  // Asa arrastrable: baja la hoja con el dedo, la cierra si se suelta pasado el umbral.
-  function onHandleTouchStart(e) { dragState.current = { startY: e.touches[0].clientY, dragging: true } }
-  function onHandleTouchMove(e) {
-    if (!dragState.current.dragging) return
-    const dy = e.touches[0].clientY - dragState.current.startY
-    if (dy > 0) setDragY(dy)
-  }
-  function onHandleTouchEnd() {
-    if (!dragState.current.dragging) return
-    dragState.current.dragging = false
-    if (dragY > 80) onClose?.()
-    setDragY(0)
-  }
 
   // Reglas comercio→categoría aprendidas (1.2). Viven en settings (local, se exportan/sincronizan).
   const merchantRules = (settings && typeof settings.merchantRules === 'object') ? settings.merchantRules : {}
 
   const sym = SYM[settings?.currency] || '$'
 
-  // Al abrir: resetea, enfoca el monto, y monta accesibilidad de diálogo
-  // (Esc para cerrar · focus-trap · retorno de foco al disparador). — web-design-guidelines
+  // Al abrir: resetea el formulario. Accesibilidad de diálogo (Esc, focus-trap,
+  // foco inicial en el monto, retorno de foco al cerrar) la maneja Sheet.jsx.
   useEffect(() => {
     if (!open) return
     setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
     setPasteOpen(false); setPasteText(''); setDetected(false)
-    const trigger = document.activeElement           // p.ej. el FAB, para devolverle el foco
-    const id = setTimeout(() => amountRef.current?.focus(), 120)
-
-    const onKey = (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); onClose?.(); return }
-      if (e.key === 'Tab' && sheetRef.current) {
-        const els = [...sheetRef.current.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])')]
-          .filter(el => !el.disabled && el.offsetParent !== null)
-        if (!els.length) return
-        const first = els[0], last = els[els.length - 1]
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => {
-      clearTimeout(id)
-      document.removeEventListener('keydown', onKey)
-      if (trigger && typeof trigger.focus === 'function') trigger.focus()  // retorno de foco
-    }
-  }, [open, defaultType, onClose])
+  }, [open, defaultType])
 
   // Categorías más usadas del historial + fallback a las de config
   const chips = useMemo(() => {
@@ -179,32 +143,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
   }
 
   return (
-    <div
-      role="dialog" aria-modal="true" aria-label={t('qa.title')}
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 600, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', animation: 'qaFade .18s ease',
-        overscrollBehavior: 'contain' }}   /* el scroll no se contagia a la página de atrás */
-    >
-      <div
-        ref={sheetRef}
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 460, background: 'var(--sur)', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-          borderRadius: window.innerWidth > 520 ? 20 : '20px 20px 0 0',
-          marginBottom: window.innerWidth > 520 ? 'auto' : 0, marginTop: window.innerWidth > 520 ? 'auto' : 0,
-          padding: `20px 20px calc(20px + env(safe-area-inset-bottom))`, boxShadow: 'var(--sh-3)',
-          animation: dragState.current.dragging ? 'none' : 'qaUp .22s cubic-bezier(.22,.61,.36,1)',
-          transform: dragY ? `translateY(${dragY}px)` : undefined,
-          transition: dragY ? 'none' : 'transform .2s ease',
-        }}
-      >
-        {/* Asa — arrastrable para cerrar, mismo gesto que un share sheet nativo */}
-        <div
-          onTouchStart={onHandleTouchStart} onTouchMove={onHandleTouchMove} onTouchEnd={onHandleTouchEnd}
-          style={{ width: 38, height: 4, borderRadius: 2, background: 'var(--brd2)', backgroundClip: 'content-box',
-            margin: '-20px auto -4px', padding: '20px 40px', touchAction: 'none', boxSizing: 'content-box' }}
-        />
-
+    <Sheet open={open} onClose={onClose} ariaLabel={t('qa.title')} initialFocusRef={amountRef}>
         {/* Toggle tipo */}
         <div style={{ display: 'flex', gap: 6, background: 'var(--sur3)', borderRadius: 10, padding: 4, marginBottom: 18 }}>
           {[['expense', t('qa.expense')], ['income', t('qa.income')]].map(([k, lb]) => (
@@ -292,13 +231,6 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
             background: canSave ? accent : 'var(--brd2)', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'var(--sans)', opacity: canSave ? 1 : .7, boxShadow: canSave ? 'var(--sh-1)' : 'none' }}>
           {saving ? '…' : t('qa.save')}
         </button>
-
-        <style>{`
-          @keyframes qaFade { from { opacity:0 } to { opacity:1 } }
-          @keyframes qaUp { from { transform: translateY(14px); opacity:.6 } to { transform: none; opacity:1 } }
-          @media (prefers-reduced-motion: reduce) { [role="dialog"] > div { animation: none !important } }
-        `}</style>
-      </div>
-    </div>
+    </Sheet>
   )
 }

@@ -1,10 +1,10 @@
 // src/pages/Dashboard/index.jsx
 // Dashboard Visual Polish — FinanceOS v1.1.1
 
-import { useMemo, useEffect, useState, useRef } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { useDialogA11y } from '../../hooks/useDialogA11y.js'
+import Sheet from '../../components/ui/Sheet.jsx'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import IncomeExpenseBar from '../../components/charts/IncomeExpenseBar.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -328,26 +328,10 @@ export default function Dashboard({ setPage }) {
   }
 
   function MonthlyCloseModal() {
-    const boxRef = useRef(null)
-    useDialogA11y(showCloseModal, dismissClose, boxRef)
-    if (!showCloseModal) return null
     const balance = kpis.balance
     const ok = balance >= 0
     return (
-      <div
-        role="dialog" aria-modal="true" aria-label={t('dash.close.title')}
-        onClick={dismissClose}
-        style={{
-        position:'fixed', inset:0, zIndex:500,
-        background:'rgba(0,0,0,.55)', backdropFilter:'blur(4px)',
-        display:'flex', alignItems:'center', justifyContent:'center', padding:16,
-      }}>
-        <div ref={boxRef} tabIndex={-1} onClick={e => e.stopPropagation()} style={{
-          background:'var(--sur)', border:`.5px solid var(--brd)`, borderRadius:16,
-          padding:'24px 20px', maxWidth:380, width:'100%',
-          maxHeight:'85vh', overflowY:'auto', outline:'none',
-          boxShadow:'0 24px 64px rgba(0,0,0,.25)',
-        }}>
+      <Sheet open={showCloseModal} onClose={dismissClose} ariaLabel={t('dash.close.title')} maxWidth={380}>
           <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'1px', marginBottom:8 }}>
             {t('dash.close.title')}
           </div>
@@ -396,8 +380,7 @@ export default function Dashboard({ setPage }) {
               {t('dash.close.stay', { m: activeMonth })}
             </button>
           </div>
-        </div>
-      </div>
+      </Sheet>
     )
   }
 
