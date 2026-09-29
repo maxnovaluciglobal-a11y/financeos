@@ -677,11 +677,14 @@ export default function Dashboard({ setPage }) {
               style={{
                 display:'flex', alignItems:'flex-start', gap:10, width:'100%', textAlign:'left',
                 background:'none', border:'none', cursor: item.page ? 'pointer' : 'default',
-                borderLeft:`3px solid ${item.color}`, paddingLeft:10,
                 marginBottom: i < todoItems.length - 1 ? 12 : 0,
               }}
             >
-              <span style={{ fontSize:14, color:item.color, flexShrink:0, marginTop:1 }}>{item.icon}</span>
+              <span style={{
+                width:22, height:22, borderRadius:'50%', flexShrink:0, marginTop:1,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:12, color:item.color, background:`color-mix(in srgb, ${item.color} 14%, transparent)`,
+              }}>{item.icon}</span>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:2 }}>{item.title}</div>
                 <div style={{ fontSize:12, color:'var(--tm)', lineHeight:1.5 }}>{item.sub}</div>
