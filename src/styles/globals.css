@@ -262,18 +262,6 @@ button { cursor: pointer; font-family: var(--sans); }
   .fos-kpi-secondary { display: none; }
 }
 
-/* Fila de estado del Dashboard (verdicto + ritmo). Dos columnas solo desde 900px:
-   el anillo necesita más aire que una grilla normal, por eso no usa .grid2 (700px). */
-.dash-status {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  align-items: stretch;
-}
-@media (min-width: 900px) {
-  .dash-status { grid-template-columns: 1fr 1fr; }
-}
-
 /* kpi-row responsive — mobile */
 @media (max-width: 600px) {
   .kpi-row {

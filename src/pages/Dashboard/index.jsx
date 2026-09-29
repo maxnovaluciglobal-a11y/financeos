@@ -131,6 +131,7 @@ export default function Dashboard({ setPage }) {
         border: 'color-mix(in srgb, var(--warn) 24%, transparent)',
         text: t('dash.insight.subs.text', { v: `${sym}${fmt(subMonthly * 12)}` }),
         sub: t('dash.insight.subs.sub'),
+        page: 'subscriptions',
       })
     }
 
@@ -152,6 +153,7 @@ export default function Dashboard({ setPage }) {
           border: 'color-mix(in srgb, var(--accent2) 22%, transparent)',
           text: t('dash.insight.topCat.text', { cat: topCat[0], pct: catPct }),
           sub: t('dash.insight.topCat.sub'),
+          page: 'movements',
         })
       }
     }
@@ -173,6 +175,7 @@ export default function Dashboard({ setPage }) {
           border: pctN > 90 ? 'color-mix(in srgb, var(--neg) 24%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 24%, transparent)' : 'color-mix(in srgb, var(--pos) 22%, transparent)',
           text: t('dash.insight.budget.text', { pct: budgetPct }),
           sub: pctN > 90 ? t('dash.insight.budget.danger') : pctN > 80 ? t('dash.insight.budget.warn') : t('dash.insight.budget.ok'),
+          page: 'budgets',
         })
       }
     }
@@ -193,6 +196,7 @@ export default function Dashboard({ setPage }) {
           border: 'color-mix(in srgb, var(--pos) 22%, transparent)',
           text: t('dash.insight.goal.text', { name: top.name, pct: goalPct }),
           sub: t('dash.insight.goal.sub', { v: `${sym}${fmt(Number(top.target) - Number(top.saved))}` }),
+          page: 'goals',
         })
       }
     }
@@ -431,6 +435,21 @@ export default function Dashboard({ setPage }) {
     return { label:t('dash.action.viewCoach'), page:'coach', tone:'accent' }
   }
 
+  // ── "Para hacer hoy" (Fase 05) — unifica señales del Diagnóstico + insights
+  // en una sola lista priorizada en vez de dos secciones separadas contando
+  // cosas distintas. Señales primero (ya vienen ordenadas por severidad desde
+  // evaluateCoach), después insights; tope de 3 para no repetir el ruido que
+  // esto vino a resolver.
+  const todoItems = [
+    ...topSignals.map(s => ({
+      icon: SEV_ICON[s.severity], color: SEV_COLOR[s.severity],
+      title: s.title, sub: s.msg, ...signalAction(s),
+    })),
+    ...insights.map(ins => ({
+      icon: ins.icon, color: ins.color, title: ins.text, sub: ins.sub, page: ins.page,
+    })),
+  ].slice(0, 3)
+
   // Flujo de inversión/propiedades (💼) del mes activo — para el "flujo total real"
   const propFlow = useMemo(() => {
     const raw = (arr) => (Array.isArray(arr) ? arr : [])
@@ -486,9 +505,9 @@ export default function Dashboard({ setPage }) {
         </button>
       </div>
 
-      {/* Estado del mes — el verdicto (¿te sobra o falta?) y el ritmo (¿vas a tiempo?)
-          cuentan la misma historia desde dos ángulos: van lado a lado y ahorran scroll.
-          .dash-status apila en una columna bajo 900px (el anillo necesita aire). */}
+      {/* Card hero: el verdicto (¿te sobra o falta?) y el ritmo (¿vas a tiempo?) — una
+          sola respuesta, no dos historias paralelas — con el anillo como acento chico
+          a la derecha del número grande (Fase 05, fusión Verdict+Ring). */}
       {(() => {
         const ringOn = showRing && (kpis.incCount > 0 || kpis.expCount > 0)
         const verdict = (
@@ -500,25 +519,36 @@ export default function Dashboard({ setPage }) {
           />
         )
         if (!ringOn) return <div style={{ marginBottom:16 }}>{verdict}</div>
+        // Card hero fusionada (Fase 05): antes eran dos cards lado a lado contando
+        // la misma historia dos veces (¿te sobra? + ¿vas a tiempo?) — ahora es una
+        // sola, con el anillo achicado a 96px como acento a la derecha del número.
+        const positive = kpis.freeFlow > 0, tight = kpis.freeFlow === 0
+        const heroColor = kpis.incCount === 0 && kpis.expCount === 0 ? 'var(--th)'
+          : positive ? 'var(--pos)' : tight ? 'var(--warn)' : 'var(--neg)'
         return (
-          <div className="dash-status" style={{ marginBottom:16 }}>
-            {verdict}
-            <div className="card rise" style={{ padding:'20px 16px', display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
-              <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'1px' }}>
-                {pulse.refIsIncome ? 'Tu ritmo del mes' : 'Ritmo de gasto'} · {activeMonth}
-              </div>
+          <div className="card rise" style={{
+            marginBottom:16, padding:'18px 20px',
+            background: kpis.incCount === 0 && kpis.expCount === 0 ? 'var(--sur)' : `color-mix(in srgb, ${heroColor} 8%, var(--sur))`,
+            border:`.5px solid color-mix(in srgb, ${heroColor} 35%, transparent)`,
+            display:'flex', alignItems:'center', gap:16, flexWrap:'wrap',
+          }}>
+            <MonthVerdict
+              freeFlow={kpis.freeFlow}
+              hasData={kpis.incCount > 0 || kpis.expCount > 0}
+              sym={sym}
+              month={activeMonth}
+              embedded
+            />
+            <div style={{ flexShrink: 0 }}>
               <LivingRing
                 spentRatio={pulse.spentRatio}
                 elapsedRatio={pulse.elapsedRatio}
                 color={pulse.color}
-                centerValue={pulse.centerValue}
-                centerLabel="SEGURO/DÍA"
-                footLabel={`quedan ${pulse.daysLeft} días`}
-                size={200}
+                centerValue=""
+                centerLabel=""
+                footLabel=""
+                size={96}
               />
-              <div style={{ fontSize:11.5, color:'var(--tm)', textAlign:'center', maxWidth:340, lineHeight:1.5 }}>
-                El punto que late es hoy · la marca fina es dónde deberías ir · si el arco no la alcanza, vas bien.
-              </div>
             </div>
           </div>
         )
@@ -626,19 +656,40 @@ export default function Dashboard({ setPage }) {
         )
       })()}
 
-      {/* Insight Cards */}
-      {insights.length > 0 && (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:10, marginBottom:20 }}>
-          {insights.map((ins, i) => (
-            <div key={i} style={{ background:ins.bg, border:`.5px solid ${ins.border}`, borderRadius:'var(--r)', padding:'12px 14px', display:'flex', alignItems:'flex-start', gap:10 }}>
-              <span style={{ fontSize:16, color:ins.color, flexShrink:0, marginTop:1 }}>{ins.icon}</span>
-              <div>
-                <div style={{ fontSize:12, fontWeight:600, color:'var(--tx)', marginBottom:3, lineHeight:1.45 }}>{ins.text}</div>
-                <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)' }}>{ins.sub}</div>
+      {/* Para hacer hoy — fusión de señales del Diagnóstico + insights (Fase 05).
+          Cada fila navega a la página donde se resuelve. */}
+      {todoItems.length > 0 && (
+        <Card className="rise" style={{ padding:'16px 18px', marginBottom:20 }}>
+          <CardHeader
+            title={t('dash.signals.title')}
+            right={setPage && (
+              <button type="button" onClick={() => setPage('coach')}
+                style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
+                {t('dash.signals.viewAll')}
+              </button>
+            )}
+          />
+          {todoItems.map((item, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => item.page && setPage?.(item.page)}
+              style={{
+                display:'flex', alignItems:'flex-start', gap:10, width:'100%', textAlign:'left',
+                background:'none', border:'none', cursor: item.page ? 'pointer' : 'default',
+                borderLeft:`3px solid ${item.color}`, paddingLeft:10,
+                marginBottom: i < todoItems.length - 1 ? 12 : 0,
+              }}
+            >
+              <span style={{ fontSize:14, color:item.color, flexShrink:0, marginTop:1 }}>{item.icon}</span>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:2 }}>{item.title}</div>
+                <div style={{ fontSize:12, color:'var(--tm)', lineHeight:1.5 }}>{item.sub}</div>
               </div>
-            </div>
+              {item.page && <span style={{ fontSize:13, color:item.color, flexShrink:0 }}>→</span>}
+            </button>
           ))}
-        </div>
+        </Card>
       )}
 
       {/* IQ Score — puntaje 0-100 de salud financiera */}
@@ -670,32 +721,6 @@ export default function Dashboard({ setPage }) {
               </div>
             ))}
           </div>
-        </Card>
-      )}
-
-      {/* Señales del Diagnóstico */}
-      {topSignals.length > 0 && (
-        <Card className="rise" style={{ padding:'16px 18px', marginBottom:16 }}>
-          <CardHeader
-            title={t('dash.signals.title')}
-            right={setPage && (
-              <button type="button" onClick={() => setPage('coach')}
-                style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
-                {t('dash.signals.viewAll')}
-              </button>
-            )}
-          />
-          {topSignals.map((s, i) => (
-            <div key={i} style={{ borderLeft:`3px solid ${SEV_COLOR[s.severity]}`, paddingLeft:10, marginBottom: i < topSignals.length - 1 ? 10 : 0 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2 }}>
-                <span style={{ fontSize:12, color:SEV_COLOR[s.severity] }}>{SEV_ICON[s.severity]}</span>
-                <span style={{ fontSize:11, fontWeight:600, color:SEV_COLOR[s.severity], fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.4px' }}>{s.severity === 'warning' ? t('dash.sev.warning') : s.severity === 'attention' ? t('dash.sev.attention') : t('dash.sev.info')}</span>
-              </div>
-              <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:2 }}>{s.title}</div>
-              <div style={{ fontSize:12, color:'var(--tm)', lineHeight:1.5 }}>{s.msg}</div>
-              {(() => { const a = signalAction(s); return <InlineCTA label={a.label} page={a.page} tone={a.tone} /> })()}
-            </div>
-          ))}
         </Card>
       )}
 
