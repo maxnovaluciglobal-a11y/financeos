@@ -1757,4 +1757,13 @@ export const en = {
     'home.budget.viewAll': "View budgets",
     'home.budget.more.one': "And {n} more category in Budgets.",
     'home.budget.more.many': "And {n} more categories in Budgets.",
+    'home.upcoming.title': "Upcoming payments",
+    'home.upcoming.hint': "next 30 days",
+    'home.upcoming.empty': "No payments in the next 30 days. Dates come from your debts' due dates and your subscriptions' next charge.",
+    'home.upcoming.kind.debt': "Debt installment",
+    'home.upcoming.kind.sub': "Subscription",
+    'home.upcoming.today': "today",
+    'home.upcoming.tomorrow': "tomorrow",
+    'home.upcoming.more.one': "And {n} more payment in the next 30 days.",
+    'home.upcoming.more.many': "And {n} more payments in the next 30 days.",
 }

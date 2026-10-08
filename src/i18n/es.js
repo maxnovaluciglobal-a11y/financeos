@@ -1757,4 +1757,13 @@ export const es = {
     'home.budget.viewAll': "Ver presupuestos",
     'home.budget.more.one': "Y {n} categoría más en Presupuestos.",
     'home.budget.more.many': "Y {n} categorías más en Presupuestos.",
+    'home.upcoming.title': "Próximos pagos",
+    'home.upcoming.hint': "próximos 30 días",
+    'home.upcoming.empty': "No hay pagos en los próximos 30 días. Las fechas salen del vencimiento de tus deudas y del próximo cobro de tus suscripciones.",
+    'home.upcoming.kind.debt': "Cuota de deuda",
+    'home.upcoming.kind.sub': "Suscripción",
+    'home.upcoming.today': "hoy",
+    'home.upcoming.tomorrow': "mañana",
+    'home.upcoming.more.one': "Y {n} pago más en los próximos 30 días.",
+    'home.upcoming.more.many': "Y {n} pagos más en los próximos 30 días.",
 }

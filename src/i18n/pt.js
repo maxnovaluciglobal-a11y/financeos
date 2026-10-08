@@ -1757,4 +1757,13 @@ export const pt = {
     'home.budget.viewAll': "Ver orçamentos",
     'home.budget.more.one': "E mais {n} categoria em Orçamentos.",
     'home.budget.more.many': "E mais {n} categorias em Orçamentos.",
+    'home.upcoming.title': "Próximos pagamentos",
+    'home.upcoming.hint': "próximos 30 dias",
+    'home.upcoming.empty': "Não há pagamentos nos próximos 30 dias. As datas vêm do vencimento das suas dívidas e da próxima cobrança das suas assinaturas.",
+    'home.upcoming.kind.debt': "Parcela de dívida",
+    'home.upcoming.kind.sub': "Assinatura",
+    'home.upcoming.today': "hoje",
+    'home.upcoming.tomorrow': "amanhã",
+    'home.upcoming.more.one': "E mais {n} pagamento nos próximos 30 dias.",
+    'home.upcoming.more.many': "E mais {n} pagamentos nos próximos 30 dias.",
 }

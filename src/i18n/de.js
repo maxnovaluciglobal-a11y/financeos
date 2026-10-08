@@ -1757,4 +1757,13 @@ export const de = {
     'home.budget.viewAll': "Budgets ansehen",
     'home.budget.more.one': "Und {n} weitere Kategorie unter Budgets.",
     'home.budget.more.many': "Und {n} weitere Kategorien unter Budgets.",
+    'home.upcoming.title': "Anstehende Zahlungen",
+    'home.upcoming.hint': "nächste 30 Tage",
+    'home.upcoming.empty': "Keine Zahlungen in den nächsten 30 Tagen. Die Termine stammen aus den Fälligkeiten Ihrer Schulden und der nächsten Abbuchung Ihrer Abos.",
+    'home.upcoming.kind.debt': "Schuldenrate",
+    'home.upcoming.kind.sub': "Abo",
+    'home.upcoming.today': "heute",
+    'home.upcoming.tomorrow': "morgen",
+    'home.upcoming.more.one': "Und {n} weitere Zahlung in den nächsten 30 Tagen.",
+    'home.upcoming.more.many': "Und {n} weitere Zahlungen in den nächsten 30 Tagen.",
 }
