@@ -231,14 +231,20 @@ export function amountClose(expected, actual, tol = MATCH_AMOUNT_TOLERANCE) {
 }
 
 // ¿Este registro sin vínculo corresponde a la ocurrencia (rule, date)?
-// Mismo tipo (lo asegura quien llama) y monto ±7,5 %, y además: misma
-// descripción en el mismo mes, o misma categoría a ±3 días.
+// Mismo tipo (lo asegura quien llama) y alguna de:
+//   · misma descripción a ±3 días, con cualquier monto (el sueldo que llegó
+//     recortado sigue siendo ESE sueldo: se cuenta lo real, no lo previsto)
+//   · misma descripción en el mismo mes y monto ±7,5 %
+//   · misma categoría a ±3 días y monto ±7,5 %
 export function recordMatchesOccurrence(rule, date, expected, record) {
   if (!record || record.recurringId) return false
-  if (!amountClose(expected, record.amount)) return false
   const rDate = String(record.date || '')
-  if (descMatches(rule, record) && monthOf(rDate) === monthOf(date)) return true
-  return record.category === rule.category && Math.abs(diffDays(date, rDate)) <= MATCH_DAYS
+  const days = Math.abs(diffDays(date, rDate))
+  const desc = descMatches(rule, record)
+  if (desc && days <= MATCH_DAYS) return true
+  if (!amountClose(expected, record.amount)) return false
+  if (desc && monthOf(rDate) === monthOf(date)) return true
+  return record.category === rule.category && days <= MATCH_DAYS
 }
 
 // ── Plan del mes ─────────────────────────────────────────────────────────────
@@ -271,10 +277,17 @@ export function monthPlan(rules, ym, { incomes = [], expenses = [], today = null
     }
   }
 
-  // Registros a mano que ya cubren una ocurrencia: se consume cada uno una sola vez.
+  // Registros a mano que ya cubren una ocurrencia: se consume cada uno una sola
+  // vez, en orden de fecha y eligiendo el más cercano a la fecha prevista.
+  pendingCandidates.sort((a, b) => a.date.localeCompare(b.date))
   for (const c of pendingCandidates) {
     const { records, ...occ } = c
-    const hit = (records || []).find(r => r && !used.has(r.id) && recordMatchesOccurrence(occ.rule, occ.date, occ.expected, r))
+    let hit = null, best = Infinity
+    for (const r of records || []) {
+      if (!r || used.has(r.id) || !recordMatchesOccurrence(occ.rule, occ.date, occ.expected, r)) continue
+      const dist = Math.abs(diffDays(occ.date, r.date))
+      if (dist < best) { best = dist; hit = r }
+    }
     if (hit) {
       used.add(hit.id)
       out.push({ ...occ, status: 'confirmed', matched: true, record: hit, amount: Number(hit.amount) || 0 })

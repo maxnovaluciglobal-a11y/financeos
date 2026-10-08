@@ -5,8 +5,7 @@ import { openDB } from 'idb'
 import { DB_VERSION, runMigrations, PRE_RECURRING_SNAPSHOT_ID } from './migrations.js'
 import { currentMonth, localDateStr } from '../../utils/index.js'
 import { reconcileRules } from '../../utils/recurringSources.js'
-import { buildConfirmedRecord, occurrenceRecordId } from '../../utils/recurring.js'
-import { applyDebtPayment } from '../../utils/debtPayment.js'
+import { planConfirmations } from '../../utils/recurringConfirm.js'
 import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/money.js'
 import { regionDefaults } from '../../i18n/region.js'
 
@@ -261,27 +260,7 @@ export async function confirmOccurrencesInDb(items, { today = localDateStr(), no
   const db = await getDB()
   const outRecords = [], outDebts = []
 
-  const plan = (existing, debtsById) => {
-    const seen = new Set(existing.filter(r => r?.recurringId && r?.occurrenceDate).map(r => `${r.recurringId}|${r.occurrenceDate}`))
-    const ids = new Set(existing.map(r => r?.id))
-    const writes = []
-    for (const { rule, date, amount } of list) {
-      const key = `${rule.id}|${date}`
-      if (seen.has(key) || ids.has(occurrenceRecordId(rule.id, date))) continue
-      seen.add(key)
-      let amt = amount
-      let debt = null
-      if (rule.source === 'debt' && rule.sourceId && debtsById.has(rule.sourceId)) {
-        const res = applyDebtPayment(debtsById.get(rule.sourceId), amount)
-        debt = res.debt; amt = res.amount
-        debtsById.set(debt.id, debt)
-      }
-      if (rule.source === 'debt' && !(Number(amt) > 0) && amount == null) continue
-      const record = buildConfirmedRecord(rule, date, { amount: amt, today, createdAt: now })
-      writes.push({ store: rule.kind === 'income' ? 'incomes' : 'expenses', record, debt })
-    }
-    return writes
-  }
+  const plan = (existing, debtsById) => planConfirmations(list, existing, debtsById, { today, now })
 
   if (!db) {
     const existing = [...lsGet('incomes'), ...lsGet('expenses')]

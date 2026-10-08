@@ -12,8 +12,11 @@ import {
   dbGetAll, dbAdd, dbDelete, clearAllData,
   getSettings, saveSettings, exportAllData, importAllData,
   isUsingFallback, firstRunSettings,
+  reconcileRecurringSources, confirmOccurrencesInDb,
 } from '../core/db/index.js'
-import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel } from '../utils/index.js'
+import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel, currentMonth } from '../utils/index.js'
+import { dueAutoConfirmations, ruleFromRecord, withAmountFrom } from '../utils/recurring.js'
+import { monthAdvance } from '../utils/monthAdvance.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
 import { hapticTap } from '../utils/haptics.js'
 import { translate } from '../i18n/translate.js'
@@ -28,6 +31,7 @@ const initialState = {
   debts:    [],
   goals:    [],
   subscriptions: [],
+  recurring: [],    // reglas de movimientos fijos (utils/recurring.js)
   // Antes de hidratar: lo del navegador (idioma/país/moneda), no 'es'/CL fijo.
   // getSettings() lo reemplaza enseguida por lo guardado, si hay algo guardado.
   settings: firstRunSettings(),
@@ -56,8 +60,11 @@ export function reducer(state, action) {
     case 'ADD_SUB':      return { ...state, subscriptions: [action.item, ...state.subscriptions] }
     case 'DEL_SUB':      return { ...state, subscriptions: state.subscriptions.filter(s => s.id !== action.id) }
     case 'UPDATE_SUB':   return { ...state, subscriptions: state.subscriptions.map(s => s.id === action.item.id ? action.item : s) }
+    case 'SET_RECURRING':return { ...state, recurring: action.items }
+    case 'UPSERT_RULE':  return { ...state, recurring: [...state.recurring.filter(r => r.id !== action.item.id), action.item] }
+    case 'DEL_RULE':     return { ...state, recurring: state.recurring.filter(r => r.id !== action.id) }
     case 'SAVE_SETTINGS':return { ...state, settings: action.settings }
-    case 'CLEAR_ALL':    return { ...state, incomes: [], expenses: [], budgets: [], debts: [], goals: [], subscriptions: [] }
+    case 'CLEAR_ALL':    return { ...state, incomes: [], expenses: [], budgets: [], debts: [], goals: [], subscriptions: [], recurring: [] }
     case 'SET_TOAST':    return { ...state, toast: action.toast }
     default:             return state
   }
@@ -90,33 +97,77 @@ export function AppProvider({ children }) {
 
   // ── Re-hidratar desde la DB (reutilizado por hydrate inicial y por el sync) ────
   const rehydrate = useCallback(async () => {
-    const [incomes, expenses, budgets, debts, goals, subscriptions, settings] = await Promise.all([
+    const [incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings] = await Promise.all([
       dbGetAll('incomes'), dbGetAll('expenses'), dbGetAll('budgets'),
-      dbGetAll('debts'),   dbGetAll('goals'),    dbGetAll('subscriptions'), getSettings(),
+      dbGetAll('debts'),   dbGetAll('goals'),    dbGetAll('subscriptions'),
+      dbGetAll('recurring').catch(() => []), getSettings(),
     ])
-    dispatch({ type: 'HYDRATE', payload: { incomes, expenses, budgets, debts, goals, subscriptions, settings } })
+    dispatch({ type: 'HYDRATE', payload: { incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings } })
     document.documentElement.setAttribute('data-theme', settings.theme || 'light')
     // Sin esto un lector de pantalla pronuncia toda la app con reglas fonéticas
     // españolas aunque el idioma elegido sea inglés, portugués o alemán.
     document.documentElement.setAttribute('lang', settings.language || 'es')
   }, [])
 
+  // Alinea las reglas de Suscripciones/Deudas después de un cambio en el origen.
+  const syncSources = useCallback(async () => {
+    try {
+      const ups = await reconcileRecurringSources()
+      if (ups.length) dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') })
+    } catch (e) { console.error('[FinanceOS] fijos de suscripciones/deudas:', e) }
+  }, [])
+
   // ── Borrado con deshacer ──────────────────────────────────────────────────────
   // Reemplaza el confirm() nativo: borra de inmediato y ofrece "Deshacer" ~6s.
   // Restaura re-insertando el MISMO item (conserva su id) y rehidratando desde DB.
   // Genérico y sin tocar el esquema: store ∈ incomes|expenses|budgets|debts|goals|subscriptions.
+  // Suscripciones y Deudas tienen su regla de fijos: tras borrar o deshacer,
+  // la regla se alinea (termina o se reabre) — ver reconcileRecurringSources.
+  const resyncIfSource = async (store) => {
+    if (store !== 'subscriptions' && store !== 'debts') return
+    try { await reconcileRecurringSources(); dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') }) } catch {}
+  }
   const deleteWithUndo = useCallback(async (store, item, deletedMsg, undoLabel) => {
     if (!item?.id) return
     try {
       await dbDelete(store, item.id)
       await rehydrate()
+      await resyncIfSource(store)
       hapticTap()
       showToast(deletedMsg || tr('common.deleted'), 'ok', {
         label: undoLabel || tr('common.undo'),
-        onAction: async () => { try { await dbAdd(store, item); await rehydrate() } catch (e) { showToast(tr('toast.undoFailed'), 'error') } },
+        onAction: async () => { try { await dbAdd(store, item); await rehydrate(); await resyncIfSource(store) } catch (e) { showToast(tr('toast.undoFailed'), 'error') } },
       })
     } catch (e) {
       showToast(tr('toast.deleteError'), 'error')
+    }
+  }, [rehydrate, showToast, tr])
+
+  // ── Movimientos fijos: mantenimiento al abrir (y al volver a la app) ───────
+  // 1) Suscripciones/Deudas → reglas (idempotente, una transacción).
+  // 2) El mes activo avanza solo si empezó un mes nuevo (utils/monthAdvance.js).
+  // 3) Reglas con registro automático: se registran las ocurrencias ya vencidas
+  //    (idempotente: ids deterministas + chequeo dentro de la transacción).
+  // Un candado evita dos pasadas a la vez (StrictMode, visibilitychange).
+  const maintRef = useRef(false)
+  const runRecurringMaintenance = useCallback(async () => {
+    if (maintRef.current) return
+    maintRef.current = true
+    try {
+      const upserts = await reconcileRecurringSources()
+      const settings = await getSettings()
+      const adv = monthAdvance(settings, currentMonth())
+      if (adv) await saveSettings(adv)
+      const [rules, incomes, expenses] = await Promise.all([dbGetAll('recurring'), dbGetAll('incomes'), dbGetAll('expenses')])
+      const due = dueAutoConfirmations(rules, { incomes, expenses, today: localDateStr() })
+      let created = 0
+      if (due.length) created = (await confirmOccurrencesInDb(due.map(o => ({ rule: o.rule, date: o.date })))).records.length
+      if (upserts.length || adv || created) await rehydrate()
+      if (created) showToast(tr(created === 1 ? 'rec.toast.autoOne' : 'rec.toast.autoMany', { n: created }), 'ok')
+    } catch (e) {
+      console.error('[FinanceOS] mantenimiento de fijos:', e)
+    } finally {
+      maintRef.current = false
     }
   }, [rehydrate, showToast, tr])
 
@@ -129,11 +180,12 @@ export function AppProvider({ children }) {
         if (isUsingFallback()) {
           showToast(tr('toast.fallbackMode'), 'ok')
         }
+        await runRecurringMaintenance()
         hydratedRef.current = true
         // Sync opcional: si está activo, baja los cambios de otros dispositivos (no-op si apagado)
         if (isSyncEnabled()) {
           pullAndApplyIfNewer(rehydrate)
-            .then(r => { if (r?.applied) showToast(tr('toast.syncedFromOther'), 'ok') })
+            .then(r => { if (r?.applied) { showToast(tr('toast.syncedFromOther'), 'ok'); runRecurringMaintenance() } })
             .catch(() => {})
         }
       } catch (e) {
@@ -146,11 +198,18 @@ export function AppProvider({ children }) {
     hydrate()
   }, [rehydrate])
 
+  // Volver a la app otro día (o en otro mes) con la pestaña abierta.
+  useEffect(() => {
+    const onVis = () => { if (document.visibilityState === 'visible' && hydratedRef.current) runRecurringMaintenance() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [runRecurringMaintenance])
+
   // ── Observa cambios locales → agenda push al sync (no-op si sync apagado) ──────
   useEffect(() => {
     if (!hydratedRef.current) return  // no dispara durante la hidratación inicial
     markLocalChange()
-  }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions])
+  }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions, state.recurring])
   // ── Formato de dinero según la moneda (y el idioma) del usuario ──────────────
   // En el render y no en un efecto: el provider se renderiza antes que sus
   // hijos, así que la primera pintura ya sale con los decimales/símbolo de la
@@ -263,31 +322,34 @@ export function AppProvider({ children }) {
     try {
       await dbAdd('debts', item)
       dispatch({ type: 'ADD_DEBT', item })
+      await syncSources()
     } catch (e) {
       showToast(tr('toast.save.debt'), 'error')
       throw e
     }
-  }, [showToast, tr])
+  }, [showToast, tr, syncSources])
 
   const delDebt = useCallback(async (id) => {
     try {
       await dbDelete('debts', id)
       dispatch({ type: 'DEL_DEBT', id })
+      await syncSources()
     } catch (e) {
       showToast(tr('toast.delete.debt'), 'error')
       throw e
     }
-  }, [showToast, tr])
+  }, [showToast, tr, syncSources])
 
   const updateDebt = useCallback(async (item) => {
     try {
       await dbAdd('debts', item)
       dispatch({ type: 'UPDATE_DEBT', item })
+      await syncSources()
     } catch (e) {
       showToast(tr('toast.update.debt'), 'error')
       throw e
     }
-  }, [showToast, tr])
+  }, [showToast, tr, syncSources])
 
   const addGoal = useCallback(async (data) => {
     const item = { ...data, id: uid() }
@@ -448,6 +510,7 @@ export function AppProvider({ children }) {
             debts:         (data.debts         || []).length,
             goals:         (data.goals         || []).length,
             importBatches: (data.importBatches || []).length,
+            recurring:     (data.recurring     || []).length,
           },
         },
         ...data,
@@ -472,11 +535,8 @@ export function AppProvider({ children }) {
         try {
           const data = JSON.parse(e.target.result)
           await importAllData(data)
-          const [incomes, expenses, budgets, debts, goals, subscriptions, settings] = await Promise.all([
-            dbGetAll('incomes'), dbGetAll('expenses'), dbGetAll('budgets'),
-            dbGetAll('debts'),   dbGetAll('goals'),    dbGetAll('subscriptions'), getSettings(),
-          ])
-          dispatch({ type: 'HYDRATE', payload: { incomes, expenses, budgets, debts, goals, subscriptions, settings } })
+          await reconcileRecurringSources().catch(() => {})
+          await rehydrate()
           showToast(tr('toast.imported'), 'ok')
           resolve()
         } catch (err) {
@@ -490,7 +550,7 @@ export function AppProvider({ children }) {
       }
       reader.readAsText(file)
     })
-  }, [showToast, tr])
+  }, [showToast, tr, rehydrate])
 
   // ── Subscriptions ─────────────────────────────────────────────
   const addSubscription = useCallback(async (item) => {
@@ -498,20 +558,65 @@ export function AppProvider({ children }) {
       const newItem = { ...item, id: item.id || uid(), createdAt: item.createdAt || new Date().toISOString() }
       await dbAdd('subscriptions', newItem)
       dispatch({ type: 'ADD_SUB', item: newItem })
+      await syncSources()
+      return newItem
     } catch (e) { showToast(tr('toast.save.subscription'), 'error') }
-  }, [showToast, tr])
+  }, [showToast, tr, syncSources])
   const deleteSubscription = useCallback(async (id) => {
     try {
       await dbDelete('subscriptions', id)
       dispatch({ type: 'DEL_SUB', id })
+      await syncSources()
     } catch (e) { showToast(tr('toast.delete.subscription'), 'error') }
-  }, [showToast, tr])
+  }, [showToast, tr, syncSources])
   const updateSubscription = useCallback(async (item) => {
     try {
       await dbAdd('subscriptions', item)
       dispatch({ type: 'UPDATE_SUB', item })
+      await syncSources()
     } catch (e) { showToast(tr('toast.update.subscription'), 'error') }
+  }, [showToast, tr, syncSources])
+
+  // ── Movimientos fijos ─────────────────────────────────────────
+  const saveRule = useCallback(async (rule) => {
+    const item = { ...rule, id: rule.id || uid(), createdAt: rule.createdAt || new Date().toISOString() }
+    try {
+      await dbAdd('recurring', item)
+      dispatch({ type: 'UPSERT_RULE', item })
+      return item
+    } catch (e) { showToast(tr('rec.toast.saveError'), 'error'); throw e }
   }, [showToast, tr])
+
+  // Confirma una o varias ocurrencias ({ rule, date, amount? }). Si alguna es
+  // de una deuda, baja el saldo (y si queda saldada, la regla termina).
+  const confirmOccurrences = useCallback(async (items) => {
+    try {
+      const res = await confirmOccurrencesInDb(items)
+      await rehydrate()
+      if (res.debts.length) await syncSources()
+      hapticTap()
+      return res
+    } catch (e) { showToast(tr('rec.toast.confirmError'), 'error'); throw e }
+  }, [rehydrate, syncSources, showToast, tr])
+
+  const skipOccurrence = useCallback(async (rule, date, skip = true) => {
+    const skipped = new Set(rule.skipped || [])
+    if (skip) skipped.add(date); else skipped.delete(date)
+    return saveRule({ ...rule, skipped: [...skipped].sort() })
+  }, [saveRule])
+
+  // "Desde ahora": monto nuevo a partir del mes `ym` (el pasado no cambia).
+  const setRuleAmountFrom = useCallback(async (rule, ym, amount) => saveRule(withAmountFrom(rule, ym, amount)), [saveRule])
+
+  // "Se repite": guarda el movimiento y crea su regla, con este registro como
+  // la primera ocurrencia confirmada.
+  const addWithRule = useCallback(async (kind, data, freq = 'monthly') => {
+    const rule = await saveRule(ruleFromRecord(data, { kind, freq, id: uid() }))
+    const linked = { ...data, recurringId: rule.id, occurrenceDate: data.date }
+    if (kind === 'income') await addIncome(linked)
+    else await addExpense(linked)
+    return rule
+  }, [saveRule, addIncome, addExpense])
 
   const value = useMemo(() => ({
     ...state,
@@ -521,6 +626,7 @@ export function AppProvider({ children }) {
     addDebt,    delDebt,    updateDebt,
     addGoal,    delGoal,    updateGoal,
       addSubscription, deleteSubscription, updateSubscription,
+    saveRule, confirmOccurrences, skipOccurrence, setRuleAmountFrom, addWithRule,
     updateSettings,
     clearAll,   loadDemo,
     exportData, exportCSV,  importData,
@@ -535,6 +641,7 @@ export function AppProvider({ children }) {
     addDebt, delDebt, updateDebt,
     addGoal, delGoal, updateGoal,
     addSubscription, deleteSubscription, updateSubscription,
+    saveRule, confirmOccurrences, skipOccurrence, setRuleAmountFrom, addWithRule,
     updateSettings,
     clearAll, loadDemo,
     exportData, exportCSV, importData,

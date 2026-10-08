@@ -6,14 +6,30 @@
 import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
 import { buildDemoState, pickDemoPersonaId, demoPersona } from './demoData.js'
 import { detectLanguage } from '../i18n/translate.js'
-import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel } from '../utils/index.js'
+import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel, localDateStr } from '../utils/index.js'
+import { reconcileRules } from '../utils/recurringSources.js'
+import { planConfirmations } from '../utils/recurringConfirm.js'
+import { ruleFromRecord, withAmountFrom } from '../utils/recurring.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
 
 export const DemoContext = createContext(null)
 
-// Replica el mismo reducer que AppContext para compatibilidad total
+// Suscripciones y Deudas tienen su regla de fijos también en el demo: después
+// de cada cambio en el origen, las reglas se alinean en memoria (misma
+// reconcileRules que la app real).
+const SOURCE_ACTIONS = new Set(['ADD_SUB', 'DEL_SUB', 'UPDATE_SUB', 'ADD_DEBT', 'DEL_DEBT', 'UPDATE_DEBT'])
 function reducer(state, action) {
+  const next = baseReducer(state, action)
+  if (!SOURCE_ACTIONS.has(action.type) || next === state) return next
+  const ups = reconcileRules(next.recurring || [], next.subscriptions || [], next.debts || [], { today: localDateStr() })
+  if (!ups.length) return next
+  const ids = new Set(ups.map(r => r.id))
+  return { ...next, recurring: [...(next.recurring || []).filter(r => !ids.has(r.id)), ...ups] }
+}
+
+// Replica el mismo reducer que AppContext para compatibilidad total
+function baseReducer(state, action) {
   switch (action.type) {
     case 'HYDRATE':      return { ...state, ...action.payload, loading: false }
     case 'ADD_INCOME':   return { ...state, incomes:  [action.item, ...state.incomes] }
@@ -34,6 +50,20 @@ function reducer(state, action) {
     case 'ADD_GOAL':     return { ...state, goals:    [...state.goals, action.item] }
     case 'DEL_GOAL':     return { ...state, goals:    state.goals.filter(g => g.id !== action.id) }
     case 'UPDATE_GOAL':  return { ...state, goals:    state.goals.map(g => g.id === action.item.id ? action.item : g) }
+    case 'SET_RECURRING':return { ...state, recurring: action.items }
+    case 'UPSERT_RULE':  return { ...state, recurring: [...(state.recurring || []).filter(r => r.id !== action.item.id), action.item] }
+    case 'DEL_RULE':     return { ...state, recurring: (state.recurring || []).filter(r => r.id !== action.id) }
+    // Confirmar ocurrencias en memoria: registros nuevos + deudas con saldo bajado.
+    case 'APPLY_CONFIRMATIONS': {
+      const inc = action.writes.filter(w => w.store === 'incomes').map(w => w.record)
+      const exp = action.writes.filter(w => w.store === 'expenses').map(w => w.record)
+      const debts = new Map(action.writes.filter(w => w.debt).map(w => [w.debt.id, w.debt]))
+      return { ...state,
+        incomes: [...inc, ...state.incomes],
+        expenses: [...exp, ...state.expenses],
+        debts: state.debts.map(d => debts.get(d.id) || d),
+      }
+    }
     case 'SAVE_SETTINGS':return { ...state, settings: action.settings }
     // En demo, "borrar todo" recarga los datos de la misma persona (y conserva el idioma elegido)
     case 'CLEAR_ALL':    return { ...state, ...buildDemoState(state.personaId, state.settings?.language) }
@@ -90,8 +120,8 @@ export function DemoProvider({ children }) {
 
   // Borrado con deshacer en demo (en memoria: re-dispatch del ADD con el mismo item)
   const deleteWithUndo = useCallback((store, item, deletedMsg, undoLabel) => {
-    const DEL = { incomes:'DEL_INCOME', expenses:'DEL_EXPENSE', budgets:'DEL_BUDGET', debts:'DEL_DEBT', goals:'DEL_GOAL', subscriptions:'DEL_SUB' }[store]
-    const ADD = { incomes:'ADD_INCOME', expenses:'ADD_EXPENSE', budgets:'ADD_BUDGET', debts:'ADD_DEBT', goals:'ADD_GOAL', subscriptions:'ADD_SUB' }[store]
+    const DEL = { incomes:'DEL_INCOME', expenses:'DEL_EXPENSE', budgets:'DEL_BUDGET', debts:'DEL_DEBT', goals:'DEL_GOAL', subscriptions:'DEL_SUB', recurring:'DEL_RULE' }[store]
+    const ADD = { incomes:'ADD_INCOME', expenses:'ADD_EXPENSE', budgets:'ADD_BUDGET', debts:'ADD_DEBT', goals:'ADD_GOAL', subscriptions:'ADD_SUB', recurring:'UPSERT_RULE' }[store]
     if (!DEL || !item?.id) return
     dispatch({ type: DEL, id: item.id })
     showToast(deletedMsg || tr('common.deleted'), 'ok', { label: undoLabel || tr('common.undo'), onAction: () => dispatch({ type: ADD, item }) })
@@ -116,6 +146,37 @@ export function DemoProvider({ children }) {
   const addSubscription    = useCallback((item) => { dispatch({ type: 'ADD_SUB', item: { ...item, id: 'sub-' + Math.random().toString(36).slice(2,9) } }); showToast(tr('demo.toast.added.subscription'), 'ok') }, [showToast, tr])
   const deleteSubscription = useCallback((id)   => { dispatch({ type: 'DEL_SUB', id }) }, [])
   const updateSubscription = useCallback((item) => { dispatch({ type: 'UPDATE_SUB', item }) }, [])
+
+  // ── Movimientos fijos (en memoria) ──
+  const stateRef = useRef(state)
+  stateRef.current = state
+  const saveRule = useCallback((rule) => {
+    const item = { ...rule, id: rule.id || 'rec-' + uid(), createdAt: rule.createdAt || new Date().toISOString() }
+    dispatch({ type: 'UPSERT_RULE', item })
+    return item
+  }, [])
+  const confirmOccurrences = useCallback((items) => {
+    const st = stateRef.current
+    const debtsById = new Map((st.debts || []).map(d => [d.id, d]))
+    const writes = planConfirmations(items, [...st.incomes, ...st.expenses], debtsById, { today: localDateStr(), now: new Date().toISOString() })
+    if (writes.length) dispatch({ type: 'APPLY_CONFIRMATIONS', writes })
+    // Una deuda saldada termina su regla (como en la app real).
+    if (writes.some(w => w.debt)) dispatch({ type: 'UPDATE_DEBT', item: writes.filter(w => w.debt).slice(-1)[0].debt })
+    return { records: writes.map(w => w.record), debts: writes.filter(w => w.debt).map(w => w.debt) }
+  }, [])
+  const skipOccurrence = useCallback((rule, date, skip = true) => {
+    const skipped = new Set(rule.skipped || [])
+    if (skip) skipped.add(date); else skipped.delete(date)
+    return saveRule({ ...rule, skipped: [...skipped].sort() })
+  }, [saveRule])
+  const setRuleAmountFrom = useCallback((rule, ym, amount) => saveRule(withAmountFrom(rule, ym, amount)), [saveRule])
+  const addWithRule = useCallback((kind, data, freq = 'monthly') => {
+    const rule = saveRule(ruleFromRecord(data, { kind, freq, id: 'rec-' + uid() }))
+    const linked = { ...data, recurringId: rule.id, occurrenceDate: data.date }
+    dispatch({ type: kind === 'income' ? 'ADD_INCOME' : 'ADD_EXPENSE', item: { ...linked, id: uid() } })
+    showToast(tr(kind === 'income' ? 'demo.toast.added.income' : 'demo.toast.added.expense'), 'ok')
+    return rule
+  }, [saveRule, showToast, tr])
 
   const updateSettings = useCallback((settings) => {
     dispatch({ type: 'SAVE_SETTINGS', settings })
@@ -207,6 +268,7 @@ export function DemoProvider({ children }) {
     addDebt,    delDebt,    updateDebt,
     addGoal,    delGoal,    updateGoal,
     addSubscription, deleteSubscription, updateSubscription,
+    saveRule, confirmOccurrences, skipOccurrence, setRuleAmountFrom, addWithRule,
     updateSettings,
     clearAll,   loadDemo,
     exportData, exportCSV,  importData,

@@ -172,6 +172,20 @@ describe('monthPlan — estado de cada ocurrencia', () => {
     expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'Arriendo depto', category: 'Otros', date: '2026-10-25', amount: 1000 })).toBe(true)
   })
 
+  it('un sueldo recortado (misma descripción, misma fecha) cubre su ocurrencia; cada registro va a la más cercana', () => {
+    const pay = rule({ id: 'p', kind: 'income', description: 'Paycheck', category: 'Salario', amounts: [{ from: '2026-01', amount: 1926.4 }],
+      schedule: { freq: 'biweekly', anchorDate: '2026-10-03' }, startDate: '2026-10-01' })
+    const incomes = [
+      { id: 'b', source: 'Paycheck', date: '2026-10-17', amount: 1214.75, category: 'Salario' },
+      { id: 'a', source: 'Paycheck', date: '2026-10-03', amount: 1926.4, category: 'Salario' },
+    ]
+    const plan = monthPlan([pay], '2026-10', { incomes })
+    expect(plan.map(o => [o.date, o.status, o.record?.id])).toEqual([
+      ['2026-10-03', 'confirmed', 'a'], ['2026-10-17', 'confirmed', 'b'], ['2026-10-31', 'pending', undefined],
+    ])
+    expect(pendingTotals(plan).income).toBe(1926.4)
+  })
+
   it('pausada: sin pendientes, pero lo confirmado sigue', () => {
     const r = rule({ paused: true })
     expect(monthPlan([r], '2026-10', {})).toEqual([])
