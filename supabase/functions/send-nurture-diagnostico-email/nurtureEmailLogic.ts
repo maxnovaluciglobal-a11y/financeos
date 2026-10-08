@@ -23,14 +23,25 @@
 // de A/B testing en este envío (no hay tracking de qué variante ganó ni forma
 // de medirlo todavía), se fija SIEMPRE la variante A. Documentado acá porque
 // es una decisión de producto, no un detalle de implementación.
+//
+// Idioma (09-oct-2026): el copy de los 4 idiomas vive en nurtureTemplates.ts
+// y se elige por diagnostico_leads.lang (pickLang, fallback español). Ver
+// supabase/migrations/20261009000000_leads_lang.sql.
+
+import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
+import { DIAGNOSTICO_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
 
 export type NurtureMode = "welcome" | "day2" | "day5" | "day12";
+export const NURTURE_MODES: NurtureMode[] = ["welcome", "day2", "day5", "day12"];
 
 export interface DiagnosticoLead {
   id: string;
   email: string;
   score: number | null;
   label: string | null;
+  // Idioma del lead (migración 20261009000000_leads_lang.sql). Opcional: antes
+  // de esa migración la columna no existe y el campo simplemente no viene.
+  lang?: string | null;
 }
 
 export interface NurtureEmailConfig {
@@ -40,6 +51,12 @@ export interface NurtureEmailConfig {
   fromEmail: string; // "MOY IQ <hola@moyiq.app>"
   cronSecret?: string;
   landingUrl: string; // "https://moyiq.app" — para armar el link de unsubscribe
+}
+
+// Idioma de la plantilla: el lang del lead si es es/en/pt/de, si no español
+// (null, columna inexistente, 'fr', basura).
+export function pickLang(lang: unknown): EmailLang {
+  return pickFromCandidates(lang);
 }
 
 // --- Personalización del email 1 --------------------------------------------
@@ -61,34 +78,20 @@ export interface NurtureEmailConfig {
 // tan preciso como saber el factor exacto, pero es consistente con lo que
 // la app puede después mostrar con datos reales (regla explícita del .md:
 // no prometer una recomendación que la app no pueda sostener).
-function actionBlockForLabel(label: string | null): string {
-  switch (label) {
-    case "Crítico":
-      return "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en MOY IQ: el Dashboard te va a mostrar exactamente en qué categoría se te va la plata, sin que tengas que armar una planilla.";
-    case "Regular":
-      return "Tu resultado está en la zona donde un cambio chico rinde mucho: ordenar el colchón de emergencia o la carga de deuda. Con tus movimientos reales cargados, MOY IQ te muestra cuál de los dos te conviene atacar primero según tu propio flujo de caja.";
-    case "Bueno":
-      return "Ya estás manejando bien lo básico. El siguiente paso es que ese resultado no dependa de que te acuerdes de revisarlo — con tus movimientos importados, el Dashboard te avisa solo cuando algo se corre de lo normal.";
-    case "Excelente":
-      return "Tu resultado ya está en el nivel donde el foco pasa de \"ordenar\" a \"optimizar\" — metas en paralelo, proyección de decisiones grandes. Eso es exactamente lo que hace Goals y Advisor con tus datos reales.";
-    default:
-      // Fallback genérico si no llegó label (no debería pasar dado que el
-      // formulario siempre lo manda, pero el gate de email es más flexible).
-      return "Registra tus movimientos de esta semana en MOY IQ. El Dashboard te muestra en qué categoría se te va más plata cada mes, sin que tengas que actualizar nada a mano.";
-  }
-}
+// Los bloques por label (en los 4 idiomas) viven en nurtureTemplates.ts
+// (ACTION_BLOCKS / actionBlock).
 
 export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): string {
   return `${config.landingUrl.replace(/\/$/, "")}/unsubscribe.html?id=${encodeURIComponent(leadId)}`;
 }
 
-function wrapHtml(bodyHtml: string, unsubUrl: string): string {
+function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): string {
   return `
     <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a;line-height:1.55">
       ${bodyHtml}
       <p style="color:#999;font-size:11px;margin-top:32px;border-top:1px solid #eee;padding-top:12px">
         MOY IQ · MAXNOVA &amp; LUCI Global LLC.
-        <a href="${unsubUrl}" style="color:#999">Darme de baja de estos correos</a>.
+        <a href="${unsubUrl}" style="color:#999">${UNSUBSCRIBE_LABEL[lang]}</a>.
       </p>
     </div>`;
 }
@@ -98,85 +101,19 @@ export interface RenderedEmail {
   html: string;
 }
 
+// day12 (reactivación, revisión 18-sep) no repite el pitch de Starter/Pro y
+// menciona el unsubscribe en el cuerpo, no solo en el footer legal — ver las
+// plantillas.
 export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: NurtureEmailConfig): RenderedEmail {
+  const lang = pickLang(lead.lang);
   const unsub = unsubscribeUrl(config, lead.id);
-  const score = lead.score != null ? `${lead.score}/100` : "tu resultado";
-
-  if (mode === "welcome") {
-    const subject = "Tu diagnóstico completo (y el dato que se quedó afuera)"; // variante A, revisión 18-sep
-    const html = wrapHtml(
-      `
-      <h2 style="color:#14213D">Acá está tu diagnóstico completo</h2>
-      <p>Hola,</p>
-      <p>Acá está tu diagnóstico completo — sin el recorte que viste en el preview.</p>
-      <p><strong>Tu puntaje MOY IQ exprés: ${score}${lead.label ? ` (${lead.label})` : ""}</strong></p>
-      <p>Un paso concreto para esta semana, según tu resultado:</p>
-      <p>${actionBlockForLabel(lead.label)}</p>
-      <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomas, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Crear cuenta gratis →</a></p>
-      <p style="color:#666;font-size:13px">Sin tarjeta, sin trial que vencer. Starter no tiene fecha de corte.</p>
-      <p style="color:#666;font-size:13px">En dos días te cuento por qué la mayoría de los presupuestos armados en una hoja de cálculo no llegan al segundo mes — y no es por falta de disciplina.</p>
-      `,
-      unsub,
-    );
-    return { subject, html };
-  }
-
-  if (mode === "day2") {
-    const subject = "El presupuesto no falló. El método, sí."; // variante A, revisión 18-sep
-    const html = wrapHtml(
-      `
-      <h2 style="color:#14213D">El problema no es cuánto ganas</h2>
-      <p>Hola,</p>
-      <p>Como prometí, acá va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
-      <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
-      <p>Cuando importas tus movimientos en MOY IQ, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más plata este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
-      <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico-d2" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver mi dashboard →</a></p>
-      <p style="color:#666;font-size:13px">Starter incluye Dashboard, Movimientos y Presupuestos sin costo.</p>
-      `,
-      unsub,
-    );
-    return { subject, html };
-  }
-
-  if (mode === "day5") {
-    const subject = "Starter o Pro: la diferencia, sin vueltas"; // variante A, revisión 18-sep
-    const html = wrapHtml(
-      `
-      <h2 style="color:#14213D">Sin testimonios inventados</h2>
-      <p>Hola,</p>
-      <p>Sin testimonio inventado de "Fulano ahorró X% en 3 meses" — no tenemos ese caso documentado, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
-      <p>La diferencia real entre lo que ya puedes usar gratis y lo que suma Pro:</p>
-      <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Dashboard con IQ Score, Movimientos y categorización automática, Presupuestos básicos, Metas simples.</p>
-      <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitas mostrarle tus números a otra persona.</p>
-      <p>Si tu situación es simple, Starter alcanza. Si tienes varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
-      <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Actualizar a Pro →</a></p>
-      <p style="color:#666;font-size:13px">Si no es para ti ahora, sigues en Starter sin perder nada de lo que ya armaste.</p>
-      `,
-      unsub,
-    );
-    return { subject, html };
-  }
-
-  // day12 — reactivación (nuevo, revisión 18-sep). No repite el pitch de
-  // Starter/Pro (ya lo vio dos veces) — vuelve a poner el propio resultado
-  // del diagnóstico adelante, no la app. Menciona unsubscribe en el cuerpo,
-  // no solo en el footer legal — el tono es "esto es para ti", ocultar la
-  // salida contradice eso.
-  const subject = "Tu IQ Score sigue ahí (no venció)"; // variante A
-  const html = wrapHtml(
-    `
-    <h2 style="color:#14213D">No te escribo por MOY IQ</h2>
-    <p>Hola,</p>
-    <p>No te vengo a insistir con Starter o Pro — ya te los mostré. Esto es distinto: tu diagnóstico de hace 12 días sigue guardado, pero doce días es tiempo suficiente para que algo haya cambiado — un gasto grande, un ingreso nuevo, una deuda que se movió.</p>
-    <p><a href="${config.landingUrl.replace(/\/$/, "")}/diagnostico.html?ref=diagnostico-d12" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Volver a ver mi diagnóstico →</a></p>
-    <p>Si tu situación es la misma, no hace falta que hagas nada — el resultado sigue siendo válido. Si cambió algo, es un buen momento para volver a correrlo y ver qué mueve.</p>
-    <p style="color:#666;font-size:13px">Este es el último correo de esta secuencia. Si prefieres no recibir más, date de baja <a href="${unsub}" style="color:#666">acá</a> — no hay problema.</p>
-    `,
-    unsub,
-  );
-  return { subject, html };
+  const copy = DIAGNOSTICO_TEMPLATES[lang][mode]({
+    score: lead.score ?? null,
+    label: lead.label ?? null,
+    unsubUrl: unsub,
+    landingUrl: config.landingUrl.replace(/\/$/, ""),
+  });
+  return { subject: copy.subject, html: wrapHtml(copy.body, unsub, lang) };
 }
 
 // --- Envío con reintento (mismo patrón que reportEmailLogic.sendReportEmail) --
@@ -236,9 +173,14 @@ async function restPatch(path: string, body: unknown, config: NurtureEmailConfig
   if (!res.ok) throw new Error(`rest_patch_failed_${res.status}`);
 }
 
+// select=* (no select=id,email,score,label,lang) a propósito: PostgREST
+// responde 400 si se pide una columna que no existe, y `lang` recién existe
+// después de la migración 20261009000000_leads_lang.sql. Con * la función
+// sirve igual antes y después: sin columna, lead.lang es undefined y
+// renderEmail cae a español. Se lee con service role, una fila por lead.
 export async function fetchLeadById(id: string, config: NurtureEmailConfig): Promise<DiagnosticoLead | null> {
   const rows = await restGet<DiagnosticoLead[]>(
-    `diagnostico_leads?id=eq.${encodeURIComponent(id)}&select=id,email,score,label&limit=1`,
+    `diagnostico_leads?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
     config,
   );
   return rows[0] ?? null;
@@ -250,7 +192,7 @@ const BATCH_LIMIT = 200; // tope por corrida del cron — este volumen de leads 
 // migración) — se manda una sola vez a quien todavía no lo tenga marcado.
 export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<DiagnosticoLead[]> {
   return restGet<DiagnosticoLead[]>(
-    `diagnostico_leads?select=id,email,score,label` +
+    `diagnostico_leads?select=*` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null&email2_sent_at=is.null` +
       `&limit=${BATCH_LIMIT}`,
     config,
@@ -262,7 +204,7 @@ export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promis
 export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promise<DiagnosticoLead[]> {
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<DiagnosticoLead[]>(
-    `diagnostico_leads?select=id,email,score,label` +
+    `diagnostico_leads?select=*` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
       `&email3_sent_at=is.null&email2_sent_at=not.is.null&email2_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,
@@ -276,7 +218,7 @@ export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promis
 export async function fetchEligibleForEmail4(config: NurtureEmailConfig): Promise<DiagnosticoLead[]> {
   const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<DiagnosticoLead[]>(
-    `diagnostico_leads?select=id,email,score,label` +
+    `diagnostico_leads?select=*` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
       `&email4_sent_at=is.null&email3_sent_at=not.is.null&email3_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,

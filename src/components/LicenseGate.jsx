@@ -74,7 +74,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
     // clave, así que sin esto nadie que arranca gratis quedaba registrado
     // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
     // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
-    if (userEmail) registerStarterLead(userEmail).catch(() => {})
+    if (userEmail) registerStarterLead(userEmail, lang).catch(() => {})
     // Recuerda la elección contra la cuenta — sin esto, loguearse desde otro
     // dispositivo volvía a mostrar esta misma pantalla de elegir plan.
     if (userId) setServerEntitlement(userId, 'starter').catch(() => {})
