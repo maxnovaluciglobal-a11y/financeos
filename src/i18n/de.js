@@ -1817,4 +1817,6 @@ export const de = {
     'lock.setup.bioFailed': "Die Biometrie wurde nicht aktiviert. Versuchen Sie es erneut oder fahren Sie nur mit PIN fort.",
     'lock.forgot.signoutShort': "Sie werden außerdem abgemeldet: Für die erneute Anmeldung brauchen Sie Ihre E-Mail-Adresse und Ihr Passwort.",
     'lock.forgot.ackRestore': "Mir ist klar, dass die aktuellen Daten auf diesem Gerät durch die Sicherung ersetzt werden.",
+    'pro.gate.trialCta': "{days} Tage testen",
+    'pro.gate.trialNote': "Karte erforderlich. Die Abbuchung von US$ {m}/Monat beginnt an Tag {next}, sofern Sie nicht vorher kündigen.",
 }

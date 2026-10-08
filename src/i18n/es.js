@@ -1817,4 +1817,6 @@ export const es = {
     'lock.setup.bioFailed': "La biometría no se activó. Prueba de nuevo o sigue solo con PIN.",
     'lock.forgot.signoutShort': "También se cierra la sesión: para volver a entrar hacen falta tu correo y tu contraseña.",
     'lock.forgot.ackRestore': "Entiendo que los datos actuales de este dispositivo se reemplazan por los del respaldo.",
+    'pro.gate.trialCta': "Probar {days} días",
+    'pro.gate.trialNote': "Requiere tarjeta. El cobro de US$ {m}/mes empieza el día {next}, salvo que canceles antes.",
 }

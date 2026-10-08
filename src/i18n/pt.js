@@ -1817,4 +1817,6 @@ export const pt = {
     'lock.setup.bioFailed': "A biometria não foi ativada. Tente de novo ou continue só com PIN.",
     'lock.forgot.signoutShort': "A sessão também é encerrada: para entrar de novo são necessários seu e-mail e sua senha.",
     'lock.forgot.ackRestore': "Entendo que os dados atuais deste dispositivo são substituídos pelos do backup.",
+    'pro.gate.trialCta': "Testar por {days} dias",
+    'pro.gate.trialNote': "Exige cartão. A cobrança de US$ {m}/mês começa no dia {next}, a menos que você cancele antes.",
 }

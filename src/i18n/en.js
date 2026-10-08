@@ -1817,4 +1817,6 @@ export const en = {
     'lock.setup.bioFailed': "Biometrics was not turned on. Try again or continue with the PIN only.",
     'lock.forgot.signoutShort': "You are also signed out: getting back in requires your email and password.",
     'lock.forgot.ackRestore': "I understand that the current data on this device is replaced by the backup.",
+    'pro.gate.trialCta': "Try it for {days} days",
+    'pro.gate.trialNote': "Card required. The US$ {m}/month charge starts on day {next} unless you cancel first.",
 }
