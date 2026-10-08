@@ -197,6 +197,13 @@ const config = {
   // 'starter' | 'pro' | 'enterprise'
   plan: 'starter',
 
+  // ── PRECIOS (fuente única en la app) ───────────────────────────────────────
+  // Los leen ProGate, LicenseGate, DemoShell y las claves i18n con {m}/{y}
+  // (vía utils/pricing.js). Deben coincidir con los Payment Links de Stripe y
+  // con la landing (repo aparte: financeos-landing, no lee este archivo).
+  // trialDays queda listo para T10 (prueba de Pro), todavía sin uso.
+  pricing: { proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14 },
+
 }
 
 export default config

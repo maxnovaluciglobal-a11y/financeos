@@ -3,11 +3,13 @@ import { useState } from 'react'
 import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
+import { formatPrice, proPriceVars } from '../utils/pricing.js'
+import config from '../config.js'
 
-function usePlans(t) {
+function usePlans(t, lang) {
   return [
     { name: 'Starter', price: t('licenseGate.free'), suffix: '',                     desc: t('licenseGate.planStarterDesc'), product: 'starter', highlight: false },
-    { name: 'Pro',      price: 'US$4.99',              suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc'),      product: 'pro',      highlight: true },
+    { name: 'Pro',      price: `US$ ${formatPrice(config.pricing.proMonthly, lang)}`, suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc', proPriceVars(lang)),      product: 'pro',      highlight: true },
   ]
 }
 
@@ -21,8 +23,8 @@ async function startCheckout(product) {
 }
 
 export default function LicenseGate({ onActivate, userEmail, userId }) {
-  const { t } = useT()
-  const PLANS = usePlans(t)
+  const { t, lang } = useT()
+  const PLANS = usePlans(t, lang)
   const [key, setKey]           = useState('')
   const [loading, setLoading]   = useState(false)
   const [buying, setBuying]     = useState(null)

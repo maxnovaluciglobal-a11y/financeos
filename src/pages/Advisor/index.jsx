@@ -400,7 +400,7 @@ export default function Advisor() {
           count: subCount, alerts: subAlerts, activeSubs } = subMetrics
 
   return (
-    <ProGate feature="Modo Asesor">{/* nombre de feature interno */}
+    <ProGate featureKey="nav.advisorMode">
     <div className="stack">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>

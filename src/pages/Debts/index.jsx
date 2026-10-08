@@ -456,7 +456,7 @@ export default function Debts() {
           </Card>
         )
       })}
-      {debts.length > 0 && <ProGate feature="Simulador de liquidación de deudas"><DebtPayoffSimulator debts={debts} sym={sym} /></ProGate>}
+      {debts.length > 0 && <ProGate featureKey="debts.sim.proFeature"><DebtPayoffSimulator debts={debts} sym={sym} /></ProGate>}
       {debts.length > 0 && <DebtProgressList debts={debts} sym={sym} />}
     </div>
   )

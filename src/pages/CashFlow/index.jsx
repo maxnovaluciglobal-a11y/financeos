@@ -150,7 +150,7 @@ export default function CashFlow({ setPage }) {
   const hasData = monthsWithData.length > 0
 
   return (
-    <ProGate feature={t('cf.proGateFeature')} feminine>
+    <ProGate feature={t('cf.proGateFeature')}>
     <div className="stack">
       <PageHeader
         title={t('cf.title')}

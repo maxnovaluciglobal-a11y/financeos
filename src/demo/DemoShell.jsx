@@ -11,6 +11,7 @@ import Toast from '../components/ui/Toast.jsx'
 import PageSkeleton from '../components/ui/PageSkeleton.jsx'
 import { AppContext } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
+import { proPriceVars } from '../utils/pricing.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -61,7 +62,7 @@ function DemoBridge({ children }) {
 
 // CTA persistente al pie — aparece después de 3 min de uso demo
 function DemoBottomCTA() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(() => {
     try { return !!localStorage.getItem('fos_demo_cta_dismissed') } catch { return false }
@@ -94,7 +95,7 @@ function DemoBottomCTA() {
     }}>
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{t('demo.cta.title')}</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>{t('demo.cta.sub', { m: '4.99' })}</div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
       </div>
       <button
         onClick={() => window.open('https://moyiq.app/#pricing', '_blank')}
