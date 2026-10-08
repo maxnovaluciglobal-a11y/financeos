@@ -2521,4 +2521,11 @@ export const en = {
     'mov.list.showMore': "Show {n} more",
     'mov.list.showLess': "Show less",
     'ahorroFiscal.figures': "Figures for {year} ({source}).",
+    'dbError.title': "Your data could not be opened",
+    'dbError.body': "Your data is still stored on this device, but the browser did not let us open it. This usually happens when storage space runs low.",
+    'dbError.keep': "Do not clear the site data. Free up space on the device and try again.",
+    'dbError.retry': "Try again",
+    'dbError.help': "If it keeps happening, we can help you back up and restore your data:",
+    'dbError.contact': "contact support",
+    'dbError.mailSubject': "My data does not open",
 }

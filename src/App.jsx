@@ -13,6 +13,7 @@ import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
 import AppLockGate from './components/lock/AppLockGate.jsx'
+import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
 import { useState, useEffect } from 'react'
 
@@ -93,7 +94,7 @@ function Inner() {
   // montado. React lo tolera con un warning en vez de romper visiblemente, por
   // eso pasó desapercibido — pero es un bug real, no cosmético. Mismo motivo
   // por el que este useEffect va acá arriba, antes de cualquier return.
-  const { settings, loading } = useApp()
+  const { settings, loading, dbError } = useApp()
 
   // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
@@ -201,6 +202,9 @@ function Inner() {
       default:              return <Dashboard setPage={setPage}/>
     }
   }
+
+  // La base local existe pero no abrió: bloquear (no mostrar una app vacía).
+  if (dbError) return <DbErrorScreen />
 
   const showOnboarding = !loading && !settings.onboardingDone
 

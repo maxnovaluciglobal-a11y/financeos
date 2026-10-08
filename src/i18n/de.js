@@ -2521,4 +2521,11 @@ export const de = {
     'mov.list.showMore': "{n} weitere anzeigen",
     'mov.list.showLess': "Weniger anzeigen",
     'ahorroFiscal.figures': "Werte für {year} ({source}).",
+    'dbError.title': "Ihre Daten konnten nicht geöffnet werden",
+    'dbError.body': "Ihre Daten sind weiterhin auf diesem Gerät gespeichert, aber der Browser hat das Öffnen nicht zugelassen. Das passiert meist, wenn der Speicherplatz knapp ist.",
+    'dbError.keep': "Löschen Sie die Website-Daten nicht. Geben Sie Speicherplatz auf dem Gerät frei und versuchen Sie es erneut.",
+    'dbError.retry': "Erneut versuchen",
+    'dbError.help': "Wenn es weiterhin auftritt, helfen wir Ihnen beim Sichern und Wiederherstellen Ihrer Daten:",
+    'dbError.contact': "Support kontaktieren",
+    'dbError.mailSubject': "Meine Daten öffnen sich nicht",
 }

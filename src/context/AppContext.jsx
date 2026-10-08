@@ -190,6 +190,9 @@ export function AppProvider({ children }) {
         }
       } catch (e) {
         console.error('Hydration error:', e)
+        // Base existente que no abre: pantalla de error bloqueante (App.jsx),
+        // nunca la app vacía sobre localStorage (ver DbOpenError en core/db).
+        if (e?.name === 'DbOpenError') { dispatch({ type: 'HYDRATE', payload: { dbError: true } }); return }
         dispatch({ type: 'HYDRATE', payload: {} })
         hydratedRef.current = true
         showToast(tr('toast.loadError'), 'error')
