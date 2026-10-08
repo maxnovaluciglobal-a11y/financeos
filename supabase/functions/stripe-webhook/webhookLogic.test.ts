@@ -455,10 +455,10 @@ const trialSession = (over = {}) => ({
 })
 
 describe('T10 · checkout de prueba', () => {
-  it('los links de prueba siguen sin pegar: no se inventaron ids', () => {
-    expect(TRIAL_LINK_MONTHLY_TODO).toBeNull()
-    expect(TRIAL_LINK_ANNUAL_TODO).toBeNull()
-    expect(Object.keys(PAYMENT_LINK_PLAN)).toHaveLength(6)
+  it('los links de prueba reales están mapeados a Pro con su intervalo', () => {
+    expect(TRIAL_LINK_MONTHLY_TODO).toBe('plink_1UOR0c2L52ZuuTMrpgyjokRi')
+    expect(TRIAL_LINK_ANNUAL_TODO).toBe('plink_1UOR1S2L52ZuuTMrZXDa0fNY')
+    expect(Object.keys(PAYMENT_LINK_PLAN)).toHaveLength(8)
     expect(TRIAL_DAYS).toBe(14)
   })
 

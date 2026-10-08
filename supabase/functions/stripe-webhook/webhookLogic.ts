@@ -64,8 +64,8 @@ export function planFromAmount(amountTotal: number | null): "personal" | "pro" {
 // endpoint puede recibir eventos de otros productos de la cuenta de Stripe, y
 // una suscripción de $0 ajena no debe mintear una licencia de MOY IQ.
 // No inventar ids: solo pegar los que muestra el dashboard de Stripe.
-export const TRIAL_LINK_MONTHLY_TODO: string | null = null; // TODO(Walter): plink_... del link de prueba Pro mensual
-export const TRIAL_LINK_ANNUAL_TODO: string | null = null;  // TODO(Walter): plink_... del link de prueba Pro anual
+export const TRIAL_LINK_MONTHLY_TODO: string | null = "plink_1UOR0c2L52ZuuTMrpgyjokRi"; // https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04 Pro mensual con prueba de 14 días (08-oct-2026)
+export const TRIAL_LINK_ANNUAL_TODO: string | null = "plink_1UOR1S2L52ZuuTMrZXDa0fNY";  // https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05 Pro anual con prueba de 14 días (08-oct-2026)
 
 // Debe coincidir con config.pricing.trialDays de la app (src/config.js) y con
 // trial_period_days de los Payment Links. Se duplica acá porque la Edge
