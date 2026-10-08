@@ -1,5 +1,5 @@
 // src/pages/Import/bankTemplates.js
-// Templates de bancos chilenos — detección automática de formato
+// Templates de bancos (CL, MX, CO, DE, US) — detección automática de formato
 // v1.4 — sin dependencias externas · 100% local
 
 /**
@@ -383,6 +383,72 @@ export const BANK_TEMPLATES = [
     dateFormat: 'DD.MM.YYYY',
     hint: 'Comdirect Umsätze — ojo: encoding ISO-8859-1',
   },
+
+  // ── ESTADOS UNIDOS ─────────────────────────────────────────────────────────
+  // Ningún banco de EEUU publica una especificación oficial de su CSV. Estas
+  // tres plantillas salen de documentación pública de terceros que coincide
+  // entre sí (consultada 08-oct-2026):
+  //   - https://bankxlsx.com/credit-card-csv-export-columns (Chase tarjeta y
+  //     cuenta, Capital One tarjeta: columnas, signo y formato de fecha)
+  //   - https://capyparse.com/blog/chase-credit-card-statement-to-csv (Chase
+  //     tarjeta: 7 columnas, compras en negativo, MM/DD/YYYY)
+  //   - https://fynnap.com/guides/chase-csv-export (Chase tarjeta y cuenta)
+  // Si un banco cambia sus encabezados, la huella deja de coincidir y el
+  // archivo cae a la detección genérica de columnas (detectColumns), que ya
+  // reconoce Date/Description/Amount: el peor caso es "sin plantilla", no un
+  // mapeo equivocado. Fuera a propósito: Bank of America (el CSV de cuenta
+  // trae un bloque de resumen antes de los encabezados, que parseCSV no
+  // salta), Wells Fargo (CSV sin fila de encabezados) y American Express
+  // (cargos en POSITIVO, necesita un modo de signo que hoy no existe).
+  {
+    id: 'chase_card',
+    name: 'Chase (credit card)',
+    flag: '🇺🇸',
+    country: 'US',
+    delimiter: ',',
+    fingerprint: ['transaction date', 'post date', 'description', 'category', 'type', 'amount'],
+    mapping: {
+      date:        'Transaction Date',
+      description: 'Description',
+      amount:      'Amount',
+    },
+    config: { mode: 'single', negativeIsExpense: true },
+    dateFormat: 'MM/DD/YYYY',
+    hint: 'Chase credit card — purchases negative, payments positive',
+  },
+  {
+    id: 'chase_checking',
+    name: 'Chase (checking)',
+    flag: '🇺🇸',
+    country: 'US',
+    delimiter: ',',
+    fingerprint: ['details', 'posting date', 'description', 'amount', 'type', 'balance'],
+    mapping: {
+      date:        'Posting Date',
+      description: 'Description',
+      amount:      'Amount',
+    },
+    config: { mode: 'single', negativeIsExpense: true },
+    dateFormat: 'MM/DD/YYYY',
+    hint: 'Chase checking — one signed Amount column, debits negative',
+  },
+  {
+    id: 'capitalone_card',
+    name: 'Capital One (credit card)',
+    flag: '🇺🇸',
+    country: 'US',
+    delimiter: ',',
+    fingerprint: ['transaction date', 'posted date', 'card no', 'description', 'debit', 'credit'],
+    mapping: {
+      date:        'Transaction Date',
+      description: 'Description',
+      debit:       'Debit',
+      credit:      'Credit',
+    },
+    config: { mode: 'debit_credit', negativeIsExpense: false },
+    dateFormat: 'YYYY-MM-DD',
+    hint: 'Capital One credit card — Debit (charges) and Credit (payments) columns, both positive',
+  },
 ]
 
 /**
@@ -400,18 +466,24 @@ export function detectBankTemplate(headers) {
       .replace(/[\u0300-\u036f]/g, '') // quitar tildes para comparar
   )
 
+  // Gana la plantilla con MÁS coincidencias (antes, la primera con ≥3): una
+  // huella genérica como la de MACH (date/description/amount/type) se comía
+  // los CSV de Chase, que tienen esas cuatro y además otras dos propias.
+  // Empate → la que aparece primero en la lista (orden histórico).
+  let best = null, bestCount = 0
   for (const template of BANK_TEMPLATES) {
     const fp = template.fingerprint
     const matches = fp.filter(keyword =>
       lower.some(h => h.includes(keyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))
     )
     // Requiere al menos 3 de los keywords del fingerprint
-    if (matches.length >= Math.min(3, fp.length)) {
-      return template
+    if (matches.length >= Math.min(3, fp.length) && matches.length > bestCount) {
+      best = template
+      bestCount = matches.length
     }
   }
 
-  return null
+  return best
 }
 
 /**

@@ -176,3 +176,70 @@ describe('paridad de las claves del bloqueo T14 (es/en/pt/de)', () => {
     expect(en['lock.settings.desc']).toMatch(/does not encrypt/)
   })
 })
+
+// i18n/english-ready (oct-2026): textos que estaban fijos en español en
+// contextos, gráficos, plantillas, PDFs, etc. Al sumar un prefijo nuevo en
+// esa rama, agregarlo acá.
+describe('paridad de las claves de english-ready (es/en/pt/de)', () => {
+  const prefixes = [
+    'toast.', 'demo.toast.', 'csv.', 'micro.', 'chart.', 'prio.', 'ring.', 'seal.', 'ui.',
+    'errorBoundary.', 'subcat.', 'expsub.', 'subs.metrics.', 'cat.', 'settings.dualCurrency.',
+    'settings.footer', 'adv.notes.nextStepsPh', 'tpl.', 'tplsel.', 'rpdf.', 'apdf.', 'imp.fileErr.', 'imp.rowErr.',
+  ]
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('sin voseo, exclamaciones ni "por favor" en ningún idioma; el alemán no tutea', () => {
+    const VOSEO = /\b(podés|tenés|contanos|dejanos|probá|elegí|revisá|escribinos|querés|vos|registrá|empezá|tocá|ingresá|olvidás|usá|respaldá|creá|mirá|sabés|hacé|agregá|cargá|importá|definí|configurá)\b/i
+    for (const k of pick(es)) {
+      expect(es[k], k).not.toMatch(VOSEO)
+      expect(es[k], k).not.toMatch(/por favor/i)
+    }
+    for (const [lang, d] of [['es', es], ['en', en], ['pt', pt], ['de', de]]) {
+      for (const k of pick(d)) expect(d[k], `${lang}:${k}`).not.toMatch(/[¡!]/)
+    }
+    for (const k of pick(en)) expect(en[k], k).not.toMatch(/\bplease\b/i)
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
+  })
+
+  it('ninguna frase en inglés o alemán quedó igual al español', () => {
+    // Solo frases (3+ palabras): etiquetas sueltas como "Streaming", "Internet"
+    // o "Original" son iguales en varios idiomas a propósito.
+    const offenders = []
+    for (const k of pick(es).filter(k => String(es[k]).trim().split(/\s+/).filter(w => /\p{L}/u.test(w)).length >= 3 && !/^MOY IQ v/.test(es[k]))) {
+      for (const [lang, d] of [['en', en], ['de', de]]) {
+        if (d[k] === es[k]) offenders.push(`${lang}:${k}`)
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+})
+
+// Demo con varias personas (08-oct-2026): el banner no puede llevar a Sofía
+// fija — el nombre y el país llegan como variables según la persona.
+describe('demo.banner.label por persona', () => {
+  it.each([['es', es], ['en', en], ['pt', pt], ['de', de]])('%s usa {name} y {country}, sin nombre fijo', (_, dict) => {
+    const s = dict['demo.banner.label']
+    expect(s).toContain('{name}')
+    expect(s).toContain('{country}')
+    expect(s).not.toMatch(/Sof[ií]a|Colomb|Kolumb/)
+    expect(s).not.toMatch(/[!¡]/)
+  })
+  it('se arma con la persona de EE. UU. en inglés', () => {
+    expect(interpolate(en['demo.banner.label'], { name: 'Maya Robinson', country: en['country.US'] }))
+      .toBe('Sample data · Maya Robinson · United States')
+  })
+})

@@ -24,7 +24,7 @@
 import { usePlan } from '../../hooks/usePlan.js'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
-import { proPriceVars, proCta } from '../../utils/pricing.js'
+import { proPriceVars, proCta, withCheckoutLang } from '../../utils/pricing.js'
 import { IconIQScore } from '../icons/Icons.jsx'
 import styles from './ui.module.css'
 
@@ -81,7 +81,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
       </p>
 
       <a
-        href={cta.href}
+        href={withCheckoutLang(cta.href, lang)}
         target="_blank"
         rel="noopener noreferrer"
         className={`${styles.btn} ${styles.btn_primary}`}

@@ -24,12 +24,23 @@
 // consent_marketing = true, igual que diagnóstico — hoy es un no-op porque
 // todos entran en true por default, pero deja el gate simétrico y listo
 // para un futuro checkbox de opt-in sin tocar este archivo.
+//
+// Idioma (09-oct-2026): el copy de los 4 idiomas vive en nurtureTemplates.ts
+// y se elige por starter_leads.lang (pickLang, fallback español). Ver
+// supabase/migrations/20261009000000_leads_lang.sql.
+
+import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
+import { STARTER_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
 
 export type NurtureMode = "welcome" | "day2" | "day5";
+export const NURTURE_MODES: NurtureMode[] = ["welcome", "day2", "day5"];
 
 export interface StarterLead {
   id: string;
   email: string;
+  // Idioma del lead (migración 20261009000000_leads_lang.sql). Opcional: antes
+  // de esa migración la columna no existe y el campo simplemente no viene.
+  lang?: string | null;
 }
 
 export interface NurtureEmailConfig {
@@ -41,6 +52,12 @@ export interface NurtureEmailConfig {
   landingUrl: string; // "https://moyiq.app" — para armar el link de unsubscribe
 }
 
+// Idioma de la plantilla: el lang del lead si es es/en/pt/de, si no español
+// (null, columna inexistente, 'fr', basura).
+export function pickLang(lang: unknown): EmailLang {
+  return pickFromCandidates(lang);
+}
+
 export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): string {
   // t=starter selecciona el RPC unsubscribe_starter_lead en unsubscribe.html
   // (ver financeos-landing/unsubscribe.html, actualizado en esta misma tarea
@@ -48,13 +65,13 @@ export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): stri
   return `${config.landingUrl.replace(/\/$/, "")}/unsubscribe.html?id=${encodeURIComponent(leadId)}&t=starter`;
 }
 
-function wrapHtml(bodyHtml: string, unsubUrl: string): string {
+function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): string {
   return `
     <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a;line-height:1.55">
       ${bodyHtml}
       <p style="color:#999;font-size:11px;margin-top:32px;border-top:1px solid #eee;padding-top:12px">
         MOY IQ · MAXNOVA &amp; LUCI Global LLC.
-        <a href="${unsubUrl}" style="color:#999">Darme de baja de estos correos</a>.
+        <a href="${unsubUrl}" style="color:#999">${UNSUBSCRIBE_LABEL[lang]}</a>.
       </p>
     </div>`;
 }
@@ -65,67 +82,9 @@ export interface RenderedEmail {
 }
 
 export function renderEmail(mode: NurtureMode, lead: StarterLead, config: NurtureEmailConfig): RenderedEmail {
-  const unsub = unsubscribeUrl(config, lead.id);
-
-  if (mode === "welcome") {
-    const subject = "Lo primero que conviene hacer con tu cuenta";
-    const html = wrapHtml(
-      `
-      <h2 style="color:#14213D">Tu cuenta ya está activa</h2>
-      <p>Hola,</p>
-      <p>Tu cuenta de MOY IQ ya está lista. Sin nada cargado todavía, el Dashboard no tiene mucho que mostrarte — el primer paso que rinde es importar tus movimientos.</p>
-      <p>Ve a Movimientos → Importar y sube el archivo que descargues de tu banco (CSV o Excel, la mayoría de los bancos de la región lo dan así). MOY IQ categoriza automáticamente lo que reconoce; lo que no, lo dejas en "Importado" y lo ajustas cuando quieras.</p>
-      <p>No hace falta cargar todo el historial. Con el último mes alcanza para que el Dashboard y el IQ Score empiecen a mostrar algo real.</p>
-      <p><a href="https://app.moyiq.app/import?ref=starter-welcome" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Importar movimientos →</a></p>
-      <p style="color:#666;font-size:13px">Los datos se cifran en tu dispositivo antes de sincronizarse. Nadie del equipo puede ver tus montos ni categorías.</p>
-      `,
-      unsub,
-    );
-    return { subject, html };
-  }
-
-  if (mode === "day2") {
-    const subject = "El IQ Score no es un número decorativo";
-    const html = wrapHtml(
-      `
-      <h2 style="color:#14213D">Lo que la mayoría no descubre solo</h2>
-      <p>Hola,</p>
-      <p>Con movimientos ya cargados, hay una parte del Dashboard que suele pasar desapercibida: el IQ Score no es un puntaje genérico — se arma con cinco factores puntuales (flujo de caja, colchón de emergencia, carga de deuda, progreso de metas, consistencia de tus datos), cada uno con su propio peso.</p>
-      <p>Toca el score para ver el desglose. Sirve para ubicar dónde está el problema real en vez de adivinar — por ejemplo, un score bajo por flujo de caja negativo pide una acción distinta que uno bajo por falta de colchón de emergencia.</p>
-      <p>Presupuestos hace algo parecido en otra sección: se arma solo a partir de lo que ya importaste, sin que tengas que definir categorías ni límites a mano primero.</p>
-      <p><a href="https://app.moyiq.app/dashboard?ref=starter-d2" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver mi IQ Score →</a></p>
-      <p style="color:#666;font-size:13px">Si todavía no importaste movimientos, el score no tiene con qué calcularse — ese es el paso anterior a este.</p>
-      `,
-      unsub,
-    );
-    return { subject, html };
-  }
-
-  // day5
-  const subject = "Qué diferencia a Starter de Pro en la práctica";
-  const html = wrapHtml(
-    `
-    <h2 style="color:#14213D">Sin testimonios inventados</h2>
-    <p>Hola,</p>
-    <p>No te vamos a inventar un testimonio de "Fulano ahorró X% en 3 meses". No tenemos esos casos documentados todavía, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
-    <p>Lo que sí podemos ser específicos es en la diferencia real entre lo que ya estás usando en Starter y lo que suma Pro:</p>
-    <p><strong>Starter (lo que ya tienes, sin fecha de vencimiento):</strong><br>
-    — Dashboard con IQ Score<br>
-    — Movimientos y categorización automática<br>
-    — Presupuestos básicos<br>
-    — Metas simples</p>
-    <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong><br>
-    — Coach: recomendaciones que se ajustan con cada movimiento nuevo<br>
-    — Advisor: proyección de escenarios antes de tomar una decisión grande<br>
-    — Goals con seguimiento de múltiples objetivos y ajuste automático<br>
-    — Reports exportables</p>
-    <p>Si tu situación es simple, seguir en Starter no te falta nada. Si tienes varias metas corriendo en paralelo o una decisión grande en el horizonte cercano, ahí es donde Pro paga solo.</p>
-    <p><a href="https://app.moyiq.app/upgrade?ref=starter-d5" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver Pro →</a></p>
-    <p style="color:#666;font-size:13px">Si no es para ti, sigues en Starter sin perder nada de lo que ya armaste.</p>
-    `,
-    unsub,
-  );
-  return { subject, html };
+  const lang = pickLang(lead.lang);
+  const copy = STARTER_TEMPLATES[lang][mode];
+  return { subject: copy.subject, html: wrapHtml(copy.body, unsubscribeUrl(config, lead.id), lang) };
 }
 
 // --- Envío con reintento (mismo patrón que send-nurture-diagnostico-email) --
@@ -185,9 +144,14 @@ async function restPatch(path: string, body: unknown, config: NurtureEmailConfig
   if (!res.ok) throw new Error(`rest_patch_failed_${res.status}`);
 }
 
+// select=* (no select=id,email,lang) a propósito: PostgREST responde 400 si
+// se pide una columna que no existe, y `lang` recién existe después de la
+// migración 20261009000000_leads_lang.sql. Con * la función sirve igual
+// antes y después: sin columna, lead.lang es undefined y renderEmail cae a
+// español. Las filas son pocas columnas y se leen con service role.
 export async function fetchLeadById(id: string, config: NurtureEmailConfig): Promise<StarterLead | null> {
   const rows = await restGet<StarterLead[]>(
-    `starter_leads?id=eq.${encodeURIComponent(id)}&select=id,email&limit=1`,
+    `starter_leads?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
     config,
   );
   return rows[0] ?? null;
@@ -201,7 +165,7 @@ const BATCH_LIMIT = 200; // tope por corrida del cron — mismo criterio que dia
 // cuándo se creó el lead.
 export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<StarterLead[]> {
   return restGet<StarterLead[]>(
-    `starter_leads?select=id,email` +
+    `starter_leads?select=*` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null&email2_sent_at=is.null` +
       `&limit=${BATCH_LIMIT}`,
     config,
@@ -213,7 +177,7 @@ export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promis
 export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promise<StarterLead[]> {
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<StarterLead[]>(
-    `starter_leads?select=id,email` +
+    `starter_leads?select=*` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
       `&email3_sent_at=is.null&email2_sent_at=not.is.null&email2_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,

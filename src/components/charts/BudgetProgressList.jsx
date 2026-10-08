@@ -4,12 +4,13 @@
 import { ChartEmpty } from './ChartCard.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useMoney } from '../Money.jsx'
-import { moneyLocale } from '../../utils/index.js'
+import { fmtMoneyCompact, catName } from '../../utils/index.js'
+import { useT } from '../../i18n/useT.js'
 
 const STATUS = [
-  { key: 'over',  label: 'Sobrepasado',      color: 'var(--red)',    bg: 'color-mix(in srgb, var(--neg) 12%, transparent)',   border: 'color-mix(in srgb, var(--neg) 26%, transparent)',  icon: 'warning' },
-  { key: 'warn',  label: 'Cerca del límite',  color: 'var(--amb)',    bg: 'rgba(245,166,35,.08)',  border: 'rgba(245,166,35,.25)',  icon: 'attention' },
-  { key: 'ok',    label: 'Bajo control',      color: 'var(--accent)', bg: 'transparent',           border: 'var(--brd)',            icon: 'ok' },
+  { key: 'over',  label: 'chart.budget.status.over', color: 'var(--red)',    bg: 'color-mix(in srgb, var(--neg) 12%, transparent)',   border: 'color-mix(in srgb, var(--neg) 26%, transparent)',  icon: 'warning' },
+  { key: 'warn',  label: 'chart.budget.status.warn', color: 'var(--amb)',    bg: 'rgba(245,166,35,.08)',  border: 'rgba(245,166,35,.25)',  icon: 'attention' },
+  { key: 'ok',    label: 'chart.budget.status.ok',   color: 'var(--accent)', bg: 'transparent',           border: 'var(--brd)',            icon: 'ok' },
 ]
 
 function getStatus(spent, limit) {
@@ -20,21 +21,17 @@ function getStatus(spent, limit) {
   return STATUS[2]
 }
 
-function fmtRaw(v, sym) {
-  const n = Number(v) || 0
-  if (n >= 1000000) return `${sym}${(n/1000000).toFixed(1)}M`
-  if (n >= 1000)    return `${sym}${(n/1000).toFixed(0)}K`
-  return `${sym}${Math.round(n).toLocaleString(moneyLocale())}`
-}
+const fmtRaw = (v, sym) => fmtMoneyCompact(v, sym)
 
 export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
   const { m } = useMoney()  // ocultar montos (T13)
+  const { t, lang } = useT()
   const fmtV = (v, s) => m(fmtRaw(v, s))
   const safeBudgets  = Array.isArray(budgets)  ? budgets  : []
   const safeExpByCat = (expByCat && typeof expByCat === 'object') ? expByCat : {}
 
   if (safeBudgets.length === 0) {
-    return <ChartEmpty msg="Aún no tienes presupuestos. Agrega uno para ver el avance mensual." />
+    return <ChartEmpty msg={t('chart.budget.empty')} />
   }
 
   // Ordenar: sobrepasados → cerca → ok
@@ -63,13 +60,13 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <SignalIcon kind={r.status.icon} size={14} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{r.category}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{catName(r.category, lang)}</span>
             </div>
             <span style={{
               fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 600,
               color: r.status.color, background: `${r.status.color}18`,
               padding: '2px 8px', borderRadius: 20,
-            }}>{r.status.label}</span>
+            }}>{t(r.status.label)}</span>
           </div>
 
           {/* Barra de progreso */}
@@ -89,17 +86,17 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 14 }}>
               <div>
-                <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>Usado</div>
+                <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>{t('chart.budget.used')}</div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: r.status.color, fontFamily: 'var(--mono)' }}>{fmtV(r.spent, sym)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>Disponible</div>
+                <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>{t('chart.budget.available')}</div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: r.avail > 0 ? 'var(--accent)' : 'var(--red)', fontFamily: 'var(--mono)' }}>
                   {r.avail > 0 ? fmtV(r.avail, sym) : `−${fmtV(r.spent - r.limit, sym)}`}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>Límite</div>
+                <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>{t('chart.budget.limit')}</div>
                 <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{fmtV(r.limit, sym)}</div>
               </div>
             </div>

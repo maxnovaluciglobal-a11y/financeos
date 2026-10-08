@@ -8,7 +8,6 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { evaluateCoach, calcCoachMetrics, COACH_CONFIG } from '../../data/coachRules.js'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
-import { moneyLocale } from '../../utils/index.js'
 import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
@@ -130,7 +129,6 @@ export default function Coach() {
   const infos       = signals.filter(s => s.severity === 'info')
 
   const sym = metrics.sym
-  const fmtN = n => (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
   const fmtP = n => ((n || 0) * 100).toFixed(1) + '%'
 
   // Score orientativo 0-100 — misma escala de 3 estados que el IQ Score (D3):

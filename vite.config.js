@@ -24,7 +24,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'MOY IQ', short_name: 'MOY IQ', lang: 'es',
+        // Sin `lang`: el manifest solo localiza name/short_name, que son la marca
+        // (igual en los 4 idiomas). Declarar 'es' afirmaba un idioma que la app
+        // no tiene fijo; el idioma real lo pone <html lang> en tiempo de ejecución.
+        name: 'MOY IQ', short_name: 'MOY IQ',
         theme_color: '#14213D', background_color: '#F1EEE6',
         display: 'standalone', start_url: '/app/',
         icons: [

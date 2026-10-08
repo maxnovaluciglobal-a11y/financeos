@@ -16,9 +16,9 @@
 //
 // Frontend: src/pages/Advisor/ReportePDF.jsx → sendReportePDFByEmail()
 //   POST https://<PROYECTO>.supabase.co/functions/v1/send-report-email
-//   body: { licenseKey, to, clientName, month, pdfBase64, filename }
+//   body: { licenseKey, to, clientName, month, pdfBase64, filename, lang }
 
-import { isValidEmail, isPdfSizeOk, checkProLicense, sendReportEmail, type EmailConfig } from "./reportEmailLogic.ts";
+import { isValidEmail, isPdfSizeOk, checkProLicense, sendReportEmail, pickLang, type EmailConfig } from "./reportEmailLogic.ts";
 
 const config: EmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "bad_json" }, 400, origin);
   }
 
-  const { licenseKey, to, clientName, month, pdfBase64, filename } = payload ?? {};
+  const { licenseKey, to, clientName, month, pdfBase64, filename, lang } = payload ?? {};
 
   if (!isValidEmail(to)) {
     return json({ ok: false, error: "invalid_email" }, 400, origin);
@@ -94,6 +94,7 @@ Deno.serve(async (req) => {
       to,
       clientName: typeof clientName === "string" ? clientName.slice(0, 200) : "",
       month: typeof month === "string" ? month.slice(0, 20) : "",
+      lang: pickLang(lang), // idioma de la app que envía; inválido o ausente → es
       pdfBase64,
       filename,
     },

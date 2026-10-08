@@ -3,9 +3,12 @@
 // NUNCA escribe en IndexedDB — los datos se descartan al cerrar la pestaña
 // Se activa cuando la URL contiene ?demo=true
 
-import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { DEMO_STATE, DEMO_INCOMES_EXITOSO } from './demoData.js'
-import { setMoneyLocale, setDateLocale } from '../utils/index.js'
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
+import { buildDemoState, pickDemoPersonaId, demoPersona } from './demoData.js'
+import { detectLanguage } from '../i18n/translate.js'
+import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel } from '../utils/index.js'
+import { translate } from '../i18n/translate.js'
+import { loadLang } from '../i18n/langCache.js'
 
 export const DemoContext = createContext(null)
 
@@ -32,8 +35,12 @@ function reducer(state, action) {
     case 'DEL_GOAL':     return { ...state, goals:    state.goals.filter(g => g.id !== action.id) }
     case 'UPDATE_GOAL':  return { ...state, goals:    state.goals.map(g => g.id === action.item.id ? action.item : g) }
     case 'SAVE_SETTINGS':return { ...state, settings: action.settings }
-    case 'CLEAR_ALL':    return { ...DEMO_STATE } // En demo, "borrar todo" recarga los datos demo
-    case 'SET_SCENARIO': return { ...state, incomes: action.scenario === 'exitoso' ? DEMO_INCOMES_EXITOSO : DEMO_STATE.incomes }
+    // En demo, "borrar todo" recarga los datos de la misma persona (y conserva el idioma elegido)
+    case 'CLEAR_ALL':    return { ...state, ...buildDemoState(state.personaId, state.settings?.language) }
+    case 'SET_SCENARIO': {
+      const p = demoPersona(state.personaId)
+      return { ...state, incomes: action.scenario === 'exitoso' ? p.incomesGood : p.incomesHard }
+    }
     case 'SET_TOAST':    return { ...state, toast: action.toast }
     default:             return state
   }
@@ -42,11 +49,16 @@ function reducer(state, action) {
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 export function DemoProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, {
-    ...DEMO_STATE,
-    incomes: DEMO_INCOMES_EXITOSO, // arranca en un mes positivo (aspiracional); el toggle lleva a 'mes difícil'
-    loading: false,
-    toast: null,
+  // Persona según el idioma del navegador (en → EE. UU./USD, de → Alemania/EUR,
+  // es/pt → Sofía/COP). Arranca en el mes positivo (aspiracional); el toggle
+  // lleva a 'mes difícil'.
+  const [state, dispatch] = useReducer(reducer, null, () => {
+    const language = detectLanguage()
+    return {
+      ...buildDemoState(pickDemoPersonaId(language), language, 'exitoso'),
+      loading: false,
+      toast: null,
+    }
   })
 
   // Aplica idioma/moneda iniciales del demo una vez al montar (antes solo se
@@ -55,10 +67,20 @@ export function DemoProvider({ children }) {
   useEffect(() => {
     const st = state.settings || {}
     document.documentElement.setAttribute('lang', st.language || 'es')
-    setMoneyLocale(st.currency || 'CLP')
+    setMoneyLocale(st.currency || 'CLP', st.language || 'es')
     setDateLocale(st.language || 'es')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Formato de dinero sincrónico en el render (mismo criterio que AppContext):
+  // la persona de EE. UU. tiene que pintar "$1,250.00" desde el primer frame.
+  setMoneyLocale(state.settings?.currency || 'CLP', state.settings?.language || 'es')
+
+  // Mismo criterio que AppContext: textos en el idioma activo vía ref.
+  const langRef = useRef(state.settings?.language || 'es')
+  langRef.current = state.settings?.language || 'es'
+  useEffect(() => { loadLang(langRef.current) }, [state.settings?.language])
+  const tr = useCallback((key, vars) => translate(langRef.current, key, vars), [])
 
   const showToast = useCallback((msg, type = 'ok', action = null) => {
     dispatch({ type: 'SET_TOAST', toast: { msg, type, action } })
@@ -67,31 +89,31 @@ export function DemoProvider({ children }) {
   const dismissToast = useCallback(() => dispatch({ type: 'SET_TOAST', toast: null }), [])
 
   // Borrado con deshacer en demo (en memoria: re-dispatch del ADD con el mismo item)
-  const deleteWithUndo = useCallback((store, item, deletedMsg = 'Eliminado', undoLabel = 'Deshacer') => {
+  const deleteWithUndo = useCallback((store, item, deletedMsg, undoLabel) => {
     const DEL = { incomes:'DEL_INCOME', expenses:'DEL_EXPENSE', budgets:'DEL_BUDGET', debts:'DEL_DEBT', goals:'DEL_GOAL', subscriptions:'DEL_SUB' }[store]
     const ADD = { incomes:'ADD_INCOME', expenses:'ADD_EXPENSE', budgets:'ADD_BUDGET', debts:'ADD_DEBT', goals:'ADD_GOAL', subscriptions:'ADD_SUB' }[store]
     if (!DEL || !item?.id) return
     dispatch({ type: DEL, id: item.id })
-    showToast(deletedMsg, 'ok', { label: undoLabel, onAction: () => dispatch({ type: ADD, item }) })
-  }, [showToast])
+    showToast(deletedMsg || tr('common.deleted'), 'ok', { label: undoLabel || tr('common.undo'), onAction: () => dispatch({ type: ADD, item }) })
+  }, [showToast, tr])
 
   // Todas las operaciones son en memoria — sin await, sin IndexedDB
-  const addIncome    = useCallback((item) => { dispatch({ type: 'ADD_INCOME',  item: { ...item, id: uid() } }); showToast('Ingreso agregado en demo.', 'ok') }, [showToast])
+  const addIncome    = useCallback((item) => { dispatch({ type: 'ADD_INCOME',  item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.income'), 'ok') }, [showToast, tr])
   const updateIncome = useCallback((item) => { dispatch({ type: 'UPDATE_INCOME', item }) }, [])
   const delIncome   = useCallback((id)   => { dispatch({ type: 'DEL_INCOME',  id }) }, [])
-  const addExpense  = useCallback((item) => { dispatch({ type: 'ADD_EXPENSE', item: { ...item, id: uid() } }); showToast('Gasto agregado en demo.', 'ok') }, [showToast])
+  const addExpense  = useCallback((item) => { dispatch({ type: 'ADD_EXPENSE', item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.expense'), 'ok') }, [showToast, tr])
   const delExpense    = useCallback((id)   => { dispatch({ type: 'DEL_EXPENSE', id }) }, [])
   const updateExpense = useCallback((item) => { dispatch({ type: 'UPDATE_EXPENSE', item }) }, [])
-  const addBudget   = useCallback((item) => { dispatch({ type: 'ADD_BUDGET',  item: { ...item, id: uid() } }); showToast('Presupuesto agregado en demo.', 'ok') }, [showToast])
+  const addBudget   = useCallback((item) => { dispatch({ type: 'ADD_BUDGET',  item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.budget'), 'ok') }, [showToast, tr])
   const delBudget   = useCallback((id)   => { dispatch({ type: 'DEL_BUDGET',  id }) }, [])
-  const addDebt     = useCallback((item) => { dispatch({ type: 'ADD_DEBT',    item: { ...item, id: uid() } }); showToast('Deuda agregada en demo.', 'ok') }, [showToast])
+  const addDebt     = useCallback((item) => { dispatch({ type: 'ADD_DEBT',    item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.debt'), 'ok') }, [showToast, tr])
   const delDebt     = useCallback((id)   => { dispatch({ type: 'DEL_DEBT',    id }) }, [])
   const updateDebt   = useCallback((item) => { dispatch({ type: 'UPDATE_DEBT', item }) }, [])
   const updateBudget = useCallback((item) => { dispatch({ type: 'UPDATE_BUDGET', item }) }, [])
-  const addGoal     = useCallback((item) => { dispatch({ type: 'ADD_GOAL',    item: { ...item, id: uid() } }); showToast('Meta agregada en demo.', 'ok') }, [showToast])
+  const addGoal     = useCallback((item) => { dispatch({ type: 'ADD_GOAL',    item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.goal'), 'ok') }, [showToast, tr])
   const delGoal     = useCallback((id)   => { dispatch({ type: 'DEL_GOAL',    id }) }, [])
   const updateGoal  = useCallback((item) => { dispatch({ type: 'UPDATE_GOAL', item }) }, [])
-  const addSubscription    = useCallback((item) => { dispatch({ type: 'ADD_SUB', item: { ...item, id: 'sub-' + Math.random().toString(36).slice(2,9) } }); showToast('Recurrente agregado en demo.', 'ok') }, [showToast])
+  const addSubscription    = useCallback((item) => { dispatch({ type: 'ADD_SUB', item: { ...item, id: 'sub-' + Math.random().toString(36).slice(2,9) } }); showToast(tr('demo.toast.added.subscription'), 'ok') }, [showToast, tr])
   const deleteSubscription = useCallback((id)   => { dispatch({ type: 'DEL_SUB', id }) }, [])
   const updateSubscription = useCallback((item) => { dispatch({ type: 'UPDATE_SUB', item }) }, [])
 
@@ -101,28 +123,28 @@ export function DemoProvider({ children }) {
     document.documentElement.setAttribute('lang', settings.language || 'es')
     // El demo también debe respetar el formato de miles de la moneda elegida
     // (AppContext lo hace en un efecto; aquí el provider es independiente).
-    setMoneyLocale(settings.currency || 'CLP')
+    setMoneyLocale(settings.currency || 'CLP', settings.language || 'es')
     setDateLocale(settings.language || 'es')
   }, [])
 
   // En demo, "borrar todo" recarga datos demo — no puede dejar vacío
   const clearAll = useCallback(() => {
     dispatch({ type: 'CLEAR_ALL' })
-    showToast('Demo reiniciada con datos ficticios.', 'ok')
-  }, [showToast])
+    showToast(tr('demo.toast.reset'), 'ok')
+  }, [showToast, tr])
 
   // loadDemo en demo = recarga los datos originales
   const loadDemo = useCallback(() => {
-    dispatch({ type: 'HYDRATE', payload: DEMO_STATE })
-    showToast('Datos demo reiniciados.', 'ok')
-  }, [])
+    dispatch({ type: 'HYDRATE', payload: buildDemoState(state.personaId, state.settings?.language) })
+    showToast(tr('demo.toast.reloaded'), 'ok')
+  }, [showToast, tr, state.personaId, state.settings?.language])
 
   // Export funciona normalmente — usa datos demo
   const exportCSV = useCallback(() => {
     const rows = [
-      ['Tipo', 'Fecha', 'Descripción', 'Categoría', 'Monto', 'Método', 'Recurrencia'],
-      ...state.incomes.map(r  => ['Ingreso', r.date, r.source,      r.category, r.amount,  '',       r.recurrence]),
-      ...state.expenses.map(r => ['Gasto',   r.date, r.description, r.category, -r.amount, r.method, r.recurrence]),
+      ['type', 'date', 'description', 'category', 'amount', 'method', 'recurrence'].map(c => tr(`csv.col.${c}`)),
+      ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, langRef.current), r.amount,  '',                                     recurrenceLabel(r.recurrence, langRef.current)]),
+      ...state.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, langRef.current), -r.amount, methodLabel(r.method, langRef.current), recurrenceLabel(r.recurrence, langRef.current)]),
     ]
     const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
@@ -132,19 +154,20 @@ export function DemoProvider({ children }) {
     a.download = 'moyiq-demo-data.csv'
     a.click()
     URL.revokeObjectURL(url)
-    showToast('CSV demo exportado — solo datos ficticios.', 'ok')
-  }, [state.incomes, state.expenses, showToast])
+    showToast(tr('demo.toast.csv'), 'ok')
+  }, [state.incomes, state.expenses, showToast, tr])
 
   const exportData = useCallback(() => {
-    const blob = new Blob([JSON.stringify(DEMO_STATE, null, 2)], { type: 'application/json' })
+    const { personaId, ...data } = buildDemoState(state.personaId, state.settings?.language)
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
     a.download = 'moyiq-demo-backup.json'
     a.click()
     URL.revokeObjectURL(url)
-    showToast('JSON demo exportado — solo datos ficticios.', 'ok')
-  }, [])
+    showToast(tr('demo.toast.json'), 'ok')
+  }, [showToast, tr, state.personaId, state.settings?.language])
 
   // Import en demo: solo memoria, no persiste
   const importData = useCallback(async (file) => {
@@ -154,21 +177,27 @@ export function DemoProvider({ children }) {
         try {
           const data = JSON.parse(e.target.result)
           dispatch({ type: 'HYDRATE', payload: data })
-          showToast('Datos cargados en demo (solo en memoria).', 'ok')
+          showToast(tr('demo.toast.imported'), 'ok')
           resolve()
         } catch {
-          showToast('Error al leer el archivo.', 'error')
+          showToast(tr('toast.readError'), 'error')
           reject()
         }
       }
       reader.readAsText(file)
     })
-  }, [showToast])
+  }, [showToast, tr])
 
   const setScenario = useCallback((scenario) => {
     dispatch({ type: 'SET_SCENARIO', scenario })
-    showToast(scenario === 'exitoso' ? 'Mostrando mes exitoso · $4.700.000 ingresos' : 'Mostrando mes difícil · $2.280.000 ingresos', 'ok')
-  }, [showToast])
+    // Total de ingresos del mes activo de ese escenario (antes iba fijo en el texto).
+    const month = state.settings?.activeMonth || ''
+    const p = demoPersona(state.personaId)
+    const list = scenario === 'exitoso' ? p.incomesGood : p.incomesHard
+    const total = list.filter(r => r.date?.startsWith(month)).reduce((s, r) => s + (Number(r.amount) || 0), 0)
+    const sym = currencySymbol(state.settings?.currency, state.settings?.language)
+    showToast(tr(scenario === 'exitoso' ? 'demo.toast.scenarioGood' : 'demo.toast.scenarioHard', { amount: fmtMoney(total, sym) }), 'ok')
+  }, [showToast, tr, state.personaId, state.settings?.activeMonth, state.settings?.currency, state.settings?.language])
 
   const value = {
     ...state,
@@ -182,7 +211,7 @@ export function DemoProvider({ children }) {
     clearAll,   loadDemo,
     exportData, exportCSV,  importData,
     // Sync no disponible en demo (no-ops)
-    enableSync: async () => { showToast('El sync no está disponible en el demo.', 'ok'); return { ok:false } },
+    enableSync: async () => { showToast(tr('demo.toast.noSync'), 'ok'); return { ok:false } },
     disableSync: () => {},
     showToast, dismissToast, deleteWithUndo, setScenario,
   }

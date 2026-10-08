@@ -8,10 +8,9 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney, fmtPct, moneyLocale, currentMonth } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName, recurrenceLabel, catName, currencySymbol } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
-import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, ReferenceArea, Legend,
@@ -25,7 +24,7 @@ const ChartTooltip = ({ active, payload, label, sym }) => {
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color, display: 'flex', gap: 12, justifyContent: 'space-between' }}>
           <span>{p.name}</span>
-          <span style={{ fontWeight: 600 }}>{sym}{Math.abs(Math.round(p.value)).toLocaleString(moneyLocale())}</span>
+          <span style={{ fontWeight: 600 }}>{fmtMoney(p.value, sym)}</span>
         </div>
       ))}
     </div>
@@ -33,11 +32,11 @@ const ChartTooltip = ({ active, payload, label, sym }) => {
 }
 
 export default function CashFlow({ setPage }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { incomes: _incAll, expenses: _expAll, budgets, settings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // proyección personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
-  const sym = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym = currencySymbol(settings.currency, settings.language)
 
   // ── Detectar recurrentes ──────────────────────────────────────────────────
   const recurringInc = useMemo(() =>
@@ -119,14 +118,13 @@ export default function CashFlow({ setPage }) {
 
   // ── Proyección 6 meses hacia adelante ────────────────────────────────────
   const projectionData = useMemo(() => {
-    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
     const result = []
     let balance = curBal
 
     for (let i = 0; i < 6; i++) {
       const base = new Date()
       const d = new Date(base.getFullYear(), base.getMonth() + i, 1)
-      const label = months[d.getMonth()] + ' ' + d.getFullYear().toString().slice(2)
+      const label = monthShortName(d.getMonth()) + ' ' + d.getFullYear().toString().slice(2)
       if (i === 0) {
         // Mes actual = DATO. Sirve de puente: aparece en ambas series para que
         // la línea real (sólida) y la estimada (punteada) se conecten.
@@ -137,7 +135,9 @@ export default function CashFlow({ setPage }) {
       }
     }
     return result
-  }, [curBal, monthlyEstimate, monthlyNetFlow])
+    // settings.language: el nombre del mes cambia con el idioma
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curBal, monthlyEstimate, monthlyNetFlow, settings.language])
 
   // ── Hitos de 30/60/90 días ────────────────────────────────────────────────
   const bal30  = curBal + monthlyNetFlow
@@ -197,10 +197,10 @@ export default function CashFlow({ setPage }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 16 }}>
               {[
                 { label: t('cf.eom.day'), value: t('cf.eom.dayValue', { d: today, n: daysInMonth }), sub: t('cf.eom.daysLeft', { n: daysLeft }), color: 'var(--tx)' },
-                { label: t('cf.eom.dailyExp'), value: `${sym}${Math.round(dailyExp).toLocaleString(moneyLocale())}`, sub: t('cf.eom.avgToDate'), color: 'var(--red)' },
-                { label: t('cf.eom.projInc'), value: `${sym}${Math.round(projInc).toLocaleString(moneyLocale())}`, sub: t('cf.eom.atPace'), color: 'var(--accent)' },
-                { label: t('cf.eom.projExp'), value: `${sym}${Math.round(projExp).toLocaleString(moneyLocale())}`, sub: t('cf.eom.atPace'), color: 'var(--red)' },
-                { label: t('cf.eom.projBal'), value: `${sym}${Math.round(projBal).toLocaleString(moneyLocale())}`, sub: projBal >= 0 ? t('cf.eom.positive') : t('cf.eom.deficit'), color: projBal >= 0 ? 'var(--accent)' : 'var(--red)' },
+                { label: t('cf.eom.dailyExp'), value: fmtSignedMoney(dailyExp, sym), sub: t('cf.eom.avgToDate'), color: 'var(--red)' },
+                { label: t('cf.eom.projInc'), value: fmtSignedMoney(projInc, sym), sub: t('cf.eom.atPace'), color: 'var(--accent)' },
+                { label: t('cf.eom.projExp'), value: fmtSignedMoney(projExp, sym), sub: t('cf.eom.atPace'), color: 'var(--red)' },
+                { label: t('cf.eom.projBal'), value: fmtSignedMoney(projBal, sym), sub: projBal >= 0 ? t('cf.eom.positive') : t('cf.eom.deficit'), color: projBal >= 0 ? 'var(--accent)' : 'var(--red)' },
               ].map(k => (
                 <div key={k.label} style={{ background: 'var(--sur2)', borderRadius: 8, padding: '10px 12px', border: '.5px solid var(--brd)' }}>
                   <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 4 }}>{k.label}</div>
@@ -231,7 +231,7 @@ export default function CashFlow({ setPage }) {
                     <div style={{ height: '100%', width: `${budgetBarPct}%`, background: paceColor, borderRadius: 3, transition: '.3s' }} />
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
-                    {t('cf.eom.budgetLine', { total: sym+totalBudget.toLocaleString(moneyLocale()), spent: sym+Math.round(curExp).toLocaleString(moneyLocale()) })}
+                    {t('cf.eom.budgetLine', { total: fmtMoney(totalBudget, sym), spent: fmtSignedMoney(curExp, sym) })}
                   </div>
                 </div>
               )}
@@ -240,7 +240,7 @@ export default function CashFlow({ setPage }) {
             {/* Alerta de ritmo */}
             {pace !== null && pace > 0.08 && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: '.5px solid rgba(255,77,106,.25)', borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
-                <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: sym+Math.round(projExp).toLocaleString(moneyLocale()), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: sym+Math.round(projExp - totalBudget).toLocaleString(moneyLocale()) }) : '' })}
+                <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: fmtSignedMoney(projExp, sym), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: fmtSignedMoney(projExp - totalBudget, sym) }) : '' })}
               </div>
             )}
             {pace !== null && pace <= 0 && curExp > 0 && (
@@ -285,7 +285,7 @@ export default function CashFlow({ setPage }) {
                 <CartesianGrid {...gridStyle} />
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false} />
                 <YAxis tick={axisStyle} axisLine={false} tickLine={false}
-                  tickFormatter={v => v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v} />
+                  tickFormatter={fmtAxis} />
                 <Tooltip content={<ChartTooltip sym={sym} />} />
                 {/* Zona estimada: todo lo que va del 2º mes en adelante es proyección */}
                 {projectionData.length > 1 && (
@@ -333,7 +333,7 @@ export default function CashFlow({ setPage }) {
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.source}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{r.recurrence} · {r.category}</div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{recurrenceLabel(r.recurrence, lang)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--grn)' }}>+{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</div>
@@ -365,7 +365,7 @@ export default function CashFlow({ setPage }) {
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{r.recurrence} · {r.category}</div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{recurrenceLabel(r.recurrence, lang)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>-{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</div>

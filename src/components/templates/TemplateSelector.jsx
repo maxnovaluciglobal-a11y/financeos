@@ -8,6 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import TEMPLATES from '../../data/templates.js'
+import { catName, prioLabel } from '../../utils/index.js'
 import { User, Users, Laptop, Store, CreditCard, PiggyBank, GraduationCap, Target } from 'lucide-react'
 
 // Ícono por plantilla (T17): antes un glifo unicode en data/templates.js
@@ -47,7 +48,7 @@ function Modal({ isOpen, onClose, children, maxWidth = 540, label }) {
 
 // ── PREVIEW MODAL ──────────────────────────────────────────────────────────
 function PreviewModal({ template, onClose, onApply, isAdvisor }) {
-  const { t: tr } = useT()
+  const { t: tr, lang } = useT()
   if (!template) return null
 
   const sectionTitle = {
@@ -84,7 +85,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
             <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{tr(`tpl.${template.id}.tagline`)}</div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6 }}>{template.description}</div>
+        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6 }}>{tr(template.description)}</div>
       </div>
 
       {/* Contenido */}
@@ -92,62 +93,62 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
 
         {/* Para quién */}
         <div>
-          <div style={sectionTitle}>Ideal para</div>
+          <div style={sectionTitle}>{tr('tplsel.idealFor')}</div>
           {template.bestFor.map(b => (
             <div key={b} style={{ fontSize: 11, color: 'var(--tm)', padding: '3px 0', display: 'flex', gap: 6 }}>
-              <span style={{ color: template.color }}>·</span> {b}
+              <span style={{ color: template.color }}>·</span> {tr(b)}
             </div>
           ))}
         </div>
 
         {/* Categorías de ingresos */}
         <div>
-          <div style={sectionTitle}>Categorías de ingresos ({template.categoriesIncome.length})</div>
-          <div>{template.categoriesIncome.map(c => pill(c, template.color))}</div>
+          <div style={sectionTitle}>{tr('tplsel.incomeCats', { n: template.categoriesIncome.length })}</div>
+          <div>{template.categoriesIncome.map(c => pill(catName(c, lang), template.color))}</div>
         </div>
 
         {/* Categorías de gastos */}
         <div>
-          <div style={sectionTitle}>Categorías de gastos ({template.categoriesExpense.length})</div>
-          <div>{template.categoriesExpense.map(c => pill(c, '#7a7868'))}</div>
+          <div style={sectionTitle}>{tr('tplsel.expenseCats', { n: template.categoriesExpense.length })}</div>
+          <div>{template.categoriesExpense.map(c => pill(catName(c, lang), '#7a7868'))}</div>
         </div>
 
         {/* Presupuestos sugeridos */}
         <div>
-          <div style={sectionTitle}>Presupuestos sugeridos</div>
+          <div style={sectionTitle}>{tr('tplsel.suggestedBudgets')}</div>
           {template.suggestedBudgets.map(b => (
             <div key={b.category} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
               padding: '6px 0', borderBottom: '0.5px solid var(--brd)', gap: 10,
             }}>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--tx)' }}>{b.category}</div>
-                <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{b.note}</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--tx)' }}>{catName(b.category, lang)}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{tr(b.note)}</div>
               </div>
               <div style={{
                 fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
                 color: template.color, flexShrink: 0,
-              }}>{b.pct}% del ingreso</div>
+              }}>{tr('tplsel.pctOfIncome', { pct: b.pct })}</div>
             </div>
           ))}
         </div>
 
         {/* Metas sugeridas */}
         <div>
-          <div style={sectionTitle}>Metas sugeridas</div>
+          <div style={sectionTitle}>{tr('tplsel.suggestedGoals')}</div>
           {template.suggestedGoals.map(g => (
             <div key={g.name} style={{ display: 'flex', gap: 8, padding: '4px 0', alignItems: 'flex-start' }}>
               <Target size={12} strokeWidth={1.7} color={template.color} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--tx)' }}>{g.name}</div>
-                <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{g.note}</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--tx)' }}>{tr(g.name)}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{tr(g.note)}</div>
               </div>
               <span style={{
                 marginLeft: 'auto', fontSize: 9, fontFamily: 'var(--mono)',
                 flexShrink: 0, padding: '1px 7px', borderRadius: 20,
                 background: g.priority === 'Alta' ? '#fdf0ee' : '#faeeda',
                 color: g.priority === 'Alta' ? '#8a2020' : '#854f0b',
-              }}>{g.priority}</span>
+              }}>{prioLabel(g.priority, lang)}</span>
             </div>
           ))}
         </div>
@@ -161,9 +162,9 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
             borderRadius: 8, border: '0.5px solid rgba(26,163,104,.2)',
           }}>
             <div style={{ fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--grn)', marginBottom: 4 }}>
-              💡 Consejo para el asesor
+              {tr('tplsel.advisorTip')}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--grn)', lineHeight: 1.6 }}>{template.advisorTip}</div>
+            <div style={{ fontSize: 11, color: 'var(--grn)', lineHeight: 1.6 }}>{tr(template.advisorTip)}</div>
           </div>
         )}
 
@@ -173,8 +174,10 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           borderRadius: 8, border: '0.5px solid rgba(133,79,11,.2)',
           fontSize: 11, color: '#854f0b', fontFamily: 'var(--mono)', lineHeight: 1.5,
         }}>
-          <InlineIcon kind="alert" size={13} />Al aplicar esta plantilla se actualizarán las categorías y los presupuestos sugeridos.
-          Tus ingresos, gastos y deudas registrados <strong>no se borrarán</strong>.
+          <InlineIcon kind="alert" size={13} />{(() => {
+            const [a, b = ''] = tr('tplsel.applyNotice').split('{notDeleted}')
+            return <>{a}<strong>{tr('tplsel.notDeleted')}</strong>{b}</>
+          })()}
         </div>
       </div>
 
@@ -187,12 +190,12 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
           borderRadius: 6, padding: '8px 16px', fontSize: 12,
           cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
-        }}>Cancelar</button>
+        }}>{tr('common.cancel')}</button>
         <button onClick={() => onApply(template)} style={{
           background: template.color, color: '#fff', border: 'none',
           borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600,
           cursor: 'pointer', fontFamily: 'var(--sans)',
-        }}>Aplicar plantilla</button>
+        }}>{tr('tplsel.apply')}</button>
       </div>
     </Modal>
   )
@@ -200,36 +203,35 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
 
 // ── CONFIRM MODAL ──────────────────────────────────────────────────────────
 function ConfirmModal({ template, hasExistingConfig, onConfirm, onCancel }) {
+  const { t: tr } = useT()
   if (!template) return null
   return (
     <Modal isOpen={!!template} onClose={onCancel} maxWidth={420}>
       <div style={{ padding: '24px 24px 20px' }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 10 }}>
-          ¿Aplicar plantilla "{template.name}"?
+          {tr('tplsel.confirmTitle', { name: tr(`tpl.${template.id}.name`) })}
         </div>
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.7, marginBottom: 16 }}>
-          {hasExistingConfig
-            ? 'Esto reemplazará las categorías y presupuestos actuales con los de esta plantilla. Tus transacciones, deudas y metas registradas no se modificarán.'
-            : 'Se configurarán las categorías y presupuestos sugeridos para este perfil. Podrás editarlos después.'}
+          {hasExistingConfig ? tr('tplsel.confirmReplace') : tr('tplsel.confirmNew')}
         </div>
         <div style={{
           padding: '8px 12px', background: 'var(--grn-bg)',
           borderRadius: 6, fontSize: 11, color: 'var(--grn)',
           fontFamily: 'var(--mono)', marginBottom: 20, lineHeight: 1.5,
         }}>
-          ✓ Tus ingresos, gastos, deudas y metas no se borrarán.
+          ✓ {tr('tplsel.safe')}
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
             background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
             borderRadius: 6, padding: '8px 16px', fontSize: 12,
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
-          }}>Cancelar</button>
+          }}>{tr('common.cancel')}</button>
           <button onClick={onConfirm} style={{
             background: template.color, color: '#fff', border: 'none',
             borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'var(--sans)',
-          }}>Confirmar</button>
+          }}>{tr('common.confirm')}</button>
         </div>
       </div>
     </Modal>
@@ -298,12 +300,12 @@ export default function TemplateSelector({ compact = false, onApplied }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--tx)', marginBottom: 4 }}>
-          Plantilla activa:
+          {tr('tplsel.activeLabel')}
           {activeTemplateId
             ? <span style={{ color: 'var(--grn)', marginLeft: 6 }}>
-                {TEMPLATES.find(t => t.id === activeTemplateId)?.name || activeTemplateId}
+                {TEMPLATES.some(t => t.id === activeTemplateId) ? tr(`tpl.${activeTemplateId}.name`) : activeTemplateId}
               </span>
-            : <span style={{ color: 'var(--th)', marginLeft: 6 }}>Sin plantilla</span>
+            : <span style={{ color: 'var(--th)', marginLeft: 6 }}>{tr('tplsel.none')}</span>
           }
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -346,10 +348,13 @@ export default function TemplateSelector({ compact = false, onApplied }) {
           fontSize: 11, color: 'var(--grn)', fontFamily: 'var(--mono)',
           marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6,
         }}>
-          ✓ Plantilla activa: <strong>{settings.activeTemplateName || activeTemplateId}</strong>
-          {settings.templateAdvisorTip && (
+          {/* Nombre y consejo salen de la plantilla por id (traducidos), no de
+              settings.activeTemplateName/templateAdvisorTip: esos quedaron
+              guardados en español en dispositivos que aplicaron una plantilla antes. */}
+          ✓ {tr('tplsel.activeLabel')} <strong>{TEMPLATES.some(t => t.id === activeTemplateId) ? tr(`tpl.${activeTemplateId}.name`) : (settings.activeTemplateName || activeTemplateId)}</strong>
+          {TEMPLATES.some(t => t.id === activeTemplateId) && (compact || settings.onboardingUseType === 'advisor') && (
             <span style={{ marginLeft: 8, color: 'var(--grn)', opacity: 0.7 }}>
-              · {settings.templateAdvisorTip.slice(0, 60)}…
+              · {tr(`tpl.${activeTemplateId}.advisorTip`).slice(0, 60)}…
             </span>
           )}
         </div>
@@ -386,7 +391,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', lineHeight: 1.2 }}>{tr(`tpl.${t.id}.name`)}</div>
                   {isActive && (
-                    <div style={{ fontSize: 9, fontFamily: 'var(--mono)', color: t.color, marginTop: 1 }}>Activa</div>
+                    <div style={{ fontSize: 9, fontFamily: 'var(--mono)', color: t.color, marginTop: 1 }}>{tr('tplsel.active')}</div>
                   )}
                 </div>
               </div>
@@ -401,11 +406,11 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 <span style={{
                   fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px',
                   borderRadius: 20, background: 'var(--sur2)', color: 'var(--th)',
-                }}>{t.categoriesExpense.length} categorías</span>
+                }}>{tr('tplsel.categoriesN', { n: t.categoriesExpense.length })}</span>
                 <span style={{
                   fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px',
                   borderRadius: 20, background: 'var(--sur2)', color: 'var(--th)',
-                }}>{t.suggestedBudgets.length} presupuestos</span>
+                }}>{tr('tplsel.budgetsN', { n: t.suggestedBudgets.length })}</span>
               </div>
 
               {/* Botones */}
@@ -418,7 +423,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                     background: 'var(--sur2)', color: 'var(--tm)',
                     fontFamily: 'var(--sans)',
                   }}
-                >Ver más</button>
+                >{tr('tplsel.more')}</button>
                 <button
                   onClick={() => handleApplyClick(t)}
                   disabled={isActive}
@@ -431,7 +436,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                     opacity: isActive ? 0.7 : 1,
                   }}
                 >
-                  {isJustApplied ? '✓ Aplicada' : isActive ? 'Activa' : 'Aplicar'}
+                  {isJustApplied ? `✓ ${tr('tplsel.applied')}` : isActive ? tr('tplsel.active') : tr('tplsel.applyShort')}
                 </button>
               </div>
             </div>
@@ -445,8 +450,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
         borderRadius: 8, border: '0.5px solid var(--brd)',
         fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5,
       }}>
-        Las plantillas configuran categorías y presupuestos sugeridos. Tus transacciones, deudas y metas registradas no se modifican.
-        Puedes editar las categorías en cualquier momento desde Ajustes.
+        {tr('tplsel.note')}
       </div>
 
       {/* Modals */}

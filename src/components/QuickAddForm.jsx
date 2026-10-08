@@ -18,6 +18,7 @@ import config from '../config.js'
 import {
   localDateStr, dateLocale, moneyLocale, catName, catLabel, methodLabel,
   getCategoriesExpense, getCategoriesIncome, CATS_EXPENSE, CATS_INCOME,
+  currencySymbol, fmtMoney,
 } from '../utils/index.js'
 import {
   pressKey, keypadToNumber, currencyDecimals, amountToKeypad, formatKeypadDisplay, decimalSeparator,
@@ -27,7 +28,6 @@ import {
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
 const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()
 
-const SYM = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }
 const todayStr = () => localDateStr()
 const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return localDateStr(d) }
 // "2026-10-05" -> fecha corta en el idioma de la interfaz (sin pasar por UTC)
@@ -124,7 +124,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const showEmoji = settings?.showCategoryEmoji === true
 
   const currency = settings?.currency
-  const sym = SYM[currency] || '$'
+  const sym = currencySymbol(currency, settings?.language)
   const decimals = currencyDecimals(currency)
 
   // Al abrir (o al cambiar resetKey): resetea el formulario. Dentro de una hoja,
@@ -354,7 +354,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
               style={{ fontSize: 13, maxWidth: '100%', overflow: 'hidden' }}>
               <SignalIcon kind="subs" size={14} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {t('qa.repeat', { desc: lastDesc, amount: `${sym}${formatKeypadDisplay(amountToKeypad(last.amount, decimals), moneyLocale())}` })}
+                {t('qa.repeat', { desc: lastDesc, amount: fmtMoney(last.amount, sym) })}
               </span>
             </button>
           </div>

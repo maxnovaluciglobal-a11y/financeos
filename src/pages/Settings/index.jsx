@@ -9,7 +9,7 @@ import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
-import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
+import { CURRENCY_OPTIONS, DEFAULT_USD_RATES, currencyOptionLabel } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
@@ -18,7 +18,7 @@ import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
 import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
-import { proPriceVars } from '../../utils/pricing.js'
+import { proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
 
 export default function Settings() {
   const { settings, updateSettings, clearAll, loadDemo, exportCSV, enableSync, disableSync } = useApp()
@@ -111,7 +111,7 @@ export default function Settings() {
             const nextRate = settings.showDualCurrency ? (liveRate(nextCurrency) || 0) : 0
             setConfirmAction({ type: 'currency', payload: { nextCurrency, nextRate } })
           }}>
-            {CURRENCY_OPTIONS.map(c=><option key={c.code} value={c.code}>{c.label}</option>)}
+            {CURRENCY_OPTIONS.map(c=><option key={c.code} value={c.code}>{currencyOptionLabel(c.code, lang)}</option>)}
           </select>
         </div>
         {confirmAction?.type === 'currency' && (
@@ -127,7 +127,7 @@ export default function Settings() {
         )}
         <div style={srow}>
           <div><div style={slbl}>{t('settings.language.label')}</div><div style={ssub}>{t('settings.language.sub')}</div></div>
-          <select aria-label={t('settings.language.label')} style={{width:'auto'}} value={settings.language||'es'} onChange={e=>updateSettings({...settings,language:e.target.value})}>
+          <select aria-label={t('settings.language.label')} style={{width:'auto'}} value={settings.language||'es'} onChange={e=>updateSettings({...settings,language:e.target.value,languageExplicit:true})}>
             <option value="es">Español</option>
             <option value="en">English</option>
             <option value="pt">Português</option>
@@ -249,7 +249,7 @@ export default function Settings() {
         {settings.showDualCurrency && settings.currency === 'USD' && (
           <div style={{...srow, borderBottom:'none'}}>
             <div style={{fontSize:11, color:'var(--th)', fontFamily:'var(--mono)'}}>
-              Tu moneda principal ya es USD — el equivalente dual no aplica.
+              {t('settings.dualCurrency.alreadyUsd')}
             </div>
           </div>
         )}
@@ -324,7 +324,7 @@ export default function Settings() {
               <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('settings.upgrade.title', proPriceVars(lang))}</div>
               <div style={ssub}>{t('settings.upgrade.sub')}</div>
             </div>
-            <Btn variant="primary" size="sm" onClick={()=>window.location.href=PRO_CHECKOUT_URL} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
+            <Btn variant="primary" size="sm" onClick={()=>window.location.href=withCheckoutLang(PRO_CHECKOUT_URL, lang)} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
           </div>
         )}
         {confirmAction?.type === 'clearAll' ? (
@@ -368,7 +368,7 @@ export default function Settings() {
         </Card>
       )}
       <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
-        MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Datos locales · Cifrado de extremo a extremo · No asesoría financiera certificada
+        {t('settings.footer')}
       </div>
     </div>
   )

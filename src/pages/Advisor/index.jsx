@@ -10,7 +10,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, moneyLocale, dateLocale, currentMonth } from '../../utils/index.js'
+import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -20,7 +20,7 @@ import { calcNetWorth } from '../../utils/netWorth.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { personalDebtRatio, personalDebts } from '../../utils/personal.js'
 import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
-import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
+import { monthLabel } from '../shared/constants.js'
 
 // ── SEMÁFORO — reglas de cálculo ─────────────────────────────────────────────
 // Verde:    condición saludable
@@ -240,7 +240,7 @@ function AdvisorNotes({ notes, onSave }) {
           style={{ ...ta, minHeight: 70 }}
           value={nextSteps}
           onChange={e => setNextSteps(e.target.value)}
-          placeholder="1. Revisar gastos de entretenimiento&#10;2. Definir meta de fondo de emergencia&#10;3. Evaluar refinanciamiento tarjeta BancoEstado"
+          placeholder={t('adv.notes.nextStepsPh')}
         />
         <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
           {t('adv.notes.nextStepsHint')}
@@ -278,11 +278,11 @@ function AdvisorNotes({ notes, onSave }) {
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function Advisor() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { incomes: _incAll, expenses: _expAll, budgets, debts, goals, settings, updateSettings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
-  const sym = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym = currencySymbol(settings.currency, settings.language)
 
   // Leer y guardar notas del asesor en settings (local)
   const advisorNotes = settings.advisorNotes || {}
@@ -302,7 +302,8 @@ export default function Advisor() {
     monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + e.amount })
     return {
       brandName:        config.app.name,
-      clientName:       advisorNotes.clientName || 'Cliente',
+      clientName:       advisorNotes.clientName || t('apdf.client'),
+      lang,
       activeMonth,
       sym,
       mIncome, mExpense, mBalance, savingRate,
@@ -693,8 +694,8 @@ export default function Advisor() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px,1fr))', gap: 8, marginBottom: 12 }}>
             {[
-              { label: t('adv.subs.monthly'), value: `${sym}${subMonthly.toLocaleString(moneyLocale(), {maximumFractionDigits:0})}` },
-              { label: t('adv.subs.annual'),   value: `${sym}${subAnnual.toLocaleString(moneyLocale(), {maximumFractionDigits:0})}` },
+              { label: t('adv.subs.monthly'), value: fmtMoney(subMonthly, sym) },
+              { label: t('adv.subs.annual'),   value: fmtMoney(subAnnual, sym) },
               { label: t('adv.subs.active'),       value: `${activeSubs.length}` },
               { label: t('adv.subs.pctIncome'), value: mIncome > 0 ? `${(subPct*100).toFixed(1)}%` : '—' },
             ].map(m => (

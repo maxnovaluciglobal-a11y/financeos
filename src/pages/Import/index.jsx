@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { markLocalChange } from '../../core/sync.js'
 import { useT } from '../../i18n/useT.js'
 import { dbGetAll, dbAdd } from '../../core/db/index.js'
-import { uid, moneyLocale, getCategoriesExpense, getCategoriesIncome, catLabel } from '../../utils/index.js'
+import { uid, fmtMoney, currencySymbol, getCategoriesExpense, getCategoriesIncome, catLabel } from '../../utils/index.js'
 import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplates.js'
 import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
@@ -73,12 +73,11 @@ const s = {
 
 // keys de traducción
 const STEPS = ['imp.step.upload', 'imp.step.map', 'imp.step.review', 'imp.step.import']
-const fmt = (n) => (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
 
 export default function ImportMovements({ setPage } = {}) {
   const { settings, rehydrate } = useApp()
   const { t, lang } = useT()
-  const sym = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$' }[settings?.currency] || '$'
+  const sym = currencySymbol(settings?.currency, settings?.language)
   const isDemo = !!settings?.isDemo
   const categoriesExpense = useMemo(() => getCategoriesExpense(settings), [settings])
   const categoriesIncome  = useMemo(() => getCategoriesIncome(settings), [settings])
@@ -129,7 +128,8 @@ export default function ImportMovements({ setPage } = {}) {
           category:    suggested.category || '',
           account:     suggested.account  || '',
         })
-        setModeConfig(bankTemplate.config)
+        // dateFormat de la plantilla: desempata DD/MM vs MM/DD si el archivo es ambiguo
+        setModeConfig({ ...bankTemplate.config, dateFormat: bankTemplate.dateFormat })
       } else {
         setMapping({
           date: suggested.date || result.headers[0] || '',
@@ -140,12 +140,14 @@ export default function ImportMovements({ setPage } = {}) {
           category: suggested.category || '',
           account: suggested.account || '',
         })
-        if (suggested.debit && suggested.credit) setModeConfig({ mode: 'debit_credit', negativeIsExpense: true })
+        // Sin plantilla: se parte del modo por defecto (y sin el dateFormat de una
+        // plantilla de un archivo anterior).
+        setModeConfig(suggested.debit && suggested.credit ? { mode: 'debit_credit', negativeIsExpense: true } : { mode: 'single', negativeIsExpense: true })
       }
       if (result.totalLines > MAX_ROWS) setWarning(t('imp.warn.maxRows', { n: result.totalLines, max: MAX_ROWS }))
       setStep(1)
     } catch (err) {
-      setWarning(t('imp.err.read', { msg: err.message }))
+      setWarning(err.code ? t(`imp.fileErr.${err.code}`, { msg: err.detail || '' }) : t('imp.err.read', { msg: err.message }))
     } finally {
       setLoading(false)
     }
@@ -158,7 +160,8 @@ export default function ImportMovements({ setPage } = {}) {
   }, [])
 
   async function handlePreview() {
-    const validated = validateRows(parsed.rows, mapping, modeConfig)
+    // Región del usuario para desempatar fechas ambiguas (US → MM/DD).
+    const validated = validateRows(parsed.rows, mapping, { ...modeConfig, locale: `${settings.language || 'es'}-${settings.country || ''}` })
     let existing = []
     if (!isDemo) {
       const [inc, exp] = await Promise.all([dbGetAll('incomes'), dbGetAll('expenses')])
@@ -306,11 +309,12 @@ export default function ImportMovements({ setPage } = {}) {
             <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 14 }}>
               {t('imp.banks.sub')}
             </p>
-            {[
-              { label: '🇨🇱 Chile', banks: BANK_TEMPLATES.filter(b => b.country === 'CL') },
-              { label: '🇲🇽 México', banks: BANK_TEMPLATES.filter(b => b.country === 'MX') },
-              { label: '🇨🇴 Colombia', banks: BANK_TEMPLATES.filter(b => b.country === 'CO') },
-            ].map(group => (
+            {/* Un grupo por país con plantilla (antes faltaban DE y US). Banderas
+                emoji como antes: Import queda fuera de D5 (ver CLAUDE.md). */}
+            {[...new Set(BANK_TEMPLATES.map(b => b.country))].map(code => ({
+              label: `${{ CL: '🇨🇱', MX: '🇲🇽', CO: '🇨🇴', DE: '🇩🇪', US: '🇺🇸' }[code] || ''} ${t(`country.${code}`)}`.trim(),
+              banks: BANK_TEMPLATES.filter(b => b.country === code),
+            })).map(group => (
               <div key={group.label} style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>{group.label}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -343,8 +347,8 @@ export default function ImportMovements({ setPage } = {}) {
                       <td style={{ ...s.td, color: 'var(--tx)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.fileName}</td>
                       <td style={{ ...s.td, color: 'var(--th)' }}>{b.importedAt?.slice(0,10)}</td>
                       <td style={{ ...s.td, fontWeight: 600 }}>{b.importedRows}</td>
-                      <td style={{ ...s.td, color: 'var(--accent)' }}>{sym}{fmt(b.totalIncome)}</td>
-                      <td style={{ ...s.td, color: 'var(--red)' }}>{sym}{fmt(b.totalExpense)}</td>
+                      <td style={{ ...s.td, color: 'var(--accent)' }}>{fmtMoney(b.totalIncome, sym)}</td>
+                      <td style={{ ...s.td, color: 'var(--red)' }}>{fmtMoney(b.totalExpense, sym)}</td>
                       <td style={{ ...s.td, color: 'var(--th)' }}>{(b.skippedRows||0)+(b.duplicateRows||0)}</td>
                     </tr>
                   ))}</tbody>
@@ -492,8 +496,8 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.valid')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)' }}>{stats.valid}</div></div>
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.dup')}</div><div style={{ ...s.summaryVal, color: 'var(--amb)' }}>{stats.duplicate}</div></div>
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.error')}</div><div style={{ ...s.summaryVal, color: 'var(--red)' }}>{stats.error}</div></div>
-              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.incomeEst')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 13 }}>{sym}{fmt(stats.incomeAmt)}</div></div>
-              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.expenseEst')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 13 }}>{sym}{fmt(stats.expenseAmt)}</div></div>
+              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.incomeEst')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 13 }}>{fmtMoney(stats.incomeAmt, sym)}</div></div>
+              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.expenseEst')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 13 }}>{fmtMoney(stats.expenseAmt, sym)}</div></div>
             </div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
               {[
@@ -519,7 +523,7 @@ export default function ImportMovements({ setPage } = {}) {
                   <td style={s.td}><input type="checkbox" aria-label={t('imp.review.includeRow', { desc: row.description || row.date })} style={{width:16,height:16,flexShrink:0}} checked={!!row._include} onChange={e => setRows(r => r.map((x, j) => j === i ? { ...x, _include: e.target.checked } : x))} /></td>
                   <td style={{ ...s.td, color: 'var(--th)' }}>{row.date || '—'}</td>
                   <td style={{ ...s.td, color: 'var(--tx)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.description || '—'}</td>
-                  <td style={{ ...s.td, color: row.type === 'income' ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{row.type === 'income' ? '+' : '−'}{sym}{fmt(row.amount)}</td>
+                  <td style={{ ...s.td, color: row.type === 'income' ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{row.type === 'income' ? '+' : '−'}{fmtMoney(row.amount, sym)}</td>
                   <td style={{ ...s.td, color: 'var(--th)' }}>{row.type === 'income' ? t('imp.review.typeIncome') : t('imp.review.typeExpense')}</td>
                   <td style={s.td}>
                     <select
@@ -534,7 +538,7 @@ export default function ImportMovements({ setPage } = {}) {
                   </td>
                   <td style={s.td}>
                     <span style={s.badge(row.status)}>{row.status === 'valid' ? t('imp.review.stValid') : row.status === 'duplicate' ? t('imp.review.stDup') : t('imp.review.stError')}</span>
-                    {row.errors?.length > 0 && <div style={{ fontSize: 10, color: 'var(--red)', marginTop: 2 }}>{row.errors.join(', ')}</div>}
+                    {row.errors?.length > 0 && <div style={{ fontSize: 10, color: 'var(--red)', marginTop: 2 }}>{row.errors.map(c => t(`imp.rowErr.${c}`)).join(', ')}</div>}
                   </td>
                 </tr>
               ))}</tbody>
@@ -572,8 +576,8 @@ export default function ImportMovements({ setPage } = {}) {
                 {t('imp.done.imported', { n: result?.importedRows })}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, margin: '20px auto', maxWidth: 400 }}>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.income')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 14 }}>{sym}{fmt(result?.totalIncome)}</div></div>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 14 }}>{sym}{fmt(result?.totalExpense)}</div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.income')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 14 }}>{fmtMoney(result?.totalIncome, sym)}</div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 14 }}>{fmtMoney(result?.totalExpense, sym)}</div></div>
                 <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.skipped')}</div><div style={{ ...s.summaryVal, color: 'var(--th)', fontSize: 14 }}>{(result?.skippedRows||0)+(result?.duplicateRows||0)}</div></div>
               </div>
               <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 16 }}>{t('imp.done.visible')}</p>

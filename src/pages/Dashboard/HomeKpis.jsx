@@ -8,12 +8,11 @@ import Money from '../../components/Money.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import { useT } from '../../i18n/useT.js'
-import { moneyLocale } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney } from '../../utils/index.js'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
 import s from './Home.module.css'
 
-const fmt = (n) => Math.round(Number(n) || 0).toLocaleString(moneyLocale())
 
 export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, children }) {
   const { t } = useT()
@@ -42,7 +41,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
           <div key={k.key} className={`${s.card} ${s.kpi} rise`} style={{ animationDelay: `${i * 40}ms` }}>
             <div className={s.kpiLabel}>{k.label}</div>
             <div className={`num ${s.kpiValue}`}>
-              <Money><CountUp value={k.raw} format={(v) => `${sym}${fmt(v)}`} /></Money>
+              <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
             </div>
             <DeltaLine delta={k.delta} prevMonth={prevMonth} />
             {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
@@ -59,7 +58,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               <div className={s.kpiLabel}>{free < 0 ? t('home.kpi.short') : t('home.kpi.left')}</div>
               {hasData ? (
                 <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor }}>
-                  <span style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money>{sym}<CountUp value={Math.abs(free)} format={(v) => fmt(v)} /></Money></span>
+                  <span style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money><CountUp value={Math.abs(free)} format={(v) => fmtMoney(v, sym)} /></Money></span>
                 </div>
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>

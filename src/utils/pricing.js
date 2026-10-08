@@ -21,6 +21,21 @@ export function proPriceVars(lang = 'es', pricing = config.pricing) {
 // CTA de Pro (ProGate): la prueba solo se ofrece si está habilitada Y hay una
 // URL de checkout https real. Con cualquiera de las dos faltando se mantiene
 // el CTA de siempre ("Ver planes" hacia la landing).
+// Idioma del correo de licencia: el Payment Link de Stripe no acepta un
+// parámetro de idioma, pero sí client_reference_id (documentado en
+// https://docs.stripe.com/payment-links/url-parameters) y Stripe lo devuelve
+// en checkout.session.completed; stripe-webhook lo lee con
+// langFromClientReference ('lang_en' → inglés). Solo para links de Stripe.
+export function withCheckoutLang(url, lang) {
+  if (typeof url !== 'string' || !/^https:\/\/buy\.stripe\.com\//.test(url)) return url
+  if (!['es', 'en', 'pt', 'de'].includes(lang)) return url
+  try {
+    const u = new URL(url)
+    if (!u.searchParams.has('client_reference_id')) u.searchParams.set('client_reference_id', `lang_${lang}`)
+    return u.toString()
+  } catch { return url }
+}
+
 export function proCta(pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
   const url = typeof pricing?.trialCheckoutUrl === 'string' ? pricing.trialCheckoutUrl.trim() : ''
   if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) {

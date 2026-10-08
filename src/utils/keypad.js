@@ -4,8 +4,13 @@
 // pegado de SMS (toKeypadAmount en smsParser.js) y lo que escribe el teclado
 // usan siempre el mismo formato, y la tecla "," no puede armar "12.5,3".
 
-import config from '../config.js'
 import { toKeypadAmount } from './smsParser.js'
+import { currencyDecimals } from './index.js'
+
+// Decimales por moneda: fuente única en utils/index.js (la usa también fmtMoney,
+// así el teclado y lo que se muestra después nunca difieren). Re-export para los
+// imports existentes.
+export { currencyDecimals }
 
 export const KEY_BACKSPACE = '⌫'
 export const KEY_DECIMAL = ','
@@ -39,12 +44,6 @@ export function pressKey(amount, key, decimals = 2) {
 // "1234,5" -> 1234.5 (0 si está vacío o no es un número)
 export function keypadToNumber(amount) {
   return parseFloat(String(amount ?? '').replace(',', '.')) || 0
-}
-
-// Decimales que acepta el teclado para una moneda (mapa explícito en config).
-export function currencyDecimals(code, map = config.currencyDecimals) {
-  const d = map?.[code]
-  return Number.isInteger(d) && d >= 0 ? d : 2
 }
 
 // Número (ej. el que trae un SMS) -> string del teclado, redondeado a los

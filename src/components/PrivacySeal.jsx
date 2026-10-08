@@ -4,7 +4,12 @@
 // y el servidor nunca puede leerla en claro. Puro SVG, sin dependencias.
 // Se estampa una vez al montar (respeta reduced-motion).
 
-export default function PrivacySeal({ size = 72, label = 'DATOS 100% LOCALES · MOY IQ · ', title = 'Cifrado de extremo a extremo' }) {
+import { useT } from '../i18n/useT.js'
+
+export default function PrivacySeal({ size = 72, label, title }) {
+  const { t } = useT()
+  if (label === undefined) label = t('seal.label')
+  if (title === undefined) title = t('seal.title')
   const c = 50
   return (
     <svg viewBox="0 0 100 100" width={size} height={size} role="img" aria-label={title}

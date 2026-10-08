@@ -8,6 +8,7 @@
 // Puro SVG, sin dependencias. Respeta prefers-reduced-motion.
 
 import { useMoney } from './Money.jsx'
+import { useT } from '../i18n/useT.js'
 
 const TAU = Math.PI * 2
 const polar = (cx, cy, r, frac) => {
@@ -20,11 +21,13 @@ export default function LivingRing({
   elapsedRatio = 0,    // día del mes / días del mes (0..1)
   color = 'var(--pos)',
   centerValue = '',    // p.ej. "$78k"
-  centerLabel = 'SEGURO/DÍA',
+  centerLabel,         // sin prop: 'ring.center.safePerDay'
   footLabel = '',      // p.ej. "quedan 12 días"
   size = 220,
-  ariaLabel,           // texto ya traducido; sin él se usa el fallback en español
+  ariaLabel,           // texto ya traducido; sin él se arma con 'ring.aria'
 }) {
+  const { t } = useT()
+  if (centerLabel === undefined) centerLabel = t('ring.center.safePerDay')
   const { m } = useMoney() // centerValue es un monto: se enmascara (T13)
   const cx = 100, cy = 100
   const rArc = 62, wArc = 13
@@ -43,7 +46,7 @@ export default function LivingRing({
 
   return (
     <svg viewBox="0 0 200 200" width={size} height={size} role="img"
-      aria-label={ariaLabel || `Gasto ${Math.round(spentRatio * 100)}% de la referencia; deberías ir en ${Math.round(elapsedRatio * 100)}% del mes`}
+      aria-label={ariaLabel || t('ring.aria', { spent: Math.round(spentRatio * 100), elapsed: Math.round(elapsedRatio * 100) })}
       style={{ display: 'block' }}>
       <defs>
         <path id="lr-textpath" d="M 100,100 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0" />
@@ -75,7 +78,7 @@ export default function LivingRing({
       {/* texto de marca circular */}
       <g style={{ transformOrigin: '100px 100px', animation: 'lr-spin 48s linear infinite' }}>
         <text fontFamily="var(--mono)" fontSize="7.4" letterSpacing="3" fill="var(--brand, var(--grn))" opacity="0.8">
-          <textPath href="#lr-textpath" startOffset="0">· DATOS 100% LOCALES · PRIVADO </textPath>
+          <textPath href="#lr-textpath" startOffset="0">{t('ring.brand')}</textPath>
         </text>
       </g>
 

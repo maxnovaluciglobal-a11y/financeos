@@ -16,6 +16,9 @@ describe('isEmergencyGoalName', () => {
     'Fundo de emergência',
     'Emergencia',
     'Emergency',
+    'Notgroschen',          // nombre que sugiere la app en alemán (gs.emergency.name)
+    'Notfallfonds',
+    'Notfallreserve',
   ])('reconoce "%s" como fondo de emergencia', (name) => {
     expect(isEmergencyGoalName(name)).toBe(true)
   })

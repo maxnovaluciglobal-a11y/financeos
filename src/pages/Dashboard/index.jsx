@@ -26,19 +26,18 @@ import NetWorthCard from './NetWorthCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
-import { moneyLocale, currentMonth } from '../../utils/index.js'
+import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, currencySymbol } from '../../utils/index.js'
 import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import { Card, CardHeader } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 
-const fmt  = (n) => (Number(n) || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
 const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
 const pct0 = (n) => ((Number(n) || 0) * 100).toFixed(0) + '%'
 
 export default function Dashboard({ setPage }) {
   const ctx      = useApp() || {}
-  const { t }    = useT()
+  const { t, lang } = useT()
   // Panorama PERSONAL: excluye movimientos marcados como inversión (r.inv) de todos
   // los cálculos del dashboard (ingresos, gastos, balance, tasa de ahorro, score, señales).
   const incomes  = Array.isArray(ctx.incomes)       ? ctx.incomes.filter(r => !r?.inv)  : []
@@ -49,7 +48,7 @@ export default function Dashboard({ setPage }) {
   const subs     = Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []
   const debts    = Array.isArray(ctx.debts) ? ctx.debts : []
 
-  const sym         = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }[settings.currency] || '$'
+  const sym         = currencySymbol(settings.currency, settings.language)
   const activeMonth = settings.activeMonth || currentMonth()
   // Defensa extra contra usdRate quedando en 0 (bug ya arreglado en el origen —
   // Settings ahora recomputa al cambiar de moneda — pero esto cubre a quien ya
@@ -61,7 +60,7 @@ export default function Dashboard({ setPage }) {
   // Ocultar montos (T13): toda cifra de dinero de esta pantalla pasa por money()
   // (strings: frases i18n, KPIs) o por <Money> (cifras sueltas en JSX).
   const { hidden: amountsHidden, m } = useMoney()
-  const money       = (n) => m(`${sym}${fmt(n)}`)
+  const money       = (n) => m(fmtSignedMoney(n, sym))
   const toUSD       = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
 
   const kpis = useMemo(() => {
@@ -152,7 +151,7 @@ export default function Dashboard({ setPage }) {
     if (monthExpenses.length > 0) {
       const catMap = {}
       monthExpenses.forEach(e => {
-        const cat = e.category || 'Sin categoría'
+        const cat = e.category || 'Sin categoría' // valor canónico; catName lo traduce
         catMap[cat] = (catMap[cat] || 0) + (Number(e.amount) || 0)
       })
       const totalExp = monthExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
@@ -164,7 +163,7 @@ export default function Dashboard({ setPage }) {
           color: 'var(--accent2)',
           bg: 'color-mix(in srgb, var(--accent2) 9%, transparent)',
           border: 'color-mix(in srgb, var(--accent2) 22%, transparent)',
-          text: t('dash.insight.topCat.text', { cat: topCat[0], pct: catPct }),
+          text: t('dash.insight.topCat.text', { cat: catName(topCat[0], lang), pct: catPct }),
           sub: t('dash.insight.topCat.sub'),
           page: 'movements',
         })
@@ -359,6 +358,17 @@ export default function Dashboard({ setPage }) {
 
   // Mapea una señal del diagnóstico a una acción concreta
   function signalAction(s) {
+    // Por la categoría de la regla (no por el texto, que ya viene traducido y
+    // en inglés/portugués/alemán no contiene 'ahorro', 'deuda', etc.).
+    const byCat = {
+      'ccat.savings':   { label:t('dash.action.createBudget'), page:'budgets',       tone:'amb' },
+      'ccat.subs':      { label:t('dash.action.viewSubs'),     page:'subscriptions', tone:'amb' },
+      'ccat.debts':     { label:t('dash.action.viewDebts'),    page:'debts',         tone:'red' },
+      'ccat.budgets':   { label:t('dash.action.adjustBudget'), page:'budgets',       tone:'amb' },
+      'ccat.goals':     { label:t('dash.action.viewGoals'),    page:'goals',         tone:'accent' },
+      'ccat.emergency': { label:t('dash.action.viewGoals'),    page:'goals',         tone:'accent' },
+    }
+    if (s.categoryKey && byCat[s.categoryKey]) return byCat[s.categoryKey]
     const txt = `${s.title || ''} ${s.msg || ''}`.toLowerCase()
     if (txt.includes('ahorro'))     return { label:t('dash.action.createBudget'), page:'budgets', tone:'amb' }
     if (txt.includes('suscrip'))    return { label:t('dash.action.viewSubs'), page:'subscriptions', tone:'amb' }
@@ -488,7 +498,7 @@ export default function Dashboard({ setPage }) {
                   <div key={i} className={`${hs.card} ${hs.kpi}`}>
                     <div className={hs.kpiLabel}>{k.label}</div>
                     <div className={`num ${hs.kpiValue}`} style={{ color: k.color }}>
-                      {k.count ? <Money><CountUp value={k.raw} format={(v) => `${k.raw < 0 ? '−' : ''}${sym}${fmt(Math.abs(v))}`} /></Money> : k.value}
+                      {k.count ? <Money><CountUp value={k.raw} format={(v) => `${k.raw < 0 ? '−' : ''}${fmtMoney(v, sym)}`} /></Money> : k.value}
                     </div>
                     {k.delta && <DeltaLine delta={k.delta} prevMonth={prevMonthOf(activeMonth)} />}
                     <div className={hs.kpiSub}>{k.sub}</div>
@@ -598,7 +608,7 @@ export default function Dashboard({ setPage }) {
             <div style={{ flex: 1, minWidth: 160 }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
               <div style={{ fontSize: 13, color: 'var(--tx)' }}>
-                {t('dash.expected.expected')} <strong><Money>{sym}{fmt(expected)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{sym}{fmt(kpis.totalInc)}</Money></strong>
+                {t('dash.expected.expected')} <strong><Money>{fmtMoney(expected, sym)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{fmtMoney(kpis.totalInc, sym)}</Money></strong>
               </div>
             </div>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>

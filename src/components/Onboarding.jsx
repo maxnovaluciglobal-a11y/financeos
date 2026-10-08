@@ -16,8 +16,9 @@ import { useT } from '../i18n/useT.js'
 import TEMPLATES from '../data/templates.js'
 import CountryBadge from './CountryBadge.jsx'
 import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency, templateForCountry } from '../data/countries.js'
+import { languageForCountry } from '../i18n/region.js'
 import config from '../config.js'
-import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, localeForCurrency } from '../utils/index.js'
+import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, fmtMoneyFor, currencyDecimals } from '../utils/index.js'
 import { calcFinancialScore, weakestFactor } from '../utils/financialScore.js'
 import { ScoreState } from './ScoreState.jsx'
 import { isSyncEnabled, syncAvailable, syncMeta } from '../core/sync.js'
@@ -34,7 +35,6 @@ const LANGUAGES = [
   { code: 'pt', name: 'Português' },
   { code: 'de', name: 'Deutsch' },
 ]
-const SYM = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }
 // Página a la que lleva cada factor del IQ Score en "siguiente paso sugerido"
 const NEXT_PAGE = { cashFlow: 'income', emergencyCushion: 'goals', debtLoad: 'debts', goalsProgress: 'goals', dataConsistency: 'movements' }
 const PAGE_LABEL = { income: 'nav.income', goals: 'nav.goals', debts: 'nav.debts', movements: 'nav.expenses' }
@@ -68,11 +68,11 @@ function clearOnboardingProgress() {
   try { localStorage.removeItem(ONBOARDING_LS_KEY) } catch {}
 }
 
-// Cómo se verá un monto con esa moneda: mismo formato que fmtMoney (símbolo +
-// entero con los separadores del locale de la moneda).
-function previewAmount(currency) {
-  const sample = currency === 'USD' || currency === 'EUR' ? 2450 : 1686200
-  return `${SYM[currency] || '$'} ${sample.toLocaleString(localeForCurrency(currency), { maximumFractionDigits: 0 })}`
+// Cómo se verá un monto con esa moneda: mismo formato que fmtMoney (símbolo,
+// separadores y decimales de la moneda; "$2,450.50", "2.450,50 €", "$1.686.200").
+function previewAmount(currency, lang) {
+  const sample = currencyDecimals(currency) > 0 ? 2450.5 : 1686200
+  return fmtMoneyFor(sample, currency, lang)
 }
 function currencyName(code, lang) {
   try { return new Intl.DisplayNames([lang], { type: 'currency' }).of(code) } catch { return '' }
@@ -158,8 +158,15 @@ export default function Onboarding({ onComplete }) {
     return () => clearTimeout(id)
   }, [step])
 
+  // Elegir país sugiere su idioma (US → en, DE → de, PT → pt, el resto → es)
+  // mientras el usuario no haya tocado el selector de idioma: una elección
+  // explícita (settings.languageExplicit) nunca se pisa.
   function chooseCountry(code) {
     setAnswers({ country: code, currency: suggestedCurrency(code) })
+    const suggested = languageForCountry(code)
+    if (suggested && !settings.languageExplicit && suggested !== settings.language) {
+      updateSettings({ ...settings, language: suggested })
+    }
   }
 
   // Escribe la configuración que antes salía de los 9 pasos. Va ANTES del paso
@@ -277,7 +284,7 @@ export default function Onboarding({ onComplete }) {
         {LANGUAGES.map(l => (
           <button key={l.code} type="button" className="fos-chip fos-chip--tall"
             aria-pressed={currentLang === l.code} aria-label={l.name} lang={l.code}
-            onClick={() => updateSettings({ ...settings, language: l.code })}
+            onClick={() => updateSettings({ ...settings, language: l.code, languageExplicit: true })}
             style={{ fontFamily: 'var(--mono)', letterSpacing: '.06em' }}>
             {l.code.toUpperCase()}
           </button>
@@ -325,7 +332,7 @@ export default function Onboarding({ onComplete }) {
       {/* Vista previa del formato — mono porque es un dato */}
       <div aria-live="polite" style={{ padding: '12px 14px', borderRadius: 'var(--rl)', background: 'var(--sur2)', border: '1px solid var(--brd)', marginBottom: 14 }}>
         <div className="num" style={{ fontSize: 24, color: 'var(--tx)', lineHeight: 1.2 }}>
-          {previewAmount(answers.currency)} <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
+          {previewAmount(answers.currency, lang)} <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
         </div>
         <div style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>{t('onboarding.v2.step1.preview')}</div>
       </div>

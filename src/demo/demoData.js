@@ -1,37 +1,18 @@
 // src/demo/demoData.js
-// Datos ficticios para el modo demo de FinanceOS
-// Perfil: Sofía García — Diseñadora freelance, 28 años, Colombia
+// Datos ficticios para el modo demo de MOY IQ.
+// Personas (08-oct-2026): se elige por el idioma del navegador (pickDemoPersonaId):
+//   es / pt → Sofía García (Colombia, COP) — este archivo
+//   en      → Maya Robinson (EE. UU., USD) — personas/us.js
+//   de      → Aylin Demir (Alemania, EUR) — personas/de.js
+// Perfil Sofía: Diseñadora freelance, 28 años, Colombia
 // 6 meses de datos. Mes actual con flujo negativo (realista para freelancer).
 // IMPORTANTE: estos datos nunca se escriben en IndexedDB
 
 import { detectLanguage } from '../i18n/translate.js'
+import { US_PERSONA } from './personas/us.js'
+import { DE_PERSONA } from './personas/de.js'
 
-// Genera IDs fijos para el demo (no aleatorios — para consistencia)
-const d = (suffix) => `demo-${suffix}`
-
-// Fechas relativas al mes actual
-const now = new Date()
-const y0  = now.getFullYear()
-const m0  = now.getMonth() + 1
-const y1  = m0 === 1  ? y0 - 1 : y0;  const m1 = m0 === 1  ? 12 : m0 - 1
-const y2  = m1 === 1  ? y1 - 1 : y1;  const m2 = m1 === 1  ? 12 : m1 - 1
-const y3  = m2 === 1  ? y2 - 1 : y2;  const m3 = m2 === 1  ? 12 : m2 - 1
-const y4  = m3 === 1  ? y3 - 1 : y3;  const m4 = m3 === 1  ? 12 : m3 - 1
-const y5  = m4 === 1  ? y4 - 1 : y4;  const m5 = m4 === 1  ? 12 : m4 - 1
-const pad = (n) => String(n).padStart(2, '0')
-const M0  = `${y0}-${pad(m0)}`
-const M1  = `${y1}-${pad(m1)}`
-const M2  = `${y2}-${pad(m2)}`
-const M3  = `${y3}-${pad(m3)}`
-const M4  = `${y4}-${pad(m4)}`
-const M5  = `${y5}-${pad(m5)}`
-const day = (ym, dd) => `${ym}-${pad(dd)}`
-
-const nextMonthDate = (dd) => {
-  const dt = new Date(y0, m0, dd)
-  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`
-}
-const nextYearDate = (month, dd) => `${y0 + 1}-${pad(month)}-${pad(dd)}`
+import { d, M0, M1, M2, M3, M4, M5, day, nextMonthDate, nextYearDate } from './demoDates.js'
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
 export const DEMO_SETTINGS = {
@@ -39,7 +20,7 @@ export const DEMO_SETTINGS = {
   country: 'CO',
   theme: 'light',
   // Idioma inicial = el del navegador (es/en/pt/de, default es), el mismo que
-  // usa DemoGate. Los datos de ejemplo (Sofía, Colombia) siguen en español.
+  // usa DemoGate. Moneda/país los pisa la persona elegida (buildDemoState).
   language: detectLanguage(),
   savingGoalPct: 20,
   onboardingDone: true,
@@ -56,7 +37,7 @@ export const DEMO_INCOMES = [
   // Mes anterior — mes bueno
   { id: d('i4'),  date: day(M1,  3), source: 'Proyecto branding — startup',        amount: 3_200_000, category: 'Freelance', recurrence: 'Único',   notes: '' },
   { id: d('i5'),  date: day(M1, 10), source: 'Clases de diseño online',            amount:   480_000, category: 'Freelance', recurrence: 'Mensual', notes: '' },
-  { id: d('i6'),  date: day(M1, 20), source: 'Venta plantillas Gumroad',           amount:   320_000, category: 'Otros',     recurrence: 'Único',   notes: '' },
+  { id: d('i6'),  date: day(M1, 20), source: 'Venta plantillas Gumroad',           amount:   320_000, category: 'Otro',      recurrence: 'Único',   notes: '' },
   // Hace 2 meses
   { id: d('i7'),  date: day(M2,  2), source: 'Proyecto web — cliente Medellín',    amount: 2_800_000, category: 'Freelance', recurrence: 'Único',   notes: '' },
   { id: d('i8'),  date: day(M2, 10), source: 'Clases de diseño online',            amount:   480_000, category: 'Freelance', recurrence: 'Mensual', notes: '' },
@@ -67,7 +48,7 @@ export const DEMO_INCOMES = [
   // Hace 4 meses
   { id: d('i12'), date: day(M4,  4), source: 'Proyecto identidad visual',          amount: 3_500_000, category: 'Freelance', recurrence: 'Único',   notes: '' },
   { id: d('i13'), date: day(M4, 10), source: 'Clases de diseño online',            amount:   480_000, category: 'Freelance', recurrence: 'Mensual', notes: '' },
-  { id: d('i14'), date: day(M4, 22), source: 'Venta activos digitales',            amount:   150_000, category: 'Otros',     recurrence: 'Único',   notes: '' },
+  { id: d('i14'), date: day(M4, 22), source: 'Venta activos digitales',            amount:   150_000, category: 'Otro',      recurrence: 'Único',   notes: '' },
   // Hace 5 meses
   { id: d('i15'), date: day(M5,  3), source: 'Proyecto redes sociales — marca',    amount: 1_900_000, category: 'Freelance', recurrence: 'Único',   notes: '' },
   { id: d('i16'), date: day(M5, 10), source: 'Clases de diseño online',            amount:   480_000, category: 'Freelance', recurrence: 'Mensual', notes: '' },
@@ -184,7 +165,7 @@ export const DEMO_SUBSCRIPTIONS = [
 export const DEMO_INCOMES_EXITOSO = [
   { id: d('ix1'), date: day(M0,  2), source: 'Proyecto branding — startup LATAM',  amount: 3_800_000, category: 'Freelance', recurrence: 'Único',   notes: 'Cliente nuevo — pago completo' },
   { id: d('ix2'), date: day(M0, 10), source: 'Clases de diseño online',             amount:   480_000, category: 'Freelance', recurrence: 'Mensual', notes: '' },
-  { id: d('ix3'), date: day(M0, 18), source: 'Venta plantillas Gumroad',            amount:   420_000, category: 'Otros',     recurrence: 'Único',   notes: 'Lanzamiento nuevo pack' },
+  { id: d('ix3'), date: day(M0, 18), source: 'Venta plantillas Gumroad',            amount:   420_000, category: 'Otro',      recurrence: 'Único',   notes: 'Lanzamiento nuevo pack' },
   // meses anteriores — igual que DEMO_INCOMES
   ...DEMO_INCOMES.filter(r => !r.date.startsWith(M0)),
 ]
@@ -199,3 +180,43 @@ export const DEMO_STATE = {
   subscriptions: DEMO_SUBSCRIPTIONS,
   settings:      DEMO_SETTINGS,
 }
+
+// ── PERSONAS ──────────────────────────────────────────────────────────────────
+export const SOFIA_PERSONA = {
+  id: 'sofia', name: 'Sofía García', country: 'CO', currency: 'COP',
+  incomesHard: DEMO_INCOMES,
+  incomesGood: DEMO_INCOMES_EXITOSO,
+  expenses: DEMO_EXPENSES,
+  budgets: DEMO_BUDGETS,
+  debts: DEMO_DEBTS,
+  goals: DEMO_GOALS,
+  subscriptions: DEMO_SUBSCRIPTIONS,
+}
+
+export const DEMO_PERSONAS = { sofia: SOFIA_PERSONA, us: US_PERSONA, de: DE_PERSONA }
+
+// Persona según el idioma con que llega la persona al demo. Portugués sigue con
+// Sofía: no hay persona brasileña/portuguesa todavía.
+export function pickDemoPersonaId(language) {
+  if (language === 'en') return 'us'
+  if (language === 'de') return 'de'
+  return 'sofia'
+}
+
+// Estado completo del demo para una persona. `scenario`: 'exitoso' (mes bueno,
+// el inicial) o 'dificil'.
+export function buildDemoState(personaId, language = detectLanguage(), scenario = 'dificil') {
+  const p = DEMO_PERSONAS[personaId] || SOFIA_PERSONA
+  return {
+    personaId: p.id,
+    incomes:       scenario === 'exitoso' ? p.incomesGood : p.incomesHard,
+    expenses:      p.expenses,
+    budgets:       p.budgets,
+    debts:         p.debts,
+    goals:         p.goals,
+    subscriptions: p.subscriptions,
+    settings:      { ...DEMO_SETTINGS, currency: p.currency, country: p.country, language },
+  }
+}
+
+export const demoPersona = (personaId) => DEMO_PERSONAS[personaId] || SOFIA_PERSONA

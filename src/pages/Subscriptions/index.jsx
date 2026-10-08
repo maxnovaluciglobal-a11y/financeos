@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { dbGetAll, dbAdd, dbDelete } from '../../core/db/index.js'
-import { uid, subEmoji, subLabel, moneyLocale, dateLocale, currentMonth } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, currencyDecimals } from '../../utils/index.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -47,7 +47,7 @@ export function toAnnual(amount, frequency) {
   }
 }
 
-export function generateAlerts(subs, monthlyIncome, t = null) {
+export function generateAlerts(subs, monthlyIncome, t = null, lang = null) {
   const tr = (key, vars, fallback) => (t ? t(key, vars) : fallback)
   const alerts = []
   const active = Array.isArray(subs) ? subs.filter(s => s.status === 'active') : []
@@ -62,7 +62,7 @@ export function generateAlerts(subs, monthlyIncome, t = null) {
     if (items.length >= 2) {
       alerts.push({
         type: 'duplicate',
-        msg: tr('subs.alert.duplicate', { n: items.length, cat }, `Tienes ${items.length} suscripciones en "${cat}". Revisa si todas son necesarias.`),
+        msg: tr('subs.alert.duplicate', { n: items.length, cat: lang ? subLabel(cat, lang) : cat }, `Tienes ${items.length} suscripciones en "${cat}". Revisa si todas son necesarias.`),
       })
     }
   })
@@ -131,10 +131,11 @@ const EMPTY_FORM = {
 
 // ── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────────
 export default function Subscriptions() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { settings, incomes, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteSubscription, deleteWithUndo, showToast } = useApp()
   const currency = settings.currency || 'CLP'
-  const fmt = n => (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
+  // Con los decimales de la moneda de cada suscripción (una de US$ en una cuenta en COP lleva centavos).
+  const fmt = (n, cur = currency) => fmtAmount(n, currencyDecimals(cur))
   const isDemo = !!settings.isDemo
 
   const [dbSubs,   setDbSubs]  = useState([])
@@ -171,7 +172,7 @@ export default function Subscriptions() {
   const nextSub = activeSubs
     .filter(s => s.nextPaymentDate)
     .sort((a, b) => new Date(a.nextPaymentDate) - new Date(b.nextPaymentDate))[0]
-  const alerts = useMemo(() => generateAlerts(subs, monthlyIncome, t), [subs, monthlyIncome, settings.language])
+  const alerts = useMemo(() => generateAlerts(subs, monthlyIncome, t, lang), [subs, monthlyIncome, settings.language])
 
   // Datos para gráficos
   // El "top" muestra el NOMBRE del servicio; el emoji viene de su categoría.
@@ -185,10 +186,10 @@ export default function Subscriptions() {
 
   const catRecords = useMemo(() =>
     activeSubs.map(s => ({
-      category: subLabel(s.category) || 'Sin categoría',
+      category: subLabel(s.category, lang) || t('chart.uncategorized'),
       amount: toMonthly(s.amount, s.frequency),
     })),
-    [activeSubs]
+    [activeSubs, lang]
   )
 
   // CRUD
@@ -324,14 +325,14 @@ export default function Subscriptions() {
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
             </FormGroup>
             <FormGroup label={t('subs.form.amount')}>
-              <input type="number" value={form.amount} placeholder="0"
+              <input type="number" inputMode="decimal" min="0" step="any" value={form.amount} placeholder="0"
                 onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} />
             </FormGroup>
           </FormRow>
           <FormRow>
             <FormGroup label={t('subs.form.category')}>
               <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
-                {SUB_CATEGORIES.map(c => <option key={c} value={c}>{subLabel(c)}</option>)}
+                {SUB_CATEGORIES.map(c => <option key={c} value={c}>{subLabel(c, lang)}</option>)}
               </select>
             </FormGroup>
             <FormGroup label={t('subs.form.freq')}>
@@ -379,10 +380,10 @@ export default function Subscriptions() {
                     <tr key={sub.id} style={{ borderBottom: i < displayed.length - 1 ? '.5px solid var(--brd)' : 'none', opacity: isActive ? 1 : 0.5 }}>
                       <td style={{ padding: '9px 12px', fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{sub.name}</td>
                       <td style={{ padding: '9px 12px' }}>
-                        <Badge color="blue">{subLabel(sub.category)}</Badge>
+                        <Badge color="blue">{subLabel(sub.category, lang)}</Badge>
                       </td>
-                      <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly)}</td>
-                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly, sub.currency || currency)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
                         {sub.nextPaymentDate ? new Date(sub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—'}

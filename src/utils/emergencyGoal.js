@@ -9,9 +9,13 @@
 // contaban como fondo de emergencia. Alcanza con la raíz "emergenc*": toda
 // frase real ("emergency fund", "fondo de emergencia", "fundo de emergência")
 // ya la contiene, así que no hace falta matchear "fund"/"fondo" sueltos.
+// Alemán: la app sugiere "Notgroschen" (gs.emergency.name), que no contiene
+// "emergenc*" — sin esto la meta sugerida en alemán no contaba para el
+// colchón del IQ Score. "Notfall*" cubre Notfallfonds/Notfallreserve.
 export function isEmergencyGoalName(name) {
   const n = (name || '').toLowerCase()
-  return n.includes('emergencia') || n.includes('emergency') || n.includes('emergên')
+  return n.includes('emergencia') || n.includes('emergency') || n.includes('emergên') ||
+    n.includes('notgroschen') || n.includes('notfall')
 }
 
 export function findEmergencyGoal(goals) {

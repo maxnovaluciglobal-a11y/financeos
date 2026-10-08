@@ -7,8 +7,7 @@ import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, PageHeader, Empty } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw } from '../../utils/index.js'
-import { CURRENCY_SYMBOLS } from '../shared/constants.js'
+import { fmtMoney as fmtMoneyRaw, currencySymbol } from '../../utils/index.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
 import CountUp from '../../components/CountUp.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -16,7 +15,7 @@ import Money, { useMoney } from '../../components/Money.jsx'
 export default function NetWorth() {
   const { goals, debts, incomes, expenses, settings } = useApp()
   const { t } = useT()
-  const sym = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))

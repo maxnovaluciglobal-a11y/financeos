@@ -4,8 +4,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr } from '../../utils/index.js'
-import { CURRENCY_SYMBOLS } from '../shared/constants.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr, currencySymbol } from '../../utils/index.js'
 import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
@@ -139,7 +138,7 @@ function DebtPayoffSimulator({ debts, sym }) {
         </div>
         {(Number(extra)||0) > 0 && monthsSaved > 0 && (
           <div style={{padding:'12px 14px',borderRadius:8,background:'rgba(10,92,62,.06)',border:'1px solid rgba(10,92,62,.2)'}}>
-            <div style={{fontSize:9,color:'var(--grn)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{t('debts.sim.withExtra', { v: m(sym+Number(extra).toLocaleString(moneyLocale())) })}</div>
+            <div style={{fontSize:9,color:'var(--grn)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{t('debts.sim.withExtra', { v: m(fmtMoneyRaw(Number(extra), sym)) })}</div>
             <div style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}>{t('debts.sim.youSave', { v: fmtMoney(interestSaved,sym) })}</div>
             <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginTop:3}}>{t('debts.sim.inLess', { t: fmtMonths(monthsSaved) })}</div>
           </div>
@@ -187,7 +186,7 @@ export default function Debts() {
     if (!f.ufDebt || !ufValue || !n) return null
     return <div style={{fontSize:10,color:'var(--grn)',fontFamily:'var(--mono)',marginTop:3}}>≈ ${Math.round(n*ufValue).toLocaleString(moneyLocale())} CLP</div>
   }
-  const sym = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
@@ -248,7 +247,7 @@ export default function Debts() {
       notes: t('debts.payment.note', { n: (Number(d.paidInstallments)||0)+1 }),
     })
     setConfirmPay(null)
-    setPayMsg({id:d.id, text:t('debts.card.paidMsg', { amt: m(sym+Math.round(monto).toLocaleString(moneyLocale())) })})
+    setPayMsg({id:d.id, text:t('debts.card.paidMsg', { amt: m(fmtMoneyRaw(monto, sym)) })})
     setTimeout(() => setPayMsg(null), 3000)
   }
 
@@ -395,7 +394,7 @@ export default function Debts() {
             {confirmPay === d.id && (
               <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(10,92,62,.06)',borderRadius:6,border:'0.5px solid rgba(10,92,62,.2)',flexWrap:'wrap'}}>
                 <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>
-                  {t('debts.card.confirmPay', { amt: m(sym+Math.round(nextPaymentAmount(d)).toLocaleString(moneyLocale())), creditor: d.creditor })}
+                  {t('debts.card.confirmPay', { amt: m(fmtMoneyRaw(nextPaymentAmount(d), sym)), creditor: d.creditor })}
                 </span>
                 <div style={{display:'flex',gap:6}}>
                   <Btn variant="primary" size="xs" onClick={() => handleRegisterPayment(d)}>{t('debts.card.confirm')}</Btn>

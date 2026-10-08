@@ -6,6 +6,7 @@ import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
 import Money, { MONEY_MASK } from '../Money.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
+import { useT } from '../../i18n/useT.js'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -110,10 +111,11 @@ export function Alert({ children, type = 'warn' }) {
   )
 }
 
-export function Empty({ text = 'Sin registros aún', cta, onCta }) {
+export function Empty({ text, cta, onCta }) {
+  const { t } = useT()
   return (
     <div className={styles.empty}>
-      {text}
+      {text ?? t('ui.empty')}
       {cta && onCta && (
         <div style={{ marginTop: 12 }}>
           <button type="button" onClick={onCta} style={{
@@ -128,6 +130,8 @@ export function Empty({ text = 'Sin registros aún', cta, onCta }) {
 }
 
 export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
+  const { t } = useT()
+  const label = name || t('ui.transaction')
   return (
     <div className={styles.txRow}>
       <div className={styles.txDot} style={{ background: dot }} />
@@ -139,12 +143,12 @@ export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
         {isIncome ? '+' : '-'}<Money>{amount}</Money>
       </div>
       {onEdit && (
-        <button className={styles.delBtn} onClick={onEdit} title="Editar" aria-label={`Editar ${name || 'movimiento'}`} style={{marginRight:2,fontSize:11}}>
+        <button className={styles.delBtn} onClick={onEdit} title={t('ui.edit')} aria-label={t('ui.editItem', { name: label })} style={{marginRight:2,fontSize:11}}>
           <span aria-hidden="true">✏️</span>
         </button>
       )}
       {onDelete && (
-        <button className={styles.delBtn} onClick={onDelete} title="Eliminar" aria-label={`Eliminar ${name || 'movimiento'}`}>
+        <button className={styles.delBtn} onClick={onDelete} title={t('ui.delete')} aria-label={t('ui.deleteItem', { name: label })}>
           <span aria-hidden="true">✕</span>
         </button>
       )}

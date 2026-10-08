@@ -51,7 +51,7 @@ export default function DemoGate({ onPass }) {
     setError('')
     setLoading(true)
     // No bloquea la entrada al demo por el resultado del registro — best-effort.
-    registerDemoLead(cleanEmail, cleanNombre, consent).finally(() => {
+    registerDemoLead(cleanEmail, cleanNombre, consent, lang).finally(() => {
       markPassed()
       setLoading(false)
       onPass()

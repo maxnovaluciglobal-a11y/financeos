@@ -11,11 +11,13 @@ import { createContext, useContext, useReducer, useEffect, useCallback, useMemo,
 import {
   dbGetAll, dbAdd, dbDelete, clearAllData,
   getSettings, saveSettings, exportAllData, importAllData,
-  isUsingFallback, DEFAULT_SETTINGS,
+  isUsingFallback, firstRunSettings,
 } from '../core/db/index.js'
-import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr } from '../utils/index.js'
+import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel } from '../utils/index.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
 import { hapticTap } from '../utils/haptics.js'
+import { translate } from '../i18n/translate.js'
+import { loadLang } from '../i18n/langCache.js'
 
 export const AppContext = createContext(null)
 
@@ -26,7 +28,9 @@ const initialState = {
   debts:    [],
   goals:    [],
   subscriptions: [],
-  settings: DEFAULT_SETTINGS,
+  // Antes de hidratar: lo del navegador (idioma/país/moneda), no 'es'/CL fijo.
+  // getSettings() lo reemplaza enseguida por lo guardado, si hay algo guardado.
+  settings: firstRunSettings(),
   loading:  true,
   toast:    null, // { msg, type } — 'ok' | 'error'
 }
@@ -62,6 +66,14 @@ export function reducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState)
 
+  // Textos de toasts/CSV en el idioma activo. AppContext es el provider, no
+  // puede usar useT(); lee el idioma por ref para que los callbacks memoizados
+  // no tengan que depender de settings.
+  const langRef = useRef(state.settings?.language || 'es')
+  langRef.current = state.settings?.language || 'es'
+  useEffect(() => { loadLang(langRef.current) }, [state.settings?.language])
+  const tr = useCallback((key, vars) => translate(langRef.current, key, vars), [])
+
   // ── Toast helper ─────────────────────────────────────────────────────────────
   // action opcional: { label, onAction } → renderiza un botón (p.ej. "Deshacer").
   // Con acción, el toast dura más (6s) para dar tiempo a reaccionar.
@@ -93,20 +105,20 @@ export function AppProvider({ children }) {
   // Reemplaza el confirm() nativo: borra de inmediato y ofrece "Deshacer" ~6s.
   // Restaura re-insertando el MISMO item (conserva su id) y rehidratando desde DB.
   // Genérico y sin tocar el esquema: store ∈ incomes|expenses|budgets|debts|goals|subscriptions.
-  const deleteWithUndo = useCallback(async (store, item, deletedMsg = 'Eliminado', undoLabel = 'Deshacer') => {
+  const deleteWithUndo = useCallback(async (store, item, deletedMsg, undoLabel) => {
     if (!item?.id) return
     try {
       await dbDelete(store, item.id)
       await rehydrate()
       hapticTap()
-      showToast(deletedMsg, 'ok', {
-        label: undoLabel,
-        onAction: async () => { try { await dbAdd(store, item); await rehydrate() } catch (e) { showToast('No se pudo deshacer.', 'error') } },
+      showToast(deletedMsg || tr('common.deleted'), 'ok', {
+        label: undoLabel || tr('common.undo'),
+        onAction: async () => { try { await dbAdd(store, item); await rehydrate() } catch (e) { showToast(tr('toast.undoFailed'), 'error') } },
       })
     } catch (e) {
-      showToast('Error al eliminar. Intenta de nuevo.', 'error')
+      showToast(tr('toast.deleteError'), 'error')
     }
-  }, [rehydrate, showToast])
+  }, [rehydrate, showToast, tr])
 
   // ── Hydrate from DB on mount ──────────────────────────────────────────────────
   const hydratedRef = useRef(false)
@@ -115,20 +127,20 @@ export function AppProvider({ children }) {
       try {
         await rehydrate()
         if (isUsingFallback()) {
-          showToast('Modo compatibilidad activo (localStorage). Los datos se guardan localmente.', 'ok')
+          showToast(tr('toast.fallbackMode'), 'ok')
         }
         hydratedRef.current = true
         // Sync opcional: si está activo, baja los cambios de otros dispositivos (no-op si apagado)
         if (isSyncEnabled()) {
           pullAndApplyIfNewer(rehydrate)
-            .then(r => { if (r?.applied) showToast('Datos sincronizados desde otro dispositivo.', 'ok') })
+            .then(r => { if (r?.applied) showToast(tr('toast.syncedFromOther'), 'ok') })
             .catch(() => {})
         }
       } catch (e) {
         console.error('Hydration error:', e)
         dispatch({ type: 'HYDRATE', payload: {} })
         hydratedRef.current = true
-        showToast('Error al cargar datos. Intenta recargar la página.', 'error')
+        showToast(tr('toast.loadError'), 'error')
       }
     }
     hydrate()
@@ -139,10 +151,12 @@ export function AppProvider({ children }) {
     if (!hydratedRef.current) return  // no dispara durante la hidratación inicial
     markLocalChange()
   }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions])
-  // ── Formato de miles según la moneda del usuario (US/MX/PT ≠ CL) ──────────────
-  useEffect(() => {
-    setMoneyLocale(state.settings?.currency || 'CLP')
-  }, [state.settings?.currency])
+  // ── Formato de dinero según la moneda (y el idioma) del usuario ──────────────
+  // En el render y no en un efecto: el provider se renderiza antes que sus
+  // hijos, así que la primera pintura ya sale con los decimales/símbolo de la
+  // moneda correcta (con un efecto, los hijos pintaban una vez con el locale
+  // anterior). Es idempotente: solo asigna 4 variables de módulo.
+  setMoneyLocale(state.settings?.currency || 'CLP', state.settings?.language || 'es')
   // ── Formato de fechas según el IDIOMA (no la moneda): "Sep" vs "sept" vs "set" ──
   useEffect(() => {
     setDateLocale(state.settings?.language || 'es')
@@ -157,30 +171,30 @@ export function AppProvider({ children }) {
       await dbAdd('incomes', item)          // DB primero
       dispatch({ type: 'ADD_INCOME', item }) // UI después de confirmar
     } catch (e) {
-      showToast('Error al guardar ingreso. Intenta de nuevo.', 'error')
+      showToast(tr('toast.save.income'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const delIncome = useCallback(async (id) => {
     try {
       await dbDelete('incomes', id)
       dispatch({ type: 'DEL_INCOME', id })
     } catch (e) {
-      showToast('Error al eliminar ingreso.', 'error')
+      showToast(tr('toast.delete.income'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const updateIncome = useCallback(async (item) => {
     try {
       await dbAdd('incomes', item)
       dispatch({ type: 'UPDATE_INCOME', item })
     } catch (e) {
-      showToast('Error al actualizar ingreso.', 'error')
+      showToast(tr('toast.update.income'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const addExpense = useCallback(async (data) => {
     const item = { ...data, id: uid(), createdAt: new Date().toISOString() }
@@ -188,30 +202,30 @@ export function AppProvider({ children }) {
       await dbAdd('expenses', item)
       dispatch({ type: 'ADD_EXPENSE', item })
     } catch (e) {
-      showToast('Error al guardar gasto. Intenta de nuevo.', 'error')
+      showToast(tr('toast.save.expense'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const delExpense = useCallback(async (id) => {
     try {
       await dbDelete('expenses', id)
       dispatch({ type: 'DEL_EXPENSE', id })
     } catch (e) {
-      showToast('Error al eliminar gasto.', 'error')
+      showToast(tr('toast.delete.expense'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const updateExpense = useCallback(async (item) => {
     try {
       await dbAdd('expenses', item)
       dispatch({ type: 'UPDATE_EXPENSE', item })
     } catch (e) {
-      showToast('Error al actualizar gasto.', 'error')
+      showToast(tr('toast.update.expense'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const addBudget = useCallback(async (data) => {
     const item = { ...data, id: uid() }
@@ -219,30 +233,30 @@ export function AppProvider({ children }) {
       await dbAdd('budgets', item)
       dispatch({ type: 'ADD_BUDGET', item })
     } catch (e) {
-      showToast('Error al guardar presupuesto.', 'error')
+      showToast(tr('toast.save.budget'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const delBudget = useCallback(async (id) => {
     try {
       await dbDelete('budgets', id)
       dispatch({ type: 'DEL_BUDGET', id })
     } catch (e) {
-      showToast('Error al eliminar presupuesto.', 'error')
+      showToast(tr('toast.delete.budget'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const updateBudget = useCallback(async (item) => {
     try {
       await dbAdd('budgets', item)
       dispatch({ type: 'UPDATE_BUDGET', item })
     } catch (e) {
-      showToast('Error al actualizar presupuesto.', 'error')
+      showToast(tr('toast.update.budget'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const addDebt = useCallback(async (data) => {
     const item = { ...data, id: uid() }
@@ -250,30 +264,30 @@ export function AppProvider({ children }) {
       await dbAdd('debts', item)
       dispatch({ type: 'ADD_DEBT', item })
     } catch (e) {
-      showToast('Error al guardar deuda.', 'error')
+      showToast(tr('toast.save.debt'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const delDebt = useCallback(async (id) => {
     try {
       await dbDelete('debts', id)
       dispatch({ type: 'DEL_DEBT', id })
     } catch (e) {
-      showToast('Error al eliminar deuda.', 'error')
+      showToast(tr('toast.delete.debt'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const updateDebt = useCallback(async (item) => {
     try {
       await dbAdd('debts', item)
       dispatch({ type: 'UPDATE_DEBT', item })
     } catch (e) {
-      showToast('Error al actualizar deuda.', 'error')
+      showToast(tr('toast.update.debt'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const addGoal = useCallback(async (data) => {
     const item = { ...data, id: uid() }
@@ -281,30 +295,30 @@ export function AppProvider({ children }) {
       await dbAdd('goals', item)
       dispatch({ type: 'ADD_GOAL', item })
     } catch (e) {
-      showToast('Error al guardar meta.', 'error')
+      showToast(tr('toast.save.goal'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const delGoal = useCallback(async (id) => {
     try {
       await dbDelete('goals', id)
       dispatch({ type: 'DEL_GOAL', id })
     } catch (e) {
-      showToast('Error al eliminar meta.', 'error')
+      showToast(tr('toast.delete.goal'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const updateGoal = useCallback(async (item) => {
     try {
       await dbAdd('goals', item)
       dispatch({ type: 'UPDATE_GOAL', item })
     } catch (e) {
-      showToast('Error al actualizar meta.', 'error')
+      showToast(tr('toast.update.goal'), 'error')
       throw e
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const updateSettings = useCallback(async (settings) => {
     try {
@@ -313,9 +327,9 @@ export function AppProvider({ children }) {
       document.documentElement.setAttribute('data-theme', settings.theme || 'light')
       document.documentElement.setAttribute('lang', settings.language || 'es')
     } catch (e) {
-      showToast('Error al guardar ajustes.', 'error')
+      showToast(tr('toast.settingsError'), 'error')
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   // ── Controles de sync (opt-in) para Ajustes ──────────────────────────────────
   const enableSync = useCallback(async () => {
@@ -326,22 +340,23 @@ export function AppProvider({ children }) {
       // push. Forzamos un push que SÍ propaga el error para no reportar un
       // "activado" falso cuando la nube rechaza la licencia (bug histórico).
       await pushNow()
-      showToast(r?.applied ? 'Sincronización activada · datos actualizados desde la nube.' : 'Sincronización activada · tus datos están en la nube.', 'ok')
+      showToast(tr(r?.applied ? 'toast.syncOnApplied' : 'toast.syncOn'), 'ok')
       return { ok: true, applied: !!r?.applied }
     } catch (e) {
       setSyncEnabled(false)
       const invalid = /invalid_license/.test(String(e?.message || ''))
-      showToast(invalid
-        ? 'No se pudo activar el sync: el servidor rechazó la licencia. Falta aplicar el fix de sync en Supabase.'
-        : 'No se pudo activar el sync. Revisa tu conexión e intenta de nuevo.', 'error')
+      // (El texto viejo en español además decía "Falta aplicar el fix de sync en
+      // Supabase": eso es para el equipo, no para el usuario. Ver CLAUDE.md,
+      // sección Supabase, si este error aparece.)
+      showToast(tr(invalid ? 'toast.syncInvalidLicense' : 'toast.syncFailed'), 'error')
       return { ok: false }
     }
-  }, [rehydrate, showToast])
+  }, [rehydrate, showToast, tr])
 
   const disableSync = useCallback(() => {
     setSyncEnabled(false)
-    showToast('Sincronización desactivada. Tus datos siguen en este dispositivo.', 'ok')
-  }, [showToast])
+    showToast(tr('toast.syncOff'), 'ok')
+  }, [showToast, tr])
 
   const clearAll = useCallback(async () => {
     try {
@@ -357,11 +372,11 @@ export function AppProvider({ children }) {
         await saveSettings(rest)
         dispatch({ type: 'SAVE_SETTINGS', settings: rest })
       }
-      showToast('Todos los datos fueron borrados.', 'ok')
+      showToast(tr('toast.cleared'), 'ok')
     } catch (e) {
-      showToast('Error al borrar datos.', 'error')
+      showToast(tr('toast.clearError'), 'error')
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const loadDemo = useCallback(async () => {
     try {
@@ -386,19 +401,22 @@ export function AppProvider({ children }) {
         ...seeds.goals.map(r    => dbAdd('goals',    r)),
       ])
       dispatch({ type: 'HYDRATE', payload: seeds })
-      showToast('Datos demo cargados correctamente.', 'ok')
+      showToast(tr('toast.demoLoaded'), 'ok')
     } catch (e) {
-      showToast('Error al cargar demo.', 'error')
+      showToast(tr('toast.demoError'), 'error')
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   // FIX: BOM UTF-8 (\uFEFF) para que Excel Windows muestre acentos correctamente
   const exportCSV = useCallback(() => {
     try {
+      // Encabezados y valores fijos (tipo, categoría canónica, método,
+      // recurrencia) en el idioma activo; lo que escribió el usuario va tal cual.
+      const lang = langRef.current
       const rows = [
-        ['Tipo', 'Fecha', 'Descripción', 'Categoría', 'Monto', 'Método', 'Recurrencia', 'Notas'],
-        ...state.incomes.map(r  => ['Ingreso', r.date, r.source,      r.category, r.amount,  '',        r.recurrence, r.notes || '']),
-        ...state.expenses.map(r => ['Gasto',   r.date, r.description, r.category, -r.amount, r.method,  r.recurrence, r.notes || '']),
+        ['type', 'date', 'description', 'category', 'amount', 'method', 'recurrence', 'notes'].map(c => tr(`csv.col.${c}`)),
+        ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, lang), r.amount,  '',                           recurrenceLabel(r.recurrence, lang), r.notes || '']),
+        ...state.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, lang), -r.amount, methodLabel(r.method, lang), recurrenceLabel(r.recurrence, lang), r.notes || '']),
       ]
       const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }) // FIX: BOM
@@ -408,11 +426,11 @@ export function AppProvider({ children }) {
       a.download = `moyiq-${localDateStr()}.csv`
       a.click()
       URL.revokeObjectURL(url)
-      showToast('CSV exportado correctamente.', 'ok')
+      showToast(tr('toast.csvExported'), 'ok')
     } catch (e) {
-      showToast('Error al exportar CSV.', 'error')
+      showToast(tr('toast.csvError'), 'error')
     }
-  }, [state.incomes, state.expenses, showToast])
+  }, [state.incomes, state.expenses, showToast, tr])
 
   const exportData = useCallback(async () => {
     try {
@@ -441,11 +459,11 @@ export function AppProvider({ children }) {
       a.download = `moyiq-backup-${localDateStr()}.json`
       a.click()
       URL.revokeObjectURL(url)
-      showToast('Respaldo creado correctamente.', 'ok')
+      showToast(tr('toast.backupCreated'), 'ok')
     } catch (e) {
-      showToast('Error al crear el respaldo.', 'error')
+      showToast(tr('toast.backupError'), 'error')
     }
-  }, [showToast])
+  }, [showToast, tr])
 
   const importData = useCallback(async (file) => {
     return new Promise((resolve, reject) => {
@@ -459,20 +477,20 @@ export function AppProvider({ children }) {
             dbGetAll('debts'),   dbGetAll('goals'),    dbGetAll('subscriptions'), getSettings(),
           ])
           dispatch({ type: 'HYDRATE', payload: { incomes, expenses, budgets, debts, goals, subscriptions, settings } })
-          showToast('Datos importados correctamente.', 'ok')
+          showToast(tr('toast.imported'), 'ok')
           resolve()
         } catch (err) {
-          showToast('Error al importar. Verifica que el archivo sea un backup válido de MOY IQ.', 'error')
+          showToast(tr('toast.importError'), 'error')
           reject(err)
         }
       }
       reader.onerror = () => {
-        showToast('No se pudo leer el archivo.', 'error')
+        showToast(tr('toast.readError'), 'error')
         reject(new Error('FileReader error'))
       }
       reader.readAsText(file)
     })
-  }, [showToast])
+  }, [showToast, tr])
 
   // ── Subscriptions ─────────────────────────────────────────────
   const addSubscription = useCallback(async (item) => {
@@ -480,20 +498,20 @@ export function AppProvider({ children }) {
       const newItem = { ...item, id: item.id || uid(), createdAt: item.createdAt || new Date().toISOString() }
       await dbAdd('subscriptions', newItem)
       dispatch({ type: 'ADD_SUB', item: newItem })
-    } catch (e) { showToast('Error al guardar suscripción. Intenta de nuevo.', 'error') }
-  }, [showToast])
+    } catch (e) { showToast(tr('toast.save.subscription'), 'error') }
+  }, [showToast, tr])
   const deleteSubscription = useCallback(async (id) => {
     try {
       await dbDelete('subscriptions', id)
       dispatch({ type: 'DEL_SUB', id })
-    } catch (e) { showToast('Error al eliminar suscripción.', 'error') }
-  }, [showToast])
+    } catch (e) { showToast(tr('toast.delete.subscription'), 'error') }
+  }, [showToast, tr])
   const updateSubscription = useCallback(async (item) => {
     try {
       await dbAdd('subscriptions', item)
       dispatch({ type: 'UPDATE_SUB', item })
-    } catch (e) { showToast('Error al actualizar suscripción.', 'error') }
-  }, [showToast])
+    } catch (e) { showToast(tr('toast.update.subscription'), 'error') }
+  }, [showToast, tr])
 
   const value = useMemo(() => ({
     ...state,

@@ -4,7 +4,7 @@ import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
 import ResetPassword from './components/ResetPassword.jsx'
 import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter } from './utils/licenseValidator.js'
-import { getSession, onAuthChange } from './core/auth.js'
+import { getSession, onAuthChange, syncUserLang } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
@@ -105,6 +105,13 @@ function Inner() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // user_metadata.lang = idioma de la app (correos de auth en ese idioma).
+  useEffect(() => {
+    if (isDemo || loading || !session?.user) return
+    syncUserLang(session, settings.language)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id, settings.language, loading])
 
   useEffect(() => {
     if (isDemo) return

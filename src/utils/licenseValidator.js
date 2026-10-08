@@ -2,6 +2,7 @@
 // VALIDADOR v2.0 — Supabase. ACTIVO en producción (lo usan App.jsx, LicenseGate, Settings).
 import { licenseKeyHash } from './syncCrypto.js'
 import { authClient } from '../core/authClient.js'
+import { withLeadLang } from './leadsLang.js'
 // Valida la clave contra la RPC `validate_license` de Supabase y cachea en localStorage
 // (fnos_license_v2). VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY están en Vercel.
 //
@@ -138,10 +139,18 @@ export async function setLicenseEmail(email) {
   } catch { return false }
 }
 
+// Fallback de idioma para los registros de lead cuando el llamador no pasa
+// el de la app: el del navegador (withLeadLang lo normaliza o lo descarta).
+function browserLang() {
+  return typeof navigator !== 'undefined' ? navigator.language : null
+}
+
 // Registra el email de quien elige Starter (best-effort: no bloquea la
 // activación si falla). Starter no tiene clave, así que no puede pasar por
 // setLicenseEmail — sin esto, nadie que arranca gratis quedaba registrado.
-export async function registerStarterLead(email) {
+// `lang` (idioma de la app) solo viaja como p_lang si LEADS_LANG_ENABLED
+// (ver leadsLang.js); sin él se usa el del navegador.
+export async function registerStarterLead(email, lang) {
   const clean = String(email || '').trim()
   if (!clean || !SUPABASE_URL || !SUPABASE_ANON) return false
   try {
@@ -152,7 +161,7 @@ export async function registerStarterLead(email) {
         Authorization: `Bearer ${SUPABASE_ANON}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ p_email: clean }),
+      body: JSON.stringify(withLeadLang({ p_email: clean }, lang ?? browserLang())),
     })
     if (!res.ok) return false
     const data = await res.json()
@@ -179,7 +188,7 @@ export async function registerStarterLead(email) {
 // Registra el lead del gate de demo (email + nombre, ver DemoGate.jsx).
 // Best-effort: si falla, DemoGate deja pasar igual — el gate es para
 // capturar el lead, no para bloquear a nadie por un problema de red.
-export async function registerDemoLead(email, nombre, consentMarketing) {
+export async function registerDemoLead(email, nombre, consentMarketing, lang) {
   const cleanEmail = String(email || '').trim()
   const cleanNombre = String(nombre || '').trim()
   if (!cleanEmail || !cleanNombre || !SUPABASE_URL || !SUPABASE_ANON) return false
@@ -191,11 +200,11 @@ export async function registerDemoLead(email, nombre, consentMarketing) {
         Authorization: `Bearer ${SUPABASE_ANON}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
+      body: JSON.stringify(withLeadLang({
         p_email: cleanEmail,
         p_nombre: cleanNombre,
         p_consent_marketing: !!consentMarketing,
-      }),
+      }, lang ?? browserLang())),
     })
     if (!res.ok) return false
     const data = await res.json()

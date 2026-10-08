@@ -14,6 +14,9 @@ const enc = new TextEncoder();
 
 // Verifica la firma del webhook de Stripe (esquema t=...,v1=...) con HMAC-SHA256.
 // Prueba contra varios secrets (test + live) y acepta si alguno coincide.
+import { type EmailLang, INTL_LOCALE, langFromStripeSession, langFromStripeSubscription } from "../_shared/emailLang.ts";
+export { langFromStripeSession, langFromStripeSubscription };
+
 export async function verifyStripeSignature(rawBody: string, sigHeader: string, secrets: string[]): Promise<boolean> {
   if (!sigHeader || secrets.length === 0) return false;
   const parts = sigHeader.split(",").map((p) => p.trim());
@@ -491,6 +494,7 @@ export async function sendKeyEmail(
   to: string, key: string, plan: string, sessionRef: string | null, config: WebhookConfig,
   interval: "month" | "year" | null = null,
   trial: TrialBilling | null = null,
+  lang: EmailLang = "es",
 ): Promise<boolean> {
   if (!config.resendApiKey) {
     console.error(`CRITICO: RESEND_API_KEY no configurada — el cliente pago y NO recibio su clave. session=${sessionRef}`);
@@ -500,28 +504,30 @@ export async function sendKeyEmail(
   // T10: si el checkout fue una prueba, el email no dice "Compra confirmada"
   // (no se cobró nada): dice que la prueba empezó, cuándo termina, qué se
   // cobrará y cómo cancelar antes.
+  const T = MAIL[lang] ?? MAIL.es;
+  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
   const billingNote = trial
     ? ""
     : interval
-      ? `<p>Es una suscripción con renovación automática ${interval === "month" ? "mensual" : "anual"}. Para cancelarla, escribe a <a href="mailto:support@moyiq.app">support@moyiq.app</a>.</p>`
+      ? `<p>${T.renewalNote(interval, support)}</p>`
       : "";
-  const heading = trial ? "Tu prueba de MOY IQ Pro" : "Tu licencia de MOY IQ";
+  const heading = trial ? T.trialSubject : T.licenseSubject;
   const intro = trial
-    ? `<p>Tu prueba de Pro empezó. Dura ${TRIAL_DAYS} días y termina el ${formatDateEs(trial.endsAt)}.</p>
-      <p>${chargeSentence(trial)} Después se renueva automáticamente${trial.interval === "year" ? " cada año" : trial.interval === "month" ? " cada mes" : ""}.</p>
-      ${cancelSentence(config)}`
-    : `<p>Compra confirmada. Plan: <strong>${plan === "pro" ? "Pro" : "Personal"}</strong>.</p>`;
-  const subject = trial ? "Tu prueba de MOY IQ Pro" : "Tu licencia de MOY IQ";
+    ? `<p>${T.trialStarted(TRIAL_DAYS, formatDateFor(trial.endsAt, lang))}</p>
+      <p>${chargeSentence(trial, lang)}${T.renews(trial.interval)}</p>
+      ${cancelSentence(config, lang)}`
+    : `<p>${T.purchase(plan === "pro" ? "Pro" : "Personal")}</p>`;
+  const subject = heading;
   const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
+    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
       <h2 style="color:#14213D">${heading}</h2>
       ${intro}
-      <p>Tu clave de acceso:</p>
+      <p>${T.keyLabel}</p>
       <p style="font-family:monospace;font-size:20px;font-weight:700;background:#f0f7f3;
                 padding:14px;border-radius:8px;text-align:center;letter-spacing:2px">${key}</p>
-      <p>Para activarla, abre <a href="${appUrl}">${appUrl}</a> e ingresa la clave.</p>
+      <p>${T.activate(`<a href="${appUrl}">${appUrl}</a>`)}</p>
       ${billingNote}
-      <p style="color:#888;font-size:12px">Tus datos financieros se guardan solo en tu dispositivo.</p>
+      <p style="color:#888;font-size:12px">${T.privacy}</p>
     </div>`;
   const attempt = async () => fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -648,23 +654,130 @@ export interface TrialBilling {
   interval: "month" | "year" | null;
 }
 
-function intervalPhrase(interval: "month" | "year" | null): string {
-  if (interval === "month") return " al mes";
-  if (interval === "year") return " al año";
-  return "";
+// ── Textos de los correos al cliente, en los 4 idiomas de la app ────────────
+// El español es el de siempre, palabra por palabra (los tests lo fijan). El
+// idioma sale de langFromStripeSession / langFromStripeSubscription
+// (_shared/emailLang.ts); sin señal, español. Voz: seca, sin exclamaciones,
+// alemán con "Sie" (financeos-workspace/branding/voz-de-producto.md).
+type Interval = "month" | "year" | null;
+interface MailText {
+  licenseSubject: string;
+  trialSubject: string;
+  trialEndingSubject: string;
+  trialEndsOn: (date: string) => string;
+  trialStarted: (days: number, date: string) => string;
+  charge: (amount: string, interval: Interval) => string;
+  chargeNoAmount: string;
+  renews: (interval: Interval) => string;
+  cancelPortal: (portal: string, support: string) => string;
+  cancelNoPortal: (support: string) => string;
+  renewalNote: (interval: "month" | "year", support: string) => string;
+  purchase: (plan: string) => string;
+  keyLabel: string;
+  activate: (link: string) => string;
+  staySame: string;
+  privacy: string;
 }
+const MAIL: Record<EmailLang, MailText> = {
+  es: {
+    licenseSubject: "Tu licencia de MOY IQ",
+    trialSubject: "Tu prueba de MOY IQ Pro",
+    trialEndingSubject: "Tu prueba de MOY IQ Pro termina pronto",
+    trialEndsOn: (d) => `Tu prueba de MOY IQ Pro termina el ${d}`,
+    trialStarted: (n, d) => `Tu prueba de Pro empezó. Dura ${n} días y termina el ${d}.`,
+    charge: (a, i) => `Ese día se cobran ${a}${i === "month" ? " al mes" : i === "year" ? " al año" : ""} en la tarjeta que registraste.`,
+    chargeNoAmount: "Ese día se cobra el precio de tu plan en la tarjeta que registraste.",
+    renews: (i) => ` Después se renueva automáticamente${i === "year" ? " cada año" : i === "month" ? " cada mes" : ""}.`,
+    cancelPortal: (portal, sup) => `Si no quieres seguir, cancela antes de esa fecha desde <a href="${portal}">tu portal de facturación</a> o escribe a ${sup}. No se cobra nada si cancelas durante la prueba.`,
+    cancelNoPortal: (sup) => `Si no quieres seguir, escribe a ${sup} antes de esa fecha y se cancela la suscripción. No se cobra nada si cancelas durante la prueba.`,
+    renewalNote: (i, sup) => `Es una suscripción con renovación automática ${i === "month" ? "mensual" : "anual"}. Para cancelarla, escribe a ${sup}.`,
+    purchase: (p) => `Compra confirmada. Plan: <strong>${p}</strong>.`,
+    keyLabel: "Tu clave de acceso:",
+    activate: (l) => `Para activarla, abre ${l} e ingresa la clave.`,
+    staySame: "Si sigues, no tienes que hacer nada: tu clave de acceso es la misma.",
+    privacy: "Tus datos financieros se guardan solo en tu dispositivo.",
+  },
+  en: {
+    licenseSubject: "Your MOY IQ license",
+    trialSubject: "Your MOY IQ Pro trial",
+    trialEndingSubject: "Your MOY IQ Pro trial ends soon",
+    trialEndsOn: (d) => `Your MOY IQ Pro trial ends on ${d}`,
+    trialStarted: (n, d) => `Your Pro trial has started. It lasts ${n} days and ends on ${d}.`,
+    charge: (a, i) => `On that day, ${a}${i === "month" ? " per month" : i === "year" ? " per year" : ""} is charged to the card you added.`,
+    chargeNoAmount: "On that day, your plan's price is charged to the card you added.",
+    renews: (i) => ` After that it renews automatically${i === "year" ? " every year" : i === "month" ? " every month" : ""}.`,
+    cancelPortal: (portal, sup) => `If you don't want to continue, cancel before that date from <a href="${portal}">your billing portal</a> or write to ${sup}. Nothing is charged if you cancel during the trial.`,
+    cancelNoPortal: (sup) => `If you don't want to continue, write to ${sup} before that date and the subscription is canceled. Nothing is charged if you cancel during the trial.`,
+    renewalNote: (i, sup) => `This subscription renews automatically every ${i === "month" ? "month" : "year"}. To cancel it, write to ${sup}.`,
+    purchase: (p) => `Purchase confirmed. Plan: <strong>${p}</strong>.`,
+    keyLabel: "Your access key:",
+    activate: (l) => `To activate it, open ${l} and enter the key.`,
+    staySame: "If you continue, you don't need to do anything: your access key stays the same.",
+    privacy: "Your financial data is stored only on your device.",
+  },
+  pt: {
+    licenseSubject: "Sua licença do MOY IQ",
+    trialSubject: "Seu teste do MOY IQ Pro",
+    trialEndingSubject: "Seu teste do MOY IQ Pro termina em breve",
+    trialEndsOn: (d) => `Seu teste do MOY IQ Pro termina em ${d}`,
+    trialStarted: (n, d) => `Seu teste do Pro começou. Dura ${n} dias e termina em ${d}.`,
+    charge: (a, i) => `Nesse dia, são cobrados ${a}${i === "month" ? " por mês" : i === "year" ? " por ano" : ""} no cartão que você cadastrou.`,
+    chargeNoAmount: "Nesse dia, o preço do seu plano é cobrado no cartão que você cadastrou.",
+    renews: (i) => ` Depois, renova automaticamente${i === "year" ? " todo ano" : i === "month" ? " todo mês" : ""}.`,
+    cancelPortal: (portal, sup) => `Se não quiser continuar, cancele antes dessa data no <a href="${portal}">seu portal de cobrança</a> ou escreva para ${sup}. Nada é cobrado se você cancelar durante o teste.`,
+    cancelNoPortal: (sup) => `Se não quiser continuar, escreva para ${sup} antes dessa data e a assinatura será cancelada. Nada é cobrado se você cancelar durante o teste.`,
+    renewalNote: (i, sup) => `É uma assinatura com renovação automática ${i === "month" ? "mensal" : "anual"}. Para cancelar, escreva para ${sup}.`,
+    purchase: (p) => `Compra confirmada. Plano: <strong>${p}</strong>.`,
+    keyLabel: "Sua chave de acesso:",
+    activate: (l) => `Para ativá-la, abra ${l} e insira a chave.`,
+    staySame: "Se continuar, não precisa fazer nada: sua chave de acesso é a mesma.",
+    privacy: "Seus dados financeiros ficam salvos apenas no seu dispositivo.",
+  },
+  de: {
+    licenseSubject: "Ihre MOY IQ-Lizenz",
+    trialSubject: "Ihre Testphase von MOY IQ Pro",
+    trialEndingSubject: "Ihre Testphase von MOY IQ Pro endet bald",
+    trialEndsOn: (d) => `Ihre Testphase von MOY IQ Pro endet am ${d}`,
+    trialStarted: (n, d) => `Ihre Pro-Testphase hat begonnen. Sie dauert ${n} Tage und endet am ${d}.`,
+    charge: (a, i) => `An diesem Tag werden ${a}${i === "month" ? " pro Monat" : i === "year" ? " pro Jahr" : ""} von der hinterlegten Karte abgebucht.`,
+    chargeNoAmount: "An diesem Tag wird der Preis Ihres Plans von der hinterlegten Karte abgebucht.",
+    renews: (i) => ` Danach verlängert sich das Abonnement automatisch${i === "year" ? " jedes Jahr" : i === "month" ? " jeden Monat" : ""}.`,
+    cancelPortal: (portal, sup) => `Wenn Sie nicht weitermachen möchten, kündigen Sie vor diesem Datum in <a href="${portal}">Ihrem Abrechnungsportal</a> oder schreiben Sie an ${sup}. Wenn Sie während der Testphase kündigen, wird nichts berechnet.`,
+    cancelNoPortal: (sup) => `Wenn Sie nicht weitermachen möchten, schreiben Sie vor diesem Datum an ${sup}; das Abonnement wird dann gekündigt. Wenn Sie während der Testphase kündigen, wird nichts berechnet.`,
+    renewalNote: (i, sup) => `Dieses Abonnement verlängert sich automatisch ${i === "month" ? "jeden Monat" : "jedes Jahr"}. Zum Kündigen schreiben Sie an ${sup}.`,
+    purchase: (p) => `Kauf bestätigt. Plan: <strong>${p}</strong>.`,
+    keyLabel: "Ihr Zugangsschlüssel:",
+    activate: (l) => `Zum Aktivieren öffnen Sie ${l} und geben den Schlüssel ein.`,
+    staySame: "Wenn Sie weitermachen, müssen Sie nichts tun: Ihr Zugangsschlüssel bleibt gleich.",
+    privacy: "Ihre Finanzdaten werden nur auf Ihrem Gerät gespeichert.",
+  },
+};
 
-function chargeSentence(billing: TrialBilling): string {
-  if (billing.amountCents == null) return "Ese día se cobra el precio de tu plan en la tarjeta que registraste.";
-  return `Ese día se cobran ${formatAmountEs(billing.amountCents, billing.currency)}${intervalPhrase(billing.interval)} en la tarjeta que registraste.`;
+// Fecha y monto en el idioma del correo. Español: las funciones de siempre.
+export function formatDateFor(iso: string | number, lang: EmailLang = "es"): string {
+  if (lang === "es") return formatDateEs(iso);
+  const d = typeof iso === "number" ? new Date(iso * 1000) : new Date(iso);
+  return new Intl.DateTimeFormat(INTL_LOCALE[lang], { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(d);
 }
-
-function cancelSentence(config: WebhookConfig): string {
-  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
-  if (config.portalUrl) {
-    return `<p>Si no quieres seguir, cancela antes de esa fecha desde <a href="${config.portalUrl}">tu portal de facturación</a> o escribe a ${support}. No se cobra nada si cancelas durante la prueba.</p>`;
+export function formatAmountFor(cents: number, currency = "usd", lang: EmailLang = "es"): string {
+  if (lang === "es") return formatAmountEs(cents, currency);
+  try {
+    return new Intl.NumberFormat(INTL_LOCALE[lang], { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
+  } catch {
+    return formatAmountEs(cents, currency);
   }
-  return `<p>Si no quieres seguir, escribe a ${support} antes de esa fecha y se cancela la suscripción. No se cobra nada si cancelas durante la prueba.</p>`;
+}
+
+function chargeSentence(billing: TrialBilling, lang: EmailLang = "es"): string {
+  const T = MAIL[lang] ?? MAIL.es;
+  if (billing.amountCents == null) return T.chargeNoAmount;
+  return T.charge(formatAmountFor(billing.amountCents, billing.currency, lang), billing.interval);
+}
+
+function cancelSentence(config: WebhookConfig, lang: EmailLang = "es"): string {
+  const T = MAIL[lang] ?? MAIL.es;
+  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
+  return `<p>${config.portalUrl ? T.cancelPortal(config.portalUrl, support) : T.cancelNoPortal(support)}</p>`;
 }
 
 // Datos de cobro de una prueba recién empezada, a partir del checkout. El
@@ -709,24 +822,25 @@ export function trialBillingFromSubscription(sub: any): TrialBilling | null {
 // 3 días antes de trial_end). Cubre la regla de las redes de tarjetas de
 // avisar antes del primer cobro de una prueba gratis: fecha, monto y cómo
 // cancelar. Solo español, igual que el email de la licencia.
-export async function sendTrialEndingEmail(to: string, billing: TrialBilling, config: WebhookConfig): Promise<boolean> {
+export async function sendTrialEndingEmail(to: string, billing: TrialBilling, config: WebhookConfig, lang: EmailLang = "es"): Promise<boolean> {
   if (!config.resendApiKey) {
     console.error("sendTrialEndingEmail: RESEND_API_KEY no configurada");
     return false;
   }
+  const T = MAIL[lang] ?? MAIL.es;
   const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#14213D">Tu prueba de MOY IQ Pro termina el ${formatDateEs(billing.endsAt)}</h2>
-      <p>${chargeSentence(billing)} Después se renueva automáticamente${billing.interval === "year" ? " cada año" : billing.interval === "month" ? " cada mes" : ""}.</p>
-      ${cancelSentence(config)}
-      <p>Si sigues, no tienes que hacer nada: tu clave de acceso es la misma.</p>
-      <p style="color:#888;font-size:12px">Tus datos financieros se guardan solo en tu dispositivo.</p>
+    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
+      <h2 style="color:#14213D">${T.trialEndsOn(formatDateFor(billing.endsAt, lang))}</h2>
+      <p>${chargeSentence(billing, lang)}${T.renews(billing.interval)}</p>
+      ${cancelSentence(config, lang)}
+      <p>${T.staySame}</p>
+      <p style="color:#888;font-size:12px">${T.privacy}</p>
     </div>`;
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: config.fromEmail, to, subject: "Tu prueba de MOY IQ Pro termina pronto", html }),
+      body: JSON.stringify({ from: config.fromEmail, to, subject: T.trialEndingSubject, html }),
     });
     if (!res.ok) {
       console.error(`sendTrialEndingEmail: Resend error ${res.status} ${await res.text()}`);
@@ -853,7 +967,7 @@ export async function handleTrialWillEnd(event: any, config: WebhookConfig): Pro
     }
   }
 
-  const sent = await sendTrialEndingEmail(license.email, billing, config);
+  const sent = await sendTrialEndingEmail(license.email, billing, config, langFromStripeSubscription(sub));
   if (!sent) {
     if (eventId) await releaseWebhookEvent(eventId, config);
     return { status: 500, body: { error: "trial reminder not sent" } };

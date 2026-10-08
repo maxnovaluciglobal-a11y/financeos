@@ -21,7 +21,7 @@ export const COUNTRIES = [
 ]
 
 // Los que se muestran sin desplegar la lista completa (mercado principal).
-export const PRIMARY_COUNTRIES = ['CL', 'MX', 'CO', 'AR', 'ES', 'PE']
+export const PRIMARY_COUNTRIES = ['CL', 'MX', 'CO', 'AR', 'ES', 'PE', 'US']
 
 export const countryKey = (code) => `country.${code}`
 export const suggestedCurrency = (code) => COUNTRIES.find(c => c.code === code)?.currency || 'USD'

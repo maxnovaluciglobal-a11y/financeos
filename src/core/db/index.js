@@ -5,6 +5,7 @@ import { openDB } from 'idb'
 import { DB_VERSION, runMigrations } from './migrations.js'
 import { currentMonth } from '../../utils/index.js'
 import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/money.js'
+import { regionDefaults } from '../../i18n/region.js'
 
 const DB_NAME = 'financeos'
 let _db = null
@@ -72,12 +73,21 @@ export const DEFAULT_SETTINGS = {
   country: 'CL',
 }
 
+// Ajustes de un dispositivo que todavía no guardó nada: idioma, país y moneda
+// salen del navegador (i18n/region.js) para que AuthGate, LicenseGate y el
+// primer paso del onboarding ya se vean en el idioma del usuario. Con ajustes
+// guardados esto no participa: lo guardado manda siempre.
+export function firstRunSettings(locales) {
+  return { ...DEFAULT_SETTINGS, ...regionDefaults(locales) }
+}
+
 export async function getSettings() {
   const db = await getDB()
   let saved = null
   if (!db) { try { saved = JSON.parse(localStorage.getItem('fos_settings')) } catch {} }
   else      { saved = await db.get('settings', SETTINGS_KEY) }
-  return { ...DEFAULT_SETTINGS, ...(saved || {}) }
+  if (!saved) return firstRunSettings()
+  return { ...DEFAULT_SETTINGS, ...saved }
 }
 
 export async function saveSettings(settings) {

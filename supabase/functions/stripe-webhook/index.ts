@@ -24,7 +24,7 @@
 
 import {
   verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, checkoutSkipReason,
-  extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
+  extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail, langFromStripeSession,
   notifyKeyDeliveryFailure, notifyNewProPurchase, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
   subscriptionIdFromSession, initialExpiryFromSession, isTrialCheckout, trialBillingFromSession,
   notifyUnmappedTrialCheckout, handleInvoicePaid, handleSubscriptionDeleted, handleInvoicePaymentFailed,
@@ -130,7 +130,9 @@ Deno.serve(async (req) => {
     const trial = isTrialCheckout(session) && expiresAt ? trialBillingFromSession(session, expiresAt) : null;
     try {
       await issueLicense(key, plan, email, session.id ?? null, paymentIntent, config, subscriptionId, expiresAt);
-      const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config, interval, trial) : false;
+      // Idioma del correo: client_reference_id 'lang_xx' del Payment Link (la app
+      // lo agrega), session.locale o el customer si viene expandido; si no, es.
+      const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config, interval, trial, langFromStripeSession(session)) : false;
       // Sin `key` a propósito — ver el comentario de sendKeyEmail(). session.id
       // identifica la fila igual de bien y no es material criptografico.
       console.log(`Licencia emitida: plan=${plan} email=${email ?? "(sin email)"} session=${session.id} payment_intent=${paymentIntent} subscription=${subscriptionId ?? "-"} expires_at=${expiresAt ?? "null"} prueba=${!!trial} email_enviado=${emailSent}`);

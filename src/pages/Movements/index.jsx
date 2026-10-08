@@ -10,7 +10,7 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel } from '../../utils/index.js'
+import { catLabel, catEmoji, subLabel, expSubcatLabel, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney } from '../../utils/index.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -38,9 +38,8 @@ function toAnnual(amount, frequency) {
   }
 }
 
-const SYM   = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$' }
-const fmt   = n => (Number(n)||0).toLocaleString(moneyLocale(), { maximumFractionDigits:0 })
-const fmtMRaw = (n, sym) => `${sym}${fmt(n)}`
+// Con los decimales de la moneda y signo "−" si el saldo queda negativo.
+const fmtMRaw = (n, sym) => fmtSignedMoney(n, sym)
 
 // La lista de categorías vive en utils/index.js (CATS_EXPENSE) — es la fuente
 // compartida con Budgets, para que un presupuesto siempre pueda matchear gasto real.
@@ -164,7 +163,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
           <input style={inp} value={f.description} placeholder={t('mov.form.descPh')}
             onChange={e => set('description', e.target.value)}/></FormGroup>
         <FormGroup label={t('mov.form.amount', { sym })}>
-          <input style={inp} type="number" inputMode="decimal" min="0" value={f.amount} placeholder="0"
+          <input style={inp} type="number" inputMode="decimal" min="0" step="any" value={f.amount} placeholder="0"
             onChange={e => set('amount', e.target.value)}/></FormGroup>
         <FormGroup label={t('mov.form.date')}>
           <input style={inp} type="date" value={f.date}
@@ -191,7 +190,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
                     fontWeight: f.subcategory === sc ? 600 : 400,
                     transition:'.12s',
                   }}>
-                  {sc}
+                  {expSubcatLabel(sc, lang)}
                 </button>
               ))}
             </div>
@@ -235,7 +234,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
 
 // ── Formulario Suscripción ────────────────────────────────────────────────────
 function FormSub({ onSave, onCancel }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const [f, setF] = useState({
     name:'', amount:'', frequency:'monthly', category:'Streaming',
     status:'active', notes:'', nextPaymentDate:''
@@ -266,7 +265,7 @@ function FormSub({ onSave, onCancel }) {
           </select></FormGroup>
         <FormGroup label={t('mov.form.category')}>
           <select style={inp} value={f.category} onChange={e => set('category', e.target.value)}>
-            {SUB_CATS.map(c => <option key={c} value={c}>{subLabel(c)}</option>)}</select></FormGroup>
+            {SUB_CATS.map(c => <option key={c} value={c}>{subLabel(c, lang)}</option>)}</select></FormGroup>
         <FormGroup label={t('mov.form.nextPay')}>
           <input style={inp} type="date" value={f.nextPaymentDate}
             onChange={e => set('nextPaymentDate', e.target.value)}/></FormGroup>
@@ -306,7 +305,7 @@ export default function Movements({ setPage }) {
   const updateSubscription = ctx.updateSubscription
   const deleteWithUndo     = ctx.deleteWithUndo
 
-  const sym         = SYM[settings.currency] || '$'
+  const sym         = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): toda cifra de esta pantalla pasa por fmtM → m().
   const { m } = useMoney()
   const fmtM = (n, s) => m(fmtMRaw(n, s))
@@ -628,7 +627,7 @@ export default function Movements({ setPage }) {
                   <input type="text" value={editForm.description||''} placeholder={t('mov.edit.descPh')} aria-label={t('mov.form.desc')}
                     onChange={ev=>setEditForm(f=>({...f,description:ev.target.value}))}
                     style={{gridColumn:'1/-1',padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
-                  <input type="number" inputMode="decimal" min="0" value={editForm.amount||''} placeholder={t('mov.edit.amountPh')} aria-label={t('mov.form.amount', { sym })}
+                  <input type="number" inputMode="decimal" min="0" step="any" value={editForm.amount||''} placeholder={t('mov.edit.amountPh')} aria-label={t('mov.form.amount', { sym })}
                     onChange={ev=>setEditForm(f=>({...f,amount:ev.target.value}))}
                     style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                   <input type="date" value={editForm.date||''} aria-label={t('mov.form.date')}
@@ -637,13 +636,13 @@ export default function Movements({ setPage }) {
                   <select value={editForm.category||e.category} aria-label={t('mov.form.category')}
                     onChange={ev=>setEditForm(f=>({...f,category:ev.target.value,subcategory:''}))}
                     style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
-                    {categoriesExpense.map(c=><option key={c}>{c}</option>)}
+                    {categoriesExpense.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
                   </select>
                   <select value={editForm.subcategory??e.subcategory??''} aria-label={t('mov.form.subcat')}
                     onChange={ev=>setEditForm(f=>({...f,subcategory:ev.target.value}))}
                     style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                     <option value="">{t('mov.edit.subcatNone')}</option>
-                    {(SUBCATS[editForm.category||e.category]||[]).map(sc=><option key={sc}>{sc}</option>)}
+                    {(SUBCATS[editForm.category||e.category]||[]).map(sc=><option key={sc} value={sc}>{expSubcatLabel(sc, lang)}</option>)}
                   </select>
                 </div>
                 <div style={{display:'flex',gap:6}}>
@@ -664,7 +663,7 @@ export default function Movements({ setPage }) {
                   </div>
                   <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
                     {e.subcategory
-                      ? <><span style={{ color:'var(--accent)', opacity:.75 }}>{catLabel(e.category, lang)}</span>{' › '}{e.subcategory}{' · '}{e.date?.slice(5)}</>
+                      ? <><span style={{ color:'var(--accent)', opacity:.75 }}>{catLabel(e.category, lang)}</span>{' › '}{expSubcatLabel(e.subcategory, lang)}{' · '}{e.date?.slice(5)}</>
                       : <>{catLabel(e.category, lang)}{' · '}{e.date?.slice(5)}</>
                     }
                   </div>

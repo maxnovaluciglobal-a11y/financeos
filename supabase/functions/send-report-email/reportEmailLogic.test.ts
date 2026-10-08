@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { isValidEmail, base64ByteLength, isPdfSizeOk, checkProLicense, sendReportEmail } from './reportEmailLogic.ts'
+import { isValidEmail, base64ByteLength, isPdfSizeOk, checkProLicense, sendReportEmail, pickLang } from './reportEmailLogic.ts'
 
 const CONFIG = { supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key', resendApiKey: 're_key', fromEmail: 'a@b.com' }
 
@@ -101,5 +101,38 @@ describe('sendReportEmail', () => {
   it('devuelve error si Resend falla dos veces seguidas', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'down' }))
     expect(await sendReportEmail(params, CONFIG)).toEqual({ ok: false, error: 'resend_500' })
+  })
+})
+
+describe('sendReportEmail por idioma (lang del cliente)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  const base = { to: 'cliente@ejemplo.com', clientName: 'Sofía', month: '2026-09', pdfBase64: 'aG9sYQ==', filename: 'r.pdf' }
+  async function body(lang?: 'es' | 'en' | 'pt' | 'de', clientName = 'Sofía') {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendReportEmail({ ...base, clientName, lang }, CONFIG)
+    return JSON.parse(fetchMock.mock.calls[0][1].body)
+  }
+  it.each([
+    ['es', 'Reporte financiero — septiembre de 2026'],
+    ['en', 'Financial report — September 2026'],
+    ['pt', 'Relatório financeiro — setembro de 2026'],
+    ['de', 'Finanzbericht – September 2026'],
+  ] as const)('%s', async (lang, subject) => {
+    const b = await body(lang)
+    expect(b.subject).toBe(subject)
+    expect(b.html).toContain(`lang="${lang}"`)
+  })
+  it('sin lang: español', async () => {
+    expect((await body()).subject).toBe('Reporte financiero — septiembre de 2026')
+  })
+  it('pickLang descarta valores inválidos', () => {
+    expect(pickLang('xx')).toBe('es')
+    expect(pickLang('en')).toBe('en')
+  })
+  it('el nombre del cliente se escapa en el HTML', async () => {
+    const b = await body('en', '<b>x</b>')
+    expect(b.html).toContain('&lt;b&gt;x&lt;/b&gt;')
+    expect(b.html).not.toContain('<b>x</b>')
   })
 })

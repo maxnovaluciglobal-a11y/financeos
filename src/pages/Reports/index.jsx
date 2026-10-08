@@ -5,12 +5,12 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
-import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
+import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -26,11 +26,11 @@ import {
 } from 'recharts'
 
 export default function Reports({ setPage }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, goals: allGoals, settings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
-  const sym        = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym        = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara en pantalla; el PDF (ReportPDF.jsx)
   // usa su propio formateo y siempre lleva las cifras reales.
   const { m } = useMoney()
@@ -57,12 +57,13 @@ export default function Reports({ setPage }) {
         currency: settings.currency || 'CLP',
         netWorth: nw.hasData ? nw : null,
         generatedAt: new Date().toLocaleDateString(dateLocale(), { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+        lang,
       }
       const blob = await pdf(<ReportPDF data={data} />).toBlob()
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `MOY-IQ-Reporte-${activeMonth}.pdf`
+      a.download = `MOY-IQ-${t('rpdf.filename')}-${activeMonth}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } catch (e) {
@@ -106,13 +107,14 @@ export default function Reports({ setPage }) {
     for (let i=5; i>=0; i--) {
       const base=new Date(); const d=new Date(base.getFullYear(), base.getMonth()-i, 1)
       const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-      const lbl=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()]
+      const lbl=monthShortName(d.getMonth())
       const inc=incomes.filter(r=>r.date?.startsWith(key)).reduce((s,r)=>s+r.amount,0)
       const exp=expenses.filter(r=>r.date?.startsWith(key)).reduce((s,r)=>s+r.amount,0)
       months.push({mes:lbl, Ingresos:inc, Gastos:exp, Ahorro:Math.max(0,inc-exp)})
     }
     return months
-  }, [incomes, expenses])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomes, expenses, settings.language])
 
   const coachSignals = useMemo(() => {
     if (mIncomes.length === 0 && mExpenses.length === 0) return []
@@ -219,7 +221,7 @@ export default function Reports({ setPage }) {
                 <BarChart data={trendData} barGap={4} barCategoryGap="30%">
                   <CartesianGrid {...gridStyle}/>
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
                   <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                   <Legend wrapperStyle={{fontSize:11,fontFamily:'var(--mono)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
@@ -251,7 +253,7 @@ export default function Reports({ setPage }) {
                 </defs>
                 <CartesianGrid {...gridStyle}/>
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
                 <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                 <ReferenceLine y={0} stroke="var(--brd2)"/>
                 <Area type="monotone" dataKey="Ahorro" name={t('reports.savings.series')} stroke="var(--grn)" strokeWidth={2} fill="url(#ahorroGrad)"/>
@@ -275,7 +277,7 @@ export default function Reports({ setPage }) {
               : <Alert type="warn">{balance<0 ? t('reports.reco.belowGoal.reduce', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25, v: fmtMoney(-balance+totalIncome*(settings.savingGoalPct/100||0.25),sym) }) : t('reports.reco.belowGoal.save', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25, v: fmtMoney(neededToSave,sym) })}</Alert>
           }
           {overBudget.length>0
-            ? <Alert type="danger">{t('reports.reco.overBudget', { cats: overBudget.map(b=>b.category).join(', ') })}</Alert>
+            ? <Alert type="danger">{t('reports.reco.overBudget', { cats: overBudget.map(b=>catName(b.category, lang)).join(', ') })}</Alert>
             : budgets.length>0 && <Alert type="ok">{t('reports.reco.budgetsOk')}</Alert>
           }
           {deseos>0 && totalExpense>0 && <Alert type="warn">{t('reports.reco.wants', { v: fmtMoney(deseos,sym), pct: fmtPct(deseos/totalExpense) })}</Alert>}
@@ -303,7 +305,7 @@ export default function Reports({ setPage }) {
               <div style={{fontSize:9,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:7}}>{t('reports.subs.byCat')}</div>
               {subMetrics.byCategory.map(([cat,data])=>(
                 <div key={cat} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'.5px solid var(--brd)',fontSize:12}}>
-                  <span style={{color:'var(--tm)'}}>{cat}</span>
+                  <span style={{color:'var(--tm)'}}>{subLabel(cat, lang)}</span>
                   <span style={{fontFamily:'var(--mono)',color:'var(--tx)'}}>{t('reports.subs.perMonthCount', { v: fmtMoney(data.monthly,sym), n: data.count })}</span>
                 </div>
               ))}

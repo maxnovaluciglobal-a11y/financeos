@@ -4,8 +4,9 @@ import { InlineIcon } from './icons/SignalIcon.jsx'
 import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
-import { formatPrice, proPriceVars } from '../utils/pricing.js'
+import { formatPrice, proPriceVars, withCheckoutLang } from '../utils/pricing.js'
 import config from '../config.js'
+import { activateUrl } from '../utils/landingLinks.js'
 
 function usePlans(t, lang) {
   return [
@@ -18,9 +19,9 @@ const CHECKOUT_LINKS = {
   pro: PRO_CHECKOUT_URL,
 }
 
-async function startCheckout(product) {
+async function startCheckout(product, lang) {
   const url = CHECKOUT_LINKS[product] || 'https://moyiq.app/#pricing'
-  window.location.href = url
+  window.location.href = withCheckoutLang(url, lang)
 }
 
 export default function LicenseGate({ onActivate, userEmail, userId }) {
@@ -61,7 +62,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   async function handleBuy(product) {
     setBuying(product)
     try {
-      await startCheckout(product)
+      await startCheckout(product, lang)
     } catch {
       setError(t('licenseGate.errorPayment'))
       setBuying(null)
@@ -74,7 +75,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
     // clave, así que sin esto nadie que arranca gratis quedaba registrado
     // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
     // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
-    if (userEmail) registerStarterLead(userEmail).catch(() => {})
+    if (userEmail) registerStarterLead(userEmail, lang).catch(() => {})
     // Recuerda la elección contra la cuenta — sin esto, loguearse desde otro
     // dispositivo volvía a mostrar esta misma pantalla de elegir plan.
     if (userId) setServerEntitlement(userId, 'starter').catch(() => {})
@@ -151,7 +152,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
               2. {t('licenseGate.helpStep2')}<br />
               3. {t('licenseGate.helpStep3')}<br /><br />
               {t('licenseGate.helpNoEmail')}{' '}
-              <a href="https://moyiq.app/activate.html" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)' }}>
+              <a href={activateUrl(lang)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)' }}>
                 {t('licenseGate.helpLink')}
               </a>
             </div>
