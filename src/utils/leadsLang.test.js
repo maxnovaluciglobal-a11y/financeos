@@ -2,18 +2,16 @@ import { describe, it, expect } from 'vitest'
 import { LEADS_LANG_ENABLED, normalizeLeadLang, withLeadLang } from './leadsLang.js'
 
 describe('LEADS_LANG_ENABLED', () => {
-  it('arranca en false hasta que la migración esté aplicada', () => {
-    expect(LEADS_LANG_ENABLED).toBe(false)
+  it('encendido: la migración 20261009000000_leads_lang se aplicó en producción el 08-oct-2026', () => {
+    expect(LEADS_LANG_ENABLED).toBe(true)
   })
 })
 
 describe('withLeadLang', () => {
   const params = { p_email: 'a@b.com' }
 
-  it('flag apagado (default): params sin cambios y sin clave p_lang', () => {
-    const out = withLeadLang(params, 'en')
-    expect(out).toEqual({ p_email: 'a@b.com' })
-    expect('p_lang' in out).toBe(false)
+  it('flag encendido (default): agrega p_lang', () => {
+    expect(withLeadLang(params, 'en')).toEqual({ p_email: 'a@b.com', p_lang: 'en' })
   })
 
   it('flag apagado explícito: tampoco agrega p_lang', () => {
