@@ -243,3 +243,34 @@ describe('demo.banner.label por persona', () => {
       .toBe('Sample data · Maya Robinson · United States')
   })
 })
+
+// Movimientos fijos (08-oct-2026): prefijo 'rec.' + las claves sueltas que se
+// agregaron o reescribieron con la misma tarea.
+describe('paridad de las claves de movimientos fijos (es/en/pt/de)', () => {
+  const prefixes = ['rec.', 'dbError.', 'nav.recurring', 'mov.list.show', 'ahorroFiscal.figures', 'cf.recInc.', 'cf.recExp.', 'cf.analysis.recap']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(100)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('ningún texto en español usa voseo, exclamaciones ni "por favor"; ningún texto alemán tutea', () => {
+    for (const k of pick(es)) {
+      expect(es[k]).not.toMatch(/\b(podés|tenés|contanos|dejanos|probá|elegí|revisá|escribinos|querés|vos|registrá|empezá|tocá|confirmá|agregá|creá|marcá)\b/i)
+      expect(es[k]).not.toMatch(/[¡!]/)
+      expect(es[k]).not.toMatch(/por favor/i)
+    }
+    for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+    for (const k of pick(en)) expect(en[k]).not.toMatch(/!/)
+  })
+})

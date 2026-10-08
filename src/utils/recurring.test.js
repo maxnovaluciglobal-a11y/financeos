@@ -1,0 +1,336 @@
+import { describe, it, expect } from 'vitest'
+import {
+  occurrencesInMonth, nextOccurrenceOf, amountAt, withAmountFrom, expectedAmount, monthPlan,
+  pendingTotals, buildConfirmedRecord, occurrenceRecordId, dueAutoConfirmations, ruleFromRecord,
+  detectRecurring, findPendingMatch, monthlyEquivalent, addDays, diffDays, addMonthsYM, recordMatchesOccurrence,
+} from './recurring.js'
+
+const rule = (over = {}) => ({
+  id: 'r1', kind: 'expense', source: 'manual', description: 'Arriendo', category: 'Vivienda', method: 'Transferencia',
+  amountMode: 'fixed', amounts: [{ from: '2026-01', amount: 500 }],
+  schedule: { freq: 'monthly', day: 1, anchorDate: '2026-01-01' },
+  startDate: '2026-01-01', autoConfirm: false, paused: false, skipped: [], createdAt: '2026-01-01T00:00:00.000Z',
+  ...over,
+})
+
+describe('fechas locales', () => {
+  it('addDays y diffDays cruzan meses, años y el cambio de horario', () => {
+    expect(addDays('2026-01-31', 1)).toBe('2026-02-01')
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01')
+    expect(addDays('2026-03-01', -1)).toBe('2026-02-28')
+    expect(diffDays('2026-03-01', '2026-04-01')).toBe(31)
+    expect(diffDays('2026-10-20', '2026-11-05')).toBe(16)
+  })
+  it('addMonthsYM', () => {
+    expect(addMonthsYM('2026-12', 1)).toBe('2027-01')
+    expect(addMonthsYM('2026-01', -1)).toBe('2025-12')
+    expect(addMonthsYM('2026-05', -14)).toBe('2025-03')
+  })
+})
+
+describe('occurrencesInMonth — calendario', () => {
+  it('mensual el 31 cae en el último día de los meses cortos', () => {
+    const r = rule({ schedule: { freq: 'monthly', day: 31, anchorDate: '2026-01-31' }, startDate: '2026-01-31' })
+    expect(occurrencesInMonth(r, '2026-01')).toEqual(['2026-01-31'])
+    expect(occurrencesInMonth(r, '2026-02')).toEqual(['2026-02-28'])
+    expect(occurrencesInMonth(r, '2026-04')).toEqual(['2026-04-30'])
+  })
+
+  it('febrero de año bisiesto: el 29 y el 30 caen el 29', () => {
+    const r29 = rule({ schedule: { freq: 'monthly', day: 30, anchorDate: '2027-01-30' }, startDate: '2027-01-01' })
+    expect(occurrencesInMonth(r29, '2028-02')).toEqual(['2028-02-29'])
+    expect(occurrencesInMonth(r29, '2027-02')).toEqual(['2027-02-28'])
+  })
+
+  it("day 'last' es siempre el último día", () => {
+    const r = rule({ schedule: { freq: 'monthly', day: 'last', anchorDate: '2026-01-31' } })
+    expect(occurrencesInMonth(r, '2026-02')).toEqual(['2026-02-28'])
+    expect(occurrencesInMonth(r, '2028-02')).toEqual(['2028-02-29'])
+    expect(occurrencesInMonth(r, '2026-07')).toEqual(['2026-07-31'])
+  })
+
+  it('quincenal: el 15 y el último día', () => {
+    const r = rule({ schedule: { freq: 'semimonthly', anchorDate: '2026-01-15' } })
+    expect(occurrencesInMonth(r, '2026-02')).toEqual(['2026-02-15', '2026-02-28'])
+    expect(occurrencesInMonth(r, '2026-03')).toEqual(['2026-03-15', '2026-03-31'])
+  })
+
+  it('cada 14 días a través de meses (a veces 3 en un mes)', () => {
+    const r = rule({ schedule: { freq: 'biweekly', anchorDate: '2026-01-02' }, startDate: '2026-01-02' })
+    expect(occurrencesInMonth(r, '2026-01')).toEqual(['2026-01-02', '2026-01-16', '2026-01-30'])
+    expect(occurrencesInMonth(r, '2026-02')).toEqual(['2026-02-13', '2026-02-27'])
+    expect(occurrencesInMonth(r, '2026-03')).toEqual(['2026-03-13', '2026-03-27'])
+    // A fin de año
+    expect(occurrencesInMonth(r, '2027-01')).toEqual(['2027-01-01', '2027-01-15', '2027-01-29'])
+  })
+
+  it('semanal', () => {
+    const r = rule({ schedule: { freq: 'weekly', anchorDate: '2026-10-05' }, startDate: '2026-10-05' })
+    expect(occurrencesInMonth(r, '2026-10')).toEqual(['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26'])
+    expect(occurrencesInMonth(r, '2026-11')).toEqual(['2026-11-02', '2026-11-09', '2026-11-16', '2026-11-23', '2026-11-30'])
+  })
+
+  it('anual: solo en el mes del ancla; 29-feb cae el 28 en años no bisiestos', () => {
+    const r = rule({ schedule: { freq: 'yearly', day: 29, anchorDate: '2028-02-29' }, startDate: '2028-02-29' })
+    expect(occurrencesInMonth(r, '2028-02')).toEqual(['2028-02-29'])
+    expect(occurrencesInMonth(r, '2029-02')).toEqual(['2029-02-28'])
+    expect(occurrencesInMonth(r, '2029-03')).toEqual([])
+  })
+
+  it('cada 3 meses (trimestral) desde el mes del ancla', () => {
+    const r = rule({ schedule: { freq: 'monthly', interval: 3, day: 10, anchorDate: '2026-02-10' }, startDate: '2026-02-01' })
+    expect(occurrencesInMonth(r, '2026-02')).toEqual(['2026-02-10'])
+    expect(occurrencesInMonth(r, '2026-03')).toEqual([])
+    expect(occurrencesInMonth(r, '2026-05')).toEqual(['2026-05-10'])
+    expect(monthlyEquivalent(r, '2026-05')).toBeCloseTo(500 / 3)
+  })
+
+  it('respeta inicio y fin (inclusive)', () => {
+    const r = rule({ schedule: { freq: 'weekly', anchorDate: '2026-10-05' }, startDate: '2026-10-12', endDate: '2026-10-19' })
+    expect(occurrencesInMonth(r, '2026-10')).toEqual(['2026-10-12', '2026-10-19'])
+    expect(occurrencesInMonth(rule({ startDate: '2026-03-02' }), '2026-03')).toEqual([])
+    expect(occurrencesInMonth(rule({ startDate: '2026-03-02' }), '2026-04')).toEqual(['2026-04-01'])
+    expect(occurrencesInMonth(rule({ endDate: '2026-05-31' }), '2026-06')).toEqual([])
+  })
+
+  it('nextOccurrenceOf busca en los meses siguientes', () => {
+    expect(nextOccurrenceOf(rule(), '2026-10-02')).toBe('2026-11-01')
+    expect(nextOccurrenceOf(rule(), '2026-10-01')).toBe('2026-10-01')
+    expect(nextOccurrenceOf(rule({ endDate: '2026-10-15' }), '2026-10-02')).toBe(null)
+  })
+})
+
+describe('montos con historial', () => {
+  const r = rule({ amounts: [{ from: '2026-01', amount: 500 }, { from: '2026-06', amount: 550 }] })
+  it('amountAt toma la entrada vigente del mes', () => {
+    expect(amountAt(r, '2026-03')).toBe(500)
+    expect(amountAt(r, '2026-06')).toBe(550)
+    expect(amountAt(r, '2027-01')).toBe(550)
+    expect(amountAt(r, '2025-12')).toBe(500)
+  })
+  it('"desde ahora" no cambia el pasado', () => {
+    const n = withAmountFrom(r, '2026-09', 600)
+    expect(amountAt(n, '2026-08')).toBe(550)
+    expect(amountAt(n, '2026-09')).toBe(600)
+    expect(amountAt(n, '2026-02')).toBe(500)
+    // reemplazar el mismo mes no duplica la entrada
+    expect(withAmountFrom(n, '2026-09', 610).amounts.filter(a => a.from === '2026-09')).toHaveLength(1)
+  })
+  it("modo 'last' y 'average' usan los confirmados anteriores", () => {
+    const recs = [
+      { recurringId: 'r1', occurrenceDate: '2026-01-01', amount: 100 },
+      { recurringId: 'r1', occurrenceDate: '2026-02-01', amount: 130 },
+      { recurringId: 'r1', occurrenceDate: '2026-03-01', amount: 160 },
+      { recurringId: 'r1', occurrenceDate: '2026-04-01', amount: 190 },
+      { recurringId: 'otra', occurrenceDate: '2026-04-01', amount: 9999 },
+    ]
+    expect(expectedAmount(rule({ amountMode: 'last' }), '2026-05-01', recs)).toBe(190)
+    expect(expectedAmount(rule({ amountMode: 'average' }), '2026-05-01', recs)).toBe(160)
+    expect(expectedAmount(rule({ amountMode: 'last' }), '2026-01-01', recs)).toBe(500) // sin historial previo
+    expect(expectedAmount(rule(), '2026-05-01', recs)).toBe(500)
+  })
+})
+
+describe('monthPlan — estado de cada ocurrencia', () => {
+  const today = '2026-10-08'
+  it('pendiente sin registro, confirmada con registro vinculado, omitida', () => {
+    const r1 = rule()
+    const r2 = rule({ id: 'r2', description: 'Netflix', category: 'Entretención', amounts: [{ from: '2026-01', amount: 15 }], schedule: { freq: 'monthly', day: 11, anchorDate: '2026-01-11' } })
+    const r3 = rule({ id: 'r3', description: 'Gym', category: 'Deporte', amounts: [{ from: '2026-01', amount: 35 }], schedule: { freq: 'monthly', day: 5 }, skipped: ['2026-10-05'] })
+    const expenses = [{ id: 'x', recurringId: 'r1', occurrenceDate: '2026-10-01', date: '2026-10-01', amount: 500, category: 'Vivienda' }]
+    const plan = monthPlan([r1, r2, r3], '2026-10', { expenses, today })
+    const by = Object.fromEntries(plan.map(o => [o.ruleId, o]))
+    expect(by.r1.status).toBe('confirmed')
+    expect(by.r2.status).toBe('pending')
+    expect(by.r2.due).toBe(false)
+    expect(by.r3.status).toBe('skipped')
+    expect(pendingTotals(plan)).toEqual({ income: 0, expense: 15, count: 1 })
+  })
+
+  it('un gasto cargado a mano que coincide cuenta como confirmado (no se cuenta dos veces)', () => {
+    const r2 = rule({ id: 'r2', description: 'Netflix', category: 'Entretención', amounts: [{ from: '2026-01', amount: 15.49 }], schedule: { freq: 'monthly', day: 11 } })
+    const manual = { id: 'm1', description: 'NETFLIX.COM', date: '2026-10-12', amount: 15.49, category: 'Entretención' }
+    const plan = monthPlan([r2], '2026-10', { expenses: [manual], today })
+    expect(plan[0].status).toBe('confirmed')
+    expect(plan[0].matched).toBe(true)
+    expect(pendingTotals(plan).count).toBe(0)
+  })
+
+  it('el mismo registro a mano no cubre dos ocurrencias', () => {
+    const a = rule({ id: 'a', description: 'Clases', category: 'Educación', amounts: [{ from: '2026-01', amount: 100 }], schedule: { freq: 'monthly', day: 10 } })
+    const b = rule({ id: 'b', description: 'Clases', category: 'Educación', amounts: [{ from: '2026-01', amount: 100 }], schedule: { freq: 'monthly', day: 10 } })
+    const plan = monthPlan([a, b], '2026-10', { expenses: [{ id: 'm', description: 'Clases', date: '2026-10-10', amount: 100, category: 'Educación' }] })
+    expect(plan.filter(o => o.status === 'confirmed')).toHaveLength(1)
+    expect(plan.filter(o => o.status === 'pending')).toHaveLength(1)
+  })
+
+  it('coincidencias: misma descripción ±3 días (cualquier monto) o parecida con monto ±7,5 %; la categoría sola no alcanza', () => {
+    const r = rule({ description: 'Arriendo', category: 'Vivienda', amounts: [{ from: '2026-01', amount: 1000 }], schedule: { freq: 'monthly', day: 10 } })
+    const m = (rec) => recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', category: 'Vivienda', ...rec })
+    // misma categoría, monto y fecha, pero otra descripción → NO (antes sí)
+    expect(m({ description: 'Reparación calefont', date: '2026-10-10', amount: 1000 })).toBe(false)
+    expect(m({ description: 'Arriendo octubre', date: '2026-10-12', amount: 1300 })).toBe(true)  // meses = ruido
+    expect(m({ description: 'ARRIENDO', date: '2026-10-25', amount: 1050 })).toBe(true)          // mismo mes, ±7,5 %
+    expect(m({ description: 'ARRIENDO', date: '2026-10-25', amount: 1100 })).toBe(false)
+    expect(m({ description: 'Arriendo bodega', date: '2026-10-10', amount: 1000 })).toBe(false)  // otra cosa
+    const nf = rule({ description: 'Netflix', amounts: [{ from: '2026-01', amount: 15.49 }] })
+    expect(recordMatchesOccurrence(nf, '2026-10-11', 15.49, { id: 'x', description: 'NETFLIX.COM', date: '2026-10-12', amount: 15.49 })).toBe(true)
+    expect(recordMatchesOccurrence(nf, '2026-10-11', 15.49, { id: 'x', description: 'Netflix gift', date: '2026-10-11', amount: 15.49 })).toBe(false)
+  })
+
+  it('dos candidatos igual de buenos: queda prevista (confirmación manual)', () => {
+    const r = rule({ description: 'Gimnasio', category: 'Deporte', amounts: [{ from: '2026-01', amount: 30 }], schedule: { freq: 'monthly', day: 5 } })
+    const expenses = [
+      { id: 'a', description: 'Gimnasio', date: '2026-10-04', amount: 30, category: 'Deporte' },
+      { id: 'b', description: 'Gimnasio', date: '2026-10-06', amount: 30, category: 'Deporte' },
+    ]
+    expect(monthPlan([r], '2026-10', { expenses })[0].status).toBe('pending')
+    expect(findPendingMatch({ description: 'Gimnasio', date: '2026-10-05', amount: 30 }, monthPlan([r, { ...r, id: 'r2' }], '2026-10', {}), 'expense')).toBe(null)
+  })
+
+  it('un sueldo recortado (misma descripción, misma fecha) cubre su ocurrencia; cada registro va a la más cercana', () => {
+    const pay = rule({ id: 'p', kind: 'income', description: 'Paycheck', category: 'Salario', amounts: [{ from: '2026-01', amount: 1926.4 }],
+      schedule: { freq: 'biweekly', anchorDate: '2026-10-03' }, startDate: '2026-10-01' })
+    const incomes = [
+      { id: 'b', source: 'Paycheck', date: '2026-10-17', amount: 1214.75, category: 'Salario' },
+      { id: 'a', source: 'Paycheck', date: '2026-10-03', amount: 1926.4, category: 'Salario' },
+    ]
+    const plan = monthPlan([pay], '2026-10', { incomes })
+    expect(plan.map(o => [o.date, o.status, o.record?.id])).toEqual([
+      ['2026-10-03', 'confirmed', 'a'], ['2026-10-17', 'confirmed', 'b'], ['2026-10-31', 'pending', undefined],
+    ])
+    expect(pendingTotals(plan).income).toBe(1926.4)
+  })
+
+  it('pausada: sin pendientes, pero lo confirmado sigue', () => {
+    const r = rule({ paused: true })
+    expect(monthPlan([r], '2026-10', {})).toEqual([])
+    const plan = monthPlan([r], '2026-10', { expenses: [{ id: 'x', recurringId: 'r1', occurrenceDate: '2026-10-01', amount: 500, date: '2026-10-01' }] })
+    expect(plan).toHaveLength(1)
+    expect(plan[0].status).toBe('confirmed')
+  })
+
+  it('pendingTotals excluye reglas de inversión y separa ingresos de gastos', () => {
+    const sal = rule({ id: 's', kind: 'income', description: 'Sueldo', category: 'Salario', amounts: [{ from: '2026-01', amount: 2000 }], schedule: { freq: 'monthly', day: 30 } })
+    const hip = rule({ id: 'h', inv: true, description: 'Hipoteca depto', category: 'Deudas', amounts: [{ from: '2026-01', amount: 700 }] })
+    const plan = monthPlan([sal, hip, rule()], '2026-10', {})
+    expect(pendingTotals(plan)).toEqual({ income: 2000, expense: 500, count: 2 })
+    expect(pendingTotals(plan, { personalOnly: false }).expense).toBe(1200)
+    expect(pendingTotals(plan, { until: '2026-10-15' })).toEqual({ income: 0, expense: 500, count: 1 })
+  })
+})
+
+describe('proyección desde reglas (bug ×N meses)', () => {
+  it('cada regla cuenta una vez con su monto vigente, aunque haya 6 meses de sueldos registrados', async () => {
+    const { recurringMonthlyTotals } = await import('./recurring.js')
+    const sal = rule({ id: 's', kind: 'income', description: 'Sueldo', amounts: [{ from: '2026-01', amount: 2000 }, { from: '2026-09', amount: 2100 }] })
+    const quin = rule({ id: 'q', kind: 'income', description: 'Extra', amounts: [{ from: '2026-01', amount: 100 }], schedule: { freq: 'semimonthly' } })
+    const rent = rule({ id: 'r', amounts: [{ from: '2026-01', amount: 500 }] })
+    const hip = rule({ id: 'h', inv: true, amounts: [{ from: '2026-01', amount: 900 }] })
+    const off = rule({ id: 'o', paused: true })
+    const ended = rule({ id: 'e', endDate: '2026-09-30' })
+    const tot = recurringMonthlyTotals([sal, quin, rent, hip, off, ended], { today: '2026-10-08' })
+    expect(tot.income).toBe(2300)
+    expect(tot.expense).toBe(500)
+    expect(tot.expenseRules).toHaveLength(1)
+  })
+})
+
+describe('confirmar — idempotente', () => {
+  it('el id del registro es determinista y lleva el vínculo', () => {
+    const r = rule()
+    const a = buildConfirmedRecord(r, '2026-10-01', { today: '2026-10-08', createdAt: 'x' })
+    const b = buildConfirmedRecord(r, '2026-10-01', { today: '2026-10-09', createdAt: 'y' })
+    expect(a.id).toBe(occurrenceRecordId('r1', '2026-10-01'))
+    expect(a.id).toBe(b.id)
+    expect(a).toMatchObject({ recurringId: 'r1', occurrenceDate: '2026-10-01', amount: 500, description: 'Arriendo', category: 'Vivienda', method: 'Transferencia', recurrence: 'Mensual' })
+  })
+  it('monto "solo este mes" y confirmación anticipada (fecha = hoy)', () => {
+    const rec = buildConfirmedRecord(rule({ schedule: { freq: 'monthly', day: 30 } }), '2026-10-30', { amount: 480, today: '2026-10-25' })
+    expect(rec.amount).toBe(480)
+    expect(rec.date).toBe('2026-10-25')
+    expect(rec.occurrenceDate).toBe('2026-10-30')
+  })
+  it('ingreso usa source', () => {
+    const rec = buildConfirmedRecord(rule({ kind: 'income', description: 'Sueldo', category: 'Salario' }), '2026-10-01', {})
+    expect(rec.source).toBe('Sueldo')
+    expect(rec.description).toBeUndefined()
+  })
+  it('confirmar dos veces no cambia el plan (sigue una sola confirmada)', () => {
+    const r = rule()
+    const rec = buildConfirmedRecord(r, '2026-10-01', {})
+    const plan = monthPlan([r], '2026-10', { expenses: [rec, { ...rec }] })
+    expect(plan).toHaveLength(1)
+    expect(plan[0].status).toBe('confirmed')
+  })
+})
+
+describe('auto-confirmación', () => {
+  it('solo reglas con autoConfirm, solo hasta hoy, sin repetir las ya registradas', () => {
+    const sal = rule({ id: 'sal', kind: 'income', description: 'Sueldo', category: 'Salario', autoConfirm: true, amounts: [{ from: '2026-08', amount: 2000 }],
+      schedule: { freq: 'semimonthly', anchorDate: '2026-08-15' }, startDate: '2026-08-01' })
+    const incomes = [buildConfirmedRecord(sal, '2026-08-15', {})]
+    const due = dueAutoConfirmations([sal, rule()], { incomes, today: '2026-10-08' })
+    expect(due.map(o => o.date)).toEqual(['2026-08-31', '2026-09-15', '2026-09-30'])
+  })
+})
+
+describe('regla desde un movimiento + detección', () => {
+  it('"Se repite cada mes" crea la regla con ese registro como primera ocurrencia', () => {
+    const r = ruleFromRecord({ description: 'Gimnasio', amount: 35, date: '2026-10-31', category: 'Deporte', method: 'Débito' }, { kind: 'expense', id: 'n1', createdAt: 'x' })
+    expect(r.schedule).toEqual({ freq: 'monthly', day: 'last', anchorDate: '2026-10-31' })
+    expect(r.startDate).toBe('2026-10-31')
+    expect(occurrencesInMonth(r, '2026-11')).toEqual(['2026-11-30'])
+    const rec = buildConfirmedRecord(r, '2026-10-31', { amount: 35 })
+    expect(monthPlan([r], '2026-10', { expenses: [rec] })[0].status).toBe('confirmed')
+  })
+
+  it('sugiere fijo con 2 de 3 meses parecidos (±15 % monto, ±5 días)', () => {
+    const recs = [
+      { id: 'a', description: 'Colegio', date: '2026-07-05', amount: 100 },
+      { id: 'b', description: 'colegio ', date: '2026-08-07', amount: 110 },
+    ]
+    const cur = { id: 'c', description: 'Colegio', date: '2026-09-04', amount: 105 }
+    expect(detectRecurring(cur, recs, [])).toEqual({ freq: 'monthly', months: 2 })
+    expect(detectRecurring(cur, recs.slice(0, 1), [])).toBe(null)
+    expect(detectRecurring({ ...cur, amount: 140 }, recs, [])).toBe(null)
+    expect(detectRecurring({ ...cur, date: '2026-09-20' }, recs, [])).toBe(null)
+    expect(detectRecurring(cur, recs, [rule({ description: 'Colegio' })])).toBe(null)
+  })
+
+  it('vincula un gasto a mano con la única ocurrencia pendiente que coincide', () => {
+    const r = rule({ description: 'Arriendo', amounts: [{ from: '2026-01', amount: 500 }] })
+    const plan = monthPlan([r], '2026-10', {})
+    expect(findPendingMatch({ description: 'Arriendo octubre', date: '2026-10-02', amount: 500, category: 'Vivienda' }, plan, 'expense')?.ruleId).toBe('r1')
+    expect(findPendingMatch({ description: 'Super', date: '2026-10-02', amount: 80, category: 'Alimentación' }, plan, 'expense')).toBe(null)
+  })
+})
+
+describe('borrar un registro confirmado', () => {
+  it('la ocurrencia queda omitida: el registro automático no la recrea (ni baja otra vez una deuda)', async () => {
+    const { ruleAfterLinkedRecord } = await import('./recurring.js')
+    const sal = rule({ id: 'sal', kind: 'income', description: 'Sueldo', autoConfirm: true, schedule: { freq: 'monthly', day: 1 }, startDate: '2026-10-01' })
+    const rec = buildConfirmedRecord(sal, '2026-10-01', {})
+    expect(dueAutoConfirmations([sal], { incomes: [rec], today: '2026-10-08' })).toEqual([])
+    const skipped = ruleAfterLinkedRecord([sal], rec, { deleted: true })
+    expect(skipped.skipped).toEqual(['2026-10-01'])
+    // el registro ya no está: sin la omisión se volvería a crear
+    expect(dueAutoConfirmations([sal], { incomes: [], today: '2026-10-08' })).toHaveLength(1)
+    expect(dueAutoConfirmations([skipped], { incomes: [], today: '2026-10-08' })).toEqual([])
+    // deshacer el borrado la reabre; registros sin vínculo no tocan nada
+    expect(ruleAfterLinkedRecord([skipped], rec, { deleted: false }).skipped).toEqual([])
+    expect(ruleAfterLinkedRecord([sal], { id: 'x', amount: 1 }, { deleted: true })).toBe(null)
+    expect(ruleAfterLinkedRecord([skipped], rec, { deleted: true })).toBe(null)
+  })
+
+  it('una cuota de deuda borrada no se vuelve a confirmar (el saldo no baja dos veces)', async () => {
+    const { ruleAfterLinkedRecord } = await import('./recurring.js')
+    const { planConfirmations } = await import('./recurringConfirm.js')
+    const debtRule = rule({ id: 'rd-d1', source: 'debt', sourceId: 'd1', category: 'Deudas', autoConfirm: true, schedule: { freq: 'monthly', day: 5 }, startDate: '2026-10-01' })
+    const debts = new Map([['d1', { id: 'd1', balance: 1000, minPayment: 100, rate: 0 }]])
+    const [w] = planConfirmations([{ rule: debtRule, date: '2026-10-05' }], [], debts, { today: '2026-10-08' })
+    expect(w.debt.balance).toBe(900)
+    const skipped = ruleAfterLinkedRecord([debtRule], w.record, { deleted: true })
+    expect(dueAutoConfirmations([skipped], { expenses: [], today: '2026-10-08' })).toEqual([])
+  })
+})

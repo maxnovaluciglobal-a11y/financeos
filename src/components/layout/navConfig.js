@@ -12,6 +12,7 @@ export const NAV = [
   { sec: 'nav.sec.movements',  items: [
     { id: 'income',    lb: 'nav.income' },
     { id: 'movements', lb: 'nav.expenses' },
+    { id: 'recurring', lb: 'nav.recurring' },
     { id: 'import',    lb: 'nav.import' },
     { id: 'subscriptions', lb: 'nav.subscriptions' },
   ] },

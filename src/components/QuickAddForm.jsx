@@ -24,6 +24,8 @@ import {
   pressKey, keypadToNumber, currencyDecimals, amountToKeypad, formatKeypadDisplay, decimalSeparator,
   KEY_BACKSPACE, KEY_DECIMAL, KEY_THOUSAND,
 } from '../utils/keypad.js'
+import { FREQS, monthPlan, findPendingMatch, detectRecurring, ruleFromRecord } from '../utils/recurring.js'
+import rs from './recurring/recurring.module.css'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
 const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()
@@ -102,7 +104,7 @@ function DateSegment({ date, setDate, t }) {
 }
 
 export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false }) {
-  const { addExpense, addIncome, expenses, incomes, settings, updateSettings, showToast } = useApp() || {}
+  const { addExpense, addIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
   const [type, setType] = useState(defaultType)
   const [amount, setAmount] = useState('')
@@ -111,6 +113,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const [date, setDate] = useState(todayStr)
   const [method, setMethod] = useState(DEFAULT_METHOD)
   const [saving, setSaving] = useState(false)
+  const [repeat, setRepeat] = useState(false)       // "Se repite" → crea un fijo
+  const [freq, setFreq] = useState('monthly')
   const [pasteOpen, setPasteOpen] = useState(false)  // 1.1 · captura por pegado
   const [pasteText, setPasteText] = useState('')
   const [detected, setDetected] = useState(false)    // feedback "detectado"
@@ -132,7 +136,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // retorno de foco al cerrar) la maneja Sheet.jsx.
   useEffect(() => {
     setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
-    setDate(todayStr()); setMethod(lastMethod)
+    setDate(todayStr()); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
     // lastMethod se lee al abrir; cambiarlo mientras el formulario está abierto no lo resetea
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,9 +240,33 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setSaving(true)
     const finalDesc = desc.trim() || catName(cat, lang)
     const base = { description: finalDesc, amount: amt, date: date || todayStr(), category: cat || FALLBACK_CAT[type] }
+    // Los ingresos llevan el nombre en `source` (lo que muestra Ingresos); se
+    // conserva también `description` como antes.
+    const data = type === 'expense' ? { ...base, subcategory: '', method, type: 'Necesidad', notes: '', project: '' } : { ...base, source: finalDesc }
     try {
-      if (type === 'expense') await addExpense?.({ ...base, subcategory: '', method, type: 'Necesidad', notes: '', project: '' })
-      else await addIncome?.({ ...base })
+      if (repeat && addWithRule) {
+        // "Se repite": el movimiento y su regla, con este registro como primera ocurrencia.
+        await addWithRule(type, data, freq)
+      } else {
+        // ¿Cubre un fijo previsto de este mes? Se vincula para no contarlo dos veces.
+        const plan = monthPlan(recurring || [], data.date.slice(0, 7), { incomes, expenses })
+        const match = findPendingMatch(data, plan, type)
+        const linked = match ? { ...data, recurringId: match.ruleId, occurrenceDate: match.date } : data
+        if (type === 'expense') await addExpense?.(linked)
+        else await addIncome?.(linked)
+        // "¿Lo marcamos como fijo?": mismo comercio 2 de los últimos 3 meses.
+        const hit = !match && saveRule && detectRecurring(data,
+          type === 'expense' ? expenses : incomes, recurring, { kind: type })
+        if (hit) {
+          setTimeout(() => showToast?.(t('rec.suggest.text', { name: finalDesc }), 'ok', {
+            label: t('rec.suggest.action'),
+            onAction: async () => {
+              await saveRule(ruleFromRecord(data, { kind: type, freq: hit.freq }))
+              showToast?.(t('rec.toast.created'), 'ok')
+            },
+          }), 900)
+        }
+      }
       // aprende comercio→categoría (usa la descripción como comercio) y el método usado
       rememberChoices(finalDesc, cat, type === 'expense' ? method : null)
       hapticTap()
@@ -367,6 +395,19 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
               {chipLabel(c)}
             </button>
           ))}
+        </div>
+
+        {/* Se repite → movimiento fijo (con frecuencia) */}
+        <div className={rs.repeat}>
+          <label className={rs.check}>
+            <input type="checkbox" checked={repeat} onChange={e => setRepeat(e.target.checked)} />
+            {t('rec.repeat.toggle')}
+          </label>
+          {repeat && (
+            <select value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
+              {FREQS.map(f => <option key={f} value={f}>{t(`rec.freq.${f}`)}</option>)}
+            </select>
+          )}
         </div>
 
         {/* Guardar — Latón con texto Navy en los dos tipos */}

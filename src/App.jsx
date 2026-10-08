@@ -13,6 +13,7 @@ import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
 import AppLockGate from './components/lock/AppLockGate.jsx'
+import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
 import { useState, useEffect } from 'react'
 
@@ -44,6 +45,7 @@ const Multimoneda   = lazy(() => import('./pages/Multimoneda/index.jsx'))
 const Steuer        = lazy(() => import('./pages/Steuer/index.jsx'))
 const ImportCSV     = lazy(() => import('./pages/Import/index.jsx'))
 const Movements     = lazy(() => import('./pages/Movements/index.jsx'))
+const Recurring     = lazy(() => import('./pages/Recurring/index.jsx'))
 const Privacy       = lazy(() => import('./pages/legal/Privacy.jsx'))
 const Terms         = lazy(() => import('./pages/legal/Terms.jsx'))
 const License       = lazy(() => import('./pages/legal/License.jsx'))
@@ -92,7 +94,7 @@ function Inner() {
   // montado. React lo tolera con un warning en vez de romper visiblemente, por
   // eso pasó desapercibido — pero es un bug real, no cosmético. Mismo motivo
   // por el que este useEffect va acá arriba, antes de cualquier return.
-  const { settings, loading } = useApp()
+  const { settings, loading, dbError } = useApp()
 
   // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
@@ -194,11 +196,15 @@ function Inner() {
       case 'multimoneda':   return <Multimoneda />
       case 'steuer':        return <Steuer />
       case 'movements':     return <Movements setPage={setPage}/>
+      case 'recurring':     return <Recurring setPage={setPage}/>
       case 'import':        return <ImportCSV setPage={setPage} />
       case 'more':          return <More setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>
     }
   }
+
+  // La base local existe pero no abrió: bloquear (no mostrar una app vacía).
+  if (dbError) return <DbErrorScreen />
 
   const showOnboarding = !loading && !settings.onboardingDone
 

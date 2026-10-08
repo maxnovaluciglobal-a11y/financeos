@@ -32,8 +32,9 @@ beforeEach(async () => {
 
 describe('migración de la store security', () => {
   it('es un paso nuevo (v3), sin tocar los anteriores', async () => {
-    expect(DB_VERSION).toBe(3)
-    expect(MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3])
+    // v4 (movimientos fijos) vino después; el paso 3 sigue siendo el de security.
+    expect(DB_VERSION).toBeGreaterThanOrEqual(3)
+    expect(MIGRATIONS.map(m => m.version).slice(0, 3)).toEqual([1, 2, 3])
     const conn = await db.getDB()
     expect([...conn.objectStoreNames]).toContain('security')
   })
@@ -46,6 +47,7 @@ describe('el PIN no viaja en respaldos ni en el sync', () => {
     const payload = await db.exportAllData()
     const json = JSON.stringify(payload)
     expect(payload).not.toHaveProperty('security')
+    expect(payload).not.toHaveProperty('backups')
     expect(json).not.toContain(cfg.pin.hash)
     expect(json).not.toContain(cfg.pin.salt)
     expect(json).not.toContain('cred-abc')
