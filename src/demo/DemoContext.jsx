@@ -9,7 +9,7 @@ import { detectLanguage } from '../i18n/translate.js'
 import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel, localDateStr } from '../utils/index.js'
 import { reconcileRules } from '../utils/recurringSources.js'
 import { planConfirmations } from '../utils/recurringConfirm.js'
-import { ruleFromRecord, withAmountFrom } from '../utils/recurring.js'
+import { ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
 
@@ -19,8 +19,19 @@ export const DemoContext = createContext(null)
 // de cada cambio en el origen, las reglas se alinean en memoria (misma
 // reconcileRules que la app real).
 const SOURCE_ACTIONS = new Set(['ADD_SUB', 'DEL_SUB', 'UPDATE_SUB', 'ADD_DEBT', 'DEL_DEBT', 'UPDATE_DEBT'])
+// Borrar el registro de una ocurrencia la deja omitida; re-agregarlo (deshacer) la reabre.
+const RECORD_DEL = { DEL_INCOME: 'incomes', DEL_EXPENSE: 'expenses' }
+const RECORD_ADD = { ADD_INCOME: true, ADD_EXPENSE: true }
+function withLinkedSkip(prev, next, action) {
+  let rec = null, deleted
+  if (RECORD_DEL[action.type]) { rec = (prev[RECORD_DEL[action.type]] || []).find(r => r.id === action.id); deleted = true }
+  else if (RECORD_ADD[action.type]) { rec = action.item; deleted = false }
+  const rule = rec ? ruleAfterLinkedRecord(next.recurring || [], rec, { deleted }) : null
+  return rule ? { ...next, recurring: next.recurring.map(r => r.id === rule.id ? rule : r) } : next
+}
+
 function reducer(state, action) {
-  const next = baseReducer(state, action)
+  const next = withLinkedSkip(state, baseReducer(state, action), action)
   if (!SOURCE_ACTIONS.has(action.type) || next === state) return next
   const ups = reconcileRules(next.recurring || [], next.subscriptions || [], next.debts || [], { today: localDateStr() })
   if (!ups.length) return next

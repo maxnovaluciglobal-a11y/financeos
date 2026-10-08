@@ -25,24 +25,67 @@ function lsDel(store, id)   { lsSet(store, lsGet(store).filter(r => r.id !== id)
 function lsClear(store)     { try { localStorage.removeItem(`fos_${store}`) } catch {} }
 
 // ─── getDB ────────────────────────────────────────────────────────────────────
+// Error que NO cae a localStorage: ya hay datos del usuario en IndexedDB pero
+// no se pudo abrir la base (p. ej. un upgrade que abortó). Caer al fallback
+// en ese caso mostraba la app VACÍA y lo nuevo quedaba en fos_* sin mezclarse
+// nunca con lo real. AppContext lo convierte en una pantalla de error con
+// "Reintentar" (components/DbErrorScreen.jsx).
+export class DbOpenError extends Error {
+  constructor(cause) { super(cause?.message || 'db_open_failed'); this.name = 'DbOpenError'; this.cause = cause }
+}
+
+function openFinanceDB(opts) {
+  return openDB(DB_NAME, DB_VERSION, {
+    upgrade(db, oldVersion, newVersion, transaction) {
+      runMigrations(db, oldVersion, newVersion, transaction, opts)
+    },
+    blocked()    { _db?.close(); _db = null },
+    blocking()   { _db?.close(); _db = null },
+    terminated() { _db = null },
+  })
+}
+
+// ¿Ya existe una base 'financeos' con datos (versión >= 1)? Sin
+// indexedDB.databases() (navegadores viejos) no se puede saber sin crearla:
+// se asume que no, y se conserva el comportamiento anterior (fallback).
+export async function existingDatabase() {
+  try {
+    if (typeof indexedDB === 'undefined' || typeof indexedDB.databases !== 'function') return false
+    const list = await indexedDB.databases()
+    return list.some(d => d?.name === DB_NAME && Number(d.version) >= 1)
+  } catch { return false }
+}
+
+let _opening = null
 export async function getDB() {
   if (_useLocalStorage) return null
   if (_db) return _db
-  try {
-    _db = await openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion, newVersion, transaction) {
-        runMigrations(db, oldVersion, newVersion, transaction)
-      },
-      blocked()    { _db?.close(); _db = null },
-      blocking()   { _db?.close(); _db = null },
-      terminated() { _db = null },
-    })
-    return _db
-  } catch (e) {
-    console.warn('IndexedDB no disponible → localStorage fallback:', e.message)
+  if (_opening) return _opening
+  _opening = (async () => {
+    let err
+    try {
+      _db = await openFinanceDB({})
+      return _db
+    } catch (e1) {
+      err = e1
+      // Reintento único sin la foto previa a fijos (migración v4): si lo que
+      // abortó el upgrade fue la foto (cuota llena), la base igual llega a v4.
+      try {
+        _db = await openFinanceDB({ skipSnapshot: true })
+        console.warn('[FinanceOS] upgrade completado sin la foto previa:', e1?.name || e1)
+        try { localStorage.setItem('fos_snapshot_skipped', new Date().toISOString()) } catch {}
+        return _db
+      } catch (e2) { err = e2 }
+    }
+    if (await existingDatabase()) {
+      console.error('[FinanceOS] no se pudo abrir la base existente:', err)
+      throw new DbOpenError(err)
+    }
+    console.warn('IndexedDB no disponible → localStorage fallback:', err?.message)
     _useLocalStorage = true
     return null
-  }
+  })()
+  try { return await _opening } finally { _opening = null }
 }
 
 export const isUsingFallback = () => _useLocalStorage

@@ -164,12 +164,28 @@ describe('monthPlan — estado de cada ocurrencia', () => {
     expect(plan.filter(o => o.status === 'pending')).toHaveLength(1)
   })
 
-  it('no coincide si el monto difiere más de 7,5 % o la fecha más de 3 días (sin misma descripción)', () => {
+  it('coincidencias: misma descripción ±3 días (cualquier monto) o parecida con monto ±7,5 %; la categoría sola no alcanza', () => {
     const r = rule({ description: 'Arriendo', category: 'Vivienda', amounts: [{ from: '2026-01', amount: 1000 }], schedule: { freq: 'monthly', day: 10 } })
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'otro', category: 'Vivienda', date: '2026-10-13', amount: 1070 })).toBe(true)
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'otro', category: 'Vivienda', date: '2026-10-14', amount: 1000 })).toBe(false)
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'otro', category: 'Vivienda', date: '2026-10-10', amount: 1080 })).toBe(false)
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'Arriendo depto', category: 'Otros', date: '2026-10-25', amount: 1000 })).toBe(true)
+    const m = (rec) => recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', category: 'Vivienda', ...rec })
+    // misma categoría, monto y fecha, pero otra descripción → NO (antes sí)
+    expect(m({ description: 'Reparación calefont', date: '2026-10-10', amount: 1000 })).toBe(false)
+    expect(m({ description: 'Arriendo octubre', date: '2026-10-12', amount: 1300 })).toBe(true)  // meses = ruido
+    expect(m({ description: 'ARRIENDO', date: '2026-10-25', amount: 1050 })).toBe(true)          // mismo mes, ±7,5 %
+    expect(m({ description: 'ARRIENDO', date: '2026-10-25', amount: 1100 })).toBe(false)
+    expect(m({ description: 'Arriendo bodega', date: '2026-10-10', amount: 1000 })).toBe(false)  // otra cosa
+    const nf = rule({ description: 'Netflix', amounts: [{ from: '2026-01', amount: 15.49 }] })
+    expect(recordMatchesOccurrence(nf, '2026-10-11', 15.49, { id: 'x', description: 'NETFLIX.COM', date: '2026-10-12', amount: 15.49 })).toBe(true)
+    expect(recordMatchesOccurrence(nf, '2026-10-11', 15.49, { id: 'x', description: 'Netflix gift', date: '2026-10-11', amount: 15.49 })).toBe(false)
+  })
+
+  it('dos candidatos igual de buenos: queda prevista (confirmación manual)', () => {
+    const r = rule({ description: 'Gimnasio', category: 'Deporte', amounts: [{ from: '2026-01', amount: 30 }], schedule: { freq: 'monthly', day: 5 } })
+    const expenses = [
+      { id: 'a', description: 'Gimnasio', date: '2026-10-04', amount: 30, category: 'Deporte' },
+      { id: 'b', description: 'Gimnasio', date: '2026-10-06', amount: 30, category: 'Deporte' },
+    ]
+    expect(monthPlan([r], '2026-10', { expenses })[0].status).toBe('pending')
+    expect(findPendingMatch({ description: 'Gimnasio', date: '2026-10-05', amount: 30 }, monthPlan([r, { ...r, id: 'r2' }], '2026-10', {}), 'expense')).toBe(null)
   })
 
   it('un sueldo recortado (misma descripción, misma fecha) cubre su ocurrencia; cada registro va a la más cercana', () => {
@@ -287,5 +303,34 @@ describe('regla desde un movimiento + detección', () => {
     const plan = monthPlan([r], '2026-10', {})
     expect(findPendingMatch({ description: 'Arriendo octubre', date: '2026-10-02', amount: 500, category: 'Vivienda' }, plan, 'expense')?.ruleId).toBe('r1')
     expect(findPendingMatch({ description: 'Super', date: '2026-10-02', amount: 80, category: 'Alimentación' }, plan, 'expense')).toBe(null)
+  })
+})
+
+describe('borrar un registro confirmado', () => {
+  it('la ocurrencia queda omitida: el registro automático no la recrea (ni baja otra vez una deuda)', async () => {
+    const { ruleAfterLinkedRecord } = await import('./recurring.js')
+    const sal = rule({ id: 'sal', kind: 'income', description: 'Sueldo', autoConfirm: true, schedule: { freq: 'monthly', day: 1 }, startDate: '2026-10-01' })
+    const rec = buildConfirmedRecord(sal, '2026-10-01', {})
+    expect(dueAutoConfirmations([sal], { incomes: [rec], today: '2026-10-08' })).toEqual([])
+    const skipped = ruleAfterLinkedRecord([sal], rec, { deleted: true })
+    expect(skipped.skipped).toEqual(['2026-10-01'])
+    // el registro ya no está: sin la omisión se volvería a crear
+    expect(dueAutoConfirmations([sal], { incomes: [], today: '2026-10-08' })).toHaveLength(1)
+    expect(dueAutoConfirmations([skipped], { incomes: [], today: '2026-10-08' })).toEqual([])
+    // deshacer el borrado la reabre; registros sin vínculo no tocan nada
+    expect(ruleAfterLinkedRecord([skipped], rec, { deleted: false }).skipped).toEqual([])
+    expect(ruleAfterLinkedRecord([sal], { id: 'x', amount: 1 }, { deleted: true })).toBe(null)
+    expect(ruleAfterLinkedRecord([skipped], rec, { deleted: true })).toBe(null)
+  })
+
+  it('una cuota de deuda borrada no se vuelve a confirmar (el saldo no baja dos veces)', async () => {
+    const { ruleAfterLinkedRecord } = await import('./recurring.js')
+    const { planConfirmations } = await import('./recurringConfirm.js')
+    const debtRule = rule({ id: 'rd-d1', source: 'debt', sourceId: 'd1', category: 'Deudas', autoConfirm: true, schedule: { freq: 'monthly', day: 5 }, startDate: '2026-10-01' })
+    const debts = new Map([['d1', { id: 'd1', balance: 1000, minPayment: 100, rate: 0 }]])
+    const [w] = planConfirmations([{ rule: debtRule, date: '2026-10-05' }], [], debts, { today: '2026-10-08' })
+    expect(w.debt.balance).toBe(900)
+    const skipped = ruleAfterLinkedRecord([debtRule], w.record, { deleted: true })
+    expect(dueAutoConfirmations([skipped], { expenses: [], today: '2026-10-08' })).toEqual([])
   })
 })

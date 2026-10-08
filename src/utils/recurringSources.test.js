@@ -67,6 +67,20 @@ describe('reconcileRules — unificación de Suscripciones y Deudas', () => {
     expect(amountAt(later[0], '2026-12')).toBe(17.99)
   })
 
+  it('"desde ahora" sobre la regla gana hasta que la suscripción misma cambie', async () => {
+    const { withAmountFrom } = await import('./recurring.js')
+    const edited = withAmountFrom(first.find(r => r.id === 'rs-s1'), '2026-10', 16.99)
+    const rules = first.map(r => r.id === 'rs-s1' ? edited : r)
+    expect(reconcileRules(rules, subs, debts, { today, now })).toEqual([])          // no se pisa
+    const changed = reconcileRules(rules, subs.map(s => s.id === 's1' ? { ...s, amount: 18.99 } : s), debts, { today: '2026-11-02', now })
+    expect(amountAt(changed[0], '2026-10')).toBe(16.99)
+    expect(amountAt(changed[0], '2026-11')).toBe(18.99)
+    expect(changed[0].sourceAmount).toBe(18.99)
+    // lo mismo con la cuota de una deuda
+    const tj = withAmountFrom(first.find(r => r.id === 'rd-d1'), '2026-11', 95)
+    expect(reconcileRules(first.map(r => r.id === 'rd-d1' ? tj : r), subs, debts, { today, now })).toEqual([])
+  })
+
   it('cancelar pausa; borrar termina; deshacer el borrado la reabre', () => {
     const paused = reconcileRules(first, subs.map(s => s.id === 's1' ? { ...s, status: 'inactive' } : s), debts, { today, now })
     expect(paused[0]).toMatchObject({ id: 'rs-s1', paused: true })

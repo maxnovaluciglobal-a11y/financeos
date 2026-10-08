@@ -1,3 +1,4 @@
+import { unwrap } from 'idb'
 // src/core/db/migrations.js — pasos de esquema versionados para IndexedDB.
 //
 // Cada entrada de MIGRATIONS es un paso irreversible: una vez que un usuario
@@ -62,26 +63,50 @@ export const MIGRATIONS = [
     // Antes de que la app convierta Suscripciones y Deudas en reglas
     // (reconcileRecurringSources, al hidratar), este paso deja una foto completa
     // de los datos en 'backups' con id PRE_RECURRING_SNAPSHOT_ID, dentro de la
-    // MISMA transacción de upgrade: o queda la foto y la versión nueva, o no
-    // queda nada (la base sigue en v3, intacta). Restaurar: restoreSnapshot().
-    // Una instalación nueva (oldVersion 0) no tiene nada que fotografiar.
+    // misma transacción de upgrade. Restaurar: restoreSnapshot().
+    //
+    // La foto es BEST-EFFORT: nunca puede impedir que la base llegue a v4.
+    // Si escribirla falla (QuotaExceededError: duplica el tamaño de los datos),
+    // el error del put se cancela (preventDefault) y el upgrade sigue sin foto.
+    // Si aun así la transacción aborta (la cuota se valida al hacer commit en
+    // algunos navegadores), getDB reintenta UNA vez con { skipSnapshot: true }:
+    // las stores se crean igual y los datos originales no se tocan — la
+    // unificación no borra ni modifica Suscripciones/Deudas, así que la foto
+    // es una red extra, no la única. Una instalación nueva no tiene foto.
     version: 4,
-    async migrate(db, transaction, oldVersion) {
+    async migrate(db, transaction, oldVersion, opts = {}) {
       if (!db.objectStoreNames.contains('recurring')) db.createObjectStore('recurring', { keyPath: 'id' })
       if (!db.objectStoreNames.contains('backups'))   db.createObjectStore('backups',   { keyPath: 'id' })
-      if (!oldVersion || !transaction) return
+      if (!oldVersion || !transaction || opts.skipSnapshot) return
       const has = (n) => db.objectStoreNames.contains(n)
       const all = (n) => (has(n) ? transaction.objectStore(n).getAll() : Promise.resolve([]))
       const [incomes, expenses, budgets, debts, goals, subscriptions, importBatches, settings] = await Promise.all([
         all('incomes'), all('expenses'), all('budgets'), all('debts'), all('goals'), all('subscriptions'), all('importBatches'),
         has('settings') ? transaction.objectStore('settings').get('main') : Promise.resolve(null),
       ])
-      await transaction.objectStore('backups').put({
+      const record = {
         id: PRE_RECURRING_SNAPSHOT_ID,
         reason: 'pre-recurring-migration',
         fromVersion: oldVersion,
         createdAt: new Date().toISOString(),
         data: { incomes, expenses, budgets, debts, goals, subscriptions, importBatches, settings: settings || null },
+      }
+      await new Promise((resolve) => {
+        let req
+        try {
+          // Request crudo (sin el wrapper de idb) para poder cancelar su error
+          // sin que aborte la transacción de upgrade.
+          req = unwrap(transaction).objectStore('backups').put(record)
+        } catch (e) {
+          console.warn('[FinanceOS] foto previa a fijos omitida:', e?.name || e)
+          resolve(); return
+        }
+        req.onsuccess = () => resolve()
+        req.onerror = (ev) => {
+          ev.preventDefault(); ev.stopPropagation?.()
+          console.warn('[FinanceOS] foto previa a fijos omitida:', req.error?.name || req.error)
+          resolve()
+        }
       })
     },
   },
@@ -102,13 +127,13 @@ export const DB_VERSION = Math.max(...MIGRATIONS.map(m => m.version))
 // upgrade — mismo resultado que un paso síncrono que tira: la base queda en
 // oldVersion, sin cambios. Dentro de un paso async solo se puede esperar
 // operaciones de ESA transacción (si se espera otra cosa, IndexedDB la cierra).
-export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps) {
+export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps, opts = {}) {
   let chain = null
   for (const step of steps) {
     if (!(oldVersion < step.version && step.version <= newVersion)) continue
-    if (chain) chain = chain.then(() => step.migrate(db, transaction, oldVersion))
+    if (chain) chain = chain.then(() => step.migrate(db, transaction, oldVersion, opts))
     else {
-      const r = step.migrate(db, transaction, oldVersion)
+      const r = step.migrate(db, transaction, oldVersion, opts)
       if (r && typeof r.then === 'function') chain = r
     }
   }
@@ -120,6 +145,6 @@ export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps
   })
 }
 
-export function runMigrations(db, oldVersion, newVersion, transaction) {
-  return runMigrationSteps(db, oldVersion, newVersion, transaction, MIGRATIONS)
+export function runMigrations(db, oldVersion, newVersion, transaction, opts = {}) {
+  return runMigrationSteps(db, oldVersion, newVersion, transaction, MIGRATIONS, opts)
 }

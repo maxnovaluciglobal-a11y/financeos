@@ -2521,4 +2521,11 @@ export const es = {
     'mov.list.showMore': "Ver {n} más",
     'mov.list.showLess': "Ver menos",
     'ahorroFiscal.figures': "Cifras {year} ({source}).",
+    'dbError.title': "No se pudieron abrir tus datos",
+    'dbError.body': "Tus datos siguen guardados en este dispositivo, pero el navegador no dejó abrirlos. Suele pasar cuando falta espacio de almacenamiento.",
+    'dbError.keep': "No borres los datos del sitio. Libera espacio en el dispositivo y vuelve a intentarlo.",
+    'dbError.retry': "Reintentar",
+    'dbError.help': "Si sigue igual, podemos ayudarte a respaldar y restaurar tus datos:",
+    'dbError.contact': "escribir a soporte",
+    'dbError.mailSubject': "No se abren mis datos",
 }

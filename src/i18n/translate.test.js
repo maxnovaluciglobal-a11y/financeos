@@ -247,7 +247,7 @@ describe('demo.banner.label por persona', () => {
 // Movimientos fijos (08-oct-2026): prefijo 'rec.' + las claves sueltas que se
 // agregaron o reescribieron con la misma tarea.
 describe('paridad de las claves de movimientos fijos (es/en/pt/de)', () => {
-  const prefixes = ['rec.', 'nav.recurring', 'mov.list.show', 'ahorroFiscal.figures', 'cf.recInc.', 'cf.recExp.', 'cf.analysis.recap']
+  const prefixes = ['rec.', 'dbError.', 'nav.recurring', 'mov.list.show', 'ahorroFiscal.figures', 'cf.recInc.', 'cf.recExp.', 'cf.analysis.recap']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
