@@ -8,7 +8,7 @@
 // se guarda. Por eso p_lang solo sale detrás de este flag.
 
 // flip to true only AFTER migration 20261009000000_leads_lang.sql is applied and nurture functions are deployed
-export const LEADS_LANG_ENABLED = false
+export const LEADS_LANG_ENABLED = true
 
 const LEAD_LANGS = ['es', 'en', 'pt', 'de']
 
