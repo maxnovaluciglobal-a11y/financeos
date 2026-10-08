@@ -64,7 +64,7 @@ describe('presupuesto por categoría', () => {
     expect(rows.map(r => r.state)).toEqual(['over', 'near', 'ok'])
   })
   it('usa el límite efectivo (rollover) cuando viene', () => {
-    const [r] = budgetRows({ budgets: [{ category: 'A', limit: 100 }], monthExpenses: [{ category: 'A', amount: 120 }], limits: { A: 150 } })
+    const [r] = budgetRows({ budgets: [{ category: 'A', limit: 100 }], monthExpenses: [{ category: 'A', amount: 110 }], limits: { A: 150 } })
     expect(r.limit).toBe(150)
     expect(r.state).toBe('ok')
   })
