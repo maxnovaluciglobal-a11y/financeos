@@ -53,7 +53,7 @@ describe('paridad de las claves nuevas de fase 1 (es/en/pt/de)', () => {
 })
 
 describe('paridad de las claves de fase 2 (es/en/pt/de)', () => {
-  const prefixes = ['qa.', 'method.', 'settings.categoryEmoji.', 'onboarding.v2.', 'country.']
+  const prefixes = ['qa.', 'method.', 'settings.categoryEmoji.', 'onboarding.v2.', 'country.', 'demo.tour.', 'demo.banner.']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)

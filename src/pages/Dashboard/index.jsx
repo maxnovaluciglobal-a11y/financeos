@@ -518,7 +518,7 @@ export default function Dashboard({ setPage }) {
             month={activeMonth}
           />
         )
-        if (!ringOn) return <div style={{ marginBottom:16 }}>{verdict}</div>
+        if (!ringOn) return <div data-tour="kpi-free" style={{ marginBottom:16 }}>{verdict}</div>
         // Card hero fusionada (Fase 05): antes eran dos cards lado a lado contando
         // la misma historia dos veces (¿te sobra? + ¿vas a tiempo?) — ahora es una
         // sola, con el anillo achicado a 96px como acento a la derecha del número.
@@ -526,7 +526,7 @@ export default function Dashboard({ setPage }) {
         const heroColor = kpis.incCount === 0 && kpis.expCount === 0 ? 'var(--th)'
           : positive ? 'var(--pos)' : tight ? 'var(--warn)' : 'var(--neg)'
         return (
-          <div className="card rise" style={{
+          <div className="card rise" data-tour="kpi-free" style={{
             marginBottom:16, padding:'18px 20px',
             background: kpis.incCount === 0 && kpis.expCount === 0 ? 'var(--sur)' : `color-mix(in srgb, ${heroColor} 8%, var(--sur))`,
             border:`.5px solid color-mix(in srgb, ${heroColor} 35%, transparent)`,
@@ -697,7 +697,7 @@ export default function Dashboard({ setPage }) {
 
       {/* IQ Score — puntaje 0-100 de salud financiera */}
       {healthScore && (
-        <Card className="rise" style={{ padding:'16px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+        <Card className="rise" data-tour="iq-score" style={{ padding:'16px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
           <div style={{ display:'flex', alignItems:'center', gap:14, flex:1, minWidth:180 }}>
             <div style={{ textAlign:'center', flexShrink:0 }}>
               <div className="num" style={{ fontSize:34, fontWeight:700, color:healthScore.color, lineHeight:1 }}>

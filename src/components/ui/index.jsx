@@ -17,9 +17,9 @@ export function Btn({ children, variant = 'ghost', size = 'md', onClick, disable
   )
 }
 
-export function Card({ children, style, className }) {
+export function Card({ children, style, className, ...rest }) {
   return (
-    <div className={[styles.card, className].filter(Boolean).join(' ')} style={style}>
+    <div className={[styles.card, className].filter(Boolean).join(' ')} style={style} {...rest}>
       {children}
     </div>
   )

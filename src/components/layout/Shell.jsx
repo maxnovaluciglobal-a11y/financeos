@@ -61,7 +61,7 @@ export default function Shell({ page, setPage, children }) {
           const items = g.items.filter(it => !it.countries || it.countries.includes(navCountry))
           if (items.length === 0) return null   // no mostrar cabecera de sección vacía
           return (
-          <div key={g.sec}>
+          <div key={g.sec} data-tour={g.sec === 'nav.sec.country' ? 'nav-country' : undefined}>
             <div className={s.sec}>{t(g.sec)}</div>
             {items.map(it => (
               <button
