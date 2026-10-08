@@ -7,8 +7,18 @@
 // — el gate es para capturar el lead, no para trabar a nadie por un problema
 // de red. Persistido en localStorage: una vez pasado, no se vuelve a pedir
 // en el mismo dispositivo/navegador.
+//
+// i18n (T02, 07-oct-2026): este gate se monta ANTES de DemoProvider, así que
+// useT() (que lee el idioma de useApp()) no sirve acá. Usa useTFor() con el
+// idioma del navegador (detectLanguage), el mismo que después recibe el demo
+// como idioma inicial (demoData.js). Lo que dice el texto tiene que ser cierto:
+// registerDemoLead guarda nombre + email + consentimiento en demo_leads y NO
+// manda ningún correo; la casilla solo registra el consentimiento de marketing.
 import { useState } from 'react'
 import { registerDemoLead } from '../utils/licenseValidator.js'
+import { useTFor } from '../i18n/useT.js'
+import { detectLanguage } from '../i18n/translate.js'
+import { Btn } from '../components/ui/index.jsx'
 import Logo from '../components/Logo.jsx'
 
 const LS_KEY = 'fnos_demo_gate_passed'
@@ -24,6 +34,8 @@ function markPassed() {
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
 export default function DemoGate({ onPass }) {
+  const [lang] = useState(() => detectLanguage())
+  const { t } = useTFor(lang)
   const [email, setEmail]     = useState('')
   const [nombre, setNombre]   = useState('')
   const [consent, setConsent] = useState(false)
@@ -34,8 +46,8 @@ export default function DemoGate({ onPass }) {
     e.preventDefault()
     const cleanEmail = email.trim()
     const cleanNombre = nombre.trim()
-    if (!cleanNombre) { setError('Contanos tu nombre.'); return }
-    if (!EMAIL_RE.test(cleanEmail)) { setError('Ese email no parece válido.'); return }
+    if (!cleanNombre) { setError(t('demoGate.errName')); return }
+    if (!EMAIL_RE.test(cleanEmail)) { setError(t('demoGate.errEmail')); return }
     setError('')
     setLoading(true)
     // No bloquea la entrada al demo por el resultado del registro — best-effort.
@@ -46,24 +58,31 @@ export default function DemoGate({ onPass }) {
     })
   }
 
+  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }
+  const inputStyle = {
+    width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 'var(--r)',
+    border: '1px solid var(--brd2)', fontSize: 16, fontFamily: 'var(--sans)',
+  }
+
   return (
-    <div style={{
+    <div lang={lang} style={{
       minHeight: '100dvh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'var(--papel, #F5F1E8)',
+      background: 'var(--bg)',
       padding: '24px 16px',
     }}>
       <form
         onSubmit={handleSubmit}
+        noValidate
         style={{
           width: '100%',
           maxWidth: 380,
-          background: '#fff',
-          borderRadius: 12,
-          padding: '32px 28px',
-          boxShadow: '0 8px 32px rgba(20,33,61,.12)',
+          background: 'var(--sur)',
+          borderRadius: 'var(--rxl)',
+          padding: '32px 24px',
+          boxShadow: 'var(--sh-3)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
@@ -74,98 +93,83 @@ export default function DemoGate({ onPass }) {
           fontFamily: 'var(--display)',
           fontSize: 20,
           fontWeight: 700,
-          color: 'var(--navy)',
+          color: 'var(--tx)',
           textAlign: 'center',
           margin: '0 0 8px',
         }}>
-          Antes de entrar al demo
+          {t('demoGate.title')}
         </h1>
         <p style={{
           fontFamily: 'var(--sans)',
           fontSize: 13,
-          color: 'var(--ceniza-700, #6b6b6b)',
+          color: 'var(--tm)',
           textAlign: 'center',
           margin: '0 0 24px',
           lineHeight: 1.5,
         }}>
-          Dejanos tu nombre y email — es un paso rápido, y el demo te espera del otro lado. Los datos que uses adentro son ficticios; los tuyos, reales, se quedan solo con nosotros.
+          {t('demoGate.sub')}
         </p>
 
         <label style={{ display: 'block', marginBottom: 14 }}>
-          <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--navy)', marginBottom: 4 }}>
-            Nombre
-          </span>
+          <span style={labelStyle}>{t('demoGate.name')}</span>
           <input
             type="text"
             value={nombre}
             onChange={e => setNombre(e.target.value)}
-            placeholder="Tu nombre"
+            placeholder={t('demoGate.namePh')}
             autoComplete="name"
-            style={{
-              width: '100%', padding: '10px 12px', borderRadius: 8,
-              border: '1px solid var(--ceniza-300, #ddd)', fontSize: 14,
-              fontFamily: 'var(--sans)',
-            }}
+            style={inputStyle}
           />
         </label>
 
         <label style={{ display: 'block', marginBottom: 14 }}>
-          <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--navy)', marginBottom: 4 }}>
-            Email
-          </span>
+          <span style={labelStyle}>{t('demoGate.email')}</span>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="tu@email.com"
+            placeholder={t('authGate.emailPlaceholder')}
             autoComplete="email"
-            style={{
-              width: '100%', padding: '10px 12px', borderRadius: 8,
-              border: '1px solid var(--ceniza-300, #ddd)', fontSize: 14,
-              fontFamily: 'var(--sans)',
-            }}
+            style={inputStyle}
           />
         </label>
 
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 18, cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 18, cursor: 'pointer', minHeight: 44 }}>
           <input
             type="checkbox"
             checked={consent}
             onChange={e => setConsent(e.target.checked)}
             style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }}
           />
-          <span style={{ fontSize: 11.5, color: 'var(--ceniza-700, #6b6b6b)', lineHeight: 1.4 }}>
-            Quiero recibir por email novedades y contenido de MOY IQ (opcional, podés darte de baja cuando quieras).
+          <span style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.45 }}>
+            {t('demoGate.consent')}
           </span>
         </label>
 
         {error && (
-          <div style={{ color: 'var(--error, #b3261e)', fontSize: 12, marginBottom: 12 }}>
+          <div role="alert" style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>
             {error}
           </div>
         )}
 
-        <button
+        <Btn
           type="submit"
+          variant="primary"
           disabled={loading}
           style={{
             width: '100%',
-            background: 'var(--laton)',
-            color: 'var(--navy)',
-            border: 'none',
-            borderRadius: 8,
-            padding: '12px 16px',
+            minHeight: 48,
             fontSize: 14,
             fontWeight: 700,
             cursor: loading ? 'default' : 'pointer',
             opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading ? 'Entrando…' : 'Ver el demo →'}
-        </button>
+          {loading ? t('demoGate.loading') : t('demoGate.submit')}
+        </Btn>
 
-        <p style={{ fontSize: 10.5, color: 'var(--ceniza-700, #6b6b6b)', textAlign: 'center', marginTop: 14 }}>
-          Sin tarjeta. El demo es gratis y no requiere que crees una cuenta.
+        <p style={{ fontSize: 12, color: 'var(--tm)', textAlign: 'center', marginTop: 14, lineHeight: 1.45 }}>
+          {t('demoGate.foot')}
         </p>
       </form>
     </div>

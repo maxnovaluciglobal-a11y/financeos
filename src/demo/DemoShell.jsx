@@ -10,6 +10,7 @@ import Shell from '../components/layout/Shell.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import PageSkeleton from '../components/ui/PageSkeleton.jsx'
 import { AppContext } from '../context/AppContext.jsx'
+import { useT } from '../i18n/useT.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -120,6 +121,8 @@ function DemoBottomCTA() {
 
 function DemoInner() {
   const [page, setPage] = useState('dashboard')
+  const { t } = useT()
+  const docTitle = t('demo.docTitle')
 
   // SEO (auditoría 2026-08-27): demo.moyiq.app comparte el mismo build
   // que app.moyiq.app (sin valor SEO, ya bloqueado con X-Robots-Tag en
@@ -127,7 +130,7 @@ function DemoInner() {
   // propio title/canonical, no el genérico heredado de index.html.
   useEffect(() => {
     if (typeof window === 'undefined' || window.location.hostname !== 'demo.moyiq.app') return
-    document.title = 'Demo — MOY IQ · Prueba la app sin registrarte'
+    document.title = docTitle
     let link = document.querySelector('link[rel="canonical"]')
     if (!link) {
       link = document.createElement('link')
@@ -135,7 +138,7 @@ function DemoInner() {
       document.head.appendChild(link)
     }
     link.setAttribute('href', 'https://demo.moyiq.app/app/?demo=true')
-  }, [])
+  }, [docTitle])
 
   function renderPage(page) {
     switch (page) {

@@ -4,6 +4,8 @@
 // 6 meses de datos. Mes actual con flujo negativo (realista para freelancer).
 // IMPORTANTE: estos datos nunca se escriben en IndexedDB
 
+import { detectLanguage } from '../i18n/translate.js'
+
 // Genera IDs fijos para el demo (no aleatorios — para consistencia)
 const d = (suffix) => `demo-${suffix}`
 
@@ -36,7 +38,9 @@ export const DEMO_SETTINGS = {
   currency: 'COP',
   country: 'CO',
   theme: 'light',
-  language: 'es',
+  // Idioma inicial = el del navegador (es/en/pt/de, default es), el mismo que
+  // usa DemoGate. Los datos de ejemplo (Sofía, Colombia) siguen en español.
+  language: detectLanguage(),
   savingGoalPct: 20,
   onboardingDone: true,
   activeMonth: M0,

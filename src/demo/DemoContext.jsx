@@ -3,7 +3,7 @@
 // NUNCA escribe en IndexedDB — los datos se descartan al cerrar la pestaña
 // Se activa cuando la URL contiene ?demo=true
 
-import { createContext, useContext, useReducer, useCallback } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { DEMO_STATE, DEMO_INCOMES_EXITOSO } from './demoData.js'
 import { setMoneyLocale, setDateLocale } from '../utils/index.js'
 
@@ -48,6 +48,17 @@ export function DemoProvider({ children }) {
     loading: false,
     toast: null,
   })
+
+  // Aplica idioma/moneda iniciales del demo una vez al montar (antes solo se
+  // aplicaban al cambiar settings, así que el idioma detectado del navegador
+  // no llegaba a fechas, formato de miles ni al <html lang>).
+  useEffect(() => {
+    const st = state.settings || {}
+    document.documentElement.setAttribute('lang', st.language || 'es')
+    setMoneyLocale(st.currency || 'CLP')
+    setDateLocale(st.language || 'es')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const showToast = useCallback((msg, type = 'ok', action = null) => {
     dispatch({ type: 'SET_TOAST', toast: { msg, type, action } })
