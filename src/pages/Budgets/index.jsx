@@ -3,9 +3,10 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, getCategoriesExpense, catLabel, currentMonth } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 
 export default function Budgets() {
   const { budgets, addBudget, delBudget, expenses, incomes, settings, updateSettings, deleteWithUndo } = useApp()
@@ -13,6 +14,9 @@ export default function Budgets() {
   const [f, setF]     = useState({ category: 'Vivienda', limit: '' })
   const [err, setErr] = useState('')
   const sym           = CURRENCY_SYMBOLS[settings.currency] || '$'
+  // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
+  const { m } = useMoney()
+  const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const isChile       = (settings.country || 'CL') === 'CL'
   const ahorroLabel   = isChile ? 'Ahorro/APV/Inversión' : 'Ahorro/Inversión'
   const rolloverOn    = !!settings.budgetRollover
@@ -116,7 +120,7 @@ export default function Budgets() {
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',background:'var(--accent-bg)',border:'.5px solid var(--accent)',borderRadius:8}}>
           <div>
             <div style={{fontSize:10,color:'var(--accent)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('budgets.unassigned.label')}</div>
-            <div style={{fontSize:16,fontWeight:700,color:'var(--accent)',fontFamily:'var(--mono)'}}>{fmtMoney(ingresoNeto-totalBudget,sym)}</div>
+            <div style={{fontSize:16,fontWeight:700,color:'var(--accent)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto-totalBudget,sym)}</Money></div>
           </div>
           <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',maxWidth:320,lineHeight:1.5}}>{t('budgets.unassigned.hint')}</div>
         </div>
@@ -142,7 +146,7 @@ export default function Budgets() {
             {ingresoNeto > 0 ? (
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
                 <span style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.model.netIncome', { month: monthLabel(activeMonth) })}</span>
-                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}>{fmtMoney(ingresoNeto,sym)}</span>
+                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto,sym)}</Money></span>
               </div>
             ) : (
               <div style={{fontSize:10,color:'#e84142',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'rgba(232,65,66,.06)',borderRadius:6}}>
@@ -256,7 +260,7 @@ export default function Budgets() {
                           <div style={{fontSize:10,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
                           {carry > 0 && (
                             <div style={{fontSize:8,fontFamily:'var(--mono)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
-                              ↻ +{fmtMoney(carry,sym)}
+                              ↻ +<Money>{fmtMoney(carry,sym)}</Money>
                             </div>
                           )}
                           <svg width="90" height="90" viewBox="0 0 90 90" role="img"
@@ -267,7 +271,7 @@ export default function Budgets() {
                             <text x={cx2} y={cy2+8} textAnchor="middle" fontSize="6"  fill="var(--th)" fontFamily="var(--mono)">{over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')}</text>
                           </svg>
                           <div style={{textAlign:'center'}}>
-                            <div style={{fontSize:11,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}>{fmtMoney(spent,sym)}</div>
+                            <div style={{fontSize:11,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}><Money>{fmtMoney(spent,sym)}</Money></div>
                             <div style={{fontSize:8,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}{carry > 0 ? t('budgets.cat.base', { base: fmtMoney(b.limit,sym) }) : ''}</div>
                           </div>
                         </div>

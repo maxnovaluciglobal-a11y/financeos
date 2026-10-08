@@ -240,6 +240,11 @@ button { cursor: pointer; font-family: var(--sans); }
        font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums lining-nums;
        letter-spacing: -0.02em; }
 
+/* Monto oculto (T13, components/Money.jsx): el "•••" hereda tamaño y color de la
+   cifra a la que reemplaza; un poco de aire entre puntos para que se lea como
+   máscara deliberada y no como texto truncado. */
+.money-masked { letter-spacing: 0.12em; white-space: nowrap; }
+
 /* Entrada suave — para escalonar la aparición de tarjetas (Ronda 3 la explota). */
 @keyframes fos-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .rise { animation: var(--dur-surface-enter) var(--ease) fos-rise both; }

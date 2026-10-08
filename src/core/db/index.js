@@ -4,6 +4,7 @@
 import { openDB } from 'idb'
 import { DB_VERSION, runMigrations } from './migrations.js'
 import { currentMonth } from '../../utils/index.js'
+import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/money.js'
 
 const DB_NAME = 'financeos'
 let _db = null
@@ -104,7 +105,10 @@ export async function exportAllData() {
   ])
   let importBatches = []
   try { importBatches = await dbGetAll('importBatches') } catch {}
-  return { incomes, expenses, budgets, debts, goals, subscriptions, importBatches, settings,
+  // settings sin los ajustes de dispositivo (hideAmounts): este payload es el
+  // mismo del respaldo JSON y del sync cifrado, ver utils/money.js.
+  return { incomes, expenses, budgets, debts, goals, subscriptions, importBatches,
+           settings: stripDeviceOnlySettings(settings),
            exportedAt: new Date().toISOString(), version: '1.2' }
 }
 
@@ -130,5 +134,5 @@ export async function importAllData(data) {
     }
     await tx.done
   }
-  if (data.settings) await saveSettings(data.settings)
+  if (data.settings) await saveSettings(mergeIncomingSettings(data.settings, await getSettings()))
 }

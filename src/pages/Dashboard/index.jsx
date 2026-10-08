@@ -23,6 +23,7 @@ import { moneyLocale, currentMonth } from '../../utils/index.js'
 import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import { Card, CardHeader } from '../../components/ui/index.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 
 const fmt  = (n) => (Number(n) || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
 const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
@@ -50,7 +51,11 @@ export default function Dashboard({ setPage }) {
   const effectiveUsdRate = Number(settings.usdRate) || DEFAULT_USD_RATES[settings.currency] || 0
   const dualOn      = !!settings.showDualCurrency && settings.currency !== 'USD' && effectiveUsdRate > 0
   const usdRate     = effectiveUsdRate || 1
-  const toUSD       = (n) => `≈ US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`
+  // Ocultar montos (T13): toda cifra de dinero de esta pantalla pasa por money()
+  // (strings: frases i18n, KPIs) o por <Money> (cifras sueltas en JSX).
+  const { hidden: amountsHidden, m } = useMoney()
+  const money       = (n) => m(`${sym}${fmt(n)}`)
+  const toUSD       = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
 
   const kpis = useMemo(() => {
     const [y, mo] = activeMonth.split('-').map(Number)
@@ -129,7 +134,7 @@ export default function Dashboard({ setPage }) {
         color: 'var(--amb)',
         bg: 'color-mix(in srgb, var(--warn) 9%, transparent)',
         border: 'color-mix(in srgb, var(--warn) 24%, transparent)',
-        text: t('dash.insight.subs.text', { v: `${sym}${fmt(subMonthly * 12)}` }),
+        text: t('dash.insight.subs.text', { v: money(subMonthly * 12) }),
         sub: t('dash.insight.subs.sub'),
         page: 'subscriptions',
       })
@@ -195,14 +200,14 @@ export default function Dashboard({ setPage }) {
           bg: 'color-mix(in srgb, var(--pos) 8%, transparent)',
           border: 'color-mix(in srgb, var(--pos) 22%, transparent)',
           text: t('dash.insight.goal.text', { name: top.name, pct: goalPct }),
-          sub: t('dash.insight.goal.sub', { v: `${sym}${fmt(Number(top.target) - Number(top.saved))}` }),
+          sub: t('dash.insight.goal.sub', { v: money(Number(top.target) - Number(top.saved)) }),
           page: 'goals',
         })
       }
     }
 
     return cards.slice(0, 4)
-  }, [subMonthly, monthExpenses, budgets, goals, sym, settings.language])
+  }, [subMonthly, monthExpenses, budgets, goals, sym, settings.language, amountsHidden])
 
   // ── Coach signals para Dashboard ──────────────────────────────────────────
   const topSignals = useMemo(() => {
@@ -348,9 +353,9 @@ export default function Dashboard({ setPage }) {
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:20 }}>
             {[
-              { label:t('dash.kpi.income'),    val:`${sym}${fmt(kpis.totalInc)}`,  color:'var(--accent)' },
-              { label:t('dash.kpi.expenses'),      val:`${sym}${fmt(kpis.totalExp)}`,  color:'var(--red)' },
-              { label:t('dash.kpi.balance'),     val:`${sym}${fmt(Math.abs(balance))}`, color: ok ? 'var(--accent)' : 'var(--red)', prefix: ok ? '+' : '−' },
+              { label:t('dash.kpi.income'),    val:money(kpis.totalInc),  color:'var(--accent)' },
+              { label:t('dash.kpi.expenses'),      val:money(kpis.totalExp),  color:'var(--red)' },
+              { label:t('dash.kpi.balance'),     val:money(Math.abs(balance)), color: ok ? 'var(--accent)' : 'var(--red)', prefix: ok ? '+' : '−' },
               { label:t('dash.close.savings'),      val:pct(kpis.savingRate),            color: kpis.savingRate >= 0.2 ? 'var(--accent)' : 'var(--amb)' },
             ].map(k => (
               <div key={k.label} style={{ background:'var(--bg2)', borderRadius:10, padding:'10px 12px' }}>
@@ -475,17 +480,17 @@ export default function Dashboard({ setPage }) {
     const color = pace <= 0.02 ? 'var(--pos)' : pace <= 0.10 ? 'var(--warn)' : 'var(--neg)'
     const safePerDay = daysLeft > 0 ? Math.max(0, (reference - spent) / daysLeft) : 0
     return { spentRatio, elapsedRatio, color, daysLeft,
-             centerValue: `${sym}${fmt(safePerDay)}`,
+             centerValue: money(safePerDay),
              refIsIncome: kpis.totalInc > 0 }
-  }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, sym])
+  }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, sym, amountsHidden])
 
   const KPIS = [
-    { label:t('dash.kpi.income'),       value:`${sym}${fmt(kpis.totalInc)}`,  color:'var(--accent)', sub:t('dash.kpi.records', { n: kpis.incCount }),                                                          delta: kpis.delta.inc,  invertDelta: false, raw: kpis.totalInc, count: true },
-    { label:t('dash.kpi.expenses'),         value:`${sym}${fmt(kpis.totalExp)}`,  color:'var(--red)',    sub:t('dash.kpi.records', { n: kpis.expCount }),                                                          delta: kpis.delta.exp,  invertDelta: true,  raw: kpis.totalExp, count: true },
-    { label:t('dash.kpi.balance'),   value:`${sym}${fmt(kpis.balance)}`,   color:kpis.balance >= 0 ? 'var(--accent)' : 'var(--red)', sub:(kpis.totalDebt + kpis.totalSubs > 0) ? t('dash.kpi.afterDebts', { v: `${sym}${fmt(kpis.freeFlow)}` }) : (kpis.balance >= 0 ? t('dash.kpi.incMinusExp') : t('dash.kpi.expOverInc')),      delta: kpis.delta.bal,  invertDelta: false, raw: kpis.balance, count: true },
-    ...(propFlow.has ? [{ label:t('dash.kpi.totalFlow'), value:`${sym}${fmt(flujoTotal)}`, color: flujoTotal >= 0 ? 'var(--accent)' : 'var(--red)', sub:t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${sym}${fmt(Math.abs(propFlow.net))}` }), delta: null, invertDelta: false, raw: flujoTotal, count: true }] : []),
+    { label:t('dash.kpi.income'),       value:money(kpis.totalInc),  color:'var(--accent)', sub:t('dash.kpi.records', { n: kpis.incCount }),                                                          delta: kpis.delta.inc,  invertDelta: false, raw: kpis.totalInc, count: true },
+    { label:t('dash.kpi.expenses'),         value:money(kpis.totalExp),  color:'var(--red)',    sub:t('dash.kpi.records', { n: kpis.expCount }),                                                          delta: kpis.delta.exp,  invertDelta: true,  raw: kpis.totalExp, count: true },
+    { label:t('dash.kpi.balance'),   value:money(kpis.balance),   color:kpis.balance >= 0 ? 'var(--accent)' : 'var(--red)', sub:(kpis.totalDebt + kpis.totalSubs > 0) ? t('dash.kpi.afterDebts', { v: money(kpis.freeFlow) }) : (kpis.balance >= 0 ? t('dash.kpi.incMinusExp') : t('dash.kpi.expOverInc')),      delta: kpis.delta.bal,  invertDelta: false, raw: kpis.balance, count: true },
+    ...(propFlow.has ? [{ label:t('dash.kpi.totalFlow'), value:money(flujoTotal), color: flujoTotal >= 0 ? 'var(--accent)' : 'var(--red)', sub:t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), delta: null, invertDelta: false, raw: flujoTotal, count: true }] : []),
     { label:t('dash.kpi.savingRate'), value:pct(kpis.savingRate),           color:kpis.savingRate >= 0.2 ? 'var(--accent)' : kpis.savingRate >= 0 ? 'var(--amb)' : 'var(--red)', sub:t('dash.kpi.ofIncome'), delta: kpis.delta.save, invertDelta: false, raw: null },
-    { label:t('dash.kpi.subs'),  value:t('dash.kpi.perMonth', { v: `${sym}${fmt(subMonthly)}` }), color:'var(--amb)',    sub:t('dash.kpi.perYear', { v: `${sym}${fmt(subMonthly * 12)}` }),                                          delta: null,            invertDelta: false, raw: subMonthly },
+    { label:t('dash.kpi.subs'),  value:t('dash.kpi.perMonth', { v: money(subMonthly) }), color:'var(--amb)',    sub:t('dash.kpi.perYear', { v: money(subMonthly * 12) }),                                          delta: null,            invertDelta: false, raw: subMonthly },
   ]
 
   return (
@@ -621,7 +626,7 @@ export default function Dashboard({ setPage }) {
             <div style={{ position:'absolute', top:-16, right:-16, width:56, height:56, borderRadius:'50%', background:`${k.color}`, opacity:.08 }}/>
             <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>{k.label}</div>
             <div className="num" style={{ fontSize:22, fontWeight:700, color:k.color, marginBottom:3, display:'flex', alignItems:'center', flexWrap:'wrap', gap:4 }}>
-              {k.count ? <CountUp value={k.raw} format={(v) => `${sym}${fmt(v)}`} /> : k.value}
+              {k.count ? <Money><CountUp value={k.raw} format={(v) => `${sym}${fmt(v)}`} /></Money> : k.value}
               <DeltaBadge d={k.delta} invert={k.invertDelta} />
             </div>
             <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)' }}>{k.sub}</div>
@@ -646,7 +651,7 @@ export default function Dashboard({ setPage }) {
             <div style={{ flex: 1, minWidth: 160 }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
               <div style={{ fontSize: 13, color: 'var(--tx)' }}>
-                {t('dash.expected.expected')} <strong>{sym}{fmt(expected)}</strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}>{sym}{fmt(kpis.totalInc)}</strong>
+                {t('dash.expected.expected')} <strong><Money>{sym}{fmt(expected)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{sym}{fmt(kpis.totalInc)}</Money></strong>
               </div>
             </div>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
@@ -742,9 +747,9 @@ export default function Dashboard({ setPage }) {
             />
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:10 }}>
               {[
-                { label:t('dash.proj.exp'),   value:`${sym}${fmt(projExp)}`,            color:'var(--red)',                                  rawVal: projExp },
-                { label:t('dash.proj.bal'), value:`${sym}${fmt(Math.abs(projBal))}`,  color: over ? 'var(--red)' : 'var(--accent)', prefix: over ? '−' : '+', rawVal: projBal },
-                { label:t('dash.proj.daily'),       value:t('dash.proj.perDay', { v: `${sym}${fmt(dailyExp)}` }),       color:'var(--th)',                                   rawVal: null },
+                { label:t('dash.proj.exp'),   value:money(projExp),            color:'var(--red)',                                  rawVal: projExp },
+                { label:t('dash.proj.bal'), value:money(Math.abs(projBal)),  color: over ? 'var(--red)' : 'var(--accent)', prefix: over ? '−' : '+', rawVal: projBal },
+                { label:t('dash.proj.daily'),       value:t('dash.proj.perDay', { v: money(dailyExp) }),       color:'var(--th)',                                   rawVal: null },
               ].map(k => (
                 <div key={k.label}>
                   <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3 }}>{k.label}</div>
@@ -760,7 +765,7 @@ export default function Dashboard({ setPage }) {
             </div>
             {avgExp > 0 && avgExpMonths > 0 && (
               <div style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
-                {t('dash.proj.basis', { cur: `${sym}${fmt(kpis.totalExp)}`, med: `${sym}${fmt(medianDaily)}`, left: daysLeft, avg: `${sym}${fmt(avgExp)}` })}
+                {t('dash.proj.basis', { cur: money(kpis.totalExp), med: money(medianDaily), left: daysLeft, avg: money(avgExp) })}
               </div>
             )}
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontFamily:'var(--mono)', color:'var(--th)' }}>

@@ -1826,4 +1826,9 @@ export const es = {
     'demo.tour.iqScore.body': "Un puntaje de 0 a 100 con 5 factores: flujo de caja, colchón de emergencia, deuda, metas y consistencia de datos.",
     'demo.tour.navCountry.title': "Herramientas de tu país",
     'demo.tour.navCountry.body': "Cálculos fiscales con las reglas reales de tu país. Son parte de Pro.",
+    'money.hidden': "Monto oculto",
+    'money.toggle': "Ocultar montos",
+    'money.announce.hidden': "Montos ocultos",
+    'money.announce.shown': "Montos visibles",
+    'money.shortcut': "Atajo: H",
 }

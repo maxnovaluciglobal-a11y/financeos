@@ -8,6 +8,7 @@ import { effectiveBudgetLimits } from '../utils/budgets.js'
 import { moneyLocale, currentMonth } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
 import { findEmergencyGoal } from '../utils/emergencyGoal.js'
+import { maskMoney } from '../utils/money.js'
 // Motor de reglas del FinanceOS Coach
 // Configurable sin tocar componentes React
 // Cada regla: id, categoría, condición, severidad, mensaje, acción sugerida
@@ -51,7 +52,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.cashFlow > 0 ? {
       severity: 'info',
       title: tr('cr.cashflowPos.title'),
-      msg: tr('cr.cashflowPos.msg', { v: `${m.sym}${fmt(m.cashFlow)}` }),
+      msg: tr('cr.cashflowPos.msg', { v: money(m, m.cashFlow) }),
       action: tr('cr.cashflowPos.action'),
     } : null,
   },
@@ -61,7 +62,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.cashFlow < 0 ? {
       severity: 'warning',
       title: tr('cr.cashflowNeg.title'),
-      msg: tr('cr.cashflowNeg.msg', { v: `${m.sym}${fmt(Math.abs(m.cashFlow))}` }),
+      msg: tr('cr.cashflowNeg.msg', { v: money(m, Math.abs(m.cashFlow)) }),
       action: tr('cr.cashflowNeg.action'),
     } : null,
   },
@@ -115,7 +116,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.subscriptionRatio >= COACH_CONFIG.thresholds.subscriptionRatioHigh ? {
       severity: 'warning',
       title: tr('cr.subsHigh.title'),
-      msg: tr('cr.subsHigh.msg', { pct: pct(m.subscriptionRatio), m: `${m.sym}${fmt(m.subscriptionMonthly)}`, a: `${m.sym}${fmt(m.subscriptionAnnual)}` }),
+      msg: tr('cr.subsHigh.msg', { pct: pct(m.subscriptionRatio), m: money(m, m.subscriptionMonthly), a: money(m, m.subscriptionAnnual) }),
       action: tr('cr.subsHigh.action'),
     } : null,
   },
@@ -125,7 +126,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.subscriptionRatio >= COACH_CONFIG.thresholds.subscriptionRatioWarn && m.subscriptionRatio < COACH_CONFIG.thresholds.subscriptionRatioHigh ? {
       severity: 'attention',
       title: tr('cr.subsWarn.title'),
-      msg: tr('cr.subsWarn.msg', { pct: pct(m.subscriptionRatio), a: `${m.sym}${fmt(m.subscriptionAnnual)}` }),
+      msg: tr('cr.subsWarn.msg', { pct: pct(m.subscriptionRatio), a: money(m, m.subscriptionAnnual) }),
       action: tr('cr.subsWarn.action'),
     } : null,
   },
@@ -135,7 +136,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.subscriptionCount > 0 && m.subscriptionRatio < COACH_CONFIG.thresholds.subscriptionRatioWarn ? {
       severity: 'info',
       title: tr('cr.subsInfo.title'),
-      msg: tr('cr.subsInfo.msg', { n: m.subscriptionCount, m: `${m.sym}${fmt(m.subscriptionMonthly)}`, pct: pct(m.subscriptionRatio) }),
+      msg: tr('cr.subsInfo.msg', { n: m.subscriptionCount, m: money(m, m.subscriptionMonthly), pct: pct(m.subscriptionRatio) }),
       action: null,
     } : null,
   },
@@ -169,7 +170,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.monthlyIncome > 0 && m.debtLoad >= COACH_CONFIG.thresholds.debtLoadHigh ? {
       severity: 'warning',
       title: tr('cr.debtHigh.title'),
-      msg: tr('cr.debtHigh.msg', { v: `${m.sym}${fmt(m.totalDebt)}`, pct: pct(m.debtLoad) }),
+      msg: tr('cr.debtHigh.msg', { v: money(m, m.totalDebt), pct: pct(m.debtLoad) }),
       action: tr('cr.debtHigh.action'),
     } : null,
   },
@@ -273,6 +274,9 @@ export const COACH_RULES = [
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function fmt(n) { return (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 }) }
+// Ocultar montos (T13): si la pantalla tiene los montos ocultos, las frases del
+// diagnóstico reciben la máscara en vez de la cifra (Dashboard, Coach, Reportes).
+function money(m, n) { return maskMoney(!!m.hideAmounts, `${m.sym}${fmt(n)}`) }
 function pct(n) { return ((n || 0) * 100).toFixed(1) + '%' }
 
 // ── EVALUADOR DE REGLAS ───────────────────────────────────────────────────────
@@ -367,6 +371,7 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
 
   return {
     sym, activeMonth,
+    hideAmounts: !!settings?.hideAmounts,
     monthlyIncome, monthlyExpense, cashFlow, savingsRate,
     subscriptionMonthly, subscriptionAnnual, subscriptionRatio, subscriptionCount,
     budgetsExceeded, budgetsNearLimit,

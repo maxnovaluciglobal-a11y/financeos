@@ -3,9 +3,10 @@
 
 import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
+import { useMoney } from '../Money.jsx'
 import { moneyLocale } from '../../utils/index.js'
 
-function fmtV(v, sym) {
+function fmtRaw(v, sym) {
   const n = Number(v) || 0
   if (n >= 1000000) return `${sym}${(n/1000000).toFixed(1)}M`
   if (n >= 1000)    return `${sym}${(n/1000).toFixed(0)}K`
@@ -27,6 +28,8 @@ function getStatus(prog) {
 const PRIORITY_COLOR = { Alta:'var(--red)', Media:'var(--amb)', Baja:'var(--th)' }
 
 export default function GoalProgressList({ goals, sym = '$' }) {
+  const { m } = useMoney()  // ocultar montos (T13)
+  const fmtV = (v, s) => m(fmtRaw(v, s))
   const safeGoals = Array.isArray(goals) ? goals : []
 
   const rows = useMemo(() => safeGoals.map(g => {

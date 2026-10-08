@@ -4,7 +4,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, dateLocale, currentMonth } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -18,6 +18,7 @@ import ReportPDF from './ReportPDF.jsx'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { usePlan } from '../../hooks/usePlan.js'
+import Money, { useMoney } from '../../components/Money.jsx'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   AreaChart, Area, ReferenceLine, ResponsiveContainer, Legend,
@@ -29,6 +30,10 @@ export default function Reports({ setPage }) {
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = CURRENCY_SYMBOLS[settings.currency] || '$'
+  // Ocultar montos (T13): fmtMoney enmascara en pantalla; el PDF (ReportPDF.jsx)
+  // usa su propio formateo y siempre lleva las cifras reales.
+  const { m } = useMoney()
+  const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const subMetrics = useSubscriptionMetrics()
   const { isPro }  = usePlan()
   const [pdfLoading, setPdfLoading] = useState(false)
@@ -196,7 +201,7 @@ export default function Reports({ setPage }) {
                         <div style={{height:'100%',width:'100%',transform:`scaleX(${Math.min(actualPct/r.max,1)})`,transformOrigin:'left',background:ok?r.color:'var(--red)',borderRadius:4,transition:'transform .4s'}}/>
                       </div>
                       <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginTop:2,display:'flex',justifyContent:'space-between'}}>
-                        <span>{fmtMoney(r.actual,sym)}</span><span>{t('reports.rule.ideal', { v: fmtMoney(r.ideal,sym) })}</span>
+                        <span><Money>{fmtMoney(r.actual,sym)}</Money></span><span>{t('reports.rule.ideal', { v: fmtMoney(r.ideal,sym) })}</span>
                       </div>
                     </div>
                   )
@@ -213,8 +218,8 @@ export default function Reports({ setPage }) {
                 <BarChart data={trendData} barGap={4} barCategoryGap="30%">
                   <CartesianGrid {...gridStyle}/>
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}/>
-                  <RTooltip contentStyle={ttStyle}/>
+                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                  <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                   <Legend wrapperStyle={{fontSize:11,fontFamily:'var(--mono)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
                   <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--red)" radius={[3,3,0,0]} opacity={0.75}/>
@@ -225,7 +230,7 @@ export default function Reports({ setPage }) {
               <table className="sr-only">
                 <caption>{t('reports.trend.title')}</caption>
                 <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('reports.trend.income')}</th><th scope="col">{t('reports.trend.expenses')}</th></tr></thead>
-                <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td>{fmtMoney(d.Ingresos,sym)}</td><td>{fmtMoney(d.Gastos,sym)}</td></tr>)}</tbody>
+                <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td><Money>{fmtMoney(d.Ingresos,sym)}</Money></td><td><Money>{fmtMoney(d.Gastos,sym)}</Money></td></tr>)}</tbody>
               </table>
             </>
           )}
@@ -245,8 +250,8 @@ export default function Reports({ setPage }) {
                 </defs>
                 <CartesianGrid {...gridStyle}/>
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}/>
-                <RTooltip contentStyle={ttStyle}/>
+                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                 <ReferenceLine y={0} stroke="var(--brd2)"/>
                 <Area type="monotone" dataKey="Ahorro" name={t('reports.savings.series')} stroke="var(--grn)" strokeWidth={2} fill="url(#ahorroGrad)"/>
               </AreaChart>
@@ -254,7 +259,7 @@ export default function Reports({ setPage }) {
             <table className="sr-only">
               <caption>{t('reports.savings.title')}</caption>
               <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('reports.savings.series')}</th></tr></thead>
-              <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td>{fmtMoney(d.Ahorro,sym)}</td></tr>)}</tbody>
+              <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td><Money>{fmtMoney(d.Ahorro,sym)}</Money></td></tr>)}</tbody>
             </table>
           </>
         )}
@@ -313,7 +318,7 @@ export default function Reports({ setPage }) {
           <div style={{flex:1,minWidth:200}}>
             <div style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:3}}>{t('reports.networth.title')}</div>
             <div className="num" style={{fontSize:22,fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
-              {nw.netWorth >= 0 ? '' : '-'}{fmtMoney(Math.abs(nw.netWorth), sym)}
+              {nw.netWorth >= 0 ? '' : '-'}<Money>{fmtMoney(Math.abs(nw.netWorth), sym)}</Money>
             </div>
             <div style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
           </div>

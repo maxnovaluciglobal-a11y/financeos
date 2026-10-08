@@ -1826,4 +1826,9 @@ export const de = {
     'demo.tour.iqScore.body': "Ein Wert von 0 bis 100 aus 5 Faktoren: Cashflow, Notgroschen, Schulden, Ziele und Datenkonsistenz.",
     'demo.tour.navCountry.title': "Werkzeuge für Ihr Land",
     'demo.tour.navCountry.body': "Steuerberechnungen nach den tatsächlichen Regeln Ihres Landes. Teil von Pro.",
+    'money.hidden': "Betrag ausgeblendet",
+    'money.toggle': "Beträge ausblenden",
+    'money.announce.hidden': "Beträge ausgeblendet",
+    'money.announce.shown': "Beträge sichtbar",
+    'money.shortcut': "Tastenkürzel: H",
 }

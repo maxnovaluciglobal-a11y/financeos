@@ -7,6 +7,8 @@
 //
 // Puro SVG, sin dependencias. Respeta prefers-reduced-motion.
 
+import { useMoney } from './Money.jsx'
+
 const TAU = Math.PI * 2
 const polar = (cx, cy, r, frac) => {
   const a = frac * TAU - Math.PI / 2 // arranca arriba (12 en punto)
@@ -22,6 +24,7 @@ export default function LivingRing({
   footLabel = '',      // p.ej. "quedan 12 días"
   size = 220,
 }) {
+  const { m } = useMoney() // centerValue es un monto: se enmascara (T13)
   const cx = 100, cy = 100
   const rArc = 62, wArc = 13
   const rDay = 78
@@ -79,7 +82,7 @@ export default function LivingRing({
       <text x="100" y="94" textAnchor="middle" fontFamily="var(--mono)" fontSize="8"
         letterSpacing="1" fill="var(--th)">{centerLabel}</text>
       <text x="100" y="116" textAnchor="middle" fontFamily="var(--display)" fontSize="22"
-        fontWeight="700" fill="var(--tx)">{centerValue}</text>
+        fontWeight="700" fill="var(--tx)">{centerValue ? m(centerValue) : ''}</text>
       {footLabel && (
         <text x="100" y="132" textAnchor="middle" fontFamily="var(--mono)" fontSize="8"
           fill="var(--th)">{footLabel}</text>

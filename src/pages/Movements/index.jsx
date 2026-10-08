@@ -12,6 +12,7 @@ import { parseTransactionText } from '../../utils/smsParser.js'
 import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel } from '../../utils/index.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -38,7 +39,7 @@ function toAnnual(amount, frequency) {
 
 const SYM   = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$' }
 const fmt   = n => (Number(n)||0).toLocaleString(moneyLocale(), { maximumFractionDigits:0 })
-const fmtM  = (n, sym) => `${sym}${fmt(n)}`
+const fmtMRaw = (n, sym) => `${sym}${fmt(n)}`
 
 // La lista de categorías vive en utils/index.js (CATS_EXPENSE) — es la fuente
 // compartida con Budgets, para que un presupuesto siempre pueda matchear gasto real.
@@ -305,6 +306,9 @@ export default function Movements({ setPage }) {
   const deleteWithUndo     = ctx.deleteWithUndo
 
   const sym         = SYM[settings.currency] || '$'
+  // Ocultar montos (T13): toda cifra de esta pantalla pasa por fmtM → m().
+  const { m } = useMoney()
+  const fmtM = (n, s) => m(fmtMRaw(n, s))
   const activeMonth = settings.activeMonth || currentMonth()
   const categoriesExpense = useMemo(() => getCategoriesExpense(settings), [settings])
 
@@ -603,7 +607,7 @@ export default function Movements({ setPage }) {
               {t('mov.list.expenses', { n: listExp.length })}
             </div>
             <div style={{ fontSize:11, fontWeight:700, color:'var(--red)',
-              fontFamily:'var(--mono)' }}>{fmtM(totalExp, sym)}</div>
+              fontFamily:'var(--mono)' }}><Money>{fmtM(totalExp, sym)}</Money></div>
           </div>
           {drillCat && (
             <div style={{ padding:'8px 14px', borderBottom:'.5px solid var(--brd)', display:'flex', alignItems:'center', gap:8, background:'var(--accent-bg)' }}>
@@ -666,7 +670,7 @@ export default function Movements({ setPage }) {
                 </div>
                 <div style={{ fontSize:12, fontWeight:600, color:'var(--red)',
                   fontFamily:'var(--mono)', flexShrink:0 }}>
-                  -{fmtM(e.amount, sym)}
+                  -<Money>{fmtM(e.amount, sym)}</Money>
                 </div>
                 {updateExpense && (
                   <button onClick={()=>{setEditingId(e.id);setEditForm({description:e.description||'',amount:e.amount,date:e.date,category:e.category,subcategory:e.subcategory||''})}}

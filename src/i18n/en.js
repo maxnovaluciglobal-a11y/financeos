@@ -1826,4 +1826,9 @@ export const en = {
     'demo.tour.iqScore.body': "A score from 0 to 100 built from 5 factors: cash flow, emergency cushion, debt, goals and data consistency.",
     'demo.tour.navCountry.title': "Tools for your country",
     'demo.tour.navCountry.body': "Tax calculations with your country's actual rules. Part of Pro.",
+    'money.hidden': "Amount hidden",
+    'money.toggle': "Hide amounts",
+    'money.announce.hidden': "Amounts hidden",
+    'money.announce.shown': "Amounts visible",
+    'money.shortcut': "Shortcut: H",
 }

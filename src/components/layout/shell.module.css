@@ -208,3 +208,21 @@
 @media (max-width: 700px) {
   .tabbar { display: grid; }
 }
+
+/* ── OCULTAR MONTOS (T13) ──
+   Área táctil de 44px sin agrandar la topbar: los márgenes negativos dejan que
+   el botón ocupe el aire de padding que ya existe arriba y abajo. */
+.topRight { display: inline-flex; align-items: center; gap: 4px; }
+.amountsBtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-width: 44px; min-height: 44px; margin: -14px 0 -14px -6px; padding: 0 10px;
+  background: none; border: 0; border-radius: var(--r); color: var(--tm);
+  font: 500 12px/1 var(--sans); letter-spacing: 0; text-transform: none;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.amountsBtn:hover { color: var(--tx); background: var(--sur2); }
+.amountsBtn[aria-pressed="true"] { color: var(--navy); background: color-mix(in srgb, var(--laton) 22%, transparent); }
+:global([data-theme="dark"]) .amountsBtn[aria-pressed="true"] { color: var(--laton-300); background: color-mix(in srgb, var(--laton) 18%, transparent); }
+.amountsLbl { white-space: nowrap; }
+@media (max-width: 700px) { .amountsLbl { display: none; } }
+@media (prefers-reduced-motion: reduce) { .amountsBtn { transition: none; } }

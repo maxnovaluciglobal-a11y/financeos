@@ -4,6 +4,7 @@
 // el dato honesto de FinanceOS: el DISPONIBLE REAL (freeFlow) = ingresos − gastos
 // − deudas − suscripciones. No es el saldo del banco; es lo que de verdad queda.
 import CountUp from '../../components/CountUp.jsx'
+import Money from '../../components/Money.jsx'
 import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
 
@@ -46,7 +47,7 @@ export default function MonthVerdict({ freeFlow, hasData, sym, month, embedded =
             fontSize: embedded ? 'clamp(26px, 9vw, 38px)' : 'var(--fs-hero)',
             color, lineHeight: 1.0, overflowWrap: 'anywhere',
           }}>
-            {freeFlow < 0 ? '−' : ''}{sym}<CountUp value={Math.abs(freeFlow)} format={(v) => Math.round(v).toLocaleString(moneyLocale())} />
+            {freeFlow < 0 ? '−' : ''}<Money>{sym}<CountUp value={Math.abs(freeFlow)} format={(v) => Math.round(v).toLocaleString(moneyLocale())} /></Money>
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2 }}>{sub}</div>
         </>

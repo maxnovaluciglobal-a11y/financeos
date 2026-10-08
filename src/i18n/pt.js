@@ -1826,4 +1826,9 @@ export const pt = {
     'demo.tour.iqScore.body': "Uma pontuação de 0 a 100 com 5 fatores: fluxo de caixa, reserva de emergência, dívida, metas e consistência dos dados.",
     'demo.tour.navCountry.title': "Ferramentas do seu país",
     'demo.tour.navCountry.body': "Cálculos fiscais com as regras reais do seu país. Fazem parte do Pro.",
+    'money.hidden': "Valor oculto",
+    'money.toggle': "Ocultar valores",
+    'money.announce.hidden': "Valores ocultos",
+    'money.announce.shown': "Valores visíveis",
+    'money.shortcut': "Atalho: H",
 }

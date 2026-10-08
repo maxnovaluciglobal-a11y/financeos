@@ -4,6 +4,7 @@
 import { useId, Children, cloneElement, isValidElement } from 'react'
 import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
+import Money, { MONEY_MASK } from '../Money.jsx'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -42,7 +43,8 @@ export function KPI({ label, value, sub, color = 'default' }) {
   return (
     <div className={styles.kpi}>
       <div className={styles.kpiLbl}>{label}</div>
-      <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')}>{value}</div>
+      {/* value enmascarado (T13) → <Money> agrega el texto sr-only "Monto oculto" */}
+      <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')}>{value === MONEY_MASK ? <Money /> : value}</div>
       {sub && <div className={styles.kpiSub}>{sub}</div>}
     </div>
   )
@@ -127,7 +129,7 @@ export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
         {meta && <div className={styles.txMeta}>{meta}</div>}
       </div>
       <div className={[styles.txAmt, isIncome ? styles.txInc : styles.txExp].join(' ')}>
-        {isIncome ? '+' : '-'}{amount}
+        {isIncome ? '+' : '-'}<Money>{amount}</Money>
       </div>
       {onEdit && (
         <button className={styles.delBtn} onClick={onEdit} title="Editar" aria-label={`Editar ${name || 'movimiento'}`} style={{marginRight:2,fontSize:11}}>
