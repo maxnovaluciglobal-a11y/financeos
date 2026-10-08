@@ -2,7 +2,9 @@
 // Ingresos · Gastos · Te queda este mes, cada uno con su variación vs. el mes
 // anterior (DeltaLine). "Te queda" absorbe la card héroe anterior (veredicto
 // del mes + Anillo Vivo): es el mismo disponible real que mostraba MonthVerdict
-// (ingresos − gastos − deudas − suscripciones), no el saldo del banco.
+// Desde los movimientos fijos (08-oct-2026) "Te queda" es SOLO lo real
+// (ingresos − gastos registrados); lo previsto que falta va en la línea
+// "Previsto pendiente", con un enlace para revisarlo.
 import CountUp from '../../components/CountUp.jsx'
 import Money from '../../components/Money.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
@@ -12,9 +14,10 @@ import { fmtMoney, fmtSignedMoney } from '../../utils/index.js'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
 import s from './Home.module.css'
+import r from '../../components/recurring/recurring.module.css'
 
 
-export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, children }) {
+export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, children }) {
   const { t } = useT()
   const prevMonth = prevMonthOf(activeMonth)
   const { cur, prev } = kpis
@@ -65,6 +68,17 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               )}
               {hasData && <DeltaLine delta={monthDelta(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} />}
               {hasData && <div className={s.kpiSub}>{subParts.join(' · ')}</div>}
+              {pending && pending.count > 0 && (
+                <div className={r.pending}>
+                  <span className={r.pendingLabel}>{t('rec.pending.line')}</span>
+                  <span className={r.pendingVals}>
+                    {pending.expense > 0 && <Money>−{fmtMoney(pending.expense, sym)}</Money>}
+                    {pending.expense > 0 && pending.income > 0 && ' · '}
+                    {pending.income > 0 && <Money>+{fmtMoney(pending.income, sym)}</Money>}
+                  </span>
+                  {onReviewPending && <button type="button" className={r.reviewLink} onClick={onReviewPending}>{t('rec.pending.review')} →</button>}
+                </div>
+              )}
               {dualOn && hasData && <div className={s.kpiDual}>{toUSD(free)}</div>}
             </div>
             {hasData && pulse && (

@@ -134,3 +134,17 @@ describe('historiales mensuales', () => {
     expect(lastValueBefore(h, '2026-10', { monthOf: e => e.m, valueOf: e => e.v })).toEqual({ m: '2026-09', v: 100 })
   })
 })
+
+import { upcomingFromRules } from './dashboardModel.js'
+describe('upcomingFromRules — próximos pagos desde los fijos', () => {
+  const r = (id, day, amount, source = 'manual', kind = 'expense') => ({ id, kind, source, description: id, category: 'Otros',
+    amounts: [{ from: '2026-01', amount }], schedule: { freq: 'monthly', day }, startDate: '2026-01-01', skipped: [] })
+  it('solo previstos de gasto entre hoy y 30 días, cruzando de mes', () => {
+    const rules = [r('arriendo', 1, 500), r('gym', 5, 35, 'subscription'), r('tarjeta', 20, 80, 'debt'), r('sueldo', 25, 2000, 'manual', 'income')]
+    const expenses = [{ id: 'x', recurringId: 'gym', occurrenceDate: '2026-11-05', amount: 35, date: '2026-11-05' }]
+    const { items, total } = upcomingFromRules(rules, { expenses, today: '2026-10-08' })
+    expect(items.map(i => `${i.name}@${i.date}`)).toEqual(['tarjeta@2026-10-20', 'arriendo@2026-11-01'])
+    expect(items[0].kind).toBe('debt')
+    expect(total).toBe(2)
+  })
+})

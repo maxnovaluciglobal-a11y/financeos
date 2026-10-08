@@ -8,8 +8,11 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName, recurrenceLabel, catName, currencySymbol } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName, catName, currencySymbol, localDateStr } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
+import { recurringMonthlyTotals } from '../../utils/recurring.js'
+import { freqText } from '../../components/recurring/labels.js'
+import Money from '../../components/Money.jsx'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -33,38 +36,21 @@ const ChartTooltip = ({ active, payload, label, sym }) => {
 
 export default function CashFlow({ setPage }) {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, settings } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, settings, recurring } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // proyección personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
 
-  // ── Detectar recurrentes ──────────────────────────────────────────────────
-  const recurringInc = useMemo(() =>
-    incomes.filter(r => r.recurrence && r.recurrence !== 'Único')
-  , [incomes])
-
-  const recurringExp = useMemo(() =>
-    expenses.filter(r => r.recurrence && r.recurrence !== 'Único')
-  , [expenses])
-
-  // ── Calcular flujo mensual recurrente ─────────────────────────────────────
-  const monthlyRecInc = useMemo(() => {
-    return recurringInc.reduce((s, r) => {
-      const amt = r.recurrence === 'Semanal' ? r.amount * 4.33
-                : r.recurrence === 'Quincenal' ? r.amount * 2
-                : r.amount
-      return s + amt
-    }, 0)
-  }, [recurringInc])
-
-  const monthlyRecExp = useMemo(() => {
-    return recurringExp.reduce((s, r) => {
-      const amt = r.recurrence === 'Semanal' ? r.amount * 4.33
-                : r.recurrence === 'Quincenal' ? r.amount * 2
-                : r.amount
-      return s + amt
-    }, 0)
-  }, [recurringExp])
+  // ── Movimientos fijos (reglas) ────────────────────────────────────────────
+  // BUG FIX (08-oct-2026): antes se sumaban TODOS los registros históricos
+  // marcados como recurrentes — con 6 meses de sueldo cargados, el ingreso
+  // recurrente salía ×6. Ahora sale de las reglas vigentes (una vez cada una,
+  // en su equivalente mensual), excluyendo las de inversión/propiedades.
+  const recMonthly = useMemo(() => recurringMonthlyTotals(recurring || [], { today: localDateStr(), personalOnly: true }), [recurring])
+  const recurringInc = recMonthly.incomeRules
+  const recurringExp = recMonthly.expenseRules
+  const monthlyRecInc = recMonthly.income
+  const monthlyRecExp = recMonthly.expense
 
   // ── Saldo actual del mes activo ───────────────────────────────────────────
   const activeMonth = settings.activeMonth || currentMonth()
@@ -325,23 +311,18 @@ export default function CashFlow({ setPage }) {
             ? <Empty text={t('cf.recInc.empty')} />
             : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {recurringInc.map(r => {
-                  const mensual = r.recurrence === 'Semanal' ? r.amount * 4.33
-                                : r.recurrence === 'Quincenal' ? r.amount * 2
-                                : r.amount
-                  return (
+                {recurringInc.map(({ rule: r, monthly: mensual, amount }) => (
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.source}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{recurrenceLabel(r.recurrence, lang)} · {catName(r.category, lang)}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--grn)' }}>+{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('cf.rec.original', { v: fmtMoney(r.amount, sym) })}</div>
+                        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--grn)' }}>+<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
-                  )
-                })}
+                ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 12, fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
                   <span>{t('cf.rec.totalMonthly')}</span>
                   <span style={{ color: 'var(--grn)', fontFamily: 'var(--mono)' }}>+{fmtMoney(monthlyRecInc, sym)}</span>
@@ -357,23 +338,18 @@ export default function CashFlow({ setPage }) {
             ? <Empty text={t('cf.recExp.empty')} />
             : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {recurringExp.map(r => {
-                  const mensual = r.recurrence === 'Semanal' ? r.amount * 4.33
-                                : r.recurrence === 'Quincenal' ? r.amount * 2
-                                : r.amount
-                  return (
+                {recurringExp.map(({ rule: r, monthly: mensual, amount }) => (
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{recurrenceLabel(r.recurrence, lang)} · {catName(r.category, lang)}</div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>-{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('cf.rec.original', { v: fmtMoney(r.amount, sym) })}</div>
+                        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>-<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
-                  )
-                })}
+                ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 12, fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
                   <span>{t('cf.rec.totalMonthly')}</span>
                   <span style={{ color: 'var(--red)', fontFamily: 'var(--mono)' }}>-{fmtMoney(monthlyRecExp, sym)}</span>
