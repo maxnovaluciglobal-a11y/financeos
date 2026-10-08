@@ -11,7 +11,7 @@ import { createContext, useContext, useReducer, useEffect, useCallback, useMemo,
 import {
   dbGetAll, dbAdd, dbDelete, clearAllData,
   getSettings, saveSettings, exportAllData, importAllData,
-  isUsingFallback, DEFAULT_SETTINGS,
+  isUsingFallback, firstRunSettings,
 } from '../core/db/index.js'
 import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr } from '../utils/index.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
@@ -26,7 +26,9 @@ const initialState = {
   debts:    [],
   goals:    [],
   subscriptions: [],
-  settings: DEFAULT_SETTINGS,
+  // Antes de hidratar: lo del navegador (idioma/país/moneda), no 'es'/CL fijo.
+  // getSettings() lo reemplaza enseguida por lo guardado, si hay algo guardado.
+  settings: firstRunSettings(),
   loading:  true,
   toast:    null, // { msg, type } — 'ok' | 'error'
 }

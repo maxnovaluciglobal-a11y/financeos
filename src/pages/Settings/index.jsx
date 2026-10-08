@@ -127,7 +127,7 @@ export default function Settings() {
         )}
         <div style={srow}>
           <div><div style={slbl}>{t('settings.language.label')}</div><div style={ssub}>{t('settings.language.sub')}</div></div>
-          <select aria-label={t('settings.language.label')} style={{width:'auto'}} value={settings.language||'es'} onChange={e=>updateSettings({...settings,language:e.target.value})}>
+          <select aria-label={t('settings.language.label')} style={{width:'auto'}} value={settings.language||'es'} onChange={e=>updateSettings({...settings,language:e.target.value,languageExplicit:true})}>
             <option value="es">Español</option>
             <option value="en">English</option>
             <option value="pt">Português</option>

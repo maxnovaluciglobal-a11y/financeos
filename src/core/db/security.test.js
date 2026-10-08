@@ -89,7 +89,7 @@ describe('wipeLocalDevice (Olvidé mi PIN)', () => {
     expect(await db.dbGetAll('incomes')).toEqual([])
     const s = await db.getSettings()
     expect(s.onboardingDone).toBeUndefined()
-    expect(s.language).toBe(db.DEFAULT_SETTINGS.language)
+    expect(s.language).toBe(db.firstRunSettings().language)
     expect(localStorage.getItem('fos_score_history')).toBeNull()
     expect(localStorage.getItem('fnos_presync_backup')).toBeNull()
     expect(localStorage.getItem('fnos_sync_on')).toBe('0')

@@ -5,8 +5,14 @@ import './styles/globals.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { installGlobalErrorLog } from './utils/errorLog.js'
+import { detectLanguage } from './i18n/translate.js'
 
 installGlobalErrorLog()
+
+// index.html trae lang="es" fijo; hasta que AppContext/DemoContext lean los
+// ajustes, el primer pintado usa el idioma del navegador (mismo criterio que el
+// primer arranque). Después lo actualiza rehydrate()/updateSettings().
+try { document.documentElement.lang = detectLanguage() } catch {}
 
 // REVERTIDO 2026-08-27: se probó Object.freeze(Object.prototype) acá como mitigación
 // de la vulnerabilidad de prototype pollution de xlsx@0.18.5 (GHSA-4r6h-8v6p-xvw6).

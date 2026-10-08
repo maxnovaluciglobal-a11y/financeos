@@ -16,6 +16,7 @@ import { useT } from '../i18n/useT.js'
 import TEMPLATES from '../data/templates.js'
 import CountryBadge from './CountryBadge.jsx'
 import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency, templateForCountry } from '../data/countries.js'
+import { languageForCountry } from '../i18n/region.js'
 import config from '../config.js'
 import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, localeForCurrency } from '../utils/index.js'
 import { calcFinancialScore, weakestFactor } from '../utils/financialScore.js'
@@ -158,8 +159,15 @@ export default function Onboarding({ onComplete }) {
     return () => clearTimeout(id)
   }, [step])
 
+  // Elegir país sugiere su idioma (US → en, DE → de, PT → pt, el resto → es)
+  // mientras el usuario no haya tocado el selector de idioma: una elección
+  // explícita (settings.languageExplicit) nunca se pisa.
   function chooseCountry(code) {
     setAnswers({ country: code, currency: suggestedCurrency(code) })
+    const suggested = languageForCountry(code)
+    if (suggested && !settings.languageExplicit && suggested !== settings.language) {
+      updateSettings({ ...settings, language: suggested })
+    }
   }
 
   // Escribe la configuración que antes salía de los 9 pasos. Va ANTES del paso
@@ -277,7 +285,7 @@ export default function Onboarding({ onComplete }) {
         {LANGUAGES.map(l => (
           <button key={l.code} type="button" className="fos-chip fos-chip--tall"
             aria-pressed={currentLang === l.code} aria-label={l.name} lang={l.code}
-            onClick={() => updateSettings({ ...settings, language: l.code })}
+            onClick={() => updateSettings({ ...settings, language: l.code, languageExplicit: true })}
             style={{ fontFamily: 'var(--mono)', letterSpacing: '.06em' }}>
             {l.code.toUpperCase()}
           </button>
