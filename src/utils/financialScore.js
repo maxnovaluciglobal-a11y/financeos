@@ -46,7 +46,7 @@ export function calcFinancialScore({
   const { savingsRateGood, savingsRateWarn } = COACH_CONFIG.thresholds
   const cashFlowPts = sr >= savingsRateGood ? 30 : sr >= savingsRateWarn ? 20 : sr >= 0 ? 10 : 0
   score += cashFlowPts
-  breakdown.push({ label: tr('score.cashFlow'), pts: cashFlowPts, max: 30 })
+  breakdown.push({ key: 'cashFlow', label: tr('score.cashFlow'), pts: cashFlowPts, max: 30 })
 
   // 2. Colchón de emergencia (0-20) — factor NUEVO del brand book, sin
   // equivalente en el modelo anterior. Reusa la detección de meta de
@@ -64,7 +64,7 @@ export function calcFinancialScore({
     : emergencyMonths > 0 ? 5
     : 0
   score += emergencyPts
-  breakdown.push({ label: tr('score.emergencyCushion'), pts: emergencyPts, max: 20 })
+  breakdown.push({ key: 'emergencyCushion', label: tr('score.emergencyCushion'), pts: emergencyPts, max: 20 })
 
   // 3. Carga de deuda (0-20) — SIN CAMBIOS de lógica ni de peso: ya era
   // 20pts (=20%) en el modelo anterior y coincide con el brand book.
@@ -74,7 +74,7 @@ export function calcFinancialScore({
   const { totalDebt, ratio: debtLoad } = personalDebtRatio(debts, annualIncome)
   const debtPts = totalDebt === 0 ? 20 : debtLoad < 0.20 ? 15 : debtLoad < 0.50 ? 10 : 0
   score += debtPts
-  breakdown.push({ label: tr('score.debtLoad'), pts: debtPts, max: 20 })
+  breakdown.push({ key: 'debtLoad', label: tr('score.debtLoad'), pts: debtPts, max: 20 })
 
   // 4. Progreso de metas (0-15) — misma lógica que el viejo factor "Metas
   // activas" (20pts: ≥1 meta con progreso→máximo, hay metas sin progreso→
@@ -83,7 +83,7 @@ export function calcFinancialScore({
   const goalsWithProgress = goalArr.filter(g => Number(g.saved) > 0).length
   const goalPts = goalsWithProgress > 0 ? 15 : goalArr.length > 0 ? 7 : 0
   score += goalPts
-  breakdown.push({ label: tr('score.goalsProgress'), pts: goalPts, max: 15 })
+  breakdown.push({ key: 'goalsProgress', label: tr('score.goalsProgress'), pts: goalPts, max: 15 })
 
   // 5. Consistencia de datos (0-15) — factor NUEVO del brand book, sin
   // equivalente previo. No existe una señal real de "% de cuentas
@@ -118,10 +118,21 @@ export function calcFinancialScore({
   }
   const consistencyPts = catPts + syncPts
   score += consistencyPts
-  breakdown.push({ label: tr('score.dataConsistency'), pts: consistencyPts, max: 15 })
+  breakdown.push({ key: 'dataConsistency', label: tr('score.dataConsistency'), pts: consistencyPts, max: 15 })
 
   const label = score >= 80 ? tr('score.excellent') : score >= 60 ? tr('score.good') : score >= 40 ? tr('score.fair') : tr('score.critical')
   const color = score >= 80 ? 'var(--pos)' : score >= 60 ? 'var(--pos)' : score >= 40 ? 'var(--amb)' : 'var(--red)'
 
   return { score, label, color, breakdown }
+}
+
+// Factor con menor proporción pts/max — el "siguiente paso sugerido" del
+// onboarding. A igual proporción gana el primero del modelo (el de más peso).
+export function weakestFactor(breakdown) {
+  let worst = null
+  for (const b of Array.isArray(breakdown) ? breakdown : []) {
+    if (!b?.max) continue
+    if (!worst || b.pts / b.max < worst.pts / worst.max) worst = b
+  }
+  return worst
 }

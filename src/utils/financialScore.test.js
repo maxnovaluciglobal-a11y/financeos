@@ -5,7 +5,7 @@
 // factor, y los dos casos límite (score 100 y score 0) para que un cambio
 // futuro de pesos o umbrales no pase desapercibido.
 import { describe, it, expect } from 'vitest'
-import { calcFinancialScore } from './financialScore.js'
+import { calcFinancialScore, weakestFactor } from './financialScore.js'
 
 const ACTIVE_MONTH = '2026-09'
 const NOW = 1_700_000_000_000 // fijo, para que los tests de "antigüedad de sync" sean deterministas
@@ -299,5 +299,20 @@ describe('calcFinancialScore — etiqueta y color según score total', () => {
     expect(r.score).toBe(38)
     expect(r.label).toBe('score.critical')
     expect(r.color).toBe('var(--red)')
+  })
+})
+
+describe('breakdown · key estable y weakestFactor', () => {
+  it('cada factor trae una key que no depende del idioma', () => {
+    const r = calcFinancialScore({ savingRate: 0, expenses: [], debts: [], goals: [], incomes: [], activeMonth: '2026-10' })
+    expect(r.breakdown.map(b => b.key)).toEqual(['cashFlow', 'emergencyCushion', 'debtLoad', 'goalsProgress', 'dataConsistency'])
+  })
+
+  it('devuelve el factor con menor proporción y, a igualdad, el primero', () => {
+    expect(weakestFactor([
+      { key: 'a', pts: 10, max: 30 }, { key: 'b', pts: 0, max: 20 }, { key: 'c', pts: 0, max: 15 },
+    ]).key).toBe('b')
+    expect(weakestFactor([{ key: 'a', pts: 15, max: 30 }, { key: 'b', pts: 10, max: 20 }]).key).toBe('a')
+    expect(weakestFactor([])).toBe(null)
   })
 })

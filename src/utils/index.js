@@ -32,6 +32,9 @@ const CURRENCY_LOCALE = {
   CLP: 'es-CL', COP: 'es-CO', ARS: 'es-AR', PEN: 'es-PE', VES: 'es-VE',
   MXN: 'es-MX', USD: 'en-US', EUR: 'pt-PT', BRL: 'pt-BR',
 }
+// Locale de formato de una moneda cualquiera (ej. la vista previa del onboarding,
+// antes de guardar la moneda elegida).
+export const localeForCurrency = (currency) => CURRENCY_LOCALE[currency] || 'es-CL'
 export function setMoneyLocale(currency) {
   _moneyLocale = CURRENCY_LOCALE[currency] || 'es-CL'
 }

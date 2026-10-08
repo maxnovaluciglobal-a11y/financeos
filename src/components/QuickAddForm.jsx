@@ -336,7 +336,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
               value={method}
               onChange={e => setMethod(e.target.value)}
               aria-label={t('qa.method')}
-              style={{ width: 'auto', maxWidth: '46%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
+              style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
             >
               {config.paymentMethods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
             </select>
