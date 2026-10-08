@@ -3,6 +3,7 @@
 // Config-driven: toda particularidad vive en src/config/aporte/{pais}.js
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -67,7 +68,7 @@ export default function AhorroFiscal() {
         <PageHeader title={config.titulo} sub={config.subtitulo} />
 
         <Alert type="info">
-          ⚠ {config.disclaimer} <strong>Cifras {config.vigencia} ({config.fuente}).</strong>
+          {config.disclaimer} <strong>Cifras {config.vigencia} ({config.fuente}).</strong>
         </Alert>
 
         <Card>

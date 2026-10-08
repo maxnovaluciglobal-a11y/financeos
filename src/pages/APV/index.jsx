@@ -3,6 +3,7 @@
 // Solo visible si settings.country === 'CL'
 
 import { useState, useMemo, useEffect } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Btn } from '../../components/ui/index.jsx'
@@ -118,7 +119,7 @@ export default function APVPage() {
       <Card>
         <CardHeader title={`🇨🇱 ${t('apv.title')}`} />
         <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:14,lineHeight:1.6,padding:'8px 10px',background:'rgba(255,165,0,.07)',borderRadius:6,border:'0.5px solid rgba(255,165,0,.2)'}}>
-          {t('apv.disclaimer')}
+          <InlineIcon kind="alert" size={13} />{t('apv.disclaimer')}
           {indInfo && (
             <span style={{display:'block',marginTop:6,opacity:0.85}}>
               {t('apv.indicators', { utm: indInfo.utm.toLocaleString(), uf: indInfo.uf.toLocaleString(), usd: (indInfo.dolar||0).toLocaleString() })}

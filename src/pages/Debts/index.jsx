@@ -1,5 +1,6 @@
 // src/pages/Debts/index.jsx — v1.5
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
@@ -284,7 +285,7 @@ export default function Debts() {
       {show && (
         <Card>
           <CardHeader title={t('debts.new')} />
-          {err && <Alert type="danger">⚠ {err}</Alert>}
+          {err && <Alert type="danger">{err}</Alert>}
           {isChile && ufValue > 0 && (
             <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', margin:'0 0 10px', lineHeight:1.4 }}>
               <input type="checkbox" checked={!!f.ufDebt} onChange={e => setF(p=>({...p, ufDebt:e.target.checked}))} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />

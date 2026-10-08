@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Lock } from 'lucide-react'
+import SignalIcon, { InlineIcon } from '../icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { CLOUD_ENABLED } from '../../core/supabase.js'
 import { cloudPush, cloudPull, cloudStatus } from '../../core/cloudSync.js'
@@ -112,12 +113,12 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F3E4CE', borderRadius: compact ? 20 : 8,
+        background: '#F3E4CE', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
-        <span>⚠</span>
+        <SignalIcon kind="alert" size={13} />
         <span>{compact ? t('backup.badge.none') : t('backup.badge.noneLong')}</span>
       </div>
     )
@@ -128,12 +129,12 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F5E6E3', borderRadius: compact ? 20 : 8,
+        background: '#F5E6E3', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(162,62,46,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--red)',
         fontFamily: 'var(--mono)',
       }}>
-        <span>⚠</span>
+        <SignalIcon kind="alert" size={13} />
         <span>{compact ? t('backup.badge.daysShort', { n: days }) : t('backup.badge.oldLong', { n: days })}</span>
       </div>
     )
@@ -144,12 +145,12 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F3E4CE', borderRadius: compact ? 20 : 8,
+        background: '#F3E4CE', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
-        <span>◑</span>
+        <SignalIcon kind="attention" size={13} />
         <span>{compact ? t('backup.badge.daysShort', { n: days }) : t('backup.badge.staleLong', { n: days })}</span>
       </div>
     )
@@ -159,7 +160,7 @@ export function BackupStatusBadge({ compact = false }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 7,
       padding: compact ? '4px 10px' : '10px 12px',
-      background: 'var(--pos-bg)', borderRadius: compact ? 20 : 8,
+      background: 'var(--pos-bg)', borderRadius: compact ? 'var(--rs)' : 8,
       border: '0.5px solid rgba(53,110,87,.25)',
       fontSize: compact ? 10 : 11, color: 'var(--pos)',
       fontFamily: 'var(--mono)',
@@ -209,7 +210,7 @@ export function BackupReminderBanner() {
       border: '0.5px solid rgba(133,79,11,.25)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
+        <SignalIcon kind="alert" size={18} />
         <div style={{ fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
           {!lastBackup ? t('backup.reminder.none') : t('backup.reminder.old', { n: days })}
         </div>
@@ -462,7 +463,7 @@ export default function BackupManager() {
             <div style={slbl}>{t('backup.restore.title')}</div>
             <div style={ssub}>
               {t('backup.restore.sub')}<br />
-              <span style={{ color: 'var(--amb)' }}>⚠ {t('backup.restore.warn')}</span>
+              <span style={{ color: 'var(--amb)' }}><InlineIcon kind="alert" size={13} />{t('backup.restore.warn')}</span>
             </div>
           </div>
           <label style={{ flexShrink: 0 }}>
@@ -530,7 +531,7 @@ export default function BackupManager() {
             color: status.type === 'ok' ? 'var(--pos)' : status.type === 'error' ? 'var(--red)' : 'var(--amb)',
             border: `0.5px solid ${status.type === 'ok' ? 'rgba(53,110,87,.25)' : status.type === 'error' ? 'rgba(162,62,46,.25)' : 'rgba(156,84,25,.25)'}`,
           }}>
-            {status.type === 'ok' ? '✓' : '⚠'} {status.msg}
+            <InlineIcon kind={status.type === 'ok' ? 'ok' : 'alert'} size={13} />{status.msg}
           </div>
         )}
 

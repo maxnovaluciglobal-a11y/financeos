@@ -6,6 +6,7 @@
 // Solo visible si settings.country === 'PT'.
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
@@ -40,7 +41,7 @@ export default function IRSPortugal() {
         <PageHeader title={t('irsPT.title')} sub={t('irsPT.sub')} />
 
         <Alert type="info">
-          ⚠ {t('irsPT.disclaimer')}
+          {t('irsPT.disclaimer')}
         </Alert>
 
         <SegmentedControl value={modo} onChange={setModo} options={[

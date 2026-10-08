@@ -5,6 +5,7 @@
 // que declara). Solo visible si settings.country === 'MX'.
 
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -78,7 +79,7 @@ export default function ResicoMX() {
         <PageHeader title={t('resicomx.title')} sub={t('resicomx.sub')} />
 
         <Alert type="info">
-          ⚠ {t('resicomx.disclaimer')}
+          {t('resicomx.disclaimer')}
         </Alert>
 
         <Card>
@@ -159,15 +160,15 @@ export default function ResicoMX() {
 
             {result.siguienteTasa && result.margenEnTramo < result.ingreso * 0.15 && (
               <div style={{ background: 'var(--warn-bg)', border: '.5px solid var(--warn)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
-                ⚠ {t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: (result.siguienteTasa * 100).toFixed(2) })}
+                <InlineIcon kind="alert" size={13} />{t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: (result.siguienteTasa * 100).toFixed(2) })}
               </div>
             )}
 
             {result.superaTope && (
               <div style={{ background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--red)', marginBottom: 14, lineHeight: 1.6 }}>
                 {result.topeEsProyeccion
-                  ? <>⚠ {t('resicomx.result.projWarn', { v: fmtMXN(result.ingresoAnualProyectado), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>
-                  : <>⚠ {t('resicomx.result.overTopeWarn', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>}
+                  ? <><InlineIcon kind="alert" size={13} />{t('resicomx.result.projWarn', { v: fmtMXN(result.ingresoAnualProyectado), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>
+                  : <><InlineIcon kind="alert" size={13} />{t('resicomx.result.overTopeWarn', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>}
               </div>
             )}
 

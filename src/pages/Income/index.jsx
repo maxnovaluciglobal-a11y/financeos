@@ -1,5 +1,6 @@
 // src/pages/Income/index.jsx — v1.5
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -83,12 +84,12 @@ export default function Income({ setPage }) {
       <div className="grid2">
         <Card>
           <CardHeader title={t('income.new')} />
-          {err && <Alert type="danger">⚠ {err}</Alert>}
+          {err && <Alert type="danger">{err}</Alert>}
 
           {setPage && (
             <button type="button" onClick={() => setPage('import')}
               style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent, #00b8d9)', cursor:'pointer', textAlign:'left', display:'block' }}>
-              {t('common.importShortcut')}
+              <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
             </button>
           )}
           <div style={{ marginBottom:12 }}>
@@ -114,7 +115,7 @@ export default function Income({ setPage }) {
             )}
             {pasteMsg && (
               <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--mono)' }}>
-                {pasteMsg.text}
+                <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
               </div>
             )}
           </div>

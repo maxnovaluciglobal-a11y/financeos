@@ -3,6 +3,7 @@
 // Basado en transacciones recurrentes detectadas + saldo actual
 
 import { useMemo } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
@@ -239,7 +240,7 @@ export default function CashFlow({ setPage }) {
             {/* Alerta de ritmo */}
             {pace !== null && pace > 0.08 && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: '.5px solid rgba(255,77,106,.25)', borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
-                {t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: sym+Math.round(projExp).toLocaleString(moneyLocale()), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: sym+Math.round(projExp - totalBudget).toLocaleString(moneyLocale()) }) : '' })}
+                <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: sym+Math.round(projExp).toLocaleString(moneyLocale()), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: sym+Math.round(projExp - totalBudget).toLocaleString(moneyLocale()) }) : '' })}
               </div>
             )}
             {pace !== null && pace <= 0 && curExp > 0 && (

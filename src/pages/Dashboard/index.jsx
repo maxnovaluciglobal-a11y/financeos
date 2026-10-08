@@ -18,6 +18,7 @@ import CountUp from '../../components/CountUp.jsx'
 import { IconIQScore } from '../../components/icons/Icons.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import MonthVerdict from './MonthVerdict.jsx'
 import CountryTool from './CountryTool.jsx'
 import { moneyLocale, currentMonth } from '../../utils/index.js'
@@ -131,7 +132,7 @@ export default function Dashboard({ setPage }) {
     // Suscripciones anuales
     if (subMonthly > 0) {
       cards.push({
-        icon: '↻',
+        icon: <SignalIcon kind="subs" size={13} />,
         color: 'var(--amb)',
         bg: 'color-mix(in srgb, var(--warn) 9%, transparent)',
         border: 'color-mix(in srgb, var(--warn) 24%, transparent)',
@@ -153,7 +154,7 @@ export default function Dashboard({ setPage }) {
       if (topCat && totalExp > 0) {
         const catPct = ((topCat[1] / totalExp) * 100).toFixed(0)
         cards.push({
-          icon: '◑',
+          icon: <SignalIcon kind="category" size={13} />,
           color: 'var(--accent2)',
           bg: 'color-mix(in srgb, var(--accent2) 9%, transparent)',
           border: 'color-mix(in srgb, var(--accent2) 22%, transparent)',
@@ -175,7 +176,7 @@ export default function Dashboard({ setPage }) {
         const pctN = Number(budgetPct)
         const color = pctN > 90 ? 'var(--red)' : pctN > 80 ? 'var(--amb)' : 'var(--accent)'
         cards.push({
-          icon: pctN > 90 ? '⚠' : pctN > 80 ? '◑' : '⊞',
+          icon: <ScoreStateIcon level={pctN > 90 ? 'risk' : pctN > 80 ? 'attention' : 'ok'} size={13} color="currentColor" />,
           color,
           bg: pctN > 90 ? 'color-mix(in srgb, var(--neg) 8%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 9%, transparent)' : 'color-mix(in srgb, var(--pos) 8%, transparent)',
           border: pctN > 90 ? 'color-mix(in srgb, var(--neg) 24%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 24%, transparent)' : 'color-mix(in srgb, var(--pos) 22%, transparent)',
@@ -196,7 +197,7 @@ export default function Dashboard({ setPage }) {
       if (top && Number(top.target) > 0) {
         const goalPct = Math.min((Number(top.saved) / Number(top.target)) * 100, 100).toFixed(0)
         cards.push({
-          icon: '→',
+          icon: <SignalIcon kind="goal" size={13} />,
           color: 'var(--accent)',
           bg: 'color-mix(in srgb, var(--pos) 8%, transparent)',
           border: 'color-mix(in srgb, var(--pos) 22%, transparent)',
@@ -394,7 +395,7 @@ export default function Dashboard({ setPage }) {
     )
   }
 
-  const SEV_ICON  = { info: '◈', attention: '⚠', warning: '⊗' }
+  const SEV_ICON  = { info: <SignalIcon kind="info" size={13} />, attention: <SignalIcon kind="attention" size={13} />, warning: <SignalIcon kind="warning" size={13} /> }
   const SEV_COLOR = { info: 'var(--accent)', attention: 'var(--amb)', warning: 'var(--red)' }
 
   function DeltaBadge({ d, invert = false }) {
@@ -581,7 +582,7 @@ export default function Dashboard({ setPage }) {
             background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:'var(--r)',
             padding:'12px 14px', marginBottom:14, cursor:'pointer', fontFamily:'var(--mono)',
           }}>
-            <span style={{ fontSize:18, lineHeight:1, flexShrink:0 }}>⇪</span>
+            <SignalIcon kind="upload" size={18} />
             <span style={{ flex:1, fontSize:12.5, fontWeight:600, lineHeight:1.4 }}>{t('dash.start.import')}</span>
             <span style={{ fontSize:12, fontWeight:700, whiteSpace:'nowrap' }}>{t('dash.start.importbtn')} →</span>
           </button>
@@ -606,11 +607,11 @@ export default function Dashboard({ setPage }) {
           <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:10 }}>{t('dash.quick.title')}</div>
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             {[
-              { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)' },
-              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--red)' },
-              { label:t('dash.quick.import'),page:'import',     color:'var(--accent2)' },
-              { label:t('dash.quick.budget'), page:'budgets',    color:'var(--amb)' },
-              { label:t('dash.quick.goal'),        page:'goals',      color:'var(--accent)' },
+              { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
+              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--red)', icon:'plus' },
+              { label:t('dash.quick.import'),page:'import',     color:'var(--accent2)', icon:'upload' },
+              { label:t('dash.quick.budget'), page:'budgets',    color:'var(--amb)', icon:'budget' },
+              { label:t('dash.quick.goal'),        page:'goals',      color:'var(--accent)', icon:'goal' },
             ].map((a,i) => (
               <button key={i} onClick={() => setPage(a.page)} style={{
                 background:'none', border:`.5px solid ${a.color}`, borderRadius:8,
@@ -618,7 +619,7 @@ export default function Dashboard({ setPage }) {
                 cursor:'pointer', fontFamily:'var(--mono)', transition:'.15s',
                 whiteSpace:'nowrap',
               }}>
-                {a.label}
+                <InlineIcon kind={a.icon} size={13} />{a.label}
               </button>
             ))}
           </div>
@@ -671,7 +672,7 @@ export default function Dashboard({ setPage }) {
       {todoItems.length > 0 && (
         <Card className="rise" style={{ padding:'16px 18px', marginBottom:20 }}>
           <CardHeader
-            title={t('dash.signals.title')}
+            title={<><InlineIcon kind="diagnosis" size={13} />{t('dash.signals.title')}</>}
             right={setPage && (
               <button type="button" onClick={() => setPage('coach')}
                 style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
@@ -817,7 +818,7 @@ export default function Dashboard({ setPage }) {
       {/* Link a Diagnóstico — vista detallada */}
       {setPage && !compact && (
         <div style={{ padding:'10px 14px', background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{t('dash.coachLink.text')}</span>
+          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}><InlineIcon kind="diagnosis" size={13} />{t('dash.coachLink.text')}</span>
           <button onClick={() => setPage('coach')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 12px', fontSize:11, color:'var(--accent)', cursor:'pointer', fontFamily:'var(--mono)' }}>
             {t('dash.coachLink.btn')}
           </button>

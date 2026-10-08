@@ -46,8 +46,9 @@
   border-top: 0.5px solid var(--brd);
 }
 .themeBtn {
-  width: 100%; padding: 6px 0; background: var(--sur2); border: 0.5px solid var(--brd);
-  border-radius: var(--r); font-size: 11px; font-family: var(--sans); color: var(--tm);
+  width: 100%; min-height: 44px; padding: 6px 0; background: var(--sur2); border: 0.5px solid var(--brd);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
+  border-radius: var(--r); font-size: 12px; font-family: var(--sans); color: var(--tm);
   transition: color .15s ease, border-color .15s ease, transform .16s var(--ease-out, ease-out);
 }
 .themeBtn:hover { color: var(--tx); border-color: var(--brd2); }

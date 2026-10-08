@@ -1,6 +1,7 @@
 // src/components/legal/MicroCopy.jsx
 // Componentes de microcopy legal — reutilizables en toda la app
 // Importar donde se necesite mostrar avisos contextuales
+import SignalIcon, { InlineIcon } from '../icons/SignalIcon.jsx'
 
 // ── FINANCIAL DISCLAIMER ─────────────────────────────────────────────────────
 // Usar en: Dashboard, Reportes, Proyección, pie de página de la app
@@ -37,7 +38,7 @@ export function BackupWarning({ variant = 'full' }) {
         fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)',
         lineHeight: 1.5, marginTop: 6,
       }}>
-        ⚠ Exporta un respaldo JSON periódicamente. Los datos locales pueden perderse
+        <InlineIcon kind="alert" size={13} />Exporta un respaldo JSON periódicamente. Los datos locales pueden perderse
         si borras el navegador o cambias de dispositivo.
       </p>
     )
@@ -49,7 +50,7 @@ export function BackupWarning({ variant = 'full' }) {
       border: '0.5px solid rgba(156,84,25,.25)', borderRadius: 8,
       fontSize: 12, color: 'var(--amb)', lineHeight: 1.6,
     }}>
-      <span style={{ flexShrink: 0, fontSize: 16, marginTop: 1 }}>⚠</span>
+      <SignalIcon kind="alert" size={16} style={{ marginTop: 3 }} />
       <div>
         <strong>Tus datos viven en este dispositivo.</strong> Si borras el navegador,
         limpias la caché o cambias de dispositivo sin exportar un respaldo, perderás

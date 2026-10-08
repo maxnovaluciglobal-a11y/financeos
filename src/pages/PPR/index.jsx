@@ -17,6 +17,7 @@
 //   - Resgate fora das condições: devolução das deduções usufruídas +10%/ano.
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, KPI } from '../../components/ui/index.jsx'
@@ -90,7 +91,7 @@ export default function PPRPage() {
     <ProGate feature={t('ppr.proGateFeature')}>
     <div className="stack">
       <PageHeader title={t('ppr.title')} sub={t('ppr.sub')} />
-      <Alert type="info">⚠ {t('ppr.disclaimer')}</Alert>
+      <Alert type="info">{t('ppr.disclaimer')}</Alert>
       <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: -4, marginBottom: 8, lineHeight: 1.6 }}>
         {t('ppr.intro')}
       </p>

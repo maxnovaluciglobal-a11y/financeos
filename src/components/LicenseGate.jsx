@@ -1,5 +1,6 @@
 // src/components/LicenseGate.jsx
 import { useState } from 'react'
+import { InlineIcon } from './icons/SignalIcon.jsx'
 import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
@@ -131,7 +132,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
 
           {error && (
             <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
-              ⚠ {error}
+              <InlineIcon kind="alert" size={13} />{error}
             </div>
           )}
 

@@ -14,7 +14,7 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
 import TabBar from './TabBar.jsx'
-import { Eye, EyeOff, Lock } from 'lucide-react'
+import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -143,10 +143,12 @@ export default function Shell({ page, setPage, children }) {
 
         <div className={s.footer}>
           <button className={s.themeBtn} onClick={toggleTheme}>
-            {isDark ? '☀ ' + t('settings.theme.light') : '◑ ' + t('settings.theme.dark')}
+            {isDark
+              ? <><Sun size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.theme.light')}</>
+              : <><Moon size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.theme.dark')}</>}
           </button>
           <button className={s.themeBtn} onClick={() => signOutAuth()}>
-            ⏻ {t('settings.account.logoutBtn')}
+            <LogOut size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.account.logoutBtn')}
           </button>
           <div className={s.legalLinks}>
             <button type="button" onClick={() => navigate('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>

@@ -11,9 +11,12 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { moneyLocale } from '../../utils/index.js'
 import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 
 // ── ICONO POR SEVERIDAD ────────────────────────────────────────────────────
-const SEV_ICON  = { info: '◈', attention: '⚠', warning: '⊗' }
+// Íconos por severidad (T17): antes glifos ◈ ⚠ ⊗; ahora el mismo vocabulario de
+// forma que el estado del IQ Score.
+const SEV_ICON  = { info: 'info', attention: 'attention', warning: 'warning' }
 // keys de traducción
 const SEV_LABEL = { info: 'coach.sev.info', attention: 'coach.sev.attention', warning: 'coach.sev.warning' }
 
@@ -27,7 +30,7 @@ function SignalCard({ signal }) {
       borderRadius: 'var(--r)', padding: '12px 14px', marginBottom: 8,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <span style={{ color, fontSize: 13 }}>{SEV_ICON[signal.severity]}</span>
+        <SignalIcon kind={SEV_ICON[signal.severity]} size={14} color={color} />
         <span style={{ fontSize: 11, fontWeight: 600, color, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>
           {t(SEV_LABEL[signal.severity])}
         </span>
@@ -70,12 +73,12 @@ function CategorySummary({ signals }) {
         const color = COACH_CONFIG.severityColors[dominant]
         return (
           <div key={cat} style={{
-            padding: '5px 11px', borderRadius: 20, fontSize: 11,
+            padding: '5px 11px', borderRadius: 'var(--rs)', fontSize: 11,
             background: 'var(--sur2)', border: `.5px solid ${color}40`,
             color: 'var(--tm)', fontFamily: 'var(--mono)',
             display: 'flex', alignItems: 'center', gap: 5,
           }}>
-            <span style={{ color, fontSize: 10 }}>{SEV_ICON[dominant]}</span>
+            <SignalIcon kind={SEV_ICON[dominant]} size={12} color={color} />
             {cat}
           </div>
         )
@@ -207,18 +210,18 @@ export default function Coach() {
       {signals.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           {warnings.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--red-bg, #fdf0ee)', border: '.5px solid var(--red)', borderRadius: 20, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
-              {t('coach.badge.review', { n: warnings.length })}
+            <div style={{ padding: '6px 12px', background: 'var(--red-bg, #fdf0ee)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
+              <InlineIcon kind="warning" size={13} />{t('coach.badge.review', { n: warnings.length })}
             </div>
           )}
           {attentions.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--amb-bg, #faeeda)', border: '.5px solid var(--amb)', borderRadius: 20, fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)' }}>
-              {t('coach.badge.attention', { n: attentions.length })}
+            <div style={{ padding: '6px 12px', background: 'var(--amb-bg, #faeeda)', border: '.5px solid var(--amb)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)' }}>
+              <InlineIcon kind="attention" size={13} />{t('coach.badge.attention', { n: attentions.length })}
             </div>
           )}
           {infos.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--grn-bg)', border: '.5px solid var(--grn)', borderRadius: 20, fontSize: 11, color: 'var(--grn)', fontFamily: 'var(--mono)' }}>
-              {t('coach.badge.info', { n: infos.length })}
+            <div style={{ padding: '6px 12px', background: 'var(--grn-bg)', border: '.5px solid var(--grn)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--grn)', fontFamily: 'var(--mono)' }}>
+              <InlineIcon kind="info" size={13} />{t('coach.badge.info', { n: infos.length })}
             </div>
           )}
         </div>
@@ -230,7 +233,7 @@ export default function Coach() {
       {/* Señales por prioridad */}
       {signals.length === 0 ? (
         <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '28px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>◈</div>
+          <div style={{ marginBottom: 8, color: 'var(--pos)', display: 'flex', justifyContent: 'center' }}><SignalIcon kind="ok" size={22} /></div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('coach.empty.title')}</div>
           <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
             {t('coach.empty.sub')}
@@ -241,7 +244,7 @@ export default function Coach() {
           {warnings.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-                {t('coach.section.review')}
+                <InlineIcon kind="warning" size={12} />{t('coach.section.review')}
               </div>
               {warnings.map(s => <SignalCard key={s.id} signal={s} />)}
             </div>
@@ -249,7 +252,7 @@ export default function Coach() {
           {attentions.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--amb)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-                {t('coach.section.attention')}
+                <InlineIcon kind="attention" size={12} />{t('coach.section.attention')}
               </div>
               {attentions.map(s => <SignalCard key={s.id} signal={s} />)}
             </div>
@@ -257,7 +260,7 @@ export default function Coach() {
           {infos.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--grn)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-                {t('coach.section.info')}
+                <InlineIcon kind="info" size={12} />{t('coach.section.info')}
               </div>
               {infos.map(s => <SignalCard key={s.id} signal={s} />)}
             </div>

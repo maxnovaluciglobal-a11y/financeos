@@ -1,5 +1,6 @@
 // src/pages/Reports/index.jsx — v1.5
 import { useMemo, useState } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -157,7 +158,7 @@ export default function Reports({ setPage }) {
               textDecoration:'none', flexShrink:0, whiteSpace:'nowrap',
             }}
           >
-            {t('reports.pdf.pro')}
+            <InlineIcon kind="pdf" size={13} />{t('reports.pdf.pro')}
           </a>
         )}
       </div>
@@ -195,7 +196,7 @@ export default function Reports({ setPage }) {
                     <div key={r.label}>
                       <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:12}}>
                         <span style={{fontWeight:500}}>{r.label}</span>
-                        <span style={{fontFamily:'var(--mono)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: ok?'✓':'⚠' })}</span>
+                        <span style={{fontFamily:'var(--mono)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
                       </div>
                       <div style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden'}}>
                         <div style={{height:'100%',width:'100%',transform:`scaleX(${Math.min(actualPct/r.max,1)})`,transformOrigin:'left',background:ok?r.color:'var(--red)',borderRadius:4,transition:'transform .4s'}}/>
@@ -333,7 +334,7 @@ export default function Reports({ setPage }) {
       {/* La lista completa de señales vive en la página Diagnóstico (evita duplicar información) */}
       {coachSignals.length > 0 && (
         <div style={{padding:'12px 16px',background:'var(--sur)',border:'.5px solid var(--brd)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-          <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',flex:1,minWidth:200,lineHeight:1.5}}>{t('reports.diag.linkText')}</span>
+          <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',flex:1,minWidth:200,lineHeight:1.5}}><InlineIcon kind="diagnosis" size={13} />{t('reports.diag.linkText')}</span>
           {setPage && (
             <button onClick={() => setPage('coach')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.diag.linkBtn')}

@@ -4,6 +4,7 @@
 // sesión ya es válida en ese momento — solo falta pedir la contraseña
 // nueva y llamar updatePassword().
 import { useState } from 'react'
+import { InlineIcon } from './icons/SignalIcon.jsx'
 import { updatePassword } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
@@ -54,7 +55,7 @@ export default function ResetPassword({ onDone }) {
 
         {error && (
           <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
-            ⚠ {error}
+            <InlineIcon kind="alert" size={13} />{error}
           </div>
         )}
 

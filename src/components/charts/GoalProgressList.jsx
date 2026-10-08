@@ -2,6 +2,7 @@
 // Progreso de metas con estados visuales — FinanceOS
 
 import { useMemo } from 'react'
+import SignalIcon from '../icons/SignalIcon.jsx'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
 import { moneyLocale } from '../../utils/index.js'
@@ -14,9 +15,9 @@ function fmtRaw(v, sym) {
 }
 
 const STATUS = [
-  { key:'done',  label:'Completada',          color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'✓' },
-  { key:'close', label:'Cerca de completarse', color:'var(--amb)',    bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.2)', icon:'◑' },
-  { key:'prog',  label:'En progreso',          color:'var(--accent2)',       bg:'transparent',          border:'var(--brd)',          icon:'→' },
+  { key:'done',  label:'Completada',          color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'ok' },
+  { key:'close', label:'Cerca de completarse', color:'var(--amb)',    bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.2)', icon:'attention' },
+  { key:'prog',  label:'En progreso',          color:'var(--accent2)',       bg:'transparent',          border:'var(--brd)',          icon:'progress' },
 ]
 
 function getStatus(prog) {
@@ -88,7 +89,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
             {/* Header */}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                <span style={{ fontSize:13 }}>{g.status.icon}</span>
+                <SignalIcon kind={g.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{g.name}</span>
                 {g.priority && (
                   <span style={{ fontSize:9, fontFamily:'var(--mono)', color:PRIORITY_COLOR[g.priority] || 'var(--th)', background:`${PRIORITY_COLOR[g.priority] || 'var(--th)'}18`, padding:'1px 6px', borderRadius:20 }}>

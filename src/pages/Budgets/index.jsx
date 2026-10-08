@@ -1,5 +1,6 @@
 // src/pages/Budgets/index.jsx — v1.5
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -108,14 +109,14 @@ export default function Budgets() {
       </div>
       {rolloverOn && (
         <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', lineHeight: 1.6 }}>
-          {t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
+          <InlineIcon kind="subs" size={13} />{t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
         </div>
       )}
       <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
         <KPI label={t('budgets.kpi.total')}     value={fmtMoney(totalBudget, sym)} />
         <KPI label={t('budgets.kpi.spent')} value={fmtMoney(totalBudgeted, sym)} color="red" sub={totalBudget > 0 ? fmtPct(totalBudgeted/totalBudget) : '-'} />
         <KPI label={t('budgets.kpi.over')}  value={overBudget.length} color={overBudget.length > 0 ? 'red' : 'green'} sub={overBudget.length > 0 ? t('budgets.kpi.review') : t('budgets.kpi.allOk')} />
-        <KPI label={t('budgets.kpi.coverage')} value={ingresoNeto > 0 ? fmtPct(totalBudget/ingresoNeto) : '—'} color={ingresoNeto > 0 && totalBudget > ingresoNeto ? 'red' : ingresoNeto > 0 && totalBudget/ingresoNeto > 0.8 ? 'amber' : 'green'} sub={ingresoNeto > 0 ? (totalBudget > ingresoNeto ? t('budgets.kpi.exceedsIncome') : totalBudget/ingresoNeto > 0.8 ? t('budgets.kpi.noMargin') : t('budgets.kpi.healthy')) : t('budgets.kpi.noIncome')} />
+        <KPI label={t('budgets.kpi.coverage')} value={ingresoNeto > 0 ? fmtPct(totalBudget/ingresoNeto) : '—'} color={ingresoNeto > 0 && totalBudget > ingresoNeto ? 'red' : ingresoNeto > 0 && totalBudget/ingresoNeto > 0.8 ? 'amber' : 'green'} sub={ingresoNeto > 0 ? (totalBudget > ingresoNeto ? <><InlineIcon kind="alert" size={12} />{t('budgets.kpi.exceedsIncome')}</> : totalBudget/ingresoNeto > 0.8 ? t('budgets.kpi.noMargin') : t('budgets.kpi.healthy')) : t('budgets.kpi.noIncome')} />
       </div>
       {ingresoNeto > totalBudget && (
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',background:'var(--accent-bg)',border:'.5px solid var(--accent)',borderRadius:8}}>
@@ -134,7 +135,7 @@ export default function Budgets() {
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
           <Card>
             <CardHeader title={t('budgets.new')} />
-            {err && <Alert type="danger">⚠ {err}</Alert>}
+            {err && <Alert type="danger">{err}</Alert>}
             <FormRow>
               <FormGroup label={t('budgets.form.category')}><select value={f.category} onChange={e => setF(p => ({...p,category:e.target.value}))}>{categoriesExpense.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</select></FormGroup>
               <FormGroup label={t('budgets.form.limit', { currency: settings.currency||'CLP' })}><input type="number" inputMode="decimal" min="0" value={f.limit} placeholder="0" onChange={e => setF(p => ({...p,limit:e.target.value}))} /></FormGroup>
@@ -151,7 +152,7 @@ export default function Budgets() {
               </div>
             ) : (
               <div style={{fontSize:10,color:'#e84142',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'rgba(232,65,66,.06)',borderRadius:6}}>
-                {t('budgets.model.noIncome', { month: monthLabel(activeMonth) })}
+                <InlineIcon kind="alert" size={13} />{t('budgets.model.noIncome', { month: monthLabel(activeMonth) })}
               </div>
             )}
             {(() => {
@@ -265,7 +266,7 @@ export default function Budgets() {
                           <div style={{fontSize:10,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
                           {carry > 0 && (
                             <div style={{fontSize:8,fontFamily:'var(--mono)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
-                              ↻ +<Money>{fmtMoney(carry,sym)}</Money>
+                              <InlineIcon kind="subs" size={11} />+<Money>{fmtMoney(carry,sym)}</Money>
                             </div>
                           )}
                           <svg width="90" height="90" viewBox="0 0 90 90" role="img"

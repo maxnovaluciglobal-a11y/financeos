@@ -106,3 +106,12 @@ describe('paridad de las claves de fase 3 (es/en/pt/de)', () => {
     for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
   })
 })
+
+describe('T17: sin glifos unicode usados como ícono dentro de los textos', () => {
+  // El ícono lo dibuja el componente (SignalIcon / Alert), no el string.
+  const GLYPH_ICON = /^[◈◑◎⊖▤⇪↻⊟⊡⌂◆⚕⊞⟶⊙⚠↗⇄☀⏻⊗🔒]/u
+  it.each([['es', es], ['en', en], ['pt', pt], ['de', de]])('%s', (_, dict) => {
+    const offenders = Object.entries(dict).filter(([, v]) => GLYPH_ICON.test(String(v).trim())).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+})

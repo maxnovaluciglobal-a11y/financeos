@@ -3,6 +3,7 @@
 // 100% local · sin dependencias externas · sin envío de datos
 
 import { useState, useCallback, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { markLocalChange } from '../../core/sync.js'
 import { useT } from '../../i18n/useT.js'
@@ -260,7 +261,7 @@ export default function ImportMovements({ setPage } = {}) {
         ))}
       </div>
 
-      {warning && <div style={s.warn}>⚠ {warning}</div>}
+      {warning && <div style={s.warn}><InlineIcon kind="alert" size={13} />{warning}</div>}
 
       {/* STEP 0 — Importar archivo */}
       {step === 0 && (
@@ -290,7 +291,7 @@ export default function ImportMovements({ setPage } = {}) {
             <input id="csv-input" type="file" accept=".csv,.xlsx,.xls,.pdf" aria-hidden="true" style={{ display: 'none' }}
               onChange={e => e.target.files[0] && handleFile(e.target.files[0])} />
             <div style={s.privacy}>
-              <span>◑</span>
+              <SignalIcon kind="lock" size={13} />
               <span>{t('imp.upload.privacy')}</span>
             </div>
             <div style={s.hint}>
@@ -529,7 +530,7 @@ export default function ImportMovements({ setPage } = {}) {
                       <option value="">{t('imp.review.noCategory')}</option>
                       {(row.type === 'income' ? categoriesIncome : categoriesExpense).map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
                     </select>
-                    {row.categorySuggested && <div style={{ fontSize: 9, color: 'var(--accent)', fontFamily: 'var(--mono)', marginTop: 2 }}>{t('imp.review.suggested')}</div>}
+                    {row.categorySuggested && <div style={{ fontSize: 9, color: 'var(--accent)', fontFamily: 'var(--mono)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
                   </td>
                   <td style={s.td}>
                     <span style={s.badge(row.status)}>{row.status === 'valid' ? t('imp.review.stValid') : row.status === 'duplicate' ? t('imp.review.stDup') : t('imp.review.stError')}</span>
@@ -560,7 +561,7 @@ export default function ImportMovements({ setPage } = {}) {
         <div style={s.card}>
           {result?.demo ? (
             <div style={{ textAlign: 'center', padding: 24 }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>◈</div>
+              <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--pos)' }}><SignalIcon kind="ok" size={28} /></div>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{t('imp.done.demoTitle')}</div>
               <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('imp.done.demoText')}</p>
             </div>

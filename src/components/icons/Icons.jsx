@@ -7,6 +7,8 @@
 // acá tal cual; al final hay 3 construidos con la MISMA regla para conceptos de
 // nav sin equivalente documentado (Ingresos, Propiedades, Modo Asesor).
 
+import { Repeat, Receipt, PiggyBank, TrendingUp, Coins } from 'lucide-react'
+
 const base = { width: 24, height: 24, viewBox: '0 0 24 24' }
 
 export function IconInicio({ size = 24, className }) {
@@ -181,7 +183,19 @@ export function IconAsesor({ size = 24, className }) {
 
 // Mapa id de nav (Shell.jsx) → componente de ícono. Los tools país-específicos
 // mantienen su bandera emoji (no son parte de este vocabulario) — ver Shell.jsx.
+// Ítems del nav sin equivalente en el brand book (T17): lucide con trazo 1.7 (el
+// mismo del TabBar) y el color de marca de los íconos de arriba, en vez de los
+// glifos unicode sueltos que se usaban antes (↻ ⊟ ⊡ ↗ ⇄).
+const navLucide = (Ic) => function NavLucideIcon({ size = 24, className }) {
+  return <Ic size={size} strokeWidth={1.7} color="var(--grn)" className={className} aria-hidden="true" />
+}
+
 export const NAV_ICONS = {
+  subscriptions: navLucide(Repeat),
+  deducciones:   navLucide(Receipt),
+  ahorrofiscal:  navLucide(PiggyBank),
+  inflacion:     navLucide(TrendingUp),
+  multimoneda:   navLucide(Coins),
   dashboard:  IconInicio,
   income:     IconIngresos,
   movements:  IconTransacciones,

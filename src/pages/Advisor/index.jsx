@@ -4,6 +4,7 @@
 // AVISO: Las alertas y señales son orientativas. No constituyen asesoría financiera certificada.
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { Lock } from 'lucide-react'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
@@ -440,7 +441,7 @@ export default function Advisor() {
           border: '0.5px solid var(--brd)', borderRadius: 8,
           fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, textAlign: 'center',
         }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>◈</div>
+          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><SignalIcon kind="investment" size={24} /></div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{t('adv.empty.title')}</div>
           <div style={{ fontSize: 12, color: 'var(--th)' }}>
             {t('adv.empty.sub')}

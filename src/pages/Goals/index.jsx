@@ -1,5 +1,6 @@
 // src/pages/Goals/index.jsx — v1.5
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -119,7 +120,7 @@ export default function Goals({ setPage }) {
       {show && (
         <Card>
           <CardHeader title={t('goals.new')} />
-          {err && <Alert type="danger">⚠ {err}</Alert>}
+          {err && <Alert type="danger">{err}</Alert>}
           <FormGroup label={t('goals.form.name')}><input type="text" value={f.name} placeholder={t('goals.form.namePh')} onChange={e=>setF(p=>({...p,name:e.target.value}))} /></FormGroup>
           <FormRow>
             <FormGroup label={t('goals.form.target', { currency: settings.currency||'CLP' })}><input type="number" inputMode="decimal" min="0" value={f.target} placeholder="0" onChange={e=>setF(p=>({...p,target:e.target.value}))} /></FormGroup>
@@ -176,7 +177,7 @@ export default function Goals({ setPage }) {
                 </div>
               </div>
               <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12,lineHeight:1.5}}>
-                {t('goals.suggest.disclaimer')}
+                <InlineIcon kind="info" size={12} />{t('goals.suggest.disclaimer')}
               </div>
               <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                 <Btn variant="primary" onClick={createSuggestedGoals} disabled={suggestions.filter(s=>s.selected&&!s.alreadyExists).length===0}>{t('goals.suggest.create')}</Btn>
@@ -185,7 +186,7 @@ export default function Goals({ setPage }) {
             </>
           ) : (
             <div style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',padding:'12px 0'}}>
-              {t('goals.suggest.noIncome', { month: activeMonth })}
+              <InlineIcon kind="alert" size={13} />{t('goals.suggest.noIncome', { month: activeMonth })}
             </div>
           )}
         </Card>

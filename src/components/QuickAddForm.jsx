@@ -7,6 +7,7 @@
 //   amountRef      ref opcional al campo del monto (Sheet lo usa para el foco inicial)
 //   autoFocus      enfoca el monto al montarse
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
+import SignalIcon from './icons/SignalIcon.jsx'
 import { Calendar } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
@@ -348,7 +349,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
             <button type="button" className="fos-link" onClick={repeatLast}
               style={{ fontSize: 13, maxWidth: '100%', overflow: 'hidden' }}>
-              <span aria-hidden="true">↻</span>
+              <SignalIcon kind="subs" size={14} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {t('qa.repeat', { desc: lastDesc, amount: `${sym}${formatKeypadDisplay(amountToKeypad(last.amount, decimals), moneyLocale())}` })}
               </span>

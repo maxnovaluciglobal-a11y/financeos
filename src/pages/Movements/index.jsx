@@ -2,6 +2,7 @@
 // Hub "Egresos del mes" — vista unificada Gastos + Recurrentes
 
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
@@ -117,7 +118,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
       {onImport && (
         <button type="button" onClick={onImport}
           style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent, #00b8d9)', cursor:'pointer', textAlign:'left', display:'block' }}>
-          {t('common.importShortcut')}
+          <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
         </button>
       )}
       {/* Pegar SMS/notificación del banco */}
@@ -153,7 +154,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
         )}
         {pasteMsg && (
           <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--mono)' }}>
-            {pasteMsg.text}
+            <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
           </div>
         )}
       </div>
@@ -659,7 +660,7 @@ export default function Movements({ setPage }) {
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:12, color:'var(--tx)', fontWeight:500,
                     overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {e.inv ? '◈ ' : ''}{e.description || e.category}
+                    {e.inv && <InlineIcon kind="investment" size={11} />}{e.description || e.category}
                   </div>
                   <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
                     {e.subcategory
