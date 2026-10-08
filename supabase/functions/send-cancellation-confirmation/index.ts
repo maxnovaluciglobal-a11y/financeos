@@ -1,7 +1,8 @@
 // supabase/functions/send-cancellation-confirmation/index.ts
 //
 // Llamada pública desde la landing (cancelar.html, en/cancel.html,
-// de/kuendigen.html vía /cancel-form.js) justo después de que la RPC
+// de/kuendigen.html y — desistimiento, kind 'withdrawal' — de/widerrufen.html,
+// todas vía /cancel-form.js) justo después de que la RPC
 // submit_cancellation_request responde ok: POST { id }.
 //
 // Deploy SIN verificación de JWT, igual que las funciones de nurture que

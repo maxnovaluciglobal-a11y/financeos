@@ -1,4 +1,5 @@
--- Cancelación online propia (reemplaza el Formspree de de/kuendigen.html).
+-- Cancelación online propia (reemplaza el Formspree de de/kuendigen.html)
+-- y desistimiento online (reemplaza el Formspree de de/widerrufen.html).
 --
 -- Propósito
 -- ---------
@@ -9,9 +10,20 @@
 -- declaración y la fecha/hora en que la hizo. Esta migración guarda esa
 -- declaración server-side (antes solo existía como un envío a Formspree).
 --
+-- Desistimiento (kind = 'withdrawal'): § 356a BGB ("Widerrufsbutton", en
+-- vigor desde el 19-jun-2026) pide lo mismo para el derecho de desistimiento
+-- de 14 días: botón "Vertrag widerrufen" → página con nombre, identificación
+-- del contrato y medio para la confirmación → botón "Widerruf bestätigen", y
+-- (Abs. 4) confirmación inmediata en forma de texto con el contenido y la
+-- fecha/hora de recepción. Usa la misma tabla, RPC y Edge Function: el
+-- correo al cliente cambia de texto y el aviso interno sale marcado URGENTE
+-- (hay 14 días para reembolsar, § 357 Abs. 1 BGB). En un desistimiento no
+-- hay motivo ni fecha de fin: la RPC guarda reason y requested_date en null
+-- aunque lleguen.
+--
 -- Flujo (mismo patrón "lead → email" que diagnostico.html):
---   1. La landing (cancelar.html, en/cancel.html, de/kuendigen.html vía
---      /cancel-form.js) llama a la RPC pública submit_cancellation_request
+--   1. La landing (cancelar.html, en/cancel.html, de/kuendigen.html,
+--      de/widerrufen.html vía /cancel-form.js) llama a la RPC pública submit_cancellation_request
 --      con la anon/publishable key. Devuelve {ok, id, created_at}.
 --   2. Con ese id llama a la Edge Function send-cancellation-confirmation,
 --      que lee la fila con service role y manda (a) la confirmación al
@@ -42,7 +54,9 @@
 -- cuenta Starter) y los dos timestamps de envío para idempotencia.
 -- requested_date null = "en la próxima fecha posible".
 --
--- No toca ninguna tabla existente. Idempotente (if not exists / or replace).
+-- No toca ninguna tabla existente. Idempotente (if not exists / or replace;
+-- el check de kind se recrea por nombre para que re-aplicar el archivo deje
+-- siempre la lista vigente, también si la tabla ya existía).
 
 create table if not exists public.cancellation_requests (
   id                     uuid primary key default gen_random_uuid(),
@@ -52,7 +66,7 @@ create table if not exists public.cancellation_requests (
   email                  text not null,
   plan                   text check (plan is null or plan in ('pro_monthly', 'pro_yearly', 'starter', 'unsure')),
   contract_ref           text,
-  kind                   text not null default 'ordinary' check (kind in ('ordinary', 'extraordinary')),
+  kind                   text not null default 'ordinary',
   reason                 text,
   requested_date         date,
   user_agent             text,
@@ -61,6 +75,10 @@ create table if not exists public.cancellation_requests (
   customer_email_sent_at timestamptz,
   internal_email_sent_at timestamptz
 );
+
+alter table public.cancellation_requests drop constraint if exists cancellation_requests_kind_check;
+alter table public.cancellation_requests add constraint cancellation_requests_kind_check
+  check (kind in ('ordinary', 'extraordinary', 'withdrawal'));
 
 create index if not exists cancellation_requests_email_created_idx
   on public.cancellation_requests (lower(email), created_at desc);
@@ -115,8 +133,14 @@ begin
   end if;
 
   v_kind := coalesce(nullif(trim(p_kind), ''), 'ordinary');
-  if v_kind not in ('ordinary', 'extraordinary') then
+  if v_kind not in ('ordinary', 'extraordinary', 'withdrawal') then
     return jsonb_build_object('ok', false, 'error', 'invalid_kind');
+  end if;
+
+  -- Desistimiento: sin motivo ni fecha de fin (ver cabecera).
+  if v_kind = 'withdrawal' then
+    p_reason := null;
+    p_requested_date := null;
   end if;
 
   v_plan := nullif(trim(coalesce(p_plan, '')), '');
@@ -174,3 +198,5 @@ notify pgrst, 'reload schema';
 -- select has_function_privilege('anon', 'public.submit_cancellation_request(text,text,text,text,text,text,date,text,text)', 'execute');  -- true
 -- select has_function_privilege('authenticated', 'public.submit_cancellation_request(text,text,text,text,text,text,date,text,text)', 'execute'); -- false
 -- select has_table_privilege('anon', 'public.cancellation_requests', 'select'); -- false
+-- select pg_get_constraintdef(oid) from pg_constraint where conname = 'cancellation_requests_kind_check';
+--   -- CHECK ((kind = ANY (ARRAY['ordinary'::text, 'extraordinary'::text, 'withdrawal'::text])))

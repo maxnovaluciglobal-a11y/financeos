@@ -6,6 +6,7 @@ import {
   sendViaResend,
   fmtTimestamp,
   escapeHtml,
+  refundDeadline,
   COPY,
   type CancellationRow,
 } from './cancellationLogic.ts'
@@ -125,6 +126,80 @@ describe('renderInternalEmail', () => {
   })
 })
 
+describe('desistimiento / Widerruf (kind withdrawal, § 356a BGB)', () => {
+  const w = (over: Partial<CancellationRow> = {}) =>
+    row({ kind: 'withdrawal', plan: null, contract_ref: 'Pro-Jahresabo vom 02.10.2026', reason: 'ignorado', requested_date: '2026-12-31', ...over })
+
+  it('de: Eingangsbestätigung mit Erklärung, Zeitpunkt (Berliner Zeit), Inhalt und Erstattungsfrist, in "Sie"', () => {
+    const e = renderCustomerEmail(w({ lang: 'de' }))
+    expect(e.subject).toBe('Eingangsbestätigung Ihres Widerrufs — MOY IQ')
+    expect(e.text).toContain('Ihre Widerrufserklärung ist am')
+    expect(e.text).toMatch(/MESZ|MEZ/)
+    expect(e.text).toContain('Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: MOY IQ Pro.')
+    expect(e.text).toContain('Pro-Jahresabo vom 02.10.2026')
+    expect(e.text).toContain('Art der Erklärung: Widerruf')
+    expect(e.text).toContain('14 Tagen')
+    expect(e.text).toContain(ID)
+    expect(e.text).not.toMatch(/\bdu\b|\bdein/i)
+  })
+
+  it('no muestra motivo ni fecha de fin (no aplican a un desistimiento)', () => {
+    const e = renderCustomerEmail(w({ lang: 'es' }))
+    expect(e.text).not.toContain('ignorado')
+    expect(e.text).not.toContain(COPY.es.labels.endDate)
+    expect(e.text).not.toContain(COPY.es.nextPossible)
+  })
+
+  it('es/en/pt: asunto, declaración y plazo de reembolso propios, sin exclamaciones', () => {
+    const es = renderCustomerEmail(w({ lang: 'es' }))
+    expect(es.subject).toBe(COPY.es.withdrawal.subject)
+    expect(es.text).toContain('Recibimos tu declaración de desistimiento el')
+    expect(es.text).toContain(COPY.es.withdrawal.declaration)
+    expect(es.text).toContain('14 días')
+    const en = renderCustomerEmail(w({ lang: 'en' }))
+    expect(en.subject).toBe(COPY.en.withdrawal.subject)
+    expect(en.text).toContain('We received your notice of withdrawal on')
+    expect(en.text).toContain('14 days')
+    const pt = renderCustomerEmail(w({ lang: 'pt' }))
+    expect(pt.subject).toBe(COPY.pt.withdrawal.subject)
+    expect(pt.text).toContain('14 dias')
+    for (const e of [es, en, pt]) expect(e.text + e.subject).not.toMatch(/[!¡]/)
+  })
+
+  it('el html también trae la declaración y escapa los datos', () => {
+    const e = renderCustomerEmail(w({ lang: 'de', name: '<b>x</b>' }))
+    expect(e.html).toContain('Hiermit widerrufe ich')
+    expect(e.html).not.toContain('<b>x</b>')
+  })
+
+  it('los 4 idiomas tienen los mismos textos de desistimiento', () => {
+    const keys = (o: object) => Object.keys(o).sort().join()
+    for (const l of ['en', 'pt', 'de'] as const) {
+      expect(keys(COPY[l].withdrawal)).toBe(keys(COPY.es.withdrawal))
+      expect(COPY[l].kind.withdrawal).toBeTruthy()
+    }
+  })
+
+  it('aviso interno: URGENTE en el asunto, fecha límite de reembolso (+14 días) y pasos', () => {
+    const e = renderInternalEmail(w({ lang: 'de', created_at: '2026-10-08T14:05:00Z' }))
+    expect(e.subject).toMatch(/^\[URGENTE · Desistimiento\] /)
+    expect(e.subject).toContain('22 de octubre de 2026')
+    expect(e.text).toContain('Reembolso a más tardar: 22 de octubre de 2026')
+    expect(e.text).toMatch(/reembols/i)
+    expect(e.text).toContain('Idioma del cliente: de')
+    expect(e.html).toContain('URGENTE')
+  })
+
+  it('refundDeadline suma 14 días calendario', () => {
+    expect(refundDeadline('2026-12-25T23:30:00Z')).toBe('2027-01-08')
+    expect(refundDeadline('nope')).toBe(null)
+  })
+
+  it('una cancelación ordinaria no se marca urgente', () => {
+    expect(renderInternalEmail(row()).subject).not.toContain('URGENTE')
+  })
+})
+
 describe('fmtTimestamp / escapeHtml', () => {
   it('devuelve el input si no es una fecha válida', () => {
     expect(fmtTimestamp('nope', 'es')).toBe('nope')
@@ -187,6 +262,15 @@ describe('processCancellation', () => {
     const sends = resendCalls(f).map((c: any[]) => JSON.parse(c[1].body))
     expect(sends[0].to).toBe('ana@example.com')
     expect(sends[1].to).toEqual(['support@moyiq.app', 'alert@example.com'])
+  })
+
+  it('desistimiento: confirmación al cliente con el texto de Widerruf y aviso interno urgente', async () => {
+    const f = router({ row: row({ kind: 'withdrawal', lang: 'de' }) })
+    vi.stubGlobal('fetch', f)
+    expect(await processCancellation(ID, CONFIG)).toEqual({ ok: true, customer: 'sent', internal: 'sent' })
+    const sends = resendCalls(f).map((c: any[]) => JSON.parse(c[1].body))
+    expect(sends[0].subject).toBe(COPY.de.withdrawal.subject)
+    expect(sends[1].subject).toMatch(/^\[URGENTE · Desistimiento\]/)
   })
 
   it('el claim es condicional: PATCH con <columna>=is.null', async () => {
