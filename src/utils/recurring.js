@@ -219,11 +219,28 @@ export function expectedAmount(rule, date, records) {
 // que QuickAddForm usa para aprender comercio→categoría.
 export const ruleKey = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()
 
-function descMatches(rule, record) {
-  const a = ruleKey(rule.description)
-  const b = ruleKey(record.description ?? record.source)
-  if (!a || !b || a.length < 3 || b.length < 3) return false
-  return a === b || b.includes(a) || a.includes(b)
+// Palabras que no distinguen un movimiento de otro: dominios/razones sociales,
+// conectores, "pago", y los meses (es/en/pt/de) — "Arriendo octubre" es el
+// mismo arriendo; "Netflix gift" NO es Netflix.
+const NOISE = new Set(('com www net org inc sa spa ltda llc gmbh ag co the de del la el los las y and und e do da ' +
+  'pago payment zahlung pagamento cuota rate parcela ' +
+  'enero febrero marzo abril mayo junio julio agosto septiembre setiembre octubre noviembre diciembre ' +
+  'january february march april may june july august september october november december ' +
+  'janeiro fevereiro marco maio junho julho setembro outubro novembro dezembro ' +
+  'januar februar marz juni juli oktober dezember ene feb mar abr jun jul ago sep sept oct nov dic jan apr aug dec').split(' '))
+
+export function descTokens(s) {
+  return [...new Set(ruleKey(s).replace(/[^a-z0-9]+/g, ' ').split(' ')
+    .filter(t => t.length > 1 && !NOISE.has(t) && !/^\d+$/.test(t)))]
+}
+
+// 'same' = mismas palabras significativas; 'similar' = Jaccard >= 2/3.
+export function descSimilarity(a, b) {
+  const ta = descTokens(a), tb = descTokens(b)
+  if (!ta.length || !tb.length) return 'none'
+  const inter = ta.filter(t => tb.includes(t)).length
+  if (inter === ta.length && inter === tb.length) return 'same'
+  return inter / (ta.length + tb.length - inter) >= 2 / 3 ? 'similar' : 'none'
 }
 
 export function amountClose(expected, actual, tol = MATCH_AMOUNT_TOLERANCE) {
@@ -232,21 +249,36 @@ export function amountClose(expected, actual, tol = MATCH_AMOUNT_TOLERANCE) {
   return Math.abs(a - e) / e <= tol
 }
 
-// ¿Este registro sin vínculo corresponde a la ocurrencia (rule, date)?
-// Mismo tipo (lo asegura quien llama) y alguna de:
-//   · misma descripción a ±3 días, con cualquier monto (el sueldo que llegó
-//     recortado sigue siendo ESE sueldo: se cuenta lo real, no lo previsto)
-//   · misma descripción en el mismo mes y monto ±7,5 %
-//   · misma categoría a ±3 días y monto ±7,5 %
-export function recordMatchesOccurrence(rule, date, expected, record) {
-  if (!record || record.recurringId) return false
+// ¿Cuánto se parece este registro sin vínculo a la ocurrencia (rule, date)?
+//   2 (fuerte) — mismas palabras significativas a ±3 días, con cualquier monto
+//                (el sueldo que llegó recortado sigue siendo ESE sueldo)
+//   1 (débil)  — descripción parecida (Jaccard >= 2/3) y monto ±7,5 %, en el
+//                mismo mes o a ±3 días
+//   0          — no. La categoría sola NUNCA alcanza: un gasto cualquiera de la
+//                misma categoría no puede dar por pagado un fijo.
+export function matchStrength(rule, date, expected, record) {
+  if (!record || record.recurringId) return 0
   const rDate = String(record.date || '')
   const days = Math.abs(diffDays(date, rDate))
-  const desc = descMatches(rule, record)
-  if (desc && days <= MATCH_DAYS) return true
-  if (!amountClose(expected, record.amount)) return false
-  if (desc && monthOf(rDate) === monthOf(date)) return true
-  return record.category === rule.category && days <= MATCH_DAYS
+  const sim = descSimilarity(rule.description, record.description ?? record.source)
+  if (sim === 'none') return 0
+  if (sim === 'same' && days <= MATCH_DAYS) return 2
+  if (!amountClose(expected, record.amount)) return 0
+  return (monthOf(rDate) === monthOf(date) || days <= MATCH_DAYS) ? 1 : 0
+}
+export const recordMatchesOccurrence = (rule, date, expected, record) => matchStrength(rule, date, expected, record) > 0
+
+// Registro que cubre la ocurrencia, o null. Si hay más de un candidato del
+// mejor nivel, es ambiguo: queda prevista para que el usuario confirme a mano.
+function uniqueMatch(occ, records, used) {
+  const strong = [], weak = []
+  for (const r of records || []) {
+    if (!r || used.has(r.id)) continue
+    const st = matchStrength(occ.rule, occ.date, occ.expected, r)
+    if (st === 2) strong.push(r); else if (st === 1) weak.push(r)
+  }
+  if (strong.length) return strong.length === 1 ? strong[0] : null
+  return weak.length === 1 ? weak[0] : null
 }
 
 // ── Plan del mes ─────────────────────────────────────────────────────────────
@@ -280,16 +312,11 @@ export function monthPlan(rules, ym, { incomes = [], expenses = [], today = null
   }
 
   // Registros a mano que ya cubren una ocurrencia: se consume cada uno una sola
-  // vez, en orden de fecha y eligiendo el más cercano a la fecha prevista.
+  // vez, en orden de fecha; ante dos candidatos igual de buenos, no se elige.
   pendingCandidates.sort((a, b) => a.date.localeCompare(b.date))
   for (const c of pendingCandidates) {
     const { records, ...occ } = c
-    let hit = null, best = Infinity
-    for (const r of records || []) {
-      if (!r || used.has(r.id) || !recordMatchesOccurrence(occ.rule, occ.date, occ.expected, r)) continue
-      const dist = Math.abs(diffDays(occ.date, r.date))
-      if (dist < best) { best = dist; hit = r }
-    }
+    const hit = uniqueMatch(occ, records, used)
     if (hit) {
       used.add(hit.id)
       out.push({ ...occ, status: 'confirmed', matched: true, record: hit, amount: Number(hit.amount) || 0 })
@@ -443,7 +470,9 @@ export function detectRecurring(record, records, rules, { kind = 'expense' } = {
 // Ocurrencia pendiente del mes que un movimiento recién cargado cubre (para
 // vincularlo y no contar dos veces). Solo si hay exactamente una candidata.
 export function findPendingMatch(record, plan, kind) {
-  const hits = (plan || []).filter(o => o.status === 'pending' && o.kind === kind &&
-    recordMatchesOccurrence(o.rule, o.date, o.expected, record))
-  return hits.length === 1 ? hits[0] : null
+  const scored = (plan || []).filter(o => o.status === 'pending' && o.kind === kind)
+    .map(o => ({ o, st: matchStrength(o.rule, o.date, o.expected, record) })).filter(x => x.st > 0)
+  const best = Math.max(0, ...scored.map(x => x.st))
+  const top = scored.filter(x => x.st === best)
+  return top.length === 1 ? top[0].o : null
 }

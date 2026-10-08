@@ -164,12 +164,28 @@ describe('monthPlan — estado de cada ocurrencia', () => {
     expect(plan.filter(o => o.status === 'pending')).toHaveLength(1)
   })
 
-  it('no coincide si el monto difiere más de 7,5 % o la fecha más de 3 días (sin misma descripción)', () => {
+  it('coincidencias: misma descripción ±3 días (cualquier monto) o parecida con monto ±7,5 %; la categoría sola no alcanza', () => {
     const r = rule({ description: 'Arriendo', category: 'Vivienda', amounts: [{ from: '2026-01', amount: 1000 }], schedule: { freq: 'monthly', day: 10 } })
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'otro', category: 'Vivienda', date: '2026-10-13', amount: 1070 })).toBe(true)
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'otro', category: 'Vivienda', date: '2026-10-14', amount: 1000 })).toBe(false)
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'otro', category: 'Vivienda', date: '2026-10-10', amount: 1080 })).toBe(false)
-    expect(recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', description: 'Arriendo depto', category: 'Otros', date: '2026-10-25', amount: 1000 })).toBe(true)
+    const m = (rec) => recordMatchesOccurrence(r, '2026-10-10', 1000, { id: 'a', category: 'Vivienda', ...rec })
+    // misma categoría, monto y fecha, pero otra descripción → NO (antes sí)
+    expect(m({ description: 'Reparación calefont', date: '2026-10-10', amount: 1000 })).toBe(false)
+    expect(m({ description: 'Arriendo octubre', date: '2026-10-12', amount: 1300 })).toBe(true)  // meses = ruido
+    expect(m({ description: 'ARRIENDO', date: '2026-10-25', amount: 1050 })).toBe(true)          // mismo mes, ±7,5 %
+    expect(m({ description: 'ARRIENDO', date: '2026-10-25', amount: 1100 })).toBe(false)
+    expect(m({ description: 'Arriendo bodega', date: '2026-10-10', amount: 1000 })).toBe(false)  // otra cosa
+    const nf = rule({ description: 'Netflix', amounts: [{ from: '2026-01', amount: 15.49 }] })
+    expect(recordMatchesOccurrence(nf, '2026-10-11', 15.49, { id: 'x', description: 'NETFLIX.COM', date: '2026-10-12', amount: 15.49 })).toBe(true)
+    expect(recordMatchesOccurrence(nf, '2026-10-11', 15.49, { id: 'x', description: 'Netflix gift', date: '2026-10-11', amount: 15.49 })).toBe(false)
+  })
+
+  it('dos candidatos igual de buenos: queda prevista (confirmación manual)', () => {
+    const r = rule({ description: 'Gimnasio', category: 'Deporte', amounts: [{ from: '2026-01', amount: 30 }], schedule: { freq: 'monthly', day: 5 } })
+    const expenses = [
+      { id: 'a', description: 'Gimnasio', date: '2026-10-04', amount: 30, category: 'Deporte' },
+      { id: 'b', description: 'Gimnasio', date: '2026-10-06', amount: 30, category: 'Deporte' },
+    ]
+    expect(monthPlan([r], '2026-10', { expenses })[0].status).toBe('pending')
+    expect(findPendingMatch({ description: 'Gimnasio', date: '2026-10-05', amount: 30 }, monthPlan([r, { ...r, id: 'r2' }], '2026-10', {}), 'expense')).toBe(null)
   })
 
   it('un sueldo recortado (misma descripción, misma fecha) cubre su ocurrencia; cada registro va a la más cercana', () => {
