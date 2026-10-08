@@ -777,3 +777,79 @@ describe('T10 · email de inicio de prueba (variante de sendKeyEmail)', () => {
     expect(formatDateEs('2026-10-23T00:00:00.000Z')).toBe('23 de octubre de 2026')
   })
 })
+
+describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  const billing = { endsAt: '2026-10-23T00:00:00Z', amountCents: 499, currency: 'usd', interval: 'month' as const }
+
+  async function capture(fn: () => Promise<unknown>) {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    await fn()
+    return JSON.parse(fetchMock.mock.calls[0][1].body)
+  }
+
+  it.each([
+    ['en', 'Your MOY IQ license', 'Purchase confirmed', 'renews automatically every year'],
+    ['pt', 'Sua licença do MOY IQ', 'Compra confirmada', 'renovação automática anual'],
+    ['de', 'Ihre MOY IQ-Lizenz', 'Kauf bestätigt', 'verlängert sich automatisch jedes Jahr'],
+  ] as const)('licencia en %s', async (lang, subject, purchase, renewal) => {
+    const body = await capture(() => sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'cs_1', CONFIG, 'year', null, lang))
+    expect(body.subject).toBe(subject)
+    expect(body.html).toContain(purchase)
+    expect(body.html).toContain(renewal)
+    expect(body.html).toContain('FNOS-X')
+    expect(body.html).toContain(`lang="${lang}"`)
+  })
+
+  it.each([
+    ['en', 'Your MOY IQ Pro trial', 'October 23, 2026', '$4.99 per month'],
+    ['pt', 'Seu teste do MOY IQ Pro', '23 de outubro de 2026', 'US$ 4,99 por mês'],
+    ['de', 'Ihre Testphase von MOY IQ Pro', '23. Oktober 2026', '4,99 $ pro Monat'],
+  ] as const)('inicio de prueba en %s: fecha y monto en su formato', async (lang, subject, date, amount) => {
+    const body = await capture(() => sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'cs_1', CONFIG, 'month', billing, lang))
+    expect(body.subject).toBe(subject)
+    expect(body.html).toContain(date)
+    expect(body.html.replace(/ /g, ' ')).toContain(amount)
+  })
+
+  it.each([
+    ['es', 'Tu prueba de MOY IQ Pro termina pronto'],
+    ['en', 'Your MOY IQ Pro trial ends soon'],
+    ['pt', 'Seu teste do MOY IQ Pro termina em breve'],
+    ['de', 'Ihre Testphase von MOY IQ Pro endet bald'],
+  ] as const)('fin de prueba en %s', async (lang, subject) => {
+    const body = await capture(() => sendTrialEndingEmail('a@b.com', billing, CONFIG, lang))
+    expect(body.subject).toBe(subject)
+  })
+
+  it('sin idioma: español de siempre', async () => {
+    const body = await capture(() => sendTrialEndingEmail('a@b.com', billing, CONFIG))
+    expect(body.subject).toBe('Tu prueba de MOY IQ Pro termina pronto')
+    expect(body.html).toContain('23 de octubre de 2026')
+  })
+
+  it('ningún correo con exclamaciones; el alemán no tutea', async () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      const a = await capture(() => sendKeyEmail('a@b.com', 'K', 'pro', 's', CONFIG, 'month', billing, lang))
+      const b = await capture(() => sendTrialEndingEmail('a@b.com', billing, { ...CONFIG, portalUrl: 'https://billing.example' }, lang))
+      const text = `${a.subject} ${a.html} ${b.subject} ${b.html}`
+      expect(text).not.toMatch(/[¡!]/)
+      if (lang === 'de') expect(text).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+    }
+  })
+
+  it('handleTrialWillEnd usa el idioma de la suscripción (metadata/customer expandido)', async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).includes('/rest/v1/licenses')) return { ok: true, json: async () => [{ email: 'c@d.com', status: 'active', plan: 'pro' }] }
+      if (String(url).includes('webhook_events_processed')) return { ok: true, status: 201, json: async () => [{}], text: async () => '' }
+      return { ok: true, json: async () => ({}), text: async () => '' }
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const event = { id: 'evt_lang', data: { object: { id: 'sub_1', status: 'trialing', trial_end: 1792713600, metadata: { lang: 'en' }, items: { data: [{ price: { unit_amount: 499, currency: 'usd', recurring: { interval: 'month' } }, quantity: 1 }] } } } }
+    await handleTrialWillEnd(event, CONFIG)
+    const resendCall = fetchMock.mock.calls.find(c => String(c[0]).includes('api.resend.com'))
+    expect(resendCall).toBeTruthy()
+    expect(JSON.parse(resendCall![1].body).subject).toBe('Your MOY IQ Pro trial ends soon')
+  })
+})

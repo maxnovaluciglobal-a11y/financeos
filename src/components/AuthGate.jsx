@@ -21,7 +21,7 @@ function friendlyError(t, raw) {
 }
 
 export default function AuthGate({ onAuthenticated }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const [tab, setTab] = useState('login') // 'login' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -40,7 +40,7 @@ export default function AuthGate({ onAuthenticated }) {
     setLoading(true)
     const result = tab === 'login'
       ? await signInWithPassword(cleanEmail, password)
-      : await signUpWithPassword(cleanEmail, password)
+      : await signUpWithPassword(cleanEmail, password, lang)
     setLoading(false)
     if (result.error) {
       setError(friendlyError(t, result.error))

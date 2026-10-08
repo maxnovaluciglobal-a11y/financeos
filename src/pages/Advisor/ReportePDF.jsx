@@ -598,6 +598,7 @@ export async function sendReportePDFByEmail(data, to) {
       month: data.activeMonth,
       pdfBase64,
       filename,
+      lang: data.lang || 'es', // idioma del correo (send-report-email)
     }),
   })
 

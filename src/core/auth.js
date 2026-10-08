@@ -54,7 +54,7 @@ export async function updatePassword(newPassword) {
   return {}
 }
 
-export async function signUpWithPassword(email, password) {
+export async function signUpWithPassword(email, password, lang) {
   if (!authClient) return { error: 'auth_not_configured' }
   // emailRedirectTo: sin esto, el correo de confirmación de signup usa el
   // Site URL único del proyecto (compartido con Invest) en vez del origen
@@ -63,7 +63,9 @@ export async function signUpWithPassword(email, password) {
   const { data, error } = await authClient.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname },
+    // data.lang → user_metadata.lang: auth-email-hook manda la confirmación
+    // (y después los resets) en ese idioma. Ver syncUserLang().
+    options: { emailRedirectTo: window.location.origin + window.location.pathname, ...(lang ? { data: { lang } } : {}) },
   })
   if (error) return { error: error.message }
   return { data }
@@ -98,6 +100,16 @@ export async function signInWithGoogle() {
   })
   if (error) return { error: error.message }
   return {}
+}
+
+// Mantiene user_metadata.lang igual al idioma de la app, para que los correos
+// de auth (reset de contraseña, cambio de email) lleguen en ese idioma también
+// a quien se registró antes de que existiera el campo o entró con Google.
+// Best-effort: un fallo no afecta nada más.
+export async function syncUserLang(session, lang) {
+  if (!authClient || !session?.user || !['es', 'en', 'pt', 'de'].includes(lang)) return
+  if (session.user.user_metadata?.lang === lang) return
+  try { await authClient.auth.updateUser({ data: { lang } }) } catch {}
 }
 
 export async function signOutAuth() {

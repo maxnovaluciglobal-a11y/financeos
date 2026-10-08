@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import config from '../config.js'
-import { formatPrice, proPriceVars, proCta } from './pricing.js'
+import { formatPrice, proPriceVars, proCta, withCheckoutLang } from './pricing.js'
 
 describe('pricing', () => {
   it('config.pricing es la fuente única de los precios de Pro', () => {
@@ -44,5 +44,16 @@ describe('pricing', () => {
       expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: 'https://buy.stripe.com/x' }))
         .toEqual({ trial: true, href: 'https://buy.stripe.com/x', labelKey: 'pro.gate.trialCta' })
     })
+  })
+})
+
+describe('withCheckoutLang (idioma del correo de licencia vía client_reference_id)', () => {
+  it('agrega lang_xx a un Payment Link de Stripe', () => {
+    expect(withCheckoutLang('https://buy.stripe.com/abc', 'en')).toBe('https://buy.stripe.com/abc?client_reference_id=lang_en')
+  })
+  it('no toca otras URLs, idiomas desconocidos ni un client_reference_id existente', () => {
+    expect(withCheckoutLang('https://moyiq.app/#pricing', 'en')).toBe('https://moyiq.app/#pricing')
+    expect(withCheckoutLang('https://buy.stripe.com/abc', 'fr')).toBe('https://buy.stripe.com/abc')
+    expect(withCheckoutLang('https://buy.stripe.com/abc?client_reference_id=x', 'de')).toBe('https://buy.stripe.com/abc?client_reference_id=x')
   })
 })

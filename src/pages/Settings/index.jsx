@@ -18,7 +18,7 @@ import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
 import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
-import { proPriceVars } from '../../utils/pricing.js'
+import { proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
 
 export default function Settings() {
   const { settings, updateSettings, clearAll, loadDemo, exportCSV, enableSync, disableSync } = useApp()
@@ -324,7 +324,7 @@ export default function Settings() {
               <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('settings.upgrade.title', proPriceVars(lang))}</div>
               <div style={ssub}>{t('settings.upgrade.sub')}</div>
             </div>
-            <Btn variant="primary" size="sm" onClick={()=>window.location.href=PRO_CHECKOUT_URL} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
+            <Btn variant="primary" size="sm" onClick={()=>window.location.href=withCheckoutLang(PRO_CHECKOUT_URL, lang)} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
           </div>
         )}
         {confirmAction?.type === 'clearAll' ? (

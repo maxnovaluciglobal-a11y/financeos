@@ -1,6 +1,6 @@
 // supabase/functions/auth-email-hook/emailHookLogic.test.ts
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { detectBrand, buildActionUrl, renderEmail, sendViaResend } from './emailHookLogic.ts'
+import { detectBrand, buildActionUrl, renderEmail, sendViaResend, pickLang } from './emailHookLogic.ts'
 
 describe('detectBrand', () => {
   it('detecta Invest por el host de redirect_to', () => {
@@ -111,5 +111,49 @@ describe('sendViaResend', () => {
     expect(res.ok).toBe(false)
     expect(res.error).toBe('resend_500')
     expect(global.fetch).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('renderEmail por idioma (user_metadata.lang)', () => {
+  const url = 'https://x.supabase.co/auth/v1/verify?token=t'
+  it.each([
+    ['es', 'Restablece tu contraseña', 'Elegir contraseña nueva'],
+    ['en', 'Reset your password', 'Choose a new password'],
+    ['pt', 'Redefina sua senha', 'Escolher nova senha'],
+    ['de', 'Passwort zurücksetzen', 'Neues Passwort wählen'],
+  ] as const)('recovery en %s', (lang, subject, cta) => {
+    const r = renderEmail('moyiq', 'recovery', url, lang)
+    expect(r.subject).toBe(subject)
+    expect(r.html).toContain(cta)
+    expect(r.html).toContain(`lang="${lang}"`)
+  })
+
+  it.each(['signup', 'magiclink', 'email_change', 'invite', 'reauthentication'] as const)('%s tiene texto propio en los 4 idiomas', (type) => {
+    const subjects = (['es', 'en', 'pt', 'de'] as const).map(l => renderEmail('moyiq', type, url, l).subject)
+    expect(new Set(subjects).size).toBe(4)
+  })
+
+  it('sin idioma: español, como siempre', () => {
+    expect(renderEmail('moyiq', 'signup', url).subject).toBe('Confirma tu cuenta de MOY IQ')
+  })
+
+  it('pickLang con user_metadata.lang ausente, inválido o regional', () => {
+    expect(pickLang(undefined)).toBe('es')
+    expect(pickLang('fr')).toBe('es')
+    expect(pickLang('en-US')).toBe('en')
+  })
+
+  it('la marca Invest también se traduce', () => {
+    expect(renderEmail('invest', 'signup', url, 'en').subject).toBe('Confirm your MOY IQ Invest account')
+  })
+
+  it('ningún texto con exclamaciones; el alemán no tutea', () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      for (const type of ['recovery', 'signup', 'magiclink', 'email_change', 'invite'] as const) {
+        const { subject, html } = renderEmail('moyiq', type, url, lang)
+        expect(subject + html).not.toMatch(/[¡!]/)
+        if (lang === 'de') expect(subject + html).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+      }
+    }
   })
 })

@@ -9,7 +9,7 @@
 // testea (lee Deno.env.get(), no importable desde Node), mismo patrón que
 // send-nurture-diagnostico-email/index.ts.
 import { Webhook } from 'npm:standardwebhooks@^1';
-import { detectBrand, buildActionUrl, renderEmail, sendViaResend } from './emailHookLogic.ts';
+import { detectBrand, buildActionUrl, renderEmail, sendViaResend, pickLang } from './emailHookLogic.ts';
 
 // RESEND_API_KEY (el secret genérico) devuelve 403 al mandar desde
 // hola@moyiq.app / invest@moyiq.app — parece estar scopeada a otro
@@ -45,7 +45,10 @@ Deno.serve(async (req) => {
     email_data.email_action_type,
     email_data.redirect_to,
   );
-  const rendered = renderEmail(brand, email_data.email_action_type, actionUrl);
+  // Idioma: user_metadata.lang (signUp lo guarda; App.jsx lo mantiene al día
+  // con el idioma de la app). Sin dato, español.
+  const lang = pickLang(user?.user_metadata?.lang);
+  const rendered = renderEmail(brand, email_data.email_action_type, actionUrl, lang);
 
   const sent = await sendViaResend(user.email, rendered, RESEND_API_KEY);
   if (!sent.ok) {
