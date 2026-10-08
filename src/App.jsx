@@ -12,6 +12,7 @@ import PageSkeleton from './components/ui/PageSkeleton.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
+import AppLockGate from './components/lock/AppLockGate.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
 import { useState, useEffect } from 'react'
 
@@ -222,9 +223,13 @@ export default function App() {
     return <DemoShell />
   }
 
+  // T14: el bloqueo va POR FUERA de AppProvider — mientras está bloqueada no
+  // se monta nada de la app (ni se cargan los datos al estado de React).
   return (
-    <AppProvider>
-      <Inner />
-    </AppProvider>
+    <AppLockGate>
+      <AppProvider>
+        <Inner />
+      </AppProvider>
+    </AppLockGate>
   )
 }

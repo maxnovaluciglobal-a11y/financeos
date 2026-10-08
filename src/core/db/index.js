@@ -97,6 +97,68 @@ export async function clearAllData() {
   await tx.done
 }
 
+// ─── Security (T14 · bloqueo) ─────────────────────────────────────────────────
+// Store 'security' (migración v3): hash del PIN, credencial WebAuthn e
+// intentos fallidos. Fuera de exportAllData/importAllData a propósito — ver
+// el comentario del paso 3 en migrations.js.
+const LS_SECURITY = 'fos_security'
+function lsSecurity() { try { return JSON.parse(localStorage.getItem(LS_SECURITY) || '{}') || {} } catch { return {} } }
+
+export async function securityGet(key) {
+  const db = await getDB()
+  if (!db) return lsSecurity()[key] ?? null
+  return (await db.get('security', key)) ?? null
+}
+
+export async function securityPut(key, value) {
+  const db = await getDB()
+  if (!db) { try { localStorage.setItem(LS_SECURITY, JSON.stringify({ ...lsSecurity(), [key]: value })) } catch {} ; return value }
+  await db.put('security', value, key)
+  return value
+}
+
+export async function securityDelete(key) {
+  const db = await getDB()
+  if (!db) { const all = lsSecurity(); delete all[key]; try { localStorage.setItem(LS_SECURITY, JSON.stringify(all)) } catch {} ; return }
+  await db.delete('security', key)
+}
+
+// ─── wipeLocalDevice ──────────────────────────────────────────────────────────
+// Borrado TOTAL de lo que MOY IQ guarda en este dispositivo: todas las stores
+// (incluidas 'settings' y 'security', que clearAllData() NO toca), las claves
+// locales `fos_*` (fallback de localStorage, historial del IQ Score, última
+// importación…) y la copia previa al sync (`fnos_presync_backup`, que es un
+// respaldo completo en claro). Además apaga el sync: si quedara encendido, la
+// próxima carga bajaría todo de la nube y "olvidé mi PIN" sería una forma de
+// saltarse el bloqueo. La licencia (`fnos_license_v2`, `fnos_starter_ack`) se
+// conserva: es de la cuenta, no son datos financieros, y para volver a
+// entrar igual hace falta iniciar sesión (el flujo de AppLock cierra sesión).
+//
+// Lo usa solo el camino "Olvidé mi PIN" de AppLock. "Borrar todos los datos"
+// de Ajustes sigue usando clearAllData(): ahí el usuario ya desbloqueó y
+// quiere vaciar movimientos, no resetear el dispositivo.
+export async function wipeLocalDevice() {
+  const db = await getDB()
+  if (db) {
+    const names = [...db.objectStoreNames]
+    if (names.length) {
+      const tx = db.transaction(names, 'readwrite')
+      await Promise.all(names.map(s => tx.objectStore(s).clear()))
+      await tx.done
+    }
+  }
+  try {
+    const keys = []
+    for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i))
+    for (const k of keys) {
+      if (k && (k.startsWith('fos_') || k === 'fnos_presync_backup' || k === 'fnos_sync_meta' || k === 'fnos_error_log')) {
+        localStorage.removeItem(k)
+      }
+    }
+    localStorage.setItem('fnos_sync_on', '0')
+  } catch {}
+}
+
 // ─── Export / Import ──────────────────────────────────────────────────────────
 export async function exportAllData() {
   const [incomes, expenses, budgets, debts, goals, subscriptions, settings] = await Promise.all([

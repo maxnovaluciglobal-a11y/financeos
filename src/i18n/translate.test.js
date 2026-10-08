@@ -115,3 +115,36 @@ describe('T17: sin glifos unicode usados como ícono dentro de los textos', () =
     expect(offenders).toEqual([])
   })
 })
+
+describe('paridad de las claves del bloqueo T14 (es/en/pt/de)', () => {
+  const prefixes = ['lock.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('ningún texto en español usa voseo, exclamaciones ni "por favor"; ningún texto alemán tutea', () => {
+    for (const k of pick(es)) {
+      expect(es[k]).not.toMatch(/\b(podés|tenés|contanos|dejanos|probá|elegí|revisá|escribinos|querés|vos|registrá|empezá|tocá|ingresá|olvidás|usá)\b/i)
+      expect(es[k]).not.toMatch(/[¡!]/)
+      expect(es[k]).not.toMatch(/por favor/i)
+    }
+    for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+
+  it('el texto de la opción dice que es un bloqueo de pantalla, no cifrado', () => {
+    expect(es['lock.settings.desc']).toMatch(/no cifra/)
+    expect(en['lock.settings.desc']).toMatch(/does not encrypt/)
+  })
+})

@@ -166,6 +166,11 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
 }
 
+/* T14 · velo mientras la app está en segundo plano con el bloqueo activo
+   (ver components/lock/AppLockGate.jsx): la captura del selector de apps no
+   muestra montos. */
+.fos-lock-veil #root { visibility: hidden; }
+
 html, body {
   overscroll-behavior: none; /* sin rebote/pull-to-refresh del navegador — sensación nativa */
 }
