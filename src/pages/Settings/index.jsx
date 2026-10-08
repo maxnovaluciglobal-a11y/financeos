@@ -8,6 +8,7 @@ import { Card, CardHeader, Btn, PageHeader } from '../../components/ui/index.jsx
 import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
+import SecuritySection from './SecuritySection.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
@@ -264,6 +265,7 @@ export default function Settings() {
         <CardHeader title={t('settings.backup.title')} />
         <BackupManager />
       </Card>
+      <SecuritySection />
       <Card>
         <CardHeader title={t('settings.sync.title')} />
         <SyncSection enableSync={enableSync} disableSync={disableSync} />
