@@ -108,8 +108,10 @@ function EsBody() {
         </p>
       </div>
 
-      <div className={s.legalNotice}>
-        Para consultas: <strong>support@moyiq.app</strong> · MAXNOVA & LUCI Global LLC
+
+      <div className={s.section}>
+        <h2>Contacto</h2>
+        <p>Consultas sobre este aviso: <strong>support@moyiq.app</strong></p>
       </div>
     </div>
   )
@@ -212,8 +214,10 @@ function EnBody() {
         </p>
       </div>
 
-      <div className={s.legalNotice}>
-        Questions: <strong>support@moyiq.app</strong> · MAXNOVA & LUCI Global LLC
+
+      <div className={s.section}>
+        <h2>Contact</h2>
+        <p>Questions about this notice: <strong>support@moyiq.app</strong></p>
       </div>
     </div>
   )
@@ -317,14 +321,15 @@ function PtBody() {
         </p>
       </div>
 
-      <div className={s.legalNotice}>
-        Para questões: <strong>support@moyiq.app</strong> · MAXNOVA & LUCI Global LLC
+
+      <div className={s.section}>
+        <h2>Contato</h2>
+        <p>Dúvidas sobre este aviso: <strong>support@moyiq.app</strong></p>
       </div>
     </div>
   )
 }
 
-// RECHTLICHE PRÜFUNG AUSSTEHEND — Entwurf, vor Verkauf an Verbraucher in DE von einer Anwältin/einem Anwalt prüfen lassen
 function DeBody() {
   return (
     <div className={s.legalWrap}>
@@ -424,8 +429,10 @@ function DeBody() {
         </p>
       </div>
 
-      <div className={s.legalNotice}>
-        Fragen: <strong>support@moyiq.app</strong> · MAXNOVA & LUCI Global LLC
+
+      <div className={s.section}>
+        <h2>Kontakt</h2>
+        <p>Fragen zu diesem Hinweis: <strong>support@moyiq.app</strong></p>
       </div>
     </div>
   )
