@@ -11,7 +11,7 @@
 // mantener. No usa verify_jwt porque el caller es SQL (pg_net) o un cliente
 // anon, ninguno de los dos trae un JWT de servicio.
 import { sendAdminNotify, type SignupEvent, type SignupDetails } from './notifyLogic.ts';
-import { subscribeToNewsletter } from '../_shared/newsletterSubscribe.ts';
+import { subscribeToNewsletter, autoSubscribeEnabled } from '../_shared/newsletterSubscribe.ts';
 
 const RESEND_API_KEY = Deno.env.get('NURTURE_RESEND_API_KEY') ?? Deno.env.get('RESEND_API_KEY') ?? '';
 const FROM_EMAIL = Deno.env.get('NURTURE_FROM_EMAIL') ?? 'MOY IQ <hola@moyiq.app>';
@@ -25,7 +25,7 @@ const NEWSLETTER_PROXY_TOKEN = Deno.env.get('NEWSLETTER_PROXY_TOKEN');
 // Por eso la suscripción automática a beehiiv queda APAGADA salvo que se
 // prenda a propósito con NEWSLETTER_AUTO_SUBSCRIBE_FREE=true (p. ej. si la
 // publication de beehiiv tiene su propio doble opt-in activado).
-const NEWSLETTER_AUTO_SUBSCRIBE_FREE = Deno.env.get('NEWSLETTER_AUTO_SUBSCRIBE_FREE') === 'true';
+const NEWSLETTER_AUTO_SUBSCRIBE_FREE = autoSubscribeEnabled(Deno.env.get('NEWSLETTER_AUTO_SUBSCRIBE_FREE'));
 
 const VALID_EVENTS: SignupEvent[] = ['starter_signup', 'invest_signup'];
 

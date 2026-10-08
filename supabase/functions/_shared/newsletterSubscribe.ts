@@ -41,3 +41,11 @@ export async function subscribeToNewsletter(
     console.error(`subscribeToNewsletter: fallo de red email=${email} product=${product}`, err);
   }
 }
+
+// Doble opt-in (oct-2026, § 7 UWG): la suscripción automática a beehiiv es
+// marketing y solo corre si su variable de entorno vale exactamente "true"
+// (NEWSLETTER_AUTO_SUBSCRIBE_FREE en notify-admin-signup,
+// NEWSLETTER_AUTO_SUBSCRIBE_PRO en stripe-webhook). Sin variable: apagada.
+export function autoSubscribeEnabled(envValue: string | null | undefined): boolean {
+  return envValue === "true";
+}
