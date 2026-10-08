@@ -13,10 +13,11 @@ import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { parseTransactionText } from '../utils/smsParser.js'
 import { hapticTap } from '../utils/haptics.js'
+import { orderQuickChips, hasProfileTemplate } from '../utils/quickChips.js'
 import config from '../config.js'
 import {
   localDateStr, dateLocale, moneyLocale, catName, catLabel, methodLabel,
-  getCategoriesExpense, getCategoriesIncome,
+  getCategoriesExpense, getCategoriesIncome, CATS_EXPENSE, CATS_INCOME,
 } from '../utils/index.js'
 import {
   pressKey, keypadToNumber, currencyDecimals, amountToKeypad, formatKeypadDisplay, decimalSeparator,
@@ -153,7 +154,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     ownOfType.slice(-120).forEach(r => { if (r.category) counts[r.category] = (counts[r.category] || 0) + 1 })
     const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(e => e[0])
     const effective = type === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)
-    return [...new Set([...ranked, ...effective])].slice(0, 6)
+    // Plantilla de perfil activa (ej. freelancer): sus categorías primero (M5)
+    const templateCats = (type === 'expense' ? settings?.categoriesExpense : settings?.categoriesIncome) || []
+    return orderQuickChips({ ranked, effective, templateCats, canonical: type === 'expense' ? CATS_EXPENSE : CATS_INCOME, templateActive: hasProfileTemplate(settings) })
   }, [type, ownOfType, settings])
 
   // Fija la primera categoría al abrir / cambiar de tipo
