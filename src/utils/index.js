@@ -10,6 +10,7 @@
 // cae a español hasta que el efecto de useT() dispare un re-render.
 import { es } from '../i18n/es.js'
 import { langCache } from '../i18n/langCache.js'
+import config from '../config.js'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -134,6 +135,8 @@ function translateOrRaw(prefix, value, lang) {
 // se pasa. Para options, listas y etiquetas. `lang` es opcional para no romper
 // callers que todavía no lo pasan (quedan en español, comportamiento previo).
 export const catLabel = (c, lang) => { const e = CAT_EMOJIS[c]; const label = lang ? translateOrRaw('cat.', c, lang) : (c || ''); return e ? `${e} ${label}` : label }
+// Solo el nombre traducido, sin emoji (chips de QuickAdd con showCategoryEmoji apagado).
+export const catName = (c, lang) => (lang ? translateOrRaw('cat.', c, lang) : (c || ''))
 
 // Categorías de SUSCRIPCIONES (distintas de las de gasto). Fallback: solo el nombre.
 export const SUB_EMOJIS = {
@@ -178,7 +181,11 @@ export function getCategoriesIncome(settings) {
   return [...CATS_INCOME, ...extra.filter(c => c && !CATS_INCOME.includes(c))]
 }
 
-export const METHODS      = ['Débito', 'Crédito', 'Efectivo', 'Transferencia']
+// Métodos de pago: la lista vive en config.paymentMethods (fuente única). El
+// valor guardado no cambia; methodLabel traduce solo lo que se muestra. Un
+// método que no está en la lista (ej. 'PSE' de los datos demo) se muestra tal cual.
+export const METHODS      = config.paymentMethods
+export const methodLabel  = (m, lang) => (lang ? translateOrRaw('method.', m, lang) : (m || ''))
 export const RECURRENCES  = ['Único', 'Mensual', 'Quincenal', 'Semanal']
 // El VALOR guardado y comparado en código (r.recurrence !== 'Único', etc.) sigue
 // siendo siempre uno de los 4 strings en español de RECURRENCES — solo la

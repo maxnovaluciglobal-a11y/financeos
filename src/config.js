@@ -131,13 +131,25 @@ const config = {
   },
 
   // ── MÉTODOS DE PAGO ────────────────────────────────────────────────────────
+  // Fuente única (QuickAdd, formulario de gasto de Movements). El VALOR guardado
+  // sigue en español, como las categorías y las recurrencias; la etiqueta que ve
+  // el usuario sale de las claves i18n 'method.<valor>' (methodLabel en utils).
+  // Antes había 3 listas distintas (esta, utils/index.js y Movements).
   paymentMethods: [
     'Débito',
     'Crédito',
     'Efectivo',
     'Transferencia',
     'Billetera digital',
+    'Otro',
   ],
+
+  // ── DECIMALES POR MONEDA ──────────────────────────────────────────────────
+  // Cuántos decimales acepta el teclado de QuickAdd. Lo que no está acá usa 2.
+  // Mapa explícito a propósito: Intl da resultados distintos según el navegador
+  // para COP (ISO dice 2, en la práctica nadie usa centavos). Con 0 decimales
+  // la tecla "," del teclado se reemplaza por "000".
+  currencyDecimals: { CLP: 0, COP: 0, PYG: 0, JPY: 0, KRW: 0, VND: 0, ISK: 0 },
 
   // ── RECURRENCIAS ───────────────────────────────────────────────────────────
   recurrences: [

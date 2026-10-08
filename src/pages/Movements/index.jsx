@@ -9,7 +9,7 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr } from '../../utils/index.js'
+import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel } from '../../utils/index.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
 
@@ -58,7 +58,7 @@ const SUBCATS = {
 }
 const SUB_CATS = ['Streaming','Música','Software','Gimnasio','Seguro',
   'Educación','Cloud','Delivery','Suscripción','Productividad','Otros']
-const METHODS  = ['Débito','Crédito','Efectivo','Transferencia','Otro']
+// Métodos de pago: lista única en config.paymentMethods (METHODS en utils)
 // label = key de traducción (el value guardado no cambia)
 const FREQS    = [
   { value:'monthly',   label:'mov.freq.monthly' },
@@ -197,7 +197,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
         )}
         <FormGroup label={t('mov.form.method')}>
           <select style={inp} value={f.method} onChange={e => set('method', e.target.value)}>
-            {METHODS.map(m => <option key={m}>{m}</option>)}</select></FormGroup>
+            {METHODS.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}</select></FormGroup>
         <FormGroup label={t('mov.form.type')}>
           <select style={inp} value={f.type} onChange={e => set('type', e.target.value)}>
             <option>Necesidad</option><option>Deseo</option></select></FormGroup>

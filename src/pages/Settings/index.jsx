@@ -156,6 +156,32 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Emoji en las categorías (QuickAdd) — apagado por defecto */}
+        <div style={srow}>
+          <div>
+            <div style={slbl}>{t('settings.categoryEmoji.label')}</div>
+            <div style={ssub}>{t('settings.categoryEmoji.sub')}</div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={settings.showCategoryEmoji === true}
+            aria-label={t('settings.categoryEmoji.label')}
+            onClick={() => updateSettings({ ...settings, showCategoryEmoji: settings.showCategoryEmoji !== true })}
+            style={{
+              width:44, height:24, borderRadius:12, position:'relative', flexShrink:0, cursor:'pointer',
+              background: settings.showCategoryEmoji === true ? 'var(--grn)' : 'var(--brd2)',
+              border: 'none', transition:'background .2s', padding:0,
+            }}
+          >
+            <span style={{
+              position:'absolute', top:3, left:3,
+              width:18, height:18, borderRadius:'50%', background:'#fff',
+              transform: settings.showCategoryEmoji === true ? 'translateX(20px)' : 'translateX(0)',
+              transition:'transform .2s', display:'block',
+            }}/>
+          </button>
+        </div>
+
         {/* Moneda secundaria */}
         <div style={srow}>
           <div>

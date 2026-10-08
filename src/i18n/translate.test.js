@@ -51,3 +51,30 @@ describe('paridad de las claves nuevas de fase 1 (es/en/pt/de)', () => {
     }
   })
 })
+
+describe('paridad de las claves de fase 2 (es/en/pt/de)', () => {
+  const prefixes = ['qa.', 'method.', 'settings.categoryEmoji.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('ningún texto en español usa voseo, exclamaciones ni "por favor"', () => {
+    for (const k of pick(es)) {
+      expect(es[k]).not.toMatch(/\b(podés|tenés|contanos|dejanos|probá|elegí|revisá|escribinos|querés|vos|registrá|empezá|tocá)\b/i)
+      expect(es[k]).not.toMatch(/[¡!]/)
+      expect(es[k]).not.toMatch(/por favor/i)
+    }
+  })
+})

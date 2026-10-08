@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { pressKey, keypadToNumber } from './keypad.js'
+import { pressKey, keypadToNumber, currencyDecimals, amountToKeypad, formatKeypadDisplay } from './keypad.js'
 import { toKeypadAmount } from './smsParser.js'
 
 const type = (keys, decimals = 2, start = '') => keys.reduce((a, k) => pressKey(a, k, decimals), start)
@@ -76,5 +76,36 @@ describe('pressKey después de pegar un SMS (toKeypadAmount)', () => {
 describe('keypadToNumber', () => {
   it.each([['1234,5', 1234.5], ['0,', 0], ['', 0], ['18000', 18000]])('%s -> %s', (s, n) => {
     expect(keypadToNumber(s)).toBe(n)
+  })
+})
+
+describe('currencyDecimals', () => {
+  it('usa el mapa explícito de config y 2 por defecto', () => {
+    expect(currencyDecimals('CLP')).toBe(0)
+    expect(currencyDecimals('COP')).toBe(0)
+    expect(currencyDecimals('USD')).toBe(2)
+    expect(currencyDecimals('ARS')).toBe(2)
+    expect(currencyDecimals('XXX')).toBe(2)
+  })
+})
+
+describe('amountToKeypad', () => {
+  it('redondea a los decimales de la moneda', () => {
+    expect(amountToKeypad(12990.4, 0)).toBe('12990')
+    expect(amountToKeypad(12.5, 2)).toBe('12,5')
+    expect(amountToKeypad(0, 2)).toBe('')
+  })
+})
+
+describe('formatKeypadDisplay', () => {
+  it.each([
+    ['18500', 'es-CL', '18.500'],
+    ['1686200', 'es-CO', '1.686.200'],
+    ['1234,5', 'en-US', '1,234.5'],
+    ['0,', 'es-CL', '0,'],
+    ['12,', 'en-US', '12.'],
+    ['', 'es-CL', ''],
+  ])('%s en %s -> %s', (a, loc, out) => {
+    expect(formatKeypadDisplay(a, loc)).toBe(out)
   })
 })

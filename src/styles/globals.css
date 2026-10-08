@@ -269,3 +269,65 @@ button { cursor: pointer; font-family: var(--sans); }
     gap: 10px !important;
   }
 }
+
+/* ── Acciones de flujo (QuickAdd, onboarding, demo) ──────────────────────────
+   Botón primario Latón con texto Navy: en hover NO se oscurece el fill, se
+   agrega el anillo interior Navy 25% (regla del brand book). Áreas táctiles
+   de 44px. Los chips son cuadrados técnicos (--rs), nunca píldora. */
+.fos-btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 44px; padding: 10px 16px;
+  border: none; border-radius: var(--r);
+  background: var(--laton); color: var(--navy);
+  font-family: var(--sans); font-size: 15px; font-weight: 600; line-height: 1.2;
+  box-shadow: var(--sh-1);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
+}
+.fos-btn-primary:hover:not(:disabled) { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
+.fos-btn-primary:active:not(:disabled) { transform: scale(.98); }
+.fos-btn-primary:disabled { background: var(--sur3); color: var(--th); box-shadow: none; cursor: not-allowed; }
+
+.fos-btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; min-height: 44px; padding: 10px 14px;
+  border: 1px solid var(--brd2); border-radius: var(--r);
+  background: transparent; color: var(--tm);
+  font-family: var(--sans); font-size: 14px; font-weight: 500; line-height: 1.2;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.fos-btn-secondary:hover:not(:disabled) { background: var(--sur2); color: var(--tx); }
+
+/* Enlace de texto con área táctil de 44px */
+.fos-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 0 4px;
+  background: none; border: none;
+  color: var(--tm); font-family: var(--sans); font-size: 14px; font-weight: 500;
+  text-decoration: underline; text-decoration-color: var(--brd2); text-underline-offset: 3px;
+  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
+}
+.fos-link:hover { color: var(--tx); text-decoration-color: currentColor; }
+
+/* Chip seleccionable (categorías, fecha, opciones del onboarding). La
+   selección es neutra (Navy/Papel): el color semántico gasto/ingreso queda
+   solo en el monto y en el toggle. */
+.fos-chip {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 8px 12px;
+  border: 1px solid var(--brd2); border-radius: var(--rs);
+  background: var(--sur); color: var(--tm);
+  font-family: var(--sans); font-size: 13px; font-weight: 500; line-height: 1.2;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.fos-chip:hover { border-color: var(--tm); color: var(--tx); }
+.fos-chip[aria-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
+.fos-chip--tall { min-height: 44px; }
+/* Un <input> transparente encima del chip (ej. el selector de fecha nativo)
+   oculta su propio outline: el anillo de foco se dibuja en el chip. */
+.fos-chip:focus-within:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fos-btn-primary, .fos-btn-secondary, .fos-link, .fos-chip { transition: none; }
+  .fos-btn-primary:active:not(:disabled) { transform: none; }
+}
