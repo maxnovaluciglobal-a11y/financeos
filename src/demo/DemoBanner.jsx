@@ -1,9 +1,11 @@
 // src/demo/DemoBanner.jsx
 import { useState } from 'react'
 import { useDemo } from './DemoContext.jsx'
+import { useT } from '../i18n/useT.js'
 
 export default function DemoBanner() {
   const { setScenario } = useDemo()
+  const { t } = useT()
   const [scenario, setLocal] = useState('exitoso')
 
   function toggle() {
@@ -39,13 +41,13 @@ export default function DemoBanner() {
         </div>
 
         <span style={{ fontSize: 11, color: 'rgba(255,255,255,.85)', flex: 1, lineHeight: 1.3, minWidth: 120 }}>
-          Datos ficticios · Sofía García · Colombia
+          {t('demo.banner.label')}
         </span>
 
         {/* Toggle escenario — muestra el estado ACTUAL, no el destino */}
         <button
           onClick={toggle}
-          title="Cambia entre dos perfiles financieros para ver cómo responde la app"
+          title={t('demo.banner.scenarioHint')}
           style={{
             background: 'rgba(255,255,255,.12)',
             border: '1px solid rgba(255,255,255,.25)',
@@ -62,7 +64,7 @@ export default function DemoBanner() {
             alignItems: 'center',
           }}
         >
-          {scenario === 'dificil' ? 'Escenario: Mes difícil ↕' : 'Escenario: Mes exitoso ↕'}
+          {scenario === 'dificil' ? t('demo.banner.scenarioHard') : t('demo.banner.scenarioGood')} <span aria-hidden="true">↕</span>
         </button>
 
         {/* CTA inmediato */}
@@ -87,7 +89,7 @@ export default function DemoBanner() {
             alignItems: 'center',
           }}
         >
-          Comprar →
+          {t('demo.banner.cta')} <span aria-hidden="true">→</span>
         </a>
 
       </div>

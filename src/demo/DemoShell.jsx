@@ -61,6 +61,7 @@ function DemoBridge({ children }) {
 
 // CTA persistente al pie — aparece después de 3 min de uso demo
 function DemoBottomCTA() {
+  const { t } = useT()
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(() => {
     try { return !!localStorage.getItem('fos_demo_cta_dismissed') } catch { return false }
@@ -92,8 +93,8 @@ function DemoBottomCTA() {
       flexWrap: 'wrap',
     }}>
       <div style={{ flex: 1, minWidth: 200 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>¿Te convence lo que ves?</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>El tuyo es privado y local — plan gratis, o Pro desde US$4.99/mes.</div>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{t('demo.cta.title')}</div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>{t('demo.cta.sub', { m: '4.99' })}</div>
       </div>
       <button
         onClick={() => window.open('https://moyiq.app/#pricing', '_blank')}
@@ -103,11 +104,11 @@ function DemoBottomCTA() {
           fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
         }}
       >
-        Comprar MOY IQ →
+        {t('demo.cta.button')} <span aria-hidden="true">→</span>
       </button>
       <button
         onClick={dismiss}
-        aria-label="Cerrar"
+        aria-label={t('common.close')}
         style={{
           background: 'transparent', border: 'none', color: 'rgba(255,255,255,.6)',
           fontSize: 18, cursor: 'pointer', lineHeight: 1, flexShrink: 0,
