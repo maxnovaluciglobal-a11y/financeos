@@ -222,8 +222,8 @@ const config = {
   // trialCheckoutUrl: URL https://buy.stripe.com/... del link de prueba Pro mensual.
   pricing: {
     proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
-    trialEnabled: false,
-    trialCheckoutUrl: null,
+    trialEnabled: true,
+    trialCheckoutUrl: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
   },
 
 }
