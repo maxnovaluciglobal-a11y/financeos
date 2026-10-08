@@ -1769,4 +1769,12 @@ export const es = {
     'backup.reminder.old.many': "Tu último respaldo fue hace {n} días.",
     'backup.reminder.local': "Tus datos están solo en este dispositivo.",
     'backup.reminder.aria': "Recordatorio de respaldo",
+    'home.score.pts': "{n} pts",
+    'home.score.next': "Siguiente paso: {factor}",
+    'home.score.allMax': "Los cinco factores están al máximo.",
+    'home.score.cta.cashFlow': "Revisar presupuestos",
+    'home.score.cta.emergencyCushion': "Ir a metas",
+    'home.score.cta.debtLoad': "Ver deudas",
+    'home.score.cta.goalsProgress': "Ir a metas",
+    'home.score.cta.dataConsistency': "Ver movimientos",
 }

@@ -1,7 +1,7 @@
 // src/pages/Dashboard/index.jsx
 // Dashboard Visual Polish — FinanceOS v1.1.1
 
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import Sheet from '../../components/ui/Sheet.jsx'
@@ -15,13 +15,13 @@ import { isSyncEnabled, syncAvailable, syncMeta } from '../../core/sync.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import CountUp from '../../components/CountUp.jsx'
-import { IconIQScore } from '../../components/icons/Icons.jsx'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import CountryTool from './CountryTool.jsx'
 import HomeKpis from './HomeKpis.jsx'
 import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
+import ScoreCard from './ScoreCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
@@ -234,71 +234,6 @@ export default function Dashboard({ setPage }) {
       lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
     }, t)
   }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, settings.language])
-
-  // ── Historial de score semanal (localStorage) ────────────────────────────
-  const SCORE_KEY = 'fos_score_history'
-  const [scoreHistory, setScoreHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(SCORE_KEY) || '[]') } catch { return [] }
-  })
-
-  useEffect(() => {
-    if (!healthScore) return
-    const week = (() => {
-      const d = new Date()
-      const jan1 = new Date(d.getFullYear(), 0, 1)
-      return `${d.getFullYear()}-W${Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7)}`
-    })()
-    setScoreHistory(prev => {
-      const existing = prev.find(e => e.w === week)
-      if (existing && existing.s === healthScore.score) return prev
-      const next = [...prev.filter(e => e.w !== week), { w: week, s: healthScore.score }]
-        .sort((a, b) => a.w.localeCompare(b.w))
-        .slice(-8)
-      try { localStorage.setItem(SCORE_KEY, JSON.stringify(next)) } catch {}
-      return next
-    })
-  }, [healthScore?.score])
-
-  function ScoreSparkline({ history, currentColor }) {
-    if (history.length < 2) return null
-    const vals = history.map(e => e.s)
-    // Escala honesta: ventana MÍNIMA de 20 pts (un ±1 no se dibuja como montaña),
-    // centrada en los datos y acotada al rango real del score [0,100].
-    const dataMin = Math.min(...vals), dataMax = Math.max(...vals)
-    const span = Math.max(dataMax - dataMin, 20)
-    const mid = (dataMin + dataMax) / 2
-    const min = Math.max(0, mid - span / 2)
-    const max = Math.min(100, min + span) || 100
-    const W = 80, H = 28
-    const pts = vals.map((v, i) => {
-      const x = (i / (vals.length - 1)) * W
-      const y = H - ((v - min) / (max - min)) * H
-      return `${x},${y}`
-    }).join(' ')
-    const prev = vals[vals.length - 2]
-    const curr = vals[vals.length - 1]
-    const diff = curr - prev
-    const trendColor = diff > 0 ? 'var(--pos)' : diff < 0 ? 'var(--neg)' : 'var(--th)'
-    const trendBg    = diff > 0 ? 'var(--pos-bg)' : diff < 0 ? 'var(--neg-bg)' : 'var(--sur3)'
-    const trendTxt   = diff > 0 ? t('dash.trend.up', { n: Math.abs(diff) }) : diff < 0 ? t('dash.trend.down', { n: Math.abs(diff) }) : t('dash.trend.flat')
-    return (
-      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-        {/* Ahora también visible en móvil — es la tendencia del score, la métrica clave */}
-        <span>
-          <svg width={W} height={H} style={{ overflow:'visible', display:'block' }}>
-            {/* #08 — relleno de área bajo la línea (tratamiento editorial dataviz):
-                da peso visual a la tendencia sin competir con el trazo. */}
-            <polygon points={`${pts} ${W},${H} 0,${H}`} fill={currentColor} opacity="0.10" stroke="none" />
-            <polyline points={pts} fill="none" stroke={currentColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
-            <circle cx={pts.split(' ').pop().split(',')[0]} cy={pts.split(' ').pop().split(',')[1]} r="3" fill={currentColor} />
-          </svg>
-        </span>
-        <span style={{ fontSize:11, fontFamily:'var(--mono)', color: trendColor, background: trendBg, borderRadius:4, padding:'2px 6px' }}>
-          {trendTxt}
-        </span>
-      </div>
-    )
-  }
 
   // ── Vista compacta (progressive disclosure) ───────────────────────────────
   // Vista esencial por defecto (calma): la primera pantalla muestra lo esencial y
@@ -572,44 +507,8 @@ export default function Dashboard({ setPage }) {
           </div>
           <div className={`${hs.pair} ${hs.pairB}`}>
             <div className={hs.oScore}>
-      {/* IQ Score — puntaje 0-100 de salud financiera */}
-      {healthScore && (
-        <Card className="rise" data-tour="iq-score" style={{ padding:'16px 18px', display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:14, flex:1, minWidth:180 }}>
-            <div style={{ textAlign:'center', flexShrink:0 }}>
-              <div className="num" style={{ fontSize:34, fontWeight:700, color:healthScore.color, lineHeight:1 }}>
-                {/* instrument-settle: barrido con resorte 900ms — nunca vuelve a
-                    cero al re-renderizar, ver token --dur-instrument-settle */}
-                <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
-              </div>
-              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginTop:2 }}>/ 100</div>
-            </div>
-            <div>
-              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:2 }}>
-                <IconIQScore size={13} />
-                {t('dash.health.title')}
-              </div>
-              <ScoreState level={healthScore.level} label={healthScore.label} size={16} style={{ fontSize:14, fontWeight:700, marginBottom:4 }} />
-              <ScoreSparkline history={scoreHistory} currentColor={healthScore.color} />
-            </div>
-          </div>
-          <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-            {healthScore.breakdown.map((b, i) => {
-              // Cada factor: completo / parcial / en cero → mismo vocabulario de
-              // ícono que el estado del score, para no depender solo del color.
-              const lvl = b.pts >= b.max ? 'ok' : b.pts > 0 ? 'attention' : 'risk'
-              return (
-                <div key={i} style={{ textAlign:'center', minWidth:56 }}>
-                  <div style={{ display:'inline-flex', alignItems:'center', gap:3, fontSize:13, fontWeight:700, fontFamily:'var(--mono)', color: SCORE_LEVELS[lvl].color }}>
-                    <ScoreStateIcon level={lvl} size={12} />{b.pts}<span style={{ fontWeight:400, color:'var(--th)' }}>/{b.max}</span>
-                  </div>
-                  <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.3px' }}>{b.label}</div>
-                </div>
-              )
-            })}
-          </div>
-        </Card>
-      )}
+              <ScoreCard healthScore={healthScore} activeMonth={activeMonth}
+                isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
             </div>
           </div>
         </div>
