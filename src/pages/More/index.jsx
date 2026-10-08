@@ -4,6 +4,7 @@
 // que un id/label nuevo no se duplica entre el sidebar de escritorio y esta
 // página.
 import { useApp } from '../../context/AppContext.jsx'
+import { Lock } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { NAV } from '../../components/layout/navConfig.js'
@@ -90,7 +91,7 @@ export default function More({ setPage }) {
 
       <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 10, lineHeight: 1.5 }}>
         MOY IQ v1.5 · MAXNOVA &amp; LUCI Global LLC<br />
-        <span style={{ opacity: .5 }}>{t('nav.noServerTag')}</span>
+        <span style={{ opacity: .5 }}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('nav.noServerTag')}</span>
       </div>
       <div style={{ marginTop: 6 }}><BackupStatusBadge compact /></div>
     </div>

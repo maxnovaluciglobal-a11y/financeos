@@ -14,7 +14,7 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
 import TabBar from './TabBar.jsx'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Lock } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -162,7 +162,7 @@ export default function Shell({ page, setPage, children }) {
           )}
           <div className={s.appVersion}>
             MOY IQ v1.5 · MAXNOVA & LUCI Global LLC<br/>
-            <span style={{opacity:.5}}>{t('nav.noServerTag')}</span>
+            <span style={{opacity:.5}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('nav.noServerTag')}</span>
           </div>
           <div style={{marginTop:6}}><BackupStatusBadge compact /></div>
         </div>

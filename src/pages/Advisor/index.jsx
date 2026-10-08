@@ -4,6 +4,7 @@
 // AVISO: Las alertas y señales son orientativas. No constituyen asesoría financiera certificada.
 
 import { useState, useMemo } from 'react'
+import { Lock } from 'lucide-react'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -268,7 +269,7 @@ function AdvisorNotes({ notes, onSave }) {
         padding: '8px 10px', background: 'var(--sur2)',
         borderRadius: 6, borderLeft: '2px solid var(--brd2)', lineHeight: 1.5,
       }}>
-        {t('adv.notes.local')}
+        <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('adv.notes.local')}
       </div>
     </div>
   )

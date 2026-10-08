@@ -4,6 +4,7 @@
 // FinanceOS no puede recuperar datos si no existe un respaldo previo.
 
 import { useState, useRef, useEffect } from 'react'
+import { Lock } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { CLOUD_ENABLED } from '../../core/supabase.js'
 import { cloudPush, cloudPull, cloudStatus } from '../../core/cloudSync.js'
@@ -426,7 +427,7 @@ export default function BackupManager() {
           border: '0.5px solid var(--brd)', borderRadius: 8,
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }}>
-            <span aria-hidden="true">🔒</span> {t('backup.where.title')}
+            <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('backup.where.title')}
           </div>
           <div style={{ fontSize: 11, color: 'var(--tm)', lineHeight: 1.7, fontFamily: 'var(--mono)' }}>
             {t('backup.where.body')} <strong style={{ color: 'var(--tx)' }}>{t('backup.where.warn')}</strong>.{' '}

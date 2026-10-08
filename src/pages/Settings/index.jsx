@@ -1,5 +1,6 @@
 // src/pages/Settings/index.jsx — v1.5
 import { useState, useEffect } from 'react'
+import { Lock } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { Card, CardHeader, Btn, PageHeader } from '../../components/ui/index.jsx'
 import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
@@ -349,7 +350,7 @@ export default function Settings() {
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.indexeddbLabel')}</span> — {t('settings.dataStorage.indexeddbDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.serverLabel')}</span> — {t('settings.dataStorage.serverDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.backupLabel')}</span> — {t('settings.dataStorage.backupDesc')}</div>
-          <div style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',marginTop:4}}>{t('settings.dataStorage.privacyBadge')}</div>
+          <div style={{fontSize:12,fontFamily:'var(--mono)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
         </div>
       </Card>
       {(installPrompt || installed || (isIOS && !isStandalone)) && (
@@ -478,7 +479,7 @@ function SyncSection({ enableSync, disableSync }) {
             </Btn>
           </div>
           <div style={{ ...sub, marginTop: 10, padding: '8px 10px', background: 'var(--sur2)', borderRadius: 'var(--r)', border: '0.5px solid var(--brd)' }}>
-            {t('settings.sync.e2e')}
+            <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.sync.e2e')}
           </div>
         </>
       )}
