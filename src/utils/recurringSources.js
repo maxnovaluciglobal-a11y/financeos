@@ -65,6 +65,7 @@ export function ruleFromSubscription(sub, { today, now }) {
     type: WANT_SUB_CATS.has(sub.category) ? 'Deseo' : 'Necesidad',
     amountMode: 'fixed',
     amounts: [{ from: monthOf(startDate), amount: Number(sub.amount) || 0 }],
+    sourceAmount: Number(sub.amount) || 0,
     schedule: scheduleForSub(sub, today),
     startDate,
     autoConfirm: false,
@@ -91,6 +92,7 @@ export function ruleFromDebt(debt, { today, now }) {
     type: 'Necesidad',
     amountMode: 'fixed',
     amounts: [{ from: monthOf(startDate), amount: Number(debt.minPayment) || 0 }],
+    sourceAmount: Number(debt.minPayment) || 0,
     schedule: { freq: 'monthly', day: due ? parseYMD(due).d : 'last', anchorDate: due || startDate },
     startDate,
     autoConfirm: false,
@@ -105,6 +107,21 @@ const debtActive = (d) => (Number(d?.minPayment) || 0) > 0 && (Number(d?.balance
 
 // Aplica a una regla existente lo que cambió en su origen. El monto nuevo entra
 // "desde ahora" (mes en curso): los meses anteriores conservan el suyo.
+//
+// Monto: solo se copia del origen cuando el ORIGEN cambió desde la última
+// sincronización (`sourceAmount`). Así un "usar este monto desde ahora" hecho
+// sobre la regla (al confirmar en la hoja del mes) no se pisa en la próxima
+// pasada con el monto viejo de la suscripción; y si después se edita la
+// suscripción, ese cambio sí manda.
+function syncAmount(rule, sourceAmt, ym) {
+  const amt = Number(sourceAmt) || 0
+  if (rule.sourceAmount === undefined) {
+    const next = amountAt(rule, ym) !== amt ? withAmountFrom(rule, ym, amt) : { ...rule }
+    return { ...next, sourceAmount: amt }
+  }
+  if (rule.sourceAmount === amt) return rule
+  return { ...withAmountFrom(rule, ym, amt), sourceAmount: amt }
+}
 function syncFromSub(rule, sub, { today }) {
   const ym = monthOf(today)
   let next = { ...rule,
@@ -113,8 +130,7 @@ function syncFromSub(rule, sub, { today }) {
     subCategory: sub.category || '',
     paused: sub.status !== 'active',
   }
-  const amt = Number(sub.amount) || 0
-  if (amountAt(next, ym) !== amt) next = withAmountFrom(next, ym, amt)
+  next = syncAmount(next, sub.amount, ym)
   const sched = scheduleForSub(sub, today)
   if (sched.freq !== rule.schedule?.freq || (sched.interval || 1) !== (rule.schedule?.interval || 1) ||
       (sub.nextPaymentDate && sub.nextPaymentDate !== rule.schedule?.anchorDate)) {
@@ -129,8 +145,7 @@ function syncFromDebt(rule, debt, { today }) {
   const project = String(debt.project || '').trim()
   let next = { ...rule, description: String(debt.creditor || '').trim() || rule.description }
   if (project) { next.inv = true; next.project = project } else { delete next.inv; delete next.project }
-  const amt = Number(debt.minPayment) || 0
-  if (amt > 0 && amountAt(next, ym) !== amt) next = withAmountFrom(next, ym, amt)
+  if ((Number(debt.minPayment) || 0) > 0) next = syncAmount(next, debt.minPayment, ym)
   const due = parseYMD(debt.dueDate) ? debt.dueDate : null
   const day = due ? parseYMD(due).d : 'last'
   if (rule.schedule?.day !== day) next.schedule = { ...rule.schedule, freq: 'monthly', day, anchorDate: due || rule.schedule?.anchorDate || rule.startDate }
