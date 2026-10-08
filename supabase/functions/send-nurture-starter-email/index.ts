@@ -28,6 +28,7 @@ import {
   markSent,
   type NurtureEmailConfig,
 } from "./nurtureEmailLogic.ts";
+import { corsHeaders } from "./cors.ts";
 
 const config: NurtureEmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -37,25 +38,6 @@ const config: NurtureEmailConfig = {
   cronSecret: Deno.env.get("CRON_SECRET"),
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",
 };
-
-const ALLOWED_ORIGINS = new Set([
-  "https://moyiq.app",
-  "https://www.moyiq.app",
-  "https://app.moyiq.app",
-  "https://financeospro.com",
-  "https://www.financeospro.com",
-  "http://localhost:4323",
-  "http://localhost:5173",
-]);
-
-function corsHeaders(origin: string | null) {
-  const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://moyiq.app";
-  return {
-    "Access-Control-Allow-Origin": allow,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, x-cron-secret",
-  };
-}
 
 function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), {

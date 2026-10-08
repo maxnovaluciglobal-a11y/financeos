@@ -274,3 +274,20 @@ describe('paridad de las claves de movimientos fijos (es/en/pt/de)', () => {
     for (const k of pick(en)) expect(en[k]).not.toMatch(/!/)
   })
 })
+
+// Doble opt-in de marketing (oct-2026): casilla de LicenseGate y texto de la
+// casilla de DemoGate que menciona el correo de confirmación.
+describe('paridad de las claves de doble opt-in (es/en/pt/de)', () => {
+  const keys = ['licenseGate.marketingConsent', 'demoGate.consentDoi']
+  it('existen en los 4 idiomas', () => {
+    for (const k of keys) for (const d of [es, en, pt, de]) expect(typeof d[k]).toBe('string')
+  })
+  it('mencionan el correo de confirmación y la baja, sin exclamaciones ni voseo, de en primera persona sin "du"', () => {
+    for (const k of keys) {
+      expect(es[k]).toMatch(/confirm/i); expect(en[k]).toMatch(/confirm/i); expect(pt[k]).toMatch(/confirm/i); expect(de[k]).toMatch(/Bestätigung/)
+      for (const d of [es, en, pt, de]) expect(d[k]).not.toMatch(/[¡!]/)
+      expect(es[k]).not.toMatch(/\b(podés|querés|vos)\b/i)
+      expect(de[k]).not.toMatch(/\bdu\b|\bdein/i)
+    }
+  })
+})

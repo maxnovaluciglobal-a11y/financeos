@@ -25,6 +25,15 @@
 // checkbox de marketing. Se agregó consent_marketing boolean not null
 // default true en la migración 20260918000900 (mismo razonamiento que
 // 20260918000500 para starter_leads — ver esa migración).
+//
+// Doble opt-in (10-oct-2026): los emails 2 y 3 son marketing y exigen además
+// consent_confirmed_at no nulo (columna agregada en
+// 20261010010000_marketing_double_optin.sql). El quiz de Invest todavía no
+// tiene casilla ni correo de confirmación, así que hoy ninguna fila queda
+// elegible: la secuencia 2/3 de Invest está apagada hasta que invest-web
+// sume la casilla + send-optin-confirmation (y su cron ya está pausado desde
+// 20261008000600). El email 1 (el resultado del quiz que la persona pidió) es
+// transaccional y no cambia.
 
 export type NurtureMode = "welcome" | "day2" | "day5";
 export type Perfil = "conservador" | "moderado" | "agresivo";
@@ -232,7 +241,7 @@ const BATCH_LIMIT = 200; // tope por corrida del cron — salvaguarda, no expect
 export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<InvestLead[]> {
   return restGet<InvestLead[]>(
     `invest_leads?select=id,email,perfil` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null&email2_sent_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null&email2_sent_at=is.null` +
       `&limit=${BATCH_LIMIT}`,
     config,
   );
@@ -243,7 +252,7 @@ export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promis
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<InvestLead[]>(
     `invest_leads?select=id,email,perfil` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null` +
       `&email3_sent_at=is.null&email2_sent_at=not.is.null&email2_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,
     config,

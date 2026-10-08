@@ -12,10 +12,13 @@
 // useT() (que lee el idioma de useApp()) no sirve acá. Usa useTFor() con el
 // idioma del navegador (detectLanguage), el mismo que después recibe el demo
 // como idioma inicial (demoData.js). Lo que dice el texto tiene que ser cierto:
-// registerDemoLead guarda nombre + email + consentimiento en demo_leads y NO
-// manda ningún correo; la casilla solo registra el consentimiento de marketing.
+// registerDemoLead guarda nombre + email + consentimiento en demo_leads. Con
+// MARKETING_DOI_ENABLED, la casilla marcada además dispara el correo de doble
+// opt-in (send-optin-confirmation) y el texto lo dice (demoGate.consentDoi);
+// sin el flag no sale ningún correo y se usa el texto viejo (demoGate.consent).
 import { useState } from 'react'
 import { registerDemoLead } from '../utils/licenseValidator.js'
+import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 import { useTFor } from '../i18n/useT.js'
 import { detectLanguage } from '../i18n/translate.js'
 import { Btn } from '../components/ui/index.jsx'
@@ -142,7 +145,7 @@ export default function DemoGate({ onPass }) {
             style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }}
           />
           <span style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.45 }}>
-            {t('demoGate.consent')}
+            {t(MARKETING_DOI_ENABLED ? 'demoGate.consentDoi' : 'demoGate.consent')}
           </span>
         </label>
 

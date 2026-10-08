@@ -30,10 +30,15 @@ import {
   notifyUnmappedTrialCheckout, handleInvoicePaid, handleSubscriptionDeleted, handleInvoicePaymentFailed,
   handleTrialWillEnd, TRIAL_DAYS, type WebhookConfig, type HandlerResult,
 } from "./webhookLogic.ts";
-import { subscribeToNewsletter } from "../_shared/newsletterSubscribe.ts";
+import { subscribeToNewsletter, autoSubscribeEnabled } from "../_shared/newsletterSubscribe.ts";
 
 const NEWSLETTER_PROXY_URL = Deno.env.get("NEWSLETTER_PROXY_URL");
 const NEWSLETTER_PROXY_TOKEN = Deno.env.get("NEWSLETTER_PROXY_TOKEN");
+// Doble opt-in (oct-2026): suscribir a cada comprador Pro al newsletter sin
+// consentimiento solo cabe en la excepción de clientes (§ 7 Abs. 3 UWG) si el
+// checkout lo avisa y permite oponerse — no verificado. Apagado salvo
+// NEWSLETTER_AUTO_SUBSCRIBE_PRO=true.
+const NEWSLETTER_AUTO_SUBSCRIBE_PRO = autoSubscribeEnabled(Deno.env.get("NEWSLETTER_AUTO_SUBSCRIBE_PRO"));
 
 // Acepta firma de TEST y de LIVE: prueba contra ambos secrets (los que existan).
 const WEBHOOK_SECRETS = [
@@ -143,10 +148,13 @@ Deno.serve(async (req) => {
       // Pedido de Walter 21-sep-2026: todo plan pago (Personal/Starter y Pro)
       // se suscribe también a la publication MOY IQ del newsletter semanal —
       // antes nadie quedaba suscrito automáticamente al pagar.
-      subscribeToNewsletter(email, "moyiq", {
-        proxyUrl: NEWSLETTER_PROXY_URL,
-        proxyToken: NEWSLETTER_PROXY_TOKEN,
-      }).catch(() => {});
+      // Desde oct-2026 solo con NEWSLETTER_AUTO_SUBSCRIBE_PRO=true (ver arriba).
+      if (NEWSLETTER_AUTO_SUBSCRIBE_PRO) {
+        subscribeToNewsletter(email, "moyiq", {
+          proxyUrl: NEWSLETTER_PROXY_URL,
+          proxyToken: NEWSLETTER_PROXY_TOKEN,
+        }).catch(() => {});
+      }
       if (!emailSent) {
         // Antes esto era invisible: la licencia quedaba emitida, el webhook
         // devolvia 200 y nadie se enteraba de que el cliente no tenia su clave.

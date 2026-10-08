@@ -123,6 +123,7 @@ describe('fetchEligibleForEmail2', () => {
     expect(url).toContain('consent_marketing=is.true')
     expect(url).toContain('account_created_at=is.null')
     expect(url).toContain('email2_sent_at=is.null')
+    expect(url).toContain('consent_confirmed_at=not.is.null') // doble opt-in: solo confirmados
     expect(url).not.toContain('created_at=lte') // sin filtro de edad, a propósito
   })
 })
@@ -135,6 +136,7 @@ describe('fetchEligibleForEmail3', () => {
     const url = fetchMock.mock.calls[0][0] as string
     expect(url).toContain('starter_leads?')
     expect(url).toContain('email3_sent_at=is.null')
+    expect(url).toContain('consent_confirmed_at=not.is.null') // doble opt-in: solo confirmados
     expect(url).toContain('email2_sent_at=not.is.null')
     expect(url).toContain('email2_sent_at=lte.')
   })

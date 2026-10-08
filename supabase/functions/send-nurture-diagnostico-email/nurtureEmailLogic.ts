@@ -27,6 +27,17 @@
 // Idioma (09-oct-2026): el copy de los 4 idiomas vive en nurtureTemplates.ts
 // y se elige por diagnostico_leads.lang (pickLang, fallback español). Ver
 // supabase/migrations/20261009000000_leads_lang.sql.
+//
+// Doble opt-in (10-oct-2026, § 7 Abs. 2 UWG / RGPD art. 7):
+//   - Email 1 (welcome) = el diagnóstico completo que la persona pidió al
+//     marcar la casilla. Es la entrega de lo que solicitó (transaccional): sale
+//     con consent_marketing = true aunque el opt-in no esté confirmado. Lo
+//     único de marketing que tenía, el anuncio "En dos días te cuento…", solo
+//     aparece si el consentimiento ya está confirmado. Ver processWelcome.
+//   - Emails 2, 3 y 4 = marketing: solo a filas con consent_confirmed_at no
+//     nulo (clic en el enlace de send-optin-confirmation). Filas viejas sin
+//     confirmar dejan de recibirlos.
+// Ver supabase/migrations/20261010010000_marketing_double_optin.sql.
 
 import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
 import { DIAGNOSTICO_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
@@ -42,6 +53,10 @@ export interface DiagnosticoLead {
   // Idioma del lead (migración 20261009000000_leads_lang.sql). Opcional: antes
   // de esa migración la columna no existe y el campo simplemente no viene.
   lang?: string | null;
+  consent_marketing?: boolean | null;
+  // Doble opt-in (20261010010000_marketing_double_optin.sql).
+  consent_confirmed_at?: string | null;
+  email1_sent_at?: string | null;
 }
 
 export interface NurtureEmailConfig {
@@ -112,6 +127,7 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
     label: lead.label ?? null,
     unsubUrl: unsub,
     landingUrl: config.landingUrl.replace(/\/$/, ""),
+    marketingConfirmed: !!(lead.consent_marketing !== false && lead.consent_confirmed_at),
   });
   return { subject: copy.subject, html: wrapHtml(copy.body, unsub, lang) };
 }
@@ -193,7 +209,7 @@ const BATCH_LIMIT = 200; // tope por corrida del cron — este volumen de leads 
 export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<DiagnosticoLead[]> {
   return restGet<DiagnosticoLead[]>(
     `diagnostico_leads?select=*` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null&email2_sent_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null&email2_sent_at=is.null` +
       `&limit=${BATCH_LIMIT}`,
     config,
   );
@@ -205,7 +221,7 @@ export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promis
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<DiagnosticoLead[]>(
     `diagnostico_leads?select=*` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null` +
       `&email3_sent_at=is.null&email2_sent_at=not.is.null&email2_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,
     config,
@@ -219,7 +235,7 @@ export async function fetchEligibleForEmail4(config: NurtureEmailConfig): Promis
   const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<DiagnosticoLead[]>(
     `diagnostico_leads?select=*` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null` +
       `&email4_sent_at=is.null&email3_sent_at=not.is.null&email3_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,
     config,
@@ -293,4 +309,28 @@ export async function runCronBatch(config: NurtureEmailConfig): Promise<CronRunR
   }
 
   return result;
+}
+
+// --- Email 1 a pedido (llamada pública desde la landing) --------------------
+
+export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type WelcomeResult =
+  | { ok: true; state?: "already_sent" }
+  | { ok: false; error: string };
+
+// El email 1 lo pide la persona al marcar la casilla del diagnóstico: solo sale
+// si la fila tiene consent_marketing = true (si no, nadie lo pidió y un id
+// ajeno no sirve para mandar correos) y una sola vez por fila (email1_sent_at).
+export async function processWelcome(leadId: unknown, config: NurtureEmailConfig): Promise<WelcomeResult> {
+  if (typeof leadId !== "string" || !UUID_RE.test(leadId)) return { ok: false, error: "invalid_lead_id" };
+  const lead = await fetchLeadById(leadId, config);
+  if (!lead) return { ok: false, error: "lead_not_found" };
+  if (lead.consent_marketing === false) return { ok: false, error: "not_requested" };
+  if (lead.email1_sent_at) return { ok: true, state: "already_sent" };
+  const rendered = renderEmail("welcome", lead, config);
+  const result = await sendViaResend(lead.email, rendered, config);
+  if (!result.ok) return { ok: false, error: result.error ?? "send_failed" };
+  await markSent(lead.id, "welcome", config);
+  return { ok: true };
 }

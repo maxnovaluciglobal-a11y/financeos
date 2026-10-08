@@ -1,7 +1,8 @@
 // supabase/functions/send-cancellation-confirmation/index.ts
 //
 // Llamada pública desde la landing (cancelar.html, en/cancel.html,
-// de/kuendigen.html vía /cancel-form.js) justo después de que la RPC
+// de/kuendigen.html y — desistimiento, kind 'withdrawal' — de/widerrufen.html,
+// todas vía /cancel-form.js) justo después de que la RPC
 // submit_cancellation_request responde ok: POST { id }.
 //
 // Deploy SIN verificación de JWT, igual que las funciones de nurture que
@@ -23,6 +24,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY    ← los inyecta Supabase
 
 import { processCancellation, type CancellationConfig } from "./cancellationLogic.ts";
+import { corsHeaders } from "./cors.ts";
 
 const SUPPORT = Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app";
 
@@ -34,26 +36,6 @@ const config: CancellationConfig = {
   replyTo: SUPPORT,
   internalTo: [SUPPORT, Deno.env.get("ALERT_EMAIL") ?? "maxnovaluciglobal@gmail.com"],
 };
-
-const ALLOWED_ORIGINS = new Set([
-  "https://moyiq.app",
-  "https://www.moyiq.app",
-  "https://app.moyiq.app",
-  "https://financeospro.com",
-  "https://www.financeospro.com",
-  "http://localhost:4323",
-  "http://localhost:5173",
-]);
-
-function corsHeaders(origin: string | null) {
-  const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://moyiq.app";
-  return {
-    "Access-Control-Allow-Origin": allow,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    Vary: "Origin",
-  };
-}
 
 function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), {

@@ -7,6 +7,7 @@ import Logo from './Logo.jsx'
 import { formatPrice, proPriceVars, withCheckoutLang } from '../utils/pricing.js'
 import config from '../config.js'
 import { activateUrl } from '../utils/landingLinks.js'
+import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 
 function usePlans(t, lang) {
   return [
@@ -32,6 +33,11 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   const [buying, setBuying]     = useState(null)
   const [error, setError]       = useState('')
   const [showHelp, setShowHelp] = useState(false)
+  // Casilla de marketing de Starter: sin marcar por defecto (doble opt-in,
+  // ver marketingConsent.js). Solo se muestra con MARKETING_DOI_ENABLED: antes
+  // de aplicar la migración el valor no se podría guardar y el texto promete
+  // un correo de confirmación que todavía no sale.
+  const [marketing, setMarketing] = useState(false)
 
   async function handleActivate() {
     const clean = key.trim()
@@ -75,7 +81,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
     // clave, así que sin esto nadie que arranca gratis quedaba registrado
     // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
     // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
-    if (userEmail) registerStarterLead(userEmail, lang).catch(() => {})
+    if (userEmail) registerStarterLead(userEmail, lang, marketing).catch(() => {})
     // Recuerda la elección contra la cuenta — sin esto, loguearse desde otro
     // dispositivo volvía a mostrar esta misma pantalla de elegir plan.
     if (userId) setServerEntitlement(userId, 'starter').catch(() => {})
@@ -198,6 +204,20 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             </button>
           ))}
         </div>
+
+        {MARKETING_DOI_ENABLED && (
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 18, cursor: 'pointer', minHeight: 44 }}>
+            <input
+              type="checkbox"
+              checked={marketing}
+              onChange={e => setMarketing(e.target.checked)}
+              style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }}
+            />
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tm)', lineHeight: 1.45 }}>
+              {t('licenseGate.marketingConsent')}
+            </span>
+          </label>
+        )}
 
         {/* Demo link */}
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>

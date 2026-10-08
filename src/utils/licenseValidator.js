@@ -3,6 +3,7 @@
 import { licenseKeyHash } from './syncCrypto.js'
 import { authClient } from '../core/authClient.js'
 import { withLeadLang } from './leadsLang.js'
+import { withStarterConsent, shouldRequestOptin } from './marketingConsent.js'
 // Valida la clave contra la RPC `validate_license` de Supabase y cachea en localStorage
 // (fnos_license_v2). VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY están en Vercel.
 //
@@ -145,12 +146,28 @@ function browserLang() {
   return typeof navigator !== 'undefined' ? navigator.language : null
 }
 
+// Pide el correo de doble opt-in (send-optin-confirmation) para la fila recién
+// registrada. Best-effort: si falla, el lead queda sin confirmar y no recibe
+// marketing, que es el lado seguro. Solo Content-Type: la función no pide
+// auth (deploy --no-verify-jwt) y así el preflight CORS es mínimo.
+function requestOptinEmail(source, id) {
+  if (!SUPABASE_URL) return
+  fetch(`${SUPABASE_URL}/functions/v1/send-optin-confirmation`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ source, id }),
+  }).catch(() => {})
+}
+
 // Registra el email de quien elige Starter (best-effort: no bloquea la
 // activación si falla). Starter no tiene clave, así que no puede pasar por
 // setLicenseEmail — sin esto, nadie que arranca gratis quedaba registrado.
 // `lang` (idioma de la app) solo viaja como p_lang si LEADS_LANG_ENABLED
-// (ver leadsLang.js); sin él se usa el del navegador.
-export async function registerStarterLead(email, lang) {
+// (ver leadsLang.js); sin él se usa el del navegador. `consentMarketing` es
+// la casilla de LicenseGate: viaja como p_consent_marketing y, si está
+// marcada, dispara el correo de doble opt-in — las dos cosas solo con
+// MARKETING_DOI_ENABLED (ver marketingConsent.js).
+export async function registerStarterLead(email, lang, consentMarketing = false) {
   const clean = String(email || '').trim()
   if (!clean || !SUPABASE_URL || !SUPABASE_ANON) return false
   try {
@@ -161,7 +178,7 @@ export async function registerStarterLead(email, lang) {
         Authorization: `Bearer ${SUPABASE_ANON}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(withLeadLang({ p_email: clean }, lang ?? browserLang())),
+      body: JSON.stringify(withStarterConsent(withLeadLang({ p_email: clean }, lang ?? browserLang()), consentMarketing)),
     })
     if (!res.ok) return false
     const data = await res.json()
@@ -169,7 +186,9 @@ export async function registerStarterLead(email, lang) {
     // dispara el email 1 (bienvenida) de la secuencia de nurture de Starter
     // sin bloquear la activación — best-effort, nunca puede tumbar el flujo
     // de "Empezar gratis". Sin esto el gap era real: el cron (ver
-    // 20260918000500) solo manda los emails 2/3, nunca el 1.
+    // 20260918000500) solo manda los emails 2/3, nunca el 1. El email 1 es de
+    // servicio (cómo empezar a usar la cuenta) y sale con o sin casilla de
+    // marketing; los 2/3 exigen el doble opt-in confirmado.
     if (data && data.ok && data.id) {
       fetch(`${SUPABASE_URL}/functions/v1/send-nurture-starter-email`, {
         method: 'POST',
@@ -181,6 +200,7 @@ export async function registerStarterLead(email, lang) {
         body: JSON.stringify({ mode: 'welcome', leadId: data.id }),
       }).catch(() => {})
     }
+    if (shouldRequestOptin(data, consentMarketing)) requestOptinEmail('starter', data.id)
     return !!(data && data.ok)
   } catch { return false }
 }
@@ -208,6 +228,7 @@ export async function registerDemoLead(email, nombre, consentMarketing, lang) {
     })
     if (!res.ok) return false
     const data = await res.json()
+    if (shouldRequestOptin(data, consentMarketing === true)) requestOptinEmail('demo', data.id)
     return !!(data && data.ok)
   } catch { return false }
 }

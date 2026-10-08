@@ -9,6 +9,7 @@ import {
   fetchEligibleForEmail4,
   markSent,
   runCronBatch,
+  processWelcome,
   type DiagnosticoLead,
   type NurtureEmailConfig,
 } from './nurtureEmailLogic.ts'
@@ -27,13 +28,23 @@ const LEAD: DiagnosticoLead = { id: 'lead-1', email: 'lead@ejemplo.com', score: 
 afterEach(() => { vi.unstubAllGlobals() })
 
 describe('renderEmail', () => {
-  it('welcome incluye el score, el label, la miga de pan al email 2 y el link de unsubscribe con el id del lead', () => {
+  it('welcome incluye el score, el label y el link de unsubscribe con el id del lead', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
     expect(r.subject).toBe('Tu diagnóstico completo (y el dato que se quedó afuera)')
     expect(r.html).toContain('42/100')
     expect(r.html).toContain('Regular')
     expect(r.html).toContain('unsubscribe.html?id=lead-1')
-    expect(r.html).toContain('En dos días te cuento')
+  })
+
+  it('welcome solo anuncia el email 2 si el consentimiento de marketing ya está confirmado (doble opt-in)', () => {
+    expect(renderEmail('welcome', LEAD, CONFIG).html).not.toContain('En dos días te cuento')
+    const confirmed = { ...LEAD, consent_marketing: true, consent_confirmed_at: '2026-10-08T12:00:00Z' }
+    expect(renderEmail('welcome', confirmed, CONFIG).html).toContain('En dos días te cuento')
+    for (const lang of ['en', 'pt', 'de']) {
+      const a = renderEmail('welcome', { ...LEAD, lang }, CONFIG).html
+      const b = renderEmail('welcome', { ...confirmed, lang }, CONFIG).html
+      expect(b.length).toBeGreaterThan(a.length)
+    }
   })
 
   it('welcome usa un bloque distinto por cada label conocido', () => {
@@ -143,6 +154,7 @@ describe('fetchEligibleForEmail2', () => {
     expect(url).toContain('consent_marketing=is.true')
     expect(url).toContain('account_created_at=is.null')
     expect(url).toContain('email2_sent_at=is.null')
+    expect(url).toContain('consent_confirmed_at=not.is.null') // doble opt-in: solo confirmados
     expect(url).not.toContain('created_at=lte') // sin filtro de edad, a propósito
   })
 })
@@ -154,6 +166,7 @@ describe('fetchEligibleForEmail3', () => {
     await fetchEligibleForEmail3(CONFIG)
     const url = fetchMock.mock.calls[0][0] as string
     expect(url).toContain('email3_sent_at=is.null')
+    expect(url).toContain('consent_confirmed_at=not.is.null') // doble opt-in: solo confirmados
     expect(url).toContain('email2_sent_at=not.is.null')
     expect(url).toContain('email2_sent_at=lte.')
   })
@@ -166,6 +179,7 @@ describe('fetchEligibleForEmail4', () => {
     await fetchEligibleForEmail4(CONFIG)
     const url = fetchMock.mock.calls[0][0] as string
     expect(url).toContain('email4_sent_at=is.null')
+    expect(url).toContain('consent_confirmed_at=not.is.null') // doble opt-in: solo confirmados
     expect(url).toContain('email3_sent_at=not.is.null')
     expect(url).toContain('email3_sent_at=lte.')
   })
@@ -242,5 +256,49 @@ describe('runCronBatch', () => {
     expect(result.email2.attempted).toBe(1)
     expect(result.email2.sent).toBe(0)
     expect(result.email2.failed).toBe(1)
+  })
+})
+
+describe('processWelcome (email 1 = resultado pedido, transaccional)', () => {
+  const ID = '0b6f1c2e-3d4a-4b5c-8d9e-0f1a2b3c4d5e'
+  const row = (over = {}) => ({ id: ID, email: 'lead@ejemplo.com', score: 42, label: 'Regular', consent_marketing: true, consent_confirmed_at: null, ...over })
+  function router(r: any) {
+    return vi.fn(async (url: string, init: any = {}) => {
+      if (url.startsWith('https://api.resend.com')) return { ok: true, status: 200, json: async () => ({}), text: async () => '' }
+      if ((init.method ?? 'GET') === 'GET') return { ok: true, json: async () => (r ? [r] : []) }
+      return { ok: true, json: async () => ({}) }
+    })
+  }
+  const resendCalls = (m: any) => m.mock.calls.filter((c: any[]) => c[0].startsWith('https://api.resend.com'))
+
+  it('rechaza un id que no es uuid sin tocar la red', async () => {
+    const f = vi.fn(); vi.stubGlobal('fetch', f)
+    expect(await processWelcome('x', CONFIG)).toEqual({ ok: false, error: 'invalid_lead_id' })
+    expect(f).not.toHaveBeenCalled()
+  })
+
+  it('404 lógico si el lead no existe', async () => {
+    vi.stubGlobal('fetch', router(null))
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: false, error: 'lead_not_found' })
+  })
+
+  it('no manda nada si el lead no marcó la casilla (consent_marketing false)', async () => {
+    const f = router(row({ consent_marketing: false })); vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: false, error: 'not_requested' })
+    expect(resendCalls(f)).toHaveLength(0)
+  })
+
+  it('no repite el envío si email1_sent_at ya está marcado', async () => {
+    const f = router(row({ email1_sent_at: '2026-10-08T12:00:00Z' })); vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true, state: 'already_sent' })
+    expect(resendCalls(f)).toHaveLength(0)
+  })
+
+  it('manda el resultado aunque el doble opt-in no esté confirmado y marca email1_sent_at', async () => {
+    const f = router(row()); vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true })
+    expect(resendCalls(f)).toHaveLength(1)
+    const patch = f.mock.calls.find((c: any[]) => c[1]?.method === 'PATCH')
+    expect(Object.keys(JSON.parse(patch[1].body))).toEqual(['email1_sent_at'])
   })
 })

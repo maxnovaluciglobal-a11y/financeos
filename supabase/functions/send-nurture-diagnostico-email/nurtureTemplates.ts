@@ -26,6 +26,9 @@ export interface DiagnosticoCopyContext {
   label: string | null;
   unsubUrl: string;
   landingUrl: string; // sin barra final
+  // Doble opt-in confirmado: solo entonces el email 1 anuncia el email 2
+  // (marketing). Opcional para no romper llamadores viejos: falta = false.
+  marketingConfirmed?: boolean;
 }
 
 export interface DiagnosticoCopy {
@@ -126,7 +129,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomas, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Crear cuenta gratis →</a></p>
       <p style="color:#666;font-size:13px">Sin tarjeta, sin trial que vencer. Starter no tiene fecha de corte.</p>
-      <p style="color:#666;font-size:13px">En dos días te cuento por qué la mayoría de los presupuestos armados en una hoja de cálculo no llegan al segundo mes — y no es por falta de disciplina.</p>
+      ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">En dos días te cuento por qué la mayoría de los presupuestos armados en una hoja de cálculo no llegan al segundo mes — y no es por falta de disciplina.</p>` : ""}
       `,
       };
     },
@@ -185,7 +188,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>This diagnosis is a snapshot of one moment. To see how it changes with each decision you make, you need to record your real transactions — that is what the free account does.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Create a free account →</a></p>
       <p style="color:#666;font-size:13px">No card, no trial to expire. Starter has no end date.</p>
-      <p style="color:#666;font-size:13px">In two days I'll explain why most budgets built in a spreadsheet don't make it to the second month — and it is not a lack of discipline.</p>
+      ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">In two days I'll explain why most budgets built in a spreadsheet don't make it to the second month — and it is not a lack of discipline.</p>` : ""}
       `,
       };
     },
@@ -244,7 +247,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Este diagnóstico é uma foto de um momento. Para ver como ele muda com cada decisão que você toma, é preciso registrar os movimentos reais — é isso que a conta gratuita faz.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Criar conta grátis →</a></p>
       <p style="color:#666;font-size:13px">Sem cartão, sem trial para vencer. O Starter não tem data de término.</p>
-      <p style="color:#666;font-size:13px">Em dois dias eu conto por que a maioria dos orçamentos montados em uma planilha não chega ao segundo mês — e não é por falta de disciplina.</p>
+      ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">Em dois dias eu conto por que a maioria dos orçamentos montados em uma planilha não chega ao segundo mês — e não é por falta de disciplina.</p>` : ""}
       `,
       };
     },
@@ -303,7 +306,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Diese Auswertung ist eine Momentaufnahme. Um zu sehen, wie sie sich mit jeder Entscheidung verändert, müssen die echten Buchungen erfasst werden — genau das leistet das kostenlose Konto.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Kostenloses Konto anlegen →</a></p>
       <p style="color:#666;font-size:13px">Keine Karte, keine Testphase, die abläuft. Starter hat kein Enddatum.</p>
-      <p style="color:#666;font-size:13px">In zwei Tagen erkläre ich, warum die meisten in einer Tabelle angelegten Budgets den zweiten Monat nicht erreichen — und es liegt nicht an fehlender Disziplin.</p>
+      ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">In zwei Tagen erkläre ich, warum die meisten in einer Tabelle angelegten Budgets den zweiten Monat nicht erreichen — und es liegt nicht an fehlender Disziplin.</p>` : ""}
       `,
       };
     },

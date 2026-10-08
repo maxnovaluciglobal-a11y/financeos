@@ -1,7 +1,10 @@
 // supabase/functions/send-cancellation-confirmation/cancellationLogic.ts
 //
 // Confirmación de una cancelación online (§ 312k BGB "Kündigungsbutton",
-// leyes de renovación automática de EE. UU.). La landing guarda la
+// leyes de renovación automática de EE. UU.) o de un desistimiento online
+// (kind 'withdrawal', § 356a BGB "Widerrufsbutton", vigente desde el
+// 19-jun-2026: § 356a Abs. 4 exige confirmar sin demora, en forma de texto,
+// el contenido de la declaración y la fecha/hora de recepción). La landing guarda la
 // declaración con la RPC pública submit_cancellation_request y después llama
 // a esta función con el id. Acá se manda:
 //   (a) al cliente, en su idioma, la confirmación de recepción con el
@@ -70,10 +73,21 @@ interface Copy {
     kind: string;
     reason: string;
     endDate: string;
+    declaration: string;
   };
   plan: Record<string, string>;
-  kind: { ordinary: string; extraordinary: string };
+  kind: { ordinary: string; extraordinary: string; withdrawal: string };
   nextPossible: string;
+  // Desistimiento (kind 'withdrawal'): asunto, intro y cierre propios + el
+  // texto de la declaración, que es el contenido que § 356a Abs. 4 BGB pide
+  // repetir en la confirmación (la página no tiene otro campo de "contenido").
+  withdrawal: {
+    subject: string;
+    intro: (ts: string) => string;
+    outro: (id: string) => string;
+    declaration: string;
+    kindLabel: string; // "Tipo de cancelación" no aplica: no es una cancelación
+  };
 }
 
 export const COPY: Record<EmailLang, Copy> = {
@@ -91,10 +105,19 @@ export const COPY: Record<EmailLang, Copy> = {
       kind: "Tipo de cancelación",
       reason: "Motivo",
       endDate: "Fin del contrato solicitado",
+      declaration: "Declaración",
     },
     plan: { pro_monthly: "Pro mensual", pro_yearly: "Pro anual", starter: "Starter (cuenta gratis)", unsure: "No lo sé" },
-    kind: { ordinary: "Ordinaria", extraordinary: "Extraordinaria (por causa justificada)" },
+    kind: { ordinary: "Ordinaria", extraordinary: "Extraordinaria (por causa justificada)", withdrawal: "Desistimiento (derecho de desistimiento de 14 días)" },
     nextPossible: "En la próxima fecha posible",
+    withdrawal: {
+      subject: "Recibimos tu desistimiento — MOY IQ",
+      intro: (ts) => `Recibimos tu declaración de desistimiento el ${ts}. Este correo confirma su recepción. Este es su contenido:`,
+      outro: (id) =>
+        `Número de referencia: ${id}. Guarda este correo. Procesamos el desistimiento y te devolvemos los pagos recibidos según las condiciones de desistimiento, sin demora y a más tardar en 14 días desde su recepción, por el mismo medio de pago. Si no pediste este desistimiento, responde a este correo.`,
+      declaration: "Por la presente desisto del contrato que celebré para la prestación del siguiente servicio: MOY IQ Pro.",
+      kindLabel: "Tipo de declaración",
+    },
   },
   en: {
     subject: "We received your cancellation — MOY IQ",
@@ -110,10 +133,19 @@ export const COPY: Record<EmailLang, Copy> = {
       kind: "Type of cancellation",
       reason: "Reason",
       endDate: "Requested end of contract",
+      declaration: "Declaration",
     },
     plan: { pro_monthly: "Pro monthly", pro_yearly: "Pro yearly", starter: "Starter (free account)", unsure: "Not sure" },
-    kind: { ordinary: "Ordinary", extraordinary: "Extraordinary (for good cause)" },
+    kind: { ordinary: "Ordinary", extraordinary: "Extraordinary (for good cause)", withdrawal: "Withdrawal (14-day right of withdrawal)" },
     nextPossible: "At the next possible date",
+    withdrawal: {
+      subject: "We received your withdrawal — MOY IQ",
+      intro: (ts) => `We received your notice of withdrawal on ${ts}. This email confirms receipt. This is its content:`,
+      outro: (id) =>
+        `Reference number: ${id}. Keep this email. We will process the withdrawal and refund the payments we received under the withdrawal terms, without undue delay and no later than 14 days after receipt, using the same means of payment. If you did not request this withdrawal, reply to this email.`,
+      declaration: "I hereby withdraw from the contract I concluded for the provision of the following service: MOY IQ Pro.",
+      kindLabel: "Type of notice",
+    },
   },
   pt: {
     subject: "Recebemos seu cancelamento — MOY IQ",
@@ -129,10 +161,19 @@ export const COPY: Record<EmailLang, Copy> = {
       kind: "Tipo de cancelamento",
       reason: "Motivo",
       endDate: "Fim do contrato solicitado",
+      declaration: "Declaração",
     },
     plan: { pro_monthly: "Pro mensal", pro_yearly: "Pro anual", starter: "Starter (conta grátis)", unsure: "Não sei" },
-    kind: { ordinary: "Ordinário", extraordinary: "Extraordinário (por justa causa)" },
+    kind: { ordinary: "Ordinário", extraordinary: "Extraordinário (por justa causa)", withdrawal: "Desistência (direito de desistência de 14 dias)" },
     nextPossible: "Na próxima data possível",
+    withdrawal: {
+      subject: "Recebemos sua desistência — MOY IQ",
+      intro: (ts) => `Recebemos sua declaração de desistência em ${ts}. Este e-mail confirma o recebimento. Este é o conteúdo:`,
+      outro: (id) =>
+        `Número de referência: ${id}. Guarde este e-mail. Vamos processar a desistência e devolver os pagamentos recebidos conforme as condições de desistência, sem demora e no máximo em 14 dias a partir do recebimento, pelo mesmo meio de pagamento. Se você não pediu esta desistência, responda a este e-mail.`,
+      declaration: "Pela presente, desisto do contrato que celebrei para a prestação do seguinte serviço: MOY IQ Pro.",
+      kindLabel: "Tipo de declaração",
+    },
   },
   de: {
     subject: "Eingangsbestätigung Ihrer Kündigung — MOY IQ",
@@ -149,10 +190,20 @@ export const COPY: Record<EmailLang, Copy> = {
       kind: "Art der Kündigung",
       reason: "Kündigungsgrund",
       endDate: "Gewünschtes Vertragsende",
+      declaration: "Erklärung",
     },
     plan: { pro_monthly: "Pro – Monatsabo", pro_yearly: "Pro – Jahresabo", starter: "Starter – kostenloses Konto", unsure: "Nicht sicher" },
-    kind: { ordinary: "Ordentliche Kündigung", extraordinary: "Außerordentliche (fristlose) Kündigung aus wichtigem Grund" },
+    kind: { ordinary: "Ordentliche Kündigung", extraordinary: "Außerordentliche (fristlose) Kündigung aus wichtigem Grund", withdrawal: "Widerruf" },
     nextPossible: "Zum nächstmöglichen Zeitpunkt",
+    withdrawal: {
+      subject: "Eingangsbestätigung Ihres Widerrufs — MOY IQ",
+      intro: (ts) =>
+        `Ihre Widerrufserklärung ist am ${ts} bei uns eingegangen. Mit dieser E-Mail bestätigen wir den Eingang. Ihre Erklärung hat folgenden Inhalt:`,
+      outro: (id) =>
+        `Referenznummer: ${id}. Bitte bewahren Sie diese E-Mail auf. Wir bearbeiten Ihren Widerruf und erstatten Ihnen die erhaltenen Zahlungen nach Maßgabe der Widerrufsbelehrung unverzüglich, spätestens binnen 14 Tagen ab Eingang des Widerrufs, über dasselbe Zahlungsmittel. Falls Sie diesen Widerruf nicht veranlasst haben, antworten Sie bitte auf diese E-Mail.`,
+      declaration: "Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: MOY IQ Pro.",
+      kindLabel: "Art der Erklärung",
+    },
   },
 };
 
@@ -191,9 +242,38 @@ export function fmtDate(ymd: string, lang: EmailLang): string {
   return d.toLocaleDateString(INTL_LOCALE[lang], { dateStyle: "long", timeZone: "UTC" } as Intl.DateTimeFormatOptions);
 }
 
+type Kind = "ordinary" | "extraordinary" | "withdrawal";
+
+export function kindOf(row: CancellationRow): Kind {
+  return row.kind === "extraordinary" || row.kind === "withdrawal" ? row.kind : "ordinary";
+}
+
+// Plazo de reembolso de un desistimiento: 14 días calendario desde la
+// recepción (§ 357 Abs. 1 / § 357a BGB). Devuelve 'YYYY-MM-DD' (UTC) o null.
+export function refundDeadline(createdAtIso: string): string | null {
+  const d = new Date(createdAtIso);
+  if (isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() + 14);
+  return d.toISOString().slice(0, 10);
+}
+
 function rowsFor(row: CancellationRow, lang: EmailLang): [string, string][] {
   const c = COPY[lang];
-  const kind = row.kind === "extraordinary" ? "extraordinary" : "ordinary";
+  const kind = kindOf(row);
+  if (kind === "withdrawal") {
+    // Sin motivo (no se pide) ni fecha de fin (el desistimiento no tiene
+    // plazo de preaviso): solo la declaración y los datos que la identifican.
+    const w: [string, string][] = [
+      [c.labels.receivedAt, fmtTimestamp(row.created_at, lang)],
+      [c.labels.declaration, c.withdrawal.declaration],
+      [c.labels.name, row.name ?? ""],
+      [c.labels.email, row.email],
+      [c.labels.plan, row.plan ? (c.plan[row.plan] ?? row.plan) : ""],
+      [c.labels.contractRef, row.contract_ref ?? ""],
+      [c.withdrawal.kindLabel, c.kind.withdrawal],
+    ];
+    return w.filter(([, v]) => v !== "");
+  }
   const out: [string, string][] = [
     [c.labels.receivedAt, fmtTimestamp(row.created_at, lang)],
     [c.labels.name, row.name ?? ""],
@@ -228,7 +308,8 @@ function wrap(inner: string): string {
 
 export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
   const lang = pickLang(row.lang);
-  const c = COPY[lang];
+  const base = COPY[lang];
+  const c = kindOf(row) === "withdrawal" ? base.withdrawal : base;
   const ts = fmtTimestamp(row.created_at, lang);
   const rows = rowsFor(row, lang);
   const html = wrap(
@@ -243,14 +324,35 @@ export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
 export function renderInternalEmail(row: CancellationRow): RenderedEmail {
   const lang = pickLang(row.lang);
   const es = COPY.es;
-  const extra = row.kind === "extraordinary";
-  const rows: [string, string][] = [
-    ...rowsFor(row, "es"),
+  const kind = kindOf(row);
+  const name = (row.name ?? row.email).slice(0, 80);
+  const meta: [string, string][] = [
     ["Idioma del cliente", row.lang ?? `sin dato (se le escribió en ${lang})`],
     ["User agent", row.user_agent ?? ""],
     ["ID", row.id],
-  ].filter(([, v]) => v !== "") as [string, string][];
-  const name = (row.name ?? row.email).slice(0, 80);
+  ];
+
+  if (kind === "withdrawal") {
+    // Desistimiento: hay que devolver lo cobrado en 14 días desde la
+    // recepción (§ 357 Abs. 1 BGB), así que el aviso va marcado urgente y con
+    // la fecha límite calculada.
+    const due = refundDeadline(row.created_at);
+    const dueTxt = due ? fmtDate(due, "es") : "14 días desde la recepción";
+    const rows = [
+      ...rowsFor(row, "es"),
+      ["Reembolso a más tardar", dueTxt] as [string, string],
+      ...meta,
+    ].filter(([, v]) => v !== "");
+    const subject = `[URGENTE · Desistimiento] ${name} — reembolso hasta el ${dueTxt}`;
+    const todo =
+      `URGENTE — desistimiento online (§ 355 / § 356a BGB). Pendiente: ubicar el contrato (Stripe / licencia), cancelar la suscripción, revocar la licencia y reembolsar todos los pagos recibidos sin demora y a más tardar el ${dueTxt}, por el mismo medio de pago (Stripe → Refund). Solo se puede retener un importe proporcional (Wertersatz) si el cliente pidió expresamente empezar antes de que venza el plazo (§ 357a Abs. 2 BGB). Confirmarle al cliente, en su idioma, el reembolso. Después marcar la fila como done (status, processed_at).`;
+    const html = wrap(`<p><strong>URGENTE: nuevo desistimiento online.</strong></p>${table(rows)}<p>${escapeHtml(todo)}</p>`);
+    const text = ["URGENTE: nuevo desistimiento online.", "", ...rows.map(([k, v]) => `${k}: ${v}`), "", todo].join("\n");
+    return { subject, html, text };
+  }
+
+  const extra = kind === "extraordinary";
+  const rows: [string, string][] = [...rowsFor(row, "es"), ...meta].filter(([, v]) => v !== "");
   const subject = `${extra ? "[Extraordinaria] " : ""}Cancelación recibida — ${name}${row.plan ? ` (${es.plan[row.plan] ?? row.plan})` : ""}`;
   const todo =
     "Pendiente: ubicar el contrato (Stripe / licencia / cuenta Starter), cancelar la renovación y confirmarle al cliente, en su idioma, la fecha en que termina el contrato. Después marcar la fila como done (status, processed_at).";

@@ -2,7 +2,7 @@
 // Política de Privacidad — MOY IQ, contenido por idioma (es/en/pt/de).
 // Sin hooks ni useT: Privacy.jsx elige el idioma y legal.test.js lo renderiza en node.
 // Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
-// Riesgos residuales: sin representante art. 27 RGPD, sin double opt-in para emails promocionales.
+// Riesgos residuales: sin representante art. 27 RGPD. Double opt-in para emails promocionales: implementado (migración 20261010010000), activo con MARKETING_DOI_ENABLED.
 // ACTUALIZADO 2026-10: la app exige cuenta (email/Google); se listan los datos que
 // sí guardamos (Supabase), los proveedores (Supabase, Stripe, Resend, Vercel,
 // Formspree) y el envío de reportes PDF del Modo Asesor, que pasa sin cifrado de
@@ -87,6 +87,11 @@ function EsBody() {
             app. Cada correo incluye un enlace para darse de baja.
           </li>
           <li>
+            <strong>Correos de marketing (doble opt-in):</strong> solo si se marca la casilla
+            correspondiente y se confirma con el enlace del correo que enviamos; guardamos la fecha y
+            hora de la confirmación como prueba del consentimiento.
+          </li>
+          <li>
             <strong>Formulario del demo:</strong> nombre, email y si el usuario acepta recibir
             novedades.
           </li>
@@ -145,7 +150,7 @@ function EsBody() {
           </li>
           <li><strong>Resend:</strong> envío de correos.</li>
           <li><strong>Vercel:</strong> alojamiento de la app y del sitio web.</li>
-          <li><strong>Formspree:</strong> recibe el formulario de novedades del sitio web.</li>
+          <li><strong>Formspree:</strong> recibe el formulario de contacto del sitio web.</li>
           <li><strong>Google:</strong> solo si el usuario elige entrar con Google.</li>
         </ul>
         <p>
@@ -309,6 +314,11 @@ function EnBody() {
             email includes an unsubscribe link.
           </li>
           <li>
+            <strong>Marketing emails (double opt-in):</strong> only if the matching box is ticked and
+            then confirmed through the link in the email we send; we keep the date and time of that
+            confirmation as proof of consent.
+          </li>
+          <li>
             <strong>Demo form:</strong> name, email, and whether the user agrees to receive
             product news.
           </li>
@@ -365,7 +375,7 @@ function EnBody() {
           </li>
           <li><strong>Resend:</strong> sending emails.</li>
           <li><strong>Vercel:</strong> hosting for the app and the website.</li>
-          <li><strong>Formspree:</strong> receives the product-news form on the website.</li>
+          <li><strong>Formspree:</strong> receives the contact form on the website.</li>
           <li><strong>Google:</strong> only if the user chooses to sign in with Google.</li>
         </ul>
         <p>
@@ -527,6 +537,11 @@ function PtBody() {
             Cada email traz um link para cancelar o recebimento.
           </li>
           <li>
+            <strong>Emails de marketing (double opt-in):</strong> só se a caixa correspondente for
+            marcada e depois confirmada pelo link do email que enviamos; guardamos a data e a hora
+            dessa confirmação como prova do consentimento.
+          </li>
+          <li>
             <strong>Formulário da demo:</strong> nome, email e se o usuário aceita receber
             novidades.
           </li>
@@ -584,7 +599,7 @@ function PtBody() {
           </li>
           <li><strong>Resend:</strong> envio de emails.</li>
           <li><strong>Vercel:</strong> hospedagem do app e do site.</li>
-          <li><strong>Formspree:</strong> recebe o formulário de novidades do site.</li>
+          <li><strong>Formspree:</strong> recebe o formulário de contato do site.</li>
           <li><strong>Google:</strong> apenas se o usuário escolher entrar com o Google.</li>
         </ul>
         <p>
@@ -760,6 +775,11 @@ function DeBody() {
             Abs. 1 lit. a DSGVO). Jede E-Mail enthält einen Abmeldelink.
           </li>
           <li>
+            <strong>Werbliche E-Mails (Double-Opt-in):</strong> nur, wenn Sie das entsprechende
+            Kästchen ankreuzen und über den Link in unserer E-Mail bestätigen; Datum und Uhrzeit der
+            Bestätigung speichern wir als Nachweis Ihrer Einwilligung (Art. 7 Abs. 1 DSGVO).
+          </li>
+          <li>
             <strong>Demo-Formular:</strong> Name, E-Mail-Adresse und ob Sie Neuigkeiten erhalten
             möchten. Zugang zur Demo auf Ihre Anfrage (Art. 6 Abs. 1 lit. b DSGVO); Neuigkeiten nur
             mit Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).
@@ -768,10 +788,6 @@ function DeBody() {
             <strong>Express-Diagnose:</strong> E-Mail-Adresse, erzieltes Ergebnis und ob Sie
             Neuigkeiten erhalten möchten. Zusendung des Ergebnisses (Art. 6 Abs. 1 lit. b DSGVO);
             Neuigkeiten nur mit Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).
-          </li>
-          <li>
-            <strong>Formular für Neuigkeiten auf der Website:</strong> E-Mail-Adresse, mit Ihrer
-            Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), übermittelt über Formspree.
           </li>
           <li>
             <strong>Pro-Abo:</strong> E-Mail-Adresse des Kaufs, irreversibler Hash des

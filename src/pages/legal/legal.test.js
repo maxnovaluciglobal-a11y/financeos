@@ -123,6 +123,14 @@ describe('privacy facts', () => {
   }
 })
 
+describe('privacy: double opt-in for marketing emails', () => {
+  for (const lang of LEGAL_LANGS) {
+    it(`${lang}: describes the double opt-in`, () => {
+      expect(render('privacy', lang).text).toMatch(/double opt-in|doble opt-in|Double-Opt-in/i)
+    })
+  }
+})
+
 describe('terms facts', () => {
   for (const lang of LEGAL_LANGS) {
     it(`${lang}: 14-day technical guarantee, 30 clients, support email`, () => {
