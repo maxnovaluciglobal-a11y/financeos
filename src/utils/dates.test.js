@@ -1,7 +1,7 @@
 // Fecha "de hoy" en hora LOCAL (B1). Antes se usaba toISOString(), que da la
 // fecha en UTC: en LatAm, después de ~21 h, un gasto quedaba con fecha de mañana.
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { localDateStr, localMonthStr, today, currentMonth } from './index.js'
+import { localDateStr, localMonthStr, today, currentMonth, setDateLocale, dateLocale } from './index.js'
 
 afterEach(() => { vi.useRealTimers() })
 
@@ -34,5 +34,20 @@ describe('today / currentMonth', () => {
     vi.setSystemTime(new Date(2026, 11, 31, 22, 15, 0))
     expect(today()).toBe('2026-12-31')
     expect(currentMonth()).toBe('2026-12')
+  })
+})
+
+describe('setDateLocale', () => {
+  afterEach(() => setDateLocale('es'))
+
+  it.each([['es', 'es-CL'], ['en', 'en-US'], ['pt', 'pt-BR'], ['de', 'de-DE']])(
+    'idioma %s -> locale de fechas %s', (lang, locale) => {
+      setDateLocale(lang)
+      expect(dateLocale()).toBe(locale)
+    })
+
+  it('un idioma desconocido cae al locale español', () => {
+    setDateLocale('fr')
+    expect(dateLocale()).toBe('es-CL')
   })
 })

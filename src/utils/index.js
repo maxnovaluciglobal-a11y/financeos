@@ -42,7 +42,7 @@ export const moneyLocale = () => _moneyLocale
 // en inglés con cuenta en USD debe ver "Sep 2028", no "sept 2028". Por eso este
 // locale es independiente de _moneyLocale.
 let _dateLocale = 'es-CL'
-const LANG_DATE_LOCALE = { es: 'es-CL', en: 'en-US', pt: 'pt-BR' }
+const LANG_DATE_LOCALE = { es: 'es-CL', en: 'en-US', pt: 'pt-BR', de: 'de-DE' }
 export function setDateLocale(language) {
   _dateLocale = LANG_DATE_LOCALE[language] || 'es-CL'
 }
