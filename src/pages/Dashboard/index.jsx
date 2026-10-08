@@ -16,11 +16,13 @@ import { pendingDebtMonthly } from '../../utils/personal.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import CountUp from '../../components/CountUp.jsx'
 import { IconIQScore } from '../../components/icons/Icons.jsx'
-import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
-import MonthVerdict from './MonthVerdict.jsx'
 import CountryTool from './CountryTool.jsx'
+import HomeKpis from './HomeKpis.jsx'
+import DeltaLine from './DeltaLine.jsx'
+import { monthDelta, prevMonthOf } from './dashboardModel.js'
+import hs from './Home.module.css'
 import { moneyLocale, currentMonth } from '../../utils/index.js'
 import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
@@ -95,6 +97,7 @@ export default function Dashboard({ setPage }) {
 
     return {
       ...cur,
+      cur, prev,
       delta: {
         inc:  delta(cur.totalInc,    prev.totalInc),
         exp:  delta(cur.totalExp,    prev.totalExp),
@@ -398,21 +401,6 @@ export default function Dashboard({ setPage }) {
   const SEV_ICON  = { info: <SignalIcon kind="info" size={13} />, attention: <SignalIcon kind="attention" size={13} />, warning: <SignalIcon kind="warning" size={13} /> }
   const SEV_COLOR = { info: 'var(--accent)', attention: 'var(--amb)', warning: 'var(--red)' }
 
-  function DeltaBadge({ d, invert = false }) {
-    if (d === null) return null
-    const n = Number(d)
-    if (Math.abs(n) < 0.5) return null
-    const up   = n > 0
-    const good = invert ? !up : up
-    return (
-      <span style={{ fontSize:11, fontFamily:'var(--mono)', color: good ? 'var(--accent)' : 'var(--red)',
-                     background: good ? 'color-mix(in srgb, var(--pos) 12%, transparent)' : 'color-mix(in srgb, var(--neg) 12%, transparent)',
-                     borderRadius:4, padding:'1px 5px', marginLeft:5 }}>
-        {up ? '↑' : '↓'}{Math.abs(n)}%
-      </span>
-    )
-  }
-
   // CTA contextual reutilizable (señales, proyección, metas)
   function InlineCTA({ label, page, tone = 'accent' }) {
     if (!setPage) return null
@@ -469,7 +457,6 @@ export default function Dashboard({ setPage }) {
 
   // ── El Anillo Vivo (Pulso) — firma del producto, visible por defecto.
   //    Solo se muestra cuando hay datos del mes. Usa motores ya existentes.
-  const showRing = true
   const pulse = useMemo(() => {
     const { today, daysInMonth, daysLeft } = projectEndOfMonth({ incomes, expenses, activeMonth })
     // Referencia = ingreso del mes (mejor proxy de "¿voy bien para esta altura?"
@@ -487,19 +474,19 @@ export default function Dashboard({ setPage }) {
              refIsIncome: kpis.totalInc > 0 }
   }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, sym, amountsHidden])
 
-  const KPIS = [
-    { label:t('dash.kpi.income'),       value:money(kpis.totalInc),  color:'var(--accent)', sub:t('dash.kpi.records', { n: kpis.incCount }),                                                          delta: kpis.delta.inc,  invertDelta: false, raw: kpis.totalInc, count: true },
-    { label:t('dash.kpi.expenses'),         value:money(kpis.totalExp),  color:'var(--red)',    sub:t('dash.kpi.records', { n: kpis.expCount }),                                                          delta: kpis.delta.exp,  invertDelta: true,  raw: kpis.totalExp, count: true },
-    { label:t('dash.kpi.balance'),   value:money(kpis.balance),   color:kpis.balance >= 0 ? 'var(--accent)' : 'var(--red)', sub:(kpis.totalDebt + kpis.totalSubs > 0) ? t('dash.kpi.afterDebts', { v: money(kpis.freeFlow) }) : (kpis.balance >= 0 ? t('dash.kpi.incMinusExp') : t('dash.kpi.expOverInc')),      delta: kpis.delta.bal,  invertDelta: false, raw: kpis.balance, count: true },
-    ...(propFlow.has ? [{ label:t('dash.kpi.totalFlow'), value:money(flujoTotal), color: flujoTotal >= 0 ? 'var(--accent)' : 'var(--red)', sub:t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), delta: null, invertDelta: false, raw: flujoTotal, count: true }] : []),
-    { label:t('dash.kpi.savingRate'), value:pct(kpis.savingRate),           color:kpis.savingRate >= 0.2 ? 'var(--accent)' : kpis.savingRate >= 0 ? 'var(--amb)' : 'var(--red)', sub:t('dash.kpi.ofIncome'), delta: kpis.delta.save, invertDelta: false, raw: null },
-    { label:t('dash.kpi.subs'),  value:t('dash.kpi.perMonth', { v: money(subMonthly) }), color:'var(--amb)',    sub:t('dash.kpi.perYear', { v: money(subMonthly * 12) }),                                          delta: null,            invertDelta: false, raw: subMonthly },
+  // KPIs secundarios (debajo de Ingresos/Gastos/Te queda). El balance neto es
+  // ingresos − gastos, sin descontar deudas ni suscripciones (eso es "Te queda").
+  const KPIS_SECONDARY = [
+    { label:t('dash.kpi.balance'), color:kpis.balance >= 0 ? 'var(--pos)' : 'var(--neg)', sub:kpis.balance >= 0 ? t('dash.kpi.incMinusExp') : t('dash.kpi.expOverInc'),
+      delta: monthDelta(kpis.cur.balance, kpis.prev.balance, { hasPrev: kpis.prev.incCount > 0 || kpis.prev.expCount > 0 }), raw: kpis.balance, count: true },
+    ...(propFlow.has ? [{ label:t('dash.kpi.totalFlow'), color: flujoTotal >= 0 ? 'var(--pos)' : 'var(--neg)', sub:t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), raw: flujoTotal, count: true }] : []),
+    { label:t('dash.kpi.savingRate'), value:pct(kpis.savingRate), color:kpis.savingRate >= 0.2 ? 'var(--pos)' : kpis.savingRate >= 0 ? 'var(--warn)' : 'var(--neg)', sub:t('dash.kpi.ofIncome') },
+    { label:t('dash.kpi.subs'), value:t('dash.kpi.perMonth', { v: money(subMonthly) }), color:'var(--tx)', sub:t('dash.kpi.perYear', { v: money(subMonthly * 12) }) },
   ]
 
   return (
     <div>
       <MonthlyCloseModal />
-      <BackupReminderBanner />
 
       {/* Header — título + toggle de vista */}
       <div style={{ marginBottom:16, display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
@@ -512,61 +499,6 @@ export default function Dashboard({ setPage }) {
           {compact ? t('dash.view.detailed') : t('dash.view.compact')}
         </button>
       </div>
-
-      {/* Card hero: el verdicto (¿te sobra o falta?) y el ritmo (¿vas a tiempo?) — una
-          sola respuesta, no dos historias paralelas — con el anillo como acento chico
-          a la derecha del número grande (Fase 05, fusión Verdict+Ring). */}
-      {(() => {
-        const ringOn = showRing && (kpis.incCount > 0 || kpis.expCount > 0)
-        const verdict = (
-          <MonthVerdict
-            freeFlow={kpis.freeFlow}
-            hasData={kpis.incCount > 0 || kpis.expCount > 0}
-            sym={sym}
-            month={activeMonth}
-          />
-        )
-        if (!ringOn) return <div data-tour="kpi-free" style={{ marginBottom:16 }}>{verdict}</div>
-        // Card hero fusionada (Fase 05): antes eran dos cards lado a lado contando
-        // la misma historia dos veces (¿te sobra? + ¿vas a tiempo?) — ahora es una
-        // sola, con el anillo achicado a 96px como acento a la derecha del número.
-        const positive = kpis.freeFlow > 0, tight = kpis.freeFlow === 0
-        const heroColor = kpis.incCount === 0 && kpis.expCount === 0 ? 'var(--th)'
-          : positive ? 'var(--pos)' : tight ? 'var(--warn)' : 'var(--neg)'
-        return (
-          <div className="card rise" data-tour="kpi-free" style={{
-            marginBottom:16, padding:'18px 20px',
-            background: kpis.incCount === 0 && kpis.expCount === 0 ? 'var(--sur)' : `color-mix(in srgb, ${heroColor} 8%, var(--sur))`,
-            border:`.5px solid color-mix(in srgb, ${heroColor} 35%, transparent)`,
-            display:'flex', alignItems:'center', gap:16, flexWrap:'wrap',
-          }}>
-            <MonthVerdict
-              freeFlow={kpis.freeFlow}
-              hasData={kpis.incCount > 0 || kpis.expCount > 0}
-              sym={sym}
-              month={activeMonth}
-              embedded
-            />
-            <div style={{ flexShrink: 0, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
-              <LivingRing
-                spentRatio={pulse.spentRatio}
-                elapsedRatio={pulse.elapsedRatio}
-                color={pulse.color}
-                centerValue=""
-                centerLabel=""
-                footLabel=""
-                size={96}
-                ariaLabel={t('pulse.aria', { spent: Math.round(pulse.spentRatio * 100), elapsed: Math.round(pulse.elapsedRatio * 100) })}
-              />
-              {/* El anillo solo comunicaba el ritmo con color: ahora con ícono + palabra (T15) */}
-              <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize:12 }} />
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* #03 — Herramienta fiscal del país como protagonista (el foso competitivo). */}
-      <CountryTool country={settings.country} setPage={setPage} />
 
       {/* Empieza aquí */}
       {setPage && kpis.incCount === 0 && kpis.expCount === 0 && (
@@ -601,71 +533,76 @@ export default function Dashboard({ setPage }) {
           </div>
         </div>
       )}
-      {/* Acciones rápidas — solo en vista detallada (reduce ruido inicial) */}
-      {setPage && !compact && (
-        <div style={{ marginBottom:20 }}>
-          <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:10 }}>{t('dash.quick.title')}</div>
-          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-            {[
-              { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
-              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--red)', icon:'plus' },
-              { label:t('dash.quick.import'),page:'import',     color:'var(--accent2)', icon:'upload' },
-              { label:t('dash.quick.budget'), page:'budgets',    color:'var(--amb)', icon:'budget' },
-              { label:t('dash.quick.goal'),        page:'goals',      color:'var(--accent)', icon:'goal' },
-            ].map((a,i) => (
-              <button key={i} onClick={() => setPage(a.page)} style={{
-                background:'none', border:`.5px solid ${a.color}`, borderRadius:8,
-                padding:'7px 14px', fontSize:12, fontWeight:600, color:a.color,
-                cursor:'pointer', fontFamily:'var(--mono)', transition:'.15s',
-                whiteSpace:'nowrap',
-              }}>
-                <InlineIcon kind={a.icon} size={13} />{a.label}
-              </button>
-            ))}
+
+      {/* Inicio M5 — responde en orden ¿cuánto me queda?, ¿en qué me estoy
+          pasando? y ¿qué viene? Escritorio a dos columnas, móvil en una sola
+          (orden en Home.module.css). */}
+      <div className={hs.home}>
+        <div className={hs.stack}>
+          <div className={hs.oBackup}><BackupReminderBanner /></div>
+          <div className={hs.oKpis}>
+            <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
+              pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
+              daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}>
+              {/* KPIs secundarios: en móvil solo en vista detallada */}
+              <div className={hs.secondary}>
+                {KPIS_SECONDARY.map((k, i) => (
+                  <div key={i} className={`${hs.card} ${hs.kpi}` + (compact ? ' fos-kpi-secondary' : '')}>
+                    <div className={hs.kpiLabel}>{k.label}</div>
+                    <div className={`num ${hs.kpiValue}`} style={{ color: k.color }}>
+                      {k.count ? <Money><CountUp value={k.raw} format={(v) => `${k.raw < 0 ? '−' : ''}${sym}${fmt(Math.abs(v))}`} /></Money> : k.value}
+                    </div>
+                    {k.delta && <DeltaLine delta={k.delta} prevMonth={prevMonthOf(activeMonth)} />}
+                    <div className={hs.kpiSub}>{k.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </HomeKpis>
+          </div>
+          <div className={`${hs.pair} ${hs.pairB}`}>
+            <div className={hs.oScore}>
+      {/* IQ Score — puntaje 0-100 de salud financiera */}
+      {healthScore && (
+        <Card className="rise" data-tour="iq-score" style={{ padding:'16px 18px', display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:14, flex:1, minWidth:180 }}>
+            <div style={{ textAlign:'center', flexShrink:0 }}>
+              <div className="num" style={{ fontSize:34, fontWeight:700, color:healthScore.color, lineHeight:1 }}>
+                {/* instrument-settle: barrido con resorte 900ms — nunca vuelve a
+                    cero al re-renderizar, ver token --dur-instrument-settle */}
+                <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
+              </div>
+              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginTop:2 }}>/ 100</div>
+            </div>
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:2 }}>
+                <IconIQScore size={13} />
+                {t('dash.health.title')}
+              </div>
+              <ScoreState level={healthScore.level} label={healthScore.label} size={16} style={{ fontSize:14, fontWeight:700, marginBottom:4 }} />
+              <ScoreSparkline history={scoreHistory} currentColor={healthScore.color} />
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+            {healthScore.breakdown.map((b, i) => {
+              // Cada factor: completo / parcial / en cero → mismo vocabulario de
+              // ícono que el estado del score, para no depender solo del color.
+              const lvl = b.pts >= b.max ? 'ok' : b.pts > 0 ? 'attention' : 'risk'
+              return (
+                <div key={i} style={{ textAlign:'center', minWidth:56 }}>
+                  <div style={{ display:'inline-flex', alignItems:'center', gap:3, fontSize:13, fontWeight:700, fontFamily:'var(--mono)', color: SCORE_LEVELS[lvl].color }}>
+                    <ScoreStateIcon level={lvl} size={12} />{b.pts}<span style={{ fontWeight:400, color:'var(--th)' }}>/{b.max}</span>
+                  </div>
+                  <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.3px' }}>{b.label}</div>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
+            </div>
           </div>
         </div>
-      )}
-      {/* KPI Cards */}
-      <div aria-live="polite" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:12, marginBottom:16 }}>
-        {KPIS.map((k, i) => (
-          <div key={i} className={'card card-hover rise' + (i >= 2 && compact ? ' fos-kpi-secondary' : '')} style={{ padding:'14px 16px', position:'relative', overflow:'hidden', animationDelay:`${i*40}ms` }}>
-            <div style={{ position:'absolute', top:-16, right:-16, width:56, height:56, borderRadius:'50%', background:`${k.color}`, opacity:.08 }}/>
-            <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>{k.label}</div>
-            <div className="num" style={{ fontSize:22, fontWeight:700, color:k.color, marginBottom:3, display:'flex', alignItems:'center', flexWrap:'wrap', gap:4 }}>
-              {k.count ? <Money><CountUp value={k.raw} format={(v) => `${sym}${fmt(v)}`} /></Money> : k.value}
-              <DeltaBadge d={k.delta} invert={k.invertDelta} />
-            </div>
-            <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)' }}>{k.sub}</div>
-            {dualOn && k.raw !== null && (
-              <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', marginTop:4, opacity:.7, borderTop:'.5px solid var(--brd)', paddingTop:4 }}>
-                {toUSD(k.raw)}
-              </div>
-            )}
-          </div>
-        ))}
       </div>
-
-      {/* Ingreso esperado vs recibido — vista detallada */}
-      {!compact && (() => {
-        const expected = Number(settings.estimatedMonthlyIncome) || 0
-        if (expected <= 0 || kpis.totalInc <= 0) return null
-        const diff = kpis.totalInc - expected
-        const pctDiff = ((diff / expected) * 100).toFixed(1)
-        const over = diff >= 0
-        return (
-          <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: `.5px solid ${over ? 'color-mix(in srgb, var(--pos) 28%, transparent)' : 'color-mix(in srgb, var(--neg) 28%, transparent)'}`, borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
-              <div style={{ fontSize: 13, color: 'var(--tx)' }}>
-                {t('dash.expected.expected')} <strong><Money>{sym}{fmt(expected)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{sym}{fmt(kpis.totalInc)}</Money></strong>
-              </div>
-            </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
-              {over ? '+' : ''}{pctDiff}%
-            </div>
-          </div>
-        )
-      })()}
 
       {/* Para hacer hoy — fusión de señales del Diagnóstico + insights (Fase 05).
           Cada fila navega a la página donde se resuelve. */}
@@ -706,44 +643,55 @@ export default function Dashboard({ setPage }) {
         </Card>
       )}
 
-      {/* IQ Score — puntaje 0-100 de salud financiera */}
-      {healthScore && (
-        <Card className="rise" data-tour="iq-score" style={{ padding:'16px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:14, flex:1, minWidth:180 }}>
-            <div style={{ textAlign:'center', flexShrink:0 }}>
-              <div className="num" style={{ fontSize:34, fontWeight:700, color:healthScore.color, lineHeight:1 }}>
-                {/* instrument-settle: barrido con resorte 900ms — nunca vuelve a
-                    cero al re-renderizar, ver token --dur-instrument-settle */}
-                <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
-              </div>
-              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginTop:2 }}>/ 100</div>
-            </div>
-            <div>
-              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:2 }}>
-                <IconIQScore size={13} />
-                {t('dash.health.title')}
-              </div>
-              <ScoreState level={healthScore.level} label={healthScore.label} size={16} style={{ fontSize:14, fontWeight:700, marginBottom:4 }} />
-              <ScoreSparkline history={scoreHistory} currentColor={healthScore.color} />
-            </div>
+      {/* #03 — Herramienta fiscal del país como protagonista (el foso competitivo). */}
+      <CountryTool country={settings.country} setPage={setPage} />
+
+      {/* Acciones rápidas — solo en vista detallada (reduce ruido inicial) */}
+      {setPage && !compact && (
+        <div style={{ marginBottom:20 }}>
+          <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:10 }}>{t('dash.quick.title')}</div>
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+            {[
+              { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
+              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--red)', icon:'plus' },
+              { label:t('dash.quick.import'),page:'import',     color:'var(--accent2)', icon:'upload' },
+              { label:t('dash.quick.budget'), page:'budgets',    color:'var(--amb)', icon:'budget' },
+              { label:t('dash.quick.goal'),        page:'goals',      color:'var(--accent)', icon:'goal' },
+            ].map((a,i) => (
+              <button key={i} onClick={() => setPage(a.page)} style={{
+                background:'none', border:`.5px solid ${a.color}`, borderRadius:8,
+                padding:'7px 14px', fontSize:12, fontWeight:600, color:a.color,
+                cursor:'pointer', fontFamily:'var(--mono)', transition:'.15s',
+                whiteSpace:'nowrap',
+              }}>
+                <InlineIcon kind={a.icon} size={13} />{a.label}
+              </button>
+            ))}
           </div>
-          <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-            {healthScore.breakdown.map((b, i) => {
-              // Cada factor: completo / parcial / en cero → mismo vocabulario de
-              // ícono que el estado del score, para no depender solo del color.
-              const lvl = b.pts >= b.max ? 'ok' : b.pts > 0 ? 'attention' : 'risk'
-              return (
-                <div key={i} style={{ textAlign:'center', minWidth:56 }}>
-                  <div style={{ display:'inline-flex', alignItems:'center', gap:3, fontSize:13, fontWeight:700, fontFamily:'var(--mono)', color: SCORE_LEVELS[lvl].color }}>
-                    <ScoreStateIcon level={lvl} size={12} />{b.pts}<span style={{ fontWeight:400, color:'var(--th)' }}>/{b.max}</span>
-                  </div>
-                  <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.3px' }}>{b.label}</div>
-                </div>
-              )
-            })}
-          </div>
-        </Card>
+        </div>
       )}
+
+      {/* Ingreso esperado vs recibido — vista detallada */}
+      {!compact && (() => {
+        const expected = Number(settings.estimatedMonthlyIncome) || 0
+        if (expected <= 0 || kpis.totalInc <= 0) return null
+        const diff = kpis.totalInc - expected
+        const pctDiff = ((diff / expected) * 100).toFixed(1)
+        const over = diff >= 0
+        return (
+          <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: `.5px solid ${over ? 'color-mix(in srgb, var(--pos) 28%, transparent)' : 'color-mix(in srgb, var(--neg) 28%, transparent)'}`, borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
+              <div style={{ fontSize: 13, color: 'var(--tx)' }}>
+                {t('dash.expected.expected')} <strong><Money>{sym}{fmt(expected)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{sym}{fmt(kpis.totalInc)}</Money></strong>
+              </div>
+            </div>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
+              {over ? '+' : ''}{pctDiff}%
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Proyección fin de mes */}
       {!compact && (kpis.totalInc > 0 || kpis.totalExp > 0) && (() => {

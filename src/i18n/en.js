@@ -1742,4 +1742,12 @@ export const en = {
     'pulse.attention': "Spending a bit fast",
     'pulse.risk': "Spending too fast",
     'pulse.aria': "You have spent {spent}% of the reference and the month is {elapsed}% through",
+    'home.kpi.left': "Left this month",
+    'home.kpi.short': "Short this month",
+    'home.kpi.leftSub': "After expenses, debts and subscriptions",
+    'home.kpi.daysLeft.one': "{n} day left",
+    'home.kpi.daysLeft.many': "{n} days left",
+    'home.delta.vs': "{pct} vs. {month}",
+    'home.delta.flat': "same as {month}",
+    'home.kpis.aria': "Month summary",
 }

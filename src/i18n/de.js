@@ -1742,4 +1742,12 @@ export const de = {
     'pulse.attention': "Ausgaben etwas schnell",
     'pulse.risk': "Ausgaben zu schnell",
     'pulse.aria': "Sie haben {spent} % der Referenz ausgegeben, der Monat ist zu {elapsed} % vorbei",
+    'home.kpi.left': "Diesen Monat übrig",
+    'home.kpi.short': "Diesen Monat im Minus",
+    'home.kpi.leftSub': "Nach Ausgaben, Schulden und Abos",
+    'home.kpi.daysLeft.one': "Noch {n} Tag",
+    'home.kpi.daysLeft.many': "Noch {n} Tage",
+    'home.delta.vs': "{pct} ggü. {month}",
+    'home.delta.flat': "wie im {month}",
+    'home.kpis.aria': "Monatsübersicht",
 }

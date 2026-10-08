@@ -1742,4 +1742,12 @@ export const pt = {
     'pulse.attention': "Gasto um pouco rápido",
     'pulse.risk': "Gasto rápido demais",
     'pulse.aria': "Você gastou {spent}% da referência e o mês está em {elapsed}%",
+    'home.kpi.left': "Sobra este mês",
+    'home.kpi.short': "Falta este mês",
+    'home.kpi.leftSub': "Após gastos, dívidas e assinaturas",
+    'home.kpi.daysLeft.one': "{n} dia restante",
+    'home.kpi.daysLeft.many': "{n} dias restantes",
+    'home.delta.vs': "{pct} vs. {month}",
+    'home.delta.flat': "igual a {month}",
+    'home.kpis.aria': "Resumo do mês",
 }
