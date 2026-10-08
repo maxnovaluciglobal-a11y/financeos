@@ -19,6 +19,7 @@ import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency, templateFo
 import config from '../config.js'
 import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, localeForCurrency } from '../utils/index.js'
 import { calcFinancialScore, weakestFactor } from '../utils/financialScore.js'
+import { ScoreState } from './ScoreState.jsx'
 import { isSyncEnabled, syncAvailable, syncMeta } from '../core/sync.js'
 import { dbAdd } from '../core/db/index.js'
 import { Wordmark } from './Logo.jsx'
@@ -394,7 +395,7 @@ export default function Onboarding({ onComplete }) {
               <CountUp value={score.score} format={(v) => Math.round(v)} duration={900} overshoot />
             </span>
             <span style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--th)' }}>/ 100</span>
-            <span style={{ fontSize: 15, fontWeight: 600, color: score.color, fontFamily: 'var(--sans)', marginLeft: 'auto' }}>{score.label}</span>
+            <ScoreState level={score.level} label={score.label} size={16} style={{ fontSize: 15, fontFamily: 'var(--sans)', marginLeft: 'auto', alignSelf: 'center' }} />
           </div>
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 18px', display: 'grid', gap: 10 }}>

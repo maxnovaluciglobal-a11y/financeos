@@ -23,6 +23,7 @@ export default function LivingRing({
   centerLabel = 'SEGURO/DÍA',
   footLabel = '',      // p.ej. "quedan 12 días"
   size = 220,
+  ariaLabel,           // texto ya traducido; sin él se usa el fallback en español
 }) {
   const { m } = useMoney() // centerValue es un monto: se enmascara (T13)
   const cx = 100, cy = 100
@@ -42,7 +43,7 @@ export default function LivingRing({
 
   return (
     <svg viewBox="0 0 200 200" width={size} height={size} role="img"
-      aria-label={`Gasto ${Math.round(spentRatio * 100)}% de la referencia; deberías ir en ${Math.round(elapsedRatio * 100)}% del mes`}
+      aria-label={ariaLabel || `Gasto ${Math.round(spentRatio * 100)}% de la referencia; deberías ir en ${Math.round(elapsedRatio * 100)}% del mes`}
       style={{ display: 'block' }}>
       <defs>
         <path id="lr-textpath" d="M 100,100 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0" />

@@ -120,10 +120,29 @@ export function calcFinancialScore({
   score += consistencyPts
   breakdown.push({ key: 'dataConsistency', label: tr('score.dataConsistency'), pts: consistencyPts, max: 15 })
 
-  const label = score >= 80 ? tr('score.excellent') : score >= 60 ? tr('score.good') : score >= 40 ? tr('score.fair') : tr('score.critical')
-  const color = score >= 80 ? 'var(--pos)' : score >= 60 ? 'var(--pos)' : score >= 40 ? 'var(--amb)' : 'var(--red)'
+  const level = scoreLevel(score)
+  const label = tr(SCORE_LEVELS[level].key)
+  const color = SCORE_LEVELS[level].color
 
-  return { score, label, color, breakdown }
+  return { score, level, label, color, breakdown }
+}
+
+// ── Estados del score (D3, 07-oct-2026) ───────────────────────────────────────
+// 3 niveles del brand book, con ícono + palabra + color (components/ScoreState.jsx):
+//   Bien ≥70 · Atención 40–69 · Riesgo <40
+// Antes eran 4 (Excelente ≥80 · Bueno ≥60 · Regular ≥40 · Crítico). Solo cambian
+// las ETIQUETAS: el número no se recalcula, así que el historial semanal
+// (fos_score_history, Dashboard) sigue siendo comparable — solo guarda números.
+// Coach usa la misma escala (pages/Coach).
+export const SCORE_LEVELS = {
+  ok:        { key: 'score.ok',        color: 'var(--pos)'  },
+  attention: { key: 'score.attention', color: 'var(--warn)' },
+  risk:      { key: 'score.risk',      color: 'var(--neg)'  },
+}
+
+export function scoreLevel(score) {
+  const n = Number(score) || 0
+  return n >= 70 ? 'ok' : n >= 40 ? 'attention' : 'risk'
 }
 
 // Factor con menor proporción pts/max — el "siguiente paso sugerido" del

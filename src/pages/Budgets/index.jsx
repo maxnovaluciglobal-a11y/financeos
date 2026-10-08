@@ -7,6 +7,7 @@ import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, curren
 import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
+import { ScoreState } from '../../components/ScoreState.jsx'
 
 export default function Budgets() {
   const { budgets, addBudget, delBudget, expenses, incomes, settings, updateSettings, deleteWithUndo } = useApp()
@@ -252,10 +253,14 @@ export default function Budgets() {
                       const p        = effLimit > 0 ? spent / effLimit : 0
                       const over     = spent > effLimit
                       const warn     = !over && p >= 0.8
-                      const clr      = over ? '#e84142' : warn ? 'var(--amb)' : 'var(--grn)'
+                      // Estado con ícono + palabra (T15), no solo color: excedido = riesgo,
+                      // ≥80% = atención, resto = bien.
+                      const lvl      = over ? 'risk' : warn ? 'attention' : 'ok'
+                      const clr      = over ? 'var(--neg)' : warn ? 'var(--warn)' : 'var(--pos)'
+                      const stateLb  = over ? t('budgets.cat.over') : warn ? t('budgets.cat.warn') : t('budgets.cat.ok')
                       const r2=32,cx2=45,cy2=45,circ2=2*Math.PI*r2,dash2=Math.min(p,1)*circ2
                       return (
-                        <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'#e84142':warn?'rgba(245,166,35,.3)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>
+                        <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'color-mix(in srgb, var(--neg) 45%, transparent)':warn?'color-mix(in srgb, var(--warn) 35%, transparent)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>
                           <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:10,cursor:'pointer',padding:'1px 4px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
                           <div style={{fontSize:10,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
                           {carry > 0 && (
@@ -267,9 +272,9 @@ export default function Budgets() {
                             aria-label={`${catLabel(b.category, lang)}: ${(p*100).toFixed(0)}% ${over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')} — ${fmtMoney(spent,sym)} ${t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}`}>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke="var(--brd)" strokeWidth="9"/>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke={clr} strokeWidth="9" strokeDasharray={`${dash2} ${circ2}`} strokeDashoffset={circ2/4} strokeLinecap="round"/>
-                            <text x={cx2} y={cy2-4} textAnchor="middle" fontSize="10" fill={clr} fontWeight="700" fontFamily="var(--mono)">{(p*100).toFixed(0)}%</text>
-                            <text x={cx2} y={cy2+8} textAnchor="middle" fontSize="6"  fill="var(--th)" fontFamily="var(--mono)">{over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')}</text>
+                            <text x={cx2} y={cy2+4} textAnchor="middle" fontSize="13" fill={clr} fontWeight="700" fontFamily="var(--mono)">{(p*100).toFixed(0)}%</text>
                           </svg>
+                          <ScoreState level={lvl} label={stateLb} size={13} style={{ fontSize:12, fontFamily:'var(--mono)' }} />
                           <div style={{textAlign:'center'}}>
                             <div style={{fontSize:11,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}><Money>{fmtMoney(spent,sym)}</Money></div>
                             <div style={{fontSize:8,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}{carry > 0 ? t('budgets.cat.base', { base: fmtMoney(b.limit,sym) }) : ''}</div>

@@ -10,13 +10,14 @@ import IncomeExpenseBar from '../../components/charts/IncomeExpenseBar.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
-import { calcFinancialScore } from '../../utils/financialScore.js'
+import { calcFinancialScore, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { isSyncEnabled, syncAvailable, syncMeta } from '../../core/sync.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import CountUp from '../../components/CountUp.jsx'
 import { IconIQScore } from '../../components/icons/Icons.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
+import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import MonthVerdict from './MonthVerdict.jsx'
 import CountryTool from './CountryTool.jsx'
 import { moneyLocale, currentMonth } from '../../utils/index.js'
@@ -370,7 +371,7 @@ export default function Dashboard({ setPage }) {
               <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--mono)', color:healthScore.color }}>{healthScore.score}</div>
               <div>
                 <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('dash.health.title')}</div>
-                <div style={{ fontSize:13, fontWeight:600, color:healthScore.color }}>{healthScore.label}</div>
+                <ScoreState level={healthScore.level} label={healthScore.label} style={{ fontSize:13 }} />
               </div>
             </div>
           )}
@@ -477,9 +478,10 @@ export default function Dashboard({ setPage }) {
     const elapsedRatio = daysInMonth > 0 ? today / daysInMonth : 0
     const spentRatio = reference > 0 ? spent / reference : 0
     const pace = spentRatio - elapsedRatio
-    const color = pace <= 0.02 ? 'var(--pos)' : pace <= 0.10 ? 'var(--warn)' : 'var(--neg)'
+    const level = pace <= 0.02 ? 'ok' : pace <= 0.10 ? 'attention' : 'risk'
+    const color = SCORE_LEVELS[level].color
     const safePerDay = daysLeft > 0 ? Math.max(0, (reference - spent) / daysLeft) : 0
-    return { spentRatio, elapsedRatio, color, daysLeft,
+    return { spentRatio, elapsedRatio, color, level, daysLeft,
              centerValue: money(safePerDay),
              refIsIncome: kpis.totalInc > 0 }
   }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, sym, amountsHidden])
@@ -544,7 +546,7 @@ export default function Dashboard({ setPage }) {
               month={activeMonth}
               embedded
             />
-            <div style={{ flexShrink: 0 }}>
+            <div style={{ flexShrink: 0, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
               <LivingRing
                 spentRatio={pulse.spentRatio}
                 elapsedRatio={pulse.elapsedRatio}
@@ -553,7 +555,10 @@ export default function Dashboard({ setPage }) {
                 centerLabel=""
                 footLabel=""
                 size={96}
+                ariaLabel={t('pulse.aria', { spent: Math.round(pulse.spentRatio * 100), elapsed: Math.round(pulse.elapsedRatio * 100) })}
               />
+              {/* El anillo solo comunicaba el ritmo con color: ahora con ícono + palabra (T15) */}
+              <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize:12 }} />
             </div>
           </div>
         )
@@ -717,17 +722,24 @@ export default function Dashboard({ setPage }) {
                 <IconIQScore size={13} />
                 {t('dash.health.title')}
               </div>
-              <div style={{ fontSize:14, fontWeight:700, color:healthScore.color, marginBottom:4 }}>{healthScore.label}</div>
+              <ScoreState level={healthScore.level} label={healthScore.label} size={16} style={{ fontSize:14, fontWeight:700, marginBottom:4 }} />
               <ScoreSparkline history={scoreHistory} currentColor={healthScore.color} />
             </div>
           </div>
           <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-            {healthScore.breakdown.map((b, i) => (
-              <div key={i} style={{ textAlign:'center', minWidth:56 }}>
-                <div style={{ fontSize:13, fontWeight:700, fontFamily:'var(--mono)', color: b.pts >= b.max ? 'var(--accent)' : b.pts > 0 ? 'var(--amb)' : 'var(--red)' }}>{b.pts}</div>
-                <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.3px' }}>{b.label}</div>
-              </div>
-            ))}
+            {healthScore.breakdown.map((b, i) => {
+              // Cada factor: completo / parcial / en cero → mismo vocabulario de
+              // ícono que el estado del score, para no depender solo del color.
+              const lvl = b.pts >= b.max ? 'ok' : b.pts > 0 ? 'attention' : 'risk'
+              return (
+                <div key={i} style={{ textAlign:'center', minWidth:56 }}>
+                  <div style={{ display:'inline-flex', alignItems:'center', gap:3, fontSize:13, fontWeight:700, fontFamily:'var(--mono)', color: SCORE_LEVELS[lvl].color }}>
+                    <ScoreStateIcon level={lvl} size={12} />{b.pts}<span style={{ fontWeight:400, color:'var(--th)' }}>/{b.max}</span>
+                  </div>
+                  <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.3px' }}>{b.label}</div>
+                </div>
+              )
+            })}
           </div>
         </Card>
       )}

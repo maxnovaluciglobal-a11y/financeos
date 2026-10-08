@@ -80,7 +80,7 @@ describe('paridad de las claves de fase 2 (es/en/pt/de)', () => {
 })
 
 describe('paridad de las claves de fase 3 (es/en/pt/de)', () => {
-  const prefixes = ['money.']
+  const prefixes = ['money.', 'score.', 'pulse.']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
