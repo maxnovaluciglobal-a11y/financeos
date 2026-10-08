@@ -43,8 +43,9 @@ export function fmtSignedPct(pct, lang = 'es') {
 }
 
 // ── Presupuesto por categoría ────────────────────────────────────────────────
-// ok < 85 % · near 85–100 % · over > 100 %.
-export const BUDGET_NEAR = 0.85
+// ok < 80 % · near 80–100 % · over > 100 %. Mismo umbral que la página
+// Presupuestos (Budgets/index.jsx), para que Inicio y Presupuestos coincidan.
+export const BUDGET_NEAR = 0.8
 
 export function budgetState(spent, limit) {
   const l = Number(limit) || 0

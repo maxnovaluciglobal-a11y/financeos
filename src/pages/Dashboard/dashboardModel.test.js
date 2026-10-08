@@ -40,9 +40,9 @@ describe('mes anterior, nombre y porcentaje', () => {
 })
 
 describe('presupuesto por categoría', () => {
-  it('estados: ok < 85 % · near 85–100 % · over > 100 %', () => {
-    expect(budgetState(84, 100)).toBe('ok')
-    expect(budgetState(85, 100)).toBe('near')
+  it('estados: ok < 80 % · near 80–100 % · over > 100 % (igual que Presupuestos)', () => {
+    expect(budgetState(79, 100)).toBe('ok')
+    expect(budgetState(80, 100)).toBe('near')
     expect(budgetState(100, 100)).toBe('near')
     expect(budgetState(101, 100)).toBe('over')
   })
