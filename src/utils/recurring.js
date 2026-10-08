@@ -415,6 +415,23 @@ export function dueAutoConfirmations(rules, { incomes = [], expenses = [], today
   return out
 }
 
+// ── Borrar un registro confirmado ────────────────────────────────────────────
+// Borrar el registro de una ocurrencia la marca como OMITIDA en su regla: si
+// no, el registro automático la volvería a crear en la próxima apertura (y en
+// una cuota de deuda, volvería a bajar el saldo). Deshacer el borrado la
+// reabre. El saldo de la deuda NO se restaura al borrar el gasto: es lo mismo
+// que pasa hoy al borrar un pago registrado con "Registrar pago" en Deudas.
+// Devuelve la regla actualizada, o null si no hay nada que cambiar.
+export function ruleAfterLinkedRecord(rules, record, { deleted }) {
+  if (!record?.recurringId || !record.occurrenceDate) return null
+  const rule = (rules || []).find(r => r && r.id === record.recurringId)
+  if (!rule) return null
+  const skipped = new Set(rule.skipped || [])
+  if (deleted === skipped.has(record.occurrenceDate)) return null
+  if (deleted) skipped.add(record.occurrenceDate); else skipped.delete(record.occurrenceDate)
+  return { ...rule, skipped: [...skipped].sort() }
+}
+
 // ── Nueva regla a partir de un movimiento ────────────────────────────────────
 // "Se repite cada mes" en QuickAdd / Ingresos: la regla nace con este registro
 // como su primera ocurrencia confirmada.

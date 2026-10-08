@@ -15,7 +15,7 @@ import {
   reconcileRecurringSources, confirmOccurrencesInDb,
 } from '../core/db/index.js'
 import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel, currentMonth } from '../utils/index.js'
-import { dueAutoConfirmations, ruleFromRecord, withAmountFrom } from '../utils/recurring.js'
+import { dueAutoConfirmations, ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { monthAdvance } from '../utils/monthAdvance.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
 import { hapticTap } from '../utils/haptics.js'
@@ -127,16 +127,26 @@ export function AppProvider({ children }) {
     if (store !== 'subscriptions' && store !== 'debts') return
     try { await reconcileRecurringSources(); dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') }) } catch {}
   }
+  // Registro de una ocurrencia borrado → la ocurrencia queda omitida (no la
+  // recrea el registro automático); restaurado → se reabre. utils/recurring.js.
+  const markLinked = async (record, deleted) => {
+    if (!record?.recurringId) return
+    try {
+      const next = ruleAfterLinkedRecord(await dbGetAll('recurring'), record, { deleted })
+      if (next) { await dbAdd('recurring', next); dispatch({ type: 'UPSERT_RULE', item: next }) }
+    } catch (e) { console.error('[FinanceOS] fijo del registro borrado:', e) }
+  }
   const deleteWithUndo = useCallback(async (store, item, deletedMsg, undoLabel) => {
     if (!item?.id) return
     try {
       await dbDelete(store, item.id)
+      if (store === 'incomes' || store === 'expenses') await markLinked(item, true)
       await rehydrate()
       await resyncIfSource(store)
       hapticTap()
       showToast(deletedMsg || tr('common.deleted'), 'ok', {
         label: undoLabel || tr('common.undo'),
-        onAction: async () => { try { await dbAdd(store, item); await rehydrate(); await resyncIfSource(store) } catch (e) { showToast(tr('toast.undoFailed'), 'error') } },
+        onAction: async () => { try { await dbAdd(store, item); if (store === 'incomes' || store === 'expenses') await markLinked(item, false); await rehydrate(); await resyncIfSource(store) } catch (e) { showToast(tr('toast.undoFailed'), 'error') } },
       })
     } catch (e) {
       showToast(tr('toast.deleteError'), 'error')
@@ -240,8 +250,10 @@ export function AppProvider({ children }) {
 
   const delIncome = useCallback(async (id) => {
     try {
+      const rec = (await dbGetAll('incomes')).find(r => r.id === id)
       await dbDelete('incomes', id)
       dispatch({ type: 'DEL_INCOME', id })
+      await markLinked(rec, true)
     } catch (e) {
       showToast(tr('toast.delete.income'), 'error')
       throw e
@@ -271,8 +283,10 @@ export function AppProvider({ children }) {
 
   const delExpense = useCallback(async (id) => {
     try {
+      const rec = (await dbGetAll('expenses')).find(r => r.id === id)
       await dbDelete('expenses', id)
       dispatch({ type: 'DEL_EXPENSE', id })
+      await markLinked(rec, true)
     } catch (e) {
       showToast(tr('toast.delete.expense'), 'error')
       throw e
