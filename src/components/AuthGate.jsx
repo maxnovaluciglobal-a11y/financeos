@@ -5,6 +5,7 @@
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.
 import { useState } from 'react'
+import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
@@ -176,7 +177,7 @@ export default function AuthGate({ onAuthenticated }) {
           />
           {error && (
             <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
-              ⚠ {error}
+              <InlineIcon kind="alert" size={13} />{error}
             </div>
           )}
           <button
@@ -340,7 +341,7 @@ export default function AuthGate({ onAuthenticated }) {
 
         {error && (
           <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
-            ⚠ {error}
+            <InlineIcon kind="alert" size={13} />{error}
           </div>
         )}
 

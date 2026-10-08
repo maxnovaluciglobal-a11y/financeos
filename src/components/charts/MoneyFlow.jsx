@@ -5,6 +5,7 @@
 import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
 import { moneyLocale } from '../../utils/index.js'
+import { useMoney } from '../Money.jsx'
 
 function fmtV(v, sym) {
   const n = Number(v) || 0
@@ -34,6 +35,10 @@ function SankeyPath({ x1, y1, h1, x2, y2, h2, color, opacity = 0.22 }) {
 }
 
 export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym = '$' }) {
+  // Ocultar montos (T13): las cifras de los nodos SVG pasan por m(); los
+  // porcentajes y las proporciones del dibujo se quedan (no son montos).
+  const { m } = useMoney()
+  const amt = (v) => m(fmtV(v, sym))
   const safeInc  = Array.isArray(incomes)      ? incomes      : []
   const safeExp  = Array.isArray(expenses)      ? expenses     : []
   const safeSubs = Array.isArray(subscriptions) ? subscriptions: []
@@ -119,8 +124,8 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         </text>
         <text x={LEFT_X + LEFT_W/2} y={PAD + incH/2 + 10}
           textAnchor="middle" dominantBaseline="middle"
-          style={{ fontFamily:'var(--mono, monospace)', fontSize: fmtV(totalInc, sym).length > 8 ? 9 : 11, fill: COLORS.income.text }}>
-          {fmtV(totalInc, sym)}
+          style={{ fontFamily:'var(--mono, monospace)', fontSize: amt(totalInc).length > 8 ? 9 : 11, fill: COLORS.income.text }}>
+          {amt(totalInc)}
         </text>
 
         {/* Paths Sankey + nodos derecha */}
@@ -148,8 +153,8 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
               {node.h > 32 && (
                 <text x={RIGHT_X + RIGHT_W/2} y={node.y + node.h/2 + 9}
                   textAnchor="middle" dominantBaseline="middle"
-                  style={{ fontFamily:'var(--mono, monospace)', fontSize: fmtV(node.amount, sym).length > 8 ? 8 : 10, fill: node.color.text }}>
-                  {fmtV(node.amount, sym)}
+                  style={{ fontFamily:'var(--mono, monospace)', fontSize: amt(node.amount).length > 8 ? 8 : 10, fill: node.color.text }}>
+                  {amt(node.amount)}
                 </text>
               )}
               {/* Porcentaje a la derecha (anclado; con margen al borde del viewBox) */}
@@ -168,7 +173,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         {items.map(it => (
           <span key={it.key} style={{ display:'flex', alignItems:'center', gap:4 }}>
             <span style={{ width:8, height:8, borderRadius:'50%', background:it.color.fill, display:'inline-block' }}/>
-            {it.label}: {fmtV(it.amount, sym)} ({totalInc > 0 ? ((it.amount/totalInc)*100).toFixed(0) : 0}%)
+            {it.label}: {amt(it.amount)} ({totalInc > 0 ? ((it.amount/totalInc)*100).toFixed(0) : 0}%)
           </span>
         ))}
       </div>

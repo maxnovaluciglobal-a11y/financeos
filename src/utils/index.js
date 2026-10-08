@@ -10,10 +10,19 @@
 // cae a español hasta que el efecto de useT() dispare un re-render.
 import { es } from '../i18n/es.js'
 import { langCache } from '../i18n/langCache.js'
+import config from '../config.js'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
-export const today = () => new Date().toISOString().slice(0, 10)
+// Fecha y mes LOCALES (YYYY-MM-DD / YYYY-MM). No usar toISOString() para esto:
+// devuelve la fecha en UTC, y en LatAm (UTC-3 a UTC-6) después de ~21 h ya es
+// "mañana" en UTC — un gasto registrado de noche quedaba con la fecha del día
+// siguiente (y el último día del mes, en el mes siguiente).
+const pad2 = (n) => String(n).padStart(2, '0')
+export const localDateStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+export const localMonthStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`
+export const today = () => localDateStr()
+export const currentMonth = () => localMonthStr()
 
 // Locale de formato de miles, seteado una vez desde AppContext según la moneda
 // del usuario (default es-CL = separador punto, comportamiento histórico).
@@ -23,6 +32,9 @@ const CURRENCY_LOCALE = {
   CLP: 'es-CL', COP: 'es-CO', ARS: 'es-AR', PEN: 'es-PE', VES: 'es-VE',
   MXN: 'es-MX', USD: 'en-US', EUR: 'pt-PT', BRL: 'pt-BR',
 }
+// Locale de formato de una moneda cualquiera (ej. la vista previa del onboarding,
+// antes de guardar la moneda elegida).
+export const localeForCurrency = (currency) => CURRENCY_LOCALE[currency] || 'es-CL'
 export function setMoneyLocale(currency) {
   _moneyLocale = CURRENCY_LOCALE[currency] || 'es-CL'
 }
@@ -34,7 +46,7 @@ export const moneyLocale = () => _moneyLocale
 // en inglés con cuenta en USD debe ver "Sep 2028", no "sept 2028". Por eso este
 // locale es independiente de _moneyLocale.
 let _dateLocale = 'es-CL'
-const LANG_DATE_LOCALE = { es: 'es-CL', en: 'en-US', pt: 'pt-BR' }
+const LANG_DATE_LOCALE = { es: 'es-CL', en: 'en-US', pt: 'pt-BR', de: 'de-DE' }
 export function setDateLocale(language) {
   _dateLocale = LANG_DATE_LOCALE[language] || 'es-CL'
 }
@@ -126,6 +138,8 @@ function translateOrRaw(prefix, value, lang) {
 // se pasa. Para options, listas y etiquetas. `lang` es opcional para no romper
 // callers que todavía no lo pasan (quedan en español, comportamiento previo).
 export const catLabel = (c, lang) => { const e = CAT_EMOJIS[c]; const label = lang ? translateOrRaw('cat.', c, lang) : (c || ''); return e ? `${e} ${label}` : label }
+// Solo el nombre traducido, sin emoji (chips de QuickAdd con showCategoryEmoji apagado).
+export const catName = (c, lang) => (lang ? translateOrRaw('cat.', c, lang) : (c || ''))
 
 // Categorías de SUSCRIPCIONES (distintas de las de gasto). Fallback: solo el nombre.
 export const SUB_EMOJIS = {
@@ -170,7 +184,11 @@ export function getCategoriesIncome(settings) {
   return [...CATS_INCOME, ...extra.filter(c => c && !CATS_INCOME.includes(c))]
 }
 
-export const METHODS      = ['Débito', 'Crédito', 'Efectivo', 'Transferencia']
+// Métodos de pago: la lista vive en config.paymentMethods (fuente única). El
+// valor guardado no cambia; methodLabel traduce solo lo que se muestra. Un
+// método que no está en la lista (ej. 'PSE' de los datos demo) se muestra tal cual.
+export const METHODS      = config.paymentMethods
+export const methodLabel  = (m, lang) => (lang ? translateOrRaw('method.', m, lang) : (m || ''))
 export const RECURRENCES  = ['Único', 'Mensual', 'Quincenal', 'Semanal']
 // El VALOR guardado y comparado en código (r.recurrence !== 'Único', etc.) sigue
 // siendo siempre uno de los 4 strings en español de RECURRENCES — solo la

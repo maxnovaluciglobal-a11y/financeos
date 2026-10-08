@@ -2,6 +2,7 @@
 // Hub "Egresos del mes" — vista unificada Gastos + Recurrentes
 
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
@@ -9,13 +10,14 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense } from '../../utils/index.js'
+import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel } from '../../utils/index.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
-const todayStr = () => new Date().toISOString().slice(0, 10)
+const todayStr = () => localDateStr()
 
 function toMonthly(amount, frequency) {
   switch (frequency) {
@@ -38,7 +40,7 @@ function toAnnual(amount, frequency) {
 
 const SYM   = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$' }
 const fmt   = n => (Number(n)||0).toLocaleString(moneyLocale(), { maximumFractionDigits:0 })
-const fmtM  = (n, sym) => `${sym}${fmt(n)}`
+const fmtMRaw = (n, sym) => `${sym}${fmt(n)}`
 
 // La lista de categorías vive en utils/index.js (CATS_EXPENSE) — es la fuente
 // compartida con Budgets, para que un presupuesto siempre pueda matchear gasto real.
@@ -58,7 +60,7 @@ const SUBCATS = {
 }
 const SUB_CATS = ['Streaming','Música','Software','Gimnasio','Seguro',
   'Educación','Cloud','Delivery','Suscripción','Productividad','Otros']
-const METHODS  = ['Débito','Crédito','Efectivo','Transferencia','Otro']
+// Métodos de pago: lista única en config.paymentMethods (METHODS en utils)
 // label = key de traducción (el value guardado no cambia)
 const FREQS    = [
   { value:'monthly',   label:'mov.freq.monthly' },
@@ -116,7 +118,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
       {onImport && (
         <button type="button" onClick={onImport}
           style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent, #00b8d9)', cursor:'pointer', textAlign:'left', display:'block' }}>
-          {t('common.importShortcut')}
+          <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
         </button>
       )}
       {/* Pegar SMS/notificación del banco */}
@@ -152,7 +154,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
         )}
         {pasteMsg && (
           <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--mono)' }}>
-            {pasteMsg.text}
+            <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
           </div>
         )}
       </div>
@@ -197,7 +199,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
         )}
         <FormGroup label={t('mov.form.method')}>
           <select style={inp} value={f.method} onChange={e => set('method', e.target.value)}>
-            {METHODS.map(m => <option key={m}>{m}</option>)}</select></FormGroup>
+            {METHODS.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}</select></FormGroup>
         <FormGroup label={t('mov.form.type')}>
           <select style={inp} value={f.type} onChange={e => set('type', e.target.value)}>
             <option>Necesidad</option><option>Deseo</option></select></FormGroup>
@@ -305,7 +307,10 @@ export default function Movements({ setPage }) {
   const deleteWithUndo     = ctx.deleteWithUndo
 
   const sym         = SYM[settings.currency] || '$'
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0,7)
+  // Ocultar montos (T13): toda cifra de esta pantalla pasa por fmtM → m().
+  const { m } = useMoney()
+  const fmtM = (n, s) => m(fmtMRaw(n, s))
+  const activeMonth = settings.activeMonth || currentMonth()
   const categoriesExpense = useMemo(() => getCategoriesExpense(settings), [settings])
 
   const [showAdd,   setShowAdd]   = useState(false)
@@ -603,7 +608,7 @@ export default function Movements({ setPage }) {
               {t('mov.list.expenses', { n: listExp.length })}
             </div>
             <div style={{ fontSize:11, fontWeight:700, color:'var(--red)',
-              fontFamily:'var(--mono)' }}>{fmtM(totalExp, sym)}</div>
+              fontFamily:'var(--mono)' }}><Money>{fmtM(totalExp, sym)}</Money></div>
           </div>
           {drillCat && (
             <div style={{ padding:'8px 14px', borderBottom:'.5px solid var(--brd)', display:'flex', alignItems:'center', gap:8, background:'var(--accent-bg)' }}>
@@ -655,7 +660,7 @@ export default function Movements({ setPage }) {
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:12, color:'var(--tx)', fontWeight:500,
                     overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {e.inv ? '◈ ' : ''}{e.description || e.category}
+                    {e.inv && <InlineIcon kind="investment" size={11} />}{e.description || e.category}
                   </div>
                   <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
                     {e.subcategory
@@ -666,7 +671,7 @@ export default function Movements({ setPage }) {
                 </div>
                 <div style={{ fontSize:12, fontWeight:600, color:'var(--red)',
                   fontFamily:'var(--mono)', flexShrink:0 }}>
-                  -{fmtM(e.amount, sym)}
+                  -<Money>{fmtM(e.amount, sym)}</Money>
                 </div>
                 {updateExpense && (
                   <button onClick={()=>{setEditingId(e.id);setEditForm({description:e.description||'',amount:e.amount,date:e.date,category:e.category,subcategory:e.subcategory||''})}}

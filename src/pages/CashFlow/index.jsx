@@ -3,11 +3,12 @@
 // Basado en transacciones recurrentes detectadas + saldo actual
 
 import { useMemo } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney, fmtPct, moneyLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, moneyLocale, currentMonth } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
@@ -67,7 +68,7 @@ export default function CashFlow({ setPage }) {
   }, [recurringExp])
 
   // ── Saldo actual del mes activo ───────────────────────────────────────────
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const curInc  = incomes.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + r.amount, 0)
   const curExp  = expenses.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + r.amount, 0)
   const curBal  = curInc - curExp
@@ -83,7 +84,7 @@ export default function CashFlow({ setPage }) {
   }, [incomes, expenses])
 
   const monthlyEstimate = useMemo(() => {
-    const nowMonth = new Date().toISOString().slice(0, 7)
+    const nowMonth = currentMonth()
     // Preferimos meses COMPLETOS (distintos del mes en curso); si no hay, usamos lo que haya
     let months = monthsWithData.filter(m => m < nowMonth)
     let partial = false
@@ -150,7 +151,7 @@ export default function CashFlow({ setPage }) {
   const hasData = monthsWithData.length > 0
 
   return (
-    <ProGate feature={t('cf.proGateFeature')} feminine>
+    <ProGate feature={t('cf.proGateFeature')}>
     <div className="stack">
       <PageHeader
         title={t('cf.title')}
@@ -239,7 +240,7 @@ export default function CashFlow({ setPage }) {
             {/* Alerta de ritmo */}
             {pace !== null && pace > 0.08 && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: '.5px solid rgba(255,77,106,.25)', borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
-                {t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: sym+Math.round(projExp).toLocaleString(moneyLocale()), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: sym+Math.round(projExp - totalBudget).toLocaleString(moneyLocale()) }) : '' })}
+                <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: sym+Math.round(projExp).toLocaleString(moneyLocale()), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: sym+Math.round(projExp - totalBudget).toLocaleString(moneyLocale()) }) : '' })}
               </div>
             )}
             {pace !== null && pace <= 0 && curExp > 0 && (

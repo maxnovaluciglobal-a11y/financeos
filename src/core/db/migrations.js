@@ -37,6 +37,19 @@ export const MIGRATIONS = [
       if (!db.objectStoreNames.contains('importBatches')) db.createObjectStore('importBatches', { keyPath: 'id' })
     },
   },
+  {
+    // T14 · bloqueo con PIN/biometría. Store aparte (clave fuera de línea,
+    // como 'settings') para el hash del PIN, el id de la credencial WebAuthn y
+    // el contador de intentos. NO va en 'settings' a propósito: settings viaja
+    // en el respaldo JSON y en el sync cifrado, y restaurar un respaldo no
+    // debe re-importar un PIN (ni "olvidé mi PIN" debe poder deshacerse
+    // bajando la nube). exportAllData/importAllData nombran sus stores uno por
+    // uno, así que 'security' queda fuera de los dos (ver db/index.test.js).
+    version: 3,
+    migrate(db) {
+      if (!db.objectStoreNames.contains('security')) db.createObjectStore('security')
+    },
+  },
 ]
 
 // Única fuente de verdad de la versión: quien agrega un paso a MIGRATIONS

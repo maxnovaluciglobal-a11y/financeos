@@ -5,12 +5,13 @@
 // que declara). Solo visible si settings.country === 'MX'.
 
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcResico, TRAMOS_RESICO, TOPE_ANUAL_RESICO, RETENCION_PERSONA_MORAL } from '../../utils/resicoMX.js'
-import { fmtFixed } from '../../utils/index.js'
+import { fmtFixed, currentMonth } from '../../utils/index.js'
 
 const fmtMXN = (n) => fmtFixed(n, 'es-MX')
 
@@ -28,7 +29,7 @@ export default function ResicoMX() {
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()
 
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const activeYear = activeMonth.slice(0, 4)
 
   // Ingreso facturable del mes activo — solo categorías que tributan por RESICO.
@@ -78,7 +79,7 @@ export default function ResicoMX() {
         <PageHeader title={t('resicomx.title')} sub={t('resicomx.sub')} />
 
         <Alert type="info">
-          ⚠ {t('resicomx.disclaimer')}
+          {t('resicomx.disclaimer')}
         </Alert>
 
         <Card>
@@ -159,15 +160,15 @@ export default function ResicoMX() {
 
             {result.siguienteTasa && result.margenEnTramo < result.ingreso * 0.15 && (
               <div style={{ background: 'var(--warn-bg)', border: '.5px solid var(--warn)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
-                ⚠ {t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: (result.siguienteTasa * 100).toFixed(2) })}
+                <InlineIcon kind="alert" size={13} />{t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: (result.siguienteTasa * 100).toFixed(2) })}
               </div>
             )}
 
             {result.superaTope && (
               <div style={{ background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--red)', marginBottom: 14, lineHeight: 1.6 }}>
                 {result.topeEsProyeccion
-                  ? <>⚠ {t('resicomx.result.projWarn', { v: fmtMXN(result.ingresoAnualProyectado), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>
-                  : <>⚠ {t('resicomx.result.overTopeWarn', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>}
+                  ? <><InlineIcon kind="alert" size={13} />{t('resicomx.result.projWarn', { v: fmtMXN(result.ingresoAnualProyectado), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>
+                  : <><InlineIcon kind="alert" size={13} />{t('resicomx.result.overTopeWarn', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>}
               </div>
             )}
 

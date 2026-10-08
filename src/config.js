@@ -131,13 +131,25 @@ const config = {
   },
 
   // ── MÉTODOS DE PAGO ────────────────────────────────────────────────────────
+  // Fuente única (QuickAdd, formulario de gasto de Movements). El VALOR guardado
+  // sigue en español, como las categorías y las recurrencias; la etiqueta que ve
+  // el usuario sale de las claves i18n 'method.<valor>' (methodLabel en utils).
+  // Antes había 3 listas distintas (esta, utils/index.js y Movements).
   paymentMethods: [
     'Débito',
     'Crédito',
     'Efectivo',
     'Transferencia',
     'Billetera digital',
+    'Otro',
   ],
+
+  // ── DECIMALES POR MONEDA ──────────────────────────────────────────────────
+  // Cuántos decimales acepta el teclado de QuickAdd. Lo que no está acá usa 2.
+  // Mapa explícito a propósito: Intl da resultados distintos según el navegador
+  // para COP (ISO dice 2, en la práctica nadie usa centavos). Con 0 decimales
+  // la tecla "," del teclado se reemplaza por "000".
+  currencyDecimals: { CLP: 0, COP: 0, PYG: 0, JPY: 0, KRW: 0, VND: 0, ISK: 0 },
 
   // ── RECURRENCIAS ───────────────────────────────────────────────────────────
   recurrences: [
@@ -196,6 +208,23 @@ const config = {
   // gratis real (Starter), no un remanente del viejo "Personal" de pago único.
   // 'starter' | 'pro' | 'enterprise'
   plan: 'starter',
+
+  // ── PRECIOS (fuente única en la app) ───────────────────────────────────────
+  // Los leen ProGate, LicenseGate, DemoShell y las claves i18n con {m}/{y}
+  // (vía utils/pricing.js). Deben coincidir con los Payment Links de Stripe y
+  // con la landing (repo aparte: financeos-landing, no lee este archivo).
+  //
+  // Prueba de Pro (T10, fase 4): trialEnabled se deja en false hasta que los
+  // Payment Links de prueba existan en Stripe, sus ids estén en el webhook y
+  // la migración esté aplicada (docs/billing-trial-runbook.md). Con true y
+  // trialCheckoutUrl cargado, ProGate muestra "Probar 14 días" y abre ese
+  // link; si falta cualquiera de los dos, ProGate sigue como antes.
+  // trialCheckoutUrl: URL https://buy.stripe.com/... del link de prueba Pro mensual.
+  pricing: {
+    proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
+    trialEnabled: false,
+    trialCheckoutUrl: null,
+  },
 
 }
 

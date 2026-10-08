@@ -40,7 +40,7 @@ export const STANDARD_DEDUCTION_2026 = { single: 16100, mfj: 32200 }
 
 // Los tramos de arriba están definidos sobre TAXABLE INCOME, no sobre ingreso
 // bruto. Pasarles el bruto sobreestima la tasa marginal (un single con $52.000
-// brutos cae en 12%, no en 22%). Usá esto antes de llamar a tasaMarginal().
+// brutos cae en 12%, no en 22%). Usar esto antes de llamar a tasaMarginal().
 export function taxableIncome(grossIncome, filingStatus = 'single') {
   const gross = Number(grossIncome) || 0
   const sd = filingStatus === 'mfj' ? STANDARD_DEDUCTION_2026.mfj : STANDARD_DEDUCTION_2026.single
@@ -97,7 +97,7 @@ export function valorFuturoSerie(aporte, tasaAnual, anios) {
 // de hoy ($X × tasaHoy) es plata que te queda en el bolsillo. Se asume que se
 // invierte al mismo retorno (simplificación: ignora el impuesto de esa cuenta
 // taxable). Con ese modelo, Traditional gana exactamente cuando tu tasa de hoy
-// es mayor que la que esperás pagar retirado.
+// es mayor que la que esperas pagar retirado.
 export function compararRothTraditional({ aporte, tasaHoy, tasaRetiro, anios, retornoAnual }) {
   const a = Number(aporte) || 0
   const tHoy = Number(tasaHoy) || 0
@@ -107,7 +107,7 @@ export function compararRothTraditional({ aporte, tasaHoy, tasaRetiro, anios, re
 
   const crecimiento = Math.pow(1 + r, n)
 
-  // Traditional: entra el monto completo pre-tax, crece, tributás al salir.
+  // Traditional: entra el monto completo pre-tax, crece, tributas al salir.
   const traditionalBruto = a * crecimiento
   const traditionalNeto = traditionalBruto * (1 - tRet)
   // La deducción de hoy, invertida al mismo retorno.

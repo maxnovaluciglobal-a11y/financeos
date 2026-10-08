@@ -3,6 +3,7 @@
 // Config-driven: serie IPC en src/config/inflacion/ar.js
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -54,7 +55,7 @@ export default function Inflacion() {
         <PageHeader title={config.titulo} sub={config.subtitulo} />
 
         <Alert type="info">
-          ⚠ {config.disclaimer} <strong>Datos hasta {config.vigencia} ({config.fuente}).</strong>
+          {config.disclaimer} <strong>Datos hasta {config.vigencia} ({config.fuente}).</strong>
         </Alert>
 
         <Card>

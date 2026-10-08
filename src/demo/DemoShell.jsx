@@ -2,14 +2,17 @@
 // Shell para modo demo — envuelve la app con DemoProvider
 // Bridge: hace que useApp() en todos los módulos use los datos demo (sin IndexedDB)
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { DemoProvider, useDemo, DemoContext } from './DemoContext.jsx'
-import DemoBanner from './DemoBanner.jsx'
+import DemoBanner, { PRICING_URL, APP_URL } from './DemoBanner.jsx'
+import DemoTour, { hasSeenDemoTour } from './DemoTour.jsx'
 import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import PageSkeleton from '../components/ui/PageSkeleton.jsx'
 import { AppContext } from '../context/AppContext.jsx'
+import { useT } from '../i18n/useT.js'
+import { proPriceVars } from '../utils/pricing.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -58,8 +61,11 @@ function DemoBridge({ children }) {
   )
 }
 
-// CTA persistente al pie — aparece después de 3 min de uso demo
-function DemoBottomCTA() {
+// CTA persistente al pie — aparece después de 75 s de uso del demo. Tarjeta
+// Navy plana (sin degradado); en móvil flota por encima del tabbar, no lo tapa.
+// No se muestra mientras corre el recorrido.
+function DemoBottomCTA({ hidden }) {
+  const { t, lang } = useT()
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(() => {
     try { return !!localStorage.getItem('fos_demo_cta_dismissed') } catch { return false }
@@ -71,7 +77,7 @@ function DemoBottomCTA() {
     return () => clearTimeout(t)
   }, [dismissed])
 
-  if (!visible || dismissed) return null
+  if (!visible || dismissed || hidden) return null
 
   function dismiss() {
     try { localStorage.setItem('fos_demo_cta_dismissed', '1') } catch {}
@@ -79,40 +85,35 @@ function DemoBottomCTA() {
   }
 
   return (
-    <div style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
-      background: 'linear-gradient(135deg, var(--navy), var(--navy-700))',
-      color: '#fff',
-      padding: '12px 16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-      boxShadow: '0 -4px 20px rgba(0,0,0,.2)',
-      flexWrap: 'wrap',
-    }}>
-      <div style={{ flex: 1, minWidth: 200 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>¿Te convence lo que ves?</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.8)' }}>El tuyo es privado y local — plan gratis, o Pro desde US$4.99/mes.</div>
+    <div className="demo-bottom-cta" role="region" aria-label={t('demo.cta.title')}>
+      <div style={{ flex: 1, minWidth: 180, paddingRight: 36 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 2 }}>{t('demo.cta.title')}</div>
+        <div style={{ fontSize: 13, fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'color-mix(in srgb, var(--papel-000) 82%, transparent)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
+      </div>
+      {/* Mismo destino y texto que el CTA del banner (T09): la app real, en la
+          misma pestaña — el registro ya captura el lead. "Ver planes" queda como
+          enlace secundario hacia la landing. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+        <a className="fos-btn-primary" href={APP_URL}
+          style={{ width: 'auto', fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          {t('demo.banner.start')}
+        </a>
+        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
+          {t('demo.banner.plans')}
+        </a>
       </div>
       <button
-        onClick={() => window.open('https://moyiq.app/#pricing', '_blank')}
-        style={{
-          background: 'var(--laton)', color: 'var(--navy)', border: 'none',
-          borderRadius: 8, padding: '9px 18px',
-          fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
-        }}
-      >
-        Comprar MOY IQ →
-      </button>
-      <button
+        type="button"
         onClick={dismiss}
-        aria-label="Cerrar"
+        aria-label={t('common.close')}
         style={{
-          background: 'transparent', border: 'none', color: 'rgba(255,255,255,.6)',
-          fontSize: 18, cursor: 'pointer', lineHeight: 1, flexShrink: 0,
+          position: 'absolute', top: 4, right: 4,
+          width: 44, height: 44, flexShrink: 0, borderRadius: 'var(--r)',
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          color: 'color-mix(in srgb, var(--papel-000) 70%, transparent)', fontSize: 16,
         }}
       >
-        ✕
+        <span aria-hidden="true">✕</span>
       </button>
     </div>
   )
@@ -120,6 +121,17 @@ function DemoBottomCTA() {
 
 function DemoInner() {
   const [page, setPage] = useState('dashboard')
+  const { t } = useT()
+  // Recorrido: arranca solo en la primera visita; el "?" del banner lo repite
+  // (vuelve al Dashboard, donde están los objetivos).
+  const [tourOpen, setTourOpen] = useState(() => !hasSeenDemoTour())
+  const closeTour = useCallback(() => setTourOpen(false), [])
+  const replayTour = useCallback(() => {
+    setPage('dashboard')
+    setTourOpen(false)
+    setTimeout(() => setTourOpen(true), 0)
+  }, [])
+  const docTitle = t('demo.docTitle')
 
   // SEO (auditoría 2026-08-27): demo.moyiq.app comparte el mismo build
   // que app.moyiq.app (sin valor SEO, ya bloqueado con X-Robots-Tag en
@@ -127,7 +139,7 @@ function DemoInner() {
   // propio title/canonical, no el genérico heredado de index.html.
   useEffect(() => {
     if (typeof window === 'undefined' || window.location.hostname !== 'demo.moyiq.app') return
-    document.title = 'Demo — MOY IQ · Prueba la app sin registrarte'
+    document.title = docTitle
     let link = document.querySelector('link[rel="canonical"]')
     if (!link) {
       link = document.createElement('link')
@@ -135,7 +147,7 @@ function DemoInner() {
       document.head.appendChild(link)
     }
     link.setAttribute('href', 'https://demo.moyiq.app/app/?demo=true')
-  }, [])
+  }, [docTitle])
 
   function renderPage(page) {
     switch (page) {
@@ -177,14 +189,15 @@ function DemoInner() {
 
   return (
     <>
-      <DemoBanner />
+      <DemoBanner onReplayTour={replayTour} />
       <Shell page={page} setPage={setPage}>
         <Suspense fallback={<PageLoader />}>
           {renderPage(page)}
         </Suspense>
         <Toast />
       </Shell>
-      <DemoBottomCTA />
+      <DemoBottomCTA hidden={tourOpen} />
+      <DemoTour open={tourOpen} onClose={closeTour} />
     </>
   )
 }

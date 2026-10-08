@@ -4,11 +4,13 @@
 // AVISO: Las alertas y señales son orientativas. No constituyen asesoría financiera certificada.
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
+import { Lock } from 'lucide-react'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, moneyLocale, dateLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, moneyLocale, dateLocale, currentMonth } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -268,7 +270,7 @@ function AdvisorNotes({ notes, onSave }) {
         padding: '8px 10px', background: 'var(--sur2)',
         borderRadius: 6, borderLeft: '2px solid var(--brd2)', lineHeight: 1.5,
       }}>
-        {t('adv.notes.local')}
+        <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('adv.notes.local')}
       </div>
     </div>
   )
@@ -350,7 +352,7 @@ export default function Advisor() {
   }
 
   // Mes activo
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
 
   // Métricas del mes activo
   const monthIncomes  = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)),  [incomes,  activeMonth])
@@ -400,7 +402,7 @@ export default function Advisor() {
           count: subCount, alerts: subAlerts, activeSubs } = subMetrics
 
   return (
-    <ProGate feature="Modo Asesor">{/* nombre de feature interno */}
+    <ProGate featureKey="nav.advisorMode">
     <div className="stack">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
@@ -439,7 +441,7 @@ export default function Advisor() {
           border: '0.5px solid var(--brd)', borderRadius: 8,
           fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, textAlign: 'center',
         }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>◈</div>
+          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><SignalIcon kind="investment" size={24} /></div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{t('adv.empty.title')}</div>
           <div style={{ fontSize: 12, color: 'var(--th)' }}>
             {t('adv.empty.sub')}

@@ -3,12 +3,13 @@
 // Config-driven: toda particularidad vive en src/config/aporte/{pais}.js
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getAporteConfig, calcAporte } from '../../utils/aporteEngine.js'
-import { fmtFixed } from '../../utils/index.js'
+import { fmtFixed, currentMonth } from '../../utils/index.js'
 import {
   compararRothTraditional, calcHSA, tasaMarginalDesdeBruto,
   limite401k, limiteIRA, limiteHSA, LIMITES_2026,
@@ -19,7 +20,7 @@ export default function AhorroFiscal() {
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()
   const config = getAporteConfig(country)
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const year = activeMonth.slice(0, 4)
 
   // Reglas de hooks: TODOS los hooks van antes de cualquier return condicional.
@@ -67,7 +68,7 @@ export default function AhorroFiscal() {
         <PageHeader title={config.titulo} sub={config.subtitulo} />
 
         <Alert type="info">
-          ⚠ {config.disclaimer} <strong>Cifras {config.vigencia} ({config.fuente}).</strong>
+          {config.disclaimer} <strong>Cifras {config.vigencia} ({config.fuente}).</strong>
         </Alert>
 
         <Card>

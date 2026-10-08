@@ -2,12 +2,14 @@
 // Barras de progreso enriquecidas para Presupuestos — FinanceOS
 
 import { ChartEmpty } from './ChartCard.jsx'
+import SignalIcon from '../icons/SignalIcon.jsx'
+import { useMoney } from '../Money.jsx'
 import { moneyLocale } from '../../utils/index.js'
 
 const STATUS = [
-  { key: 'over',  label: 'Sobrepasado',      color: 'var(--red)',    bg: 'color-mix(in srgb, var(--neg) 12%, transparent)',   border: 'color-mix(in srgb, var(--neg) 26%, transparent)',  icon: '⚠' },
-  { key: 'warn',  label: 'Cerca del límite',  color: 'var(--amb)',    bg: 'rgba(245,166,35,.08)',  border: 'rgba(245,166,35,.25)',  icon: '◑' },
-  { key: 'ok',    label: 'Bajo control',      color: 'var(--accent)', bg: 'transparent',           border: 'var(--brd)',            icon: '✓' },
+  { key: 'over',  label: 'Sobrepasado',      color: 'var(--red)',    bg: 'color-mix(in srgb, var(--neg) 12%, transparent)',   border: 'color-mix(in srgb, var(--neg) 26%, transparent)',  icon: 'warning' },
+  { key: 'warn',  label: 'Cerca del límite',  color: 'var(--amb)',    bg: 'rgba(245,166,35,.08)',  border: 'rgba(245,166,35,.25)',  icon: 'attention' },
+  { key: 'ok',    label: 'Bajo control',      color: 'var(--accent)', bg: 'transparent',           border: 'var(--brd)',            icon: 'ok' },
 ]
 
 function getStatus(spent, limit) {
@@ -18,7 +20,7 @@ function getStatus(spent, limit) {
   return STATUS[2]
 }
 
-function fmtV(v, sym) {
+function fmtRaw(v, sym) {
   const n = Number(v) || 0
   if (n >= 1000000) return `${sym}${(n/1000000).toFixed(1)}M`
   if (n >= 1000)    return `${sym}${(n/1000).toFixed(0)}K`
@@ -26,6 +28,8 @@ function fmtV(v, sym) {
 }
 
 export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
+  const { m } = useMoney()  // ocultar montos (T13)
+  const fmtV = (v, s) => m(fmtRaw(v, s))
   const safeBudgets  = Array.isArray(budgets)  ? budgets  : []
   const safeExpByCat = (expByCat && typeof expByCat === 'object') ? expByCat : {}
 
@@ -58,7 +62,7 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
           {/* Fila superior */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ fontSize: 13 }}>{r.status.icon}</span>
+              <SignalIcon kind={r.status.icon} size={14} />
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{r.category}</span>
             </div>
             <span style={{

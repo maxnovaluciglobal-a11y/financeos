@@ -8,11 +8,11 @@
 // Cruzar un tramo por $1 sube la tasa de TODO el ingreso — un "efecto cliff"
 // real que vale la pena advertir.
 //
-// Trampa 2 (Art. 113-J LISR): si le facturás a una persona moral, ella está
-// obligada a retenerte 1.25% del pago (sin IVA) y enterarlo al SAT por vos.
+// Trampa 2 (Art. 113-J LISR): si le facturas a una persona moral, ella está
+// obligada a retenerte 1.25% del pago (sin IVA) y enterarlo al SAT por ti.
 // Esa retención NO es un impuesto extra: es un pago a cuenta acreditable
 // contra el ISR causado del mes. Lo que realmente sale de tu bolsillo cuando
-// declarás es ISR causado − retenciones. Si la retención supera al ISR causado
+// declaras es ISR causado − retenciones. Si la retención supera al ISR causado
 // (pasa en el primer tramo, donde la tasa 1.00% < 1.25% retenido), el mes
 // cierra con saldo a favor, no con un pago.
 

@@ -64,7 +64,7 @@ export interface NurtureEmailConfig {
 function actionBlockForLabel(label: string | null): string {
   switch (label) {
     case "Crítico":
-      return "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registrá tus movimientos de esta semana en MOY IQ: el Dashboard te va a mostrar exactamente en qué categoría se te va la plata, sin que tengas que armar una planilla.";
+      return "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en MOY IQ: el Dashboard te va a mostrar exactamente en qué categoría se te va la plata, sin que tengas que armar una planilla.";
     case "Regular":
       return "Tu resultado está en la zona donde un cambio chico rinde mucho: ordenar el colchón de emergencia o la carga de deuda. Con tus movimientos reales cargados, MOY IQ te muestra cuál de los dos te conviene atacar primero según tu propio flujo de caja.";
     case "Bueno":
@@ -74,7 +74,7 @@ function actionBlockForLabel(label: string | null): string {
     default:
       // Fallback genérico si no llegó label (no debería pasar dado que el
       // formulario siempre lo manda, pero el gate de email es más flexible).
-      return "Registrá tus movimientos de esta semana en MOY IQ. El Dashboard te muestra en qué categoría se te va más plata cada mes, sin que tengas que actualizar nada a mano.";
+      return "Registra tus movimientos de esta semana en MOY IQ. El Dashboard te muestra en qué categoría se te va más plata cada mes, sin que tengas que actualizar nada a mano.";
   }
 }
 
@@ -112,7 +112,7 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
       <p><strong>Tu puntaje MOY IQ exprés: ${score}${lead.label ? ` (${lead.label})` : ""}</strong></p>
       <p>Un paso concreto para esta semana, según tu resultado:</p>
       <p>${actionBlockForLabel(lead.label)}</p>
-      <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomás, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
+      <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomas, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Crear cuenta gratis →</a></p>
       <p style="color:#666;font-size:13px">Sin tarjeta, sin trial que vencer. Starter no tiene fecha de corte.</p>
       <p style="color:#666;font-size:13px">En dos días te cuento por qué la mayoría de los presupuestos armados en una hoja de cálculo no llegan al segundo mes — y no es por falta de disciplina.</p>
@@ -126,11 +126,11 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
     const subject = "El presupuesto no falló. El método, sí."; // variante A, revisión 18-sep
     const html = wrapHtml(
       `
-      <h2 style="color:#14213D">El problema no es cuánto ganás</h2>
+      <h2 style="color:#14213D">El problema no es cuánto ganas</h2>
       <p>Hola,</p>
       <p>Como prometí, acá va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
       <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
-      <p>Cuando importás tus movimientos en MOY IQ, no armás el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más plata este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
+      <p>Cuando importas tus movimientos en MOY IQ, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más plata este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
       <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
       <p><a href="https://app.moyiq.app/signup?ref=diagnostico-d2" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver mi dashboard →</a></p>
       <p style="color:#666;font-size:13px">Starter incluye Dashboard, Movimientos y Presupuestos sin costo.</p>
@@ -147,12 +147,12 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
       <h2 style="color:#14213D">Sin testimonios inventados</h2>
       <p>Hola,</p>
       <p>Sin testimonio inventado de "Fulano ahorró X% en 3 meses" — no tenemos ese caso documentado, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
-      <p>La diferencia real entre lo que ya podés usar gratis y lo que suma Pro:</p>
+      <p>La diferencia real entre lo que ya puedes usar gratis y lo que suma Pro:</p>
       <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Dashboard con IQ Score, Movimientos y categorización automática, Presupuestos básicos, Metas simples.</p>
-      <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitás mostrarle tus números a otra persona.</p>
-      <p>Si tu situación es simple, Starter alcanza. Si tenés varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
+      <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitas mostrarle tus números a otra persona.</p>
+      <p>Si tu situación es simple, Starter alcanza. Si tienes varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
       <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Actualizar a Pro →</a></p>
-      <p style="color:#666;font-size:13px">Si no es para vos ahora, seguís en Starter sin perder nada de lo que ya armaste.</p>
+      <p style="color:#666;font-size:13px">Si no es para ti ahora, sigues en Starter sin perder nada de lo que ya armaste.</p>
       `,
       unsub,
     );
@@ -162,7 +162,7 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
   // day12 — reactivación (nuevo, revisión 18-sep). No repite el pitch de
   // Starter/Pro (ya lo vio dos veces) — vuelve a poner el propio resultado
   // del diagnóstico adelante, no la app. Menciona unsubscribe en el cuerpo,
-  // no solo en el footer legal — el tono es "esto es para vos", ocultar la
+  // no solo en el footer legal — el tono es "esto es para ti", ocultar la
   // salida contradice eso.
   const subject = "Tu IQ Score sigue ahí (no venció)"; // variante A
   const html = wrapHtml(
@@ -172,7 +172,7 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
     <p>No te vengo a insistir con Starter o Pro — ya te los mostré. Esto es distinto: tu diagnóstico de hace 12 días sigue guardado, pero doce días es tiempo suficiente para que algo haya cambiado — un gasto grande, un ingreso nuevo, una deuda que se movió.</p>
     <p><a href="${config.landingUrl.replace(/\/$/, "")}/diagnostico.html?ref=diagnostico-d12" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Volver a ver mi diagnóstico →</a></p>
     <p>Si tu situación es la misma, no hace falta que hagas nada — el resultado sigue siendo válido. Si cambió algo, es un buen momento para volver a correrlo y ver qué mueve.</p>
-    <p style="color:#666;font-size:13px">Este es el último correo de esta secuencia. Si preferís no recibir más, date de baja <a href="${unsub}" style="color:#666">acá</a> — no hay problema.</p>
+    <p style="color:#666;font-size:13px">Este es el último correo de esta secuencia. Si prefieres no recibir más, date de baja <a href="${unsub}" style="color:#666">acá</a> — no hay problema.</p>
     `,
     unsub,
   );

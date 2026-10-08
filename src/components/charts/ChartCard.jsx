@@ -1,4 +1,5 @@
 // src/components/charts/ChartCard.jsx
+import SignalIcon from '../icons/SignalIcon.jsx'
 export default function ChartCard({ title, subtitle, children, minHeight = 220 }) {
   return (
     <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'18px 20px', marginBottom:16, boxShadow:'var(--sh-1)' }}>
@@ -19,7 +20,7 @@ export default function ChartCard({ title, subtitle, children, minHeight = 220 }
 export function ChartEmpty({ msg = 'Sin datos suficientes para mostrar este gráfico.' }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:160, flexDirection:'column', gap:8 }}>
-      <div style={{ fontSize:22, opacity:.3 }}>◈</div>
+      <div style={{ opacity:.35, color:'var(--th)' }}><SignalIcon kind="category" size={22} /></div>
       <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)', textAlign:'center', maxWidth:220 }}>{msg}</div>
     </div>
   )

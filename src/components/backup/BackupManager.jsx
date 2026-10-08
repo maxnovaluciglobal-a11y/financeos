@@ -4,11 +4,19 @@
 // FinanceOS no puede recuperar datos si no existe un respaldo previo.
 
 import { useState, useRef, useEffect } from 'react'
+import { Lock, History, Download, X } from 'lucide-react'
+import rs from './BackupReminder.module.css'
+import SignalIcon, { InlineIcon } from '../icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { CLOUD_ENABLED } from '../../core/supabase.js'
 import { cloudPush, cloudPull, cloudStatus } from '../../core/cloudSync.js'
 
 import { dateLocale } from '../../utils/index.js'
+import { useT } from '../../i18n/useT.js'
+import { translate } from '../../i18n/translate.js'
+
+// "hace N días" con .one/.many (mismo precedente que projects.totalNet.*)
+const plural = (t, base, n, vars) => t(`${base}.${n === 1 ? 'one' : 'many'}`, { n, ...vars })
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function daysSince(isoDate) {
   if (!isoDate) return null
@@ -23,23 +31,24 @@ function formatDate(isoDate) {
 }
 
 // ── VALIDACIÓN DEL ARCHIVO JSON ───────────────────────────────────────────────
-export function validateBackupFile(data) {
+// `t` opcional: sin él, los mensajes salen en español (uso fuera de React).
+export function validateBackupFile(data, t = (k, v) => translate('es', k, v)) {
   const errors = []
 
   // Debe ser un objeto
   if (!data || typeof data !== 'object' || Array.isArray(data))
-    return { valid: false, errors: ['El archivo no tiene el formato correcto.'] }
+    return { valid: false, errors: [t('backup.err.format')] }
 
   // Debe tener al menos una colección conocida
   const knownKeys = ['incomes', 'expenses', 'budgets', 'debts', 'goals']
   const hasKnownKey = knownKeys.some(k => k in data)
   if (!hasKnownKey)
-    errors.push('El archivo no parece ser un respaldo válido de MOY IQ.')
+    errors.push(t('backup.err.notBackup'))
 
   // Las colecciones deben ser arrays
   knownKeys.forEach(k => {
     if (k in data && !Array.isArray(data[k]))
-      errors.push(`La sección "${k}" no tiene el formato esperado.`)
+      errors.push(t('backup.err.section', { k }))
   })
 
   // Detectar si es archivo demo — tiene IDs que empiezan con "demo-"
@@ -49,17 +58,18 @@ export function validateBackupFile(data) {
   ]
   const isDemoBackup = allIds.some(id => String(id).startsWith('demo-'))
   if (isDemoBackup)
-    errors.push('Este archivo contiene datos de demostración. No se puede restaurar como datos reales.')
+    errors.push(t('backup.err.demo'))
 
   // Verificar versión si existe
   if (data._meta?.version && !data._meta.version.startsWith('1.'))
-    errors.push('Este respaldo fue creado con una versión diferente de MOY IQ. Puede tener problemas de compatibilidad.')
+    errors.push(t('backup.err.version'))
 
   return { valid: errors.length === 0, errors, isDemoBackup }
 }
 
 // ── MODAL DE CONFIRMACIÓN ─────────────────────────────────────────────────────
 function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = false }) {
+  const { t } = useT()
   if (!isOpen) return null
   return (
     <div style={{
@@ -73,19 +83,19 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = fa
         border: '0.5px solid var(--brd2)',
       }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 10 }}>{title}</div>
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.7, marginBottom: 20 }}>{message}</div>
+        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.7, marginBottom: 20, whiteSpace: 'pre-line' }}>{message}</div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
             background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
             borderRadius: 6, padding: '8px 16px', fontSize: 12,
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
-          }}>Cancelar</button>
+          }}>{t('common.cancel')}</button>
           <button onClick={onConfirm} style={{
             background: danger ? 'var(--red)' : 'var(--laton)', color: danger ? '#fff' : 'var(--navy)',
             border: 'none', borderRadius: 6, padding: '8px 18px',
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'var(--sans)',
-          }}>Confirmar</button>
+          }}>{t('common.confirm')}</button>
         </div>
       </div>
     </div>
@@ -95,6 +105,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = fa
 // ── BACKUP STATUS BADGE ───────────────────────────────────────────────────────
 export function BackupStatusBadge({ compact = false }) {
   const { settings } = useApp()
+  const { t } = useT()
   const lastBackup = settings.lastBackupAt
   const days = daysSince(lastBackup)
 
@@ -103,13 +114,13 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F3E4CE', borderRadius: compact ? 20 : 8,
+        background: '#F3E4CE', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
-        <span>⚠</span>
-        <span>{compact ? 'Sin respaldo' : 'Sin respaldo creado todavía — crea uno ahora desde Ajustes'}</span>
+        <SignalIcon kind="alert" size={13} />
+        <span>{compact ? t('backup.badge.none') : t('backup.badge.noneLong')}</span>
       </div>
     )
   }
@@ -119,13 +130,13 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F5E6E3', borderRadius: compact ? 20 : 8,
+        background: '#F5E6E3', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(162,62,46,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--red)',
         fontFamily: 'var(--mono)',
       }}>
-        <span>⚠</span>
-        <span>{compact ? `Respaldo hace ${days}d` : `Último respaldo hace ${days} días — se recomienda crear uno nuevo`}</span>
+        <SignalIcon kind="alert" size={13} />
+        <span>{compact ? t('backup.badge.daysShort', { n: days }) : t('backup.badge.oldLong', { n: days })}</span>
       </div>
     )
   }
@@ -135,13 +146,13 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F3E4CE', borderRadius: compact ? 20 : 8,
+        background: '#F3E4CE', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
-        <span>◑</span>
-        <span>{compact ? `Respaldo hace ${days}d` : `Último respaldo hace ${days} días — considera actualizarlo`}</span>
+        <SignalIcon kind="attention" size={13} />
+        <span>{compact ? t('backup.badge.daysShort', { n: days }) : t('backup.badge.staleLong', { n: days })}</span>
       </div>
     )
   }
@@ -150,13 +161,13 @@ export function BackupStatusBadge({ compact = false }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 7,
       padding: compact ? '4px 10px' : '10px 12px',
-      background: 'var(--pos-bg)', borderRadius: compact ? 20 : 8,
+      background: 'var(--pos-bg)', borderRadius: compact ? 'var(--rs)' : 8,
       border: '0.5px solid rgba(53,110,87,.25)',
       fontSize: compact ? 10 : 11, color: 'var(--pos)',
       fontFamily: 'var(--mono)',
     }}>
       <span>✓</span>
-      <span>{compact ? `Respaldo al día` : `Último respaldo: ${formatDate(lastBackup)}`}</span>
+      <span>{compact ? t('backup.badge.ok') : t('backup.badge.okLong', { date: formatDate(lastBackup) })}</span>
     </div>
   )
 }
@@ -169,17 +180,32 @@ export function BackupStatusBadge({ compact = false }) {
 // real: un navegador no puede escribir un archivo en disco sin que el usuario lo
 // vea, así que esto es lo más automático que se puede hacer sin salir del modelo
 // local-only.
+// M5 (oct-2026): franja de la primera vista del Inicio, con tokens (Latón/Navy),
+// ícono + texto y cierre por sesión (sessionStorage): vuelve a aparecer en la
+// próxima visita mientras el respaldo siga viejo. Mismos umbrales de siempre:
+// sin respaldo, o más de 14 días.
+const REMINDER_DISMISS_KEY = 'fos_backup_reminder_dismissed'
+export const BACKUP_STALE_DAYS = 14
+
 export function BackupReminderBanner() {
   const { settings, updateSettings, exportData, incomes, expenses, debts, goals } = useApp()
-  const [dismissed, setDismissed] = useState(false)
+  const { t } = useT()
+  const [dismissed, setDismissed] = useState(() => {
+    try { return sessionStorage.getItem(REMINDER_DISMISS_KEY) === '1' } catch { return false }
+  })
   const [exporting, setExporting] = useState(false)
   const lastBackup = settings.lastBackupAt
   const days = daysSince(lastBackup)
   const hasRealData = incomes.length > 0 || expenses.length > 0 || debts.length > 0 || goals.length > 0
 
   // Datos ficticios de demo no necesitan respaldo — nunca mostrar acá.
-  const stale = !settings?.isDemo && hasRealData && (lastBackup === null || lastBackup === undefined || days > 14)
+  const stale = !settings?.isDemo && hasRealData && (lastBackup === null || lastBackup === undefined || days > BACKUP_STALE_DAYS)
   if (!stale || dismissed) return null
+
+  function dismiss() {
+    try { sessionStorage.setItem(REMINDER_DISMISS_KEY, '1') } catch { /* modo privado: solo en memoria */ }
+    setDismissed(true)
+  }
 
   async function handleBackupNow() {
     setExporting(true)
@@ -192,27 +218,22 @@ export function BackupReminderBanner() {
   }
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-      padding: '12px 16px', marginBottom: 16, borderRadius: 10,
-      background: !lastBackup ? '#F3E4CE' : '#F3E4CE',
-      border: '0.5px solid rgba(133,79,11,.25)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
-        <div style={{ fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
-          {!lastBackup ? 'Todavía no tienes un respaldo de tus datos.' : `Tu último respaldo fue hace ${days} días.`}
-        </div>
+    <div className={rs.strip} role="region" aria-label={t('backup.reminder.aria')}>
+      <div className={rs.msg}>
+        <History size={18} strokeWidth={1.7} aria-hidden="true" />
+        <span>
+          {!lastBackup ? t('backup.reminder.none') : plural(t, 'backup.reminder.old', days)}{' '}
+          <span className={rs.local}>{t('backup.reminder.local')}</span>
+        </span>
       </div>
-      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-        <button onClick={handleBackupNow} disabled={exporting} style={{
-          background: 'var(--amb)', color: '#fff', border: 'none', borderRadius: 6,
-          padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: exporting ? 'default' : 'pointer',
-          opacity: exporting ? 0.6 : 1,
-        }}>{exporting ? 'Creando…' : '↓ Crear respaldo ahora'}</button>
-        <button onClick={() => setDismissed(true)} aria-label="Cerrar aviso" style={{
-          background: 'none', border: 'none', color: 'var(--amb)', fontSize: 13, cursor: 'pointer', minWidth: 32, minHeight: 32,
-        }}>✕</button>
+      <div className={rs.actions}>
+        <button type="button" className={rs.cta} onClick={handleBackupNow} disabled={exporting} aria-busy={exporting}>
+          <Download size={16} strokeWidth={1.9} aria-hidden="true" />
+          {exporting ? t('backup.reminder.creating') : t('backup.reminder.cta')}
+        </button>
+        <button type="button" className={rs.close} onClick={dismiss} aria-label={t('backup.reminder.dismiss')}>
+          <X size={18} strokeWidth={1.8} aria-hidden="true" />
+        </button>
       </div>
     </div>
   )
@@ -221,6 +242,7 @@ export function BackupReminderBanner() {
 // ── MAIN BACKUP MANAGER ───────────────────────────────────────────────────────
 export default function BackupManager() {
   const { settings, updateSettings, exportData, importData, incomes, expenses, budgets, debts, goals } = useApp()
+  const { t } = useT()
   const [status, setStatus]           = useState(null)
   const [importing, setImporting]     = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -247,10 +269,10 @@ export default function BackupManager() {
       await exportData()
       // Guardar fecha del último respaldo
       await updateSettings({ ...settings, lastBackupAt: new Date().toISOString() })
-      setStatus({ type: 'ok', msg: `Respaldo descargado correctamente. Guárdalo en un lugar seguro (Google Drive, iCloud, email).` })
+      setStatus({ type: 'ok', msg: t('backup.status.exportOk') })
       setTimeout(() => setStatus(null), 5000)
     } catch (e) {
-      setStatus({ type: 'error', msg: 'Error al crear el respaldo. Intenta de nuevo.' })
+      setStatus({ type: 'error', msg: t('backup.status.exportErr') })
     }
   }
 
@@ -262,9 +284,9 @@ export default function BackupManager() {
       const result = await cloudPush()
       await updateSettings({ ...settings, lastCloudSyncAt: result.savedAt })
       setCloudInfo(await cloudStatus())
-      setStatus({ type: 'ok', msg: '☁ Datos sincronizados en la nube correctamente.' })
+      setStatus({ type: 'ok', msg: `☁ ${t('backup.status.cloudPushOk')}` })
     } catch (e) {
-      setStatus({ type: 'error', msg: 'Error al sincronizar: ' + (e.message || 'verifica tu conexión.') })
+      setStatus({ type: 'error', msg: t('backup.status.cloudPushErr', { msg: e.message || t('backup.status.checkConnection') }) })
     } finally {
       setCloudSyncing(false)
       setTimeout(() => setStatus(null), 5000)
@@ -278,7 +300,7 @@ export default function BackupManager() {
     try {
       const result = await cloudPull()
       if (!result) {
-        setStatus({ type: 'warn', msg: 'No hay datos en la nube para este dispositivo todavía.' })
+        setStatus({ type: 'warn', msg: t('backup.status.cloudEmpty') })
         return
       }
       await importData(new File(
@@ -286,9 +308,9 @@ export default function BackupManager() {
         'cloud-backup.json',
         { type: 'application/json' }
       ))
-      setStatus({ type: 'ok', msg: `☁ Datos restaurados desde la nube (guardado: ${formatDate(result.savedAt)}).` })
+      setStatus({ type: 'ok', msg: `☁ ${t('backup.status.cloudPullOk', { date: formatDate(result.savedAt) })}` })
     } catch (e) {
-      setStatus({ type: 'error', msg: 'Error al restaurar desde la nube: ' + (e.message || 'verifica tu conexión.') })
+      setStatus({ type: 'error', msg: t('backup.status.cloudPullErr', { msg: e.message || t('backup.status.checkConnection') }) })
     } finally {
       setCloudSyncing(false)
       setTimeout(() => setStatus(null), 6000)
@@ -311,13 +333,13 @@ export default function BackupManager() {
       try {
         data = JSON.parse(text)
       } catch {
-        setStatus({ type: 'error', msg: 'El archivo no es un JSON válido. Verifica que sea un respaldo de MOY IQ.' })
+        setStatus({ type: 'error', msg: t('backup.status.invalidJson') })
         setImporting(false)
         return
       }
 
       // Validar
-      const { valid, errors, isDemoBackup } = validateBackupFile(data)
+      const { valid, errors, isDemoBackup } = validateBackupFile(data, t)
       if (!valid) {
         setStatus({ type: 'error', msg: errors.join(' ') })
         setImporting(false)
@@ -335,7 +357,7 @@ export default function BackupManager() {
         await doImport(data)
       }
     } catch (e) {
-      setStatus({ type: 'error', msg: 'Error al leer el archivo. Verifica que sea un respaldo válido de MOY IQ.' })
+      setStatus({ type: 'error', msg: t('backup.status.readErr') })
     } finally {
       setImporting(false)
     }
@@ -355,11 +377,11 @@ export default function BackupManager() {
       if (data._meta?.createdAt) {
         await updateSettings({ ...settings, lastBackupAt: data._meta.createdAt })
       }
-      setStatus({ type: 'ok', msg: 'Datos restaurados correctamente. Tu información está actualizada.' })
+      setStatus({ type: 'ok', msg: t('backup.status.restoreOk') })
       setPendingFile(null)
       setPendingData(null)
     } catch (e) {
-      setStatus({ type: 'error', msg: 'Error al restaurar los datos. El archivo puede estar incompleto o dañado.' })
+      setStatus({ type: 'error', msg: t('backup.status.restoreErr') })
     } finally {
       setImporting(false)
       setTimeout(() => setStatus(null), 5000)
@@ -387,8 +409,8 @@ export default function BackupManager() {
       {/* Modal de confirmación de restauración */}
       <ConfirmModal
         isOpen={confirmOpen}
-        title="¿Restaurar datos desde respaldo?"
-        message={`Esto reemplazará todos tus datos actuales (${totalRecords} registros) con el contenido del archivo "${pendingFile}". Esta acción no se puede deshacer.\n\nSi quieres conservar los datos actuales, cancela y crea un respaldo primero.`}
+        title={t('backup.confirm.title')}
+        message={plural(t, 'backup.confirm.message', totalRecords, { file: pendingFile })}
         onConfirm={() => doImport(pendingData)}
         onCancel={() => { setConfirmOpen(false); setPendingFile(null); setPendingData(null) }}
         danger
@@ -406,7 +428,7 @@ export default function BackupManager() {
             border: '0.5px solid var(--brd)', borderRadius: 8,
             fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5,
           }}>
-            No hay datos reales para respaldar. Registra ingresos o gastos primero.
+            {t('backup.noData')}
           </div>
         )}
 
@@ -416,26 +438,24 @@ export default function BackupManager() {
           border: '0.5px solid var(--brd)', borderRadius: 8,
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }}>
-            🔒 ¿Dónde viven tus datos?
+            <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('backup.where.title')}
           </div>
           <div style={{ fontSize: 11, color: 'var(--tm)', lineHeight: 1.7, fontFamily: 'var(--mono)' }}>
-            Tus datos se guardan en este navegador, en este dispositivo — el servidor nunca puede
-            leerlos en claro. Si borras el navegador, limpias la caché o cambias de
-            dispositivo <strong style={{ color: 'var(--tx)' }}>sin un respaldo previo, los datos se perderán permanentemente</strong>.
-            MOY IQ no puede recuperarlos.
+            {t('backup.where.body')} <strong style={{ color: 'var(--tx)' }}>{t('backup.where.warn')}</strong>.{' '}
+            {t('backup.where.noRecovery')}
           </div>
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
-            Recomendación: crear un respaldo mensual y guardarlo en Google Drive, iCloud o enviarlo por email.
+            {t('backup.where.tip')}
           </div>
         </div>
 
         {/* Crear respaldo */}
         <div style={srow}>
           <div style={{ flex: 1 }}>
-            <div style={slbl}>Crear respaldo</div>
+            <div style={slbl}>{t('backup.create.title')}</div>
             <div style={ssub}>
-              Descarga un archivo JSON con todos tus datos · {totalRecords} registros
-              {lastBackup && <><br />Último respaldo: {formatDate(lastBackup)}{days !== null && days > 0 ? ` (hace ${days} día${days !== 1 ? 's' : ''})` : ' (hoy)'}</>}
+              {plural(t, 'backup.create.sub', totalRecords)}
+              {lastBackup && <><br />{t('backup.badge.okLong', { date: formatDate(lastBackup) })} ({days !== null && days > 0 ? plural(t, 'backup.ago', days) : t('backup.ago.today')})</>}
             </div>
           </div>
           <button
@@ -443,17 +463,17 @@ export default function BackupManager() {
             disabled={!hasRealData}
             style={{ ...btn('primary'), opacity: hasRealData ? 1 : 0.5, cursor: hasRealData ? 'pointer' : 'not-allowed' }}
           >
-            ↓ Crear respaldo
+            ↓ {t('backup.create.title')}
           </button>
         </div>
 
         {/* Restaurar respaldo */}
         <div style={{ ...srow, borderBottom: 'none' }}>
           <div style={{ flex: 1 }}>
-            <div style={slbl}>Restaurar respaldo</div>
+            <div style={slbl}>{t('backup.restore.title')}</div>
             <div style={ssub}>
-              Importa un archivo JSON de respaldo previo<br />
-              <span style={{ color: 'var(--amb)' }}>⚠ Esto reemplazará todos los datos actuales</span>
+              {t('backup.restore.sub')}<br />
+              <span style={{ color: 'var(--amb)' }}><InlineIcon kind="alert" size={13} />{t('backup.restore.warn')}</span>
             </div>
           </div>
           <label style={{ flexShrink: 0 }}>
@@ -462,7 +482,7 @@ export default function BackupManager() {
               disabled={importing}
               style={{ ...btn('default'), opacity: importing ? 0.6 : 1 }}
             >
-              {importing ? 'Importando…' : '↑ Restaurar'}
+              {importing ? t('backup.restore.importing') : `↑ ${t('backup.restore.btn')}`}
             </button>
             <input
               ref={fileRef}
@@ -480,35 +500,34 @@ export default function BackupManager() {
           <div style={{ marginTop: 8, padding: '16px', background: 'var(--sur2)', border: '0.5px solid var(--brd)', borderRadius: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>☁ Respaldo en la nube</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>☁ {t('backup.cloud.title')}</div>
                 <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
                   {cloudInfo?.connected
-                    ? `Conectado · ID ${cloudInfo.userId}${cloudInfo.lastSync ? ' · Último sync: ' + formatDate(cloudInfo.lastSync) : ''}`
-                    : 'Sin sesión activa · se crea automáticamente al sincronizar'}
+                    ? `${t('backup.cloud.connected', { id: cloudInfo.userId })}${cloudInfo.lastSync ? ' · ' + t('backup.cloud.lastSync', { date: formatDate(cloudInfo.lastSync) }) : ''}`
+                    : t('backup.cloud.noSession')}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   onClick={handleCloudPull}
                   disabled={cloudSyncing}
-                  title="Restaurar desde la nube"
+                  title={t('backup.cloud.pullTitle')}
                   style={{ ...btn('default'), fontSize: 11, padding: '6px 12px', opacity: cloudSyncing ? 0.5 : 1 }}
                 >
-                  ↓ Restaurar
+                  ↓ {t('backup.restore.btn')}
                 </button>
                 <button
                   onClick={handleCloudPush}
                   disabled={cloudSyncing || !hasRealData}
-                  title="Subir datos a la nube"
+                  title={t('backup.cloud.pushTitle')}
                   style={{ ...btn('primary'), fontSize: 11, padding: '6px 12px', opacity: (cloudSyncing || !hasRealData) ? 0.5 : 1 }}
                 >
-                  {cloudSyncing ? 'Sincronizando…' : '↑ Sincronizar'}
+                  {cloudSyncing ? t('backup.cloud.syncing') : `↑ ${t('backup.cloud.sync')}`}
                 </button>
               </div>
             </div>
             <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
-              Tu backup se guarda cifrado en un servidor privado vinculado a este dispositivo. No requiere contraseña.
-              Para acceder desde otro dispositivo usa el backup local (JSON).
+              {t('backup.cloud.note')}
             </div>
           </div>
         )}
@@ -522,7 +541,7 @@ export default function BackupManager() {
             color: status.type === 'ok' ? 'var(--pos)' : status.type === 'error' ? 'var(--red)' : 'var(--amb)',
             border: `0.5px solid ${status.type === 'ok' ? 'rgba(53,110,87,.25)' : status.type === 'error' ? 'rgba(162,62,46,.25)' : 'rgba(156,84,25,.25)'}`,
           }}>
-            {status.type === 'ok' ? '✓' : '⚠'} {status.msg}
+            <InlineIcon kind={status.type === 'ok' ? 'ok' : 'alert'} size={13} />{status.msg}
           </div>
         )}
 

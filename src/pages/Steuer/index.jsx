@@ -8,6 +8,7 @@
 // se resuelven vía t() usando claves 'steuer.werbungskosten.cat.<key>'.
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader, Btn } from '../../components/ui/index.jsx'
@@ -15,6 +16,7 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import { calcDescuentosDE, calcZvE, BUNDESLAENDER, ARBEITNEHMER_PAUSCHBETRAG } from '../../utils/taxCalcDE.js'
 import { tasaMarginalDE } from '../../config/deducciones/de.js'
 import { getDeduccionesConfig, autofillGastos } from '../../utils/deduccionesEngine.js'
+import { currentMonth } from '../../utils/index.js'
 
 const fmtEUR = (n) => `€${(Number(n) || 0).toLocaleString('de-DE', { maximumFractionDigits: 0 })}`
 
@@ -48,7 +50,7 @@ export default function Steuer() {
     <ProGate feature={t('steuer.proFeature')}>
       <div className="stack">
         <PageHeader title={t('steuer.title')} sub={t('steuer.sub')} />
-        <Alert type="info">⚠ {t('steuer.disclaimer')}</Alert>
+        <Alert type="info">{t('steuer.disclaimer')}</Alert>
         <LohnabzuegeCard />
         <WerbungskostenCard expenses={expenses} settings={settings} />
       </div>
@@ -149,7 +151,7 @@ function LohnabzuegeCard() {
 function WerbungskostenCard({ expenses, settings }) {
   const { t } = useT()
   const config = getDeduccionesConfig('DE')
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const year = activeMonth.slice(0, 4)
 
   // Autofill gastos desde registros del año actual

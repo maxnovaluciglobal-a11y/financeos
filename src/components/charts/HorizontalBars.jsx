@@ -3,8 +3,10 @@
 
 import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
+import { useMoney } from '../Money.jsx'
 
 export default function HorizontalBars({ records, sym = '$', maxItems = 6, valueKey = 'amount', labelKey = 'category' }) {
+  const { m } = useMoney()
   const safeRecords = Array.isArray(records) ? records : []
 
   const data = useMemo(() => {
@@ -25,7 +27,7 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
 
   const max = data[0].value
   const total = data.reduce((s, d) => s + d.value, 0)
-  const fmtV = v => v >= 1000000 ? `${sym}${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${sym}${(v/1000).toFixed(0)}K` : `${sym}${v}`
+  const fmtV = v => m(v >= 1000000 ? `${sym}${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${sym}${(v/1000).toFixed(0)}K` : `${sym}${v}`)
 
   // Color por identidad de categoría (theme-aware). Antes: la #1 salía roja
   // por su POSICIÓN, no por su significado — alarma falsa en "Arriendo", etc.

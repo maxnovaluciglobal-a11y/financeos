@@ -7,6 +7,7 @@
 // Solo visible si settings.country === 'ES'.
 
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
@@ -41,7 +42,7 @@ export default function IRPFEspana() {
         <PageHeader title={t('irpfes.title')} sub={t('irpfes.sub')} />
 
         <Alert type="info">
-          ⚠ {t('irpfes.disclaimer')}
+          {t('irpfes.disclaimer')}
         </Alert>
 
         <SegmentedControl value={modo} onChange={setModo} options={[

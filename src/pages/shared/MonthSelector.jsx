@@ -1,10 +1,11 @@
 // src/pages/shared/MonthSelector.jsx
 import { useApp } from '../../context/AppContext.jsx'
 import { monthLabel } from './constants.js'
+import { currentMonth } from '../../utils/index.js'
 
 export default function MonthSelector({ incomes = [], expenses = [] }) {
   const { settings, updateSettings } = useApp()
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const allDates = [...incomes.map(r => r.date), ...expenses.map(r => r.date)].filter(Boolean)
   const months   = [...new Set(allDates.map(d => d.slice(0, 7)))].sort().reverse()
   if (months.length === 0) return null

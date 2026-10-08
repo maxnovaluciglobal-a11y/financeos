@@ -76,7 +76,7 @@
 @media (max-width: 480px) { .frow { grid-template-columns: 1fr; } }  /* móvil: una columna */
 
 /* ALERT */
-.alert { border-radius: var(--r); padding: 10px 12px; font-size: 11px; display: flex; align-items: flex-start; gap: 6px; }
+.alert { border-radius: var(--r); padding: 10px 12px; font-size: 12px; line-height: 1.5; display: flex; align-items: flex-start; gap: 8px; }
 .alert_warn   { background: var(--amb-bg); color: var(--amb); border: 0.5px solid rgba(156,84,25,.25); }
 .alert_danger { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(162,62,46,.25); }
 .alert_ok     { background: var(--pos-bg); color: var(--pos); border: 0.5px solid rgba(53,110,87,.25); }

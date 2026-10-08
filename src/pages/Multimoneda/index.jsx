@@ -6,6 +6,7 @@
 // para quien tenga una referencia mejor (P2P puntual, etc.).
 
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -81,7 +82,7 @@ export default function Multimoneda() {
         <PageHeader title={t('multimoneda.titulo')} sub={t('multimoneda.subtitulo')} />
 
         <Alert type="info">
-          ⚠ {t('multimoneda.disclaimer')}
+          {t('multimoneda.disclaimer')}
         </Alert>
 
         <Card>

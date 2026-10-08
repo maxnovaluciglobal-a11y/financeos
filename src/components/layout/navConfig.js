@@ -3,14 +3,17 @@
 // reuse el mismo árbol de navegación en vez de duplicarlo — un id/label nuevo
 // se agrega en un solo lugar y aparece tanto en el sidebar/drawer como en "more".
 
-// lb = key de traducción (ver src/i18n/*.js), no texto directo
+// lb = key de traducción (ver src/i18n/*.js), no texto directo.
+// Íconos: NAV_ICONS (components/icons/Icons.jsx) por id; los ítems de país
+// llevan `cc` y se dibujan con CountryBadge (D5). `ic` (emoji de bandera) queda
+// solo como último fallback si un ítem no tuviera ninguna de las dos cosas.
 export const NAV = [
-  { sec: 'nav.sec.main',    items: [{ id: 'dashboard', ic: '◈', lb: 'nav.dashboard' }] },
+  { sec: 'nav.sec.main',    items: [{ id: 'dashboard', lb: 'nav.dashboard' }] },
   { sec: 'nav.sec.movements',  items: [
-    { id: 'income',    ic: '↑', lb: 'nav.income' },
-    { id: 'movements', ic: '↓', lb: 'nav.expenses' },
-    { id: 'import',    ic: '⇪', lb: 'nav.import' },
-    { id: 'subscriptions', ic: '↻', lb: 'nav.subscriptions' },
+    { id: 'income',    lb: 'nav.income' },
+    { id: 'movements', lb: 'nav.expenses' },
+    { id: 'import',    lb: 'nav.import' },
+    { id: 'subscriptions', lb: 'nav.subscriptions' },
   ] },
   // #06 — "Tu país" como sección propia: eleva el diferenciador fiscal por país
   // (antes estaba diluido dentro de Planificación) y de-satura esa sección.
@@ -19,32 +22,32 @@ export const NAV = [
     { id: 'apv',     ic: '🇨🇱', cc: 'CL', lb: 'nav.apvChile', countries: ['CL'], proOnly: true },
     { id: 'irspt',    ic: '🇵🇹', cc: 'PT', lb: 'nav.irsPT', countries: ['PT'], proOnly: true },
     { id: 'ppr',     ic: '🇵🇹', cc: 'PT', lb: 'nav.pprPortugal', countries: ['PT'], proOnly: true },
-    { id: 'deducciones', ic: '⊟', lb: 'nav.deductions', countries: ['EC', 'PE'], proOnly: true },
+    { id: 'deducciones', lb: 'nav.deductions', countries: ['EC', 'PE'], proOnly: true },
     { id: 'resico',       ic: '🇲🇽', cc: 'MX', lb: 'nav.resicoMX', countries: ['MX'], proOnly: true },
     { id: 'irpfes',   ic: '🇪🇸', cc: 'ES', lb: 'nav.irpfES', countries: ['ES'], proOnly: true },
-    { id: 'ahorrofiscal', ic: '⊡', lb: 'nav.taxSavings', countries: ['MX', 'CO', 'US', 'ES'], proOnly: true },
+    { id: 'ahorrofiscal', lb: 'nav.taxSavings', countries: ['MX', 'CO', 'US', 'ES'], proOnly: true },
     { id: 'multidolar',  ic: '🇦🇷', cc: 'AR', lb: 'nav.multidolarAR', countries: ['AR'], proOnly: true },
-    { id: 'inflacion',   ic: '↗', lb: 'nav.inflation', countries: ['AR'], proOnly: true },
-    { id: 'multimoneda', ic: '⇄', lb: 'nav.multicurrency', countries: ['VE'], proOnly: true },
+    { id: 'inflacion',   lb: 'nav.inflation', countries: ['AR'], proOnly: true },
+    { id: 'multimoneda', lb: 'nav.multicurrency', countries: ['VE'], proOnly: true },
     { id: 'steuer',      ic: '🇩🇪', cc: 'DE', lb: 'nav.steuerDE', countries: ['DE'], proOnly: true },
   ] },
   { sec: 'nav.sec.planning', items: [
-    { id: 'budgets', ic: '▤', lb: 'nav.budgets' },
-    { id: 'debts',   ic: '⊖', lb: 'nav.debts' },
-    { id: 'goals',   ic: '◎', lb: 'nav.goals' },
-    { id: 'projects', ic: '⌂', lb: 'nav.properties', proOnly: true },
+    { id: 'budgets', lb: 'nav.budgets' },
+    { id: 'debts',   lb: 'nav.debts' },
+    { id: 'goals',   lb: 'nav.goals' },
+    { id: 'projects', lb: 'nav.properties', proOnly: true },
   ] },
   { sec: 'nav.sec.analysis', items: [
-    { id: 'networth', ic: '◆', lb: 'nav.netWorth' },
-    { id: 'coach',    ic: '⚕', lb: 'nav.diagnosis' },
-    { id: 'reports',  ic: '⊞', lb: 'nav.reports' },
-    { id: 'cashflow', ic: '⟶', lb: 'nav.projection', proOnly: true },
+    { id: 'networth', lb: 'nav.netWorth' },
+    { id: 'coach',    lb: 'nav.diagnosis' },
+    { id: 'reports',  lb: 'nav.reports' },
+    { id: 'cashflow', lb: 'nav.projection', proOnly: true },
   ] },
   { sec: 'nav.sec.pro', items: [
-    { id: 'advisor',  ic: '◑', lb: 'nav.advisorMode', proOnly: true },
+    { id: 'advisor',  lb: 'nav.advisorMode', proOnly: true },
   ] },
   { sec: 'nav.sec.account', items: [
-    { id: 'settings', ic: '⊙', lb: 'nav.settings' },
+    { id: 'settings', lb: 'nav.settings' },
   ] },
 ]
 

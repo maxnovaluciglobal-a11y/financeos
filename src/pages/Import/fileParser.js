@@ -86,7 +86,7 @@ async function parsePDF(file) {
   const lines = await extractPdfLines(file)
   const rows = parsePdfLinesToRows(lines)
   if (rows.length === 0) {
-    throw new Error('No se detectaron movimientos en el PDF. Puede ser un PDF escaneado (imagen) o un formato no reconocido. Probá con el CSV o Excel del banco.')
+    throw new Error('No se detectaron movimientos en el PDF. Puede ser un PDF escaneado (imagen) o un formato no reconocido. Prueba con el CSV o el Excel del banco.')
   }
   return {
     headers: ['fecha', 'descripcion', 'monto'],

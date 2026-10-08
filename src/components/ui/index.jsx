@@ -4,6 +4,8 @@
 import { useId, Children, cloneElement, isValidElement } from 'react'
 import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
+import Money, { MONEY_MASK } from '../Money.jsx'
+import SignalIcon from '../icons/SignalIcon.jsx'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -17,9 +19,9 @@ export function Btn({ children, variant = 'ghost', size = 'md', onClick, disable
   )
 }
 
-export function Card({ children, style, className }) {
+export function Card({ children, style, className, ...rest }) {
   return (
-    <div className={[styles.card, className].filter(Boolean).join(' ')} style={style}>
+    <div className={[styles.card, className].filter(Boolean).join(' ')} style={style} {...rest}>
       {children}
     </div>
   )
@@ -42,7 +44,8 @@ export function KPI({ label, value, sub, color = 'default' }) {
   return (
     <div className={styles.kpi}>
       <div className={styles.kpiLbl}>{label}</div>
-      <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')}>{value}</div>
+      {/* value enmascarado (T13) → <Money> agrega el texto sr-only "Monto oculto" */}
+      <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')}>{value === MONEY_MASK ? <Money /> : value}</div>
       {sub && <div className={styles.kpiSub}>{sub}</div>}
     </div>
   )
@@ -86,17 +89,23 @@ export function FormRow({ children }) {
   return <div className={styles.frow}>{children}</div>
 }
 
+// Ícono por tipo (T17): antes cada texto llevaba un "⚠ " o "◈ " pegado adelante
+// dentro del string i18n; ahora lo dibuja el componente, igual para todos.
+const ALERT_ICON = { warn: 'alert', warning: 'alert', danger: 'alert', info: 'info', ok: 'ok' }
+
 export function Alert({ children, type = 'warn' }) {
   // role="alert" ya implica aria-live="assertive" (errores: interrumpen);
   // role="status" implica "polite" (advertencias/info: esperan una pausa).
   const isDanger = type === 'danger'
+  const cls = type === 'warning' ? 'warn' : type   // 'warning' no tenía estilo propio
   return (
     <div
-      className={[styles.alert, styles[`alert_${type}`]].join(' ')}
+      className={[styles.alert, styles[`alert_${cls}`]].join(' ')}
       role={isDanger ? 'alert' : 'status'}
       aria-live={isDanger ? 'assertive' : 'polite'}
     >
-      {children}
+      <SignalIcon kind={ALERT_ICON[type] || 'info'} size={14} style={{ marginTop: 1 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
     </div>
   )
 }
@@ -127,7 +136,7 @@ export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
         {meta && <div className={styles.txMeta}>{meta}</div>}
       </div>
       <div className={[styles.txAmt, isIncome ? styles.txInc : styles.txExp].join(' ')}>
-        {isIncome ? '+' : '-'}{amount}
+        {isIncome ? '+' : '-'}<Money>{amount}</Money>
       </div>
       {onEdit && (
         <button className={styles.delBtn} onClick={onEdit} title="Editar" aria-label={`Editar ${name || 'movimiento'}`} style={{marginRight:2,fontSize:11}}>

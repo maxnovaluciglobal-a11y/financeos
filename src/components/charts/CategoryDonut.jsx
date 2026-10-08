@@ -4,18 +4,19 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
 import { catLabel, moneyLocale } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
+import { useMoney } from '../Money.jsx'
 
 // Paleta categórica por identidad, theme-aware (definida en globals.css).
 const COLORS = ['var(--cat-1)','var(--cat-2)','var(--cat-3)','var(--cat-4)','var(--cat-5)','var(--cat-6)','var(--cat-7)','var(--cat-8)']
 
-function CustomTooltip({ active, payload, sym, lang }) {
+function CustomTooltip({ active, payload, sym, lang, m }) {
   if (!active || !payload?.length) return null
   const d = payload[0]
   if (!d) return null
   return (
     <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'8px 12px', fontSize:12, fontFamily:'var(--mono)' }}>
       <div style={{ color: d.payload?.fill || 'var(--accent)', fontWeight:600, marginBottom:2 }}>{catLabel(d.name, lang)}</div>
-      <div style={{ color:'var(--tx)' }}>{sym}{(d.value || 0).toLocaleString(moneyLocale(), { maximumFractionDigits:0 })}</div>
+      <div style={{ color:'var(--tx)' }}>{m(`${sym}${(d.value || 0).toLocaleString(moneyLocale(), { maximumFractionDigits:0 })}`)}</div>
       <div style={{ color:'var(--th)' }}>{d.payload?.pct || 0}%</div>
     </div>
   )
@@ -23,6 +24,7 @@ function CustomTooltip({ active, payload, sym, lang }) {
 
 export default function CategoryDonut({ records, sym = '$', maxCategories = 6, onCategoryClick }) {
   const { lang } = useT()
+  const { m } = useMoney()
   const safeRecords = Array.isArray(records) ? records : []
   const clickable = (name) => typeof onCategoryClick === 'function' && name !== 'Otros'
 
@@ -55,7 +57,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
 
   if (!data.length || total === 0) return <ChartEmpty msg="Agrega gastos con categorías para ver la distribución." />
 
-  const fmtTotal = total >= 1000000 ? `${sym}${(total/1000000).toFixed(1)}M` : total >= 1000 ? `${sym}${(total/1000).toFixed(0)}K` : `${sym}${total}`
+  const fmtTotal = m(total >= 1000000 ? `${sym}${(total/1000000).toFixed(1)}M` : total >= 1000 ? `${sym}${(total/1000).toFixed(0)}K` : `${sym}${total}`)
 
   return (
     <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
@@ -66,7 +68,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
               onClick={(d) => { if (d && clickable(d.name)) onCategoryClick(d.name) }}>
               {data.map((d, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} style={{ outline:'none', cursor: clickable(d.name) ? 'pointer' : 'default' }}/>)}
             </Pie>
-            <Tooltip content={<CustomTooltip sym={sym} lang={lang}/>}/>
+            <Tooltip content={<CustomTooltip sym={sym} lang={lang} m={m}/>}/>
           </PieChart>
         </ResponsiveContainer>
         {/* Label central */}

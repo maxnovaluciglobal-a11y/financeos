@@ -13,7 +13,7 @@ import {
   getSettings, saveSettings, exportAllData, importAllData,
   isUsingFallback, DEFAULT_SETTINGS,
 } from '../core/db/index.js'
-import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale } from '../utils/index.js'
+import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr } from '../utils/index.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
 import { hapticTap } from '../utils/haptics.js'
 
@@ -405,7 +405,7 @@ export function AppProvider({ children }) {
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `moyiq-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `moyiq-${localDateStr()}.csv`
       a.click()
       URL.revokeObjectURL(url)
       showToast('CSV exportado correctamente.', 'ok')
@@ -438,7 +438,7 @@ export function AppProvider({ children }) {
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `moyiq-backup-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `moyiq-backup-${localDateStr()}.json`
       a.click()
       URL.revokeObjectURL(url)
       showToast('Respaldo creado correctamente.', 'ok')

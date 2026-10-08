@@ -5,6 +5,7 @@
 // mientras tanto"). Solo visible si settings.country === 'AR'.
 
 import { useState, useMemo, useEffect } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
@@ -47,7 +48,7 @@ export default function MultiDolarAR() {
       <div className="stack">
         <PageHeader title={t('multidolarar.title')} sub={t('multidolarar.sub')} />
 
-        <Alert type="info">⚠ {t('multidolarar.disclaimer')}</Alert>
+        <Alert type="info">{t('multidolarar.disclaimer')}</Alert>
 
         <Card>
           <CardHeader title={t('multidolarar.rates.title')} right={

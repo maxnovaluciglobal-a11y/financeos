@@ -3,10 +3,20 @@
 // Aplica categorías y presupuestos sugeridos SIN borrar transacciones reales
 
 import { useState, useRef } from 'react'
+import { InlineIcon } from '../icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import TEMPLATES from '../../data/templates.js'
+import { User, Users, Laptop, Store, CreditCard, PiggyBank, GraduationCap, Target } from 'lucide-react'
+
+// Ícono por plantilla (T17): antes un glifo unicode en data/templates.js
+// (◈ ◑ ⟶ ▤ ⊖ ◎ ⊞). lucide con trazo 1.7; hereda el color del contenedor.
+const TEMPLATE_ICONS = { personal: User, pareja: Users, freelancer: Laptop, pyme: Store, deudas: CreditCard, ahorro: PiggyBank, educador: GraduationCap }
+function TemplateIcon({ id, size = 16 }) {
+  const Ic = TEMPLATE_ICONS[id] || User
+  return <Ic size={size} strokeWidth={1.7} aria-hidden="true" style={{ flexShrink: 0 }} />
+}
 
 // ── MODAL BASE ─────────────────────────────────────────────────────────────
 function Modal({ isOpen, onClose, children, maxWidth = 540, label }) {
@@ -68,7 +78,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
             background: `${template.color}18`, display: 'flex',
             alignItems: 'center', justifyContent: 'center',
             fontSize: 18, color: template.color, flexShrink: 0,
-          }}>{template.icon}</div>
+          }}><TemplateIcon id={template.id} size={18} /></div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)' }}>{tr(`tpl.${template.id}.name`)}</div>
             <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{tr(`tpl.${template.id}.tagline`)}</div>
@@ -127,7 +137,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           <div style={sectionTitle}>Metas sugeridas</div>
           {template.suggestedGoals.map(g => (
             <div key={g.name} style={{ display: 'flex', gap: 8, padding: '4px 0', alignItems: 'flex-start' }}>
-              <span style={{ color: template.color, flexShrink: 0, marginTop: 1 }}>◎</span>
+              <Target size={12} strokeWidth={1.7} color={template.color} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
                 <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--tx)' }}>{g.name}</div>
                 <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{g.note}</div>
@@ -163,7 +173,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           borderRadius: 8, border: '0.5px solid rgba(133,79,11,.2)',
           fontSize: 11, color: '#854f0b', fontFamily: 'var(--mono)', lineHeight: 1.5,
         }}>
-          ⚠ Al aplicar esta plantilla se actualizarán las categorías y los presupuestos sugeridos.
+          <InlineIcon kind="alert" size={13} />Al aplicar esta plantilla se actualizarán las categorías y los presupuestos sugeridos.
           Tus ingresos, gastos y deudas registrados <strong>no se borrarán</strong>.
         </div>
       </div>
@@ -302,7 +312,8 @@ export default function TemplateSelector({ compact = false, onApplied }) {
               key={t.id}
               onClick={() => handleApplyClick(t)}
               style={{
-                padding: '4px 10px', borderRadius: 20, fontSize: 10,
+                display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 32,
+                padding: '4px 10px', borderRadius: 'var(--rs)', fontSize: 12,
                 cursor: 'pointer', fontFamily: 'var(--mono)',
                 background: activeTemplateId === t.id ? `${t.color}18` : 'var(--sur2)',
                 color: activeTemplateId === t.id ? t.color : 'var(--th)',
@@ -310,7 +321,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 fontWeight: activeTemplateId === t.id ? 600 : 400,
               }}
             >
-              {t.icon} {tr(`tpl.${t.id}.name`)}
+              <TemplateIcon id={t.id} size={13} />{tr(`tpl.${t.id}.name`)}
             </button>
           ))}
         </div>
@@ -371,7 +382,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                   background: `${t.color}18`, display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   fontSize: 14, color: t.color,
-                }}>{t.icon}</div>
+                }}><TemplateIcon id={t.id} size={15} /></div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', lineHeight: 1.2 }}>{tr(`tpl.${t.id}.name`)}</div>
                   {isActive && (

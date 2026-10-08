@@ -1,5 +1,5 @@
 // src/pages/NetWorth/index.jsx
-// Patrimonio neto — vista consolidada de lo que ya registrás en la app:
+// Patrimonio neto — vista consolidada de lo que ya registras en la app:
 // activos (ahorro en metas + flujo neto de propiedades) menos pasivos (deudas).
 // No agrega datos nuevos: reutiliza Goals, Debts y Projects tal cual existen.
 
@@ -7,15 +7,19 @@ import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, PageHeader, Empty } from '../../components/ui/index.jsx'
-import { fmtMoney } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
 import CountUp from '../../components/CountUp.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 
 export default function NetWorth() {
   const { goals, debts, incomes, expenses, settings } = useApp()
   const { t } = useT()
   const sym = CURRENCY_SYMBOLS[settings.currency] || '$'
+  // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
+  const { m } = useMoney()
+  const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
 
   // Cálculo compartido (mismo que usa el resumen en Reportes/PDF)
   const { savedInGoals, propsValueTotal, propertiesNet, pendingDebt, totalActivos, totalPasivos, netWorth, hasData } =
@@ -41,7 +45,7 @@ export default function NetWorth() {
                 {t('networth.headline')}
               </div>
               <div className="num" style={{ fontSize: 36, fontWeight: 700, color: netWorth >= 0 ? 'var(--grn)' : '#e84142' }}>
-                {netWorth >= 0 ? '' : '-'}<CountUp value={Math.abs(netWorth)} format={(v) => fmtMoney(v, sym)} duration={750} />
+                {netWorth >= 0 ? '' : '-'}<Money><CountUp value={Math.abs(netWorth)} format={(v) => fmtMoneyRaw(v, sym)} duration={750} /></Money>
               </div>
               <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
                 {t('networth.formula', { a: fmtMoney(totalActivos, sym), p: fmtMoney(totalPasivos, sym) })}
@@ -57,7 +61,7 @@ export default function NetWorth() {
               <Row label={t('networth.propsPositive')} value={Math.max(0, propertiesNet)} sym={sym} color="var(--grn)" />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalAssets')}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--grn)' }}>{fmtMoney(totalActivos, sym)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--grn)' }}><Money>{fmtMoney(totalActivos, sym)}</Money></span>
               </div>
             </Card>
 
@@ -67,7 +71,7 @@ export default function NetWorth() {
               <Row label={t('networth.propsNegative')} value={Math.max(0, -propertiesNet)} sym={sym} color="#e84142" />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalLiabilities')}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)', color: '#e84142' }}>{fmtMoney(totalPasivos, sym)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)', color: '#e84142' }}><Money>{fmtMoney(totalPasivos, sym)}</Money></span>
               </div>
             </Card>
           </div>
@@ -82,11 +86,14 @@ export default function NetWorth() {
 }
 
 function Row({ label, value, sym, color }) {
+  // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
+  const { m } = useMoney()
+  const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   if (!value) return null
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '5px 0' }}>
       <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--mono)', color }}>{fmtMoney(value, sym)}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--mono)', color }}><Money>{fmtMoney(value, sym)}</Money></span>
     </div>
   )
 }

@@ -14,6 +14,7 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
 import TabBar from './TabBar.jsx'
+import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -37,7 +38,10 @@ export default function Shell({ page, setPage, children }) {
   // accesible dinámico, en vez de tocar cada página una por una.
   const contentRef = useRef(null)
   useEffect(() => {
-    const id = setTimeout(() => contentRef.current?.focus(), 50)
+    // preventScroll: en el demo el banner sticky va arriba del Shell (100dvh) y el
+    // documento queda 60px más alto; sin esto el focus() desplazaba la ventana y
+    // la topbar (con el botón de ocultar montos) quedaba tapada por el banner.
+    const id = setTimeout(() => contentRef.current?.focus({ preventScroll: true }), 50)
     return () => clearTimeout(id)
   }, [page])
 
@@ -47,6 +51,33 @@ export default function Shell({ page, setPage, children }) {
     if (document.startViewTransition) document.startViewTransition(() => setPage(id))
     else setPage(id)
   }
+
+  // ── Ocultar montos (T13) ─────────────────────────────────────────────────────
+  // Preferencia de este dispositivo (no viaja en respaldos ni sync, ver
+  // utils/money.js). El anuncio va a una región aria-live propia: el botón ya
+  // expone su estado con aria-pressed, pero el cambio de toda la pantalla
+  // (cifras → "Monto oculto") merece decirse en voz alta una vez.
+  const amountsHidden = !!settings.hideAmounts
+  const [amountsAnnounce, setAmountsAnnounce] = useState('')
+  function toggleAmounts() {
+    const next = !amountsHidden
+    updateSettings({ ...settings, hideAmounts: next })
+    setAmountsAnnounce(t(next ? 'money.announce.hidden' : 'money.announce.shown'))
+  }
+  // Atajo "H" en escritorio, solo si el foco no está en un campo editable.
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'h' && e.key !== 'H') return
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || e.defaultPrevented) return
+      const el = e.target
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return
+      if (!window.matchMedia?.('(min-width: 701px)').matches) return
+      e.preventDefault()
+      toggleAmounts()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   function toggleTheme() {
     updateSettings({ ...settings, theme: isDark ? 'light' : 'dark' })
@@ -61,7 +92,7 @@ export default function Shell({ page, setPage, children }) {
           const items = g.items.filter(it => !it.countries || it.countries.includes(navCountry))
           if (items.length === 0) return null   // no mostrar cabecera de sección vacía
           return (
-          <div key={g.sec}>
+          <div key={g.sec} data-tour={g.sec === 'nav.sec.country' ? 'nav-country' : undefined}>
             <div className={s.sec}>{t(g.sec)}</div>
             {items.map(it => (
               <button
@@ -112,10 +143,12 @@ export default function Shell({ page, setPage, children }) {
 
         <div className={s.footer}>
           <button className={s.themeBtn} onClick={toggleTheme}>
-            {isDark ? '☀ ' + t('settings.theme.light') : '◑ ' + t('settings.theme.dark')}
+            {isDark
+              ? <><Sun size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.theme.light')}</>
+              : <><Moon size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.theme.dark')}</>}
           </button>
           <button className={s.themeBtn} onClick={() => signOutAuth()}>
-            ⏻ {t('settings.account.logoutBtn')}
+            <LogOut size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.account.logoutBtn')}
           </button>
           <div className={s.legalLinks}>
             <button type="button" onClick={() => navigate('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
@@ -131,7 +164,7 @@ export default function Shell({ page, setPage, children }) {
           )}
           <div className={s.appVersion}>
             MOY IQ v1.5 · MAXNOVA & LUCI Global LLC<br/>
-            <span style={{opacity:.5}}>{t('nav.noServerTag')}</span>
+            <span style={{opacity:.5}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('nav.noServerTag')}</span>
           </div>
           <div style={{marginTop:6}}><BackupStatusBadge compact /></div>
         </div>
@@ -145,7 +178,23 @@ export default function Shell({ page, setPage, children }) {
         <div className={s.topbar}>
           <div className={s.topLeft} />
           <span className={s.crumb}>{t(pageLabel(page))}</span>
-          <span className={s.topRight}>MOY IQ · {settings.currency || 'CLP'}</span>
+          <span className={s.topRight}>
+            <button
+              type="button"
+              className={s.amountsBtn}
+              onClick={toggleAmounts}
+              aria-pressed={amountsHidden}
+              aria-label={t('money.toggle')}
+              title={`${t('money.toggle')} · ${t('money.shortcut')}`}
+            >
+              {amountsHidden
+                ? <EyeOff size={16} strokeWidth={1.7} aria-hidden="true" />
+                : <Eye size={16} strokeWidth={1.7} aria-hidden="true" />}
+              <span className={s.amountsLbl} aria-hidden="true">{t('money.toggle')}</span>
+            </button>
+            <span>MOY IQ · {settings.currency || 'CLP'}</span>
+          </span>
+          <span className="sr-only" role="status" aria-live="polite">{amountsAnnounce}</span>
         </div>
 
         <main className={s.content} ref={contentRef} tabIndex={-1} style={{ outline: 'none' }} aria-label={t(pageLabel(page))}>

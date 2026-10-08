@@ -9,9 +9,14 @@ import { useT } from '../../i18n/useT.js'
 import { evaluateCoach, calcCoachMetrics, COACH_CONFIG } from '../../data/coachRules.js'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { moneyLocale } from '../../utils/index.js'
+import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
+import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 
 // ── ICONO POR SEVERIDAD ────────────────────────────────────────────────────
-const SEV_ICON  = { info: '◈', attention: '⚠', warning: '⊗' }
+// Íconos por severidad (T17): antes glifos ◈ ⚠ ⊗; ahora el mismo vocabulario de
+// forma que el estado del IQ Score.
+const SEV_ICON  = { info: 'info', attention: 'attention', warning: 'warning' }
 // keys de traducción
 const SEV_LABEL = { info: 'coach.sev.info', attention: 'coach.sev.attention', warning: 'coach.sev.warning' }
 
@@ -25,7 +30,7 @@ function SignalCard({ signal }) {
       borderRadius: 'var(--r)', padding: '12px 14px', marginBottom: 8,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <span style={{ color, fontSize: 13 }}>{SEV_ICON[signal.severity]}</span>
+        <SignalIcon kind={SEV_ICON[signal.severity]} size={14} color={color} />
         <span style={{ fontSize: 11, fontWeight: 600, color, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>
           {t(SEV_LABEL[signal.severity])}
         </span>
@@ -68,12 +73,12 @@ function CategorySummary({ signals }) {
         const color = COACH_CONFIG.severityColors[dominant]
         return (
           <div key={cat} style={{
-            padding: '5px 11px', borderRadius: 20, fontSize: 11,
+            padding: '5px 11px', borderRadius: 'var(--rs)', fontSize: 11,
             background: 'var(--sur2)', border: `.5px solid ${color}40`,
             color: 'var(--tm)', fontFamily: 'var(--mono)',
             display: 'flex', alignItems: 'center', gap: 5,
           }}>
-            <span style={{ color, fontSize: 10 }}>{SEV_ICON[dominant]}</span>
+            <SignalIcon kind={SEV_ICON[dominant]} size={12} color={color} />
             {cat}
           </div>
         )
@@ -83,12 +88,20 @@ function CategorySummary({ signals }) {
 }
 
 // ── KPI BAR ────────────────────────────────────────────────────────────────
-function KpiBar({ label, value, pct, color }) {
+// level: 'ok' | 'attention' | 'risk' (misma escala que el IQ Score, D3). El
+// ícono junto al valor hace que el estado no dependa solo del color de la barra.
+function KpiBar({ label, value, pct, level }) {
+  const { t } = useT()
+  const color = SCORE_LEVELS[level]?.color
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 3 }}>
         <span style={{ color: 'var(--tm)', fontFamily: 'var(--mono)' }}>{label}</span>
-        <span style={{ fontWeight: 600, color: color || 'var(--tx)', fontFamily: 'var(--mono)' }}>{value}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600, color: color || 'var(--tx)', fontFamily: 'var(--mono)' }}>
+          {level && <ScoreStateIcon level={level} size={13} />}
+          {value}
+          {level && <span className="sr-only">{t(SCORE_LEVELS[level].key)}</span>}
+        </span>
       </div>
       <div style={{ height: 4, background: 'var(--sur2)', borderRadius: 2, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: '100%', transform: `scaleX(${Math.min(pct, 1)})`, transformOrigin: 'left', background: color || 'var(--grn)', borderRadius: 2, transition: 'transform .4s' }} />
@@ -120,10 +133,13 @@ export default function Coach() {
   const fmtN = n => (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
   const fmtP = n => ((n || 0) * 100).toFixed(1) + '%'
 
-  // Score orientativo 0-100
+  // Score orientativo 0-100 — misma escala de 3 estados que el IQ Score (D3):
+  // Bien ≥70 · Atención 40–69 · Riesgo <40 (antes tenía sus propios cortes 80/60).
   const score = Math.max(0, 100 - warnings.length * 20 - attentions.length * 8)
-  const scoreColor = score >= 80 ? 'var(--grn)' : score >= 60 ? 'var(--amb)' : 'var(--red)'
-  const scoreLabel = score >= 80 ? t('coach.score.few') : score >= 60 ? t('coach.score.some') : t('coach.score.many')
+  const level = scoreLevel(score)
+  const scoreColor = SCORE_LEVELS[level].color
+  // Umbrales de cada KPI → nivel (los mismos cortes de color que ya tenía cada barra)
+  const lvl3 = (good, mid) => good ? 'ok' : mid ? 'attention' : 'risk'
 
   return (
     <div>
@@ -150,13 +166,13 @@ export default function Coach() {
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
         {/* Score circle */}
         <div style={{ textAlign: 'center', padding: '0 12px' }}>
-          <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('coach.score.label')}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('coach.score.label')}</div>
           <div style={{ fontSize: 42, fontWeight: 800, color: scoreColor, fontFamily: 'var(--mono)', lineHeight: 1, letterSpacing: '-2px' }}>
             {score}
           </div>
-          <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2 }}>/100</div>
-          <div style={{ fontSize: 10, fontWeight: 600, color: scoreColor, marginTop: 4 }}>{scoreLabel}</div>
-          <div style={{ fontSize: 9, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 3, lineHeight: 1.4, textAlign: 'center' }}>{t('coach.score.note')}</div>
+          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2 }}>/100</div>
+          <ScoreState level={level} label={t(SCORE_LEVELS[level].key)} size={14} style={{ fontSize: 13, marginTop: 6, justifyContent: 'center' }} />
+          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 3, lineHeight: 1.4, textAlign: 'center' }}>{t('coach.score.note')}</div>
         </div>
 
         {/* KPIs */}
@@ -165,26 +181,26 @@ export default function Coach() {
             label={t('coach.kpi.savingRate')}
             value={fmtP(metrics.savingsRate)}
             pct={Math.max(0, metrics.savingsRate)}
-            color={metrics.savingsRate >= 0.20 ? 'var(--grn)' : metrics.savingsRate >= 0.10 ? 'var(--amb)' : 'var(--red)'}
+            level={lvl3(metrics.savingsRate >= 0.20, metrics.savingsRate >= 0.10)}
           />
           <KpiBar
             label={t('coach.kpi.subsRatio')}
             value={fmtP(metrics.subscriptionRatio)}
             pct={metrics.subscriptionRatio}
-            color={metrics.subscriptionRatio < 0.07 ? 'var(--grn)' : metrics.subscriptionRatio < 0.12 ? 'var(--amb)' : 'var(--red)'}
+            level={lvl3(metrics.subscriptionRatio < 0.07, metrics.subscriptionRatio < 0.12)}
           />
           <KpiBar
             label={t('coach.kpi.debtLoad')}
             value={fmtP(metrics.debtLoad)}
             pct={metrics.debtLoad}
-            color={metrics.debtLoad < 0.30 ? 'var(--grn)' : metrics.debtLoad < 0.50 ? 'var(--amb)' : 'var(--red)'}
+            level={lvl3(metrics.debtLoad < 0.30, metrics.debtLoad < 0.50)}
           />
           {metrics.monthlyExpense > 0 && (
             <KpiBar
               label={t('coach.kpi.emergency')}
               value={t('coach.kpi.months', { n: metrics.emergencyFundMonths.toFixed(1) })}
               pct={metrics.emergencyFundMonths / 3}
-              color={metrics.emergencyFundMonths >= 3 ? 'var(--grn)' : metrics.emergencyFundMonths >= 1 ? 'var(--amb)' : 'var(--red)'}
+              level={lvl3(metrics.emergencyFundMonths >= 3, metrics.emergencyFundMonths >= 1)}
             />
           )}
         </div>
@@ -194,18 +210,18 @@ export default function Coach() {
       {signals.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           {warnings.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--red-bg, #fdf0ee)', border: '.5px solid var(--red)', borderRadius: 20, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
-              {t('coach.badge.review', { n: warnings.length })}
+            <div style={{ padding: '6px 12px', background: 'var(--red-bg, #fdf0ee)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
+              <InlineIcon kind="warning" size={13} />{t('coach.badge.review', { n: warnings.length })}
             </div>
           )}
           {attentions.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--amb-bg, #faeeda)', border: '.5px solid var(--amb)', borderRadius: 20, fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)' }}>
-              {t('coach.badge.attention', { n: attentions.length })}
+            <div style={{ padding: '6px 12px', background: 'var(--amb-bg, #faeeda)', border: '.5px solid var(--amb)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)' }}>
+              <InlineIcon kind="attention" size={13} />{t('coach.badge.attention', { n: attentions.length })}
             </div>
           )}
           {infos.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--grn-bg)', border: '.5px solid var(--grn)', borderRadius: 20, fontSize: 11, color: 'var(--grn)', fontFamily: 'var(--mono)' }}>
-              {t('coach.badge.info', { n: infos.length })}
+            <div style={{ padding: '6px 12px', background: 'var(--grn-bg)', border: '.5px solid var(--grn)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--grn)', fontFamily: 'var(--mono)' }}>
+              <InlineIcon kind="info" size={13} />{t('coach.badge.info', { n: infos.length })}
             </div>
           )}
         </div>
@@ -217,7 +233,7 @@ export default function Coach() {
       {/* Señales por prioridad */}
       {signals.length === 0 ? (
         <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '28px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>◈</div>
+          <div style={{ marginBottom: 8, color: 'var(--pos)', display: 'flex', justifyContent: 'center' }}><SignalIcon kind="ok" size={22} /></div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('coach.empty.title')}</div>
           <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
             {t('coach.empty.sub')}
@@ -228,7 +244,7 @@ export default function Coach() {
           {warnings.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-                {t('coach.section.review')}
+                <InlineIcon kind="warning" size={12} />{t('coach.section.review')}
               </div>
               {warnings.map(s => <SignalCard key={s.id} signal={s} />)}
             </div>
@@ -236,7 +252,7 @@ export default function Coach() {
           {attentions.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--amb)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-                {t('coach.section.attention')}
+                <InlineIcon kind="attention" size={12} />{t('coach.section.attention')}
               </div>
               {attentions.map(s => <SignalCard key={s.id} signal={s} />)}
             </div>
@@ -244,7 +260,7 @@ export default function Coach() {
           {infos.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--grn)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-                {t('coach.section.info')}
+                <InlineIcon kind="info" size={12} />{t('coach.section.info')}
               </div>
               {infos.map(s => <SignalCard key={s.id} signal={s} />)}
             </div>

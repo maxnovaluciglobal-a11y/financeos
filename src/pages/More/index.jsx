@@ -4,6 +4,7 @@
 // que un id/label nuevo no se duplica entre el sidebar de escritorio y esta
 // página.
 import { useApp } from '../../context/AppContext.jsx'
+import { Lock, Sun, Moon, LogOut } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { NAV } from '../../components/layout/navConfig.js'
@@ -68,16 +69,18 @@ export default function More({ setPage }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
         <button type="button" onClick={toggleTheme} style={{
-          width: '100%', padding: '10px 0', background: 'var(--sur2)', border: '0.5px solid var(--brd)',
+          width: '100%', minHeight: 44, padding: '10px 0', background: 'var(--sur2)', border: '0.5px solid var(--brd)',
           borderRadius: 'var(--r)', fontSize: 12, fontFamily: 'var(--sans)', color: 'var(--tm)', cursor: 'pointer',
         }}>
-          {isDark ? '☀ ' + t('settings.theme.light') : '◑ ' + t('settings.theme.dark')}
+          {isDark
+            ? <><Sun size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.theme.light')}</>
+            : <><Moon size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.theme.dark')}</>}
         </button>
         <button type="button" onClick={() => signOutAuth()} style={{
-          width: '100%', padding: '10px 0', background: 'var(--sur2)', border: '0.5px solid var(--brd)',
+          width: '100%', minHeight: 44, padding: '10px 0', background: 'var(--sur2)', border: '0.5px solid var(--brd)',
           borderRadius: 'var(--r)', fontSize: 12, fontFamily: 'var(--sans)', color: 'var(--tm)', cursor: 'pointer',
         }}>
-          ⏻ {t('settings.account.logoutBtn')}
+          <LogOut size={14} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />{t('settings.account.logoutBtn')}
         </button>
       </div>
 
@@ -90,7 +93,7 @@ export default function More({ setPage }) {
 
       <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 10, lineHeight: 1.5 }}>
         MOY IQ v1.5 · MAXNOVA &amp; LUCI Global LLC<br />
-        <span style={{ opacity: .5 }}>{t('nav.noServerTag')}</span>
+        <span style={{ opacity: .5 }}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('nav.noServerTag')}</span>
       </div>
       <div style={{ marginTop: 6 }}><BackupStatusBadge compact /></div>
     </div>

@@ -1,10 +1,14 @@
 // src/pages/Settings/index.jsx — v1.5
 import { useState, useEffect } from 'react'
+import CountrySelect from '../../components/ui/CountrySelect.jsx'
+import { COUNTRIES, countryKey } from '../../data/countries.js'
+import { Lock } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { Card, CardHeader, Btn, PageHeader } from '../../components/ui/index.jsx'
 import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
+import SecuritySection from './SecuritySection.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
@@ -14,10 +18,11 @@ import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
 import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
+import { proPriceVars } from '../../utils/pricing.js'
 
 export default function Settings() {
   const { settings, updateSettings, clearAll, loadDemo, exportCSV, enableSync, disableSync } = useApp()
-  const { t } = useT()
+  const { t, lang } = useT()
   const [installPrompt, setInstallPrompt] = useState(null)
   const [accountEmail, setAccountEmail] = useState(null)
   const [accountUserId, setAccountUserId] = useState(null)
@@ -130,21 +135,15 @@ export default function Settings() {
           </select>
         </div>
         <div style={srow}>
-          <div><div style={slbl}>{t('settings.country.label')}</div><div style={ssub}>{t('settings.country.sub')}</div></div>
-          <select aria-label={t('settings.country.label')} style={{width:'auto'}} value={settings.country||'CL'} onChange={e=>updateSettings({...settings,country:e.target.value})}>
-            <option value="CL">🇨🇱 Chile</option>
-            <option value="MX">🇲🇽 México</option>
-            <option value="AR">🇦🇷 Argentina</option>
-            <option value="CO">🇨🇴 Colombia</option>
-            <option value="EC">🇪🇨 Ecuador</option>
-            <option value="PE">🇵🇪 Perú</option>
-            <option value="VE">🇻🇪 Venezuela</option>
-            <option value="US">🇺🇸 USA</option>
-            <option value="ES">🇪🇸 España</option>
-            <option value="PT">🇵🇹 Portugal</option>
-            <option value="DE">🇩🇪 Alemania</option>
-            <option value="OTHER">🌎 Otro</option>
-          </select>
+          <div><div style={slbl} id="settings-country-label">{t('settings.country.label')}</div><div style={ssub}>{t('settings.country.sub')}</div></div>
+          {/* D5: CountryBadge en vez de banderas emoji. Un <option> nativo no dibuja
+              SVG, por eso es un listbox propio (CountrySelect, patrón APG). */}
+          <CountrySelect
+            labelId="settings-country-label"
+            value={settings.country || 'CL'}
+            onChange={(code) => updateSettings({ ...settings, country: code })}
+            options={COUNTRIES.map(c => ({ code: c.code, label: t(countryKey(c.code)) }))}
+          />
         </div>
         <TaxIdField country={settings.country} taxId={settings.taxId} updateSettings={updateSettings} settings={settings} />
         <div style={srow}>
@@ -153,6 +152,32 @@ export default function Settings() {
             <Btn variant={settings.theme==='light'?'primary':'ghost'} size="sm" onClick={()=>updateSettings({...settings,theme:'light'})}>{t('settings.theme.light')}</Btn>
             <Btn variant={settings.theme==='dark' ?'primary':'ghost'} size="sm" onClick={()=>updateSettings({...settings,theme:'dark' })}>{t('settings.theme.dark')}</Btn>
           </div>
+        </div>
+
+        {/* Emoji en las categorías (QuickAdd) — apagado por defecto */}
+        <div style={srow}>
+          <div>
+            <div style={slbl}>{t('settings.categoryEmoji.label')}</div>
+            <div style={ssub}>{t('settings.categoryEmoji.sub')}</div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={settings.showCategoryEmoji === true}
+            aria-label={t('settings.categoryEmoji.label')}
+            onClick={() => updateSettings({ ...settings, showCategoryEmoji: settings.showCategoryEmoji !== true })}
+            style={{
+              width:44, height:24, borderRadius:12, position:'relative', flexShrink:0, cursor:'pointer',
+              background: settings.showCategoryEmoji === true ? 'var(--grn)' : 'var(--brd2)',
+              border: 'none', transition:'background .2s', padding:0,
+            }}
+          >
+            <span style={{
+              position:'absolute', top:3, left:3,
+              width:18, height:18, borderRadius:'50%', background:'#fff',
+              transform: settings.showCategoryEmoji === true ? 'translateX(20px)' : 'translateX(0)',
+              transition:'transform .2s', display:'block',
+            }}/>
+          </button>
         </div>
 
         {/* Moneda secundaria */}
@@ -240,6 +265,7 @@ export default function Settings() {
         <CardHeader title={t('settings.backup.title')} />
         <BackupManager />
       </Card>
+      <SecuritySection />
       <Card>
         <CardHeader title={t('settings.sync.title')} />
         <SyncSection enableSync={enableSync} disableSync={disableSync} />
@@ -295,7 +321,7 @@ export default function Settings() {
         {!isDemo && getLicensePlan() !== 'pro' && (
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border:'1px solid var(--laton)',borderRadius:'var(--r)'}}>
             <div>
-              <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('settings.upgrade.title')}</div>
+              <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('settings.upgrade.title', proPriceVars(lang))}</div>
               <div style={ssub}>{t('settings.upgrade.sub')}</div>
             </div>
             <Btn variant="primary" size="sm" onClick={()=>window.location.href=PRO_CHECKOUT_URL} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
@@ -322,7 +348,7 @@ export default function Settings() {
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.indexeddbLabel')}</span> — {t('settings.dataStorage.indexeddbDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.serverLabel')}</span> — {t('settings.dataStorage.serverDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.backupLabel')}</span> — {t('settings.dataStorage.backupDesc')}</div>
-          <div style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',marginTop:4}}>{t('settings.dataStorage.privacyBadge')}</div>
+          <div style={{fontSize:12,fontFamily:'var(--mono)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
         </div>
       </Card>
       {(installPrompt || installed || (isIOS && !isStandalone)) && (
@@ -451,7 +477,7 @@ function SyncSection({ enableSync, disableSync }) {
             </Btn>
           </div>
           <div style={{ ...sub, marginTop: 10, padding: '8px 10px', background: 'var(--sur2)', borderRadius: 'var(--r)', border: '0.5px solid var(--brd)' }}>
-            {t('settings.sync.e2e')}
+            <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.sync.e2e')}
           </div>
         </>
       )}

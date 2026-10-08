@@ -46,7 +46,7 @@ describe('renderEmail', () => {
 
   it('welcome cae a un mensaje genérico si no hay label', () => {
     const r = renderEmail('welcome', { ...LEAD, label: null }, CONFIG)
-    expect(r.html).toContain('Registrá tus movimientos de esta semana')
+    expect(r.html).toContain('Registra tus movimientos de esta semana')
   })
 
   it('day2 apunta al signup con ref=diagnostico-d2 y cierra el loop del email 1', () => {

@@ -5,7 +5,7 @@
 // factor, y los dos casos límite (score 100 y score 0) para que un cambio
 // futuro de pesos o umbrales no pase desapercibido.
 import { describe, it, expect } from 'vitest'
-import { calcFinancialScore } from './financialScore.js'
+import { scoreLevel, SCORE_LEVELS, calcFinancialScore, weakestFactor } from './financialScore.js'
 
 const ACTIVE_MONTH = '2026-09'
 const NOW = 1_700_000_000_000 // fijo, para que los tests de "antigüedad de sync" sean deterministas
@@ -66,7 +66,8 @@ describe('calcFinancialScore — casos límite', () => {
     }), rawT)
     expect(r.breakdown.map(b => b.pts)).toEqual([30, 20, 20, 15, 15])
     expect(r.score).toBe(100)
-    expect(r.label).toBe('score.excellent')
+    expect(r.label).toBe('score.ok')
+    expect(r.level).toBe('ok')
     expect(r.color).toBe('var(--pos)')
   })
 
@@ -85,8 +86,9 @@ describe('calcFinancialScore — casos límite', () => {
     }), rawT)
     expect(r.breakdown.map(b => b.pts)).toEqual([0, 0, 0, 0, 0])
     expect(r.score).toBe(0)
-    expect(r.label).toBe('score.critical')
-    expect(r.color).toBe('var(--red)')
+    expect(r.label).toBe('score.risk')
+    expect(r.level).toBe('risk')
+    expect(r.color).toBe('var(--neg)')
   })
 })
 
@@ -226,18 +228,19 @@ describe('calcFinancialScore — Consistencia de datos (0-15): % categorizado (0
 })
 
 describe('calcFinancialScore — etiqueta y color según score total', () => {
-  it('score 80 (borde inclusive) → excelente', () => {
+  it('score 80 → bien (D3: ≥70)', () => {
     // 30 (flujo) + 0 (colchón, sin meta) + 20 (deuda, sin deuda) + 15 (metas, con progreso) + 15 (datos, todo al día) = 80
     const r = calcFinancialScore(baseInput({
       savingRate: 0.25,
       goals: [{ name: 'Viaje', saved: 100 }],
     }), rawT)
     expect(r.score).toBe(80)
-    expect(r.label).toBe('score.excellent')
+    expect(r.label).toBe('score.ok')
+    expect(r.level).toBe('ok')
     expect(r.color).toBe('var(--pos)')
   })
 
-  it('score 60 (borde inclusive) → bueno', () => {
+  it('score 60 → atención (D3: 40–69; antes era "bueno")', () => {
     // 30 (flujo) + 0 (colchón, meta de emergencia sin progreso) + 15 (deuda, ratio<0.20)
     // + 15 (metas, con progreso vía una meta NO-emergencia) + 0 (datos, <50% categorizado
     // sobre expenses+incomes combinados, y sync viejo) = 60
@@ -257,11 +260,12 @@ describe('calcFinancialScore — etiqueta y color según score total', () => {
       lastSyncAt: NOW - 10 * 86400000,
     }), rawT)
     expect(r.score).toBe(60)
-    expect(r.label).toBe('score.good')
-    expect(r.color).toBe('var(--pos)')
+    expect(r.label).toBe('score.attention')
+    expect(r.level).toBe('attention')
+    expect(r.color).toBe('var(--warn)')
   })
 
-  it('score 40 (borde inclusive) → regular', () => {
+  it('score 40 (borde inclusive) → atención', () => {
     // 20 (flujo, tier intermedio) + 0 (colchón) + 20 (deuda, sin deuda) + 0 (metas) + 0 (datos) = 40
     const r = calcFinancialScore(baseInput({
       savingRate: 0.15,
@@ -275,11 +279,12 @@ describe('calcFinancialScore — etiqueta y color según score total', () => {
       lastSyncAt: NOW - 10 * 86400000,
     }), rawT)
     expect(r.score).toBe(40)
-    expect(r.label).toBe('score.fair')
-    expect(r.color).toBe('var(--amb)')
+    expect(r.label).toBe('score.attention')
+    expect(r.level).toBe('attention')
+    expect(r.color).toBe('var(--warn)')
   })
 
-  it('score 38 (justo bajo el piso de "regular") → crítico', () => {
+  it('score 38 (bajo el piso de atención) → riesgo', () => {
     // 10 (flujo) + 0 (colchón, sin meta que matchee) + 15 (deuda, ratio<0.20) + 7 (metas,
     // sin progreso) + 6 (datos: <50% categorizado sobre expenses+incomes combinados,
     // sync desactivado = 6 pts neutrales) = 38
@@ -297,7 +302,34 @@ describe('calcFinancialScore — etiqueta y color según score total', () => {
       syncEnabled: false,
     }), rawT)
     expect(r.score).toBe(38)
-    expect(r.label).toBe('score.critical')
-    expect(r.color).toBe('var(--red)')
+    expect(r.label).toBe('score.risk')
+    expect(r.level).toBe('risk')
+    expect(r.color).toBe('var(--neg)')
+  })
+})
+
+describe('breakdown · key estable y weakestFactor', () => {
+  it('cada factor trae una key que no depende del idioma', () => {
+    const r = calcFinancialScore({ savingRate: 0, expenses: [], debts: [], goals: [], incomes: [], activeMonth: '2026-10' })
+    expect(r.breakdown.map(b => b.key)).toEqual(['cashFlow', 'emergencyCushion', 'debtLoad', 'goalsProgress', 'dataConsistency'])
+  })
+
+  it('devuelve el factor con menor proporción y, a igualdad, el primero', () => {
+    expect(weakestFactor([
+      { key: 'a', pts: 10, max: 30 }, { key: 'b', pts: 0, max: 20 }, { key: 'c', pts: 0, max: 15 },
+    ]).key).toBe('b')
+    expect(weakestFactor([{ key: 'a', pts: 15, max: 30 }, { key: 'b', pts: 10, max: 20 }]).key).toBe('a')
+    expect(weakestFactor([])).toBe(null)
+  })
+})
+
+describe('scoreLevel — 3 niveles de D3 (Bien ≥70 · Atención 40–69 · Riesgo <40)', () => {
+  it.each([[100,'ok'],[70,'ok'],[69,'attention'],[40,'attention'],[39,'risk'],[0,'risk'],[undefined,'risk']])('%s → %s', (n, lvl) => {
+    expect(scoreLevel(n)).toBe(lvl)
+  })
+  it('cada nivel tiene clave i18n y color semántico propio', () => {
+    expect(SCORE_LEVELS.ok).toEqual({ key: 'score.ok', color: 'var(--pos)' })
+    expect(SCORE_LEVELS.attention).toEqual({ key: 'score.attention', color: 'var(--warn)' })
+    expect(SCORE_LEVELS.risk).toEqual({ key: 'score.risk', color: 'var(--neg)' })
   })
 })

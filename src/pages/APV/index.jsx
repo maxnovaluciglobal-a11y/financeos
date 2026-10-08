@@ -3,6 +3,7 @@
 // Solo visible si settings.country === 'CL'
 
 import { useState, useMemo, useEffect } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Btn } from '../../components/ui/index.jsx'
@@ -10,6 +11,7 @@ import { calcAPV } from '../../utils/apvCalc.js'
 import { calcBeneficioAPV, calcDescuentos, calcImpuestoAnual, calcGapTramo, calcArbitraje, calcBrutoDesdeLiquido, setIndicadores, getParametrosCL } from '../../utils/taxCalcCL.js'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
+import { currentMonth } from '../../utils/index.js'
 
 const money = n => '$' + (Number(n) || 0).toLocaleString()
 
@@ -20,7 +22,7 @@ export default function APVPage() {
 
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
 
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   // Indicadores (UTM/UF) — se cargan primero para que el bruto se estime con la UTM vigente
   const [indInfo, setIndInfo] = useState(null)
   useEffect(() => {
@@ -117,7 +119,7 @@ export default function APVPage() {
       <Card>
         <CardHeader title={`🇨🇱 ${t('apv.title')}`} />
         <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:14,lineHeight:1.6,padding:'8px 10px',background:'rgba(255,165,0,.07)',borderRadius:6,border:'0.5px solid rgba(255,165,0,.2)'}}>
-          {t('apv.disclaimer')}
+          <InlineIcon kind="alert" size={13} />{t('apv.disclaimer')}
           {indInfo && (
             <span style={{display:'block',marginTop:6,opacity:0.85}}>
               {t('apv.indicators', { utm: indInfo.utm.toLocaleString(), uf: indInfo.uf.toLocaleString(), usd: (indInfo.dolar||0).toLocaleString() })}

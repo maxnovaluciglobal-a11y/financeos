@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { authClient } from '../core/authClient.js'
 import AuthGate from '../components/AuthGate.jsx'
+import { localDateStr } from '../utils/index.js'
 
 const ESTADOS = ['nuevo', 'contactado', 'nutriendo', 'convertido', 'perdido']
 const PRODUCTOS = ['moyiq', 'invest']
@@ -81,7 +82,7 @@ function exportRowsToCsv(rows) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `crm_contacts_${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `crm_contacts_${localDateStr()}.csv`
   document.body.appendChild(a)
   a.click()
   a.remove()

@@ -33,7 +33,7 @@ export function onAuthChange(callback, onEvent) {
 
 // Manda el correo de recuperación (Supabase Auth). redirectTo vuelve al
 // mismo origen/path actual — App.jsx detecta el evento PASSWORD_RECOVERY
-// cuando ese link se abre y muestra la pantalla de "elegí una contraseña
+// cuando ese link se abre y muestra la pantalla de "elige una contraseña
 // nueva" en vez del flujo normal de login.
 export async function resetPasswordForEmail(email) {
   if (!authClient) return { error: 'auth_not_configured' }

@@ -1,13 +1,15 @@
 // src/pages/Goals/index.jsx — v1.5
 import { useState, useMemo } from 'react'
+import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, prioEmoji } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, prioEmoji, currentMonth, localMonthStr } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
+import Money, { useMoney } from '../../components/Money.jsx'
 
 export default function Goals({ setPage }) {
   const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo } = useApp()
@@ -25,8 +27,11 @@ export default function Goals({ setPage }) {
   const [editForm, setEditForm]       = useState({})
 
   const sym              = CURRENCY_SYMBOLS[settings.currency] || '$'
+  // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
+  const { m } = useMoney()
+  const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const isChile          = (settings.country || 'CL') === 'CL'
-  const activeMonth      = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth      = settings.activeMonth || currentMonth()
 
   const ingresoNetoGoals = useMemo(() => {
     return (incomes || []).filter(r => r.date?.startsWith(activeMonth)).reduce((s,r) => s+r.amount, 0)
@@ -56,7 +61,7 @@ export default function Goals({ setPage }) {
     for (const s of suggestions.filter(s => s.selected && !s.alreadyExists)) {
       const targetDate = new Date()
       targetDate.setMonth(targetDate.getMonth() + (s.monthsToGoal || 12))
-      await addGoal({ name:`${s.emoji} ${s.name}`, target:s.target, saved:0, targetDate:targetDate.toISOString().slice(0,7), priority:s.goalPriority, color:s.color })
+      await addGoal({ name:`${s.emoji} ${s.name}`, target:s.target, saved:0, targetDate:localMonthStr(targetDate), priority:s.goalPriority, color:s.color })
     }
     setShowSuggest(false); setSuggestions([])
   }
@@ -101,7 +106,7 @@ export default function Goals({ setPage }) {
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: ok ? 'var(--accent-bg)' : 'var(--red-bg)', border:`.5px solid ${ok ? 'var(--accent)' : 'var(--red)'}`, flexWrap:'wrap' }}>
             <span style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('goals.available')}</span>
             <span style={{ fontSize:15, fontWeight:700, fontFamily:'var(--mono)', color: ok ? 'var(--accent)' : 'var(--red)', marginLeft:'auto' }}>
-              {ok ? '' : '−'}{fmtMoney(Math.abs(disponible), sym)}
+              {ok ? '' : '−'}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
             </span>
             {!ok && <span style={{ fontSize:11, color:'var(--red)', width:'100%' }}>{t('goals.available.negative')}</span>}
           </div>
@@ -115,7 +120,7 @@ export default function Goals({ setPage }) {
       {show && (
         <Card>
           <CardHeader title={t('goals.new')} />
-          {err && <Alert type="danger">⚠ {err}</Alert>}
+          {err && <Alert type="danger">{err}</Alert>}
           <FormGroup label={t('goals.form.name')}><input type="text" value={f.name} placeholder={t('goals.form.namePh')} onChange={e=>setF(p=>({...p,name:e.target.value}))} /></FormGroup>
           <FormRow>
             <FormGroup label={t('goals.form.target', { currency: settings.currency||'CLP' })}><input type="number" inputMode="decimal" min="0" value={f.target} placeholder="0" onChange={e=>setF(p=>({...p,target:e.target.value}))} /></FormGroup>
@@ -139,7 +144,7 @@ export default function Goals({ setPage }) {
             <>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
                 <span style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('goals.suggest.basedOn', { month: activeMonth })}</span>
-                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}>{fmtMoney(ingresoNetoGoals,sym)}</span>
+                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNetoGoals,sym)}</Money></span>
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:14}}>
                 {suggestions.map((s,i) => (
@@ -167,12 +172,12 @@ export default function Goals({ setPage }) {
               </div>
               <div style={{padding:'10px 14px',background:'var(--sur2)',borderRadius:6,marginBottom:14}}>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>
-                  {t('goals.suggest.totalLine')} <span style={{color:'var(--grn)',fontWeight:700}}>{fmtMoney(totalMonthlyContribution(suggestions),sym)}/mes</span>
+                  {t('goals.suggest.totalLine')} <span style={{color:'var(--grn)',fontWeight:700}}><Money>{fmtMoney(totalMonthlyContribution(suggestions),sym)}</Money>/mes</span>
                   <span style={{marginLeft:8,color:'var(--th)'}}>{t('goals.suggest.pctIncome', { pct: ingresoNetoGoals>0?((totalMonthlyContribution(suggestions)/ingresoNetoGoals)*100).toFixed(0):0 })}</span>
                 </div>
               </div>
               <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12,lineHeight:1.5}}>
-                {t('goals.suggest.disclaimer')}
+                <InlineIcon kind="info" size={12} />{t('goals.suggest.disclaimer')}
               </div>
               <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                 <Btn variant="primary" onClick={createSuggestedGoals} disabled={suggestions.filter(s=>s.selected&&!s.alreadyExists).length===0}>{t('goals.suggest.create')}</Btn>
@@ -181,7 +186,7 @@ export default function Goals({ setPage }) {
             </>
           ) : (
             <div style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',padding:'12px 0'}}>
-              {t('goals.suggest.noIncome', { month: activeMonth })}
+              <InlineIcon kind="alert" size={13} />{t('goals.suggest.noIncome', { month: activeMonth })}
             </div>
           )}
         </Card>
@@ -272,7 +277,7 @@ export default function Goals({ setPage }) {
                   })()}
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                      <span style={{fontSize:11,fontFamily:'var(--mono)',color:clr,fontWeight:600}}>{fmtMoney(g.saved,sym)}</span>
+                      <span style={{fontSize:11,fontFamily:'var(--mono)',color:clr,fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
                       <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
                       <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
                     </div>

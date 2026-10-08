@@ -1,9 +1,19 @@
 // src/demo/DemoBanner.jsx
+// Banner fijo del demo (T09): Navy plano, selector de escenario, "Ver planes",
+// "?" para repetir el recorrido y el CTA "Empezar con mis datos", que lleva a la
+// app real en la misma pestaña. El registro de la app captura el lead (el email
+// ya se pidió en el formulario de entrada del demo, D1 = B), así que acá no se
+// vuelve a pedir. Estilos en globals.css (.demo-banner*).
 import { useState } from 'react'
 import { useDemo } from './DemoContext.jsx'
+import { useT } from '../i18n/useT.js'
 
-export default function DemoBanner() {
+export const APP_URL = 'https://app.moyiq.app/app/'
+export const PRICING_URL = 'https://moyiq.app/#pricing'
+
+export default function DemoBanner({ onReplayTour }) {
   const { setScenario } = useDemo()
+  const { t } = useT()
   const [scenario, setLocal] = useState('exitoso')
 
   function toggle() {
@@ -13,83 +23,31 @@ export default function DemoBanner() {
   }
 
   return (
-    <div style={{
-      position: 'sticky',
-      top: 0,
-      zIndex: 200,
-      background: 'linear-gradient(135deg, var(--navy), var(--navy-700))',
-      color: '#fff',
-      boxShadow: '0 2px 12px rgba(20,33,61,.3)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', paddingTop: 'max(8px, env(safe-area-inset-top))', minHeight: 40, flexWrap: 'wrap' }}>
+    <div className="demo-banner">
+      <div className="demo-banner__row">
+        <span className="demo-banner__badge">DEMO</span>
 
-        <div style={{
-          background: 'rgba(255,255,255,.2)',
-          borderRadius: 20,
-          padding: '2px 8px',
-          fontSize: 10,
-          fontFamily: 'var(--mono)',
-          fontWeight: 600,
-          letterSpacing: 1,
-          flexShrink: 0,
-          border: '1px solid rgba(255,255,255,.3)',
-          whiteSpace: 'nowrap',
-        }}>
-          DEMO
-        </div>
-
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.85)', flex: 1, lineHeight: 1.3, minWidth: 120 }}>
-          Datos ficticios · Sofía García · Colombia
-        </span>
+        <span className="demo-banner__label">{t('demo.banner.label')}</span>
 
         {/* Toggle escenario — muestra el estado ACTUAL, no el destino */}
-        <button
-          onClick={toggle}
-          title="Cambia entre dos perfiles financieros para ver cómo responde la app"
-          style={{
-            background: 'rgba(255,255,255,.12)',
-            border: '1px solid rgba(255,255,255,.25)',
-            color: '#fff',
-            borderRadius: 6,
-            padding: '8px 12px',
-            minHeight: 40,
-            fontSize: 11,
-            cursor: 'pointer',
-            fontFamily: 'var(--mono)',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-          }}
-        >
-          {scenario === 'dificil' ? 'Escenario: Mes difícil ↕' : 'Escenario: Mes exitoso ↕'}
+        <button type="button" className="demo-banner__scenario" onClick={toggle} title={t('demo.banner.scenarioHint')}>
+          <span>{scenario === 'dificil' ? t('demo.banner.scenarioHard') : t('demo.banner.scenarioGood')}</span>
+          <span aria-hidden="true">↕</span>
         </button>
 
-        {/* CTA inmediato */}
-        <a
-          href="https://moyiq.app/#pricing"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            background: 'var(--laton)',
-            border: 'none',
-            color: 'var(--navy)',
-            borderRadius: 6,
-            padding: '8px 14px',
-            minHeight: 40,
-            fontSize: 11,
-            fontWeight: 700,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            textDecoration: 'none',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-          }}
-        >
-          Comprar →
+        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer">
+          {t('demo.banner.plans')}
         </a>
 
+        {onReplayTour && (
+          <button type="button" className="demo-banner__help" onClick={onReplayTour} aria-label={t('demo.tour.replay')} title={t('demo.tour.replay')}>
+            ?
+          </button>
+        )}
+
+        <a className="fos-btn-primary demo-banner__cta" href={APP_URL}>
+          {t('demo.banner.start')}
+        </a>
       </div>
     </div>
   )

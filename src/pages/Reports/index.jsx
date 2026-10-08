@@ -1,10 +1,11 @@
 // src/pages/Reports/index.jsx — v1.5
 import { useMemo, useState } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, dateLocale } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -18,6 +19,7 @@ import ReportPDF from './ReportPDF.jsx'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { usePlan } from '../../hooks/usePlan.js'
+import Money, { useMoney } from '../../components/Money.jsx'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   AreaChart, Area, ReferenceLine, ResponsiveContainer, Legend,
@@ -29,11 +31,15 @@ export default function Reports({ setPage }) {
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = CURRENCY_SYMBOLS[settings.currency] || '$'
+  // Ocultar montos (T13): fmtMoney enmascara en pantalla; el PDF (ReportPDF.jsx)
+  // usa su propio formateo y siempre lleva las cifras reales.
+  const { m } = useMoney()
+  const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const subMetrics = useSubscriptionMetrics()
   const { isPro }  = usePlan()
   const [pdfLoading, setPdfLoading] = useState(false)
   const [pdfError, setPdfError] = useState(null)
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
 
   // Patrimonio neto (stock a HOY) — cálculo compartido con la página Patrimonio
   const nw = useMemo(() => calcNetWorth({ goals: allGoals, debts: allDebts, incomes: _incAll, expenses: _expAll, settings }),
@@ -152,7 +158,7 @@ export default function Reports({ setPage }) {
               textDecoration:'none', flexShrink:0, whiteSpace:'nowrap',
             }}
           >
-            {t('reports.pdf.pro')}
+            <InlineIcon kind="pdf" size={13} />{t('reports.pdf.pro')}
           </a>
         )}
       </div>
@@ -190,13 +196,13 @@ export default function Reports({ setPage }) {
                     <div key={r.label}>
                       <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:12}}>
                         <span style={{fontWeight:500}}>{r.label}</span>
-                        <span style={{fontFamily:'var(--mono)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: ok?'✓':'⚠' })}</span>
+                        <span style={{fontFamily:'var(--mono)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
                       </div>
                       <div style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden'}}>
                         <div style={{height:'100%',width:'100%',transform:`scaleX(${Math.min(actualPct/r.max,1)})`,transformOrigin:'left',background:ok?r.color:'var(--red)',borderRadius:4,transition:'transform .4s'}}/>
                       </div>
                       <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginTop:2,display:'flex',justifyContent:'space-between'}}>
-                        <span>{fmtMoney(r.actual,sym)}</span><span>{t('reports.rule.ideal', { v: fmtMoney(r.ideal,sym) })}</span>
+                        <span><Money>{fmtMoney(r.actual,sym)}</Money></span><span>{t('reports.rule.ideal', { v: fmtMoney(r.ideal,sym) })}</span>
                       </div>
                     </div>
                   )
@@ -213,8 +219,8 @@ export default function Reports({ setPage }) {
                 <BarChart data={trendData} barGap={4} barCategoryGap="30%">
                   <CartesianGrid {...gridStyle}/>
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}/>
-                  <RTooltip contentStyle={ttStyle}/>
+                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                  <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                   <Legend wrapperStyle={{fontSize:11,fontFamily:'var(--mono)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
                   <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--red)" radius={[3,3,0,0]} opacity={0.75}/>
@@ -225,7 +231,7 @@ export default function Reports({ setPage }) {
               <table className="sr-only">
                 <caption>{t('reports.trend.title')}</caption>
                 <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('reports.trend.income')}</th><th scope="col">{t('reports.trend.expenses')}</th></tr></thead>
-                <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td>{fmtMoney(d.Ingresos,sym)}</td><td>{fmtMoney(d.Gastos,sym)}</td></tr>)}</tbody>
+                <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td><Money>{fmtMoney(d.Ingresos,sym)}</Money></td><td><Money>{fmtMoney(d.Gastos,sym)}</Money></td></tr>)}</tbody>
               </table>
             </>
           )}
@@ -245,8 +251,8 @@ export default function Reports({ setPage }) {
                 </defs>
                 <CartesianGrid {...gridStyle}/>
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}/>
-                <RTooltip contentStyle={ttStyle}/>
+                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                 <ReferenceLine y={0} stroke="var(--brd2)"/>
                 <Area type="monotone" dataKey="Ahorro" name={t('reports.savings.series')} stroke="var(--grn)" strokeWidth={2} fill="url(#ahorroGrad)"/>
               </AreaChart>
@@ -254,7 +260,7 @@ export default function Reports({ setPage }) {
             <table className="sr-only">
               <caption>{t('reports.savings.title')}</caption>
               <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('reports.savings.series')}</th></tr></thead>
-              <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td>{fmtMoney(d.Ahorro,sym)}</td></tr>)}</tbody>
+              <tbody>{trendData.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td><Money>{fmtMoney(d.Ahorro,sym)}</Money></td></tr>)}</tbody>
             </table>
           </>
         )}
@@ -313,7 +319,7 @@ export default function Reports({ setPage }) {
           <div style={{flex:1,minWidth:200}}>
             <div style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:3}}>{t('reports.networth.title')}</div>
             <div className="num" style={{fontSize:22,fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
-              {nw.netWorth >= 0 ? '' : '-'}{fmtMoney(Math.abs(nw.netWorth), sym)}
+              {nw.netWorth >= 0 ? '' : '-'}<Money>{fmtMoney(Math.abs(nw.netWorth), sym)}</Money>
             </div>
             <div style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
           </div>
@@ -328,7 +334,7 @@ export default function Reports({ setPage }) {
       {/* La lista completa de señales vive en la página Diagnóstico (evita duplicar información) */}
       {coachSignals.length > 0 && (
         <div style={{padding:'12px 16px',background:'var(--sur)',border:'.5px solid var(--brd)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-          <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',flex:1,minWidth:200,lineHeight:1.5}}>{t('reports.diag.linkText')}</span>
+          <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',flex:1,minWidth:200,lineHeight:1.5}}><InlineIcon kind="diagnosis" size={13} />{t('reports.diag.linkText')}</span>
           {setPage && (
             <button onClick={() => setPage('coach')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.diag.linkBtn')}

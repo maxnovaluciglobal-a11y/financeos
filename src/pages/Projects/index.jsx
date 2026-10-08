@@ -4,6 +4,7 @@
 // de inversión: muestra el panorama económico de cada propiedad/proyecto por separado.
 
 import { useMemo, useState } from 'react'
+import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, PageHeader, Empty } from '../../components/ui/index.jsx'
@@ -132,7 +133,7 @@ export default function Projects() {
                       {mort > 0 && <Row label={t('projects.linkedMortgage')} value={`-${fmtMoney(mort, sym)}`} color="#e84142" />}
                       {val > 0 && mort === 0 && (
                         <div style={{ fontSize: 10, color: 'var(--amb, #b45309)', fontFamily: 'var(--mono)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
-                          {t('projects.noMortgageHint')}
+                          <InlineIcon kind="alert" size={13} />{t('projects.noMortgageHint')}
                         </div>
                       )}
                       {val > 0 && (

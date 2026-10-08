@@ -103,7 +103,7 @@ interface Copy {
   heading: string;
   body: string; // HTML, antes del botón
   cta: string;
-  afterCta?: string; // HTML opcional, después del botón (p.ej. aviso de "si no fuiste vos")
+  afterCta?: string; // HTML opcional, después del botón (p.ej. aviso de "si no lo pediste")
 }
 
 // Copy en español únicamente — mismo criterio que el resto de correos
@@ -115,33 +115,33 @@ function copyFor(brand: Brand, actionType: EmailActionType): Copy {
   switch (actionType) {
     case 'recovery':
       return {
-        subject: 'Restablecé tu contraseña',
-        heading: 'Restablecé tu contraseña',
-        body: `Recibimos un pedido para cambiar la contraseña de tu cuenta de ${productName}. Si fuiste vos, hacé click abajo para elegir una nueva.`,
+        subject: 'Restablece tu contraseña',
+        heading: 'Restablece tu contraseña',
+        body: `Recibimos un pedido para cambiar la contraseña de tu cuenta de ${productName}. Si lo pediste tú, usa el botón de abajo para elegir una nueva.`,
         cta: 'Elegir contraseña nueva',
-        afterCta: 'Si no pediste esto, podés ignorar este correo — tu contraseña actual sigue funcionando.',
+        afterCta: 'Si no lo pediste, puedes ignorar este correo. Tu contraseña actual sigue funcionando.',
       };
     case 'signup':
       return {
-        subject: `Confirmá tu cuenta de ${productName}`,
-        heading: 'Confirmá tu email',
+        subject: `Confirma tu cuenta de ${productName}`,
+        heading: 'Confirma tu email',
         body: `Un paso más para activar tu cuenta de ${productName}.`,
         cta: 'Confirmar email',
       };
     case 'magiclink':
       return {
         subject: `Tu enlace de acceso a ${productName}`,
-        heading: 'Entrá a tu cuenta',
-        body: `Usá el enlace de abajo para entrar a ${productName}. Vence pronto y solo se puede usar una vez.`,
+        heading: 'Entra a tu cuenta',
+        body: `Usa el enlace de abajo para entrar a ${productName}. Vence pronto y solo se puede usar una vez.`,
         cta: 'Entrar',
       };
     case 'email_change':
       return {
-        subject: 'Confirmá tu nuevo email',
-        heading: 'Confirmá tu nuevo email',
+        subject: 'Confirma tu nuevo email',
+        heading: 'Confirma tu nuevo email',
         body: `Pediste cambiar el email de tu cuenta de ${productName}.`,
         cta: 'Confirmar nuevo email',
-        afterCta: 'Si no pediste este cambio, podés ignorar este correo.',
+        afterCta: 'Si no pediste este cambio, puedes ignorar este correo.',
       };
     case 'invite':
       return {
@@ -154,7 +154,7 @@ function copyFor(brand: Brand, actionType: EmailActionType): Copy {
       return {
         subject: `${productName} — verificación`,
         heading: 'Verificación de cuenta',
-        body: `Completá este paso para tu cuenta de ${productName}.`,
+        body: `Completa este paso para tu cuenta de ${productName}.`,
         cta: 'Continuar',
       };
   }

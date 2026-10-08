@@ -1,5 +1,6 @@
 // src/components/ui/Toast.jsx
 import { useApp } from '../../context/AppContext.jsx'
+import SignalIcon, { InlineIcon } from '../icons/SignalIcon.jsx'
 
 export default function Toast() {
   const { toast, dismissToast } = useApp()
@@ -34,7 +35,7 @@ export default function Toast() {
         animation: 'fos-toast-in var(--dur-surface-enter, 220ms) var(--ease, ease) both',
       }}
     >
-      <span>{isError ? '⚠ ' : '✓ '}{toast.msg}</span>
+      <span><InlineIcon kind={isError ? 'alert' : 'ok'} size={14} />{toast.msg}</span>
       {action && (
         <button
           type="button"

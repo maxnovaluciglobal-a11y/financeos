@@ -3,25 +3,27 @@ import { useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
 import { moneyLocale } from '../../utils/index.js'
+import { useMoney, MONEY_MASK } from '../Money.jsx'
 
 const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 
-function CustomTooltip({ active, payload, label, sym }) {
+function CustomTooltip({ active, payload, label, sym, m }) {
   if (!active || !payload?.length) return null
   const inc = payload.find(p => p.dataKey === 'ingresos')?.value || 0
   const exp = payload.find(p => p.dataKey === 'gastos')?.value || 0
-  const f = v => (v || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
+  const f = v => m(`${sym}${(v || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)
   return (
     <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'10px 14px', fontSize:12, fontFamily:'var(--mono)' }}>
       <div style={{ fontWeight:600, color:'var(--tx)', marginBottom:6 }}>{label}</div>
-      <div style={{ color:'var(--accent)', marginBottom:2 }}>Ingresos: {sym}{f(inc)}</div>
-      <div style={{ color:'var(--red)', marginBottom:4 }}>Gastos: {sym}{f(exp)}</div>
-      <div style={{ color:'var(--th)', borderTop:'.5px solid var(--brd)', paddingTop:4 }}>Neto: {sym}{f(inc - exp)}</div>
+      <div style={{ color:'var(--accent)', marginBottom:2 }}>Ingresos: {f(inc)}</div>
+      <div style={{ color:'var(--red)', marginBottom:4 }}>Gastos: {f(exp)}</div>
+      <div style={{ color:'var(--th)', borderTop:'.5px solid var(--brd)', paddingTop:4 }}>Neto: {f(inc - exp)}</div>
     </div>
   )
 }
 
 export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months = 6 }) {
+  const { hidden, m } = useMoney()
   const safeInc = Array.isArray(incomes)  ? incomes  : []
   const safeExp = Array.isArray(expenses) ? expenses : []
 
@@ -42,7 +44,8 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
   if (!hasData) return <ChartEmpty msg="Agrega ingresos y gastos para ver la comparación mensual." />
 
   const maxVal = Math.max(...data.flatMap(d => [d.ingresos, d.gastos]), 1)
-  const tickFmt = v => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)
+  // Ocultar montos (T13): el eje Y también es una cifra legible.
+  const tickFmt = v => hidden ? MONEY_MASK : v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)
 
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -50,7 +53,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
         <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false}/>
         <XAxis dataKey="mes" tick={{ fill:'var(--th)', fontSize:11, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false}/>
         <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={{ fill:'var(--th)', fontSize:10, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>
-        <Tooltip content={<CustomTooltip sym={sym}/>} cursor={{ fill:'rgba(255,255,255,.03)' }}/>
+        <Tooltip content={<CustomTooltip sym={sym} m={m}/>} cursor={{ fill:'rgba(255,255,255,.03)' }}/>
         <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', paddingTop:8 }}/>
         <Bar dataKey="ingresos" name="Ingresos" fill="var(--accent)" radius={[3,3,0,0]} maxBarSize={32}/>
         <Bar dataKey="gastos"   name="Gastos"   fill="var(--red)"    radius={[3,3,0,0]} maxBarSize={32}/>

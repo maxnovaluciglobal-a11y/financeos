@@ -6,7 +6,6 @@
 export const TEMPLATES = [
   {
     id: 'personal',
-    icon: '◈',
     color: '#356E57',
     name: 'Persona natural',
     tagline: 'Para quién controla sus finanzas personales por primera vez',
@@ -36,7 +35,6 @@ export const TEMPLATES = [
 
   {
     id: 'pareja',
-    icon: '◑',
     color: '#5B7A99',
     name: 'Pareja o familia',
     tagline: 'Para dos personas con finanzas compartidas o mixtas',
@@ -67,7 +65,6 @@ export const TEMPLATES = [
 
   {
     id: 'freelancer',
-    icon: '⟶',
     color: '#8B7A55',
     name: 'Freelancer',
     tagline: 'Para quienes tienen ingresos variables o múltiples fuentes',
@@ -98,7 +95,6 @@ export const TEMPLATES = [
 
   {
     id: 'pyme',
-    icon: '▤',
     color: '#B8863B',
     name: 'Pyme o negocio pequeño',
     tagline: 'Para dueños que mezclan finanzas personales y del negocio',
@@ -128,7 +124,6 @@ export const TEMPLATES = [
 
   {
     id: 'deudas',
-    icon: '⊖',
     color: '#A23E2E',
     name: 'Cliente con deuda',
     tagline: 'Para quienes priorizan salir de deudas de forma ordenada',
@@ -159,7 +154,6 @@ export const TEMPLATES = [
 
   {
     id: 'ahorro',
-    icon: '◎',
     color: '#356E57',
     name: 'Cliente con meta de ahorro',
     tagline: 'Para quienes tienen un objetivo de ahorro específico y concreto',
@@ -188,7 +182,6 @@ export const TEMPLATES = [
 
   {
     id: 'educador',
-    icon: '⊞',
     color: '#8B7A55',
     name: 'Educador financiero',
     tagline: 'Para talleres y clases de educación financiera',

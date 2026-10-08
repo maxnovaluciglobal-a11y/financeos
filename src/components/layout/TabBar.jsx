@@ -26,6 +26,7 @@ export default function TabBar({ page, onNavigate, onAdd, t }) {
             className={primary ? s.tabAdd : s.tab + (on ? ' ' + s.tabActive : '')}
             aria-current={!primary && on ? 'page' : undefined}
             aria-label={primary ? t(lb) : undefined}
+            data-tour={primary ? 'tab-add' : undefined}
             onClick={() => primary ? onAdd() : onNavigate(id)}
           >
             <Ic size={primary ? 24 : 21} strokeWidth={on ? 2.2 : 1.7} aria-hidden={primary || undefined} />
