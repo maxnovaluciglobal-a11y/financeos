@@ -1777,4 +1777,5 @@ export const en = {
     'home.score.cta.debtLoad': "View debts",
     'home.score.cta.goalsProgress': "Go to goals",
     'home.score.cta.dataConsistency': "View transactions",
+    'home.nw.view': "View details",
 }

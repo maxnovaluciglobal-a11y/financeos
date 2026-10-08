@@ -1777,4 +1777,5 @@ export const pt = {
     'home.score.cta.debtLoad': "Ver dívidas",
     'home.score.cta.goalsProgress': "Ir para metas",
     'home.score.cta.dataConsistency': "Ver movimentações",
+    'home.nw.view': "Ver detalhes",
 }

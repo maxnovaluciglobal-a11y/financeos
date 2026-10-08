@@ -21,7 +21,7 @@
 
 @container (min-width: 760px) {
   .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-  .pair > :only-child { grid-column: 1 / -1; }
+  .pair > :only-child, .pair > :has(+ :empty), .pair > :empty + * { grid-column: 1 / -1; }
   .oBackup { order: 1; }
   .oKpis   { order: 2; }
   .pairA   { order: 3; }

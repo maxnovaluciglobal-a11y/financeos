@@ -22,6 +22,7 @@ import HomeKpis from './HomeKpis.jsx'
 import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
+import NetWorthCard from './NetWorthCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
@@ -509,6 +510,10 @@ export default function Dashboard({ setPage }) {
             <div className={hs.oScore}>
               <ScoreCard healthScore={healthScore} activeMonth={activeMonth}
                 isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
+            </div>
+            <div className={hs.oNetWorth}>
+              <NetWorthCard goals={goals} debts={debts} incomes={ctx.incomes} expenses={ctx.expenses}
+                settings={settings} sym={sym} setPage={setPage} />
             </div>
           </div>
         </div>
