@@ -5,8 +5,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { dbGetAll, dbAdd, dbDelete } from '../../core/db/index.js'
 import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, currencyDecimals } from '../../utils/index.js'
+import { toLocal } from '../../utils/recurring.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -109,13 +109,13 @@ export function generateAlerts(subs, monthlyIncome, t = null, lang = null) {
   const in7   = new Date(today); in7.setDate(today.getDate() + 7)
   const upcoming = active.filter(s => {
     if (!s.nextPaymentDate) return false
-    const d = new Date(s.nextPaymentDate)
+    const d = toLocal(s.nextPaymentDate)
     return d >= today && d <= in7
   })
   upcoming.forEach(s => {
     alerts.push({
       type: 'upcoming',
-      msg: tr('subs.alert.upcoming', { name: s.name, date: new Date(s.nextPaymentDate).toLocaleDateString(dateLocale()) }, `"${s.name}" tiene un pago próximo el ${new Date(s.nextPaymentDate).toLocaleDateString(dateLocale())}.`),
+      msg: tr('subs.alert.upcoming', { name: s.name, date: toLocal(s.nextPaymentDate).toLocaleDateString(dateLocale()) }, `"${s.name}" tiene un pago próximo el ${toLocal(s.nextPaymentDate).toLocaleDateString(dateLocale())}.`),
     })
   })
 
@@ -136,16 +136,17 @@ export default function Subscriptions() {
   const currency = settings.currency || 'CLP'
   // Con los decimales de la moneda de cada suscripción (una de US$ en una cuenta en COP lleva centavos).
   const fmt = (n, cur = currency) => fmtAmount(n, currencyDecimals(cur))
-  const isDemo = !!settings.isDemo
-
-  const [dbSubs,   setDbSubs]  = useState([])
-  const [loading,  setLoading] = useState(!isDemo)
+  // Una sola fuente: el contexto (app real o demo). Antes la app real leía
+  // además su propia copia de IndexedDB y escribía directo en la store, por
+  // fuera del contexto — con la unificación en fijos, cada cambio tiene que
+  // pasar por addSubscription/updateSubscription/deleteSubscription para que
+  // su regla se mantenga alineada (crear crea la regla; cancelar la pausa).
   const [showForm, setShowForm] = useState(false)
   const [editing,  setEditing]  = useState(null)
   const [form,     setForm]     = useState(EMPTY_FORM)
   const [filter,   setFilter]   = useState('all')
 
-  const subs = isDemo ? (ctxSubs || []) : dbSubs
+  const subs = ctxSubs || []
 
   const monthlyIncome = useMemo(() => {
     if (!Array.isArray(incomes)) return 0
@@ -155,13 +156,6 @@ export default function Subscriptions() {
       .reduce((s, r) => s + (r.amount || 0), 0)
   }, [incomes, settings.activeMonth])
 
-  useEffect(() => {
-    if (isDemo) return
-    dbGetAll('subscriptions').then(data => {
-      setDbSubs(data || [])
-      setLoading(false)
-    })
-  }, [isDemo])
 
   const activeSubs    = subs.filter(s => s.status === 'active')
   const totalMonthly  = activeSubs.reduce((s, sub) => s + toMonthly(sub.amount, sub.frequency), 0)
@@ -171,7 +165,7 @@ export default function Subscriptions() {
     : null
   const nextSub = activeSubs
     .filter(s => s.nextPaymentDate)
-    .sort((a, b) => new Date(a.nextPaymentDate) - new Date(b.nextPaymentDate))[0]
+    .sort((a, b) => String(a.nextPaymentDate).localeCompare(String(b.nextPaymentDate)))[0]
   const alerts = useMemo(() => generateAlerts(subs, monthlyIncome, t, lang), [subs, monthlyIncome, settings.language])
 
   // Datos para gráficos
@@ -199,7 +193,7 @@ export default function Subscriptions() {
     const newAmount = parseFloat(form.amount) || 0
     // Guardamos el monto viejo antes de pisarlo — sin esto no hay forma de
     // detectar que una suscripción subió de precio (ver generateAlerts).
-    const prev = editing ? dbSubs.find(s => s.id === editing) : null
+    const prev = editing ? subs.find(s => s.id === editing) : null
     const priceHistory = prev && Number(prev.amount) !== newAmount
       ? [...(prev.priceHistory || []), { amount: Number(prev.amount) || 0, at: prev.updatedAt || prev.createdAt || now }].slice(-12)
       : (prev?.priceHistory || [])
@@ -213,41 +207,21 @@ export default function Subscriptions() {
       status:    form.status || 'active',
       priceHistory,
     }
-    if (isDemo) {
-      setDbSubs(prev => editing
-        ? prev.map(s => s.id === editing ? item : s)
-        : [...prev, item]
-      )
-    } else {
-      if (editing) {
-        await updateSubscription(item)
-        setDbSubs(prev => prev.map(s => s.id === editing ? item : s))
-      } else {
-        await addSubscription(item)
-        setDbSubs(prev => [...prev, item])
-      }
-    }
+    if (editing) await updateSubscription(item)
+    else await addSubscription(item)
     closeForm()
   }
 
-  async function remove(id) {
-    const sub = dbSubs.find(s => s.id === id)
+  // Borrar termina su regla de fijos; "Deshacer" la reabre (reconcileRules).
+  function remove(id) {
+    const sub = subs.find(s => s.id === id)
     if (!sub) return
-    setDbSubs(prev => prev.filter(s => s.id !== id))
-    if (!isDemo) { try { await deleteSubscription(id) } catch {} }
-    showToast(t('common.deleted'), 'ok', {
-      label: t('common.undo'),
-      onAction: async () => {
-        setDbSubs(prev => prev.some(s => s.id === sub.id) ? prev : [...prev, sub])
-        if (!isDemo) { try { await dbAdd('subscriptions', sub) } catch {} }
-      },
-    })
+    deleteWithUndo('subscriptions', sub, t('common.deleted'), t('common.undo'))
   }
 
+  // Cancelar (inactiva) pausa su regla: deja de aparecer como previsto.
   async function toggleStatus(sub) {
-    const updated = { ...sub, status: sub.status === 'active' ? 'inactive' : 'active', updatedAt: new Date().toISOString() }
-    if (!isDemo) await dbAdd('subscriptions', updated)
-    setDbSubs(prev => prev.map(s => s.id === updated.id ? updated : s))
+    await updateSubscription({ ...sub, status: sub.status === 'active' ? 'inactive' : 'active', updatedAt: new Date().toISOString() })
   }
 
   function openEdit(sub) {
@@ -266,8 +240,6 @@ export default function Subscriptions() {
     : filter === 'active' ? activeSubs
     : subs.filter(s => s.status === 'inactive')
 
-  if (loading) return <div style={{ padding: 24, color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 12 }}>{t('subs.loading')}</div>
-
   return (
     <div>
       <PageHeader title={t('subs.title')} sub={t('subs.sub')} />
@@ -278,7 +250,7 @@ export default function Subscriptions() {
         <KPI label={t('subs.kpi.annual')} value={`${currency} ${fmt(totalAnnual)}`} />
         <KPI label={t('subs.kpi.active')} value={activeSubs.length} />
         <KPI label={t('subs.kpi.mostExpensive')} value={mostExpensive ? mostExpensive.name : '—'} color="amber" />
-        <KPI label={t('subs.kpi.nextPay')} value={nextSub ? new Date(nextSub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—'} />
+        <KPI label={t('subs.kpi.nextPay')} value={nextSub ? (toLocal(nextSub.nextPaymentDate) || new Date(nextSub.nextPaymentDate)).toLocaleDateString(dateLocale()) : '—'} />
       </div>
 
       {/* VISUAL INSIGHTS */}
@@ -386,7 +358,7 @@ export default function Subscriptions() {
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
-                        {sub.nextPaymentDate ? new Date(sub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—'}
+                        {sub.nextPaymentDate ? (toLocal(sub.nextPaymentDate) || new Date(sub.nextPaymentDate)).toLocaleDateString(dateLocale()) : '—'}
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <button onClick={() => toggleStatus(sub)} aria-pressed={isActive} style={{

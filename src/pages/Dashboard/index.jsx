@@ -1,7 +1,7 @@
 // src/pages/Dashboard/index.jsx
 // Dashboard Visual Polish — FinanceOS v1.1.1
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import Sheet from '../../components/ui/Sheet.jsx'
@@ -12,7 +12,6 @@ import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
 import { calcFinancialScore, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { isSyncEnabled, syncAvailable, syncMeta } from '../../core/sync.js'
-import { pendingDebtMonthly } from '../../utils/personal.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import CountUp from '../../components/CountUp.jsx'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
@@ -31,6 +30,9 @@ import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import { Card, CardHeader } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
+import MonthSheet from '../../components/recurring/MonthSheet.jsx'
+import { monthPlan, pendingTotals } from '../../utils/recurring.js'
+import { localDateStr } from '../../utils/index.js'
 
 const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
 const pct0 = (n) => ((Number(n) || 0) * 100).toFixed(0) + '%'
@@ -72,19 +74,13 @@ export default function Dashboard({ setPage }) {
       const exp = expenses.filter(r => r?.date?.startsWith(month))
       const totalInc = inc.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
       const totalExp = exp.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-      const totalSubs = subs.filter(s => s?.status === 'active').reduce((s, sub) => {
-        const amt = Number(sub.amount) || 0
-        const f   = sub.frequency || 'monthly'
-        if (f === 'annual' || f === 'anual') return s + amt / 12
-        if (f === 'quarterly') return s + amt / 3
-        if (f === 'weekly') return s + amt * 4.33
-        return s + amt
-      }, 0)
-      // Solo deudas personales (no las de propiedades) y sin contar cuotas ya registradas como gasto
-      const totalDebt = pendingDebtMonthly(debts, exp)
       const balance  = totalInc - totalExp                        // Balance neto = ingresos − gastos
-      const freeFlow = totalInc - totalExp - totalDebt - totalSubs // Disponible tras deudas y suscripciones
-      return { totalInc, totalExp, totalDebt, totalSubs, balance, freeFlow,
+      // "Te queda" = solo lo REAL (decisión de Walter, 08-oct-2026). Antes se
+      // restaban siempre las suscripciones activas y las cuotas: si el gasto
+      // también estaba registrado, se contaba dos veces. Lo previsto que falta
+      // (suscripciones, cuotas, fijos) va aparte en "Previsto pendiente".
+      const freeFlow = balance
+      return { totalInc, totalExp, balance, freeFlow,
                savingRate: totalInc > 0 ? balance / totalInc : 0,  // sin floor: coincide con Coach/Advisor
                incCount: inc.length, expCount: exp.length }
     }
@@ -107,7 +103,14 @@ export default function Dashboard({ setPage }) {
         save: delta(cur.savingRate,  prev.savingRate),
       }
     }
-  }, [incomes, expenses, debts, subs, activeMonth])
+  }, [incomes, expenses, activeMonth])
+
+  // ── Movimientos fijos del mes activo ─────────────────────────────────────
+  const todayStr = localDateStr()
+  const rules = Array.isArray(ctx.recurring) ? ctx.recurring : []
+  const plan = useMemo(() => monthPlan(rules, activeMonth, { incomes: ctx.incomes || [], expenses: ctx.expenses || [], today: todayStr }),
+    [rules, activeMonth, ctx.incomes, ctx.expenses, todayStr])
+  const pendingSum = useMemo(() => pendingTotals(plan), [plan])
 
   const monthExpenses = useMemo(() =>
     expenses.filter(r => r?.date?.startsWith(activeMonth)),
@@ -263,6 +266,28 @@ export default function Dashboard({ setPage }) {
   })()
 
   const showCloseModal = isMonthClosed && !closeDismissed && (kpis.incCount > 0 || kpis.expCount > 0)
+
+  // Hoja de inicio de mes (fusionada con el cierre): con el mes activo en el
+  // mes en curso, la primera vez que se abre el Inicio en ese mes muestra cómo
+  // cerró el anterior y los fijos previstos. "Revisar" la reabre cuando sea.
+  const isCurrent = activeMonth === currentMonth()
+  const prevMonthKey = prevMonthOf(activeMonth)
+  const prevHasData = kpis.prev.incCount > 0 || kpis.prev.expCount > 0
+  const [startDismissed, setStartDismissed] = useState(() => {
+    try { return localStorage.getItem(`fos_mstart_${activeMonth}`) === '1' } catch { return false }
+  })
+  useEffect(() => {
+    try { setStartDismissed(localStorage.getItem(`fos_mstart_${activeMonth}`) === '1') } catch {}
+  }, [activeMonth])
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const autoStart = isCurrent && !startDismissed && !settings.isDemo &&
+    (plan.some(o => !o.rule.inv) || prevHasData) && (kpis.incCount > 0 || kpis.expCount > 0 || rules.length > 0)
+  const sheetOpen = reviewOpen || autoStart
+  const closeSheet = useCallback(() => {
+    try { localStorage.setItem(`fos_mstart_${activeMonth}`, '1') } catch {}
+    setStartDismissed(true)
+    setReviewOpen(false)
+  }, [activeMonth])
 
   function dismissClose() {
     try { localStorage.setItem(`fos_close_${activeMonth}`, '1') } catch {}
@@ -422,11 +447,9 @@ export default function Dashboard({ setPage }) {
              refIsIncome: kpis.totalInc > 0 }
   }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, sym, amountsHidden])
 
-  // KPIs secundarios (debajo de Ingresos/Gastos/Te queda). El balance neto es
-  // ingresos − gastos, sin descontar deudas ni suscripciones (eso es "Te queda").
+  // KPIs secundarios (debajo de Ingresos/Gastos/Te queda). El balance neto
+  // salió de acá: desde los fijos, "Te queda" ES ingresos − gastos y se repetía.
   const KPIS_SECONDARY = [
-    { label:t('dash.kpi.balance'), color:kpis.balance >= 0 ? 'var(--pos)' : 'var(--neg)', sub:kpis.balance >= 0 ? t('dash.kpi.incMinusExp') : t('dash.kpi.expOverInc'),
-      delta: monthDelta(kpis.cur.balance, kpis.prev.balance, { hasPrev: kpis.prev.incCount > 0 || kpis.prev.expCount > 0 }), raw: kpis.balance, count: true },
     ...(propFlow.has ? [{ label:t('dash.kpi.totalFlow'), color: flujoTotal >= 0 ? 'var(--pos)' : 'var(--neg)', sub:t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), raw: flujoTotal, count: true }] : []),
     { label:t('dash.kpi.savingRate'), value:pct(kpis.savingRate), color:kpis.savingRate >= 0.2 ? 'var(--pos)' : kpis.savingRate >= 0 ? 'var(--warn)' : 'var(--neg)', sub:t('dash.kpi.ofIncome') },
     { label:t('dash.kpi.subs'), value:t('dash.kpi.perMonth', { v: money(subMonthly) }), color:'var(--tx)', sub:t('dash.kpi.perYear', { v: money(subMonthly * 12) }) },
@@ -434,7 +457,10 @@ export default function Dashboard({ setPage }) {
 
   return (
     <div>
-      <MonthlyCloseModal />
+      {!isCurrent && <MonthlyCloseModal />}
+      <MonthSheet open={sheetOpen} onClose={closeSheet} month={activeMonth} plan={plan} today={todayStr} sym={sym}
+        prev={autoStart && prevHasData ? { month: prevMonthKey, balance: kpis.prev.balance } : null}
+        onGoToList={setPage ? () => { closeSheet(); setPage('recurring') } : undefined} />
 
       {/* Header — título + toggle de vista */}
       <div style={{ marginBottom:16, display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
@@ -490,6 +516,7 @@ export default function Dashboard({ setPage }) {
           <div className={hs.oBackup}><BackupReminderBanner /></div>
           <div className={hs.oKpis}>
             <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
+              pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
               pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}>
               {/* KPIs secundarios: en móvil solo en vista detallada */}
@@ -513,7 +540,7 @@ export default function Dashboard({ setPage }) {
                 activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
             </div>
             <div className={hs.oUpcoming}>
-              <UpcomingPayments debts={debts} subscriptions={subs} sym={sym} setPage={setPage} />
+              <UpcomingPayments rules={rules} incomes={ctx.incomes} expenses={ctx.expenses} debts={debts} subscriptions={subs} sym={sym} setPage={setPage} />
             </div>
           </div>
           <div className={`${hs.pair} ${hs.pairB}`}>

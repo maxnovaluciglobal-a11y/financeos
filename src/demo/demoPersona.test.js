@@ -2,14 +2,16 @@ import { describe, it, expect } from 'vitest'
 import { pickDemoPersonaId, buildDemoState, DEMO_PERSONAS, demoPersona } from './demoData.js'
 import { M0 } from './demoDates.js'
 import config from '../config.js'
+import { monthPlan, pendingTotals } from '../utils/recurring.js'
 import { isEmergencyGoalName } from '../utils/emergencyGoal.js'
-import { currencyDecimals } from '../utils/index.js'
+import { currencyDecimals, CATS_EXPENSE, CATS_INCOME } from '../utils/index.js'
 
 const sum = (rows, k = 'amount') => rows.reduce((s, r) => s + (Number(r[k]) || 0), 0)
 const inMonth = (rows) => rows.filter(r => r.date?.startsWith(M0))
-// "Te queda este mes" del Inicio: ingresos − gastos − cuotas de deudas − suscripciones
-const leftThisMonth = (state) =>
-  sum(inMonth(state.incomes)) - sum(inMonth(state.expenses)) - sum(state.debts, 'minPayment') - sum(state.subscriptions)
+// "Te queda este mes" del Inicio (decisión de Walter, 08-oct-2026): solo lo
+// real (ingresos − gastos); lo previsto va aparte en "Previsto pendiente".
+const leftThisMonth = (state) => sum(inMonth(state.incomes)) - sum(inMonth(state.expenses))
+const pendingExpense = (state) => pendingTotals(monthPlan(state.recurring, M0, state)).expense
 
 describe('selección de persona del demo por idioma', () => {
   it('en → EE. UU. en USD, de → Alemania en EUR, es/pt → Sofía en COP', () => {
@@ -38,9 +40,19 @@ describe.each(Object.keys(DEMO_PERSONAS))('persona %s', (id) => {
   const good = buildDemoState(id, 'es', 'exitoso')
   const hard = buildDemoState(id, 'es', 'dificil')
 
-  it('mes bueno con saldo positivo y mes difícil con saldo negativo', () => {
+  it('mes bueno con saldo real positivo; en el difícil no alcanza para los fijos que faltan', () => {
     expect(leftThisMonth(good)).toBeGreaterThan(0)
-    expect(leftThisMonth(hard)).toBeLessThan(0)
+    expect(leftThisMonth(hard) - pendingExpense(hard)).toBeLessThan(0)
+  })
+  it('muestra fijos: sueldo o ingreso fijo, arriendo, suscripciones y cuotas, con algo previsto', () => {
+    const kinds = new Set(good.recurring.map(r => r.source))
+    expect([...kinds].sort()).toEqual(['debt', 'manual', 'subscription'])
+    expect(good.recurring.some(r => r.kind === 'income')).toBe(true)
+    expect(good.recurring.some(r => r.category === 'Vivienda')).toBe(true)
+    const plan = monthPlan(good.recurring, M0, good)
+    expect(plan.some(o => o.status === 'pending')).toBe(true)
+    expect(plan.some(o => o.status === 'confirmed')).toBe(true)
+    for (const r of good.recurring) expect([...CATS_EXPENSE, 'Deudas', ...CATS_INCOME]).toContain(r.category)
   })
   it('categorías = valores internos de la app (las etiquetas se traducen aparte)', () => {
     for (const r of p.expenses) expect(config.categoriesExpense).toContain(r.category)

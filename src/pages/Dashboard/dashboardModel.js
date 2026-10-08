@@ -4,6 +4,7 @@
 // categoría) y ¿qué viene? (próximos pagos). Testeado en dashboardModel.test.js.
 
 import { localDateStr } from '../../utils/index.js'
+import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
 
 // ── Variación vs. mes anterior ───────────────────────────────────────────────
 // null = no hay base para comparar (el mes anterior no tiene datos o su valor es
@@ -187,4 +188,23 @@ export const FACTOR_PAGE = {
   debtLoad: 'debts',
   goalsProgress: 'goals',
   dataConsistency: 'movements',
+}
+
+// ── Próximos pagos desde los fijos (unificación, 08-oct-2026) ───────────────
+// Suscripciones, cuotas de deudas y gastos fijos manuales son reglas: los
+// próximos pagos son sus ocurrencias PREVISTAS (no confirmadas ni omitidas)
+// entre hoy y hoy + `days`. Lo ya registrado este mes no vuelve a aparecer.
+export function upcomingFromRules(rules, { incomes = [], expenses = [], today = new Date(), days = 30, limit = 5 } = {}) {
+  const t0 = typeof today === 'string' ? today : localDateStr(today)
+  const end = addDays(t0, days)
+  const months = [...new Set([monthOf(t0), monthOf(addDays(t0, 15)), monthOf(end)])]
+  const out = []
+  for (const ym of months) {
+    for (const o of monthPlan(rules, ym, { incomes, expenses })) {
+      if (o.status !== 'pending' || o.kind !== 'expense' || o.date < t0 || o.date > end) continue
+      out.push({ id: o.key, kind: o.rule.source === 'debt' ? 'debt' : o.rule.source === 'subscription' ? 'sub' : 'manual', name: o.rule.description || '', amount: Number(o.amount) || 0, date: o.date })
+    }
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount)
+  return { items: out.slice(0, limit), total: out.length }
 }

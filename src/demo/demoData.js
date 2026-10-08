@@ -13,6 +13,7 @@ import { US_PERSONA } from './personas/us.js'
 import { DE_PERSONA } from './personas/de.js'
 
 import { d, M0, M1, M2, M3, M4, M5, day, nextMonthDate, nextYearDate } from './demoDates.js'
+import { demoRecurringRules } from './demoRecurring.js'
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
 export const DEMO_SETTINGS = {
@@ -215,6 +216,7 @@ export function buildDemoState(personaId, language = detectLanguage(), scenario 
     debts:         p.debts,
     goals:         p.goals,
     subscriptions: p.subscriptions,
+    recurring:     demoRecurringRules(p),
     settings:      { ...DEMO_SETTINGS, currency: p.currency, country: p.country, language },
   }
 }

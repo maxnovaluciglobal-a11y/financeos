@@ -44,6 +44,7 @@ const Multimoneda   = lazy(() => import('./pages/Multimoneda/index.jsx'))
 const Steuer        = lazy(() => import('./pages/Steuer/index.jsx'))
 const ImportCSV     = lazy(() => import('./pages/Import/index.jsx'))
 const Movements     = lazy(() => import('./pages/Movements/index.jsx'))
+const Recurring     = lazy(() => import('./pages/Recurring/index.jsx'))
 const Privacy       = lazy(() => import('./pages/legal/Privacy.jsx'))
 const Terms         = lazy(() => import('./pages/legal/Terms.jsx'))
 const License       = lazy(() => import('./pages/legal/License.jsx'))
@@ -194,6 +195,7 @@ function Inner() {
       case 'multimoneda':   return <Multimoneda />
       case 'steuer':        return <Steuer />
       case 'movements':     return <Movements setPage={setPage}/>
+      case 'recurring':     return <Recurring setPage={setPage}/>
       case 'import':        return <ImportCSV setPage={setPage} />
       case 'more':          return <More setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>

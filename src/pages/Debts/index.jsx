@@ -9,16 +9,9 @@ import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
-
-// Pago real que se cobraría hoy — incluye el interés del período, con la misma
-// fórmula que usa el simulador de liquidación más abajo. Antes "Registrar pago"
-// solo restaba el pago del saldo sin sumar el interés primero, así que cada
-// pago real dejaba el saldo guardado más bajo de lo que en verdad era.
-function nextPaymentAmount(d) {
-  const rate = (Number(d.rate) || 0) / 100 / 12
-  const balanceWithInterest = Number(d.balance) + Number(d.balance) * rate
-  return Math.min(Number(d.minPayment) || 0, balanceWithInterest)
-}
+import { nextPaymentAmount } from '../../utils/debtPayment.js'
+import { monthPlan } from '../../utils/recurring.js'
+import { debtRuleId } from '../../utils/recurringSources.js'
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
@@ -170,7 +163,7 @@ function DebtPayoffSimulator({ debts, sym }) {
 }
 
 export default function Debts() {
-  const { debts, addDebt, delDebt, updateDebt, addExpense, incomes, expenses, settings, deleteWithUndo } = useApp()
+  const { debts, addDebt, delDebt, updateDebt, addExpense, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences } = useApp()
   const { t } = useT()
   const [show, setShow]             = useState(false)
   const [f, setF]                   = useState({ creditor:'', debtType:'Tarjeta', initial:'', balance:'', minPayment:'', dueDate:'', rate:'', totalInstallments:'', paidInstallments:'', project:'', ufDebt:false })
@@ -229,6 +222,26 @@ export default function Debts() {
   }, [incomes, expenses])
 
   async function handleRegisterPayment(d) {
+    // La cuota de la deuda es un movimiento fijo (unificación 08-oct-2026): si
+    // la de este mes está prevista, "Registrar pago" la CONFIRMA — mismo gasto y
+    // misma baja de saldo de siempre (utils/debtPayment.js), y además deja de
+    // figurar como previsto pendiente. Sin cuota prevista (ya pagada este mes,
+    // o un pago extra) sigue el camino de antes.
+    const todayIso = localDateStr()
+    const rule = (recurring || []).find(r => r.id === debtRuleId(d.id))
+    const occ = rule && confirmOccurrences
+      ? monthPlan([rule], todayIso.slice(0, 7), { incomes, expenses, today: todayIso }).find(o => o.status === 'pending')
+      : null
+    if (occ) {
+      const res = await confirmOccurrences([{ rule, date: occ.date }])
+      const paid = res?.records?.[0]?.amount
+      setConfirmPay(null)
+      if (paid > 0) {
+        setPayMsg({ id: d.id, text: t('debts.card.paidMsg', { amt: m(fmtMoneyRaw(paid, sym)) }) })
+        setTimeout(() => setPayMsg(null), 3000)
+      }
+      return
+    }
     const rate = (Number(d.rate) || 0) / 100 / 12
     const balanceWithInterest = Number(d.balance) + Number(d.balance) * rate
     const monto = nextPaymentAmount(d)

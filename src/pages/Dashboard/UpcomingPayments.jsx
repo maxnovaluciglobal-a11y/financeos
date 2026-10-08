@@ -1,13 +1,15 @@
 // src/pages/Dashboard/UpcomingPayments.jsx — "¿qué viene?" (M5, pieza 3).
-// Próximos pagos de los siguientes 30 días: cuotas de Deudas (fecha de
-// vencimiento, mensual) y cobros de Suscripciones activas (según frecuencia),
-// mezclados y ordenados por fecha. Fechas en hora local (dashboardModel.js).
+// Próximos pagos de los siguientes 30 días. Desde la unificación (08-oct-2026)
+// salen de los movimientos fijos: cuotas de Deudas, Suscripciones y gastos
+// fijos manuales, solo los PREVISTOS (lo ya confirmado no vuelve a aparecer).
+// Fechas en hora local (dashboardModel.js).
 import { useMemo } from 'react'
 import Money from '../../components/Money.jsx'
 import { IconTarjetas, NAV_ICONS } from '../../components/icons/Icons.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, localDateStr } from '../../utils/index.js'
-import { upcomingPayments } from './dashboardModel.js'
+import { upcomingFromRules } from './dashboardModel.js'
+import { CalendarClock } from 'lucide-react'
 import s from './Home.module.css'
 
 const SubIcon = NAV_ICONS.subscriptions
@@ -22,14 +24,17 @@ function parts(dateStr, lang) {
   return { day: d, mon, full }
 }
 
-export default function UpcomingPayments({ debts, subscriptions, sym, setPage }) {
+const ManualIcon = ({ size }) => <CalendarClock size={size} strokeWidth={1.7} aria-hidden="true" />
+const KIND_ICON = { debt: IconTarjetas, sub: SubIcon, manual: ManualIcon }
+const KIND_LABEL = { debt: 'home.upcoming.kind.debt', sub: 'home.upcoming.kind.sub', manual: 'rec.source.manual' }
+
+export default function UpcomingPayments({ rules, incomes, expenses, debts, subscriptions, sym, setPage }) {
   const { t, lang } = useT()
   const todayStr = localDateStr()
   const { items, total } = useMemo(
-    () => upcomingPayments({ debts, subscriptions, today: new Date() }),
+    () => upcomingFromRules(rules || [], { incomes, expenses, today: todayStr }),
     // la fecha de hoy entra en la clave: al pasar la medianoche se recalcula
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debts, subscriptions, todayStr],
+    [rules, incomes, expenses, todayStr],
   )
   const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return localDateStr(d) })()
   const hiddenCount = total - items.length
@@ -52,7 +57,7 @@ export default function UpcomingPayments({ debts, subscriptions, sym, setPage })
           {items.map(it => {
             const p = parts(it.date, lang)
             const when = it.date === todayStr ? t('home.upcoming.today') : it.date === tomorrowStr ? t('home.upcoming.tomorrow') : null
-            const Ic = it.kind === 'debt' ? IconTarjetas : SubIcon
+            const Ic = KIND_ICON[it.kind] || ManualIcon
             return (
               <li key={it.id} className={`${s.row} ${s.payRow}`}>
                 <div className={s.payDate} title={p.full}>
@@ -64,7 +69,7 @@ export default function UpcomingPayments({ debts, subscriptions, sym, setPage })
                   <div className={s.payName}>{it.name}</div>
                   <div className={s.payKind}>
                     <Ic size={14} />
-                    <span>{t(it.kind === 'debt' ? 'home.upcoming.kind.debt' : 'home.upcoming.kind.sub')}</span>
+                    <span>{t(KIND_LABEL[it.kind] || 'rec.source.manual')}</span>
                     {when && <span className={s.payWhen}>· {when}</span>}
                   </div>
                 </div>
@@ -80,6 +85,7 @@ export default function UpcomingPayments({ debts, subscriptions, sym, setPage })
         <div className={s.footLinks}>
           {(hasDebts || items.length === 0) && <button type="button" className={s.cardLink} onClick={() => setPage('debts')}>{t('dash.action.viewDebts')} →</button>}
           {(hasSubs || items.length === 0) && <button type="button" className={s.cardLink} onClick={() => setPage('subscriptions')}>{t('dash.action.viewSubs')} →</button>}
+          <button type="button" className={s.cardLink} onClick={() => setPage('recurring')}>{t('rec.sheet.goList')} →</button>
         </div>
       )}
     </section>

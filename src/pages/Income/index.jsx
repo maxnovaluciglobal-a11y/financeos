@@ -9,14 +9,20 @@ import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
 import Money, { useMoney } from '../../components/Money.jsx'
+import { FREQS } from '../../utils/recurring.js'
+import rs from '../../components/recurring/recurring.module.css'
 
 export default function Income({ setPage }) {
-  const { incomes, expenses, addIncome, delIncome, updateIncome, settings, deleteWithUndo } = useApp()
+  const { incomes, expenses, addIncome, delIncome, updateIncome, settings, deleteWithUndo, addWithRule } = useApp()
   const { t, lang } = useT()
   // Nombres de propiedades/proyectos ya usados (para autocompletar)
   const projectOptions = useMemo(() => [...new Set([...(incomes||[]), ...(expenses||[])].map(r => r?.project).filter(Boolean))], [incomes, expenses])
   const [f, setF]       = useState({ source: '', amount: '', date: today(), category: 'Salario', recurrence: 'Único', notes: '' })
   const [err, setErr]   = useState('')
+  // "Se repite" crea un movimiento fijo (regla) con este ingreso como primera
+  // ocurrencia; reemplaza al viejo selector de recurrencia, que era solo una etiqueta.
+  const [repeat, setRepeat] = useState(false)
+  const [freq, setFreq]     = useState('monthly')
   const [saving, setSaving]   = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm]   = useState({})
@@ -49,7 +55,8 @@ export default function Income({ setPage }) {
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const total       = useMemo(() => filtered.reduce((s, r) => s + r.amount, 0), [filtered])
-  const fixed       = useMemo(() => filtered.filter(r => r.recurrence !== 'Único').reduce((s, r) => s + r.amount, 0), [filtered])
+  // Fijo = vinculado a un movimiento fijo, o con la etiqueta vieja de recurrencia.
+  const fixed       = useMemo(() => filtered.filter(r => r.recurringId || (r.recurrence && r.recurrence !== 'Único')).reduce((s, r) => s + r.amount, 0), [filtered])
   const investment  = useMemo(() => filtered.filter(r => r.inv).reduce((s, r) => s + r.amount, 0), [filtered])
 
   async function saveEdit(r) {
@@ -62,10 +69,14 @@ export default function Income({ setPage }) {
     if (!f.source.trim())               { setErr(t('income.err.name')); return }
     if (!f.amount || Number(f.amount) <= 0) { setErr(t('income.err.amount')); return }
     setErr(''); setSaving(true)
-    try { await addIncome({ ...f, amount: Number(f.amount) }) }
+    const LEGACY = { monthly: 'Mensual', semimonthly: 'Quincenal', biweekly: 'Quincenal', weekly: 'Semanal' }
+    try {
+      if (repeat && addWithRule) await addWithRule('income', { ...f, amount: Number(f.amount), recurrence: LEGACY[freq] || 'Único' }, freq)
+      else await addIncome({ ...f, amount: Number(f.amount), recurrence: 'Único' })
+    }
     catch {}
     finally {
-      setSaving(false)
+      setSaving(false); setRepeat(false); setFreq('monthly')
       setF({ source: '', amount: '', date: today(), category: 'Salario', recurrence: 'Único', notes: '' })
     }
   }
@@ -129,8 +140,18 @@ export default function Income({ setPage }) {
           </FormRow>
           <FormRow>
             <FormGroup label={t('income.form.category')}><select value={f.category} onChange={e => setF(p => ({ ...p, category: e.target.value }))}>{categoriesIncome.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</select></FormGroup>
-            <FormGroup label={t('income.form.recurrence')}><select value={f.recurrence} onChange={e => setF(p => ({ ...p, recurrence: e.target.value }))}>{RECURRENCES.map(r => <option key={r} value={r}>{recurrenceLabel(r, lang)}</option>)}</select></FormGroup>
           </FormRow>
+          <div className={rs.repeat} style={{ justifyContent: 'flex-start' }}>
+            <label className={rs.check}>
+              <input type="checkbox" checked={repeat} onChange={e => setRepeat(e.target.checked)} />
+              {t('rec.repeat.toggle')}
+            </label>
+            {repeat && (
+              <select value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
+                {FREQS.map(fr => <option key={fr} value={fr}>{t(`rec.freq.${fr}`)}</option>)}
+              </select>
+            )}
+          </div>
           <FormGroup label={t('income.form.notes')}><input type="text" value={f.notes} placeholder={t('income.form.notesPh')} onChange={e => setF(p => ({ ...p, notes: e.target.value }))} /></FormGroup>
           <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', margin:'4px 0 10px', lineHeight:1.4 }}>
             <input type="checkbox" checked={!!f.inv} onChange={e => setF(p => ({ ...p, inv: e.target.checked }))} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />
@@ -150,7 +171,7 @@ export default function Income({ setPage }) {
           {filtered.length === 0
             ? <div style={{textAlign:'center',padding:'24px 0'}}>
                 <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12}}>{t('income.emptyText')}</div>
-                <button onClick={() => setF(p => ({...p, recurrence:'Mensual'}))} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('income.emptyBtn')}</button>
+                <button onClick={() => setRepeat(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('income.emptyBtn')}</button>
               </div>
             : <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                 {filtered.map(r => editingId === r.id ? (

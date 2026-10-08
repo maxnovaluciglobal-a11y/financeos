@@ -68,7 +68,7 @@ export default function AhorroFiscal() {
         <PageHeader title={config.titulo} sub={config.subtitulo} />
 
         <Alert type="info">
-          {config.disclaimer} <strong>Cifras {config.vigencia} ({config.fuente}).</strong>
+          {config.disclaimer} <strong>{t('ahorroFiscal.figures', { year: config.vigencia, source: config.fuente })}</strong>
         </Alert>
 
         <Card>
