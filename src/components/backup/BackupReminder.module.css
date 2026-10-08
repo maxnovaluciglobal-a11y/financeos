@@ -1,0 +1,36 @@
+/* Franja de recordatorio de respaldo (Inicio M5). Tono de aviso (warn) en el
+   fondo y el ícono; el texto queda en --tx para mantener contraste AA, y el
+   CTA es Latón con texto Navy (regla de marca). Áreas táctiles de 44px. */
+.strip {
+  display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--rl);
+  background: var(--warn-bg);
+  border: 0.5px solid color-mix(in srgb, var(--warn) 32%, transparent);
+}
+.msg { display: flex; align-items: center; gap: 10px; flex: 1 1 280px; min-width: 0; padding: 4px 0; font-size: 13px; line-height: 1.45; color: var(--tx); }
+.msg svg { color: var(--warn); flex-shrink: 0; }
+.local { color: var(--tm); }
+.actions { display: flex; align-items: center; gap: 2px; margin-left: auto; flex-shrink: 0; }
+.cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 0 16px;
+  border: 0; border-radius: var(--r);
+  background: var(--laton); color: var(--navy);
+  font-family: var(--sans); font-size: 14px; font-weight: 600; white-space: nowrap;
+  box-shadow: var(--sh-1);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
+}
+.cta:hover:not(:disabled) { box-shadow: var(--sh-1), inset 0 0 0 2px rgba(20,33,61,.25); }
+.cta:active:not(:disabled) { transform: scale(.98); }
+.cta:disabled { opacity: .7; cursor: default; }
+.close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border: 0; border-radius: var(--r);
+  background: none; color: var(--tm);
+}
+.close:hover { background: color-mix(in srgb, var(--tx) 6%, transparent); color: var(--tx); }
+@media (prefers-reduced-motion: reduce) {
+  .cta { transition: none; }
+  .cta:active:not(:disabled) { transform: none; }
+}

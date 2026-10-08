@@ -1601,7 +1601,6 @@ export const de = {
     'backup.badge.ok': "Sicherung aktuell",
     'backup.badge.okLong': "Letzte Sicherung: {date}",
     'backup.reminder.none': "Sie haben noch keine Sicherung Ihrer Daten.",
-    'backup.reminder.old': "Ihre letzte Sicherung ist {n} Tage her.",
     'backup.reminder.creating': "Wird erstellt…",
     'backup.reminder.cta': "Jetzt sichern",
     'backup.reminder.dismiss': "Hinweis schließen",
@@ -1766,4 +1765,8 @@ export const de = {
     'home.upcoming.tomorrow': "morgen",
     'home.upcoming.more.one': "Und {n} weitere Zahlung in den nächsten 30 Tagen.",
     'home.upcoming.more.many': "Und {n} weitere Zahlungen in den nächsten 30 Tagen.",
+    'backup.reminder.old.one': "Ihre letzte Sicherung ist {n} Tag her.",
+    'backup.reminder.old.many': "Ihre letzte Sicherung ist {n} Tage her.",
+    'backup.reminder.local': "Ihre Daten liegen nur auf diesem Gerät.",
+    'backup.reminder.aria': "Erinnerung an die Sicherung",
 }

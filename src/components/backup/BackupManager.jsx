@@ -4,7 +4,8 @@
 // FinanceOS no puede recuperar datos si no existe un respaldo previo.
 
 import { useState, useRef, useEffect } from 'react'
-import { Lock } from 'lucide-react'
+import { Lock, History, Download, X } from 'lucide-react'
+import rs from './BackupReminder.module.css'
 import SignalIcon, { InlineIcon } from '../icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { CLOUD_ENABLED } from '../../core/supabase.js'
@@ -179,18 +180,32 @@ export function BackupStatusBadge({ compact = false }) {
 // real: un navegador no puede escribir un archivo en disco sin que el usuario lo
 // vea, así que esto es lo más automático que se puede hacer sin salir del modelo
 // local-only.
+// M5 (oct-2026): franja de la primera vista del Inicio, con tokens (Latón/Navy),
+// ícono + texto y cierre por sesión (sessionStorage): vuelve a aparecer en la
+// próxima visita mientras el respaldo siga viejo. Mismos umbrales de siempre:
+// sin respaldo, o más de 14 días.
+const REMINDER_DISMISS_KEY = 'fos_backup_reminder_dismissed'
+export const BACKUP_STALE_DAYS = 14
+
 export function BackupReminderBanner() {
   const { settings, updateSettings, exportData, incomes, expenses, debts, goals } = useApp()
   const { t } = useT()
-  const [dismissed, setDismissed] = useState(false)
+  const [dismissed, setDismissed] = useState(() => {
+    try { return sessionStorage.getItem(REMINDER_DISMISS_KEY) === '1' } catch { return false }
+  })
   const [exporting, setExporting] = useState(false)
   const lastBackup = settings.lastBackupAt
   const days = daysSince(lastBackup)
   const hasRealData = incomes.length > 0 || expenses.length > 0 || debts.length > 0 || goals.length > 0
 
   // Datos ficticios de demo no necesitan respaldo — nunca mostrar acá.
-  const stale = !settings?.isDemo && hasRealData && (lastBackup === null || lastBackup === undefined || days > 14)
+  const stale = !settings?.isDemo && hasRealData && (lastBackup === null || lastBackup === undefined || days > BACKUP_STALE_DAYS)
   if (!stale || dismissed) return null
+
+  function dismiss() {
+    try { sessionStorage.setItem(REMINDER_DISMISS_KEY, '1') } catch { /* modo privado: solo en memoria */ }
+    setDismissed(true)
+  }
 
   async function handleBackupNow() {
     setExporting(true)
@@ -203,27 +218,22 @@ export function BackupReminderBanner() {
   }
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-      padding: '12px 16px', marginBottom: 16, borderRadius: 10,
-      background: !lastBackup ? '#F3E4CE' : '#F3E4CE',
-      border: '0.5px solid rgba(133,79,11,.25)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <SignalIcon kind="alert" size={18} />
-        <div style={{ fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
-          {!lastBackup ? t('backup.reminder.none') : t('backup.reminder.old', { n: days })}
-        </div>
+    <div className={rs.strip} role="region" aria-label={t('backup.reminder.aria')}>
+      <div className={rs.msg}>
+        <History size={18} strokeWidth={1.7} aria-hidden="true" />
+        <span>
+          {!lastBackup ? t('backup.reminder.none') : plural(t, 'backup.reminder.old', days)}{' '}
+          <span className={rs.local}>{t('backup.reminder.local')}</span>
+        </span>
       </div>
-      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-        <button onClick={handleBackupNow} disabled={exporting} style={{
-          background: 'var(--amb)', color: '#fff', border: 'none', borderRadius: 6,
-          padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: exporting ? 'default' : 'pointer',
-          opacity: exporting ? 0.6 : 1,
-        }}>{exporting ? t('backup.reminder.creating') : `↓ ${t('backup.reminder.cta')}`}</button>
-        <button onClick={() => setDismissed(true)} aria-label={t('backup.reminder.dismiss')} style={{
-          background: 'none', border: 'none', color: 'var(--amb)', fontSize: 13, cursor: 'pointer', minWidth: 32, minHeight: 32,
-        }}>✕</button>
+      <div className={rs.actions}>
+        <button type="button" className={rs.cta} onClick={handleBackupNow} disabled={exporting} aria-busy={exporting}>
+          <Download size={16} strokeWidth={1.9} aria-hidden="true" />
+          {exporting ? t('backup.reminder.creating') : t('backup.reminder.cta')}
+        </button>
+        <button type="button" className={rs.close} onClick={dismiss} aria-label={t('backup.reminder.dismiss')}>
+          <X size={18} strokeWidth={1.8} aria-hidden="true" />
+        </button>
       </div>
     </div>
   )

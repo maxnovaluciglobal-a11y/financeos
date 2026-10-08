@@ -12,6 +12,7 @@
 .pair { display: contents; }
 
 .oBackup   { order: 2; }
+.oBackup:empty, .oNetWorth:empty, .oScore:empty { display: none; }
 .oKpis     { order: 1; }
 .oScore    { order: 3; }
 .oBudget   { order: 4; }
@@ -79,6 +80,8 @@
 
 .secondary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }
 .secondary .kpiValue { font-size: 18px; }
+/* Vista compacta en móvil: solo los tres KPIs principales (antes .fos-kpi-secondary) */
+@media (max-width: 700px) { .secondaryCompact { display: none; } }
 
 /* ── Filas de lista (presupuesto, próximos pagos) ─────────────────────────── */
 .rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
@@ -105,36 +108,6 @@
 
 .footLinks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
 .more { font-size: 12px; color: var(--th); margin-top: 8px; }
-
-/* ── Respaldo ──────────────────────────────────────────────────────────── */
-.backup {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 10px 12px 10px 16px;
-  border-radius: var(--rl);
-  background: var(--warn-bg);
-  border: 0.5px solid color-mix(in srgb, var(--warn) 30%, transparent);
-}
-.backupMsg { display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-width: 0; font-size: 13px; line-height: 1.45; color: var(--tx); }
-.backupMsg svg { color: var(--warn); flex-shrink: 0; }
-.backupActions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: auto; }
-.btnPrimary {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  min-height: 44px; padding: 0 16px;
-  border: 0; border-radius: var(--r);
-  background: var(--laton); color: var(--navy);
-  font-family: var(--sans); font-size: 14px; font-weight: 600; white-space: nowrap;
-  box-shadow: var(--sh-1);
-  transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
-}
-.btnPrimary:hover:not(:disabled) { box-shadow: var(--sh-1), inset 0 0 0 2px rgba(20,33,61,.25); }
-.btnPrimary:active:not(:disabled) { transform: scale(.98); }
-.btnPrimary:disabled { opacity: .7; cursor: default; }
-.iconBtn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; border: 0; border-radius: var(--r);
-  background: none; color: var(--tm);
-}
-.iconBtn:hover { background: color-mix(in srgb, var(--tx) 6%, transparent); color: var(--tx); }
 
 /* ── IQ Score ──────────────────────────────────────────────────────────── */
 .scoreTop { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }

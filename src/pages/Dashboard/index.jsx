@@ -547,9 +547,9 @@ export default function Dashboard({ setPage }) {
               pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}>
               {/* KPIs secundarios: en móvil solo en vista detallada */}
-              <div className={hs.secondary}>
+              <div className={hs.secondary + (compact ? ' ' + hs.secondaryCompact : '')}>
                 {KPIS_SECONDARY.map((k, i) => (
-                  <div key={i} className={`${hs.card} ${hs.kpi}` + (compact ? ' fos-kpi-secondary' : '')}>
+                  <div key={i} className={`${hs.card} ${hs.kpi}`}>
                     <div className={hs.kpiLabel}>{k.label}</div>
                     <div className={`num ${hs.kpiValue}`} style={{ color: k.color }}>
                       {k.count ? <Money><CountUp value={k.raw} format={(v) => `${k.raw < 0 ? '−' : ''}${sym}${fmt(Math.abs(v))}`} /></Money> : k.value}
@@ -785,14 +785,15 @@ export default function Dashboard({ setPage }) {
       )}
 
 
-      {/* Backup recomendado */}
-      <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+      {/* Backup recomendado — nota general en la vista detallada; el aviso con
+          días y botón de un clic es la franja de la primera vista (M5) */}
+      {!compact && <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:3 }}>{t('dash.backup.title')}</div>
           <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{t('dash.backup.text')}</div>
         </div>
         {setPage && <button onClick={() => setPage?.('settings')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'5px 12px', fontSize:11, color:'var(--tx)', cursor:'pointer', fontFamily:'var(--mono)', whiteSpace:'nowrap', flexShrink:0 }}>{t('dash.backup.btn')}</button>}
-      </div>
+      </div>}
       <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.6 }}>
         {t('dash.disclaimer')}
       </div>
