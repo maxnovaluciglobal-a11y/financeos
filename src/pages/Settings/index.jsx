@@ -1,5 +1,7 @@
 // src/pages/Settings/index.jsx — v1.5
 import { useState, useEffect } from 'react'
+import CountrySelect from '../../components/ui/CountrySelect.jsx'
+import { COUNTRIES, countryKey } from '../../data/countries.js'
 import { Lock } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { Card, CardHeader, Btn, PageHeader } from '../../components/ui/index.jsx'
@@ -132,21 +134,15 @@ export default function Settings() {
           </select>
         </div>
         <div style={srow}>
-          <div><div style={slbl}>{t('settings.country.label')}</div><div style={ssub}>{t('settings.country.sub')}</div></div>
-          <select aria-label={t('settings.country.label')} style={{width:'auto'}} value={settings.country||'CL'} onChange={e=>updateSettings({...settings,country:e.target.value})}>
-            <option value="CL">🇨🇱 Chile</option>
-            <option value="MX">🇲🇽 México</option>
-            <option value="AR">🇦🇷 Argentina</option>
-            <option value="CO">🇨🇴 Colombia</option>
-            <option value="EC">🇪🇨 Ecuador</option>
-            <option value="PE">🇵🇪 Perú</option>
-            <option value="VE">🇻🇪 Venezuela</option>
-            <option value="US">🇺🇸 USA</option>
-            <option value="ES">🇪🇸 España</option>
-            <option value="PT">🇵🇹 Portugal</option>
-            <option value="DE">🇩🇪 Alemania</option>
-            <option value="OTHER">🌎 Otro</option>
-          </select>
+          <div><div style={slbl} id="settings-country-label">{t('settings.country.label')}</div><div style={ssub}>{t('settings.country.sub')}</div></div>
+          {/* D5: CountryBadge en vez de banderas emoji. Un <option> nativo no dibuja
+              SVG, por eso es un listbox propio (CountrySelect, patrón APG). */}
+          <CountrySelect
+            labelId="settings-country-label"
+            value={settings.country || 'CL'}
+            onChange={(code) => updateSettings({ ...settings, country: code })}
+            options={COUNTRIES.map(c => ({ code: c.code, label: t(countryKey(c.code)) }))}
+          />
         </div>
         <TaxIdField country={settings.country} taxId={settings.taxId} updateSettings={updateSettings} settings={settings} />
         <div style={srow}>
