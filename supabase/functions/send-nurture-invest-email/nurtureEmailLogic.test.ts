@@ -26,12 +26,14 @@ const LEAD: InvestLead = { id: 'lead-1', email: 'lead@ejemplo.com', perfil: 'mod
 afterEach(() => { vi.unstubAllGlobals() })
 
 describe('renderEmail', () => {
-  it('welcome muestra el perfil calculado y apunta a crear cuenta', () => {
+  const MODES = ['welcome', 'day2', 'day5'] as const
+
+  it('welcome muestra el perfil calculado y apunta a /app', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
     expect(r.subject).toContain('Moderado')
     expect(r.html).toContain('Moderado')
-    expect(r.html).toContain('Armar mi portfolio')
-    expect(r.html).toContain('ref=invest-welcome')
+    expect(r.html).toContain('Abrir MOY IQ Invest')
+    expect(r.html).toContain('https://invest.moyiq.app/app?ref=invest-welcome')
     expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
   })
 
@@ -45,33 +47,58 @@ describe('renderEmail', () => {
   it('welcome ajusta el copy según el perfil conservador', () => {
     const r = renderEmail('welcome', { ...LEAD, perfil: 'conservador' }, CONFIG)
     expect(r.html).toContain('Conservador')
-    expect(r.html).toContain('renta fija')
+    expect(r.html).toContain('preservar tu capital')
   })
 
   it('welcome ajusta el copy según el perfil agresivo', () => {
     const r = renderEmail('welcome', { ...LEAD, perfil: 'agresivo' }, CONFIG)
     expect(r.html).toContain('Agresivo')
-    expect(r.html).toContain('cripto')
+    expect(r.html).toContain('horizonte largo')
   })
 
-  it('day2 explica el Position Builder', () => {
+  it('welcome no sugiere un mix de cartera', () => {
+    for (const perfil of ['conservador', 'moderado', 'agresivo'] as const) {
+      const r = renderEmail('welcome', { ...LEAD, perfil }, CONFIG)
+      expect(r.html).not.toMatch(/mix sugerido|renta variable|cripto/i)
+      expect(r.html).toContain('no una recomendación de inversión')
+    }
+  })
+
+  it('day2 explica el Position Builder con tu regla de riesgo', () => {
     const r = renderEmail('day2', LEAD, CONFIG)
     expect(r.html).toContain('Position Builder')
-    expect(r.html).toContain('Regla del 2%')
+    expect(r.html).toContain('Con tu regla de riesgo')
+    expect(r.html).not.toMatch(/óptimo/i)
     expect(r.html).toContain('ref=invest-d2')
   })
 
-  it('day5 no incluye testimonios inventados', () => {
+  it('day5 describe la beta pública gratuita sin planes ni precios', () => {
     const r = renderEmail('day5', LEAD, CONFIG)
-    expect(r.html).toContain('Sin inventar nada que no esté en el sitio')
+    expect(r.html).toContain('beta pública gratuita')
+    expect(r.html).toContain('ref=invest-d5')
+    expect(r.html).not.toContain('#pricing')
   })
 
-  it('day5 detalla Free vs Pro con features reales del pricing', () => {
-    const r = renderEmail('day5', LEAD, CONFIG)
-    expect(r.html).toContain('$9.99')
-    expect(r.html).toContain('Dividend Calendar')
-    expect(r.html).toContain('Rebalancing Tool')
-    expect(r.html).toContain('ref=invest-d5')
+  it('los 3 correos llevan el disclaimer, mencionan la beta y conservan el unsubscribe', () => {
+    for (const mode of MODES) {
+      const r = renderEmail(mode, LEAD, CONFIG)
+      expect(r.html).toContain('Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.')
+      expect(r.html).toMatch(/beta pública/)
+      expect(r.html).toContain('https://invest.moyiq.app/app')
+      expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
+    }
+  })
+
+  it('ningún correo usa claims prohibidos por el relanzamiento', () => {
+    const banned = [/tiempo real/i, /\bPro\b/, /trial/i, /prueba gratis/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /óptimo/i, /[¡!]/, /\bpodés\b|\btenés\b|\bquerés\b/]
+    for (const mode of MODES) {
+      for (const perfil of ['conservador', 'moderado', 'agresivo'] as const) {
+        const r = renderEmail(mode, { ...LEAD, perfil }, CONFIG)
+        for (const re of banned) {
+          expect(r.subject + r.html).not.toMatch(re)
+        }
+      }
+    }
   })
 })
 

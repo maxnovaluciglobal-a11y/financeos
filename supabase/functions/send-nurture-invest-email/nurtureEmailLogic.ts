@@ -20,20 +20,18 @@
 // RESEND_API_KEY, que está scopeado a otro remitente y devuelve 403 (ver
 // comentario en supabase/functions/auth-email-hook/index.ts).
 //
-// consent_marketing: invest_leads no pedía opt-in explícito — el quiz de
-// perfil-inversor.html hoy es "deja tu email para ver tu resultado", sin
-// checkbox de marketing. Se agregó consent_marketing boolean not null
-// default true en la migración 20260918000900 (mismo razonamiento que
-// 20260918000500 para starter_leads — ver esa migración).
+// consent_marketing: desde el relanzamiento v2 (migración 20261009000100) el
+// default es false y register_invest_lead guarda la casilla del quiz
+// (p_consent_marketing). Los leads anteriores al 2026-10-08 quedaron marcados
+// como enviados y sin consentimiento.
 //
-// Doble opt-in (10-oct-2026): los emails 2 y 3 son marketing y exigen además
-// consent_confirmed_at no nulo (columna agregada en
-// 20261010010000_marketing_double_optin.sql). El quiz de Invest todavía no
-// tiene casilla ni correo de confirmación, así que hoy ninguna fila queda
-// elegible: la secuencia 2/3 de Invest está apagada hasta que invest-web
-// sume la casilla + send-optin-confirmation (y su cron ya está pausado desde
-// 20261008000600). El email 1 (el resultado del quiz que la persona pidió) es
-// transaccional y no cambia.
+// Doble opt-in (10-oct-2026): los emails 2 y 3 son marketing y exigen
+// consent_marketing=true Y consent_confirmed_at no nulo (columna agregada en
+// 20261010010000_marketing_double_optin.sql). Mientras invest-web no mande el
+// correo de confirmación (send-optin-confirmation) tras el quiz, ninguna fila
+// queda elegible: la secuencia 2/3 de Invest está apagada en la práctica. El
+// email 1 (el RESULTADO del quiz que la persona pidió) es transaccional y se
+// manda siempre.
 
 export type NurtureMode = "welcome" | "day2" | "day5";
 export type Perfil = "conservador" | "moderado" | "agresivo";
@@ -66,12 +64,16 @@ const TEXT = "#FAF8F2";
 const MUTED = "#9C9686";
 const GOLD = "#CC9A52";
 
+// Línea legal fija en el pie de los 3 correos (relanzamiento v2, oct-2026).
+export const DISCLAIMER = "Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.";
+
 function wrapHtml(bodyHtml: string, unsubUrl: string): string {
   return `
     <div style="background:${BG};padding:32px 16px">
       <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;background:${CARD};color:${TEXT};line-height:1.55;padding:32px;border-radius:12px;border:1px solid #232838">
         ${bodyHtml}
         <p style="color:${MUTED};font-size:11px;margin-top:32px;border-top:1px solid #232838;padding-top:12px">
+          ${DISCLAIMER}<br>
           MOY IQ Invest · MAXNOVA &amp; Luci Global LLC.
           <a href="${unsubUrl}" style="color:${MUTED}">Darme de baja de estos correos</a>.
         </p>
@@ -84,23 +86,25 @@ export interface RenderedEmail {
   html: string;
 }
 
-const PROFILE_COPY: Record<Perfil, { name: string; desc: string; mix: string[] }> = {
+// Relanzamiento v2 (beta pública gratuita, oct-2026): el copy describe el
+// perfil según las respuestas del quiz, sin sugerir un mix ni recomendar
+// activos. Nada de planes pagos, precios, "tiempo real" ni puntajes.
+const PROFILE_COPY: Record<Perfil, { name: string; desc: string }> = {
   conservador: {
     name: "Conservador",
-    desc: "Priorizas preservar tu capital por sobre el crecimiento. Un mix con mayor peso en renta fija y efectivo suele ajustarse mejor a tu perfil.",
-    mix: ["70-80% renta fija / efectivo", "20-30% renta variable"],
+    desc: "Según tus respuestas, priorizas preservar tu capital por sobre el crecimiento y toleras poco las caídas de valor.",
   },
   moderado: {
     name: "Moderado",
-    desc: "Buscas un balance entre crecimiento y estabilidad. Un mix diversificado entre renta fija y variable suele ajustarse mejor a tu perfil.",
-    mix: ["40-60% renta variable", "40-60% renta fija / efectivo"],
+    desc: "Según tus respuestas, buscas un balance entre crecimiento y estabilidad y toleras caídas de valor moderadas.",
   },
   agresivo: {
     name: "Agresivo",
-    desc: "Priorizas el crecimiento por sobre la estabilidad y tienes horizonte largo para absorber caídas. Un mix con mayor peso en renta variable y activos de mayor riesgo suele ajustarse mejor a tu perfil.",
-    mix: ["70-90% renta variable / cripto", "10-30% renta fija / efectivo"],
+    desc: "Según tus respuestas, priorizas el crecimiento, tienes un horizonte largo y toleras caídas de valor más fuertes.",
   },
 };
+
+const BUTTON_STYLE = `display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600`;
 
 export function renderEmail(mode: NurtureMode, lead: InvestLead, config: NurtureEmailConfig): RenderedEmail {
   const unsub = unsubscribeUrl(config, lead.id);
@@ -113,11 +117,10 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       <h2 style="color:${GOLD};margin-top:0">Tu perfil es ${profile.name}</h2>
       <p>Hola,</p>
       <p>${profile.desc}</p>
-      <p>Mix sugerido como punto de partida:</p>
-      <p>${profile.mix.map((m) => `<span style="display:inline-block;background:#1F2536;color:${TEXT};padding:6px 12px;border-radius:6px;font-size:13px;margin:4px 4px 0 0">${m}</span>`).join("")}</p>
-      <p>Esto es un resultado, no un portfolio. Para armar el portfolio real — con precios en tiempo real, indicadores y seguimiento de tus posiciones, no solo un mix teórico — hace falta una cuenta.</p>
-      <p><a href="https://invest.moyiq.app/app?ref=invest-welcome" style="display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Armar mi portfolio →</a></p>
-      <p style="color:${MUTED};font-size:13px">Plan Free disponible sin tarjeta — 5 posiciones, precios reales, Position Builder.</p>
+      <p>Es un resultado orientativo, no una recomendación de inversión. Sirve para leer tus propias decisiones con más contexto.</p>
+      <p>MOY IQ Invest está abierto como beta pública gratuita. Puedes registrar tus posiciones, ver precios de Yahoo Finance con la hora del último dato y revisar cada indicador con su rango y una lectura simple.</p>
+      <p><a href="https://invest.moyiq.app/app?ref=invest-welcome" style="${BUTTON_STYLE}">Abrir MOY IQ Invest</a></p>
+      <p style="color:${MUTED};font-size:13px">Durante la beta todas las funciones están abiertas para todos, sin tarjeta.</p>
       `,
       unsub,
     );
@@ -125,15 +128,15 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
   }
 
   if (mode === "day2") {
-    const subject = "El Position Builder aplica la Regla del 2% sola";
+    const subject = "Cuánto arriesgar por operación, con tu regla de riesgo";
     const html = wrapHtml(
       `
-      <h2 style="color:${GOLD};margin-top:0">Lo que la mayoría no descubre solo</h2>
+      <h2 style="color:${GOLD};margin-top:0">Con tu regla de riesgo</h2>
       <p>Hola,</p>
-      <p>Una de las herramientas de Invest que menos se usa al principio, y más ahorra errores caros, es el <strong>Position Builder</strong>: ingresas ticker, capital disponible y stop loss, y calcula automáticamente el tamaño de posición óptimo aplicando la Regla del 2% — cuánto arriesgar por operación para no comprometer el capital total en una sola posición mala.</p>
-      <p>Está disponible desde el plan Free. La mayoría entra a Invest a mirar precios y nunca lo prueba porque no está en el centro de la pantalla — vale la pena buscarlo una vez.</p>
-      <p><a href="https://invest.moyiq.app/app?ref=invest-d2#position-builder" style="display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Probar Position Builder →</a></p>
-      <p style="color:${MUTED};font-size:13px">Si todavía no creaste tu cuenta, este es el momento — el plan Free no pide tarjeta.</p>
+      <p>En el <strong>Position Builder</strong> de MOY IQ Invest ingresas el ticker, tu capital y el precio de tu stop loss. Con tu regla de riesgo, por ejemplo no arriesgar más del 2% del capital en una sola operación, calcula cuántas unidades corresponden para que, si el precio llega al stop, la pérdida no supere ese límite.</p>
+      <p>Es un cálculo aritmético: no evalúa si la operación conviene ni sugiere comprar o vender. La decisión es tuya.</p>
+      <p><a href="https://invest.moyiq.app/app?ref=invest-d2#position-builder" style="${BUTTON_STYLE}">Abrir el Position Builder</a></p>
+      <p style="color:${MUTED};font-size:13px">MOY IQ Invest está en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.</p>
       `,
       unsub,
     );
@@ -141,30 +144,22 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
   }
 
   // day5
-  const subject = "Qué diferencia a Free de Pro en Invest";
+  const subject = "Qué incluye la beta pública de MOY IQ Invest";
   const html = wrapHtml(
     `
-    <h2 style="color:${GOLD};margin-top:0">Sin inventar nada que no esté en el sitio</h2>
+    <h2 style="color:${GOLD};margin-top:0">Qué puedes usar durante la beta</h2>
     <p>Hola,</p>
-    <p>La diferencia real entre lo que ya puedes usar en Free y lo que suma Pro (US$9.99/mes):</p>
-    <p><strong style="color:${TEXT}">Free (sin tarjeta, sin fecha de vencimiento):</strong><br>
-    — 5 posiciones en portfolio<br>
-    — Precios reales en tiempo real<br>
-    — Noticias del mercado<br>
-    — 5 indicadores activos<br>
-    — Position Builder<br>
-    — 3 alertas de precio</p>
-    <p><strong style="color:${TEXT}">Pro (US$9.99/mes):</strong><br>
-    — Todo lo de Free, sin límites<br>
-    — Comparador head-to-head (¿AAPL o MSFT? ¿SPY o QQQ?)<br>
-    — Market Sentiment Gauge propio (Fear &amp; Greed calculado con tus datos)<br>
-    — Dividend Calendar con proyección a 12 meses<br>
-    — Rebalancing Tool<br>
-    — Módulo Chile/LATAM + tipo de cambio en tiempo real<br>
-    — Indicadores Pro (RSI/MACD/Bandas de Bollinger), Backtesting Engine, export CSV</p>
-    <p>Si solo sigues de cerca 3-4 posiciones, Free probablemente te alcanza. Si comparas activos seguido o haces seguimiento de dividendos, ahí es donde Pro paga solo.</p>
-    <p><a href="https://invest.moyiq.app/app?ref=invest-d5#pricing" style="display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver planes →</a></p>
-    <p style="color:${MUTED};font-size:13px">Si no es para ti ahora, sigues en Free sin perder nada.</p>
+    <p>MOY IQ Invest está en beta pública gratuita: todas las funciones están abiertas para todos, sin tarjeta. Esto es lo que puedes usar hoy:</p>
+    <p>
+    — Seguimiento de tus posiciones<br>
+    — Precios de Yahoo Finance con retraso, con la hora del último dato visible<br>
+    — Indicadores (RSI, MACD, Bandas de Bollinger), cada uno con su rango y una lectura simple<br>
+    — Position Builder con tu regla de riesgo<br>
+    — Comparador de activos<br>
+    — Alertas de precio</p>
+    <p>La herramienta ordena tu información y explica cada dato. No te dice qué comprar ni vender, y no está conectada a ningún broker.</p>
+    <p><a href="https://invest.moyiq.app/app?ref=invest-d5" style="${BUTTON_STYLE}">Abrir MOY IQ Invest</a></p>
+    <p style="color:${MUTED};font-size:13px">Si no te sirve ahora, puedes darte de baja con el enlace de abajo.</p>
     `,
     unsub,
   );
