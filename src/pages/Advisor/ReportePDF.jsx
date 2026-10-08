@@ -4,7 +4,8 @@
 // AVISO: Contenido informativo. No constituye asesoría financiera certificada.
 
 import { Document, Page, Text, View, StyleSheet, Font, pdf } from '@react-pdf/renderer'
-import { fmtMoney, fmtPct, dateLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subLabel, monthYearLabel } from '../../utils/index.js'
+import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
 
 // ── COLORES ──────────────────────────────────────────────────────────────────
@@ -164,17 +165,19 @@ const s = StyleSheet.create({
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 const STATUS_COLORS = { green: C.grn3, yellow: '#9C5419', red: C.red }
 const STATUS_BG     = { green: C.grnL, yellow: C.ambL,    red: C.redL }
-const STATUS_LABEL  = { green: 'Bien', yellow: 'Atención', red: 'Riesgo' }
 
 function today() {
   return new Date().toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+// "Marzo 2026" / "March 2026" / "März 2026" — mes completo en el idioma de la
+// interfaz (dateLocale), con mayúscula inicial (es/pt lo dan en minúscula).
 function monthLabel(m) {
   if (!m) return '—'
-  const [y, mo] = m.split('-')
-  const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-  return `${meses[+mo]} ${y}`
+  const [y, mo] = m.split('-').map(Number)
+  let s = ''
+  try { s = new Date(y, mo - 1, 1).toLocaleDateString(dateLocale(), { month: 'long' }) } catch {}
+  return s ? `${s.charAt(0).toUpperCase()}${s.slice(1)} ${y}` : monthYearLabel(m)
 }
 
 function parseSteps(text) {
@@ -193,15 +196,19 @@ export function ReporteFinancieroPDF({ data }) {
     advisorNotes,
     expByCategory,
     subMonthly, subAnnual, subCount, subAlerts, subByCategory, netWorth,
+    lang = 'es',
   } = data
+  // react-pdf renderiza fuera del árbol de la app: idioma por data.lang.
+  const t = (key, vars) => translate(lang, key, vars)
+  const client = clientName || t('apdf.client')
 
   const steps = parseSteps(advisorNotes?.nextSteps || '')
 
   return (
     <Document
-      title={`Reporte Financiero — ${clientName || 'Cliente'} — ${monthLabel(activeMonth)}`}
+      title={t('apdf.docTitle', { client, month: monthLabel(activeMonth) })}
       author={brandName}
-      subject="Diagnóstico financiero personal"
+      subject={t('apdf.subject')}
       creator="MOY IQ · MAXNOVA & LUCI Global LLC"
     >
       {/* ── PÁGINA 1 — Resumen ejecutivo ── */}
@@ -211,13 +218,13 @@ export function ReporteFinancieroPDF({ data }) {
         <View style={s.header}>
           <View style={s.headerLeft}>
             <Text style={s.brandName}>{brandName}</Text>
-            <Text style={s.brandSub}>HERRAMIENTA DE ORGANIZACIÓN FINANCIERA</Text>
+            <Text style={s.brandSub}>{t('apdf.brandSub')}</Text>
           </View>
           <View style={s.headerRight}>
-            <Text style={s.reportTitle}>Reporte Financiero</Text>
-            <Text style={s.reportMeta}>Cliente: {clientName || 'Sin nombre'}</Text>
-            <Text style={s.reportMeta}>Periodo: {monthLabel(activeMonth)}</Text>
-            <Text style={s.reportMeta}>Fecha: {today()}</Text>
+            <Text style={s.reportTitle}>{t('apdf.title')}</Text>
+            <Text style={s.reportMeta}>{t('apdf.clientLine', { client: clientName || t('apdf.noName') })}</Text>
+            <Text style={s.reportMeta}>{t('apdf.period', { month: monthLabel(activeMonth) })}</Text>
+            <Text style={s.reportMeta}>{t('apdf.date', { date: today() })}</Text>
           </View>
         </View>
 
@@ -230,58 +237,60 @@ export function ReporteFinancieroPDF({ data }) {
           <View style={{ flex: 1 }}>
             <Text style={[s.scoreLabel, { color: scoreColor }]}>{scoreLabel}</Text>
             <Text style={s.scoreSub}>
-              {signals.filter(sg => sg.status === 'green').length} indicadores saludables ·{' '}
-              {signals.filter(sg => sg.status === 'yellow').length} requieren atención ·{' '}
-              {signals.filter(sg => sg.status === 'red').length} en riesgo
+              {t('apdf.signalsSummary', {
+                green: signals.filter(sg => sg.status === 'green').length,
+                yellow: signals.filter(sg => sg.status === 'yellow').length,
+                red: signals.filter(sg => sg.status === 'red').length,
+              })}
             </Text>
             {advisorNotes?.meetingDate && (
               <Text style={[s.scoreSub, { marginTop: 3, color: C.grn2 }]}>
-                Próxima reunión: {new Date(advisorNotes.meetingDate + 'T12:00').toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}
+                {t('apdf.nextMeeting', { date: new Date(advisorNotes.meetingDate + 'T12:00').toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) })}
               </Text>
             )}
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ fontSize: 7, color: C.ink4, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 0.5 }}>Score financiero</Text>
-            <Text style={{ fontSize: 7, color: C.ink4, marginTop: 2 }}>Basado en {signals.length} indicadores</Text>
+            <Text style={{ fontSize: 7, color: C.ink4, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('apdf.scoreTitle')}</Text>
+            <Text style={{ fontSize: 7, color: C.ink4, marginTop: 2 }}>{t('apdf.scoreBasis', { n: signals.length })}</Text>
           </View>
         </View>
 
         {/* Métricas clave */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Métricas del mes</Text>
+          <Text style={s.sectionTitle}>{t('apdf.metrics')}</Text>
           <View style={s.kpiGrid}>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Ingreso mensual</Text>
+              <Text style={s.kpiLabel}>{t('apdf.income')}</Text>
               <Text style={[s.kpiValue, { color: C.grn }]}>{fmtMoney(mIncome, sym)}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Gasto mensual</Text>
+              <Text style={s.kpiLabel}>{t('apdf.expense')}</Text>
               <Text style={[s.kpiValue, { color: mExpense > mIncome ? C.red : C.ink }]}>{fmtMoney(mExpense, sym)}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Flujo neto</Text>
+              <Text style={s.kpiLabel}>{t('apdf.netFlow')}</Text>
               <Text style={[s.kpiValue, { color: mBalance >= 0 ? C.grn : C.red }]}>{fmtMoney(mBalance, sym)}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Tasa de ahorro</Text>
+              <Text style={s.kpiLabel}>{t('rpdf.savingRate')}</Text>
               <Text style={[s.kpiValue, { color: savingRate >= 0.2 ? C.grn : savingRate >= 0.1 ? '#9C5419' : C.red }]}>{fmtPct(savingRate)}</Text>
-              <Text style={s.kpiSub}>Meta: 20%+</Text>
+              <Text style={s.kpiSub}>{t('apdf.goalPlus')}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Deuda total</Text>
+              <Text style={s.kpiLabel}>{t('apdf.totalDebt')}</Text>
               <Text style={[s.kpiValue, { color: totalDebt > 0 ? '#9C5419' : C.grn }]}>{fmtMoney(totalDebt, sym)}</Text>
-              {totalDebt > 0 && <Text style={s.kpiSub}>Min: {fmtMoney(totalMinPayments, sym)}/mes</Text>}
+              {totalDebt > 0 && <Text style={s.kpiSub}>{t('apdf.minPerMonth', { amount: fmtMoney(totalMinPayments, sym) })}</Text>}
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Metas activas</Text>
+              <Text style={s.kpiLabel}>{t('apdf.activeGoals')}</Text>
               <Text style={s.kpiValue}>{goals.length}</Text>
-              <Text style={s.kpiSub}>{overBudgetCount > 0 ? `${overBudgetCount} presup. excedidos` : 'Presupuestos al día'}</Text>
+              <Text style={s.kpiSub}>{overBudgetCount > 0 ? t('apdf.overBudget', { n: overBudgetCount }) : t('apdf.budgetsOk')}</Text>
             </View>
             {netWorth && (
               <View style={s.kpiBox}>
-                <Text style={s.kpiLabel}>Patrimonio neto (hoy)</Text>
+                <Text style={s.kpiLabel}>{t('rpdf.netWorth')}</Text>
                 <Text style={[s.kpiValue, { color: netWorth.netWorth >= 0 ? C.grn : C.red }]}>{fmtMoney(netWorth.netWorth, sym)}</Text>
-                <Text style={s.kpiSub}>Activos {fmtMoney(netWorth.totalActivos, sym)} − Pasivos {fmtMoney(netWorth.totalPasivos, sym)}</Text>
+                <Text style={s.kpiSub}>{t('rpdf.assetsLiabilities', { assets: fmtMoney(netWorth.totalActivos, sym), liabilities: fmtMoney(netWorth.totalPasivos, sym) })}</Text>
               </View>
             )}
           </View>
@@ -289,26 +298,26 @@ export function ReporteFinancieroPDF({ data }) {
 
         {/* Semáforo */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Semáforo financiero</Text>
+          <Text style={s.sectionTitle}>{t('apdf.trafficLight')}</Text>
           {signals.map((sg, i) => (
             <View key={i} style={[s.signalRow, { backgroundColor: STATUS_BG[sg.status] }]}>
               <View style={[s.signalDot, { backgroundColor: STATUS_COLORS[sg.status] }]} />
               <Text style={s.signalLabel}>{sg.label}</Text>
               <Text style={s.signalNote}>{sg.note}</Text>
               <Text style={[s.signalBadge, { color: STATUS_COLORS[sg.status], backgroundColor: `${STATUS_COLORS[sg.status]}18` }]}>
-                {STATUS_LABEL[sg.status]}
+                {t(`apdf.status.${sg.status}`)}
               </Text>
             </View>
           ))}
           <Text style={{ fontSize: 7, color: C.ink4, marginTop: 5, lineHeight: 1.4 }}>
-            * Señales orientativas. No constituyen diagnóstico financiero certificado.
+            {t('apdf.signalsNote')}
           </Text>
         </View>
 
         {/* Alertas */}
         {alerts.length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Alertas ({alerts.length})</Text>
+            <Text style={s.sectionTitle}>{t('apdf.alerts', { n: alerts.length })}</Text>
             {alerts.slice(0, 5).map((a, i) => {
               const alertColors = {
                 danger: { bg: C.redL, border: C.red, icon: '⚠' },
@@ -329,7 +338,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Footer pág 1 */}
         <View style={s.footer} fixed>
           <Text style={s.footerLeft}>
-            {brandName} · Reporte generado por MOY IQ · {today()}
+            {t('apdf.footer', { brand: brandName, date: today() })}
           </Text>
           <Text style={s.footerRight} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
@@ -344,23 +353,23 @@ export function ReporteFinancieroPDF({ data }) {
           <Text style={[s.brandName, { fontSize: 13 }]}>{brandName}</Text>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={[s.reportMeta, { fontFamily: 'Helvetica-Bold', color: C.ink }]}>
-              {clientName || 'Cliente'} · {monthLabel(activeMonth)}
+              {client} · {monthLabel(activeMonth)}
             </Text>
-            <Text style={s.reportMeta}>Deudas · Metas · Notas del asesor</Text>
+            <Text style={s.reportMeta}>{t('apdf.page2Sub')}</Text>
           </View>
         </View>
 
         {/* Deudas */}
         {debts.length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Deudas activas</Text>
+            <Text style={s.sectionTitle}>{t('apdf.debts')}</Text>
             <View style={s.table}>
               <View style={s.tableHead}>
-                <Text style={[s.thCell, { flex: 3 }]}>Acreedor</Text>
-                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>Saldo pendiente</Text>
-                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>Pago mínimo</Text>
-                <Text style={[s.thCell, { flex: 1, textAlign: 'right' }]}>TAE</Text>
-                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>% Pagado</Text>
+                <Text style={[s.thCell, { flex: 3 }]}>{t('apdf.creditor')}</Text>
+                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>{t('apdf.balance')}</Text>
+                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>{t('apdf.minPayment')}</Text>
+                <Text style={[s.thCell, { flex: 1, textAlign: 'right' }]}>{t('apdf.rate')}</Text>
+                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>{t('apdf.paidPct')}</Text>
               </View>
               {debts.map((d, i) => {
                 const pct = d.initial > 0 ? (d.initial - d.balance) / d.initial : 0
@@ -369,7 +378,7 @@ export function ReporteFinancieroPDF({ data }) {
                   <View key={d.id} style={isLast ? s.tableRowLast : s.tableRow}>
                     <Text style={[s.tdCell, { flex: 3, fontFamily: 'Helvetica-Bold', color: C.ink }]}>{d.creditor}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: '#9C5419', fontFamily: 'Helvetica-Bold' }]}>{fmtMoney(d.balance, sym)}</Text>
-                    <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{fmtMoney(d.minPayment || 0, sym)}/mes</Text>
+                    <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{t('rpdf.perMonth', { amount: fmtMoney(d.minPayment || 0, sym) })}</Text>
                     <Text style={[s.tdCell, { flex: 1, textAlign: 'right', color: d.rate > 15 ? C.red : C.ink2 }]}>{d.rate}%</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: C.grn2 }]}>{fmtPct(pct)}</Text>
                   </View>
@@ -382,7 +391,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Metas */}
         {goals.length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Metas de ahorro</Text>
+            <Text style={s.sectionTitle}>{t('apdf.goals')}</Text>
             {goals.map((g, i) => {
               const pct = g.target > 0 ? Math.min(g.saved / g.target, 1) : 0
               return (
@@ -395,7 +404,7 @@ export function ReporteFinancieroPDF({ data }) {
                     <View style={[s.barFill, { width: `${pct * 100}%`, backgroundColor: g.color || C.grn }]} />
                   </View>
                   <Text style={s.goalSub}>
-                    {fmtPct(pct)} completado · Fecha objetivo: {g.targetDate || '—'} · Prioridad: {g.priority || '—'}
+                    {t('apdf.goalLine', { pct: fmtPct(pct), date: g.targetDate ? monthLabel(String(g.targetDate).slice(0, 7)) : '—', priority: g.priority ? prioLabel(g.priority, lang) : '—' })}
                   </Text>
                 </View>
               )
@@ -406,18 +415,18 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Gastos por categoría */}
         {Object.keys(expByCategory).length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Gastos por categoría</Text>
+            <Text style={s.sectionTitle}>{t('apdf.byCategory')}</Text>
             <View style={s.table}>
               <View style={s.tableHead}>
-                <Text style={[s.thCell, { flex: 3 }]}>Categoría</Text>
-                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>Monto</Text>
-                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>% del gasto total</Text>
+                <Text style={[s.thCell, { flex: 3 }]}>{t('apdf.category')}</Text>
+                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>{t('apdf.amount')}</Text>
+                <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>{t('apdf.pctOfTotal')}</Text>
               </View>
               {Object.entries(expByCategory).sort((a, b) => b[1] - a[1]).map(([cat, amt], i, arr) => {
                 const isLast = i === arr.length - 1
                 return (
                   <View key={cat} style={isLast ? s.tableRowLast : s.tableRow}>
-                    <Text style={[s.tdCell, { flex: 3, fontFamily: 'Helvetica-Bold' }]}>{cat}</Text>
+                    <Text style={[s.tdCell, { flex: 3, fontFamily: 'Helvetica-Bold' }]}>{catName(cat, lang)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{fmtMoney(amt, sym)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: C.ink3 }]}>
                       {mExpense > 0 ? fmtPct(amt / mExpense) : '—'}
@@ -434,9 +443,9 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Observaciones del asesor */}
         {advisorNotes?.comments && (
           <View style={[s.section, { marginBottom: 12 }]}>
-            <Text style={s.sectionTitle}>Observaciones del asesor</Text>
+            <Text style={s.sectionTitle}>{t('apdf.observations')}</Text>
             <View style={s.notesBox}>
-              <Text style={s.notesLabel}>Notas profesionales</Text>
+              <Text style={s.notesLabel}>{t('apdf.notesLabel')}</Text>
               <Text style={s.notesText}>{advisorNotes.comments}</Text>
             </View>
           </View>
@@ -445,7 +454,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Próximos pasos */}
         {steps.length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Próximos pasos</Text>
+            <Text style={s.sectionTitle}>{t('apdf.nextSteps')}</Text>
             {steps.map((step, i) => (
               <View key={i} style={s.stepRow}>
                 <View style={s.stepNum}>
@@ -460,13 +469,13 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Suscripciones y gastos recurrentes */}
         {subCount > 0 && (
           <View style={[s.section, { marginBottom: 12 }]}>
-            <Text style={s.sectionTitle}>Suscripciones y gastos recurrentes</Text>
+            <Text style={s.sectionTitle}>{t('apdf.subs')}</Text>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
               {[
-                { lb: 'Gasto mensual estimado', v: fmtMoney(subMonthly || 0, sym) },
-                { lb: 'Gasto anual estimado',   v: fmtMoney(subAnnual  || 0, sym) },
-                { lb: 'Servicios activos',      v: `${subCount || 0}` },
-                ...(mIncome > 0 ? [{ lb: '% del ingreso', v: fmtPct((subMonthly || 0) / mIncome) }] : []),
+                { lb: t('apdf.subsMonthly'), v: fmtMoney(subMonthly || 0, sym) },
+                { lb: t('apdf.subsAnnual'), v: fmtMoney(subAnnual  || 0, sym) },
+                { lb: t('apdf.subsCount'), v: `${subCount || 0}` },
+                ...(mIncome > 0 ? [{ lb: t('apdf.subsPctIncome'), v: fmtPct((subMonthly || 0) / mIncome) }] : []),
               ].map(m => (
                 <View key={m.lb} style={{ flex: 1, backgroundColor: C.card, padding: 8, borderRadius: 4, border: '0.5 solid ' + C.brd }}>
                   <Text style={{ fontSize: 7, color: C.ink3, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{m.lb}</Text>
@@ -477,13 +486,13 @@ export function ReporteFinancieroPDF({ data }) {
             {(subByCategory || []).length > 0 && (
               <View style={s.table}>
                 <View style={s.tableHead}>
-                  <Text style={[s.thCell, { flex: 3 }]}>Categoría</Text>
-                  <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>Mensual estimado</Text>
-                  <Text style={[s.thCell, { flex: 1, textAlign: 'right' }]}>Servicios</Text>
+                  <Text style={[s.thCell, { flex: 3 }]}>{t('apdf.category')}</Text>
+                  <Text style={[s.thCell, { flex: 2, textAlign: 'right' }]}>{t('apdf.subsMonthlyCol')}</Text>
+                  <Text style={[s.thCell, { flex: 1, textAlign: 'right' }]}>{t('apdf.subsServices')}</Text>
                 </View>
                 {(subByCategory || []).slice(0, 5).map(([cat, data], i, arr) => (
                   <View key={cat} style={i === arr.length - 1 ? s.tableRowLast : s.tableRow}>
-                    <Text style={[s.tdCell, { flex: 3 }]}>{cat}</Text>
+                    <Text style={[s.tdCell, { flex: 3 }]}>{subLabel(cat, lang)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{fmtMoney(data.monthly || 0, sym)}</Text>
                     <Text style={[s.tdCell, { flex: 1, textAlign: 'right', color: C.ink3 }]}>{data.count}</Text>
                   </View>
@@ -498,7 +507,7 @@ export function ReporteFinancieroPDF({ data }) {
               </View>
             )}
             <Text style={{ fontSize: 7, color: C.ink3, marginTop: 6 }}>
-              Gasto proyectado · no incluido en gastos registrados · estas sugerencias son orientativas y no constituyen asesoría financiera.
+              {t('apdf.subsNote')}
             </Text>
           </View>
         )}
@@ -506,19 +515,15 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Disclaimer */}
         <View style={s.disclaimer}>
           <Text style={s.disclaimerText}>
-            AVISO LEGAL: Este reporte es una herramienta de organización, diagnóstico y seguimiento financiero personal.
-            Ha sido generado con MOY IQ a partir de los datos ingresados por el usuario. No constituye asesoría
-            financiera, tributaria, contable ni de inversión. No reemplaza la consulta con profesionales certificados.
-            Las señales, alertas y métricas presentadas son orientativas y se basan exclusivamente en los datos
-            registrados. {brandName !== 'MOY IQ' ? `Elaborado con MOY IQ · MAXNOVA & LUCI Global LLC. ` : ''}
-            Para consultas: {config.app.supportEmail}
+            {t('apdf.legal')} {brandName !== 'MOY IQ' ? `${t('apdf.madeWith')} ` : ''}
+            {t('apdf.contact', { email: config.app.supportEmail })}
           </Text>
         </View>
 
         {/* Footer pág 2 */}
         <View style={s.footer} fixed>
           <Text style={s.footerLeft}>
-            {brandName} · Reporte generado por MOY IQ · {today()}
+            {t('apdf.footer', { brand: brandName, date: today() })}
           </Text>
           <Text style={s.footerRight} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
@@ -529,10 +534,10 @@ export function ReporteFinancieroPDF({ data }) {
 }
 
 // ── HELPERS COMPARTIDOS (descarga local + envío por correo) ──────────────────
-function reportFilename({ clientName, activeMonth }) {
-  const monthStr = activeMonth ? activeMonth.replace('-', '-') : 'reporte'
-  const clientStr = clientName ? clientName.replace(/\s+/g, '-').toLowerCase() : 'cliente'
-  return `reporte-financiero-${clientStr}-${monthStr}.pdf`
+function reportFilename({ clientName, activeMonth, lang = 'es' }) {
+  const monthStr = activeMonth || ''
+  const clientStr = (clientName || translate(lang, 'apdf.client')).replace(/\s+/g, '-').toLowerCase()
+  return `${translate(lang, 'apdf.filename')}-${clientStr}${monthStr ? `-${monthStr}` : ''}.pdf`
 }
 
 async function buildReportePDFBlob(data) {

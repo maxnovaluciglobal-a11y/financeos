@@ -57,12 +57,13 @@ export default function Reports({ setPage }) {
         currency: settings.currency || 'CLP',
         netWorth: nw.hasData ? nw : null,
         generatedAt: new Date().toLocaleDateString(dateLocale(), { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+        lang,
       }
       const blob = await pdf(<ReportPDF data={data} />).toBlob()
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `MOY-IQ-Reporte-${activeMonth}.pdf`
+      a.download = `MOY-IQ-${t('rpdf.filename')}-${activeMonth}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } catch (e) {

@@ -278,7 +278,7 @@ function AdvisorNotes({ notes, onSave }) {
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function Advisor() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { incomes: _incAll, expenses: _expAll, budgets, debts, goals, settings, updateSettings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
@@ -302,7 +302,8 @@ export default function Advisor() {
     monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + e.amount })
     return {
       brandName:        config.app.name,
-      clientName:       advisorNotes.clientName || 'Cliente',
+      clientName:       advisorNotes.clientName || t('apdf.client'),
+      lang,
       activeMonth,
       sym,
       mIncome, mExpense, mBalance, savingRate,

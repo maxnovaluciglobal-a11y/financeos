@@ -4,7 +4,8 @@
 import {
   Document, Page, Text, View, StyleSheet, Font,
 } from '@react-pdf/renderer'
-import { moneyLocale } from '../../utils/index.js'
+import { moneyLocale, catName } from '../../utils/index.js'
+import { translate } from '../../i18n/translate.js'
 
 const ACCENT  = '#356E57'  // --pos / verde-800 (positivo/ingreso), no la marca
 const BRAND   = '#CC9A52'  // --accent-dark (Latón sobre fondo Navy) — header del PDF es oscuro
@@ -75,8 +76,11 @@ export default function ReportPDF({ data }) {
     sym, month, monthLabel,
     totalIncome, totalExpense, totalSubs, totalDebt, balance, savingRate,
     savingGoalPct, necesidad, deseos, expByCat, trendData,
-    overBudget, currency, generatedAt, netWorth,
+    overBudget, currency, generatedAt, netWorth, lang = 'es',
   } = data
+  // react-pdf renderiza fuera del árbol de React de la app (sin AppContext):
+  // el idioma llega en data.lang y se traduce con translate() directo.
+  const t = (key, vars) => translate(lang, key, vars)
 
   const catEntries = Object.entries(expByCat)
     .sort((a, b) => b[1] - a[1])
@@ -87,27 +91,27 @@ export default function ReportPDF({ data }) {
 
   const recs = []
   if (savingRate >= 0.25) {
-    recs.push({ type: 'ok', text: `Tasa de ahorro ${pct(savingRate)} — supera la meta del ${savingGoalPct}%. Excelente.` })
+    recs.push({ type: 'ok', text: t('rpdf.rec.savingOk', { rate: pct(savingRate), goal: savingGoalPct }) })
   } else {
-    recs.push({ type: 'warn', text: `Tasa de ahorro ${pct(savingRate)} — meta: ${savingGoalPct}%. Ajusta gastos variables.` })
+    recs.push({ type: 'warn', text: t('rpdf.rec.savingLow', { rate: pct(savingRate), goal: savingGoalPct }) })
   }
   if (overBudget.length > 0) {
-    recs.push({ type: 'danger', text: `Presupuestos excedidos: ${overBudget.map(b => b.category).join(', ')}.` })
+    recs.push({ type: 'danger', text: t('rpdf.rec.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') }) })
   } else {
-    recs.push({ type: 'ok', text: 'Todos los presupuestos están dentro del límite mensual.' })
+    recs.push({ type: 'ok', text: t('rpdf.rec.allOk') })
   }
   if (deseos > 0 && totalExpense > 0) {
     const dp = deseos / totalExpense
-    recs.push({ type: dp > 0.3 ? 'warn' : 'info', text: `Gastos "deseo": ${fmt(deseos, sym)} (${pct(deseos / (totalIncome || 1))} del ingreso). Regla 50/30/20: máximo 30%.` })
+    recs.push({ type: dp > 0.3 ? 'warn' : 'info', text: t('rpdf.rec.wants', { amount: fmt(deseos, sym), pct: pct(deseos / (totalIncome || 1)) }) })
   }
   if (totalSubs > 0) {
-    recs.push({ type: 'info', text: `Suscripciones recurrentes: ${fmt(totalSubs, sym)}/mes → ${fmt(totalSubs * 12, sym)}/año.` })
+    recs.push({ type: 'info', text: t('rpdf.rec.subs', { month: fmt(totalSubs, sym), year: fmt(totalSubs * 12, sym) }) })
   }
 
   const recColors = { ok: { bg: '#EAF3EF', txt: '#356E57' }, warn: { bg: '#F7EDE0', txt: '#9C5419' }, danger: { bg: '#F5E6E3', txt: '#A23E2E' }, info: { bg: '#E9EEF2', txt: '#3E5A78' } }
 
   return (
-    <Document title={`MOY IQ — Reporte ${monthLabel}`} author="MOY IQ" creator="MOY IQ v1.5">
+    <Document title={t('rpdf.docTitle', { month: monthLabel })} author="MOY IQ" creator="MOY IQ v1.5">
       <Page size="A4" style={s.page}>
 
         {/* Header */}
@@ -115,64 +119,64 @@ export default function ReportPDF({ data }) {
           <View style={s.hRow}>
             <View>
               <Text style={s.hTitle}>MOY IQ</Text>
-              <Text style={s.hSub}>Reporte financiero personal · {monthLabel}</Text>
+              <Text style={s.hSub}>{t('rpdf.sub', { month: monthLabel })}</Text>
             </View>
             <View>
-              <Text style={s.hMeta}>Generado: {generatedAt}</Text>
-              <Text style={s.hMeta}>Moneda: {currency}</Text>
-              <Text style={s.hMeta}>Uso orientativo — no asesoría financiera</Text>
+              <Text style={s.hMeta}>{t('rpdf.generated', { date: generatedAt })}</Text>
+              <Text style={s.hMeta}>{t('rpdf.currency', { currency })}</Text>
+              <Text style={s.hMeta}>{t('rpdf.guidance')}</Text>
             </View>
           </View>
         </View>
 
         {/* KPIs */}
         <View style={s.section}>
-          <Text style={s.secTitle}>Resumen del mes</Text>
+          <Text style={s.secTitle}>{t('rpdf.summary')}</Text>
           <View style={s.kpiRow}>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Ingresos</Text>
+              <Text style={s.kpiLabel}>{t('chart.income')}</Text>
               <Text style={[s.kpiVal, { color: ACCENT }]}>{fmt(totalIncome, sym)}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Gastos</Text>
+              <Text style={s.kpiLabel}>{t('chart.expenses')}</Text>
               <Text style={[s.kpiVal, { color: RED }]}>{fmt(totalExpense, sym)}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Balance neto</Text>
+              <Text style={s.kpiLabel}>{t('rpdf.net')}</Text>
               <Text style={[s.kpiVal, { color: balance >= 0 ? ACCENT : RED }]}>{fmt(balance, sym)}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Tasa de ahorro</Text>
+              <Text style={s.kpiLabel}>{t('rpdf.savingRate')}</Text>
               <Text style={[s.kpiVal, { color: savingRate >= 0.2 ? ACCENT : savingRate >= 0.1 ? AMBER : RED }]}>{pct(savingRate)}</Text>
-              <Text style={s.kpiSub}>Meta: {savingGoalPct}%</Text>
+              <Text style={s.kpiSub}>{t('rpdf.goal', { pct: savingGoalPct })}</Text>
             </View>
           </View>
           <View style={s.kpiRow}>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Suscripciones</Text>
-              <Text style={[s.kpiVal, { color: AMBER, fontSize: 11 }]}>{fmt(totalSubs, sym)}/mes</Text>
-              <Text style={s.kpiSub}>{fmt(totalSubs * 12, sym)}/año</Text>
+              <Text style={s.kpiLabel}>{t('chart.flow.subs')}</Text>
+              <Text style={[s.kpiVal, { color: AMBER, fontSize: 11 }]}>{t('rpdf.perMonth', { amount: fmt(totalSubs, sym) })}</Text>
+              <Text style={s.kpiSub}>{t('rpdf.perYear', { amount: fmt(totalSubs * 12, sym) })}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Pagos deuda</Text>
-              <Text style={[s.kpiVal, { color: RED, fontSize: 11 }]}>{fmt(totalDebt, sym)}/mes</Text>
+              <Text style={s.kpiLabel}>{t('chart.flow.debt')}</Text>
+              <Text style={[s.kpiVal, { color: RED, fontSize: 11 }]}>{t('rpdf.perMonth', { amount: fmt(totalDebt, sym) })}</Text>
             </View>
             {netWorth && (
               <View style={s.kpiBox}>
-                <Text style={s.kpiLabel}>Patrimonio neto (hoy)</Text>
+                <Text style={s.kpiLabel}>{t('rpdf.netWorth')}</Text>
                 <Text style={[s.kpiVal, { color: netWorth.netWorth >= 0 ? ACCENT : RED, fontSize: 11 }]}>{fmt(netWorth.netWorth, sym)}</Text>
-                <Text style={s.kpiSub}>Activos {fmt(netWorth.totalActivos, sym)} − Pasivos {fmt(netWorth.totalPasivos, sym)}</Text>
+                <Text style={s.kpiSub}>{t('rpdf.assetsLiabilities', { assets: fmt(netWorth.totalActivos, sym), liabilities: fmt(netWorth.totalPasivos, sym) })}</Text>
               </View>
             )}
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Necesidades</Text>
+              <Text style={s.kpiLabel}>{t('rpdf.needs')}</Text>
               <Text style={[s.kpiVal, { fontSize: 11 }]}>{fmt(necesidad, sym)}</Text>
-              <Text style={s.kpiSub}>{totalExpense > 0 ? pct(necesidad / totalExpense) : '—'} del gasto</Text>
+              <Text style={s.kpiSub}>{t('rpdf.ofSpending', { pct: totalExpense > 0 ? pct(necesidad / totalExpense) : '—' })}</Text>
             </View>
             <View style={s.kpiBox}>
-              <Text style={s.kpiLabel}>Deseos / Ocio</Text>
+              <Text style={s.kpiLabel}>{t('rpdf.wants')}</Text>
               <Text style={[s.kpiVal, { fontSize: 11 }]}>{fmt(deseos, sym)}</Text>
-              <Text style={s.kpiSub}>{totalExpense > 0 ? pct(deseos / totalExpense) : '—'} del gasto</Text>
+              <Text style={s.kpiSub}>{t('rpdf.ofSpending', { pct: totalExpense > 0 ? pct(deseos / totalExpense) : '—' })}</Text>
             </View>
           </View>
         </View>
@@ -180,12 +184,12 @@ export default function ReportPDF({ data }) {
         {/* Gastos por categoría */}
         {catEntries.length > 0 && (
           <View style={s.section}>
-            <Text style={s.secTitle}>Gastos por categoría</Text>
+            <Text style={s.secTitle}>{t('rpdf.byCategory')}</Text>
             {catEntries.map(([cat, amt], i) => {
               const w = (amt / maxCat) * 100
               return (
                 <View key={cat} style={s.barRow}>
-                  <Text style={s.barLabel}>{cat}</Text>
+                  <Text style={s.barLabel}>{catName(cat, lang)}</Text>
                   <View style={s.barTrack}>
                     <View style={[s.barFill, { width: `${w}%`, backgroundColor: CAT_COLORS[i % CAT_COLORS.length] }]} />
                   </View>
@@ -201,20 +205,20 @@ export default function ReportPDF({ data }) {
 
         {/* Tendencia 6 meses */}
         <View style={s.section}>
-          <Text style={s.secTitle}>Tendencia — últimos 6 meses</Text>
+          <Text style={s.secTitle}>{t('rpdf.trend')}</Text>
           {/* Mini barras horizontales por mes */}
           {trendData.map((d) => (
             <View key={d.mes} style={{ marginBottom: 6 }}>
               <Text style={{ fontSize: 7, color: GRAY, marginBottom: 2 }}>{d.mes}</Text>
               <View style={s.barRow}>
-                <Text style={[s.barLabel, { width: 44, color: ACCENT }]}>Ingresos</Text>
+                <Text style={[s.barLabel, { width: 54, color: ACCENT }]}>{t('chart.income')}</Text>
                 <View style={s.barTrack}>
                   <View style={[s.barFill, { width: `${(d.Ingresos / maxTrend) * 100}%`, backgroundColor: ACCENT }]} />
                 </View>
                 <Text style={s.barAmt}>{fmt(d.Ingresos, sym)}</Text>
               </View>
               <View style={s.barRow}>
-                <Text style={[s.barLabel, { width: 44, color: RED }]}>Gastos</Text>
+                <Text style={[s.barLabel, { width: 54, color: RED }]}>{t('chart.expenses')}</Text>
                 <View style={s.barTrack}>
                   <View style={[s.barFill, { width: `${(d.Gastos / maxTrend) * 100}%`, backgroundColor: RED }]} />
                 </View>
@@ -227,16 +231,16 @@ export default function ReportPDF({ data }) {
         {/* Regla 50/30/20 */}
         {totalIncome > 0 && (
           <View style={s.section}>
-            <Text style={s.secTitle}>Regla 50 / 30 / 20</Text>
+            <Text style={s.secTitle}>{t('rpdf.rule')}</Text>
             {[
-              { label: 'Necesidades + Deudas', actual: necesidad + totalDebt, ideal: 0.5, color: ACCENT },
-              { label: 'Deseos / Ocio',         actual: deseos,               ideal: 0.3, color: AMBER },
-              { label: 'Ahorro neto',           actual: Math.max(0, balance), ideal: 0.2, color: '#60a5fa' },
+              { key: 'needs',   label: t('rpdf.rule.needsDebt'), actual: necesidad + totalDebt, ideal: 0.5, color: ACCENT },
+              { key: 'wants',   label: t('rpdf.wants'),          actual: deseos,               ideal: 0.3, color: AMBER },
+              { key: 'savings', label: t('rpdf.rule.savings'),   actual: Math.max(0, balance), ideal: 0.2, color: '#60a5fa' },
             ].map(r => {
               const ap = totalIncome > 0 ? r.actual / totalIncome : 0
-              const ok = r.label === 'Ahorro neto' ? ap >= r.ideal : ap <= r.ideal
+              const ok = r.key === 'savings' ? ap >= r.ideal : ap <= r.ideal
               return (
-                <View key={r.label} style={s.ruleRow}>
+                <View key={r.key} style={s.ruleRow}>
                   <Text style={s.ruleLabel}>{r.label}</Text>
                   <View style={s.ruleTrack}>
                     <View style={[s.barFill, { width: `${Math.min(ap / r.ideal, 1) * 100}%`, backgroundColor: ok ? r.color : RED }]} />
@@ -252,7 +256,7 @@ export default function ReportPDF({ data }) {
 
         {/* Recomendaciones */}
         <View style={s.section}>
-          <Text style={s.secTitle}>Recomendaciones</Text>
+          <Text style={s.secTitle}>{t('rpdf.recs')}</Text>
           {recs.map((r, i) => (
             <View key={i} style={[s.recBox, { backgroundColor: recColors[r.type]?.bg || LGRAY }]}>
               <Text style={[s.recText, { color: recColors[r.type]?.txt || DARK }]}>{r.text}</Text>
@@ -264,9 +268,7 @@ export default function ReportPDF({ data }) {
         <View style={s.footer} fixed>
           <View style={s.divider} />
           <Text style={s.footTxt}>
-            MOY IQ v1.5 · MAXNOVA {'&'} LUCI Global LLC · Datos procesados localmente · Cifrado de extremo a extremo.{'\n'}
-            Este reporte es de carácter orientativo y NO constituye asesoría financiera, tributaria, legal ni de inversión.
-            Consulta a un profesional certificado para decisiones financieras formales.
+            {t('rpdf.footer')}
           </Text>
         </View>
 

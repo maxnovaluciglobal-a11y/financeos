@@ -184,7 +184,7 @@ describe('paridad de las claves de english-ready (es/en/pt/de)', () => {
   const prefixes = [
     'toast.', 'demo.toast.', 'csv.', 'micro.', 'chart.', 'prio.', 'ring.', 'seal.', 'ui.',
     'errorBoundary.', 'subcat.', 'expsub.', 'subs.metrics.', 'cat.', 'settings.dualCurrency.',
-    'settings.footer', 'adv.notes.nextStepsPh', 'tpl.', 'tplsel.',
+    'settings.footer', 'adv.notes.nextStepsPh', 'tpl.', 'tplsel.', 'rpdf.', 'apdf.',
   ]
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
