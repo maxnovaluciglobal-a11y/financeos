@@ -14,7 +14,7 @@ import { PRIVACY_CONTENT } from './privacyContent.jsx'
 import { TERMS_CONTENT } from './termsContent.jsx'
 import { LICENSE_CONTENT } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
-import { LAST_UPDATED, LEGAL_LANGS, pickLang, SUPPORT_EMAIL } from './legalMeta.js'
+import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_LANGS, pickLang, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -70,9 +70,14 @@ describe('legal pages × languages', () => {
           expect(text).toContain(SUPPORT_EMAIL)
         })
 
-        it('never claims there are no accounts and never promises a trial', () => {
+        it('never claims there are no accounts; a trial appears only as a conditional clause in the terms', () => {
           expect(text).not.toMatch(NO_ACCOUNTS)
-          expect(text).not.toMatch(/\btrial\b|prueba gratis|prueba gratuita|período de teste|periodo de teste|Testphase|kostenlos testen|Probezeit/i)
+          const TRIAL = /\btrial\b|prueba gratis|prueba gratuita|teste gratuito|período de teste|periodo de teste|Testphase|kostenlos testen|Probezeit/i
+          if (page === 'terms') {
+            expect(text).toMatch(/si se ofrece|if offered|se oferecido|falls angeboten/)
+          } else {
+            expect(text).not.toMatch(TRIAL)
+          }
         })
 
         it('uses MOY IQ as product name (FinanceOS only as former name)', () => {
@@ -131,11 +136,30 @@ describe('terms facts', () => {
   }
 })
 
-describe('German draft markers', () => {
+describe('review completed: no draft markers left', () => {
   for (const { file } of Object.values(PAGES)) {
-    it(`${file} flags the German block for legal review`, () => {
+    it(`${file} has no pending-review markers or draft notices`, () => {
       const src = readFileSync(join(here, file), 'utf8')
-      expect(src).toContain('RECHTLICHE PRÜFUNG AUSSTEHEND')
+      expect(src).not.toMatch(/PRÜFUNG AUSSTEHEND|REVISIÓN LEGAL PENDIENTE|LEGAL REVIEW PENDING|punto de partida informativo|informational starting point|ponto de partida informativo|Entwurf und wird derzeit/)
+    })
+  }
+})
+
+describe('company identification and renewal facts', () => {
+  for (const lang of LEGAL_LANGS) {
+    for (const page of ['terms', 'privacy']) {
+      it(`${page}/${lang}: names the Florida LLC, its Document Number and address`, () => {
+        const { text } = render(page, lang)
+        expect(text).toContain(COMPANY.documentNumber)
+        expect(text).toContain(COMPANY.address)
+        expect(text).toContain('Florida')
+      })
+    }
+    it(`terms/${lang}: automatic renewal and online cancellation`, () => {
+      const { text } = render('terms', lang)
+      expect(text).toMatch(/automáticamente|automatically|automaticamente|verlängert sich/)
+      if (lang === 'de') expect(text).toMatch(/Verträge hier kündigen/)
+      else expect(text).toContain(CANCEL_URLS[lang].replace(/^https:\/\//, ''))
     })
   }
 })

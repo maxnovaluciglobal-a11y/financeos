@@ -196,3 +196,16 @@
   font-size: 14px;
   margin-top: 1px;
 }
+
+/* Identificación de la empresa (Términos y Privacidad) */
+.company {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--tm);
+  line-height: 1.6;
+  background: var(--sur);
+  border: 0.5px solid var(--brd);
+  border-radius: var(--rl, 10px);
+  padding: 12px 14px;
+  margin: 8px 0;
+}

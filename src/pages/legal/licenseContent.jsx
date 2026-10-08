@@ -11,6 +11,7 @@
 // formato FNOS-… y cualquier licencia emitida con el nombre anterior tiene que seguir
 // reconociéndose como válida.
 // Enterprise / white-label: bajo contacto directo.
+// Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
 
 // vitest.config.js no carga el plugin de React: el JSX se transforma con el runtime
 // clásico (React.createElement), así que React tiene que estar en scope.
@@ -39,7 +40,7 @@ export const PLANS = {
       featured: true,
       allowed: [
         'Todo lo del plan Starter',
-        'Uso comercial con hasta 30 clientes mientras la suscripción esté activa',
+        'Uso profesional con hasta 30 clientes mientras la suscripción esté activa',
         'Modo Asesor: semáforo, alertas y reporte PDF profesional para trabajar con clientes',
         'Exportación de reportes PDF',
         'Multi-moneda',
@@ -72,7 +73,7 @@ export const PLANS = {
       featured: true,
       allowed: [
         'Everything in the Starter plan',
-        'Commercial use with up to 30 clients while the subscription is active',
+        'Professional use with up to 30 clients while the subscription is active',
         'Advisor Mode: status signals, alerts, and a professional PDF report for client work',
         'PDF report export',
         'Multi-currency',
@@ -105,7 +106,7 @@ export const PLANS = {
       featured: true,
       allowed: [
         'Tudo do plano Starter',
-        'Uso comercial com até 30 clientes enquanto a assinatura estiver ativa',
+        'Uso profissional com até 30 clientes enquanto a assinatura estiver ativa',
         'Modo Consultor: semáforo, alertas e relatório PDF profissional para trabalhar com clientes',
         'Exportação de relatórios PDF',
         'Multimoeda',
@@ -119,7 +120,6 @@ export const PLANS = {
       ],
     },
   ],
-  // RECHTLICHE PRÜFUNG AUSSTEHEND — Entwurf, vor Verkauf an Verbraucher in DE von einer Anwältin/einem Anwalt prüfen lassen
   de: [
     {
       name: 'Starter — kostenlos',
@@ -158,12 +158,12 @@ export const PLANS = {
 export const COPY = {
   es: {
     title: 'Términos de Licencia',
-    intro: 'El plan que uses determina cómo puedes usar MOY IQ. Para usar la app necesitas una cuenta gratuita. Starter es gratis, de uso personal y no vence; Pro es una suscripción con renovación automática que permite uso comercial con hasta 30 clientes.',
+    intro: 'El plan que uses determina cómo puedes usar MOY IQ. Para usar la app necesitas una cuenta gratuita. Starter es gratis, de uso personal y no vence; Pro es una suscripción con renovación automática que permite uso profesional con hasta 30 clientes.',
     allowed: '✓ Permitido',
     notAllowed: '✗ No permitido',
     billingTitle: 'Suscripción Pro: renovación y cancelación',
     billing1: 'Al contratar Pro, eliges facturación mensual (US$4.99) o anual (US$39.99). El cobro se repite automáticamente al final de cada período (cada mes o cada año, según lo elegido) hasta que canceles.',
-    billing2: 'Puedes cancelar cuando quieras escribiendo a support@moyiq.app. Tu acceso Pro sigue activo hasta el final del período ya pagado. No se hacen reembolsos parciales por el tiempo no usado, salvo la garantía técnica de 14 días desde la compra descrita en los Términos de Uso.',
+    billing2: 'Puedes cancelar en línea cuando quieras en moyiq.app/cancelar.html (cuando esté disponible, también en Cuenta → Gestionar suscripción) o escribiendo a support@moyiq.app. La cancelación rige al final del período ya pagado y hasta entonces conservas Pro. No se hacen reembolsos parciales por el tiempo no usado, salvo la garantía técnica de 14 días, el derecho de desistimiento de los consumidores de la UE y lo que exija la ley imperativa de tu país, según los Términos de Uso.',
     billing3: 'Al cancelar o si un cobro de renovación no se puede procesar, tu cuenta pasa automáticamente al plan Starter. No pierdes tus datos, solo el acceso a las funciones exclusivas de Pro.',
     enterpriseTitle: 'Enterprise / marca blanca',
     enterpriseText: 'La redistribución de MOY IQ bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@moyiq.app para una propuesta.',
@@ -174,16 +174,15 @@ export const COPY = {
     formerName: 'MOY IQ se llamaba antes FinanceOS. Las licencias emitidas con ese nombre (claves con formato FNOS-…) siguen siendo válidas; el cambio de nombre no modifica sus derechos.',
     contactTitle: 'Contacto para licencias',
     contactText: 'Para consultas sobre cambio de plan, usos no contemplados o licencias personalizadas: ',
-    notice: 'Este documento fue redactado como punto de partida informativo. No constituye asesoría legal. Se recomienda revisión por un abogado antes de uso comercial definitivo.',
   },
   en: {
     title: 'License Terms',
-    intro: 'The plan you use determines how you may use MOY IQ. You need a free account to use the app. Starter is free, for personal use, and never expires; Pro is an automatically renewing subscription that allows commercial use with up to 30 clients.',
+    intro: 'The plan you use determines how you may use MOY IQ. You need a free account to use the app. Starter is free, for personal use, and never expires; Pro is an automatically renewing subscription that allows professional use with up to 30 clients.',
     allowed: '✓ Allowed',
     notAllowed: '✗ Not allowed',
     billingTitle: 'Pro subscription: renewal and cancellation',
     billing1: 'When you subscribe to Pro, you choose monthly (US$4.99) or annual (US$39.99) billing. The charge repeats automatically at the end of each period (every month or every year, as chosen) until you cancel.',
-    billing2: 'You can cancel anytime by writing to support@moyiq.app. Your Pro access stays active until the end of the period you already paid for. There are no partial refunds for unused time, except under the 14-day technical guarantee from purchase described in the Terms of Use.',
+    billing2: 'You can cancel online anytime at moyiq.app/en/cancel.html (when available, also under Account → Manage subscription) or by writing to support@moyiq.app. Cancellation takes effect at the end of the period already paid, and you keep Pro until then. There are no partial refunds for unused time, except under the 14-day technical guarantee, the EU consumer right of withdrawal, and where mandatory law in your country requires one, as set out in the Terms of Use.',
     billing3: 'When you cancel, or if a renewal charge cannot be processed, your account moves automatically to the Starter plan. You keep your data; you only lose access to Pro-only features.',
     enterpriseTitle: 'Enterprise / white-label',
     enterpriseText: 'Redistributing MOY IQ under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@moyiq.app for a proposal.',
@@ -194,16 +193,15 @@ export const COPY = {
     formerName: 'MOY IQ was previously called FinanceOS. Licenses issued under that name (keys in the FNOS-… format) remain valid; the name change does not alter their rights.',
     contactTitle: 'License contact',
     contactText: 'For plan changes, uses not covered here, or custom licenses: ',
-    notice: 'This document was drafted as an informational starting point. It is not legal advice. Review by an attorney is recommended before definitive commercial use.',
   },
   pt: {
     title: 'Termos de Licença',
-    intro: 'O plano que você usa determina como pode usar o MOY IQ. Para usar o app você precisa de uma conta gratuita. O Starter é gratuito, de uso pessoal e não vence; o Pro é uma assinatura com renovação automática que permite uso comercial com até 30 clientes.',
+    intro: 'O plano que você usa determina como pode usar o MOY IQ. Para usar o app você precisa de uma conta gratuita. O Starter é gratuito, de uso pessoal e não vence; o Pro é uma assinatura com renovação automática que permite uso profissional com até 30 clientes.',
     allowed: '✓ Permitido',
     notAllowed: '✗ Não permitido',
     billingTitle: 'Assinatura Pro: renovação e cancelamento',
     billing1: 'Ao assinar o Pro, você escolhe cobrança mensal (US$4.99) ou anual (US$39.99). A cobrança se repete automaticamente ao final de cada período (a cada mês ou a cada ano, conforme escolhido) até você cancelar.',
-    billing2: 'Você pode cancelar quando quiser escrevendo para support@moyiq.app. Seu acesso Pro continua ativo até o final do período já pago. Não há reembolso parcial pelo tempo não utilizado, exceto pela garantia técnica de 14 dias a partir da compra descrita nos Termos de Uso.',
+    billing2: 'Você pode cancelar online quando quiser em moyiq.app/cancelar.html (quando estiver disponível, também em Conta → Gerenciar assinatura) ou escrevendo para support@moyiq.app. O cancelamento vale ao final do período já pago e até lá você mantém o Pro. Não há reembolso parcial pelo tempo não utilizado, exceto pela garantia técnica de 14 dias, pelo direito de arrependimento dos consumidores da UE e pelo que a lei imperativa do seu país exigir, conforme os Termos de Uso.',
     billing3: 'Ao cancelar, ou se uma cobrança de renovação não puder ser processada, sua conta passa automaticamente para o plano Starter. Você não perde seus dados, apenas o acesso às funções exclusivas do Pro.',
     enterpriseTitle: 'Enterprise / marca branca',
     enterpriseText: 'A redistribuição do MOY IQ sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@moyiq.app para receber uma proposta.',
@@ -214,10 +212,8 @@ export const COPY = {
     formerName: 'O MOY IQ se chamava FinanceOS. As licenças emitidas com esse nome (chaves no formato FNOS-…) continuam válidas; a mudança de nome não altera os seus direitos.',
     contactTitle: 'Contato para licenças',
     contactText: 'Para questões sobre mudança de plano, usos não previstos ou licenças personalizadas: ',
-    notice: 'Este documento foi redigido como ponto de partida informativo. Não constitui aconselhamento jurídico. Recomenda-se revisão por um advogado antes do uso comercial definitivo.',
   },
-  // RECHTLICHE PRÜFUNG AUSSTEHEND — Entwurf, vor Verkauf an Verbraucher in DE von einer Anwältin/einem Anwalt prüfen lassen
-  // Laufzeit und Kündigung folgen dem AGB-Entwurf (de/agb.html § 6), nicht den anderen Sprachen.
+  // Laufzeit und Kündigung folgen den AGB (de/agb.html § 6), nicht den anderen Sprachen.
   de: {
     title: 'Lizenzbedingungen',
     intro: 'Der Tarif, den Sie nutzen, bestimmt, wie Sie MOY IQ verwenden dürfen. Für die Nutzung benötigen Sie ein kostenloses Benutzerkonto. Starter ist kostenlos, für private Zwecke und unbefristet; Pro ist ein Abo, das sich automatisch verlängert und die berufliche Nutzung mit bis zu 30 Klientinnen und Klienten erlaubt.',
@@ -227,8 +223,9 @@ export const COPY = {
     billing1: 'Bei Pro wählen Sie monatliche (US$ 4,99) oder jährliche (US$ 39,99) Abrechnung. Das Monatsabo verlängert sich jeweils um einen Monat. Das Jahresabo hat eine erste Laufzeit von zwölf Monaten und verlängert sich danach auf unbestimmte Zeit; es kann dann jederzeit mit einer Frist von einem Monat gekündigt werden, im Voraus gezahlte Entgelte für die Zeit danach erstatten wir anteilig.',
     billing2: (
       <>
-        Sie können per E-Mail an support@moyiq.app, per Brief oder über die Kündigungsschaltfläche{' '}
-        {deLegalRef('kuendigen', '„Verträge hier kündigen“')} kündigen. Ihr Pro-Zugang bleibt bis
+        Sie können über die Kündigungsschaltfläche{' '}
+        {deLegalRef('kuendigen', '„Verträge hier kündigen“')}, sobald verfügbar in der App unter „Konto →
+        Abo verwalten“, per E-Mail an support@moyiq.app oder per Brief kündigen. Ihr Pro-Zugang bleibt bis
         zum Ende des bezahlten Zeitraums aktiv. Ihr gesetzliches Widerrufsrecht und die technische
         Garantie von 14 Tagen ab Kauf (siehe AGB) bleiben unberührt.
       </>
@@ -243,7 +240,6 @@ export const COPY = {
     formerName: 'MOY IQ hieß früher FinanceOS. Unter diesem Namen ausgegebene Lizenzen (Schlüssel im Format FNOS-…) bleiben gültig; die Namensänderung ändert nichts an ihren Rechten.',
     contactTitle: 'Kontakt zu Lizenzen',
     contactText: 'Für Fragen zu Tarifwechseln, hier nicht geregelten Nutzungen oder individuellen Lizenzen: ',
-    notice: 'Dieser Text ist ein Entwurf und wird derzeit rechtlich geprüft. Er stellt keine Rechtsberatung dar.',
   },
 }
 
@@ -300,7 +296,6 @@ function LicenseBody({ c, plans }) {
         <p>{c.contactText}<strong>support@moyiq.app</strong></p>
       </div>
 
-      <div className={s.legalNotice}>{c.notice}</div>
     </div>
   )
 }

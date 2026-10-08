@@ -1,7 +1,8 @@
 // src/pages/legal/privacyContent.jsx
 // Política de Privacidad — MOY IQ, contenido por idioma (es/en/pt/de).
 // Sin hooks ni useT: Privacy.jsx elige el idioma y legal.test.js lo renderiza en node.
-// AVISO: punto de partida redactado sin abogado. Revisar antes de uso comercial definitivo.
+// Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
+// Riesgos residuales: sin representante art. 27 RGPD, sin double opt-in para emails promocionales.
 // ACTUALIZADO 2026-10: la app exige cuenta (email/Google); se listan los datos que
 // sí guardamos (Supabase), los proveedores (Supabase, Stripe, Resend, Vercel,
 // Formspree) y el envío de reportes PDF del Modo Asesor, que pasa sin cifrado de
@@ -14,6 +15,7 @@ import React from 'react' // eslint-disable-line no-unused-vars
 import s from './legal.module.css'
 import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
+import { CompanyBlock } from './companyBlock.jsx'
 
 function EsBody() {
   return (
@@ -34,6 +36,7 @@ function EsBody() {
           qué datos se quedan en el dispositivo del usuario, qué datos guardamos en nuestros
           servidores, con qué proveedores trabajamos y cómo ejercer los derechos sobre esos datos.
         </p>
+        <CompanyBlock lang="es" />
       </div>
 
       <div className={s.section}>
@@ -135,7 +138,7 @@ function EsBody() {
         <h2>7. Proveedores</h2>
         <p>Trabajamos con estos proveedores para operar el servicio:</p>
         <ul className={s.list}>
-          <li><strong>Supabase:</strong> base de datos, autenticación, sincronización cifrada y validación de licencias.</li>
+          <li><strong>Supabase:</strong> base de datos, autenticación, sincronización cifrada y validación de licencias (servidores en Ohio, EE. UU., región us-east-2).</li>
           <li>
             <strong>Stripe:</strong> procesa los pagos. Nunca vemos los datos de la tarjeta;
             recibimos solo la confirmación del pago y el email asociado a la compra.
@@ -195,6 +198,14 @@ function EsBody() {
           financieros guardados solo en el dispositivo los controla y borra el propio usuario,
           porque nosotros no los tenemos.
         </p>
+        <p>
+          Respondemos en un plazo máximo de 30 días. Los datos se tratan en EE. UU.; para usuarios
+          del Espacio Económico Europeo, el Reino Unido o Suiza, la transferencia se apoya en el
+          Marco de Privacidad de Datos UE-EE. UU. cuando el destinatario está certificado y, si no,
+          en las cláusulas contractuales tipo de la Comisión Europea. Quien vive en la UE o el EEE
+          (por ejemplo, en España) puede además reclamar ante la autoridad de protección de datos
+          de su país. No vendemos datos personales.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -228,12 +239,6 @@ function EsBody() {
         <p>Para consultas sobre privacidad: <strong>support@moyiq.app</strong></p>
       </div>
 
-      <div className={s.legalNotice}>
-        Este documento fue redactado como punto de partida informativo. No constituye asesoría
-        legal. Se recomienda revisión por un abogado especializado antes de uso comercial
-        definitivo, en especial para jurisdicciones con normas específicas de protección de datos
-        (RGPD, LGPD, etc.).
-      </div>
     </div>
   )
 }
@@ -256,6 +261,7 @@ function EnBody() {
           which data stays on the user's device, which data we store on our servers, which service
           providers we use, and how to exercise rights over that data.
         </p>
+        <CompanyBlock lang="en" />
       </div>
 
       <div className={s.section}>
@@ -352,7 +358,7 @@ function EnBody() {
         <h2>7. Service providers</h2>
         <p>We use these providers to run the service:</p>
         <ul className={s.list}>
-          <li><strong>Supabase:</strong> database, authentication, encrypted sync, and license validation.</li>
+          <li><strong>Supabase:</strong> database, authentication, encrypted sync, and license validation (servers in Ohio, USA, region us-east-2).</li>
           <li>
             <strong>Stripe:</strong> processes payments. We never see card details; we only
             receive the payment confirmation and the email used for the purchase.
@@ -410,6 +416,13 @@ function EnBody() {
           the account), write to <strong>support@moyiq.app</strong>. Financial data stored only on
           the device is controlled and deleted by the user, because we do not hold it.
         </p>
+        <p>
+          We reply within 30 days. Data is processed in the USA; for users in the European Economic
+          Area, the UK, or Switzerland, the transfer relies on the EU-US Data Privacy Framework
+          where the recipient is certified and, otherwise, on the European Commission's standard
+          contractual clauses. Users in the EU or EEA can also complain to the data protection
+          authority of their country. We do not sell personal information.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -443,11 +456,6 @@ function EnBody() {
         <p>For privacy questions: <strong>support@moyiq.app</strong></p>
       </div>
 
-      <div className={s.legalNotice}>
-        This document was drafted as an informational starting point. It is not legal advice.
-        Review by a specialized attorney is recommended before definitive commercial use,
-        especially in jurisdictions with specific data-protection rules (GDPR, LGPD, etc.).
-      </div>
     </div>
   )
 }
@@ -471,6 +479,7 @@ function PtBody() {
           explica quais dados ficam no dispositivo do usuário, quais dados armazenamos em nossos
           servidores, com quais fornecedores trabalhamos e como exercer os direitos sobre esses dados.
         </p>
+        <CompanyBlock lang="pt" />
       </div>
 
       <div className={s.section}>
@@ -568,7 +577,7 @@ function PtBody() {
         <h2>7. Fornecedores</h2>
         <p>Trabalhamos com estes fornecedores para operar o serviço:</p>
         <ul className={s.list}>
-          <li><strong>Supabase:</strong> banco de dados, autenticação, sincronização criptografada e validação de licenças.</li>
+          <li><strong>Supabase:</strong> banco de dados, autenticação, sincronização criptografada e validação de licenças (servidores em Ohio, EUA, região us-east-2).</li>
           <li>
             <strong>Stripe:</strong> processa os pagamentos. Nunca vemos os dados do cartão;
             recebemos apenas a confirmação do pagamento e o email da compra.
@@ -629,6 +638,14 @@ function PtBody() {
           armazenados apenas no dispositivo são controlados e apagados pelo próprio usuário, porque
           nós não os temos.
         </p>
+        <p>
+          Respondemos em até 30 dias. Os dados são tratados nos EUA; para usuários do Espaço
+          Econômico Europeu, do Reino Unido ou da Suíça, a transferência se apoia no Marco de
+          Privacidade de Dados UE-EUA quando o destinatário é certificado e, caso contrário, nas
+          cláusulas contratuais-padrão da Comissão Europeia. No Brasil, o titular pode exercer os
+          direitos da LGPD pelo mesmo email e reclamar à ANPD; na UE ou no EEE, à autoridade de
+          proteção de dados do seu país. Não vendemos dados pessoais.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -662,17 +679,10 @@ function PtBody() {
         <p>Para questões sobre privacidade: <strong>support@moyiq.app</strong></p>
       </div>
 
-      <div className={s.legalNotice}>
-        Este documento foi redigido como ponto de partida informativo. Não constitui
-        aconselhamento jurídico. Recomenda-se revisão por um advogado especializado antes do uso
-        comercial definitivo, especialmente em jurisdições com normas específicas de proteção de
-        dados (LGPD, RGPD etc.).
-      </div>
     </div>
   )
 }
 
-// RECHTLICHE PRÜFUNG AUSSTEHEND — Entwurf, vor Verkauf an Verbraucher in DE von einer Anwältin/einem Anwalt prüfen lassen
 // Quelle: ../financeos-landing (Branch i18n/landing-de) de/datenschutz.html. Postanschrift,
 // vertretungsberechtigte Person und EU-Vertreter (Art. 27 DSGVO) fehlen dort noch als
 // Platzhalter; hier wird deshalb auf das Impressum verwiesen statt Platzhalter anzuzeigen.
@@ -692,11 +702,12 @@ function DeBody() {
         <h2>1. Verantwortlicher</h2>
         <p>
           Verantwortlich für die Verarbeitung personenbezogener Daten im Sinne der
-          Datenschutz-Grundverordnung (DSGVO) ist die MAXNOVA & LUCI Global LLC, USA, E-Mail:{' '}
-          <strong>support@moyiq.app</strong>. Die vollständige Postanschrift, die
-          vertretungsberechtigte Person und, sobald benannt, der Vertreter in der Union nach
-          Art. 27 DSGVO werden im {deLegalRef('impressum', 'Impressum')} angegeben.
+          Datenschutz-Grundverordnung (DSGVO) ist die MAXNOVA & LUCI Global LLC, vertreten durch
+          die Manager Walter M. La Madriz Guerra und Patricia L. Velazco Gil:
         </p>
+        <CompanyBlock lang="de" />
+        {/* Art. 27 DSGVO: Vertreter in der Union noch nicht benannt (Ausnahme nach Abs. 2 greift
+            voraussichtlich nicht, EDPB-Leitlinien 3/2018). Nach Beauftragung hier eintragen. */}
         <p>
           Ein Datenschutzbeauftragter ist nicht benannt. Für alle Fragen zum Datenschutz erreichen
           Sie uns unter support@moyiq.app.
@@ -843,7 +854,7 @@ function DeBody() {
           geschieht dies auf Grundlage eines Vertrags zur Auftragsverarbeitung (Art. 28 DSGVO).
         </p>
         <ul className={s.list}>
-          <li><strong>Supabase Inc. (USA):</strong> Datenbank, Authentifizierung, verschlüsselte Synchronisierung, Lizenzprüfung.</li>
+          <li><strong>Supabase Inc. (USA, Serverstandort Ohio, Region us-east-2):</strong> Datenbank, Authentifizierung, verschlüsselte Synchronisierung, Lizenzprüfung.</li>
           <li>
             <strong>Stripe (USA bzw. Irland, je nach Vertragspartner):</strong> Zahlungsabwicklung.
             Stripe verarbeitet Zahlungsdaten teilweise als eigener Verantwortlicher (z. B. zur
@@ -952,10 +963,6 @@ function DeBody() {
         </p>
       </div>
 
-      <div className={s.legalNotice}>
-        Dieser Text ist ein Entwurf und wird derzeit rechtlich geprüft. Er stellt keine
-        Rechtsberatung dar. Fragen: support@moyiq.app
-      </div>
     </div>
   )
 }
