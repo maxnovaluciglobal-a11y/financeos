@@ -24,22 +24,68 @@ export const localMonthStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.ge
 export const today = () => localDateStr()
 export const currentMonth = () => localMonthStr()
 
-// Locale de formato de miles, seteado una vez desde AppContext según la moneda
-// del usuario (default es-CL = separador punto, comportamiento histórico).
-// Evita que un cliente en USA/México/Portugal vea el separador chileno.
+// ── DINERO: locale, decimales y símbolo ──────────────────────────────────────
+// Seteado desde AppContext/DemoContext según la moneda (y el idioma) del usuario
+// (default es-CL = separador punto, comportamiento histórico). Evita que un
+// cliente en USA/México/Portugal vea el separador chileno.
+//
+// Decimales (08-oct-2026, decisión de Walter): los montos se muestran con los
+// decimales de la moneda — config.currencyDecimals (CLP/COP/PYG… 0) y 2 para el
+// resto (USD/EUR/MXN…). Antes todo se redondeaba a enteros y un gasto de
+// US$42.50 se veía como "US$43". Para una moneda de 2 decimales se muestran
+// SIEMPRE los 2 ("$1,250.00", no "$1,250"): las cifras van en columnas con
+// tabular-nums (.num) y un ".00" que aparece y desaparece desalinea la lista y
+// hace que dos montos del mismo tipo se lean distinto. Los ejes compactos de
+// los gráficos (K/M) siguen enteros.
 let _moneyLocale = 'es-CL'
+let _moneyCurrency = 'CLP'
+let _moneyLang = 'es'
+let _moneyDecimals = 0
 const CURRENCY_LOCALE = {
   CLP: 'es-CL', COP: 'es-CO', ARS: 'es-AR', PEN: 'es-PE', VES: 'es-VE',
   MXN: 'es-MX', USD: 'en-US', EUR: 'pt-PT', BRL: 'pt-BR',
 }
+// El euro no tiene "un" país: el formato sigue al idioma de la interfaz
+// (de → "1.234,50 €", es → "1234,50 €", en → "€1,234.50"). Sin idioma, el
+// histórico pt-PT.
+const EUR_LOCALE_BY_LANG = { de: 'de-DE', es: 'es-ES', pt: 'pt-PT', en: 'en-IE' }
+
+// Símbolo por moneda (fuente única; antes había 8 copias por página).
+export const CURRENCY_SYMBOLS = { CLP: '$', USD: 'US$', EUR: '€', VES: 'Bs.', MXN: '$', ARS: '$', COP: '$', PEN: 'S/', PYG: '₲', UYU: '$U', BRL: 'R$' }
+
+// Decimales que se muestran (y que acepta el teclado de QuickAdd) para una
+// moneda: mapa explícito en config, 2 para lo que no está.
+export function currencyDecimals(code, map = config.currencyDecimals) {
+  const d = map?.[code]
+  return Number.isInteger(d) && d >= 0 ? d : 2
+}
+
 // Locale de formato de una moneda cualquiera (ej. la vista previa del onboarding,
-// antes de guardar la moneda elegida).
-export const localeForCurrency = (currency) => CURRENCY_LOCALE[currency] || 'es-CL'
-export function setMoneyLocale(currency) {
-  _moneyLocale = CURRENCY_LOCALE[currency] || 'es-CL'
+// antes de guardar la moneda elegida). `language` solo cambia algo para EUR.
+export const localeForCurrency = (currency, language) =>
+  (currency === 'EUR' && EUR_LOCALE_BY_LANG[language]) || CURRENCY_LOCALE[currency] || 'es-CL'
+
+export function setMoneyLocale(currency, language) {
+  _moneyCurrency = currency || 'CLP'
+  if (language) _moneyLang = language
+  _moneyLocale = localeForCurrency(_moneyCurrency, _moneyLang)
+  _moneyDecimals = currencyDecimals(_moneyCurrency)
 }
 // Locale activo, para los toLocaleString sueltos que no pasan por fmtMoney.
 export const moneyLocale = () => _moneyLocale
+export const moneyDecimals = () => _moneyDecimals
+
+// Símbolo de la moneda en el idioma activo. Único caso especial: en inglés el
+// dólar es "$" (así lo escribe un usuario de EE. UU.); en español/portugués/
+// alemán sigue "US$" para no confundirlo con el peso.
+export function currencySymbol(code = _moneyCurrency, language = _moneyLang) {
+  if (code === 'USD' && language === 'en') return '$'
+  return CURRENCY_SYMBOLS[code] || '$'
+}
+
+// ¿El símbolo va después de la cifra? Solo el euro fuera del inglés
+// ("42,50 €" en de/es/pt; "€42.50" en en-IE).
+const symbolAfter = (symbol, locale = _moneyLocale) => symbol === '€' && !String(locale).startsWith('en')
 
 // ── Locale de FECHAS ─────────────────────────────────────────────────────────
 // Ojo: las fechas NO siguen a la moneda sino al IDIOMA de la interfaz. Un usuario
@@ -74,9 +120,59 @@ export function monthYearLabel(ym, locale = _dateLocale) {
 export const fmtFixed = (n, locale, symbol = '$') =>
   `${symbol}${Math.round(Number(n) || 0).toLocaleString(locale)}`
 
+// Cifra SIN símbolo con los decimales de la moneda activa (conserva el signo).
+// Para los textos que arman el símbolo aparte o necesitan el número solo.
+export function fmtAmount(n, decimals = _moneyDecimals, locale = _moneyLocale) {
+  const f = 10 ** decimals
+  let v = Math.round((Number(n) || 0) * f) / f
+  if (Object.is(v, -0)) v = 0
+  return v.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+}
+
+// Monto con símbolo, SIEMPRE en valor absoluto (el signo lo pone quien llama,
+// como hasta ahora: "-" + fmtMoney(x)). "$42.50" / "$42.500" / "42,50 €".
 export const fmtMoney = (n, symbol = '$') => {
-  const abs = Math.abs(Math.round(n || 0))
-  return symbol + abs.toLocaleString(_moneyLocale)
+  const num = fmtAmount(Math.abs(Number(n) || 0))
+  return symbolAfter(symbol) ? `${num}\u00a0${symbol}` : symbol + num
+}
+
+// Igual que fmtMoney pero con signo menos tipográfico para negativos
+// ("−$1,250.00"), para saldos/proyecciones que pueden quedar en rojo.
+export const fmtSignedMoney = (n, symbol = '$') =>
+  (Number(n) < 0 && fmtAmount(Math.abs(n)) !== fmtAmount(0) ? '\u2212' : '') + fmtMoney(n, symbol)
+
+// Monto formateado para una moneda/idioma cualquiera, sin tocar el estado
+// global (ej. la vista previa del onboarding antes de guardar la moneda).
+export function fmtMoneyFor(n, currency, language) {
+  const locale = localeForCurrency(currency, language)
+  const symbol = currencySymbol(currency, language)
+  const num = fmtAmount(Math.abs(Number(n) || 0), currencyDecimals(currency), locale)
+  return symbolAfter(symbol, locale) ? `${num}\u00a0${symbol}` : symbol + num
+}
+
+// Monto compacto para listas/tarjetas de gráficos con poco ancho ("$12.5K",
+// "$1.8M"). Bajo el umbral se muestra completo, con centavos si la moneda los
+// tiene: en USD/EUR el umbral es 10 000 (un "$1K" por $1,250.00 esconde
+// demasiado); en CLP/COP sigue en 1 000 como siempre (ahí 1 000 es poco).
+// Valor absoluto, como fmtMoney.
+export function fmtMoneyCompact(n, symbol = '$') {
+  const a = Math.abs(Number(n) || 0)
+  const threshold = _moneyDecimals > 0 ? 10_000 : 1000
+  if (a < threshold) return fmtMoney(a, symbol)
+  const [v, unit] = a >= 1_000_000 ? [a / 1_000_000, 'M'] : [a / 1000, 'K']
+  const maxFrac = unit === 'M' || _moneyDecimals > 0 ? 1 : 0
+  const num = v.toLocaleString(_moneyLocale, { maximumFractionDigits: maxFrac }) + unit
+  return symbolAfter(symbol) ? `${num}\u00a0${symbol}` : symbol + num
+}
+
+// Eje compacto de gráficos: 950 → "950", 12 000 → "12K", 1 500 000 → "1.5M".
+// Enteros a propósito: un eje con centavos no se lee.
+export function fmtAxis(v) {
+  const n = Number(v) || 0
+  const a = Math.abs(n)
+  if (a >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
+  if (a >= 1000) return (n / 1000).toFixed(0) + 'K'
+  return String(Math.round(n))
 }
 
 // Número SIN símbolo, con el mismo locale que el dinero. Usar SIEMPRE en vez de

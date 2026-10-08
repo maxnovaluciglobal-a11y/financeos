@@ -4,8 +4,8 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth } from '../../utils/index.js'
-import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
+import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth, currencySymbol } from '../../utils/index.js'
+import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -44,7 +44,7 @@ export default function Income({ setPage }) {
 
   const activeMonth = settings.activeMonth || currentMonth()
   const filtered    = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)), [incomes, activeMonth])
-  const sym         = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym         = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
@@ -124,7 +124,7 @@ export default function Income({ setPage }) {
             <input type="text" value={f.source} placeholder={t('income.form.sourcePh')} onChange={e => setF(p => ({ ...p, source: e.target.value }))} />
           </FormGroup>
           <FormRow>
-            <FormGroup label={t('income.form.amount', { currency: settings.currency || 'CLP' })}><input type="number" inputMode="decimal" min="0" value={f.amount} placeholder="0" onChange={e => setF(p => ({ ...p, amount: e.target.value }))} /></FormGroup>
+            <FormGroup label={t('income.form.amount', { currency: settings.currency || 'CLP' })}><input type="number" inputMode="decimal" min="0" step="any" value={f.amount} placeholder="0" onChange={e => setF(p => ({ ...p, amount: e.target.value }))} /></FormGroup>
             <FormGroup label={t('income.form.date')}><input type="date" value={f.date} onChange={e => setF(p => ({ ...p, date: e.target.value }))} /></FormGroup>
           </FormRow>
           <FormRow>
@@ -163,7 +163,7 @@ export default function Income({ setPage }) {
                       </div>
                       <div>
                         <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.amount')}</div>
-                        <input type="number" inputMode="decimal" min="0" value={editForm.amount||''} onChange={e=>setEditForm(f=>({...f,amount:e.target.value}))}
+                        <input type="number" inputMode="decimal" min="0" step="any" value={editForm.amount||''} onChange={e=>setEditForm(f=>({...f,amount:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>

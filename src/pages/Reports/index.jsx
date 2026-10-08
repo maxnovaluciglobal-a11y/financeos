@@ -5,12 +5,12 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
-import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
+import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -30,7 +30,7 @@ export default function Reports({ setPage }) {
   const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, goals: allGoals, settings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
-  const sym        = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym        = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara en pantalla; el PDF (ReportPDF.jsx)
   // usa su propio formateo y siempre lleva las cifras reales.
   const { m } = useMoney()
@@ -221,7 +221,7 @@ export default function Reports({ setPage }) {
                 <BarChart data={trendData} barGap={4} barCategoryGap="30%">
                   <CartesianGrid {...gridStyle}/>
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                  <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
                   <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                   <Legend wrapperStyle={{fontSize:11,fontFamily:'var(--mono)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
@@ -253,7 +253,7 @@ export default function Reports({ setPage }) {
                 </defs>
                 <CartesianGrid {...gridStyle}/>
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
-                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}/>
+                <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
                 <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                 <ReferenceLine y={0} stroke="var(--brd2)"/>
                 <Area type="monotone" dataKey="Ahorro" name={t('reports.savings.series')} stroke="var(--grn)" strokeWidth={2} fill="url(#ahorroGrad)"/>

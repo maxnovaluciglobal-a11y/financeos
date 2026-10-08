@@ -5,7 +5,11 @@ import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
 import { useT } from '../../i18n/useT.js'
-import { catName } from '../../utils/index.js'
+import { catName, fmtMoneyCompact } from '../../utils/index.js'
+
+// Centavos: se redondea a 2 decimales (no a enteros) para que el tooltip de
+// US$42.50 no diga $43.00.
+const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100
 
 export default function HorizontalBars({ records, sym = '$', maxItems = 6, valueKey = 'amount', labelKey = 'category' }) {
   const { m } = useMoney()
@@ -20,7 +24,7 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
       map[label] = (map[label] || 0) + (Number(r[valueKey]) || Number(r.amount) || 0)
     })
     return Object.entries(map)
-      .map(([name, value]) => ({ name, value: Math.round(value) }))
+      .map(([name, value]) => ({ name, value: round2(value) }))
       .filter(d => d.value > 0)
       .sort((a, b) => b.value - a.value)
       .slice(0, maxItems)
@@ -30,7 +34,7 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
 
   const max = data[0].value
   const total = data.reduce((s, d) => s + d.value, 0)
-  const fmtV = v => m(v >= 1000000 ? `${sym}${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${sym}${(v/1000).toFixed(0)}K` : `${sym}${v}`)
+  const fmtV = v => m(fmtMoneyCompact(v, sym))
 
   // Color por identidad de categoría (theme-aware). Antes: la #1 salía roja
   // por su POSICIÓN, no por su significado — alarma falsa en "Arriendo", etc.

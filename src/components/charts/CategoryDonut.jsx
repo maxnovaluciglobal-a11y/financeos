@@ -2,9 +2,13 @@
 import { useMemo } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
-import { catLabel, moneyLocale, catName } from '../../utils/index.js'
+import { catLabel, fmtMoney, fmtMoneyCompact, catName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { useMoney } from '../Money.jsx'
+
+// Centavos: se redondea a 2 decimales (no a enteros) para que el tooltip de
+// US$42.50 no diga $43.00.
+const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100
 
 // Paleta categórica por identidad, theme-aware (definida en globals.css).
 const COLORS = ['var(--cat-1)','var(--cat-2)','var(--cat-3)','var(--cat-4)','var(--cat-5)','var(--cat-6)','var(--cat-7)','var(--cat-8)']
@@ -16,7 +20,7 @@ function CustomTooltip({ active, payload, sym, lang, m }) {
   return (
     <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'8px 12px', fontSize:12, fontFamily:'var(--mono)' }}>
       <div style={{ color: d.payload?.fill || 'var(--accent)', fontWeight:600, marginBottom:2 }}>{catLabel(d.name, lang)}</div>
-      <div style={{ color:'var(--tx)' }}>{m(`${sym}${(d.value || 0).toLocaleString(moneyLocale(), { maximumFractionDigits:0 })}`)}</div>
+      <div style={{ color:'var(--tx)' }}>{m(fmtMoney(d.value, sym))}</div>
       <div style={{ color:'var(--th)' }}>{d.payload?.pct || 0}%</div>
     </div>
   )
@@ -37,7 +41,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
     })
 
     let sorted = Object.entries(map)
-      .map(([name, value]) => ({ name, value: Math.round(value) }))
+      .map(([name, value]) => ({ name, value: round2(value) }))
       .filter(d => d.value > 0)
       .sort((a, b) => b.value - a.value)
 
@@ -47,17 +51,17 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
     if (sorted.length > maxCategories) {
       const top   = sorted.slice(0, maxCategories - 1)
       const otros = sorted.slice(maxCategories - 1).reduce((s, d) => s + d.value, 0)
-      if (otros > 0) top.push({ name:'Otros', value: Math.round(otros) })
+      if (otros > 0) top.push({ name:'Otros', value: round2(otros) })
       sorted = top
     }
 
     const withPct = sorted.map(d => ({ ...d, pct: ((d.value / total) * 100).toFixed(1) }))
-    return { data: withPct, total: Math.round(total) }
+    return { data: withPct, total: round2(total) }
   }, [safeRecords, maxCategories])
 
   if (!data.length || total === 0) return <ChartEmpty msg={t('chart.donut.empty')} />
 
-  const fmtTotal = m(total >= 1000000 ? `${sym}${(total/1000000).toFixed(1)}M` : total >= 1000 ? `${sym}${(total/1000).toFixed(0)}K` : `${sym}${total}`)
+  const fmtTotal = m(fmtMoneyCompact(total, sym))
 
   return (
     <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>

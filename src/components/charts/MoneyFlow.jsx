@@ -4,16 +4,11 @@
 
 import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
-import { moneyLocale } from '../../utils/index.js'
+import { fmtMoneyCompact } from '../../utils/index.js'
 import { useMoney } from '../Money.jsx'
 import { useT } from '../../i18n/useT.js'
 
-function fmtV(v, sym) {
-  const n = Number(v) || 0
-  if (n >= 1000000) return `${sym}${(n/1000000).toFixed(1)}M`
-  if (n >= 1000)    return `${sym}${(n/1000).toFixed(0)}K`
-  return `${sym}${Math.round(n).toLocaleString(moneyLocale())}`
-}
+const fmtV = (v, sym) => fmtMoneyCompact(v, sym)
 
 const COLORS = {
   income:  { fill: 'var(--pos)', stroke: '#00b896', text: '#004d3e' },

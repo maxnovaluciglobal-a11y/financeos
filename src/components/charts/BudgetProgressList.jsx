@@ -4,7 +4,7 @@
 import { ChartEmpty } from './ChartCard.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useMoney } from '../Money.jsx'
-import { moneyLocale, catName } from '../../utils/index.js'
+import { fmtMoneyCompact, catName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 
 const STATUS = [
@@ -21,12 +21,7 @@ function getStatus(spent, limit) {
   return STATUS[2]
 }
 
-function fmtRaw(v, sym) {
-  const n = Number(v) || 0
-  if (n >= 1000000) return `${sym}${(n/1000000).toFixed(1)}M`
-  if (n >= 1000)    return `${sym}${(n/1000).toFixed(0)}K`
-  return `${sym}${Math.round(n).toLocaleString(moneyLocale())}`
-}
+const fmtRaw = (v, sym) => fmtMoneyCompact(v, sym)
 
 export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
   const { m } = useMoney()  // ocultar montos (T13)

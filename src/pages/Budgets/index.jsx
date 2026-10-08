@@ -4,8 +4,8 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName } from '../../utils/index.js'
-import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
+import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
@@ -15,7 +15,7 @@ export default function Budgets() {
   const { t, lang } = useT()
   const [f, setF]     = useState({ category: 'Vivienda', limit: '' })
   const [err, setErr] = useState('')
-  const sym           = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym           = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))

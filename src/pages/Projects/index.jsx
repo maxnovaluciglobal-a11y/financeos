@@ -9,13 +9,12 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, PageHeader, Empty } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney } from '../../utils/index.js'
-import { CURRENCY_SYMBOLS } from '../shared/constants.js'
+import { fmtMoney, currencySymbol } from '../../utils/index.js'
 
 export default function Projects() {
   const { incomes, expenses, debts, settings, updateSettings } = useApp()
   const { t } = useT()
-  const sym = CURRENCY_SYMBOLS[settings.currency] || '$'
+  const sym = currencySymbol(settings.currency, settings.language)
 
   const groups = useMemo(() => {
     const map = {}
@@ -111,7 +110,7 @@ export default function Projects() {
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '.5px solid var(--brd)' }}>
                       <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 5 }}>{t('projects.valueHint')}</div>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <input type="number" inputMode="decimal" min="0" value={draft} autoFocus placeholder="0"
+                        <input type="number" inputMode="decimal" min="0" step="any" value={draft} autoFocus placeholder="0"
                           onChange={e => setDraft(e.target.value)}
                           style={{ flex: 1, minWidth: 0, padding: '6px 9px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--mono)', fontSize: 12 }} />
                         <button onClick={() => saveValue(g.name)} style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--laton)', color: 'var(--navy)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{t('projects.saveBtn')}</button>

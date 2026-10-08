@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { dbGetAll, dbAdd, dbDelete } from '../../core/db/index.js'
-import { uid, subEmoji, subLabel, moneyLocale, dateLocale, currentMonth } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, currencyDecimals } from '../../utils/index.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -134,7 +134,8 @@ export default function Subscriptions() {
   const { t, lang } = useT()
   const { settings, incomes, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteSubscription, deleteWithUndo, showToast } = useApp()
   const currency = settings.currency || 'CLP'
-  const fmt = n => (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
+  // Con los decimales de la moneda de cada suscripción (una de US$ en una cuenta en COP lleva centavos).
+  const fmt = (n, cur = currency) => fmtAmount(n, currencyDecimals(cur))
   const isDemo = !!settings.isDemo
 
   const [dbSubs,   setDbSubs]  = useState([])
@@ -324,7 +325,7 @@ export default function Subscriptions() {
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
             </FormGroup>
             <FormGroup label={t('subs.form.amount')}>
-              <input type="number" value={form.amount} placeholder="0"
+              <input type="number" inputMode="decimal" min="0" step="any" value={form.amount} placeholder="0"
                 onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} />
             </FormGroup>
           </FormRow>
@@ -381,8 +382,8 @@ export default function Subscriptions() {
                       <td style={{ padding: '9px 12px' }}>
                         <Badge color="blue">{subLabel(sub.category, lang)}</Badge>
                       </td>
-                      <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly)}</td>
-                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly, sub.currency || currency)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
                       <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
                         {sub.nextPaymentDate ? new Date(sub.nextPaymentDate).toLocaleDateString(dateLocale()) : '—'}

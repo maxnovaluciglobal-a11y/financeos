@@ -4,7 +4,7 @@
 import {
   Document, Page, Text, View, StyleSheet, Font,
 } from '@react-pdf/renderer'
-import { moneyLocale, catName } from '../../utils/index.js'
+import { fmtMoney, catName } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 
 const ACCENT  = '#356E57'  // --pos / verde-800 (positivo/ingreso), no la marca
@@ -61,8 +61,11 @@ const s = StyleSheet.create({
   badgeTxt:{ fontSize: 7, fontFamily: 'Helvetica-Bold' },
 })
 
+// Con los decimales de la moneda. Signo ASCII "-" a propósito: la Helvetica
+// integrada de react-pdf (WinAnsi) no tiene el "−" tipográfico.
 function fmt(n, sym = '$') {
-  return `${sym}${(Number(n) || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`
+  const v = Number(n) || 0
+  return (v < 0 && fmtMoney(v, sym) !== fmtMoney(0, sym) ? '-' : '') + fmtMoney(v, sym)
 }
 function pct(n) { return `${((Number(n) || 0) * 100).toFixed(1)}%` }
 

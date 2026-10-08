@@ -57,10 +57,14 @@ export function DemoProvider({ children }) {
   useEffect(() => {
     const st = state.settings || {}
     document.documentElement.setAttribute('lang', st.language || 'es')
-    setMoneyLocale(st.currency || 'CLP')
+    setMoneyLocale(st.currency || 'CLP', st.language || 'es')
     setDateLocale(st.language || 'es')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Formato de dinero sincrónico en el render (mismo criterio que AppContext):
+  // la persona de EE. UU. tiene que pintar "$1,250.00" desde el primer frame.
+  setMoneyLocale(state.settings?.currency || 'CLP', state.settings?.language || 'es')
 
   // Mismo criterio que AppContext: textos en el idioma activo vía ref.
   const langRef = useRef(state.settings?.language || 'es')
@@ -109,7 +113,7 @@ export function DemoProvider({ children }) {
     document.documentElement.setAttribute('lang', settings.language || 'es')
     // El demo también debe respetar el formato de miles de la moneda elegida
     // (AppContext lo hace en un efecto; aquí el provider es independiente).
-    setMoneyLocale(settings.currency || 'CLP')
+    setMoneyLocale(settings.currency || 'CLP', settings.language || 'es')
     setDateLocale(settings.language || 'es')
   }, [])
 

@@ -151,10 +151,12 @@ export function AppProvider({ children }) {
     if (!hydratedRef.current) return  // no dispara durante la hidratación inicial
     markLocalChange()
   }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions])
-  // ── Formato de miles según la moneda del usuario (US/MX/PT ≠ CL) ──────────────
-  useEffect(() => {
-    setMoneyLocale(state.settings?.currency || 'CLP')
-  }, [state.settings?.currency])
+  // ── Formato de dinero según la moneda (y el idioma) del usuario ──────────────
+  // En el render y no en un efecto: el provider se renderiza antes que sus
+  // hijos, así que la primera pintura ya sale con los decimales/símbolo de la
+  // moneda correcta (con un efecto, los hijos pintaban una vez con el locale
+  // anterior). Es idempotente: solo asigna 4 variables de módulo.
+  setMoneyLocale(state.settings?.currency || 'CLP', state.settings?.language || 'es')
   // ── Formato de fechas según el IDIOMA (no la moneda): "Sep" vs "sept" vs "set" ──
   useEffect(() => {
     setDateLocale(state.settings?.language || 'es')

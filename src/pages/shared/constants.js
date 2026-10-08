@@ -1,8 +1,9 @@
 // src/pages/shared/constants.js
 // Constantes compartidas entre módulos de páginas
-import { monthYearLabel } from '../../utils/index.js'
+import { monthYearLabel, CURRENCY_SYMBOLS } from '../../utils/index.js'
 
-export const CURRENCY_SYMBOLS = { CLP: '$', USD: 'US$', EUR: '€', VES: 'Bs.', MXN: '$', ARS: '$', COP: '$', PEN: 'S/', PYG: '₲', UYU: '$U', BRL: 'R$' }
+// Fuente única en utils/index.js; para el símbolo según idioma usar currencySymbol().
+export { CURRENCY_SYMBOLS }
 export const CURRENCY_OPTIONS  = [
   { code: 'CLP', label: 'CLP — Peso chileno' },
   { code: 'USD', label: 'USD — Dólar' },

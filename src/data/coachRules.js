@@ -5,7 +5,7 @@
 // necesita otro idioma que español.
 import { es } from '../i18n/es.js'
 import { effectiveBudgetLimits } from '../utils/budgets.js'
-import { moneyLocale, currentMonth } from '../utils/index.js'
+import { currentMonth, fmtSignedMoney, currencySymbol } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
 import { findEmergencyGoal } from '../utils/emergencyGoal.js'
 import { maskMoney } from '../utils/money.js'
@@ -273,10 +273,9 @@ export const COACH_RULES = [
 ]
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-function fmt(n) { return (n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 }) }
 // Ocultar montos (T13): si la pantalla tiene los montos ocultos, las frases del
 // diagnóstico reciben la máscara en vez de la cifra (Dashboard, Coach, Reportes).
-function money(m, n) { return maskMoney(!!m.hideAmounts, `${m.sym}${fmt(n)}`) }
+function money(m, n) { return maskMoney(!!m.hideAmounts, fmtSignedMoney(n, m.sym)) }
 function pct(n) { return ((n || 0) * 100).toFixed(1) + '%' }
 
 // ── EVALUADOR DE REGLAS ───────────────────────────────────────────────────────
@@ -308,7 +307,7 @@ export function evaluateCoach(metrics, t) {
 // ── CALCULADOR DE MÉTRICAS PARA EL COACH ─────────────────────────────────────
 export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, subs, settings }) {
   const activeMonth = settings?.activeMonth || currentMonth()
-  const sym = { CLP: '$', USD: 'US$', EUR: '€', VES: 'Bs.', MXN: '$', ARS: '$', COP: '$' }[settings?.currency] || '$'
+  const sym = currencySymbol(settings?.currency, settings?.language)
 
   // Ingresos y gastos del mes activo
   const monthlyIncome  = incomes.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + (r.amount || 0), 0)

@@ -2,15 +2,19 @@
 import { useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
-import { moneyLocale, monthShortName } from '../../utils/index.js'
+import { fmtMoney, fmtAxis, monthShortName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { useMoney, MONEY_MASK } from '../Money.jsx'
+
+// Centavos: se redondea a 2 decimales (no a enteros) para que el tooltip de
+// US$42.50 no diga $43.00.
+const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100
 
 function CustomTooltip({ active, payload, label, sym, m, t }) {
   if (!active || !payload?.length) return null
   const inc = payload.find(p => p.dataKey === 'ingresos')?.value || 0
   const exp = payload.find(p => p.dataKey === 'gastos')?.value || 0
-  const f = v => m(`${sym}${(v || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)
+  const f = v => m(fmtMoney(v, sym))
   return (
     <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'10px 14px', fontSize:12, fontFamily:'var(--mono)' }}>
       <div style={{ fontWeight:600, color:'var(--tx)', marginBottom:6 }}>{label}</div>
@@ -35,7 +39,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const inc = safeInc.filter(r => r?.date?.startsWith(key)).reduce((s, r) => s + (Number(r?.amount) || 0), 0)
       const exp = safeExp.filter(r => r?.date?.startsWith(key)).reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-      result.push({ mes: monthShortName(d.getMonth()), ingresos: Math.round(inc), gastos: Math.round(exp) })
+      result.push({ mes: monthShortName(d.getMonth()), ingresos: round2(inc), gastos: round2(exp) })
     }
     return result
     // lang: el nombre del mes cambia con el idioma
@@ -47,7 +51,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
 
   const maxVal = Math.max(...data.flatMap(d => [d.ingresos, d.gastos]), 1)
   // Ocultar montos (T13): el eje Y también es una cifra legible.
-  const tickFmt = v => hidden ? MONEY_MASK : v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)
+  const tickFmt = v => hidden ? MONEY_MASK : fmtAxis(v)
 
   return (
     <ResponsiveContainer width="100%" height={220}>

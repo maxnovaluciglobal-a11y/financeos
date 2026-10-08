@@ -5,15 +5,10 @@ import { useMemo } from 'react'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
-import { moneyLocale, dateLocale } from '../../utils/index.js'
+import { fmtMoneyCompact, dateLocale } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 
-function fmtRaw(v, sym) {
-  const n = Number(v) || 0
-  if (n >= 1000000) return `${sym}${(n/1000000).toFixed(1)}M`
-  if (n >= 1000)    return `${sym}${(n/1000).toFixed(0)}K`
-  return `${sym}${Math.round(n).toLocaleString(moneyLocale())}`
-}
+const fmtRaw = (v, sym) => fmtMoneyCompact(v, sym)
 
 const STATUS = [
   { key:'done',  label:'chart.debt.status.done',  color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'ok' },
