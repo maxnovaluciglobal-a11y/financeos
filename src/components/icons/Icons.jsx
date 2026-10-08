@@ -7,7 +7,7 @@
 // acá tal cual; al final hay 3 construidos con la MISMA regla para conceptos de
 // nav sin equivalente documentado (Ingresos, Propiedades, Modo Asesor).
 
-import { Repeat, Receipt, PiggyBank, TrendingUp, Coins } from 'lucide-react'
+import { Repeat, Receipt, PiggyBank, TrendingUp, Coins, CalendarClock } from 'lucide-react'
 
 const base = { width: 24, height: 24, viewBox: '0 0 24 24' }
 
@@ -192,6 +192,7 @@ const navLucide = (Ic) => function NavLucideIcon({ size = 24, className }) {
 
 export const NAV_ICONS = {
   subscriptions: navLucide(Repeat),
+  recurring:     navLucide(CalendarClock),
   deducciones:   navLucide(Receipt),
   ahorrofiscal:  navLucide(PiggyBank),
   inflacion:     navLucide(TrendingUp),

@@ -45,7 +45,9 @@ export function parseYMD(s) {
 export const ymd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`
 export const daysInMonth = (y, m) => new Date(y, m, 0).getDate()
 export const monthOf = (dateStr) => String(dateStr || '').slice(0, 7)
-const toLocal = (s) => { const p = parseYMD(s); return p ? new Date(p.y, p.m - 1, p.d) : null }
+// 'YYYY-MM-DD' → Date a medianoche LOCAL (new Date('YYYY-MM-DD') la toma en UTC
+// y en LatAm muestra el día anterior).
+export const toLocal = (s) => { const p = parseYMD(s); return p ? new Date(p.y, p.m - 1, p.d) : null }
 const fromLocal = (dt) => ymd(dt.getFullYear(), dt.getMonth() + 1, dt.getDate())
 
 export function addDays(dateStr, n) {
@@ -315,6 +317,20 @@ export function pendingTotals(plan, { personalOnly = true, until = null } = {}) 
 }
 
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100
+
+// Equivalente mensual de las reglas vigentes (Proyección). Cada regla cuenta
+// UNA vez, con su monto vigente — nunca la suma de su historial.
+export function recurringMonthlyTotals(rules, { today, personalOnly = true } = {}) {
+  const ym = monthOf(today)
+  const incomeRules = [], expenseRules = []
+  for (const r of rules || []) {
+    if (!isActiveRule(r, today) || (personalOnly && r.inv)) continue
+    const row = { rule: r, amount: amountAt(r, ym), monthly: round2(monthlyEquivalent(r, ym)) }
+    ;(r.kind === 'income' ? incomeRules : expenseRules).push(row)
+  }
+  const sum = (a) => round2(a.reduce((s, x) => s + x.monthly, 0))
+  return { income: sum(incomeRules), expense: sum(expenseRules), incomeRules, expenseRules }
+}
 
 // Reglas vigentes (no pausadas ni terminadas a la fecha `today`).
 export function isActiveRule(rule, today) {

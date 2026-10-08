@@ -7,6 +7,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { Card, CardHeader, Btn, PageHeader } from '../../components/ui/index.jsx'
 import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
+import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES, currencyOptionLabel } from '../shared/constants.js'
@@ -264,6 +265,7 @@ export default function Settings() {
       <Card>
         <CardHeader title={t('settings.backup.title')} />
         <BackupManager />
+        <SnapshotRestore />
       </Card>
       <SecuritySection />
       <Card>

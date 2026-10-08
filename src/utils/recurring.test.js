@@ -204,6 +204,22 @@ describe('monthPlan — estado de cada ocurrencia', () => {
   })
 })
 
+describe('proyección desde reglas (bug ×N meses)', () => {
+  it('cada regla cuenta una vez con su monto vigente, aunque haya 6 meses de sueldos registrados', async () => {
+    const { recurringMonthlyTotals } = await import('./recurring.js')
+    const sal = rule({ id: 's', kind: 'income', description: 'Sueldo', amounts: [{ from: '2026-01', amount: 2000 }, { from: '2026-09', amount: 2100 }] })
+    const quin = rule({ id: 'q', kind: 'income', description: 'Extra', amounts: [{ from: '2026-01', amount: 100 }], schedule: { freq: 'semimonthly' } })
+    const rent = rule({ id: 'r', amounts: [{ from: '2026-01', amount: 500 }] })
+    const hip = rule({ id: 'h', inv: true, amounts: [{ from: '2026-01', amount: 900 }] })
+    const off = rule({ id: 'o', paused: true })
+    const ended = rule({ id: 'e', endDate: '2026-09-30' })
+    const tot = recurringMonthlyTotals([sal, quin, rent, hip, off, ended], { today: '2026-10-08' })
+    expect(tot.income).toBe(2300)
+    expect(tot.expense).toBe(500)
+    expect(tot.expenseRules).toHaveLength(1)
+  })
+})
+
 describe('confirmar — idempotente', () => {
   it('el id del registro es determinista y lleva el vínculo', () => {
     const r = rule()
