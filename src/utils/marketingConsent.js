@@ -14,7 +14,7 @@
 
 // flip to true only AFTER migration 20261010010000_marketing_double_optin.sql
 // is applied and send-optin-confirmation + the nurture functions are deployed
-export const MARKETING_DOI_ENABLED = false
+export const MARKETING_DOI_ENABLED = true
 
 // Fuentes que acepta send-optin-confirmation (tabla de leads de cada una).
 export const OPTIN_SOURCES = ['starter', 'diagnostico', 'demo']

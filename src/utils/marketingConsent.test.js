@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { MARKETING_DOI_ENABLED, withStarterConsent, shouldRequestOptin, OPTIN_SOURCES } from './marketingConsent.js'
 
 describe('MARKETING_DOI_ENABLED', () => {
-  it('apagado hasta aplicar 20261010010000_marketing_double_optin.sql y deployar send-optin-confirmation', () => {
-    expect(MARKETING_DOI_ENABLED).toBe(false)
+  it('encendido: 20261010010000_marketing_double_optin aplicada y send-optin-confirmation desplegada (08-oct-2026)', () => {
+    expect(MARKETING_DOI_ENABLED).toBe(true)
   })
 })
 
