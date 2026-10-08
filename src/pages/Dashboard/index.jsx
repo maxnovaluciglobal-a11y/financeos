@@ -20,6 +20,7 @@ import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import CountryTool from './CountryTool.jsx'
 import HomeKpis from './HomeKpis.jsx'
+import BudgetByCategory from './BudgetByCategory.jsx'
 import DeltaLine from './DeltaLine.jsx'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
@@ -558,6 +559,12 @@ export default function Dashboard({ setPage }) {
                 ))}
               </div>
             </HomeKpis>
+          </div>
+          <div className={`${hs.pair} ${hs.pairA}`}>
+            <div className={hs.oBudget}>
+              <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
+                activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
+            </div>
           </div>
           <div className={`${hs.pair} ${hs.pairB}`}>
             <div className={hs.oScore}>

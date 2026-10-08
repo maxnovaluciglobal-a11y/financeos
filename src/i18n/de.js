@@ -1750,4 +1750,11 @@ export const de = {
     'home.delta.vs': "{pct} ggü. {month}",
     'home.delta.flat': "wie im {month}",
     'home.kpis.aria': "Monatsübersicht",
+    'home.budget.title': "Budget nach Kategorie",
+    'home.budget.hint': "ausgegeben / Limit",
+    'home.budget.empty': "Sie haben noch kein Budget. Legen Sie eines pro Kategorie an, um zu sehen, wo Sie zu viel ausgeben.",
+    'home.budget.create': "Budget anlegen",
+    'home.budget.viewAll': "Budgets ansehen",
+    'home.budget.more.one': "Und {n} weitere Kategorie unter Budgets.",
+    'home.budget.more.many': "Und {n} weitere Kategorien unter Budgets.",
 }
