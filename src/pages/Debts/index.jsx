@@ -9,16 +9,7 @@ import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
-
-// Pago real que se cobraría hoy — incluye el interés del período, con la misma
-// fórmula que usa el simulador de liquidación más abajo. Antes "Registrar pago"
-// solo restaba el pago del saldo sin sumar el interés primero, así que cada
-// pago real dejaba el saldo guardado más bajo de lo que en verdad era.
-function nextPaymentAmount(d) {
-  const rate = (Number(d.rate) || 0) / 100 / 12
-  const balanceWithInterest = Number(d.balance) + Number(d.balance) * rate
-  return Math.min(Number(d.minPayment) || 0, balanceWithInterest)
-}
+import { nextPaymentAmount } from '../../utils/debtPayment.js'
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
