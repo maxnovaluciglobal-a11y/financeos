@@ -27,6 +27,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY    ← los inyecta Supabase
 
 import { processOptin, type OptinConfig } from "./optinLogic.ts";
+import { corsHeaders } from "./cors.ts";
 
 const config: OptinConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -36,29 +37,6 @@ const config: OptinConfig = {
   replyTo: Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app",
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",
 };
-
-const ALLOWED_ORIGINS = new Set([
-  "https://moyiq.app",
-  "https://www.moyiq.app",
-  "https://app.moyiq.app",
-  "https://demo.moyiq.app",
-  "https://app.financeospro.com",
-  "https://demo.financeospro.com",
-  "https://financeospro.com",
-  "https://www.financeospro.com",
-  "http://localhost:4323",
-  "http://localhost:5173",
-]);
-
-function corsHeaders(origin: string | null) {
-  const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://moyiq.app";
-  return {
-    "Access-Control-Allow-Origin": allow,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, apikey, authorization",
-    Vary: "Origin",
-  };
-}
 
 function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), {
