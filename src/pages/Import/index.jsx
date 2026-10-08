@@ -129,7 +129,8 @@ export default function ImportMovements({ setPage } = {}) {
           category:    suggested.category || '',
           account:     suggested.account  || '',
         })
-        setModeConfig(bankTemplate.config)
+        // dateFormat de la plantilla: desempata DD/MM vs MM/DD si el archivo es ambiguo
+        setModeConfig({ ...bankTemplate.config, dateFormat: bankTemplate.dateFormat })
       } else {
         setMapping({
           date: suggested.date || result.headers[0] || '',
@@ -140,12 +141,14 @@ export default function ImportMovements({ setPage } = {}) {
           category: suggested.category || '',
           account: suggested.account || '',
         })
-        if (suggested.debit && suggested.credit) setModeConfig({ mode: 'debit_credit', negativeIsExpense: true })
+        // Sin plantilla: se parte del modo por defecto (y sin el dateFormat de una
+        // plantilla de un archivo anterior).
+        setModeConfig(suggested.debit && suggested.credit ? { mode: 'debit_credit', negativeIsExpense: true } : { mode: 'single', negativeIsExpense: true })
       }
       if (result.totalLines > MAX_ROWS) setWarning(t('imp.warn.maxRows', { n: result.totalLines, max: MAX_ROWS }))
       setStep(1)
     } catch (err) {
-      setWarning(t('imp.err.read', { msg: err.message }))
+      setWarning(err.code ? t(`imp.fileErr.${err.code}`, { msg: err.detail || '' }) : t('imp.err.read', { msg: err.message }))
     } finally {
       setLoading(false)
     }
@@ -158,7 +161,8 @@ export default function ImportMovements({ setPage } = {}) {
   }, [])
 
   async function handlePreview() {
-    const validated = validateRows(parsed.rows, mapping, modeConfig)
+    // Región del usuario para desempatar fechas ambiguas (US → MM/DD).
+    const validated = validateRows(parsed.rows, mapping, { ...modeConfig, locale: `${settings.language || 'es'}-${settings.country || ''}` })
     let existing = []
     if (!isDemo) {
       const [inc, exp] = await Promise.all([dbGetAll('incomes'), dbGetAll('expenses')])
@@ -306,11 +310,12 @@ export default function ImportMovements({ setPage } = {}) {
             <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 14 }}>
               {t('imp.banks.sub')}
             </p>
-            {[
-              { label: '🇨🇱 Chile', banks: BANK_TEMPLATES.filter(b => b.country === 'CL') },
-              { label: '🇲🇽 México', banks: BANK_TEMPLATES.filter(b => b.country === 'MX') },
-              { label: '🇨🇴 Colombia', banks: BANK_TEMPLATES.filter(b => b.country === 'CO') },
-            ].map(group => (
+            {/* Un grupo por país con plantilla (antes faltaban DE y US). Banderas
+                emoji como antes: Import queda fuera de D5 (ver CLAUDE.md). */}
+            {[...new Set(BANK_TEMPLATES.map(b => b.country))].map(code => ({
+              label: `${{ CL: '🇨🇱', MX: '🇲🇽', CO: '🇨🇴', DE: '🇩🇪', US: '🇺🇸' }[code] || ''} ${t(`country.${code}`)}`.trim(),
+              banks: BANK_TEMPLATES.filter(b => b.country === code),
+            })).map(group => (
               <div key={group.label} style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>{group.label}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -534,7 +539,7 @@ export default function ImportMovements({ setPage } = {}) {
                   </td>
                   <td style={s.td}>
                     <span style={s.badge(row.status)}>{row.status === 'valid' ? t('imp.review.stValid') : row.status === 'duplicate' ? t('imp.review.stDup') : t('imp.review.stError')}</span>
-                    {row.errors?.length > 0 && <div style={{ fontSize: 10, color: 'var(--red)', marginTop: 2 }}>{row.errors.join(', ')}</div>}
+                    {row.errors?.length > 0 && <div style={{ fontSize: 10, color: 'var(--red)', marginTop: 2 }}>{row.errors.map(c => t(`imp.rowErr.${c}`)).join(', ')}</div>}
                   </td>
                 </tr>
               ))}</tbody>

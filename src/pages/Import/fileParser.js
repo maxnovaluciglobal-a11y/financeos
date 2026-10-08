@@ -2,6 +2,15 @@
 // Parser CSV — sin dependencias externas · 100% local · sin envío de datos
 
 export const MAX_ROWS = 1000
+
+// Errores con `code` para que la pantalla los muestre en el idioma del usuario
+// ('imp.fileErr.<code>'); el mensaje en español queda como respaldo/log.
+function importError(code, message, detail) {
+  const e = new Error(message)
+  e.code = code
+  if (detail) e.detail = detail
+  return e
+}
 export const SUPPORTED_TYPES = ['.csv', '.xlsx', '.xls', '.pdf']
 
 export async function parseFile(file) {
@@ -13,7 +22,7 @@ export async function parseFile(file) {
     return parsePDF(file)
   }
   if (ext !== 'csv') {
-    throw new Error('Formato no soportado. Se aceptan archivos .csv, .xlsx, .xls y .pdf')
+    throw importError('format', 'Formato no soportado. Se aceptan archivos .csv, .xlsx, .xls y .pdf')
   }
   const text = await readAsText(file)
   return parseCSV(text)
@@ -86,7 +95,7 @@ async function parsePDF(file) {
   const lines = await extractPdfLines(file)
   const rows = parsePdfLinesToRows(lines)
   if (rows.length === 0) {
-    throw new Error('No se detectaron movimientos en el PDF. Puede ser un PDF escaneado (imagen) o un formato no reconocido. Prueba con el CSV o el Excel del banco.')
+    throw importError('pdfEmpty', 'No se detectaron movimientos en el PDF. Puede ser un PDF escaneado (imagen) o un formato no reconocido. Prueba con el CSV o el Excel del banco.')
   }
   return {
     headers: ['fecha', 'descripcion', 'monto'],
@@ -118,7 +127,7 @@ function excelCellToString(value) {
 // celdas no vacías en vez de asumir que el header está en la fila 0.
 export function rowsFromMatrix(jsonRows, sourceType, sheetName) {
   if (!jsonRows || jsonRows.length < 2) {
-    throw new Error('El archivo Excel no contiene filas válidas.')
+    throw importError('xlsxEmpty', 'El archivo Excel no contiene filas válidas.')
   }
   let headerRowIdx = 0
   for (let i = 0; i < Math.min(10, jsonRows.length); i++) {
@@ -158,7 +167,7 @@ export async function parseWorkbookBuffer(arrayBuffer) {
   const workbook = new ExcelJS.Workbook()
   await workbook.xlsx.load(arrayBuffer)
   const worksheet = workbook.worksheets[0]
-  if (!worksheet) throw new Error('El archivo Excel no contiene hojas.')
+  if (!worksheet) throw importError('xlsxNoSheet', 'El archivo Excel no contiene hojas.')
   const jsonRows = []
   worksheet.eachRow({ includeEmpty: true }, (row) => {
     jsonRows.push(row.values.slice(1).map(excelCellToString))
@@ -171,12 +180,13 @@ async function parseXLSX(file) {
   try {
     buffer = await file.arrayBuffer()
   } catch {
-    throw new Error('No se pudo leer el archivo Excel')
+    throw importError('xlsxRead', 'No se pudo leer el archivo Excel')
   }
   try {
     return await parseWorkbookBuffer(buffer)
   } catch (err) {
-    throw new Error(err.message.startsWith('El archivo Excel') ? err.message : 'Error al leer el Excel: ' + err.message)
+    if (err.code) throw err
+    throw importError('xlsxParse', 'Error al leer el Excel: ' + err.message, err.message)
   }
 }
 
@@ -195,10 +205,10 @@ function readAsText(file) {
           res(utf8)
         }
       } catch (err) {
-        rej(new Error('No se pudo decodificar el archivo'))
+        rej(importError('decode', 'No se pudo decodificar el archivo'))
       }
     }
-    r.onerror = () => rej(new Error('No se pudo leer el archivo'))
+    r.onerror = () => rej(importError('read', 'No se pudo leer el archivo'))
     r.readAsArrayBuffer(file)
   })
 }
@@ -245,25 +255,56 @@ export function detectColumns(headers) {
   const lower = headers.map(h => h.toLowerCase())
   const find = (kw) => { const i = lower.findIndex(h => kw.some(k => h.includes(k))); return i >= 0 ? headers[i] : null }
   return {
-    date:        find(['fecha', 'date', 'día', 'dia', 'fec']),
-    description: find(['descripcion', 'descripción', 'concepto', 'detalle', 'desc', 'glosa', 'nombre']),
-    amount:      find(['monto', 'importe', 'amount', 'valor', 'total', 'suma']),
+    // + pt/de ('data', 'datum', 'descrição', 'beschreibung', 'betrag'): el CSV
+    // que exporta la app en portugués o alemán tiene que volver a importarse.
+    date:        find(['fecha', 'date', 'día', 'dia', 'fec', 'datum', 'data']),
+    description: find(['descripcion', 'descripción', 'concepto', 'detalle', 'desc', 'glosa', 'nombre', 'beschreibung', 'verwendungszweck']),
+    amount:      find(['monto', 'importe', 'amount', 'valor', 'total', 'suma', 'betrag']),
     debit:       find(['debito', 'débito', 'cargo', 'egreso', 'debit', 'retiro']),
     credit:      find(['credito', 'crédito', 'abono', 'ingreso', 'credit', 'deposito']),
-    category:    find(['categoria', 'categoría', 'category', 'tipo', 'rubro']),
+    category:    find(['categoria', 'categoría', 'category', 'kategorie', 'tipo', 'rubro']),
     account:     find(['cuenta', 'account', 'tarjeta', 'card']),
   }
 }
 
-export function normalizeDate(str) {
+// ── Fechas DD/MM vs MM/DD ────────────────────────────────────────────────────
+// Antes se asumía siempre DD/MM: un CSV de un banco de EEUU ("03/15/2026")
+// quedaba con mes 15. El orden se decide UNA vez por archivo, mirando todas
+// las filas (detectDateOrder) y se aplica igual a todas (normalizeDate).
+const NUM_DATE_RE = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})(?!\d)/
+
+// 'DMY' | 'MDY'. Evidencia del archivo primero (un campo > 12 no puede ser
+// mes); si todo es ambiguo, el formato que declara la plantilla del banco
+// (bankTemplates.dateFormat) y si no hay, la región del usuario: US → MDY,
+// cualquier otra → DMY (comportamiento histórico).
+export function detectDateOrder(values, { templateFormat, locale } = {}) {
+  let firstOver12 = false, secondOver12 = false
+  for (const v of values || []) {
+    const m = String(v ?? '').trim().match(NUM_DATE_RE)
+    if (!m) continue
+    if (Number(m[1]) > 12) firstOver12 = true
+    if (Number(m[2]) > 12) secondOver12 = true
+  }
+  if (firstOver12 && !secondOver12) return 'DMY'
+  if (secondOver12 && !firstOver12) return 'MDY'
+  const tf = String(templateFormat || '').toUpperCase()
+  if (/^MM[\/.\-]DD/.test(tf)) return 'MDY'
+  if (/^DD[\/.\-]MM/.test(tf)) return 'DMY'
+  const region = String(locale || '').split(/[-_]/)[1]?.toUpperCase()
+  return region === 'US' ? 'MDY' : 'DMY'
+}
+
+export function normalizeDate(str, order = 'DMY') {
   if (!str) return null
   const s = String(str).trim()
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
-  const dmy = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/)
-  if (dmy) return `${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`
-  const dmy2 = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2})$/)
-  if (dmy2) { const yr = parseInt(dmy2[3]) > 50 ? `19${dmy2[3]}` : `20${dmy2[3]}`; return `${yr}-${dmy2[2].padStart(2,'0')}-${dmy2[1].padStart(2,'0')}` }
-  return null
+  const m = s.match(NUM_DATE_RE)
+  if (!m) return null
+  const [a, b] = [Number(m[1]), Number(m[2])]
+  const [day, month] = order === 'MDY' ? [b, a] : [a, b]
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null
+  const year = m[3].length === 2 ? (Number(m[3]) > 50 ? `19${m[3]}` : `20${m[3]}`) : m[3]
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 export function normalizeAmount(str) {
@@ -304,16 +345,21 @@ export function getAmount(row, mapping, config) {
   return a !== null ? Math.abs(a) : 0
 }
 
-export function validateRows(rows, mapping, config) {
+// config.dateOrder fuerza el orden; si no, se detecta con todas las filas
+// (config.dateFormat = el de la plantilla del banco, config.locale = la región
+// del usuario, ej. 'en-US'). errors son códigos ('date' | 'amount' |
+// 'description'): la pantalla de importación los traduce.
+export function validateRows(rows, mapping, config = {}) {
+  const order = config.dateOrder || detectDateOrder(rows.map(r => r[mapping.date]), { templateFormat: config.dateFormat, locale: config.locale })
   return rows.map(row => {
-    const date = normalizeDate(row[mapping.date])
+    const date = normalizeDate(row[mapping.date], order)
     const amount = getAmount(row, mapping, config)
     const type = detectTransactionType(row, mapping, config)
     const description = (row[mapping.description] || '').trim()
     const errors = []
-    if (!date) errors.push('Fecha no reconocida')
-    if (!amount || amount === 0) errors.push('Monto inválido')
-    if (!description) errors.push('Sin descripción')
+    if (!date) errors.push('date')
+    if (!amount || amount === 0) errors.push('amount')
+    if (!description) errors.push('description')
     return { _rowIndex: row._rowIndex, date: date || '', description, amount, type, category: row[mapping.category] || '', account: row[mapping.account] || '', originalDescription: description, status: errors.length > 0 ? 'error' : 'valid', errors }
   })
 }
