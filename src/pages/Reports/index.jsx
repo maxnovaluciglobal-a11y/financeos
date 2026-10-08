@@ -4,7 +4,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, dateLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, dateLocale, currentMonth } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -33,7 +33,7 @@ export default function Reports({ setPage }) {
   const { isPro }  = usePlan()
   const [pdfLoading, setPdfLoading] = useState(false)
   const [pdfError, setPdfError] = useState(null)
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
 
   // Patrimonio neto (stock a HOY) — cálculo compartido con la página Patrimonio
   const nw = useMemo(() => calcNetWorth({ goals: allGoals, debts: allDebts, incomes: _incAll, expenses: _expAll, settings }),

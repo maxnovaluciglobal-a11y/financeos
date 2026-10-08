@@ -10,7 +10,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcResico, TRAMOS_RESICO, TOPE_ANUAL_RESICO, RETENCION_PERSONA_MORAL } from '../../utils/resicoMX.js'
-import { fmtFixed } from '../../utils/index.js'
+import { fmtFixed, currentMonth } from '../../utils/index.js'
 
 const fmtMXN = (n) => fmtFixed(n, 'es-MX')
 
@@ -28,7 +28,7 @@ export default function ResicoMX() {
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()
 
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const activeYear = activeMonth.slice(0, 4)
 
   // Ingreso facturable del mes activo — solo categorías que tributan por RESICO.

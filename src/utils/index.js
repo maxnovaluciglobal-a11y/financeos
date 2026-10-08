@@ -13,7 +13,15 @@ import { langCache } from '../i18n/langCache.js'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
-export const today = () => new Date().toISOString().slice(0, 10)
+// Fecha y mes LOCALES (YYYY-MM-DD / YYYY-MM). No usar toISOString() para esto:
+// devuelve la fecha en UTC, y en LatAm (UTC-3 a UTC-6) después de ~21 h ya es
+// "mañana" en UTC — un gasto registrado de noche quedaba con la fecha del día
+// siguiente (y el último día del mes, en el mes siguiente).
+const pad2 = (n) => String(n).padStart(2, '0')
+export const localDateStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+export const localMonthStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`
+export const today = () => localDateStr()
+export const currentMonth = () => localMonthStr()
 
 // Locale de formato de miles, seteado una vez desde AppContext según la moneda
 // del usuario (default es-CL = separador punto, comportamiento histórico).

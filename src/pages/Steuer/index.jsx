@@ -15,6 +15,7 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import { calcDescuentosDE, calcZvE, BUNDESLAENDER, ARBEITNEHMER_PAUSCHBETRAG } from '../../utils/taxCalcDE.js'
 import { tasaMarginalDE } from '../../config/deducciones/de.js'
 import { getDeduccionesConfig, autofillGastos } from '../../utils/deduccionesEngine.js'
+import { currentMonth } from '../../utils/index.js'
 
 const fmtEUR = (n) => `€${(Number(n) || 0).toLocaleString('de-DE', { maximumFractionDigits: 0 })}`
 
@@ -149,7 +150,7 @@ function LohnabzuegeCard() {
 function WerbungskostenCard({ expenses, settings }) {
   const { t } = useT()
   const config = getDeduccionesConfig('DE')
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const year = activeMonth.slice(0, 4)
 
   // Autofill gastos desde registros del año actual

@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, prioEmoji } from '../../utils/index.js'
+import { fmtMoney, fmtPct, prioEmoji, currentMonth, localMonthStr } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
@@ -26,7 +26,7 @@ export default function Goals({ setPage }) {
 
   const sym              = CURRENCY_SYMBOLS[settings.currency] || '$'
   const isChile          = (settings.country || 'CL') === 'CL'
-  const activeMonth      = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth      = settings.activeMonth || currentMonth()
 
   const ingresoNetoGoals = useMemo(() => {
     return (incomes || []).filter(r => r.date?.startsWith(activeMonth)).reduce((s,r) => s+r.amount, 0)
@@ -56,7 +56,7 @@ export default function Goals({ setPage }) {
     for (const s of suggestions.filter(s => s.selected && !s.alreadyExists)) {
       const targetDate = new Date()
       targetDate.setMonth(targetDate.getMonth() + (s.monthsToGoal || 12))
-      await addGoal({ name:`${s.emoji} ${s.name}`, target:s.target, saved:0, targetDate:targetDate.toISOString().slice(0,7), priority:s.goalPriority, color:s.color })
+      await addGoal({ name:`${s.emoji} ${s.name}`, target:s.target, saved:0, targetDate:localMonthStr(targetDate), priority:s.goalPriority, color:s.color })
     }
     setShowSuggest(false); setSuggestions([])
   }

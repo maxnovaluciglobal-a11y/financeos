@@ -6,6 +6,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { dbGetAll } from '../core/db/index.js'
+import { currentMonth } from '../utils/index.js'
 
 // ── CÁLCULOS DE FRECUENCIA ──────────────────────────────────────────────────
 export function toMonthly(amount, frequency) {
@@ -97,7 +98,7 @@ export default function useSubscriptionMetrics() {
   }, [isDemo])
 
   // Ingreso del mes activo
-  const activeMonth   = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth   = settings.activeMonth || currentMonth()
   const monthlyIncome = useMemo(() => {
     if (!Array.isArray(incomes)) return 0
     return incomes

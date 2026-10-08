@@ -5,7 +5,7 @@
 // necesita otro idioma que español.
 import { es } from '../i18n/es.js'
 import { effectiveBudgetLimits } from '../utils/budgets.js'
-import { moneyLocale } from '../utils/index.js'
+import { moneyLocale, currentMonth } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
 import { findEmergencyGoal } from '../utils/emergencyGoal.js'
 // Motor de reglas del FinanceOS Coach
@@ -303,7 +303,7 @@ export function evaluateCoach(metrics, t) {
 
 // ── CALCULADOR DE MÉTRICAS PARA EL COACH ─────────────────────────────────────
 export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, subs, settings }) {
-  const activeMonth = settings?.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings?.activeMonth || currentMonth()
   const sym = { CLP: '$', USD: 'US$', EUR: '€', VES: 'Bs.', MXN: '$', ARS: '$', COP: '$' }[settings?.currency] || '$'
 
   // Ingresos y gastos del mes activo

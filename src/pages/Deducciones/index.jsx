@@ -8,13 +8,14 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getDeduccionesConfig, autofillGastos, calcDeducciones } from '../../utils/deduccionesEngine.js'
+import { currentMonth } from '../../utils/index.js'
 
 export default function Deducciones() {
   const { settings, expenses, incomes } = useApp()
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()
   const config = getDeduccionesConfig(country)
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const year = activeMonth.slice(0, 4)
 
   // Reglas de hooks: TODOS los hooks van antes del guard de país. Si

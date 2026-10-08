@@ -10,6 +10,7 @@ import { calcAPV } from '../../utils/apvCalc.js'
 import { calcBeneficioAPV, calcDescuentos, calcImpuestoAnual, calcGapTramo, calcArbitraje, calcBrutoDesdeLiquido, setIndicadores, getParametrosCL } from '../../utils/taxCalcCL.js'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
+import { currentMonth } from '../../utils/index.js'
 
 const money = n => '$' + (Number(n) || 0).toLocaleString()
 
@@ -20,7 +21,7 @@ export default function APVPage() {
 
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
 
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   // Indicadores (UTM/UF) — se cargan primero para que el bruto se estime con la UTM vigente
   const [indInfo, setIndInfo] = useState(null)
   useEffect(() => {

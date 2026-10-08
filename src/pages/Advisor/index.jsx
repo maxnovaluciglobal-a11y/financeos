@@ -8,7 +8,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, moneyLocale, dateLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, moneyLocale, dateLocale, currentMonth } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -350,7 +350,7 @@ export default function Advisor() {
   }
 
   // Mes activo
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
 
   // Métricas del mes activo
   const monthIncomes  = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)),  [incomes,  activeMonth])

@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
 import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
@@ -227,7 +227,7 @@ export default function Debts() {
     const monto = nextPaymentAmount(d)
     if (monto <= 0) return
     const newBalance = Math.max(0, balanceWithInterest - monto)
-    const todayStr = new Date().toISOString().slice(0,10)
+    const todayStr = localDateStr()
     const ufFields = (Number(d.ufBalance) > 0 && ufValue > 0)
       ? { ufBalance: Math.max(0, (Number(d.ufBalance) + Number(d.ufBalance) * rate) - monto / ufValue) }
       : {}

@@ -6,7 +6,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import TEMPLATES from '../data/templates.js'
-import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid } from '../utils/index.js'
+import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth } from '../utils/index.js'
 import { dbAdd } from '../core/db/index.js'
 
 // label/desc son KEYS de traducción (ver src/i18n/translations.js), no texto directo
@@ -213,7 +213,7 @@ export default function Onboarding({ onComplete }) {
       onboardingDone: true, onboardingUseType: answers.useType,
       onboardingExperience: answers.experience, onboardingMainGoal: answers.mainGoal,
       estimatedMonthlyIncome: Number(answers.estimatedMonthlyIncome) || 0,
-      activeMonth: new Date().toISOString().slice(0, 7),
+      activeMonth: currentMonth(),
       activeTemplateId: tpl.id, activeTemplateName: tpl.name,
       categoriesIncome: tpl.categoriesIncome, categoriesExpense: tpl.categoriesExpense,
       templateSuggestedBudgets: tpl.suggestedBudgets,

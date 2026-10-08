@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { dbGetAll, dbAdd, dbDelete } from '../../core/db/index.js'
-import { uid, subEmoji, subLabel, moneyLocale, dateLocale } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, moneyLocale, dateLocale, currentMonth } from '../../utils/index.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -148,7 +148,7 @@ export default function Subscriptions() {
 
   const monthlyIncome = useMemo(() => {
     if (!Array.isArray(incomes)) return 0
-    const month = settings.activeMonth || new Date().toISOString().slice(0, 7)
+    const month = settings.activeMonth || currentMonth()
     return incomes
       .filter(r => r.date?.startsWith(month))
       .reduce((s, r) => s + (r.amount || 0), 0)

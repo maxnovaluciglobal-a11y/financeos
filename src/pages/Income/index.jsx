@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel } from '../../utils/index.js'
+import { fmtMoney, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
@@ -40,7 +40,7 @@ export default function Income({ setPage }) {
     setShowPaste(false)
   }
 
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const filtered    = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)), [incomes, activeMonth])
   const sym         = CURRENCY_SYMBOLS[settings.currency] || '$'
   const total       = useMemo(() => filtered.reduce((s, r) => s + r.amount, 0), [filtered])

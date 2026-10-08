@@ -19,7 +19,7 @@ import { IconIQScore } from '../../components/icons/Icons.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import MonthVerdict from './MonthVerdict.jsx'
 import CountryTool from './CountryTool.jsx'
-import { moneyLocale } from '../../utils/index.js'
+import { moneyLocale, currentMonth } from '../../utils/index.js'
 import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import { Card, CardHeader } from '../../components/ui/index.jsx'
@@ -42,7 +42,7 @@ export default function Dashboard({ setPage }) {
   const debts    = Array.isArray(ctx.debts) ? ctx.debts : []
 
   const sym         = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }[settings.currency] || '$'
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   // Defensa extra contra usdRate quedando en 0 (bug ya arreglado en el origen —
   // Settings ahora recomputa al cambiar de moneda — pero esto cubre a quien ya
   // tenía un 0 guardado en IndexedDB de antes del fix): si el usuario activó la

@@ -9,12 +9,13 @@ import { parseTransactionText } from '../utils/smsParser.js'
 import { hapticTap } from '../utils/haptics.js'
 import Sheet from './ui/Sheet.jsx'
 import config from '../config.js'
+import { localDateStr } from '../utils/index.js'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
 const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim()
 
 const SYM = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }
-const todayStr = () => new Date().toISOString().slice(0, 10)
+const todayStr = () => localDateStr()
 
 // Teclado numérico propio — evita el teclado del sistema (y su zoom) en el campo
 // más usado de la app. Controla `amount` como string directamente en vez de

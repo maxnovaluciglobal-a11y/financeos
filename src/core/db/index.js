@@ -3,6 +3,7 @@
 
 import { openDB } from 'idb'
 import { DB_VERSION, runMigrations } from './migrations.js'
+import { currentMonth } from '../../utils/index.js'
 
 const DB_NAME = 'financeos'
 let _db = null
@@ -66,7 +67,7 @@ export const DEFAULT_SETTINGS = {
   theme: 'light',
   savingGoalPct: 25,
   emergencyFundMonths: 5,
-  activeMonth: new Date().toISOString().slice(0, 7),
+  activeMonth: currentMonth(),
   country: 'CL',
 }
 

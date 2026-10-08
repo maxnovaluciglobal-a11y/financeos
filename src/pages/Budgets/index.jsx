@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, getCategoriesExpense, catLabel } from '../../utils/index.js'
+import { fmtMoney, fmtPct, getCategoriesExpense, catLabel, currentMonth } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 
@@ -17,7 +17,7 @@ export default function Budgets() {
   const ahorroLabel   = isChile ? 'Ahorro/APV/Inversión' : 'Ahorro/Inversión'
   const rolloverOn    = !!settings.budgetRollover
 
-  const activeMonth   = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth   = settings.activeMonth || currentMonth()
   const categoriesExpense = useMemo(() => getCategoriesExpense(settings), [settings])
 
   // Mes anterior para calcular rollover

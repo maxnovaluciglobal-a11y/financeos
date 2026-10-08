@@ -9,13 +9,13 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense } from '../../utils/index.js'
+import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr } from '../../utils/index.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
-const todayStr = () => new Date().toISOString().slice(0, 10)
+const todayStr = () => localDateStr()
 
 function toMonthly(amount, frequency) {
   switch (frequency) {
@@ -305,7 +305,7 @@ export default function Movements({ setPage }) {
   const deleteWithUndo     = ctx.deleteWithUndo
 
   const sym         = SYM[settings.currency] || '$'
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0,7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const categoriesExpense = useMemo(() => getCategoriesExpense(settings), [settings])
 
   const [showAdd,   setShowAdd]   = useState(false)

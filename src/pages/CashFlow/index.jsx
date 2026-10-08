@@ -7,7 +7,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney, fmtPct, moneyLocale } from '../../utils/index.js'
+import { fmtMoney, fmtPct, moneyLocale, currentMonth } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
@@ -67,7 +67,7 @@ export default function CashFlow({ setPage }) {
   }, [recurringExp])
 
   // ── Saldo actual del mes activo ───────────────────────────────────────────
-  const activeMonth = settings.activeMonth || new Date().toISOString().slice(0, 7)
+  const activeMonth = settings.activeMonth || currentMonth()
   const curInc  = incomes.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + r.amount, 0)
   const curExp  = expenses.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + r.amount, 0)
   const curBal  = curInc - curExp
@@ -83,7 +83,7 @@ export default function CashFlow({ setPage }) {
   }, [incomes, expenses])
 
   const monthlyEstimate = useMemo(() => {
-    const nowMonth = new Date().toISOString().slice(0, 7)
+    const nowMonth = currentMonth()
     // Preferimos meses COMPLETOS (distintos del mes en curso); si no hay, usamos lo que haya
     let months = monthsWithData.filter(m => m < nowMonth)
     let partial = false
