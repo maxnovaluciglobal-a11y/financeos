@@ -161,7 +161,7 @@ Deno.serve(async () => {
       const daysLeft = Math.max(1, Math.ceil((new Date(lic.expires_at).getTime() - Date.now()) / 86400000));
       const payload = {
         title: "MOY IQ",
-        body: `Tu prueba vence en ${daysLeft} día${daysLeft === 1 ? "" : "s"}. Tus datos se quedan si decidís continuar.`,
+        body: `Tu prueba vence en ${daysLeft} día${daysLeft === 1 ? "" : "s"}. Tus datos se quedan si decides continuar.`,
         url: "/app/",
         tag: "trial-expiring",
       };

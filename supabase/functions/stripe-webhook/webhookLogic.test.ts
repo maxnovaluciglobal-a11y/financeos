@@ -335,6 +335,18 @@ describe('llamadas HTTP (fetch mockeado)', () => {
       const bodyYear = JSON.parse(fetchMock.mock.calls[1][1].body)
       expect(bodyYear.html).toContain('renovación automática anual')
     })
+
+    it('usa la voz del producto: sin voseo, sin exclamaciones y sin emoji (B4, 2026-10-07)', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'sess_1', CONFIG, 'month')
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+      const text = `${body.subject} ${body.html}`
+      expect(text).not.toMatch(/escribinos|podés|tenés|activá/i)
+      expect(text).not.toMatch(/[¡!]/)
+      expect(text).not.toMatch(/\p{Extended_Pictographic}/u)
+      expect(body.html).toContain('FNOS-X')
+    })
   })
 
   describe('notifyKeyDeliveryFailure', () => {

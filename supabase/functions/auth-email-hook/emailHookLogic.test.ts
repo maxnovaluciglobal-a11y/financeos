@@ -54,7 +54,7 @@ describe('renderEmail', () => {
     const r = renderEmail('moyiq', 'recovery', 'https://x.test/verify')
     expect(r.fromEmail).toBe('MOY IQ <hola@moyiq.app>')
     expect(r.html).toContain('https://x.test/verify')
-    expect(r.subject).toBe('Restablecé tu contraseña')
+    expect(r.subject).toBe('Restablece tu contraseña')
   })
   it('Invest: remitente y paleta correctos, distinto de MOY IQ', () => {
     const r = renderEmail('invest', 'recovery', 'https://x.test/verify')

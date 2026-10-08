@@ -21,7 +21,7 @@
 // comentario en supabase/functions/auth-email-hook/index.ts).
 //
 // consent_marketing: invest_leads no pedía opt-in explícito — el quiz de
-// perfil-inversor.html hoy es "dejá tu email para ver tu resultado", sin
+// perfil-inversor.html hoy es "deja tu email para ver tu resultado", sin
 // checkbox de marketing. Se agregó consent_marketing boolean not null
 // default true en la migración 20260918000900 (mismo razonamiento que
 // 20260918000500 para starter_leads — ver esa migración).
@@ -78,17 +78,17 @@ export interface RenderedEmail {
 const PROFILE_COPY: Record<Perfil, { name: string; desc: string; mix: string[] }> = {
   conservador: {
     name: "Conservador",
-    desc: "Priorizás preservar tu capital por sobre el crecimiento. Un mix con mayor peso en renta fija y efectivo suele ajustarse mejor a tu perfil.",
+    desc: "Priorizas preservar tu capital por sobre el crecimiento. Un mix con mayor peso en renta fija y efectivo suele ajustarse mejor a tu perfil.",
     mix: ["70-80% renta fija / efectivo", "20-30% renta variable"],
   },
   moderado: {
     name: "Moderado",
-    desc: "Buscás un balance entre crecimiento y estabilidad. Un mix diversificado entre renta fija y variable suele ajustarse mejor a tu perfil.",
+    desc: "Buscas un balance entre crecimiento y estabilidad. Un mix diversificado entre renta fija y variable suele ajustarse mejor a tu perfil.",
     mix: ["40-60% renta variable", "40-60% renta fija / efectivo"],
   },
   agresivo: {
     name: "Agresivo",
-    desc: "Priorizás el crecimiento por sobre la estabilidad y tenés horizonte largo para absorber caídas. Un mix con mayor peso en renta variable y activos de mayor riesgo suele ajustarse mejor a tu perfil.",
+    desc: "Priorizas el crecimiento por sobre la estabilidad y tienes horizonte largo para absorber caídas. Un mix con mayor peso en renta variable y activos de mayor riesgo suele ajustarse mejor a tu perfil.",
     mix: ["70-90% renta variable / cripto", "10-30% renta fija / efectivo"],
   },
 };
@@ -121,7 +121,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       `
       <h2 style="color:${GOLD};margin-top:0">Lo que la mayoría no descubre solo</h2>
       <p>Hola,</p>
-      <p>Una de las herramientas de Invest que menos se usa al principio, y más ahorra errores caros, es el <strong>Position Builder</strong>: ingresás ticker, capital disponible y stop loss, y calcula automáticamente el tamaño de posición óptimo aplicando la Regla del 2% — cuánto arriesgar por operación para no comprometer el capital total en una sola posición mala.</p>
+      <p>Una de las herramientas de Invest que menos se usa al principio, y más ahorra errores caros, es el <strong>Position Builder</strong>: ingresas ticker, capital disponible y stop loss, y calcula automáticamente el tamaño de posición óptimo aplicando la Regla del 2% — cuánto arriesgar por operación para no comprometer el capital total en una sola posición mala.</p>
       <p>Está disponible desde el plan Free. La mayoría entra a Invest a mirar precios y nunca lo prueba porque no está en el centro de la pantalla — vale la pena buscarlo una vez.</p>
       <p><a href="https://invest.moyiq.app/app?ref=invest-d2#position-builder" style="display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Probar Position Builder →</a></p>
       <p style="color:${MUTED};font-size:13px">Si todavía no creaste tu cuenta, este es el momento — el plan Free no pide tarjeta.</p>
@@ -137,7 +137,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     `
     <h2 style="color:${GOLD};margin-top:0">Sin inventar nada que no esté en el sitio</h2>
     <p>Hola,</p>
-    <p>La diferencia real entre lo que ya podés usar en Free y lo que suma Pro (US$9.99/mes):</p>
+    <p>La diferencia real entre lo que ya puedes usar en Free y lo que suma Pro (US$9.99/mes):</p>
     <p><strong style="color:${TEXT}">Free (sin tarjeta, sin fecha de vencimiento):</strong><br>
     — 5 posiciones en portfolio<br>
     — Precios reales en tiempo real<br>
@@ -153,9 +153,9 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     — Rebalancing Tool<br>
     — Módulo Chile/LATAM + tipo de cambio en tiempo real<br>
     — Indicadores Pro (RSI/MACD/Bandas de Bollinger), Backtesting Engine, export CSV</p>
-    <p>Si solo seguís de cerca 3-4 posiciones, Free probablemente te alcanza. Si comparás activos seguido o hacés seguimiento de dividendos, ahí es donde Pro paga solo.</p>
+    <p>Si solo sigues de cerca 3-4 posiciones, Free probablemente te alcanza. Si comparas activos seguido o haces seguimiento de dividendos, ahí es donde Pro paga solo.</p>
     <p><a href="https://invest.moyiq.app/app?ref=invest-d5#pricing" style="display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver planes →</a></p>
-    <p style="color:${MUTED};font-size:13px">Si no es para vos ahora, seguís en Free sin perder nada.</p>
+    <p style="color:${MUTED};font-size:13px">Si no es para ti ahora, sigues en Free sin perder nada.</p>
     `,
     unsub,
   );

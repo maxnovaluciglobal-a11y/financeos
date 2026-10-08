@@ -327,23 +327,23 @@ export async function sendKeyEmail(
   }
   const appUrl = "https://app.moyiq.app/app/";
   const billingNote = interval
-    ? `<p>Es una suscripción con renovación automática ${interval === "month" ? "mensual" : "anual"}. Para cancelarla, escribinos a <a href="mailto:support@moyiq.app">support@moyiq.app</a>.</p>`
+    ? `<p>Es una suscripción con renovación automática ${interval === "month" ? "mensual" : "anual"}. Para cancelarla, escribe a <a href="mailto:support@moyiq.app">support@moyiq.app</a>.</p>`
     : "";
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
       <h2 style="color:#14213D">Tu licencia de MOY IQ</h2>
-      <p>¡Gracias por tu compra! Tu plan: <strong>${plan === "pro" ? "Pro" : "Personal"}</strong>.</p>
+      <p>Compra confirmada. Plan: <strong>${plan === "pro" ? "Pro" : "Personal"}</strong>.</p>
       <p>Tu clave de acceso:</p>
       <p style="font-family:monospace;font-size:20px;font-weight:700;background:#f0f7f3;
                 padding:14px;border-radius:8px;text-align:center;letter-spacing:2px">${key}</p>
-      <p>Actívala aquí: <a href="${appUrl}">${appUrl}</a></p>
+      <p>Para activarla, abre <a href="${appUrl}">${appUrl}</a> e ingresa la clave.</p>
       ${billingNote}
       <p style="color:#888;font-size:12px">Tus datos financieros se guardan solo en tu dispositivo.</p>
     </div>`;
   const attempt = async () => fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: config.fromEmail, to, subject: "Tu licencia de MOY IQ 🔑", html }),
+    body: JSON.stringify({ from: config.fromEmail, to, subject: "Tu licencia de MOY IQ", html }),
   });
   let res = await attempt();
   if (!res.ok) {

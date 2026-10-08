@@ -1,5 +1,5 @@
 // src/pages/NetWorth/index.jsx
-// Patrimonio neto — vista consolidada de lo que ya registrás en la app:
+// Patrimonio neto — vista consolidada de lo que ya registras en la app:
 // activos (ahorro en metas + flujo neto de propiedades) menos pasivos (deudas).
 // No agrega datos nuevos: reutiliza Goals, Debts y Projects tal cual existen.
 

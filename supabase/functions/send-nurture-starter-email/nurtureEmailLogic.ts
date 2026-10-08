@@ -6,7 +6,7 @@
 // diferencia de fondo con esa secuencia: quien recibe esto YA ES usuario
 // Starter con cuenta activa, no un lead que "podría" registrarse. El
 // objetivo es activación (que use Dashboard/Movimientos/Presupuestos con
-// datos reales) y, en el email 3, upsell a Pro — nunca "creá tu cuenta".
+// datos reales) y, en el email 3, upsell a Pro — nunca "crea tu cuenta".
 //
 // Separada de index.ts por el mismo motivo que en send-nurture-diagnostico-
 // email/: index.ts lee Deno.env.get() a nivel de módulo y no se puede
@@ -74,7 +74,7 @@ export function renderEmail(mode: NurtureMode, lead: StarterLead, config: Nurtur
       <h2 style="color:#14213D">Tu cuenta ya está activa</h2>
       <p>Hola,</p>
       <p>Tu cuenta de MOY IQ ya está lista. Sin nada cargado todavía, el Dashboard no tiene mucho que mostrarte — el primer paso que rinde es importar tus movimientos.</p>
-      <p>Andá a Movimientos → Importar y subí el archivo que descargues de tu banco (CSV o Excel, la mayoría de los bancos de la región lo dan así). MOY IQ categoriza automáticamente lo que reconoce; lo que no, lo dejás en "Importado" y lo ajustás cuando quieras.</p>
+      <p>Ve a Movimientos → Importar y sube el archivo que descargues de tu banco (CSV o Excel, la mayoría de los bancos de la región lo dan así). MOY IQ categoriza automáticamente lo que reconoce; lo que no, lo dejas en "Importado" y lo ajustas cuando quieras.</p>
       <p>No hace falta cargar todo el historial. Con el último mes alcanza para que el Dashboard y el IQ Score empiecen a mostrar algo real.</p>
       <p><a href="https://app.moyiq.app/import?ref=starter-welcome" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Importar movimientos →</a></p>
       <p style="color:#666;font-size:13px">Los datos se cifran en tu dispositivo antes de sincronizarse. Nadie del equipo puede ver tus montos ni categorías.</p>
@@ -91,7 +91,7 @@ export function renderEmail(mode: NurtureMode, lead: StarterLead, config: Nurtur
       <h2 style="color:#14213D">Lo que la mayoría no descubre solo</h2>
       <p>Hola,</p>
       <p>Con movimientos ya cargados, hay una parte del Dashboard que suele pasar desapercibida: el IQ Score no es un puntaje genérico — se arma con cinco factores puntuales (flujo de caja, colchón de emergencia, carga de deuda, progreso de metas, consistencia de tus datos), cada uno con su propio peso.</p>
-      <p>Tocá el score para ver el desglose. Sirve para ubicar dónde está el problema real en vez de adivinar — por ejemplo, un score bajo por flujo de caja negativo pide una acción distinta que uno bajo por falta de colchón de emergencia.</p>
+      <p>Toca el score para ver el desglose. Sirve para ubicar dónde está el problema real en vez de adivinar — por ejemplo, un score bajo por flujo de caja negativo pide una acción distinta que uno bajo por falta de colchón de emergencia.</p>
       <p>Presupuestos hace algo parecido en otra sección: se arma solo a partir de lo que ya importaste, sin que tengas que definir categorías ni límites a mano primero.</p>
       <p><a href="https://app.moyiq.app/dashboard?ref=starter-d2" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver mi IQ Score →</a></p>
       <p style="color:#666;font-size:13px">Si todavía no importaste movimientos, el score no tiene con qué calcularse — ese es el paso anterior a este.</p>
@@ -109,7 +109,7 @@ export function renderEmail(mode: NurtureMode, lead: StarterLead, config: Nurtur
     <p>Hola,</p>
     <p>No te vamos a inventar un testimonio de "Fulano ahorró X% en 3 meses". No tenemos esos casos documentados todavía, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
     <p>Lo que sí podemos ser específicos es en la diferencia real entre lo que ya estás usando en Starter y lo que suma Pro:</p>
-    <p><strong>Starter (lo que ya tenés, sin fecha de vencimiento):</strong><br>
+    <p><strong>Starter (lo que ya tienes, sin fecha de vencimiento):</strong><br>
     — Dashboard con IQ Score<br>
     — Movimientos y categorización automática<br>
     — Presupuestos básicos<br>
@@ -119,9 +119,9 @@ export function renderEmail(mode: NurtureMode, lead: StarterLead, config: Nurtur
     — Advisor: proyección de escenarios antes de tomar una decisión grande<br>
     — Goals con seguimiento de múltiples objetivos y ajuste automático<br>
     — Reports exportables</p>
-    <p>Si tu situación es simple, seguir en Starter no te falta nada. Si tenés varias metas corriendo en paralelo o una decisión grande en el horizonte cercano, ahí es donde Pro paga solo.</p>
+    <p>Si tu situación es simple, seguir en Starter no te falta nada. Si tienes varias metas corriendo en paralelo o una decisión grande en el horizonte cercano, ahí es donde Pro paga solo.</p>
     <p><a href="https://app.moyiq.app/upgrade?ref=starter-d5" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Ver Pro →</a></p>
-    <p style="color:#666;font-size:13px">Si no es para vos, seguís en Starter sin perder nada de lo que ya armaste.</p>
+    <p style="color:#666;font-size:13px">Si no es para ti, sigues en Starter sin perder nada de lo que ya armaste.</p>
     `,
     unsub,
   );

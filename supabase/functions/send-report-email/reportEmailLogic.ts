@@ -80,7 +80,7 @@ export async function sendReportEmail(
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
       <h2 style="color:#14213D">Reporte financiero${params.clientName ? " — " + params.clientName : ""}</h2>
       <p>Adjunto encontrarás el diagnóstico financiero de ${params.month}, generado con MOY IQ Modo Asesor.</p>
-      <p style="color:#888;font-size:12px">Este correo puede contener información financiera personal. Si no esperabas recibirlo, ignoralo y avisá a quien te lo envió.</p>
+      <p style="color:#888;font-size:12px">Este correo puede contener información financiera personal. Si no esperabas recibirlo, ignóralo y avisa a quien te lo envió.</p>
     </div>`;
 
   const body = {
