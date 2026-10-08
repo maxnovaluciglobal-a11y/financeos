@@ -7,12 +7,14 @@
 import { useState } from 'react'
 import { useDemo } from './DemoContext.jsx'
 import { useT } from '../i18n/useT.js'
+import { demoPersona } from './demoData.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
 export const PRICING_URL = 'https://moyiq.app/#pricing'
 
 export default function DemoBanner({ onReplayTour }) {
-  const { setScenario } = useDemo()
+  const { setScenario, personaId } = useDemo()
+  const persona = demoPersona(personaId)
   const { t } = useT()
   const [scenario, setLocal] = useState('exitoso')
 
@@ -27,7 +29,7 @@ export default function DemoBanner({ onReplayTour }) {
       <div className="demo-banner__row">
         <span className="demo-banner__badge">DEMO</span>
 
-        <span className="demo-banner__label">{t('demo.banner.label')}</span>
+        <span className="demo-banner__label">{t('demo.banner.label', { name: persona.name, country: t(`country.${persona.country}`) })}</span>
 
         {/* Toggle escenario — muestra el estado ACTUAL, no el destino */}
         <button type="button" className="demo-banner__scenario" onClick={toggle} title={t('demo.banner.scenarioHint')}>

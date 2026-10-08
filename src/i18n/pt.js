@@ -1581,7 +1581,7 @@ export const pt = {
     'demoGate.loading': "Entrando…",
     'demoGate.foot': "Sem cartão. Para usar o MOY IQ com seus dados reais, você precisa de uma conta gratuita.",
     'demo.docTitle': "Demo — MOY IQ · Experimente o app com dados fictícios",
-    'demo.banner.label': "Dados fictícios · Sofía García · Colômbia",
+    'demo.banner.label': "Dados fictícios · {name} · {country}",
     'demo.banner.scenarioGood': "Cenário: mês bom",
     'demo.banner.scenarioHard': "Cenário: mês difícil",
     'demo.banner.scenarioHint': "Alterna entre dois perfis financeiros para mostrar como o app responde",

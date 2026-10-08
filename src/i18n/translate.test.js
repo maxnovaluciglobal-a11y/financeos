@@ -227,3 +227,19 @@ describe('paridad de las claves de english-ready (es/en/pt/de)', () => {
     expect(offenders).toEqual([])
   })
 })
+
+// Demo con varias personas (08-oct-2026): el banner no puede llevar a Sofía
+// fija — el nombre y el país llegan como variables según la persona.
+describe('demo.banner.label por persona', () => {
+  it.each([['es', es], ['en', en], ['pt', pt], ['de', de]])('%s usa {name} y {country}, sin nombre fijo', (_, dict) => {
+    const s = dict['demo.banner.label']
+    expect(s).toContain('{name}')
+    expect(s).toContain('{country}')
+    expect(s).not.toMatch(/Sof[ií]a|Colomb|Kolumb/)
+    expect(s).not.toMatch(/[!¡]/)
+  })
+  it('se arma con la persona de EE. UU. en inglés', () => {
+    expect(interpolate(en['demo.banner.label'], { name: 'Maya Robinson', country: en['country.US'] }))
+      .toBe('Sample data · Maya Robinson · United States')
+  })
+})

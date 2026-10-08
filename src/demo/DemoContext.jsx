@@ -4,8 +4,9 @@
 // Se activa cuando la URL contiene ?demo=true
 
 import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
-import { DEMO_STATE, DEMO_INCOMES_EXITOSO } from './demoData.js'
-import { setMoneyLocale, setDateLocale, fmtMoney, catName, recurrenceLabel, methodLabel } from '../utils/index.js'
+import { buildDemoState, pickDemoPersonaId, demoPersona } from './demoData.js'
+import { detectLanguage } from '../i18n/translate.js'
+import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel } from '../utils/index.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
 
@@ -34,8 +35,12 @@ function reducer(state, action) {
     case 'DEL_GOAL':     return { ...state, goals:    state.goals.filter(g => g.id !== action.id) }
     case 'UPDATE_GOAL':  return { ...state, goals:    state.goals.map(g => g.id === action.item.id ? action.item : g) }
     case 'SAVE_SETTINGS':return { ...state, settings: action.settings }
-    case 'CLEAR_ALL':    return { ...DEMO_STATE } // En demo, "borrar todo" recarga los datos demo
-    case 'SET_SCENARIO': return { ...state, incomes: action.scenario === 'exitoso' ? DEMO_INCOMES_EXITOSO : DEMO_STATE.incomes }
+    // En demo, "borrar todo" recarga los datos de la misma persona (y conserva el idioma elegido)
+    case 'CLEAR_ALL':    return { ...state, ...buildDemoState(state.personaId, state.settings?.language) }
+    case 'SET_SCENARIO': {
+      const p = demoPersona(state.personaId)
+      return { ...state, incomes: action.scenario === 'exitoso' ? p.incomesGood : p.incomesHard }
+    }
     case 'SET_TOAST':    return { ...state, toast: action.toast }
     default:             return state
   }
@@ -44,11 +49,16 @@ function reducer(state, action) {
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 export function DemoProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, {
-    ...DEMO_STATE,
-    incomes: DEMO_INCOMES_EXITOSO, // arranca en un mes positivo (aspiracional); el toggle lleva a 'mes difícil'
-    loading: false,
-    toast: null,
+  // Persona según el idioma del navegador (en → EE. UU./USD, de → Alemania/EUR,
+  // es/pt → Sofía/COP). Arranca en el mes positivo (aspiracional); el toggle
+  // lleva a 'mes difícil'.
+  const [state, dispatch] = useReducer(reducer, null, () => {
+    const language = detectLanguage()
+    return {
+      ...buildDemoState(pickDemoPersonaId(language), language, 'exitoso'),
+      loading: false,
+      toast: null,
+    }
   })
 
   // Aplica idioma/moneda iniciales del demo una vez al montar (antes solo se
@@ -125,9 +135,9 @@ export function DemoProvider({ children }) {
 
   // loadDemo en demo = recarga los datos originales
   const loadDemo = useCallback(() => {
-    dispatch({ type: 'HYDRATE', payload: DEMO_STATE })
+    dispatch({ type: 'HYDRATE', payload: buildDemoState(state.personaId, state.settings?.language) })
     showToast(tr('demo.toast.reloaded'), 'ok')
-  }, [showToast, tr])
+  }, [showToast, tr, state.personaId, state.settings?.language])
 
   // Export funciona normalmente — usa datos demo
   const exportCSV = useCallback(() => {
@@ -148,7 +158,8 @@ export function DemoProvider({ children }) {
   }, [state.incomes, state.expenses, showToast, tr])
 
   const exportData = useCallback(() => {
-    const blob = new Blob([JSON.stringify(DEMO_STATE, null, 2)], { type: 'application/json' })
+    const { personaId, ...data } = buildDemoState(state.personaId, state.settings?.language)
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
@@ -156,7 +167,7 @@ export function DemoProvider({ children }) {
     a.click()
     URL.revokeObjectURL(url)
     showToast(tr('demo.toast.json'), 'ok')
-  }, [showToast, tr])
+  }, [showToast, tr, state.personaId, state.settings?.language])
 
   // Import en demo: solo memoria, no persiste
   const importData = useCallback(async (file) => {
@@ -181,10 +192,12 @@ export function DemoProvider({ children }) {
     dispatch({ type: 'SET_SCENARIO', scenario })
     // Total de ingresos del mes activo de ese escenario (antes iba fijo en el texto).
     const month = state.settings?.activeMonth || ''
-    const list = scenario === 'exitoso' ? DEMO_INCOMES_EXITOSO : DEMO_STATE.incomes
+    const p = demoPersona(state.personaId)
+    const list = scenario === 'exitoso' ? p.incomesGood : p.incomesHard
     const total = list.filter(r => r.date?.startsWith(month)).reduce((s, r) => s + (Number(r.amount) || 0), 0)
-    showToast(tr(scenario === 'exitoso' ? 'demo.toast.scenarioGood' : 'demo.toast.scenarioHard', { amount: fmtMoney(total) }), 'ok')
-  }, [showToast, tr, state.settings?.activeMonth])
+    const sym = currencySymbol(state.settings?.currency, state.settings?.language)
+    showToast(tr(scenario === 'exitoso' ? 'demo.toast.scenarioGood' : 'demo.toast.scenarioHard', { amount: fmtMoney(total, sym) }), 'ok')
+  }, [showToast, tr, state.personaId, state.settings?.activeMonth, state.settings?.currency, state.settings?.language])
 
   const value = {
     ...state,
