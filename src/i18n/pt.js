@@ -1683,7 +1683,6 @@ export const pt = {
     'demo.banner.cta': "Comprar",
     'demo.cta.title': "Isso atende ao que você precisa?",
     'demo.cta.sub': "Com seus dados, tudo fica no seu dispositivo. Plano gratuito, ou Pro a partir de US$ {m}/mês.",
-    'demo.cta.button': "Comprar o MOY IQ",
     'backup.err.format': "O arquivo não tem o formato correto.",
     'backup.err.notBackup': "O arquivo não parece ser um backup válido do MOY IQ.",
     'backup.err.section': "A seção \"{k}\" não tem o formato esperado.",

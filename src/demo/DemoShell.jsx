@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { DemoProvider, useDemo, DemoContext } from './DemoContext.jsx'
-import DemoBanner, { PRICING_URL } from './DemoBanner.jsx'
+import DemoBanner, { PRICING_URL, APP_URL } from './DemoBanner.jsx'
 import DemoTour, { hasSeenDemoTour } from './DemoTour.jsx'
 import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
@@ -86,19 +86,28 @@ function DemoBottomCTA({ hidden }) {
 
   return (
     <div className="demo-bottom-cta" role="region" aria-label={t('demo.cta.title')}>
-      <div style={{ flex: 1, minWidth: 180 }}>
+      <div style={{ flex: 1, minWidth: 180, paddingRight: 36 }}>
         <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 2 }}>{t('demo.cta.title')}</div>
         <div style={{ fontSize: 13, fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'color-mix(in srgb, var(--papel-000) 82%, transparent)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
       </div>
-      <a className="fos-btn-primary" href={PRICING_URL} target="_blank" rel="noopener noreferrer"
-        style={{ width: 'auto', fontSize: 14, textDecoration: 'none' }}>
-        {t('demo.cta.button')} <span aria-hidden="true">→</span>
-      </a>
+      {/* Mismo destino y texto que el CTA del banner (T09): la app real, en la
+          misma pestaña — el registro ya captura el lead. "Ver planes" queda como
+          enlace secundario hacia la landing. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+        <a className="fos-btn-primary" href={APP_URL}
+          style={{ width: 'auto', fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          {t('demo.banner.start')}
+        </a>
+        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
+          {t('demo.banner.plans')}
+        </a>
+      </div>
       <button
         type="button"
         onClick={dismiss}
         aria-label={t('common.close')}
         style={{
+          position: 'absolute', top: 4, right: 4,
           width: 44, height: 44, flexShrink: 0, borderRadius: 'var(--r)',
           background: 'transparent', border: 'none', cursor: 'pointer',
           color: 'color-mix(in srgb, var(--papel-000) 70%, transparent)', fontSize: 16,
