@@ -15,6 +15,7 @@ import { Smartphone, FileUp } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import TEMPLATES from '../data/templates.js'
+import CountryBadge from './CountryBadge.jsx'
 import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency, templateForCountry } from '../data/countries.js'
 import config from '../config.js'
 import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, localeForCurrency } from '../utils/index.js'
@@ -290,8 +291,10 @@ export default function Onboarding({ onComplete }) {
           <button key={c.code} type="button" className="fos-chip fos-chip--tall"
             aria-pressed={answers.country === c.code} onClick={() => chooseCountry(c.code)}
             style={{ justifyContent: 'flex-start', textAlign: 'left', gap: 10 }}>
-            <span aria-hidden="true" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--th)', minWidth: 22, letterSpacing: '.04em' }}>
-              {c.code === 'OTHER' ? '··' : c.code}
+            {/* D5 (08-oct-2026): CountryBadge en vez del código ISO suelto. "Otro" no
+                tiene país → texto. aria-hidden: el nombre del botón es el país. */}
+            <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', minWidth: 22, color: 'var(--tm)', fontFamily: 'var(--mono)', fontSize: 12 }}>
+              {c.code === 'OTHER' ? '··' : <CountryBadge code={c.code} size={22} />}
             </span>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t(countryKey(c.code))}</span>
           </button>
