@@ -69,6 +69,9 @@ function parseDate(text) {
   if (y.length === 2) y = '20' + y
   // Validación básica de rango
   if (+mo < 1 || +mo > 12 || +d < 1 || +d > 31) return null
+  // Fecha de calendario real (descarta 31/02, 31/04…)
+  const dt = new Date(+y, +mo - 1, +d)
+  if (dt.getFullYear() !== +y || dt.getMonth() !== +mo - 1 || dt.getDate() !== +d) return null
   return `${y}-${mo}-${d}`
 }
 
@@ -98,4 +101,19 @@ export function parseTransactionText(text) {
   const confidence = amount != null && (merchant || date) ? 'high' : 'low'
 
   return { amount, merchant, date, type, confidence }
+}
+
+/**
+ * Convierte un monto numérico al formato del teclado de QuickAdd: sin
+ * separador de miles, coma como decimal y como máximo 2 decimales
+ * (14.99 -> "14,99", 12990 -> "12990", 12.5 -> "12,5"). Sin esto, el monto
+ * pegado quedaba con punto ("12.5") y al tocar la tecla "," se formaba
+ * "12.5,3", que se guardaba como 12.5 sin aviso.
+ * @param {number|null} n
+ * @returns {string}
+ */
+export function toKeypadAmount(n) {
+  const v = Number(n)
+  if (!Number.isFinite(v) || v <= 0) return ''
+  return (Math.round(v * 100) / 100).toFixed(2).replace(/\.?0+$/, '').replace('.', ',')
 }

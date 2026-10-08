@@ -5,17 +5,22 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
-import { parseTransactionText } from '../utils/smsParser.js'
+import { parseTransactionText, toKeypadAmount } from '../utils/smsParser.js'
 import { hapticTap } from '../utils/haptics.js'
 import Sheet from './ui/Sheet.jsx'
 import config from '../config.js'
-import { localDateStr } from '../utils/index.js'
+import { localDateStr, dateLocale } from '../utils/index.js'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
 const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim()
 
 const SYM = { CLP:'$', USD:'US$', EUR:'€', VES:'Bs.', MXN:'$', ARS:'$', COP:'$', PEN:'S/', BRL:'R$', UYU:'$U' }
 const todayStr = () => localDateStr()
+// "2026-10-05" -> fecha corta en el idioma de la interfaz (sin pasar por UTC)
+const fmtPastedDate = (iso) => {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })
+}
 
 // Teclado numérico propio — evita el teclado del sistema (y su zoom) en el campo
 // más usado de la app. Controla `amount` como string directamente en vez de
@@ -68,6 +73,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
   const [pasteOpen, setPasteOpen] = useState(false)  // 1.1 · captura por pegado
   const [pasteText, setPasteText] = useState('')
   const [detected, setDetected] = useState(false)    // feedback "detectado"
+  const [pastedDate, setPastedDate] = useState(null) // fecha que trae el SMS (YYYY-MM-DD), si la hay
   const amountRef = useRef(null)
 
   // Reglas comercio→categoría aprendidas (1.2). Viven en settings (local, se exportan/sincronizan).
@@ -80,7 +86,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
   useEffect(() => {
     if (!open) return
     setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
-    setPasteOpen(false); setPasteText(''); setDetected(false)
+    setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
   }, [open, defaultType])
 
   // Categorías más usadas del historial + fallback a las de config
@@ -101,8 +107,11 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
   function handlePaste(text) {
     setPasteText(text)
     const r = parseTransactionText(text)
-    if (!r || r.confidence !== 'high') { setDetected(false); return }
-    if (r.amount != null) setAmount(String(r.amount))
+    if (!r || r.confidence !== 'high') { setDetected(false); setPastedDate(null); return }
+    if (r.amount != null) setAmount(toKeypadAmount(r.amount))
+    // Fecha del SMS: solo si no es futura (un dd/mm mal interpretado, o un SMS
+    // con formato mm/dd, no debe dejar un gasto en el futuro). Si no hay, hoy.
+    setPastedDate(r.date && r.date <= todayStr() ? r.date : null)
     if (r.type) setType(r.type)
     if (r.merchant) {
       setDesc(r.merchant)
@@ -129,7 +138,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
     if (!canSave) return
     setSaving(true)
     const finalDesc = desc.trim() || cat
-    const base = { description: finalDesc, amount: amt, date: todayStr(), category: cat || 'Otro' }
+    const base = { description: finalDesc, amount: amt, date: pastedDate || todayStr(), category: cat || 'Otro' }
     try {
       if (type === 'expense') await addExpense?.({ ...base, subcategory: '', method: 'Débito', type: 'Necesidad', notes: '', project: '' })
       else await addIncome?.({ ...base })
@@ -177,9 +186,13 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
             />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
-                {detected ? `✓ ${t('qa.pasteDetected')}` : t('qa.pasteLocal')}
+                {detected
+                  ? `✓ ${pastedDate && pastedDate !== todayStr()
+                      ? t('qa.pasteDetectedDate', { date: fmtPastedDate(pastedDate) })
+                      : t('qa.pasteDetected')}`
+                  : t('qa.pasteLocal')}
               </span>
-              <button type="button" onClick={() => { setPasteOpen(false); setPasteText(''); setDetected(false) }}
+              <button type="button" onClick={() => { setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null) }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>
                 {t('qa.pasteClose')}
               </button>

@@ -19,6 +19,7 @@ export const pt = {
     'qa.pastePh': "Cole aqui a mensagem do banco (ex. \"Compra R$23,40 em Jumbo…\")",
     'qa.pasteLocal': "Interpretado no seu aparelho · nada é enviado",
     'qa.pasteDetected': "Detectado · revise e salve",
+    'qa.pasteDetectedDate': "Detectado · data {date} · revise e salve",
     'qa.pasteClose': "Fechar",
     'verdict.eyebrow': "Seu mês",
     'verdict.surplus': "Sobra para você este mês",

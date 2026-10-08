@@ -19,6 +19,7 @@ export const de = {
     'qa.pastePh': "Bank-Nachricht hier einfügen (z. B. \"Kauf 23,40 € bei Rewe…\")",
     'qa.pasteLocal': "Wird lokal auf Ihrem Gerät ausgewertet · nichts wird gesendet",
     'qa.pasteDetected': "Erkannt · prüfen und speichern",
+    'qa.pasteDetectedDate': "Erkannt · Datum {date} · prüfen und speichern",
     'qa.pasteClose': "Schließen",
     'verdict.eyebrow': "Ihr Monat",
     'verdict.surplus': "Diesen Monat bleibt übrig",
