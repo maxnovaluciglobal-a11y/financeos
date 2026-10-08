@@ -1,7 +1,7 @@
 // Fecha "de hoy" en hora LOCAL (B1). Antes se usaba toISOString(), que da la
 // fecha en UTC: en LatAm, después de ~21 h, un gasto quedaba con fecha de mañana.
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { localDateStr, localMonthStr, today, currentMonth, setDateLocale, dateLocale } from './index.js'
+import { localDateStr, localMonthStr, today, currentMonth, setDateLocale, dateLocale, monthShortName, monthYearLabel } from './index.js'
 
 afterEach(() => { vi.useRealTimers() })
 
@@ -49,5 +49,25 @@ describe('setDateLocale', () => {
   it('un idioma desconocido cae al locale español', () => {
     setDateLocale('fr')
     expect(dateLocale()).toBe('es-CL')
+  })
+})
+
+describe('monthShortName / monthYearLabel (nombres de mes por idioma)', () => {
+  it.each([['es-CL', 'Ene'], ['en-US', 'Jan'], ['pt-BR', 'Jan'], ['de-DE', 'Jan']])('%s enero -> %s', (loc, out) => {
+    expect(monthShortName(0, loc)).toBe(out)
+  })
+  it('sin punto final y con mayúscula inicial', () => {
+    for (const loc of ['es-CL', 'en-US', 'pt-BR', 'de-DE']) {
+      for (let i = 0; i < 12; i++) {
+        const s = monthShortName(i, loc)
+        expect(s).not.toMatch(/\.$/)
+        expect(s[0]).toBe(s[0].toUpperCase())
+      }
+    }
+  })
+  it('monthYearLabel arma "Mes AAAA"', () => {
+    expect(monthYearLabel('2026-03', 'en-US')).toBe('Mar 2026')
+    expect(monthYearLabel('2026-12', 'es-CL')).toBe('Dic 2026')
+    expect(monthYearLabel('', 'en-US')).toBe('')
   })
 })

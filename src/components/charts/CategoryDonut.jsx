@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
-import { catLabel, moneyLocale } from '../../utils/index.js'
+import { catLabel, moneyLocale, catName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { useMoney } from '../Money.jsx'
 
@@ -23,7 +23,7 @@ function CustomTooltip({ active, payload, sym, lang, m }) {
 }
 
 export default function CategoryDonut({ records, sym = '$', maxCategories = 6, onCategoryClick }) {
-  const { lang } = useT()
+  const { t, lang } = useT()
   const { m } = useMoney()
   const safeRecords = Array.isArray(records) ? records : []
   const clickable = (name) => typeof onCategoryClick === 'function' && name !== 'Otros'
@@ -55,7 +55,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
     return { data: withPct, total: Math.round(total) }
   }, [safeRecords, maxCategories])
 
-  if (!data.length || total === 0) return <ChartEmpty msg="Agrega gastos con categorías para ver la distribución." />
+  if (!data.length || total === 0) return <ChartEmpty msg={t('chart.donut.empty')} />
 
   const fmtTotal = m(total >= 1000000 ? `${sym}${(total/1000000).toFixed(1)}M` : total >= 1000 ? `${sym}${(total/1000).toFixed(0)}K` : `${sym}${total}`)
 
@@ -74,7 +74,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
         {/* Label central */}
         <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center', pointerEvents:'none' }}>
           <div style={{ fontSize:15, fontWeight:700, color:'var(--tx)', fontFamily:'var(--mono)' }}>{fmtTotal}</div>
-          <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>total</div>
+          <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('chart.donut.total')}</div>
         </div>
       </div>
       <div style={{ flex:1, minWidth:140, display:'flex', flexDirection:'column', gap:6 }}>
@@ -85,9 +85,9 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
               role: 'button', tabIndex: 0,
               onClick: () => onCategoryClick(d.name),
               onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCategoryClick(d.name) } },
-              'aria-label': `Ver movimientos de ${d.name}`,
+              'aria-label': t('chart.donut.viewMovements', { cat: catName(d.name, lang) }),
             } : {})}
-            title={clickable(d.name) ? `Ver movimientos de ${d.name}` : undefined}
+            title={clickable(d.name) ? t('chart.donut.viewMovements', { cat: catName(d.name, lang) }) : undefined}
             style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d.name) ? 'pointer' : 'default', padding:'2px 0' }}
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>

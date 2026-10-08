@@ -4,9 +4,12 @@
 import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
+import { useT } from '../../i18n/useT.js'
+import { catName } from '../../utils/index.js'
 
 export default function HorizontalBars({ records, sym = '$', maxItems = 6, valueKey = 'amount', labelKey = 'category' }) {
   const { m } = useMoney()
+  const { t, lang } = useT()
   const safeRecords = Array.isArray(records) ? records : []
 
   const data = useMemo(() => {
@@ -23,7 +26,7 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
       .slice(0, maxItems)
   }, [safeRecords, maxItems, valueKey, labelKey])
 
-  if (!data.length) return <ChartEmpty msg="Sin datos suficientes para mostrar las categorías principales." />
+  if (!data.length) return <ChartEmpty msg={t('chart.empty.topCategories')} />
 
   const max = data[0].value
   const total = data.reduce((s, d) => s + d.value, 0)
@@ -41,7 +44,7 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
         return (
           <div key={i}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{d.name}</span>
+              <span style={{ fontSize: 12, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{catName(d.name, lang)}</span>
               <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', flexShrink: 0 }}>
                 {fmtV(d.value)} · {pct}%
               </span>

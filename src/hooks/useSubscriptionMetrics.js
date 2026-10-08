@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { dbGetAll } from '../core/db/index.js'
 import { currentMonth } from '../utils/index.js'
+import { useT } from '../i18n/useT.js'
 
 // ── CÁLCULOS DE FRECUENCIA ──────────────────────────────────────────────────
 export function toMonthly(amount, frequency) {
@@ -32,15 +33,16 @@ export function toAnnual(amount, frequency) {
 }
 
 // ── ESTADO ORIENTATIVO ──────────────────────────────────────────────────────
-export function subStatus(pct) {
-  if (pct <= 0)    return { label: 'Sin ingreso de referencia', color: 'var(--th)' }
-  if (pct < 0.03)  return { label: 'Bajo',     color: 'var(--grn)' }
-  if (pct < 0.07)  return { label: 'Moderado', color: 'var(--amb)' }
-  return               { label: 'Alto',     color: 'var(--red)' }
+// t opcional: sin él, la etiqueta es la clave i18n (para tests/llamadas puras).
+export function subStatus(pct, t = (k) => k) {
+  if (pct <= 0)    return { label: t('subs.metrics.status.none'),     color: 'var(--th)' }
+  if (pct < 0.03)  return { label: t('subs.metrics.status.low'),      color: 'var(--grn)' }
+  if (pct < 0.07)  return { label: t('subs.metrics.status.moderate'), color: 'var(--amb)' }
+  return               { label: t('subs.metrics.status.high'),     color: 'var(--red)' }
 }
 
 // ── DETECCIÓN DE DUPLICADOS Y SUGERENCIAS ──────────────────────────────────
-export function generateAlerts(activeSubs, monthlyIncome) {
+export function generateAlerts(activeSubs, monthlyIncome, t = (k) => k) {
   const alerts = []
   const byCat  = {}
 
@@ -51,27 +53,27 @@ export function generateAlerts(activeSubs, monthlyIncome) {
 
   // Más de 2 streaming
   if ((byCat['Streaming'] || []).length >= 2) {
-    alerts.push({ type: 'duplicate', msg: `Tienes ${byCat['Streaming'].length} suscripciones en Streaming. Revisa si todas se usan regularmente.` })
+    alerts.push({ type: 'duplicate', msg: t('subs.metrics.alert.streaming', { n: byCat['Streaming'].length }) })
   }
   // Más de 1 música
   if ((byCat['Música'] || []).length > 1) {
-    alerts.push({ type: 'duplicate', msg: `Hay ${byCat['Música'].length} servicios de música activos. Evalúa si ambos son necesarios.` })
+    alerts.push({ type: 'duplicate', msg: t('subs.metrics.alert.music', { n: byCat['Música'].length }) })
   }
   // Más de 1 almacenamiento
   if ((byCat['Almacenamiento'] || []).length > 1) {
-    alerts.push({ type: 'duplicate', msg: `Hay ${byCat['Almacenamiento'].length} servicios de almacenamiento. Considera consolidarlos.` })
+    alerts.push({ type: 'duplicate', msg: t('subs.metrics.alert.storage', { n: byCat['Almacenamiento'].length }) })
   }
   // Sin fecha de próximo pago
   const sinFecha = activeSubs.filter(s => !s.nextPaymentDate)
   if (sinFecha.length > 0) {
-    alerts.push({ type: 'info', msg: `${sinFecha.length} suscripción${sinFecha.length > 1 ? 'es' : ''} sin fecha de próximo pago registrada.` })
+    alerts.push({ type: 'info', msg: t('subs.alert.missing', { n: sinFecha.length }) })
   }
   // % sobre ingresos alto
   if (monthlyIncome > 0) {
     const monthly = activeSubs.reduce((s, sub) => s + toMonthly(sub.amount, sub.frequency), 0)
     const pct     = monthly / monthlyIncome
     if (pct > 0.07) {
-      alerts.push({ type: 'income', msg: `Tus suscripciones representan el ${(pct * 100).toFixed(1)}% de tus ingresos mensuales. Puede ser útil revisar.` })
+      alerts.push({ type: 'income', msg: t('subs.alert.income', { pct: (pct * 100).toFixed(1) }) })
     }
   }
 
@@ -81,6 +83,7 @@ export function generateAlerts(activeSubs, monthlyIncome) {
 // ── HOOK PRINCIPAL ──────────────────────────────────────────────────────────
 export default function useSubscriptionMetrics() {
   const { settings, incomes, subscriptions: ctxSubs } = useApp()
+  const { t, lang } = useT()
   const isDemo = !!settings.isDemo
 
   const [dbSubs,  setDbSubs]  = useState([])
@@ -118,8 +121,10 @@ export default function useSubscriptionMetrics() {
   )
 
   const pct     = monthlyIncome > 0 ? monthly / monthlyIncome : 0
-  const status  = subStatus(pct)
-  const alerts  = useMemo(() => generateAlerts(activeSubs, monthlyIncome), [activeSubs, monthlyIncome])
+  const status  = subStatus(pct, t)
+  // lang: los textos de las alertas cambian con el idioma
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const alerts  = useMemo(() => generateAlerts(activeSubs, monthlyIncome, t), [activeSubs, monthlyIncome, lang])
 
   const mostExpensive = useMemo(() =>
     activeSubs.reduce((max, s) => {

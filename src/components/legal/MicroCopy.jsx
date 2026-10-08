@@ -2,17 +2,19 @@
 // Componentes de microcopy legal — reutilizables en toda la app
 // Importar donde se necesite mostrar avisos contextuales
 import SignalIcon, { InlineIcon } from '../icons/SignalIcon.jsx'
+import { useT } from '../../i18n/useT.js'
 
 // ── FINANCIAL DISCLAIMER ─────────────────────────────────────────────────────
 // Usar en: Dashboard, Reportes, Proyección, pie de página de la app
 export function FinancialDisclaimer({ compact = false }) {
+  const { t } = useT()
   if (compact) {
     return (
       <p style={{
         fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)',
         lineHeight: 1.5, marginTop: 8,
       }}>
-        Orientación general · No constituye asesoría financiera certificada.
+        {t('micro.disclaimer.compact')}
       </p>
     )
   }
@@ -22,9 +24,7 @@ export function FinancialDisclaimer({ compact = false }) {
       lineHeight: 1.6, padding: '8px 12px', background: 'var(--sur2)',
       borderRadius: 6, borderLeft: '2px solid var(--brd2)', marginTop: 8,
     }}>
-      MOY IQ es una herramienta de organización financiera personal. Los datos y
-      proyecciones mostrados se basan en la información ingresada por el usuario y
-      no constituyen asesoría financiera, tributaria ni de inversión.
+      {t('micro.disclaimer.full')}
     </div>
   )
 }
@@ -32,14 +32,14 @@ export function FinancialDisclaimer({ compact = false }) {
 // ── BACKUP WARNING ────────────────────────────────────────────────────────────
 // Usar en: Ajustes, onboarding final, primer acceso al módulo de exportación
 export function BackupWarning({ variant = 'full' }) {
+  const { t } = useT()
   if (variant === 'inline') {
     return (
       <p style={{
         fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)',
         lineHeight: 1.5, marginTop: 6,
       }}>
-        <InlineIcon kind="alert" size={13} />Exporta un respaldo JSON periódicamente. Los datos locales pueden perderse
-        si borras el navegador o cambias de dispositivo.
+        <InlineIcon kind="alert" size={13} />{t('micro.backup.inline')}
       </p>
     )
   }
@@ -52,10 +52,8 @@ export function BackupWarning({ variant = 'full' }) {
     }}>
       <SignalIcon kind="alert" size={16} style={{ marginTop: 3 }} />
       <div>
-        <strong>Tus datos viven en este dispositivo.</strong> Si borras el navegador,
-        limpias la caché o cambias de dispositivo sin exportar un respaldo, perderás
-        todos tus datos de forma permanente. Exporta un respaldo JSON desde{' '}
-        <strong>Ajustes → Exportar JSON</strong> al menos una vez al mes.
+        <strong>{t('micro.backup.title')}</strong>{' '}
+        {t('micro.backup.body', { path: `${t('nav.settings')} → ${t('settings.backup.title')}` })}
       </div>
     </div>
   )
@@ -64,14 +62,13 @@ export function BackupWarning({ variant = 'full' }) {
 // ── PROJECTION DISCLAIMER ─────────────────────────────────────────────────────
 // Usar en: módulo de Proyección de flujo de caja
 export function ProjectionDisclaimer() {
+  const { t } = useT()
   return (
     <p style={{
       fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)',
       lineHeight: 1.5, marginTop: 8,
     }}>
-      * Proyección calculada sobre ingresos y gastos recurrentes registrados.
-      No incluye eventos futuros imprevistos. Orientación general — no constituye
-      asesoría financiera certificada.
+      {t('micro.projection')}
     </p>
   )
 }
@@ -79,14 +76,14 @@ export function ProjectionDisclaimer() {
 // ── REPORTS DISCLAIMER ────────────────────────────────────────────────────────
 // Usar en: módulo de Reportes
 export function ReportsDisclaimer() {
+  const { t } = useT()
   return (
     <p style={{
       fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)',
       lineHeight: 1.5, padding: '6px 10px', background: 'var(--sur2)',
       borderRadius: 4, marginTop: 4,
     }}>
-      Las recomendaciones mostradas se basan en los datos registrados y son
-      orientativas. No constituyen asesoría financiera, tributaria ni de inversión.
+      {t('micro.reports')}
     </p>
   )
 }

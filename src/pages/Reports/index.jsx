@@ -5,7 +5,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -26,7 +26,7 @@ import {
 } from 'recharts'
 
 export default function Reports({ setPage }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, goals: allGoals, settings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
@@ -106,13 +106,14 @@ export default function Reports({ setPage }) {
     for (let i=5; i>=0; i--) {
       const base=new Date(); const d=new Date(base.getFullYear(), base.getMonth()-i, 1)
       const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-      const lbl=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()]
+      const lbl=monthShortName(d.getMonth())
       const inc=incomes.filter(r=>r.date?.startsWith(key)).reduce((s,r)=>s+r.amount,0)
       const exp=expenses.filter(r=>r.date?.startsWith(key)).reduce((s,r)=>s+r.amount,0)
       months.push({mes:lbl, Ingresos:inc, Gastos:exp, Ahorro:Math.max(0,inc-exp)})
     }
     return months
-  }, [incomes, expenses])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomes, expenses, settings.language])
 
   const coachSignals = useMemo(() => {
     if (mIncomes.length === 0 && mExpenses.length === 0) return []
@@ -275,7 +276,7 @@ export default function Reports({ setPage }) {
               : <Alert type="warn">{balance<0 ? t('reports.reco.belowGoal.reduce', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25, v: fmtMoney(-balance+totalIncome*(settings.savingGoalPct/100||0.25),sym) }) : t('reports.reco.belowGoal.save', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25, v: fmtMoney(neededToSave,sym) })}</Alert>
           }
           {overBudget.length>0
-            ? <Alert type="danger">{t('reports.reco.overBudget', { cats: overBudget.map(b=>b.category).join(', ') })}</Alert>
+            ? <Alert type="danger">{t('reports.reco.overBudget', { cats: overBudget.map(b=>catName(b.category, lang)).join(', ') })}</Alert>
             : budgets.length>0 && <Alert type="ok">{t('reports.reco.budgetsOk')}</Alert>
           }
           {deseos>0 && totalExpense>0 && <Alert type="warn">{t('reports.reco.wants', { v: fmtMoney(deseos,sym), pct: fmtPct(deseos/totalExpense) })}</Alert>}
@@ -303,7 +304,7 @@ export default function Reports({ setPage }) {
               <div style={{fontSize:9,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:7}}>{t('reports.subs.byCat')}</div>
               {subMetrics.byCategory.map(([cat,data])=>(
                 <div key={cat} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'.5px solid var(--brd)',fontSize:12}}>
-                  <span style={{color:'var(--tm)'}}>{cat}</span>
+                  <span style={{color:'var(--tm)'}}>{subLabel(cat, lang)}</span>
                   <span style={{fontFamily:'var(--mono)',color:'var(--tx)'}}>{t('reports.subs.perMonthCount', { v: fmtMoney(data.monthly,sym), n: data.count })}</span>
                 </div>
               ))}

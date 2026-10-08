@@ -240,7 +240,7 @@ function AdvisorNotes({ notes, onSave }) {
           style={{ ...ta, minHeight: 70 }}
           value={nextSteps}
           onChange={e => setNextSteps(e.target.value)}
-          placeholder="1. Revisar gastos de entretenimiento&#10;2. Definir meta de fondo de emergencia&#10;3. Evaluar refinanciamiento tarjeta BancoEstado"
+          placeholder={t('adv.notes.nextStepsPh')}
         />
         <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
           {t('adv.notes.nextStepsHint')}

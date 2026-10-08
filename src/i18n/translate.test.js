@@ -182,7 +182,9 @@ describe('paridad de las claves del bloqueo T14 (es/en/pt/de)', () => {
 // esa rama, agregarlo acá.
 describe('paridad de las claves de english-ready (es/en/pt/de)', () => {
   const prefixes = [
-    'toast.', 'demo.toast.', 'csv.',
+    'toast.', 'demo.toast.', 'csv.', 'micro.', 'chart.', 'prio.', 'ring.', 'seal.', 'ui.',
+    'errorBoundary.', 'subcat.', 'expsub.', 'subs.metrics.', 'cat.', 'settings.dualCurrency.',
+    'settings.footer', 'adv.notes.nextStepsPh',
   ]
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
@@ -213,12 +215,13 @@ describe('paridad de las claves de english-ready (es/en/pt/de)', () => {
     for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
   })
 
-  it('ningún texto en inglés, portugués o alemán quedó igual al español (salvo marcas/códigos)', () => {
-    const SAME_OK = /^(MOY IQ|CSV|JSON|PDF|IQ Score|Freelance|Streaming|Software|Cloud|Delivery|[A-Z0-9 ·%{}$.,:/()-]+)$/
+  it('ninguna frase en inglés o alemán quedó igual al español', () => {
+    // Solo frases (3+ palabras): etiquetas sueltas como "Streaming", "Internet"
+    // o "Original" son iguales en varios idiomas a propósito.
     const offenders = []
-    for (const k of pick(es)) {
+    for (const k of pick(es).filter(k => String(es[k]).trim().split(/\s+/).filter(w => /\p{L}/u.test(w)).length >= 3 && !/^MOY IQ v/.test(es[k]))) {
       for (const [lang, d] of [['en', en], ['de', de]]) {
-        if (d[k] === es[k] && !SAME_OK.test(es[k])) offenders.push(`${lang}:${k}`)
+        if (d[k] === es[k]) offenders.push(`${lang}:${k}`)
       }
     }
     expect(offenders).toEqual([])

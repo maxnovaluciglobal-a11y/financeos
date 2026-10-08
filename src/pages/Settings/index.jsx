@@ -9,7 +9,7 @@ import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
-import { CURRENCY_OPTIONS, DEFAULT_USD_RATES } from '../shared/constants.js'
+import { CURRENCY_OPTIONS, DEFAULT_USD_RATES, currencyOptionLabel } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
@@ -111,7 +111,7 @@ export default function Settings() {
             const nextRate = settings.showDualCurrency ? (liveRate(nextCurrency) || 0) : 0
             setConfirmAction({ type: 'currency', payload: { nextCurrency, nextRate } })
           }}>
-            {CURRENCY_OPTIONS.map(c=><option key={c.code} value={c.code}>{c.label}</option>)}
+            {CURRENCY_OPTIONS.map(c=><option key={c.code} value={c.code}>{currencyOptionLabel(c.code, lang)}</option>)}
           </select>
         </div>
         {confirmAction?.type === 'currency' && (
@@ -249,7 +249,7 @@ export default function Settings() {
         {settings.showDualCurrency && settings.currency === 'USD' && (
           <div style={{...srow, borderBottom:'none'}}>
             <div style={{fontSize:11, color:'var(--th)', fontFamily:'var(--mono)'}}>
-              Tu moneda principal ya es USD — el equivalente dual no aplica.
+              {t('settings.dualCurrency.alreadyUsd')}
             </div>
           </div>
         )}
@@ -368,7 +368,7 @@ export default function Settings() {
         </Card>
       )}
       <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
-        MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Datos locales · Cifrado de extremo a extremo · No asesoría financiera certificada
+        {t('settings.footer')}
       </div>
     </div>
   )

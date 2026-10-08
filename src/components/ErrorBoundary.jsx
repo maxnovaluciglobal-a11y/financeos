@@ -5,6 +5,12 @@
 // están intactos en IndexedDB — solo falló el render.
 
 import { Component } from 'react'
+import { translate, detectLanguage } from '../i18n/translate.js'
+
+// Está FUERA de AppProvider (envuelve a <App/>): no hay useT(). El idioma sale
+// de <html lang>, que AppContext/DemoContext mantienen con settings.language;
+// si ese diccionario no alcanzó a cargarse, translate() cae a español.
+const tr = (key, vars) => translate(document.documentElement.lang || detectLanguage(), key, vars)
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -55,19 +61,20 @@ export default class ErrorBoundary extends Component {
       background: 'transparent', color: '#63604F', fontSize: 12, cursor: 'pointer', marginTop: 8,
     }
 
+    const [before, after = ''] = tr('errorBoundary.body').split('{safe}')
+
     return (
       <div style={wrap}>
         <div style={card}>
           <div style={{ fontSize: 34, marginBottom: 10 }}>🔧</div>
           <div style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', marginBottom: 8 }}>
-            Algo se interrumpió
+            {tr('errorBoundary.title')}
           </div>
           <p style={{ fontSize: 13, color: '#6b6a63', lineHeight: 1.6, marginBottom: 4 }}>
-            Tuvimos un problema al mostrar esta pantalla. <strong>Tus datos están a salvo</strong> en
-            tu dispositivo — solo falló la vista. Recarga para volver a la app.
+            {before}<strong>{tr('errorBoundary.safe')}</strong>{after}
           </p>
-          <button style={btnP} onClick={this.handleReload}>Recargar la app</button>
-          <button style={btnG} onClick={this.handleHome}>Ir al inicio</button>
+          <button style={btnP} onClick={this.handleReload}>{tr('errorBoundary.reload')}</button>
+          <button style={btnG} onClick={this.handleHome}>{tr('errorBoundary.home')}</button>
         </div>
       </div>
     )

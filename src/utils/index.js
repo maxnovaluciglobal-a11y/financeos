@@ -51,6 +51,20 @@ export function setDateLocale(language) {
   _dateLocale = LANG_DATE_LOCALE[language] || 'es-CL'
 }
 export const dateLocale = () => _dateLocale
+// Mes abreviado en el idioma de la interfaz ("Ene"/"Jan"/"Jan"/"Jan"), sin el
+// punto final que agregan algunos locales ("jan.", "Jan."). monthIndex: 0..11.
+export function monthShortName(monthIndex, locale = _dateLocale) {
+  let s = ''
+  try { s = new Date(2000, monthIndex, 1).toLocaleDateString(locale, { month: 'short' }) } catch {}
+  s = String(s).replace(/\.$/, '')
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
+}
+// "Mar 2026" / "Mär 2026" a partir de 'YYYY-MM'.
+export function monthYearLabel(ym, locale = _dateLocale) {
+  if (!ym) return ''
+  const [y, mo] = String(ym).split('-')
+  return `${monthShortName(Number(mo) - 1, locale)} ${y}`
+}
 
 // Formateo de moneda con locale/símbolo FIJOS, para las calculadoras fiscales
 // por país (AhorroFiscal, HipotecaUF, ResicoMX, IRSPortugal, IRPFEspana,
@@ -147,11 +161,16 @@ export const SUB_EMOJIS = {
   'Educación': '📚', Cloud: '☁️', Delivery: '🛵', 'Suscripción': '🔄', Productividad: '⚙️', Otros: '📦',
 }
 export const subEmoji = (c) => SUB_EMOJIS[c] || ''
-export const subLabel = (c) => { const e = SUB_EMOJIS[c]; return e ? `${e} ${c}` : (c || '') }
+// Igual que catLabel: el valor guardado no cambia, solo la etiqueta.
+export const subLabel = (c, lang) => { const e = SUB_EMOJIS[c]; const label = lang ? translateOrRaw('subcat.', c, lang) : (c || ''); return e ? `${e} ${label}` : label }
+// Subcategorías sugeridas de gasto (Movements/SUBCATS): mismo criterio.
+export const expSubcatLabel = (c, lang) => (lang ? translateOrRaw('expsub.', c, lang) : (c || ''))
 
 // Prioridad de metas — semáforo visual (🔴 alta, 🟡 media, 🟢 baja).
 export const PRIO_EMOJIS = { Alta: '🔴', Media: '🟡', Baja: '🟢' }
 export const prioEmoji = (p) => PRIO_EMOJIS[p] || ''
+// Etiqueta traducida de una prioridad guardada ('Alta'/'Media'/'Baja').
+export const prioLabel = (p, lang) => (lang ? translateOrRaw('prio.', p, lang) : (p || ''))
 
 // Tipos de deuda con emoji. Los valores se guardan en español (como la prioridad);
 // el emoji es solo presentación. Fallback 💳 para deudas antiguas sin tipo.

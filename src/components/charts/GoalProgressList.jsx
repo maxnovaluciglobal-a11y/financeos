@@ -5,7 +5,8 @@ import { useMemo } from 'react'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
-import { moneyLocale } from '../../utils/index.js'
+import { moneyLocale, monthYearLabel, prioLabel } from '../../utils/index.js'
+import { useT } from '../../i18n/useT.js'
 
 function fmtRaw(v, sym) {
   const n = Number(v) || 0
@@ -15,9 +16,9 @@ function fmtRaw(v, sym) {
 }
 
 const STATUS = [
-  { key:'done',  label:'Completada',          color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'ok' },
-  { key:'close', label:'Cerca de completarse', color:'var(--amb)',    bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.2)', icon:'attention' },
-  { key:'prog',  label:'En progreso',          color:'var(--accent2)',       bg:'transparent',          border:'var(--brd)',          icon:'progress' },
+  { key:'done',  label:'chart.goal.status.done',  color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'ok' },
+  { key:'close', label:'chart.goal.status.close', color:'var(--amb)',    bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.2)', icon:'attention' },
+  { key:'prog',  label:'chart.progress',          color:'var(--accent2)',       bg:'transparent',          border:'var(--brd)',          icon:'progress' },
 ]
 
 function getStatus(prog) {
@@ -30,6 +31,7 @@ const PRIORITY_COLOR = { Alta:'var(--red)', Media:'var(--amb)', Baja:'var(--th)'
 
 export default function GoalProgressList({ goals, sym = '$' }) {
   const { m } = useMoney()  // ocultar montos (T13)
+  const { t, lang } = useT()
   const fmtV = (v, s) => m(fmtRaw(v, s))
   const safeGoals = Array.isArray(goals) ? goals : []
 
@@ -44,7 +46,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
   }).sort((a, b) => b.prog - a.prog), [safeGoals])
 
   if (!rows.length) {
-    return <ChartEmpty msg="Aún no tienes metas registradas para mostrar el avance." />
+    return <ChartEmpty msg={t('chart.goal.empty')} />
   }
 
   const totalTarget    = rows.reduce((s, g) => s + g.target,    0)
@@ -58,11 +60,11 @@ export default function GoalProgressList({ goals, sym = '$' }) {
       {/* Resumen global */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))', gap:10, marginBottom:20 }}>
         {[
-          { label:'Total objetivo',  value:fmtV(totalTarget,    sym), color:'var(--th)' },
-          { label:'Total acumulado', value:fmtV(totalSaved,     sym), color:'var(--accent)' },
-          { label:'Restante',        value:fmtV(totalRemaining, sym), color:'var(--amb)' },
-          { label:'Avance global',   value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.7 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
-          { label:'Completadas',     value:`${completedCount}/${rows.length}`, color: completedCount > 0 ? 'var(--accent)' : 'var(--th)' },
+          { label:t('chart.goal.totalTarget'), value:fmtV(totalTarget,    sym), color:'var(--th)' },
+          { label:t('chart.goal.totalSaved'), value:fmtV(totalSaved,     sym), color:'var(--accent)' },
+          { label:t('chart.goal.remaining'), value:fmtV(totalRemaining, sym), color:'var(--amb)' },
+          { label:t('chart.goal.overall'), value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.7 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
+          { label:t('chart.goal.completed'), value:`${completedCount}/${rows.length}`, color: completedCount > 0 ? 'var(--accent)' : 'var(--th)' },
         ].map((k,i) => (
           <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
             <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
@@ -74,7 +76,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
       {/* Barra global */}
       <div style={{ marginBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>Progreso total de metas</span>
+          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{t('chart.goal.progressTitle')}</span>
           <span style={{ fontSize:12, fontWeight:700, color:'var(--accent)', fontFamily:'var(--mono)' }}>{(totalProg*100).toFixed(0)}%</span>
         </div>
         <div style={{ height:8, background:'var(--sur2)', borderRadius:4, overflow:'hidden' }}>
@@ -93,12 +95,12 @@ export default function GoalProgressList({ goals, sym = '$' }) {
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{g.name}</span>
                 {g.priority && (
                   <span style={{ fontSize:9, fontFamily:'var(--mono)', color:PRIORITY_COLOR[g.priority] || 'var(--th)', background:`${PRIORITY_COLOR[g.priority] || 'var(--th)'}18`, padding:'1px 6px', borderRadius:20 }}>
-                    {g.priority}
+                    {prioLabel(g.priority, lang)}
                   </span>
                 )}
               </div>
               <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:g.status.color, background:`${g.status.color}18`, padding:'2px 8px', borderRadius:20 }}>
-                {g.status.label}
+                {t(g.status.label)}
               </span>
             </div>
 
@@ -111,9 +113,9 @@ export default function GoalProgressList({ goals, sym = '$' }) {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ display:'flex', gap:16 }}>
                 {[
-                  { label:'Acumulado', value:fmtV(g.saved,     sym), color:'var(--accent)' },
-                  { label:'Restante',  value:fmtV(g.remaining, sym), color: g.remaining > 0 ? 'var(--amb)' : 'var(--accent)' },
-                  { label:'Objetivo',  value:fmtV(g.target,    sym), color:'var(--th)' },
+                  { label:t('chart.goal.saved'), value:fmtV(g.saved,     sym), color:'var(--accent)' },
+                  { label:t('chart.goal.remaining'), value:fmtV(g.remaining, sym), color: g.remaining > 0 ? 'var(--amb)' : 'var(--accent)' },
+                  { label:t('chart.goal.target'), value:fmtV(g.target,    sym), color:'var(--th)' },
                 ].map((c,j) => (
                   <div key={j}>
                     <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:1 }}>{c.label}</div>
@@ -126,7 +128,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
 
             {g.targetDate && (
               <div style={{ marginTop:6, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
-                Fecha objetivo: {g.targetDate.slice(0,7).replace('-','/')}
+                {t('chart.goal.targetDate', { date: monthYearLabel(g.targetDate.slice(0, 7)) })}
               </div>
             )}
           </div>

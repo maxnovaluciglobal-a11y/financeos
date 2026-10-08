@@ -294,7 +294,7 @@ export function evaluateCoach(metrics, t) {
     try {
       const result = rule.evaluate(metrics, tr)
       if (result) {
-        results.push({ id: rule.id, category: tr(rule.category), ...result })
+        results.push({ id: rule.id, category: tr(rule.category), categoryKey: rule.category, ...result })
       }
     } catch (e) {
       console.warn(`Coach rule ${rule.id} error:`, e)

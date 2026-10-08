@@ -5,7 +5,8 @@ import { useMemo } from 'react'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
-import { moneyLocale } from '../../utils/index.js'
+import { moneyLocale, dateLocale } from '../../utils/index.js'
+import { useT } from '../../i18n/useT.js'
 
 function fmtRaw(v, sym) {
   const n = Number(v) || 0
@@ -15,10 +16,17 @@ function fmtRaw(v, sym) {
 }
 
 const STATUS = [
-  { key:'done',  label:'Pagada',           color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'ok' },
-  { key:'close', label:'Cerca de terminar',color:'var(--amb)',     bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.2)', icon:'attention' },
-  { key:'prog',  label:'En progreso',      color:'var(--accent2)',        bg:'transparent',          border:'var(--brd)',          icon:'progress' },
+  { key:'done',  label:'chart.debt.status.done',  color:'var(--accent)', bg:'color-mix(in srgb, var(--pos) 9%, transparent)',  border:'color-mix(in srgb, var(--pos) 22%, transparent)',  icon:'ok' },
+  { key:'close', label:'chart.debt.status.close', color:'var(--amb)',     bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.2)', icon:'attention' },
+  { key:'prog',  label:'chart.progress',          color:'var(--accent2)',        bg:'transparent',          border:'var(--brd)',          icon:'progress' },
 ]
+
+// 'YYYY-MM-DD' → '15 mar' / 'Mar 15' según el idioma de la interfaz.
+function fmtDay(iso) {
+  const [y, mo, d] = String(iso).split('-').map(Number)
+  if (!y || !mo || !d) return iso
+  return new Date(y, mo - 1, d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })
+}
 
 function getStatus(prog) {
   if (prog >= 1)    return STATUS[0]
@@ -28,6 +36,7 @@ function getStatus(prog) {
 
 export default function DebtProgressList({ debts, sym = '$' }) {
   const { m } = useMoney()  // ocultar montos (T13)
+  const { t } = useT()
   const fmtV = (v, s) => m(fmtRaw(v, s))
   const safeDebts = Array.isArray(debts) ? debts : []
 
@@ -42,7 +51,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
   }).sort((a, b) => b.balance - a.balance), [safeDebts])
 
   if (!rows.length) {
-    return <ChartEmpty msg="Aún no tienes deudas registradas para mostrar el avance." />
+    return <ChartEmpty msg={t('chart.debt.empty')} />
   }
 
   // Totales
@@ -56,10 +65,10 @@ export default function DebtProgressList({ debts, sym = '$' }) {
       {/* Resumen global */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))', gap:10, marginBottom:20 }}>
         {[
-          { label:'Deuda original', value:fmtV(totalInitial, sym), color:'var(--th)' },
-          { label:'Saldo pendiente',value:fmtV(totalBalance,  sym), color:'var(--red)' },
-          { label:'Total pagado',   value:fmtV(totalPaid,     sym), color:'var(--accent)' },
-          { label:'Avance total',   value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.75 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
+          { label:t('chart.debt.original'), value:fmtV(totalInitial, sym), color:'var(--th)' },
+          { label:t('chart.debt.balance'), value:fmtV(totalBalance,  sym), color:'var(--red)' },
+          { label:t('chart.debt.totalPaid'), value:fmtV(totalPaid,     sym), color:'var(--accent)' },
+          { label:t('chart.debt.overall'), value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.75 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
         ].map((k,i) => (
           <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
             <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
@@ -71,7 +80,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
       {/* Barra global */}
       <div style={{ marginBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>Progreso total de pago</span>
+          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{t('chart.debt.progressTitle')}</span>
           <span style={{ fontSize:12, fontWeight:700, color:'var(--accent)', fontFamily:'var(--mono)' }}>{(totalProg*100).toFixed(0)}%</span>
         </div>
         <div style={{ height:8, background:'var(--sur2)', borderRadius:4, overflow:'hidden' }}>
@@ -88,10 +97,10 @@ export default function DebtProgressList({ debts, sym = '$' }) {
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <SignalIcon kind={d.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{d.creditor}</span>
-                {d.rate > 0 && <span style={{ fontSize:9, fontFamily:'var(--mono)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius:20 }}>{d.rate}% TAE</span>}
+                {d.rate > 0 && <span style={{ fontSize:9, fontFamily:'var(--mono)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius:20 }}>{t('chart.debt.rate', { rate: d.rate })}</span>}
               </div>
               <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius:20 }}>
-                {d.status.label}
+                {t(d.status.label)}
               </span>
             </div>
 
@@ -104,9 +113,9 @@ export default function DebtProgressList({ debts, sym = '$' }) {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ display:'flex', gap:16 }}>
                 {[
-                  { label:'Pagado',   value:fmtV(d.paid,    sym), color:'var(--accent)' },
-                  { label:'Pendiente',value:fmtV(d.balance, sym), color:'var(--red)' },
-                  { label:'Original', value:fmtV(d.initial, sym), color:'var(--th)' },
+                  { label:t('chart.debt.paid'), value:fmtV(d.paid,    sym), color:'var(--accent)' },
+                  { label:t('chart.debt.pending'), value:fmtV(d.balance, sym), color:'var(--red)' },
+                  { label:t('chart.debt.initial'), value:fmtV(d.initial, sym), color:'var(--th)' },
                 ].map((c,j) => (
                   <div key={j}>
                     <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:1 }}>{c.label}</div>
@@ -119,7 +128,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
 
             {d.dueDate && (
               <div style={{ marginTop:6, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
-                Vence: {d.dueDate.slice(5).replace('-','/')} {d.minPayment > 0 ? `· Pago mín: ${fmtV(d.minPayment,sym)}` : ''}
+                {t('chart.debt.due', { date: fmtDay(d.dueDate) })} {d.minPayment > 0 ? `· ${t('chart.debt.minPayment', { amount: fmtV(d.minPayment, sym) })}` : ''}
               </div>
             )}
           </div>

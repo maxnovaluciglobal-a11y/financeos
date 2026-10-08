@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney, fmtPct, moneyLocale, currentMonth } from '../../utils/index.js'
+import { fmtMoney, fmtPct, moneyLocale, currentMonth, monthShortName, recurrenceLabel, catName } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import { CURRENCY_SYMBOLS } from '../shared/constants.js'
@@ -33,7 +33,7 @@ const ChartTooltip = ({ active, payload, label, sym }) => {
 }
 
 export default function CashFlow({ setPage }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const { incomes: _incAll, expenses: _expAll, budgets, settings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // proyección personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
@@ -119,14 +119,13 @@ export default function CashFlow({ setPage }) {
 
   // ── Proyección 6 meses hacia adelante ────────────────────────────────────
   const projectionData = useMemo(() => {
-    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
     const result = []
     let balance = curBal
 
     for (let i = 0; i < 6; i++) {
       const base = new Date()
       const d = new Date(base.getFullYear(), base.getMonth() + i, 1)
-      const label = months[d.getMonth()] + ' ' + d.getFullYear().toString().slice(2)
+      const label = monthShortName(d.getMonth()) + ' ' + d.getFullYear().toString().slice(2)
       if (i === 0) {
         // Mes actual = DATO. Sirve de puente: aparece en ambas series para que
         // la línea real (sólida) y la estimada (punteada) se conecten.
@@ -137,7 +136,9 @@ export default function CashFlow({ setPage }) {
       }
     }
     return result
-  }, [curBal, monthlyEstimate, monthlyNetFlow])
+    // settings.language: el nombre del mes cambia con el idioma
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curBal, monthlyEstimate, monthlyNetFlow, settings.language])
 
   // ── Hitos de 30/60/90 días ────────────────────────────────────────────────
   const bal30  = curBal + monthlyNetFlow
@@ -333,7 +334,7 @@ export default function CashFlow({ setPage }) {
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.source}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{r.recurrence} · {r.category}</div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{recurrenceLabel(r.recurrence, lang)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--grn)' }}>+{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</div>
@@ -365,7 +366,7 @@ export default function CashFlow({ setPage }) {
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{r.recurrence} · {r.category}</div>
+                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{recurrenceLabel(r.recurrence, lang)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>-{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</div>

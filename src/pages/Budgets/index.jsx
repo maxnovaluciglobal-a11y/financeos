@@ -4,7 +4,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName } from '../../utils/index.js'
 import { CURRENCY_SYMBOLS, monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -187,7 +187,7 @@ export default function Budgets() {
                       <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 10px',borderRadius:6,background:s.highlight?'rgba(10,92,62,.08)':i%2===0?'var(--sur2)':'transparent',border:s.highlight?'0.5px solid rgba(10,92,62,.25)':'none'}}>
                         <div>
                           {/* La fila de ahorro usa etiqueta traducida (no está en el mapa) → emoji fijo */}
-                          <span style={{fontSize:11,fontFamily:'var(--mono)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{s.highlight ? `💰 ${s.cat}` : catLabel(s.cat, lang)}</span>
+                          <span style={{fontSize:11,fontFamily:'var(--mono)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{s.highlight ? `💰 ${catName(s.cat, lang)}` : catLabel(s.cat, lang)}</span>
                           <span style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:6}}>{s.grupo}</span>
                         </div>
                         <div style={{textAlign:'right'}}>

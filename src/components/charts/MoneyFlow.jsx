@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
 import { moneyLocale } from '../../utils/index.js'
 import { useMoney } from '../Money.jsx'
+import { useT } from '../../i18n/useT.js'
 
 function fmtV(v, sym) {
   const n = Number(v) || 0
@@ -38,6 +39,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
   // Ocultar montos (T13): las cifras de los nodos SVG pasan por m(); los
   // porcentajes y las proporciones del dibujo se quedan (no son montos).
   const { m } = useMoney()
+  const { t } = useT()
   const amt = (v) => m(fmtV(v, sym))
   const safeInc  = Array.isArray(incomes)      ? incomes      : []
   const safeExp  = Array.isArray(expenses)      ? expenses     : []
@@ -61,16 +63,17 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
     const libre     = Math.max(0, totalInc - totalExp - totalSubs - totalDebt)
 
     const items = [
-      { key: 'gastos', label: 'Gastos',       amount: totalExp,   color: COLORS.gastos },
-      totalSubs > 0 && { key: 'subs',   label: 'Suscripciones', amount: totalSubs,  color: COLORS.subs },
-      totalDebt > 0 && { key: 'deudas', label: 'Pagos deuda',  amount: totalDebt,  color: COLORS.deudas },
-      { key: 'libre',  label: 'Disponible',   amount: libre,     color: COLORS.libre },
+      { key: 'gastos', label: t('chart.expenses'), amount: totalExp,   color: COLORS.gastos },
+      totalSubs > 0 && { key: 'subs',   label: t('chart.flow.subs'), amount: totalSubs,  color: COLORS.subs },
+      totalDebt > 0 && { key: 'deudas', label: t('chart.flow.debt'), amount: totalDebt,  color: COLORS.deudas },
+      { key: 'libre',  label: t('chart.flow.available'), amount: libre,     color: COLORS.libre },
     ].filter(Boolean)
 
     return { totalInc, items }
-  }, [safeInc, safeExp, safeSubs, safeDebt])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [safeInc, safeExp, safeSubs, safeDebt, t])
 
-  if (!data) return <ChartEmpty msg="Agrega ingresos y gastos para ver el flujo de dinero del mes." />
+  if (!data) return <ChartEmpty msg={t('chart.flow.empty')} />
 
   const { totalInc, items } = data
 
@@ -112,7 +115,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         width="100%"
         style={{ display:'block', maxWidth:'100%' }}
         role="img"
-        aria-label="Flujo de dinero del mes"
+        aria-label={t('chart.flow.aria')}
       >
         {/* Nodo izquierdo — Ingresos */}
         <rect x={LEFT_X} y={PAD} width={LEFT_W} height={incH} rx="6"
@@ -120,7 +123,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         <text x={LEFT_X + LEFT_W/2} y={PAD + incH/2 - 10}
           textAnchor="middle" dominantBaseline="middle"
           style={{ fontFamily:'var(--mono, monospace)', fontSize:11, fontWeight:700, fill: COLORS.income.text }}>
-          Ingresos
+          {t('chart.income')}
         </text>
         <text x={LEFT_X + LEFT_W/2} y={PAD + incH/2 + 10}
           textAnchor="middle" dominantBaseline="middle"
@@ -179,7 +182,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
       </div>
 
       <div style={{ marginTop:8, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
-        Distribución orientativa. No constituye asesoría financiera.
+        {t('chart.flow.disclaimer')}
       </div>
     </div>
   )

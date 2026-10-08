@@ -10,7 +10,7 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel } from '../../utils/index.js'
+import { catLabel, catEmoji, subLabel, expSubcatLabel, moneyLocale, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel } from '../../utils/index.js'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -191,7 +191,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
                     fontWeight: f.subcategory === sc ? 600 : 400,
                     transition:'.12s',
                   }}>
-                  {sc}
+                  {expSubcatLabel(sc, lang)}
                 </button>
               ))}
             </div>
@@ -235,7 +235,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
 
 // ── Formulario Suscripción ────────────────────────────────────────────────────
 function FormSub({ onSave, onCancel }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const [f, setF] = useState({
     name:'', amount:'', frequency:'monthly', category:'Streaming',
     status:'active', notes:'', nextPaymentDate:''
@@ -266,7 +266,7 @@ function FormSub({ onSave, onCancel }) {
           </select></FormGroup>
         <FormGroup label={t('mov.form.category')}>
           <select style={inp} value={f.category} onChange={e => set('category', e.target.value)}>
-            {SUB_CATS.map(c => <option key={c} value={c}>{subLabel(c)}</option>)}</select></FormGroup>
+            {SUB_CATS.map(c => <option key={c} value={c}>{subLabel(c, lang)}</option>)}</select></FormGroup>
         <FormGroup label={t('mov.form.nextPay')}>
           <input style={inp} type="date" value={f.nextPaymentDate}
             onChange={e => set('nextPaymentDate', e.target.value)}/></FormGroup>
@@ -637,13 +637,13 @@ export default function Movements({ setPage }) {
                   <select value={editForm.category||e.category} aria-label={t('mov.form.category')}
                     onChange={ev=>setEditForm(f=>({...f,category:ev.target.value,subcategory:''}))}
                     style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
-                    {categoriesExpense.map(c=><option key={c}>{c}</option>)}
+                    {categoriesExpense.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
                   </select>
                   <select value={editForm.subcategory??e.subcategory??''} aria-label={t('mov.form.subcat')}
                     onChange={ev=>setEditForm(f=>({...f,subcategory:ev.target.value}))}
                     style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                     <option value="">{t('mov.edit.subcatNone')}</option>
-                    {(SUBCATS[editForm.category||e.category]||[]).map(sc=><option key={sc}>{sc}</option>)}
+                    {(SUBCATS[editForm.category||e.category]||[]).map(sc=><option key={sc} value={sc}>{expSubcatLabel(sc, lang)}</option>)}
                   </select>
                 </div>
                 <div style={{display:'flex',gap:6}}>
@@ -664,7 +664,7 @@ export default function Movements({ setPage }) {
                   </div>
                   <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
                     {e.subcategory
-                      ? <><span style={{ color:'var(--accent)', opacity:.75 }}>{catLabel(e.category, lang)}</span>{' › '}{e.subcategory}{' · '}{e.date?.slice(5)}</>
+                      ? <><span style={{ color:'var(--accent)', opacity:.75 }}>{catLabel(e.category, lang)}</span>{' › '}{expSubcatLabel(e.subcategory, lang)}{' · '}{e.date?.slice(5)}</>
                       : <>{catLabel(e.category, lang)}{' · '}{e.date?.slice(5)}</>
                     }
                   </div>
