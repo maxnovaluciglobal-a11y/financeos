@@ -6,9 +6,8 @@
 // Lo que se dejó de preguntar usa defaults: uso 'personal', meta de ahorro de
 // config/DB (25 %), plantilla según el país (data/countries.js). Goals y Budgets
 // deberían pedir lo suyo la primera vez que se entra (pendiente aparte).
-// Las claves i18n del flujo viejo (onboarding.useType.*, .profile.*, .basics.*,
-// .income.*, .goalExp.*, .template.*, .summary.*) quedan sin uso: se borran en
-// un commit aparte, después de confirmar que nada más las lee.
+// Las claves i18n del flujo viejo de 9 pasos se borraron el 08-oct-2026 (chore
+// de fase 3) tras comprobar con grep que nada las leía.
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Smartphone, FileUp } from 'lucide-react'
