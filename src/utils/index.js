@@ -163,6 +163,8 @@ export const SUB_EMOJIS = {
 export const subEmoji = (c) => SUB_EMOJIS[c] || ''
 // Igual que catLabel: el valor guardado no cambia, solo la etiqueta.
 export const subLabel = (c, lang) => { const e = SUB_EMOJIS[c]; const label = lang ? translateOrRaw('subcat.', c, lang) : (c || ''); return e ? `${e} ${label}` : label }
+// Solo el nombre traducido, sin emoji (PDFs: Helvetica no dibuja emoji).
+export const subName = (c, lang) => (lang ? translateOrRaw('subcat.', c, lang) : (c || ''))
 // Subcategorías sugeridas de gasto (Movements/SUBCATS): mismo criterio.
 export const expSubcatLabel = (c, lang) => (lang ? translateOrRaw('expsub.', c, lang) : (c || ''))
 

@@ -4,7 +4,7 @@
 // AVISO: Contenido informativo. No constituye asesoría financiera certificada.
 
 import { Document, Page, Text, View, StyleSheet, Font, pdf } from '@react-pdf/renderer'
-import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subLabel, monthYearLabel } from '../../utils/index.js'
+import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
 
@@ -492,7 +492,7 @@ export function ReporteFinancieroPDF({ data }) {
                 </View>
                 {(subByCategory || []).slice(0, 5).map(([cat, data], i, arr) => (
                   <View key={cat} style={i === arr.length - 1 ? s.tableRowLast : s.tableRow}>
-                    <Text style={[s.tdCell, { flex: 3 }]}>{subLabel(cat, lang)}</Text>
+                    <Text style={[s.tdCell, { flex: 3 }]}>{subName(cat, lang)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{fmtMoney(data.monthly || 0, sym)}</Text>
                     <Text style={[s.tdCell, { flex: 1, textAlign: 'right', color: C.ink3 }]}>{data.count}</Text>
                   </View>
