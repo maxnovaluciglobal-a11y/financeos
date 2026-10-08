@@ -75,7 +75,7 @@
   /* Wordmark/display: Instrument Sans. Estático (400/500/600/700 + italic 400),
      sin eje de ancho variable — a diferencia de la Archivo anterior, el peso se
      controla con font-weight normal, no font-variation-settings. */
-  --display:   'Instrument Sans', 'IBM Plex Sans', sans-serif;
+  --display:   'MOY Bullet', 'Instrument Sans', 'IBM Plex Sans', sans-serif; /* MOY Bullet: solo U+2022, ver public/fonts.css */
   --mono:      'IBM Plex Mono', monospace;
   /* Radios — chicos y técnicos a propósito (nunca pill / rounded-lg grande). */
   --r:         8px;    /* botones */
@@ -248,7 +248,10 @@ button { cursor: pointer; font-family: var(--sans); }
 /* Monto oculto (T13, components/Money.jsx): el "•••" hereda tamaño y color de la
    cifra a la que reemplaza; un poco de aire entre puntos para que se lea como
    máscara deliberada y no como texto truncado. */
-.money-masked { letter-spacing: 0.12em; white-space: nowrap; }
+/* Instrument Sans dibuja "•" como cuadrado ("■■■"): la máscara usa la sans de UI
+   (bullet redondo). Las máscaras dentro de strings (m()) en texto display las
+   cubre 'MOY Bullet' en --display (public/fonts.css). */
+.money-masked { font-family: var(--sans); font-weight: 600; letter-spacing: 0.12em; white-space: nowrap; }
 
 /* Entrada suave — para escalonar la aparición de tarjetas (Ronda 3 la explota). */
 @keyframes fos-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

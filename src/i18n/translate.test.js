@@ -107,6 +107,34 @@ describe('paridad de las claves de fase 3 (es/en/pt/de)', () => {
   })
 })
 
+describe('paridad de las claves del Inicio M5 (es/en/pt/de)', () => {
+  const prefixes = ['home.', 'backup.reminder.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('ningún texto en español usa voseo, exclamaciones ni "por favor"; ningún texto alemán tutea', () => {
+    for (const k of pick(es)) {
+      expect(es[k]).not.toMatch(/\b(podés|tenés|contanos|dejanos|probá|elegí|revisá|escribinos|querés|vos|registrá|empezá|tocá|respaldá|creá|mirá)\b/i)
+      expect(es[k]).not.toMatch(/[¡!]/)
+      expect(es[k]).not.toMatch(/por favor/i)
+    }
+    for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+})
+
 describe('T17: sin glifos unicode usados como ícono dentro de los textos', () => {
   // El ícono lo dibuja el componente (SignalIcon / Alert), no el string.
   const GLYPH_ICON = /^[◈◑◎⊖▤⇪↻⊟⊡⌂◆⚕⊞⟶⊙⚠↗⇄☀⏻⊗🔒]/u
