@@ -20,11 +20,12 @@
 // RESEND_API_KEY, que está scopeado a otro remitente y devuelve 403 (ver
 // comentario en supabase/functions/auth-email-hook/index.ts).
 //
-// consent_marketing: invest_leads no pedía opt-in explícito — el quiz de
-// perfil-inversor.html hoy es "deja tu email para ver tu resultado", sin
-// checkbox de marketing. Se agregó consent_marketing boolean not null
-// default true en la migración 20260918000900 (mismo razonamiento que
-// 20260918000500 para starter_leads — ver esa migración).
+// consent_marketing: desde el relanzamiento v2 (migración 20261009000100) el
+// default es false y register_invest_lead guarda la casilla del quiz
+// (p_consent_marketing). Los correos 2 y 3 (marketing, cron) exigen
+// consent_marketing=true; el correo 1 ("welcome", el RESULTADO del quiz que
+// la persona pidió) es transaccional y se manda siempre. Los leads anteriores
+// al 2026-10-08 quedaron marcados como enviados y sin consentimiento.
 
 export type NurtureMode = "welcome" | "day2" | "day5";
 export type Perfil = "conservador" | "moderado" | "agresivo";
