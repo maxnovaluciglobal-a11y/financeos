@@ -6,7 +6,7 @@ describe('pricing', () => {
   it('config.pricing es la fuente única de los precios de Pro', () => {
     expect(config.pricing).toEqual({
       proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
-      trialEnabled: false, trialCheckoutUrl: null,
+      trialEnabled: true, trialCheckoutUrl: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
     })
   })
 
@@ -29,8 +29,11 @@ describe('pricing', () => {
 
   describe('proCta (T10)', () => {
     const base = { proMonthly: 4.99, proAnnual: 39.99, trialDays: 14 }
-    it('por defecto (trialEnabled false) el CTA es el de siempre', () => {
-      expect(proCta(config.pricing)).toEqual({ trial: false, href: 'https://moyiq.app/#pricing', labelKey: 'pro.gate.cta' })
+    it('con trialEnabled false el CTA es el de siempre', () => {
+      expect(proCta({ ...config.pricing, trialEnabled: false })).toEqual({ trial: false, href: 'https://moyiq.app/#pricing', labelKey: 'pro.gate.cta' })
+    })
+    it('la config de producción ofrece la prueba con el link mensual de 14 días', () => {
+      expect(proCta(config.pricing)).toEqual({ trial: true, href: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04', labelKey: 'pro.gate.trialCta' })
     })
     it('con la prueba habilitada pero sin URL, cae al CTA de siempre', () => {
       expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: null }).trial).toBe(false)
