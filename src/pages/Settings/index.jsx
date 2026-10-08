@@ -20,6 +20,7 @@ import { moneyLocale } from '../../utils/index.js'
 import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
 import { proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
+import { cancelUrl } from '../../utils/cancelUrl.js'
 
 export default function Settings() {
   const { settings, updateSettings, clearAll, loadDemo, exportCSV, enableSync, disableSync } = useApp()
@@ -320,6 +321,12 @@ export default function Settings() {
             <Btn variant="ghost" size="sm" onClick={()=>setConfirmAction({type:'deactivate'})}>{t('settings.license.btn')}</Btn>
           </div>
         ))}
+        {!isDemo && (
+          <div style={srow}>
+            <div><div style={slbl}>{t('settings.cancelSub.label')}</div><div style={ssub}>{t('settings.cancelSub.sub')}</div></div>
+            <Btn variant="ghost" size="sm" onClick={() => window.open(cancelUrl(lang), '_blank', 'noopener,noreferrer')}>{t('settings.cancelSub.btn')}</Btn>
+          </div>
+        )}
         {!isDemo && getLicensePlan() !== 'pro' && (
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border:'1px solid var(--laton)',borderRadius:'var(--r)'}}>
             <div>
