@@ -21,10 +21,7 @@
 
 import {
   runCronBatch,
-  renderEmail,
-  sendViaResend,
-  fetchLeadById,
-  markSent,
+  processWelcome,
   type NurtureEmailConfig,
 } from "./nurtureEmailLogic.ts";
 
@@ -68,8 +65,6 @@ function json(body: unknown, status: number, origin: string | null) {
   });
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
 
@@ -99,20 +94,17 @@ Deno.serve(async (req) => {
   }
 
   if (mode === "welcome") {
-    const leadId = payload?.leadId;
-    if (typeof leadId !== "string" || !UUID_RE.test(leadId)) {
-      return json({ ok: false, error: "invalid_lead_id" }, 400, origin);
-    }
-    const lead = await fetchLeadById(leadId, config);
-    if (!lead) {
-      return json({ ok: false, error: "lead_not_found" }, 404, origin);
-    }
-    const rendered = renderEmail("welcome", lead, config);
-    const result = await sendViaResend(lead.email, rendered, config);
-    if (result.ok) {
-      await markSent(lead.id, "welcome", config);
-    }
-    return json(result, result.ok ? 200 : 502, origin);
+    const result = await processWelcome(payload?.leadId, config);
+    const status = result.ok
+      ? 200
+      : result.error === "invalid_lead_id"
+        ? 400
+        : result.error === "lead_not_found"
+          ? 404
+          : result.error === "not_requested"
+            ? 403
+            : 502;
+    return json(result, status, origin);
   }
 
   return json({ ok: false, error: "invalid_mode" }, 400, origin);

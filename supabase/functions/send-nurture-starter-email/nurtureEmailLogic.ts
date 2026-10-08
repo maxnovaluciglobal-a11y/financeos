@@ -28,6 +28,15 @@
 // Idioma (09-oct-2026): el copy de los 4 idiomas vive en nurtureTemplates.ts
 // y se elige por starter_leads.lang (pickLang, fallback español). Ver
 // supabase/migrations/20261009000000_leads_lang.sql.
+//
+// Doble opt-in (10-oct-2026, § 7 Abs. 2 UWG / RGPD art. 7): los emails 2 y 3
+// son marketing y solo salen a filas con consent_marketing = true Y
+// consent_confirmed_at no nulo (la persona hizo clic en el enlace del correo
+// de send-optin-confirmation). El email 1 (welcome) es de servicio: ayuda a
+// usar la cuenta recién creada, sin publicidad — sale siempre. Filas viejas
+// con consent_marketing = true heredado del default (sin casilla) no tienen
+// consent_confirmed_at: dejan de recibir marketing. Ver
+// supabase/migrations/20261010010000_marketing_double_optin.sql.
 
 import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
 import { STARTER_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
@@ -166,7 +175,7 @@ const BATCH_LIMIT = 200; // tope por corrida del cron — mismo criterio que dia
 export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<StarterLead[]> {
   return restGet<StarterLead[]>(
     `starter_leads?select=*` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null&email2_sent_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null&email2_sent_at=is.null` +
       `&limit=${BATCH_LIMIT}`,
     config,
   );
@@ -178,7 +187,7 @@ export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promis
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<StarterLead[]>(
     `starter_leads?select=*` +
-      `&unsubscribed_at=is.null&consent_marketing=is.true&account_created_at=is.null` +
+      `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null` +
       `&email3_sent_at=is.null&email2_sent_at=not.is.null&email2_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,
     config,
