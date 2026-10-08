@@ -54,7 +54,7 @@ export default function NetWorthCard({ goals, debts, incomes, expenses, settings
             <IconAhorro size={14} />{t('networth.title')}
           </h2>
           <div className={`num ${s.nwValue}`} style={{ color: value < 0 ? 'var(--neg)' : 'var(--tx)' }}>
-            {value < 0 ? '−' : ''}<Money>{fmtMoney(Math.abs(value), sym)}</Money>
+            <span style={{ whiteSpace: 'nowrap' }}>{value < 0 ? '−' : ''}<Money>{fmtMoney(Math.abs(value), sym)}</Money></span>
           </div>
           {delta && <DeltaLine delta={delta} prevMonth={prev.m} />}
           <div className={s.nwSplit}>

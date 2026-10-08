@@ -59,7 +59,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               <div className={s.kpiLabel}>{free < 0 ? t('home.kpi.short') : t('home.kpi.left')}</div>
               {hasData ? (
                 <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor }}>
-                  {free < 0 ? '−' : free > 0 ? '+' : ''}<Money>{sym}<CountUp value={Math.abs(free)} format={(v) => fmt(v)} /></Money>
+                  <span style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money>{sym}<CountUp value={Math.abs(free)} format={(v) => fmt(v)} /></Money></span>
                 </div>
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
