@@ -26,14 +26,19 @@ export const PRIMARY_COUNTRIES = ['CL', 'MX', 'CO', 'AR', 'ES', 'PE']
 export const countryKey = (code) => `country.${code}`
 export const suggestedCurrency = (code) => COUNTRIES.find(c => c.code === code)?.currency || 'USD'
 
-// Plantilla de perfil por país (data/templates.js). Regla simple y explícita:
-// ninguna de las 7 plantillas es específica de un país (todas son perfiles de
-// uso: personal, pareja, freelancer, pyme, deudas, ahorro, educador), así que
-// hoy todos los países reciben 'personal', la plantilla general. El país ya
-// cambia la moneda, la herramienta fiscal y el menú "Tu país". El mapa existe
-// para poder asignar otra plantilla a un país sin tocar el onboarding; un país
-// que no está en el mapa cae a 'personal'. Se puede cambiar en Ajustes.
-const TEMPLATE_BY_COUNTRY = {}
+// Plantilla de perfil por país (data/templates.js). Las 7 plantillas son perfiles
+// de uso (personal, pareja, freelancer, pyme, deudas, ahorro, educador), no de
+// país; el país solo elige con cuál se arranca. Regla explícita: 'freelancer'
+// donde el trabajo por cuenta propia es la mayoría o casi (≥40 % del empleo
+// total), 'personal' en el resto.
+// Fuente: Banco Mundial / OIT, estimación modelada "Self-employed, total (% of
+// total employment)" (SL.EMP.SELF.ZS), 2025 — EC 52,3 · PE 51,3 · CO 45,6 ·
+// VE 40,4. Los siguientes quedan lejos del corte: MX 30,8 · AR 25,6 · CL 23,9 ·
+// ES 14,5 · PT 14,4 · DE 8,1 · US 6,1.
+// https://data.worldbank.org/indicator/SL.EMP.SELF.ZS (consultado 08-oct-2026).
+// Un país que no está en el mapa cae a 'personal'. Se cambia en Ajustes →
+// Plantillas de perfil, sin tocar los movimientos ya registrados.
+const TEMPLATE_BY_COUNTRY = { EC: 'freelancer', PE: 'freelancer', CO: 'freelancer', VE: 'freelancer' }
 
 export function templateForCountry(code) {
   return TEMPLATE_BY_COUNTRY[code] || 'personal'

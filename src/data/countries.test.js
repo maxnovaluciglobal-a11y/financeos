@@ -35,4 +35,11 @@ describe('countries', () => {
     }
     expect(templateForCountry('CL')).toBe('personal')
   })
+
+  it('templateForCountry: freelancer donde el autoempleo es ≥40 % (EC, PE, CO, VE)', () => {
+    expect(templateForCountry('CO')).toBe('freelancer')
+    for (const c of ['EC', 'PE', 'VE']) expect(templateForCountry(c)).toBe('freelancer')
+    for (const c of ['CL', 'MX', 'AR', 'ES', 'PT', 'DE', 'US']) expect(templateForCountry(c)).toBe('personal')
+    expect(templateForCountry('OTHER')).toBe('personal')
+  })
 })
