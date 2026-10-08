@@ -17,3 +17,14 @@ export function formatPrice(amount, lang = 'es') {
 export function proPriceVars(lang = 'es', pricing = config.pricing) {
   return { m: formatPrice(pricing.proMonthly, lang), y: formatPrice(pricing.proAnnual, lang) }
 }
+
+// CTA de Pro (ProGate): la prueba solo se ofrece si está habilitada Y hay una
+// URL de checkout https real. Con cualquiera de las dos faltando se mantiene
+// el CTA de siempre ("Ver planes" hacia la landing).
+export function proCta(pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
+  const url = typeof pricing?.trialCheckoutUrl === 'string' ? pricing.trialCheckoutUrl.trim() : ''
+  if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) {
+    return { trial: true, href: url, labelKey: 'pro.gate.trialCta' }
+  }
+  return { trial: false, href: fallbackUrl, labelKey: 'pro.gate.cta' }
+}

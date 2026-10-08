@@ -1752,4 +1752,6 @@ export const pt = {
     'pro.gate.benefit.country': "Ferramentas fiscais do seu país",
     'pro.gate.cta': "Ver planos",
     'pro.gate.ctaHint': "Abre em uma nova aba",
+    'pro.gate.trialCta': "Testar por {days} dias",
+    'pro.gate.trialNote': "Exige cartão. A cobrança de US$ {m}/mês começa no dia {next}, a menos que você cancele antes.",
 }

@@ -1752,4 +1752,6 @@ export const de = {
     'pro.gate.benefit.country': "Steuer-Tools für Ihr Land",
     'pro.gate.cta': "Pläne ansehen",
     'pro.gate.ctaHint': "Öffnet sich in einem neuen Tab",
+    'pro.gate.trialCta': "{days} Tage testen",
+    'pro.gate.trialNote': "Karte erforderlich. Die Abbuchung von US$ {m}/Monat beginnt an Tag {next}, sofern Sie nicht vorher kündigen.",
 }

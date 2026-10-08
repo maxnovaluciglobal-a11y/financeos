@@ -201,8 +201,18 @@ const config = {
   // Los leen ProGate, LicenseGate, DemoShell y las claves i18n con {m}/{y}
   // (vía utils/pricing.js). Deben coincidir con los Payment Links de Stripe y
   // con la landing (repo aparte: financeos-landing, no lee este archivo).
-  // trialDays queda listo para T10 (prueba de Pro), todavía sin uso.
-  pricing: { proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14 },
+  //
+  // Prueba de Pro (T10, fase 4): trialEnabled se deja en false hasta que los
+  // Payment Links de prueba existan en Stripe, sus ids estén en el webhook y
+  // la migración esté aplicada (docs/billing-trial-runbook.md). Con true y
+  // trialCheckoutUrl cargado, ProGate muestra "Probar 14 días" y abre ese
+  // link; si falta cualquiera de los dos, ProGate sigue como antes.
+  // trialCheckoutUrl: URL https://buy.stripe.com/... del link de prueba Pro mensual.
+  pricing: {
+    proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
+    trialEnabled: false,
+    trialCheckoutUrl: null,
+  },
 
 }
 

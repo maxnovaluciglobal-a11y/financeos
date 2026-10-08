@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import config from '../config.js'
-import { formatPrice, proPriceVars } from './pricing.js'
+import { formatPrice, proPriceVars, proCta } from './pricing.js'
 
 describe('pricing', () => {
   it('config.pricing es la fuente única de los precios de Pro', () => {
-    expect(config.pricing).toEqual({ proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14 })
+    expect(config.pricing).toEqual({
+      proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
+      trialEnabled: false, trialCheckoutUrl: null,
+    })
   })
 
   it.each([
@@ -22,5 +25,24 @@ describe('pricing', () => {
 
   it('idioma desconocido cae al formato español', () => {
     expect(formatPrice(4.99, 'xx')).toBe('4,99')
+  })
+
+  describe('proCta (T10)', () => {
+    const base = { proMonthly: 4.99, proAnnual: 39.99, trialDays: 14 }
+    it('por defecto (trialEnabled false) el CTA es el de siempre', () => {
+      expect(proCta(config.pricing)).toEqual({ trial: false, href: 'https://moyiq.app/#pricing', labelKey: 'pro.gate.cta' })
+    })
+    it('con la prueba habilitada pero sin URL, cae al CTA de siempre', () => {
+      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: null }).trial).toBe(false)
+      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: '' }).trial).toBe(false)
+      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: 'http://inseguro' }).trial).toBe(false)
+    })
+    it('solo trialEnabled === true habilita la prueba (no un valor truthy cualquiera)', () => {
+      expect(proCta({ ...base, trialEnabled: 'true', trialCheckoutUrl: 'https://buy.stripe.com/x' }).trial).toBe(false)
+    })
+    it('habilitada y con URL https: "Probar 14 días" hacia el checkout de prueba', () => {
+      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: 'https://buy.stripe.com/x' }))
+        .toEqual({ trial: true, href: 'https://buy.stripe.com/x', labelKey: 'pro.gate.trialCta' })
+    })
   })
 })

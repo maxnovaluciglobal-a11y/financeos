@@ -15,14 +15,18 @@
 // landing en una pestaña nueva: en la PWA instalada en iOS (standalone), una
 // navegación en la misma pestaña deja a la persona fuera de la app sin forma
 // de volver.
+//
+// T10 (08-oct-2026): si config.pricing.trialEnabled === true y hay
+// trialCheckoutUrl, el CTA pasa a "Probar 14 días" y abre el Payment Link de
+// prueba, con la nota de cobro debajo (tarjeta requerida, cuándo se cobra).
+// Con el flag apagado o sin URL, todo queda como antes (utils/pricing.js, proCta).
 
 import { usePlan } from '../../hooks/usePlan.js'
 import { useT } from '../../i18n/useT.js'
-import { proPriceVars } from '../../utils/pricing.js'
+import config from '../../config.js'
+import { proPriceVars, proCta } from '../../utils/pricing.js'
 import { IconIQScore } from '../icons/Icons.jsx'
 import styles from './ui.module.css'
-
-const PRICING_URL = 'https://moyiq.app/#pricing'
 
 export const DEFAULT_PRO_BENEFITS = [
   'pro.gate.benefit.advisor',
@@ -39,6 +43,10 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
 
   const featureName = featureKey ? t(featureKey) : (feature || t('pro.gate.featureDefault'))
   const list = Array.isArray(benefits) && benefits.length ? benefits : DEFAULT_PRO_BENEFITS
+  const cta = proCta(config.pricing)
+  const trialDays = config.pricing.trialDays
+  const priceVars = proPriceVars(lang)
+  const ctaLabel = t(cta.labelKey, { days: trialDays })
 
   return (
     <div style={{
@@ -69,20 +77,26 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
       </ul>
 
       <p style={{ fontSize: 13, color: 'var(--th)', marginBottom: 20 }}>
-        {t('pro.gate.price', proPriceVars(lang))}
+        {t('pro.gate.price', priceVars)}
       </p>
 
       <a
-        href={PRICING_URL}
+        href={cta.href}
         target="_blank"
         rel="noopener noreferrer"
         className={`${styles.btn} ${styles.btn_primary}`}
-        aria-label={`${t('pro.gate.cta')} (${t('pro.gate.ctaHint')})`}
+        aria-label={`${ctaLabel} (${t('pro.gate.ctaHint')})`}
         title={t('pro.gate.ctaHint')}
         style={{ fontSize: 14, fontWeight: 700, padding: '10px 24px', minHeight: 48, textDecoration: 'none' }}
       >
-        {t('pro.gate.cta')}
+        {ctaLabel}
       </a>
+
+      {cta.trial && (
+        <p style={{ fontSize: 12, color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
+          {t('pro.gate.trialNote', { m: priceVars.m, next: trialDays + 1 })}
+        </p>
+      )}
     </div>
   )
 }
