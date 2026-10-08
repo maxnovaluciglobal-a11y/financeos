@@ -6,6 +6,7 @@ import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import { formatPrice, proPriceVars, withCheckoutLang } from '../utils/pricing.js'
 import config from '../config.js'
+import { activateUrl } from '../utils/landingLinks.js'
 
 function usePlans(t, lang) {
   return [
@@ -151,7 +152,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
               2. {t('licenseGate.helpStep2')}<br />
               3. {t('licenseGate.helpStep3')}<br /><br />
               {t('licenseGate.helpNoEmail')}{' '}
-              <a href="https://moyiq.app/activate.html" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)' }}>
+              <a href={activateUrl(lang)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)' }}>
                 {t('licenseGate.helpLink')}
               </a>
             </div>
