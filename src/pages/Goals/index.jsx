@@ -3,7 +3,8 @@ import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
+import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState } from '../../components/ui/index.jsx'
+import { Flag } from 'lucide-react'
 import { fmtMoney as fmtMoneyRaw, fmtPct, prioEmoji, currentMonth, localMonthStr, prioLabel, currencySymbol } from '../../utils/index.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
@@ -192,10 +193,8 @@ export default function Goals({ setPage }) {
       )}
 
       {goals.length === 0 && !show && (
-        <Card><div style={{textAlign:'center',padding:'24px 0'}}>
-          <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12}}>{t('goals.empty')}</div>
-          <button onClick={()=>setShow(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('goals.emptyBtn')}</button>
-        </div></Card>
+        <EmptyState icon={Flag} title={t('empty.goals.title')} text={t('goals.empty')}
+          cta={t('empty.goals.cta')} onCta={() => setShow(true)} />
       )}
 
       <div style={{display:'flex',flexDirection:'column',gap:10}}>

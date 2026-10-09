@@ -15,7 +15,9 @@ import { monthPlan, pendingTotals, toLocal } from '../../utils/recurring.js'
 import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
-import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
+import { FormGroup, KPI, Alert, Empty, EmptyState } from '../../components/ui/index.jsx'
+import { ArrowLeftRight } from 'lucide-react'
+import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -597,7 +599,10 @@ export default function Movements({ setPage }) {
           )}
           <div style={{ maxHeight:460, overflowY:'auto' }}>
             {listExp.length === 0 ? (
-              <Empty text={drillCat ? t('mov.list.emptyCat', { cat: drillCat }) : t('mov.list.empty')} />
+              drillCat
+                ? <Empty text={t('mov.list.emptyCat', { cat: drillCat })} />
+                : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
+                    cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />
             ) : (showAllExp ? listExp : listExp.slice(0, 10)).map((e,i) => editingId === e.id ? (
               <div key={e.id} style={{padding:'10px 14px',borderBottom:i<listExp.length-1?'.5px solid var(--brd)':'none',background:'rgba(232,65,66,.03)'}}>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:6,marginBottom:6}}>

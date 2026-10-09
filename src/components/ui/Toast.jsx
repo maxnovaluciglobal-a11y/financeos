@@ -33,6 +33,9 @@ export default function Toast() {
         background: isError ? 'var(--neg)' : 'var(--brand, var(--grn))',
         color: '#fff',
         boxShadow: 'var(--sh-3, 0 8px 24px rgba(0,0,0,.25))',
+        // left:50% + translate encoge la caja a la mitad del ancho: max-content
+        // evita que un texto corto se parta en dos líneas.
+        width: 'max-content',
         maxWidth: 'min(92vw, 420px)',
         animation: 'fos-toast-in var(--dur-surface-enter, 220ms) var(--ease, ease) both',
       }}
