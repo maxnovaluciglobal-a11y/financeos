@@ -1,5 +1,5 @@
 // src/utils/tasaVE.js
-// Tasa Bs/USD en vivo — Venezuela. Fuente: ve.dolarapi.com (BCV oficial + paralelo)
+// Tasa Bs/USD consultada a la fuente — Venezuela. Fuente: ve.dolarapi.com (BCV oficial + paralelo)
 // Cache localStorage 6h · Fallback a constante si offline o API falla.
 // Mismo patrón que src/utils/indicadores.js (Chile).
 //
@@ -12,6 +12,17 @@
 export const FALLBACK = {
   oficial: 771.07,   // BCV referencial 16-ago-2026
   paralelo: 865.62,  // referencial 16-ago-2026
+}
+// Fecha de esos valores: sin red se muestran CON esta fecha, nunca con la de hoy.
+export const FALLBACK_AT = new Date(2026, 7, 16).getTime()
+
+// Tasa que se usa por defecto (decisión 08-oct-2026): la oficial del BCV. El
+// paralelo sigue visible como opción, pero el usuario lo elige a propósito.
+export const DEFAULT_FUENTE_VE = 'oficial'
+export function defaultFuenteVE(data) {
+  if (data && Number(data.oficial) > 0) return 'oficial'
+  if (data && data.paraleloDisponible && Number(data.paralelo) > 0) return 'paralelo'
+  return DEFAULT_FUENTE_VE
 }
 
 const LS_KEY = 'fnos_tasa_ve_v1'
@@ -51,6 +62,6 @@ export async function loadTasaVE() {
     localStorage.setItem(LS_KEY, JSON.stringify(result))
     return result
   } catch {
-    return { ...FALLBACK, paraleloDisponible: true, ts: Date.now(), source: 'fallback' }
+    return { ...FALLBACK, paraleloDisponible: true, ts: FALLBACK_AT, source: 'fallback' }
   }
 }

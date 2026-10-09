@@ -14,7 +14,7 @@ import Sheet from '../../components/ui/Sheet.jsx'
 import Money from '../../components/Money.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtAmount, moneyLocale, currencySymbol, dateLocale } from '../../utils/index.js'
-import { SOURCE_LABEL, REF_CURRENCY, toRef, isStale, rateAgeDays, rateOptions, loadersFor } from '../../utils/refRate.js'
+import { SOURCE_LABEL, REF_CURRENCY, toRef, isStale, rateAgeDays, rateOptions, loadersFor, defaultRateOption } from '../../utils/refRate.js'
 import { loadTasaVE } from '../../utils/tasaVE.js'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
@@ -28,7 +28,7 @@ export function fmtRef(n, lang) {
   return currencySymbol(REF_CURRENCY, lang) + fmtAmount(Math.abs(Number(n) || 0), 2, moneyLocale())
 }
 
-function fmtDay(at, withTime = false) {
+export function fmtDay(at, withTime = false) {
   try {
     return new Date(at).toLocaleString(dateLocale(), withTime
       ? { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }
@@ -120,6 +120,9 @@ export function RateSheet({ open, onClose, settings, sym, current, onSave }) {
     for (const k of loaders) { try { res[k] = await LOADERS[k]() } catch { /* sin red */ } }
     const opts = rateOptions(settings, res)
     setOptions(opts)
+    // VE: queda elegida la oficial del BCV (con su fecha); el paralelo sigue a un toque.
+    const def = defaultRateOption(opts)
+    if (def) { setPicked(def); setValue(String(def.rate)) }
     setState(opts.length ? 'done' : 'failed')
   }
 

@@ -347,3 +347,36 @@ describe('paridad de las claves del plan "como Rial" fase 3 (R12–R14, es/en/pt
     for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
   })
 })
+
+// Pulido 09-oct-2026: claves tocadas o nuevas (multimoneda VE, textos que
+// estaban fijos en JSX, banderas, primeras entradas de Metas/Presupuestos).
+describe('paridad de las claves del pulido 09-oct (es/en/pt/de)', () => {
+  const prefixes = ['multimoneda.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(20)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('sin voseo, exclamaciones, "en vivo" ni emoji de bandera; el alemán no tutea', () => {
+    for (const k of pick(es)) {
+      expect(es[k], k).not.toMatch(/\b(podés|tenés|querés|vos|acá|escribí|elegí|usás|guardá|mirá)\b/i)
+      expect(es[k], k).not.toMatch(/en vivo|tiempo real/i)
+    }
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) {
+      expect(d[k], k).not.toMatch(/[¡!]/)
+      expect(d[k], k).not.toMatch(/\p{Regional_Indicator}/u)
+    }
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|deiner|dich|dir)\b/i)
+  })
+})

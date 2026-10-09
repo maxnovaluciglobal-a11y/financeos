@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { refEligible, savedRate, cachedRate, resolveRefRate, toRef, isStale, rateAgeDays, rateOptions, loadersFor, rateToolFor, CACHE_KEYS } from './refRate.js'
+import { refEligible, savedRate, cachedRate, resolveRefRate, toRef, isStale, rateAgeDays, rateOptions, loadersFor, rateToolFor, defaultRateOption, CACHE_KEYS } from './refRate.js'
 
 const store = (obj) => (k) => (k in obj ? JSON.stringify(obj[k]) : null)
 const DAY = 86400000
@@ -87,5 +87,19 @@ describe('rateOptions: qué se ofrece al consultar la tasa de hoy', () => {
     expect(rateToolFor('ve')).toBe('multimoneda')
     expect(rateToolFor('AR')).toBe('multidolar')
     expect(rateToolFor('CL')).toBe(null)
+  })
+})
+
+describe('tasa preseleccionada al consultar (decisión: BCV oficial en VE)', () => {
+  it('VE: queda elegida la oficial del BCV y el paralelo sigue como opción', () => {
+    const ve = { oficial: 874.73, paralelo: 990, paraleloDisponible: true, ts: 9, source: 'api' }
+    const opts = rateOptions({ country: 'VE', currency: 'VES' }, { ve })
+    expect(defaultRateOption(opts)).toEqual({ source: 'bcv', rate: 874.73, at: 9 })
+    expect(opts.map(o => o.source)).toContain('paralelo')
+  })
+  it('fuera de VE no se preselecciona nada', () => {
+    const ar = { oficial: 1500, blue: 1545, mep: 1521, ts: 3, source: 'api' }
+    expect(defaultRateOption(rateOptions({ country: 'AR', currency: 'ARS' }, { ar }))).toBe(null)
+    expect(defaultRateOption([])).toBe(null)
   })
 })
