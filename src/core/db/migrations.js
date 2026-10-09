@@ -1,4 +1,5 @@
 import { unwrap } from 'idb'
+import { planCategoryUnification } from '../../utils/categoryAliases.js'
 // src/core/db/migrations.js — pasos de esquema versionados para IndexedDB.
 //
 // Cada entrada de MIGRATIONS es un paso irreversible: una vez que un usuario
@@ -15,6 +16,30 @@ import { unwrap } from 'idb'
 // este código — ver migrations.test.js para la prueba).
 // Id de la foto previa a la unificación de Suscripciones/Deudas en fijos (v4).
 export const PRE_RECURRING_SNAPSHOT_ID = 'pre-recurring-v4'
+// Id de la foto previa a la unificación de "Entretenimiento" → "Entretención" (v5).
+export const PRE_CATEGORY_UNIFY_SNAPSHOT_ID = 'pre-category-unify-v5'
+
+// Escribe una foto en 'backups' sin poder abortar el upgrade: request crudo
+// (sin el wrapper de idb) para cancelar su error (cuota llena) con
+// preventDefault. Mismo patrón que la foto de v4, que no se toca (paso ya
+// shippeado); este helper es para los pasos nuevos.
+function putSnapshotBestEffort(transaction, record, label) {
+  return new Promise((resolve) => {
+    let req
+    try {
+      req = unwrap(transaction).objectStore('backups').put(record)
+    } catch (e) {
+      console.warn(`[FinanceOS] foto previa (${label}) omitida:`, e?.name || e)
+      resolve(); return
+    }
+    req.onsuccess = () => resolve()
+    req.onerror = (ev) => {
+      ev.preventDefault(); ev.stopPropagation?.()
+      console.warn(`[FinanceOS] foto previa (${label}) omitida:`, req.error?.name || req.error)
+      resolve()
+    }
+  })
+}
 
 export const MIGRATIONS = [
   {
@@ -108,6 +133,49 @@ export const MIGRATIONS = [
           resolve()
         }
       })
+    },
+  },
+  {
+    // Unificación de categorías (09-oct-2026, aprobada por Walter): las
+    // plantillas guardaban "Entretenimiento" y la lista canónica usa
+    // "Entretención" — la misma categoría aparecía dos veces. Este paso
+    // renombra la grafía vieja en gastos, ingresos, reglas de fijos y ajustes
+    // (listas de la plantilla, presupuestos sugeridos, reglas comercio →
+    // categoría), y fusiona presupuestos duplicados sumando los límites (ver
+    // utils/categoryAliases.js, donde está la regla y sus tests).
+    //
+    // Antes de escribir, foto completa en 'backups' (PRE_CATEGORY_UNIFY_
+    // SNAPSHOT_ID), BEST-EFFORT igual que v4: si no entra (cuota), el upgrade
+    // sigue sin foto; si aun así aborta, getDB reintenta con skipSnapshot.
+    // Solo se escribe foto si hay algo que cambiar. Instalación nueva: nada.
+    // Idempotente: sobre datos ya unificados el plan sale vacío.
+    version: 5,
+    async migrate(db, transaction, oldVersion, opts = {}) {
+      if (!oldVersion || !transaction) return
+      const has = (n) => db.objectStoreNames.contains(n)
+      const all = (n) => (has(n) ? transaction.objectStore(n).getAll() : Promise.resolve([]))
+      const [incomes, expenses, budgets, debts, goals, subscriptions, importBatches, recurring, settings] = await Promise.all([
+        all('incomes'), all('expenses'), all('budgets'), all('debts'), all('goals'), all('subscriptions'), all('importBatches'), all('recurring'),
+        has('settings') ? transaction.objectStore('settings').get('main') : Promise.resolve(null),
+      ])
+      const plan = planCategoryUnification({ incomes, expenses, budgets, recurring, settings })
+      if (plan.empty) return
+      if (!opts.skipSnapshot && has('backups')) {
+        await putSnapshotBestEffort(transaction, {
+          id: PRE_CATEGORY_UNIFY_SNAPSHOT_ID,
+          reason: 'pre-category-unify',
+          fromVersion: oldVersion,
+          createdAt: new Date().toISOString(),
+          data: { incomes, expenses, budgets, debts, goals, subscriptions, importBatches, recurring, settings: settings || null },
+        }, 'categorías')
+      }
+      for (const [store, records] of Object.entries(plan.puts)) {
+        if (!records.length || !has(store)) continue
+        const os = transaction.objectStore(store)
+        for (const r of records) await os.put(r)
+      }
+      if (has('budgets')) for (const id of plan.deletes.budgets) await transaction.objectStore('budgets').delete(id)
+      if (plan.settings && has('settings')) await transaction.objectStore('settings').put(plan.settings, 'main')
     },
   },
 ]

@@ -45,5 +45,6 @@ describe('plantilla de perfil del onboarding', () => {
     const chips = orderQuickChips({ ranked: [], effective: getCategoriesExpense(s), templateCats: s.categoriesExpense, canonical: CATS_EXPENSE, templateActive: true })
     expect(chips).toContain('Alimentación')
     expect(chips).toContain('Marketing propio')
+    expect(chips).toContain('Provisión impuestos')
   })
 })

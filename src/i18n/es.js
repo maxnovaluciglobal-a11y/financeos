@@ -1314,7 +1314,7 @@ export const es = {
     'cat.Arriendo': 'Arriendo', 'cat.Bono': 'Bono', 'cat.Otro': 'Otro',
     'cat.Alimentación': 'Alimentación', 'cat.Vivienda': 'Vivienda', 'cat.Transporte': 'Transporte',
     'cat.Salud': 'Salud', 'cat.Educación': 'Educación', 'cat.Ropa': 'Ropa',
-    'cat.Entretención': 'Entretención', 'cat.Servicios': 'Servicios', 'cat.Tecnología': 'Tecnología',
+    'cat.Entretención': 'Entretenimiento', 'cat.Servicios': 'Servicios', 'cat.Tecnología': 'Tecnología',
     'cat.Deporte': 'Deporte', 'cat.Viajes': 'Viajes', 'cat.Otros': 'Otros',
     'cat.Entretenimiento': 'Entretenimiento', 'cat.Propiedad': 'Propiedad', 'cat.Mascota': 'Mascota',
     'cat.Pensión': 'Pensión', 'cat.Negocio propio': 'Negocio propio', 'cat.Ahorro': 'Ahorro',

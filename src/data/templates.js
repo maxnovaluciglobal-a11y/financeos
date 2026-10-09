@@ -8,7 +8,8 @@
 // 'tpl.<id>.*' de src/i18n/{es,en,pt,de}.js; acá solo queda la clave. Las
 // categorías SÍ son valores en español que se guardan tal cual en los datos
 // del usuario (como en CATS_EXPENSE): su etiqueta se traduce con catLabel()
-// vía 'cat.<valor>'. `name` sigue en español porque se guarda como
+// vía 'cat.<valor>'. Usar siempre el valor canónico de CATS_EXPENSE
+// ("Entretención", nunca "Entretenimiento": ver utils/categoryAliases.js). `name` sigue en español porque se guarda como
 // settings.activeTemplateName (referencia); la UI muestra 'tpl.<id>.name'.
 
 export const TEMPLATES = [
@@ -20,12 +21,12 @@ export const TEMPLATES = [
     description: 'tpl.personal.description',
     bestFor: ['tpl.personal.bestFor.0', 'tpl.personal.bestFor.1', 'tpl.personal.bestFor.2'],
     categoriesIncome: ['Salario', 'Bono', 'Freelance', 'Inversión', 'Otro'],
-    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Salud', 'Entretenimiento', 'Servicios', 'Ropa', 'Otro'],
+    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Salud', 'Entretención', 'Servicios', 'Ropa', 'Otro'],
     suggestedBudgets: [
       { category: 'Vivienda', pct: 30, note: 'tpl.personal.budgetNote.0' },
       { category: 'Alimentación', pct: 15, note: 'tpl.personal.budgetNote.1' },
       { category: 'Transporte', pct: 10, note: 'tpl.personal.budgetNote.2' },
-      { category: 'Entretenimiento', pct: 10, note: 'tpl.personal.budgetNote.3' },
+      { category: 'Entretención', pct: 10, note: 'tpl.personal.budgetNote.3' },
       { category: 'Salud', pct: 5, note: 'tpl.personal.budgetNote.4' },
     ],
     suggestedGoals: [
@@ -45,13 +46,13 @@ export const TEMPLATES = [
     description: 'tpl.pareja.description',
     bestFor: ['tpl.pareja.bestFor.0', 'tpl.pareja.bestFor.1', 'tpl.pareja.bestFor.2'],
     categoriesIncome: ['Salario cónyuge 1', 'Salario cónyuge 2', 'Arriendo', 'Bono', 'Freelance', 'Otro'],
-    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Educación hijos', 'Salud', 'Entretenimiento', 'Servicios', 'Ropa', 'Mascotas', 'Otro'],
+    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Educación hijos', 'Salud', 'Entretención', 'Servicios', 'Ropa', 'Mascotas', 'Otro'],
     suggestedBudgets: [
       { category: 'Vivienda', pct: 28, note: 'tpl.pareja.budgetNote.0' },
       { category: 'Alimentación', pct: 18, note: 'tpl.pareja.budgetNote.1' },
       { category: 'Educación hijos', pct: 12, note: 'tpl.pareja.budgetNote.2' },
       { category: 'Transporte', pct: 10, note: 'tpl.pareja.budgetNote.3' },
-      { category: 'Entretenimiento', pct: 8, note: 'tpl.pareja.budgetNote.4' },
+      { category: 'Entretención', pct: 8, note: 'tpl.pareja.budgetNote.4' },
     ],
     suggestedGoals: [
       { name: 'tpl.pareja.goal.0.name', note: 'tpl.pareja.goal.0.note', priority: 'Alta' },
@@ -71,7 +72,7 @@ export const TEMPLATES = [
     description: 'tpl.freelancer.description',
     bestFor: ['tpl.freelancer.bestFor.0', 'tpl.freelancer.bestFor.1', 'tpl.freelancer.bestFor.2', 'tpl.freelancer.bestFor.3'],
     categoriesIncome: ['Proyecto cliente A', 'Proyecto cliente B', 'Retainer mensual', 'Consultoría', 'Plataforma digital', 'Bono', 'Otro'],
-    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Tecnología', 'Marketing propio', 'Educación / Cursos', 'Salud', 'Servicios', 'Provisión impuestos', 'Entretenimiento', 'Otro'],
+    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Tecnología', 'Marketing propio', 'Educación / Cursos', 'Salud', 'Servicios', 'Provisión impuestos', 'Entretención', 'Otro'],
     suggestedBudgets: [
       { category: 'Provisión impuestos', pct: 15, note: 'tpl.freelancer.budgetNote.0' },
       { category: 'Tecnología', pct: 8, note: 'tpl.freelancer.budgetNote.1' },
@@ -148,12 +149,12 @@ export const TEMPLATES = [
     description: 'tpl.ahorro.description',
     bestFor: ['tpl.ahorro.bestFor.0', 'tpl.ahorro.bestFor.1', 'tpl.ahorro.bestFor.2'],
     categoriesIncome: ['Salario', 'Bono', 'Ingreso extra', 'Inversión', 'Otro'],
-    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Salud', 'Servicios', 'Entretenimiento', 'Ahorro meta principal', 'Otro'],
+    categoriesExpense: ['Vivienda', 'Alimentación', 'Transporte', 'Salud', 'Servicios', 'Entretención', 'Ahorro meta principal', 'Otro'],
     suggestedBudgets: [
       { category: 'Ahorro meta principal', pct: 25, note: 'tpl.ahorro.budgetNote.0' },
       { category: 'Vivienda', pct: 28, note: 'tpl.ahorro.budgetNote.1' },
       { category: 'Alimentación', pct: 15, note: 'tpl.ahorro.budgetNote.2' },
-      { category: 'Entretenimiento', pct: 8, note: 'tpl.ahorro.budgetNote.3' },
+      { category: 'Entretención', pct: 8, note: 'tpl.ahorro.budgetNote.3' },
     ],
     suggestedGoals: [
       { name: 'tpl.ahorro.goal.0.name', note: 'tpl.ahorro.goal.0.note', priority: 'Alta' },
