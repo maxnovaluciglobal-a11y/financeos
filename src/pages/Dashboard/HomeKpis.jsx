@@ -14,18 +14,25 @@ import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtSignedMoney } from '../../utils/index.js'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
+import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
+import { toRef } from '../../utils/refRate.js'
 import s from './Home.module.css'
 import r from '../../components/recurring/recurring.module.css'
 
 
-export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, children }) {
-  const { t } = useT()
+export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
+  const { t, lang } = useT()
   const prevMonth = prevMonthOf(activeMonth)
   const { cur, prev } = kpis
   const hasData = cur.incCount > 0 || cur.expCount > 0
   const prevHasData = prev.incCount > 0 || prev.expCount > 0
 
   const free = cur.freeFlow
+  // R12: la cifra de "Te queda" en US$ si el usuario lo eligió y hay tasa.
+  const showRef = !!(refc?.rate && refc.mode === 'ref')
+  // Largo del texto de la cifra (R12 + VES): define el tamaño y el layout del hero.
+  const heroText = (free < 0 ? '−' : free > 0 ? '+' : '') + (showRef ? fmtRef(toRef(Math.abs(free), refc.rate.rate), lang) : fmtMoney(Math.abs(free), sym))
+  const heroLong = heroText.length > 11
   const freeColor = !hasData ? 'var(--th)' : free > 0 ? 'var(--pos)' : free === 0 ? 'var(--warn)' : 'var(--neg)'
 
   const tiles = [
@@ -47,12 +54,15 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
           background: hasData ? `color-mix(in srgb, ${freeColor} 7%, var(--sur))` : undefined,
           borderColor: hasData ? `color-mix(in srgb, ${freeColor} 30%, transparent)` : undefined,
         }}>
-          <div className={s.left}>
+          <div className={`${s.left} ${heroLong ? s.leftLong : ''}`}>
             <div className={s.leftBody}>
               <div className={s.kpiLabel}>{free < 0 ? t('home.kpi.short') : t('home.kpi.left')}</div>
               {hasData ? (
-                <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor }}>
-                  <span style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money><CountUp value={Math.abs(free)} format={(v) => fmtMoney(v, sym)} /></Money></span>
+                <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor, '--chars': heroText.length }}>
+                  {/* key: al cambiar de moneda la cifra arranca de cero otra vez (no anima de Bs a US$) */}
+                  <span key={showRef ? 'ref' : 'local'} style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money>{showRef
+                    ? <CountUp value={toRef(Math.abs(free), refc.rate.rate)} format={(v) => fmtRef(v, lang)} />
+                    : <CountUp value={Math.abs(free)} format={(v) => fmtMoney(v, sym)} />}</Money></span>
                 </div>
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
@@ -70,7 +80,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                   {onReviewPending && <button type="button" className={r.reviewLink} onClick={onReviewPending}>{t('rec.pending.review')} →</button>}
                 </div>
               )}
-              {dualOn && hasData && <div className={s.kpiDual}>{toUSD(free)}</div>}
+              {!refc && dualOn && hasData && <div className={s.kpiDual}>{toUSD(free)}</div>}
             </div>
             {hasData && pulse && (
               <div className={s.ring}>
@@ -87,6 +97,12 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               </div>
             )}
           </div>
+          {/* R12/R13: a todo el ancho de la tarjeta, debajo de la cifra y el anillo */}
+          {refc && (
+            <RefRow refRate={refc.rate} mode={showRef ? 'ref' : 'local'} free={free} sym={sym} country={refc.country}
+              showAmount={hasData} onEdit={refc.onEdit} tool={refc.tool} onTool={refc.onTool}
+              switcher={refc.rate && hasData ? <RefSwitch mode={refc.mode} onChange={refc.setMode} localCode={refc.localCode} /> : null} />
+          )}
         </div>
 
         {/* Ingresos | Gastos (R05/G6): tocables, llevan a su lista del mes. */}
@@ -101,7 +117,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                 {k.label}
                 {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
               </div>
-              <div className={`num ${s.kpiValue}`}>
+              <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
                 <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
               </div>
               <DeltaLine delta={k.delta} prevMonth={prevMonth} />

@@ -255,7 +255,7 @@ export default function Subscriptions() {
 
       {/* VISUAL INSIGHTS */}
       {activeSubs.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div className="grid2" style={{ gap: 16, marginBottom: 16 }}>
           <ChartCard title={t('subs.chart.top')} minHeight={160}>
             <HorizontalBars records={topRecords} sym={`${currency} `} maxItems={6} />
           </ChartCard>

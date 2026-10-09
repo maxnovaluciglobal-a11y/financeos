@@ -24,6 +24,8 @@ import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
 import NetWorthCard from './NetWorthCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
+import { RateSheet } from './RefCurrency.jsx'
+import { refEligible, resolveRefRate, rateToolFor } from '../../utils/refRate.js'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, currencySymbol } from '../../utils/index.js'
@@ -58,7 +60,19 @@ export default function Dashboard({ setPage }) {
   // Settings ahora recomputa al cambiar de moneda — pero esto cubre a quien ya
   // tenía un 0 guardado en IndexedDB de antes del fix): si el usuario activó la
   // moneda dual, mostrarla igual con la tasa por defecto en vez de apagarla.
-  const effectiveUsdRate = Number(settings.usdRate) || DEFAULT_USD_RATES[settings.currency] || 0
+  //
+  // R12: quien califica para la moneda de referencia (VE/AR o moneda dual
+  // activada) usa la tasa resuelta con fecha (utils/refRate.js) y NUNCA el
+  // DEFAULT_USD_RATES fijo (sin fecha; en VES está muy desactualizado). Sin
+  // tasa, el Inicio pide agregarla en vez de mostrar un ≈ inventado.
+  const refOn = refEligible(settings)
+  const [rateTick, setRateTick] = useState(0)
+  const refRate = useMemo(() => (refOn
+    ? resolveRefRate(settings, (k) => { try { return localStorage.getItem(k) } catch { return null } })
+    : null),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [refOn, settings.usdRate, settings.usdRateAt, settings.usdRateSource, settings.country, settings.currency, rateTick])
+  const effectiveUsdRate = refOn ? (refRate?.rate || 0) : (Number(settings.usdRate) || DEFAULT_USD_RATES[settings.currency] || 0)
   const dualOn      = !!settings.showDualCurrency && settings.currency !== 'USD' && effectiveUsdRate > 0
   const usdRate     = effectiveUsdRate || 1
   // Ocultar montos (T13): toda cifra de dinero de esta pantalla pasa por money()
@@ -457,9 +471,29 @@ export default function Dashboard({ setPage }) {
     { label:t('dash.kpi.subs'), value:t('dash.kpi.perMonth', { v: money(subMonthly) }), color:'var(--tx)', sub:t('dash.kpi.perYear', { v: money(subMonthly * 12) }) },
   ]
 
+  // R12/R13: moneda de referencia del hero + calculadora del país.
+  const [refMode, setRefModeState] = useState(() => { try { return localStorage.getItem('fos_home_refcur') === 'ref' ? 'ref' : 'local' } catch { return 'local' } })
+  const setRefMode = (m) => { setRefModeState(m); try { localStorage.setItem('fos_home_refcur', m) } catch { /* modo privado */ } }
+  const [rateSheetOpen, setRateSheetOpen] = useState(false)
+  const rateTool = rateToolFor(settings.country)
+  const refc = refOn ? {
+    rate: refRate, mode: refRate ? refMode : 'local', setMode: setRefMode,
+    localCode: String(settings.currency || '').toUpperCase(), country: settings.country,
+    onEdit: () => setRateSheetOpen(true),
+    tool: !!(rateTool && setPage), onTool: () => setPage?.(rateTool),
+  } : null
+  function saveRate(patch) {
+    updateSettings?.({ ...settings, ...patch })
+    setRateTick(n => n + 1)
+    setRateSheetOpen(false)
+    ctx.showToast?.(t('refcur.saved'))
+  }
+
   return (
     <div>
       {!isCurrent && <MonthlyCloseModal />}
+      {refOn && <RateSheet open={rateSheetOpen} onClose={() => setRateSheetOpen(false)} settings={settings} sym={sym}
+        current={refRate} onSave={saveRate} />}
       <MonthSheet open={sheetOpen} onClose={closeSheet} month={activeMonth} plan={plan} today={todayStr} sym={sym}
         prev={autoStart && prevHasData ? { month: prevMonthKey, balance: kpis.prev.balance } : null}
         onGoToList={setPage ? () => { closeSheet(); setPage('recurring') } : undefined} />
@@ -481,7 +515,7 @@ export default function Dashboard({ setPage }) {
               pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
               pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
-              onOpen={setPage}>
+              onOpen={setPage} refc={refc}>
               {/* KPIs secundarios: en móvil solo en vista detallada */}
               <div className={hs.secondary + (compact ? ' ' + hs.secondaryCompact : '')}>
                 {KPIS_SECONDARY.map((k, i) => (

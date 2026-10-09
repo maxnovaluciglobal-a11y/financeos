@@ -46,3 +46,22 @@ describe('menuSections (R11): el Menú no pierde ningún ítem del NAV', () => {
     expect(de).not.toContain('apv')
   })
 })
+
+describe('menuSections (R13): calculadora de tasa a un toque en VE/AR', () => {
+  it('VE: "Herramientas" primero con Multimoneda, sin repetirla en "Tu país"', () => {
+    const secs = menuSections('VE')
+    expect(secs[0].sec).toBe('nav.sec.tools')
+    expect(secs[0].items).toHaveLength(1)
+    expect(secs[0].items[0]).toMatchObject({ id: 'multimoneda', lb: 'refcur.tool', tool: true, proOnly: true })
+    const ids = secs.flatMap(g => g.items.map(i => i.id))
+    expect(ids.filter(id => id === 'multimoneda')).toHaveLength(1)
+  })
+  it('AR: Dólar y rendimientos en Herramientas; Inflación sigue en "Tu país"', () => {
+    const secs = menuSections('AR')
+    expect(secs[0].items[0].id).toBe('multidolar')
+    expect(secs.find(g => g.sec === 'nav.sec.country').items.map(i => i.id)).toEqual(['inflacion'])
+  })
+  it('el resto de países no tiene sección Herramientas', () => {
+    for (const cc of ['CL', 'DE', 'MX']) expect(menuSections(cc).some(g => g.sec === 'nav.sec.tools')).toBe(false)
+  })
+})

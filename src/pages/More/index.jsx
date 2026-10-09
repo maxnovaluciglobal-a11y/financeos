@@ -5,7 +5,7 @@
 // la barra — y Cuenta (Ajustes), tema y cerrar sesión al final.
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Lock, Sun, Moon, LogOut, ChevronRight } from 'lucide-react'
+import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { menuSections } from '../../components/layout/navConfig.js'
@@ -81,7 +81,9 @@ export default function More({ setPage }) {
             {g.items.map(it => (
               <button key={it.id} type="button" className={s.row} onClick={() => setPage(it.id)}>
                 <span className={s.rowIc} aria-hidden="true">
-                  {SHOW_FIRMA && it.cc
+                  {it.tool
+                    ? <Calculator size={18} strokeWidth={1.7} />
+                    : SHOW_FIRMA && it.cc
                     ? <CountryBadge code={it.cc} />
                     : NAV_ICONS[it.id]
                       ? (() => { const Ic = NAV_ICONS[it.id]; return <Ic size={18} /> })()

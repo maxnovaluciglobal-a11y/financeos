@@ -39,6 +39,14 @@ export default function Settings() {
   // Tasa a usar: la de Fixer si ya cargó, si no el hardcodeado de siempre —
   // nunca deja al usuario esperando un fetch para ver/editar el campo.
   const liveRate = (currency) => fx?.rates?.[currency] ?? DEFAULT_USD_RATES[currency]
+  // R12: la tasa guarda su fecha y fuente (el Inicio nunca muestra una tasa sin
+  // fecha). Solo una tasa consultada de verdad (Fixer) lleva fecha de consulta;
+  // el valor fijo de respaldo queda "sin fecha" para que el Inicio lo diga.
+  const rateMeta = (currency, rate) => {
+    if (!(rate > 0)) return { usdRateAt: null, usdRateSource: null }
+    const live = fx?.source === 'fixer' && Number(fx?.rates?.[currency]) === Number(rate)
+    return live ? { usdRateAt: fx.ts, usdRateSource: 'fixer' } : { usdRateAt: null, usdRateSource: null }
+  }
   const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
 
@@ -88,7 +96,7 @@ export default function Settings() {
     if (!confirmAction || confirmAction.type !== 'currency') return
     const { nextCurrency, nextRate } = confirmAction.payload
     setConfirmAction(null)
-    updateSettings({ ...settings, currency: nextCurrency, usdRate: nextRate })
+    updateSettings({ ...settings, currency: nextCurrency, usdRate: nextRate, ...rateMeta(nextCurrency, nextRate) })
   }
 
   const srow = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 0', borderBottom:'0.5px solid var(--brd)' }
@@ -195,7 +203,8 @@ export default function Settings() {
             onClick={() => {
               const next = !settings.showDualCurrency
               const rate = settings.usdRate || liveRate(settings.currency || 'CLP') || 1
-              updateSettings({ ...settings, showDualCurrency: next, usdRate: rate })
+              const meta = settings.usdRate ? {} : rateMeta(settings.currency || 'CLP', rate)
+              updateSettings({ ...settings, showDualCurrency: next, usdRate: rate, ...meta })
             }}
             style={{
               width:44, height:24, borderRadius:12, position:'relative', flexShrink:0, cursor:'pointer',
@@ -224,7 +233,7 @@ export default function Settings() {
                 aria-label={t('settings.exchangeRate.label', { currency: settings.currency || 'CLP' })}
                 value={settings.usdRate || liveRate(settings.currency) || ''}
                 placeholder={String(liveRate(settings.currency) || '')}
-                onChange={e => updateSettings({...settings, usdRate: parseFloat(e.target.value) || 0})}
+                onChange={e => { const v = parseFloat(e.target.value) || 0; updateSettings({...settings, usdRate: v, usdRateAt: v > 0 ? Date.now() : null, usdRateSource: v > 0 ? 'manual' : null}) }}
                 style={{flex:1, padding:'7px 10px', borderRadius:6, border:'.5px solid var(--brd2)',
                   background:'var(--sur2)', color:'var(--tx)', fontSize:13, fontFamily:'var(--mono)'}}
               />
@@ -232,7 +241,7 @@ export default function Settings() {
                 {t('settings.exchangeRate.perUsd', { currency: settings.currency || 'CLP' })}
               </span>
               <Btn variant="ghost" size="sm"
-                onClick={() => updateSettings({...settings, usdRate: liveRate(settings.currency) || 1})}>
+                onClick={() => { const r = liveRate(settings.currency) || 1; updateSettings({...settings, usdRate: r, ...rateMeta(settings.currency, r)}) }}>
                 {t('settings.exchangeRate.reset')}
               </Btn>
             </div>
