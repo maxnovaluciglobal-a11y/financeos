@@ -16,13 +16,17 @@ import { NAV, pageLabel } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
 import { QUICK_ADD_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
+import PushAsk from '../PushAsk.jsx'
+import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
+import { pushSupported, isPushEnabled } from '../../core/push.js'
+import { getLicenseKey } from '../../utils/licenseValidator.js'
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
 
 export default function Shell({ page, setPage, children }) {
-  const { settings, updateSettings } = useApp()
+  const { settings, updateSettings, incomes, expenses, showToast } = useApp()
   const { t } = useT()
   const isChile = (settings.country || 'CL') === 'CL'
   const isDark = settings.theme === 'dark'
@@ -38,6 +42,28 @@ export default function Shell({ page, setPage, children }) {
   // Con el teclado virtual abierto, el TabBar queda flotando arriba de él o lo
   // tapa — se oculta mientras se escribe (ver useKeyboardOpen).
   const keyboardOpen = useKeyboardOpen()
+
+  // Pre-permiso de avisos (R09): se evalúa después de guardar desde el Registro
+  // rápido, con los conteos ya actualizados (el efecto corre tras el render).
+  const [pushCheck, setPushCheck] = useState(false)
+  const [pushAskOpen, setPushAskOpen] = useState(false)
+  const movementCount = (incomes?.length || 0) + (expenses?.length || 0)
+  useEffect(() => {
+    if (!pushCheck) return
+    setPushCheck(false)
+    let asked = false
+    try { asked = localStorage.getItem(PUSH_ASKED_KEY) === '1' } catch { asked = true }
+    if (shouldAskPush({ supported: pushSupported(), enabled: isPushEnabled(), asked,
+      hasLicense: !!getLicenseKey(), isDemo: !!settings.isDemo, movementCount })) {
+      try { localStorage.setItem(PUSH_ASKED_KEY, '1') } catch {}
+      setTimeout(() => setPushAskOpen(true), 400)
+    }
+  }, [pushCheck, movementCount, settings.isDemo])
+  function onPushResult(r) {
+    if (r?.ok) showToast?.(t('pushAsk.enabled'))
+    else if (r?.error === 'permission_denied') showToast?.(t('settings.push.permissionDenied'), 'error')
+    else showToast?.(t('settings.push.genericError'), 'error')
+  }
 
   // Recorrido por pantalla (R08): solo la primera visita; después, el "?".
   const tour = usePageTour(page, { isDemo: !!settings.isDemo })
@@ -227,7 +253,8 @@ export default function Shell({ page, setPage, children }) {
       </div>
 
       <PageTour page={page} open={tour.open} onClose={tour.close} />
-      <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} />
+      <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => setPushCheck(true)} />
+      <PushAsk open={pushAskOpen} onClose={() => setPushAskOpen(false)} onResult={onPushResult} />
     </div>
   )
 }

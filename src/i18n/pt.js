@@ -2583,4 +2583,10 @@ export const pt = {
     'tour.bud.model.body': "Divida sua receita com um modelo sugerido e ajuste depois.",
     'tour.bud.summary.title': "Como você está",
     'tour.bud.summary.body': "Cada categoria mostra quanto já gastou e se passou do limite.",
+    'pushAsk.title': "Ative os avisos",
+    'pushAsk.body': "Avisamos quando seu teste ou sua licença estiver para vencer, para você não perder o acesso. Você pode desativá-los quando quiser em Ajustes.",
+    'pushAsk.privacy': "Os avisos não levam valores nem categorias: seus dados financeiros não saem deste dispositivo.",
+    'pushAsk.enable': "Ativar avisos",
+    'pushAsk.later': "Agora não",
+    'pushAsk.enabled': "Avisos ativados",
 }

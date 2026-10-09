@@ -8,13 +8,13 @@ import { useT } from '../i18n/useT.js'
 import Sheet from './ui/Sheet.jsx'
 import QuickAddForm from './QuickAddForm.jsx'
 
-export default function QuickAdd({ open, defaultType = 'expense', onClose }) {
+export default function QuickAdd({ open, defaultType = 'expense', onClose, onSaved }) {
   const { t } = useT()
   const amountRef = useRef(null)
   if (!open) return null
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={t('qa.title')} initialFocusRef={amountRef}>
-      <QuickAddForm defaultType={defaultType} amountRef={amountRef} onSaved={() => onClose?.()} />
+      <QuickAddForm defaultType={defaultType} amountRef={amountRef} onSaved={(type) => { onSaved?.(type); onClose?.() }} />
     </Sheet>
   )
 }

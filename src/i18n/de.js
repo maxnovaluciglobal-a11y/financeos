@@ -2583,4 +2583,10 @@ export const de = {
     'tour.bud.model.body': "Teilen Sie Ihr Einkommen mit einem Vorschlag auf und passen Sie ihn später an.",
     'tour.bud.summary.title': "Wie Sie stehen",
     'tour.bud.summary.body': "Jede Kategorie zeigt, wie viel Sie ausgegeben haben und ob Sie darüber liegen.",
+    'pushAsk.title': "Benachrichtigungen aktivieren",
+    'pushAsk.body': "Wir benachrichtigen Sie, wenn Ihr Test oder Ihre Lizenz bald abläuft, damit Sie den Zugang nicht verlieren. Sie können die Benachrichtigungen jederzeit in den Einstellungen deaktivieren.",
+    'pushAsk.privacy': "Die Benachrichtigungen enthalten keine Beträge oder Kategorien: Ihre Finanzdaten verlassen dieses Gerät nicht.",
+    'pushAsk.enable': "Benachrichtigungen aktivieren",
+    'pushAsk.later': "Jetzt nicht",
+    'pushAsk.enabled': "Benachrichtigungen aktiviert",
 }

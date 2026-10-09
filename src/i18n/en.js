@@ -2583,4 +2583,10 @@ export const en = {
     'tour.bud.model.body': "Split your income with a suggested model and adjust it later.",
     'tour.bud.summary.title': "How you are doing",
     'tour.bud.summary.body': "Each category shows how much you have spent and whether you are over.",
+    'pushAsk.title': "Turn on notifications",
+    'pushAsk.body': "We notify you when your trial or license is about to expire, so you do not lose access. You can turn them off anytime in Settings.",
+    'pushAsk.privacy': "Notifications carry no amounts or categories: your financial data never leaves this device.",
+    'pushAsk.enable': "Turn on notifications",
+    'pushAsk.later': "Not now",
+    'pushAsk.enabled': "Notifications on",
 }
