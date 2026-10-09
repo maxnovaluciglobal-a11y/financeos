@@ -11,6 +11,7 @@ import { calcAPV } from '../../utils/apvCalc.js'
 import { calcBeneficioAPV, calcDescuentos, calcImpuestoAnual, calcGapTramo, calcArbitraje, calcBrutoDesdeLiquido, setIndicadores, getParametrosCL } from '../../utils/taxCalcCL.js'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
+import CountryBadge from '../../components/CountryBadge.jsx'
 import { currentMonth } from '../../utils/index.js'
 
 const money = n => '$' + (Number(n) || 0).toLocaleString()
@@ -117,7 +118,7 @@ export default function APVPage() {
     <ProGate feature={t('apv.proGateFeature')}>
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
       <Card>
-        <CardHeader title={`🇨🇱 ${t('apv.title')}`} />
+        <CardHeader title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><CountryBadge code="CL" size={16} title={t('country.CL')} />{t('apv.title')}</span>} />
         <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:14,lineHeight:1.6,padding:'8px 10px',background:'rgba(255,165,0,.07)',borderRadius:6,border:'0.5px solid rgba(255,165,0,.2)'}}>
           <InlineIcon kind="alert" size={13} />{t('apv.disclaimer')}
           {indInfo && (

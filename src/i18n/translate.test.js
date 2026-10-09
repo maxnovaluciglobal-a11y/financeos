@@ -347,3 +347,59 @@ describe('paridad de las claves del plan "como Rial" fase 3 (R12–R14, es/en/pt
     for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
   })
 })
+
+// Pulido 09-oct-2026: claves tocadas o nuevas (multimoneda VE, textos que
+// estaban fijos en JSX, banderas, primeras entradas de Metas/Presupuestos).
+describe('paridad de las claves del pulido 09-oct (es/en/pt/de)', () => {
+  const prefixes = ['multimoneda.', 'steuer.elster.', 'mov.form.typeNeed', 'mov.form.typeWant', 'goals.suggest.perMonthSuffix', 'goals.first.', 'budgets.first.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(20)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) {
+      for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+
+  it('sin voseo, exclamaciones, "en vivo" ni emoji de bandera; el alemán no tutea', () => {
+    for (const k of pick(es)) {
+      expect(es[k], k).not.toMatch(/\b(podés|tenés|querés|vos|acá|escribí|elegí|usás|guardá|mirá)\b/i)
+      expect(es[k], k).not.toMatch(/en vivo|tiempo real/i)
+    }
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) {
+      expect(d[k], k).not.toMatch(/[¡!]/)
+      expect(d[k], k).not.toMatch(/\p{Regional_Indicator}/u)
+    }
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|deiner|dich|dir)\b/i)
+  })
+})
+
+// Pulido 09-oct: el alemán va de "Sie" en TODA la app (antes solo se probaba
+// por prefijo de fase y quedaban ~95 textos con du/dein en las herramientas
+// por país, ajustes, licencia y login).
+describe('alemán formal en todas las claves', () => {
+  it('ningún texto en alemán tutea (du/dein/dich/dir)', () => {
+    const offenders = Object.entries(de).filter(([, v]) => /\b(du|dein|deine|deinen|deinem|deiner|deines|dich|dir)\b/i.test(String(v))).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+  it('ni imperativos de du al empezar una frase', () => {
+    const IMP = /(^|[.:—–]\s+)(Gib|Prüfe|Melde dich|Sieh|Erfasse|Wende dich|Simuliere|Trage|Wähle|Tippe|Speichere|Öffne|Kopiere|Erwäge|Aktualisiere|Versuche es)\b/
+    const offenders = Object.entries(de).filter(([, v]) => IMP.test(String(v))).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+})
+
+describe('sin voseo ni exclamaciones en ningún texto en español', () => {
+  it('es', () => {
+    const VOSEO = /\b(tenés|podés|querés|sabés|acá|vos|hacé|mirá|elegí|agregá|usá|probá|revisá|tocá|empezá|registrá|escribí|guardá|editá|creá|cargá|importá|definí|configurá|contanos|dejanos|escribinos|ingresá|olvidás|respaldá|consultá|usás)\b/i
+    const offenders = Object.entries(es).filter(([, v]) => VOSEO.test(String(v)) || /[¡!]/.test(String(v))).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+})

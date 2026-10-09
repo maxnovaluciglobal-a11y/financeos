@@ -114,6 +114,13 @@ export function rateOptions({ country, currency }, { ve, ar, fixer } = {}) {
   return out
 }
 
+// Opción que queda elegida al consultar: en VE la tasa oficial del BCV
+// (decisión 08-oct-2026); el paralelo y las demás quedan visibles para elegir.
+// En el resto no se preselecciona nada: el usuario decide.
+export function defaultRateOption(options = []) {
+  return options.find(o => o.source === 'bcv') || null
+}
+
 // ¿Qué loaders hay que llamar para esta moneda? (VE/AR usan su API dedicada,
 // ya usada por Multimoneda/MultiDolarAR; el resto, el proxy propio /api/fixer.)
 export function loadersFor({ country, currency }) {

@@ -19,18 +19,18 @@ export const NAV = [
   // #06 — "Tu país" como sección propia: eleva el diferenciador fiscal por país
   // (antes estaba diluido dentro de Planificación) y de-satura esa sección.
   { sec: 'nav.sec.country', items: [
-    { id: 'hipoteca', ic: '🇨🇱', cc: 'CL', lb: 'nav.hipotecaCL', countries: ['CL'], proOnly: true },
-    { id: 'apv',     ic: '🇨🇱', cc: 'CL', lb: 'nav.apvChile', countries: ['CL'], proOnly: true },
-    { id: 'irspt',    ic: '🇵🇹', cc: 'PT', lb: 'nav.irsPT', countries: ['PT'], proOnly: true },
-    { id: 'ppr',     ic: '🇵🇹', cc: 'PT', lb: 'nav.pprPortugal', countries: ['PT'], proOnly: true },
+    { id: 'hipoteca', cc: 'CL', lb: 'nav.hipotecaCL', countries: ['CL'], proOnly: true },
+    { id: 'apv',     cc: 'CL', lb: 'nav.apvChile', countries: ['CL'], proOnly: true },
+    { id: 'irspt',    cc: 'PT', lb: 'nav.irsPT', countries: ['PT'], proOnly: true },
+    { id: 'ppr',     cc: 'PT', lb: 'nav.pprPortugal', countries: ['PT'], proOnly: true },
     { id: 'deducciones', lb: 'nav.deductions', countries: ['EC', 'PE'], proOnly: true },
-    { id: 'resico',       ic: '🇲🇽', cc: 'MX', lb: 'nav.resicoMX', countries: ['MX'], proOnly: true },
-    { id: 'irpfes',   ic: '🇪🇸', cc: 'ES', lb: 'nav.irpfES', countries: ['ES'], proOnly: true },
+    { id: 'resico',       cc: 'MX', lb: 'nav.resicoMX', countries: ['MX'], proOnly: true },
+    { id: 'irpfes',   cc: 'ES', lb: 'nav.irpfES', countries: ['ES'], proOnly: true },
     { id: 'ahorrofiscal', lb: 'nav.taxSavings', countries: ['MX', 'CO', 'US', 'ES'], proOnly: true },
-    { id: 'multidolar',  ic: '🇦🇷', cc: 'AR', lb: 'nav.multidolarAR', countries: ['AR'], proOnly: true },
+    { id: 'multidolar',  cc: 'AR', lb: 'nav.multidolarAR', countries: ['AR'], proOnly: true },
     { id: 'inflacion',   lb: 'nav.inflation', countries: ['AR'], proOnly: true },
     { id: 'multimoneda', lb: 'nav.multicurrency', countries: ['VE'], proOnly: true },
-    { id: 'steuer',      ic: '🇩🇪', cc: 'DE', lb: 'nav.steuerDE', countries: ['DE'], proOnly: true },
+    { id: 'steuer',      cc: 'DE', lb: 'nav.steuerDE', countries: ['DE'], proOnly: true },
   ] },
   { sec: 'nav.sec.planning', items: [
     { id: 'budgets', lb: 'nav.budgets' },

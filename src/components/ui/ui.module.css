@@ -41,9 +41,13 @@
   background: var(--sur); border-radius: var(--rl);
   padding: 14px 16px; border: 0.5px solid var(--brd);
   box-shadow: var(--sh-1);
+  /* Todos los <KPI> viven en una celda de .kpi-row (grid con ancho definido),
+     así que la tarjeta puede ser contenedor: la cifra se mide con su ancho. */
+  container-type: inline-size;
 }
 .kpiLbl { font-size: 11px; color: var(--tm); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.kpiVal { font-size: 22px; font-weight: 700; font-family: var(--display); letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; color: var(--tx); }
+/* 1.65 ≈ 1 / ancho medio de un dígito en em; 100cqi = ancho útil de la tarjeta. */
+.kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 700; font-family: var(--display); letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; color: var(--tx); }
 /* "green" acá es semántico de DATO (positivo), no de marca → --pos (Verde), no --grn (Navy). */
 .kpi_green { color: var(--pos); }
 .kpi_red   { color: var(--red); }
@@ -128,3 +132,15 @@
 .emptyText { margin: 0 0 6px; max-width: 360px; font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--tm); }
 .emptySecondary { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 2px; }
 .emptyHint { font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--th); max-width: 320px; }
+/* Primera entrada guiada: opciones (Metas) y lista de sugerencias (Presupuestos). */
+.emptyChoices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 440px; margin: 4px 0 8px; }
+.emptyChoice { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; text-align: left; width: 100%; }
+.emptyChoiceTop { display: inline-flex; align-items: center; gap: 8px; color: var(--tx); }
+.emptyChoiceTop svg { flex-shrink: 0; color: var(--grn); }
+.emptyChoiceSub { font-size: 12px; font-weight: 400; color: var(--th); }
+.emptyPick { list-style: none; width: 100%; max-width: 440px; margin: 4px 0 8px; padding: 0; text-align: left; border-top: 0.5px solid var(--brd); }
+.emptyPick li { border-bottom: 0.5px solid var(--brd); }
+.emptyPick label { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 4px 2px; cursor: pointer; font-family: var(--sans); font-size: 14px; color: var(--tx); }
+.emptyPickCat { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.emptyPickAmt { font-family: var(--mono); font-size: 13px; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
+[data-theme="dark"] .emptyChoiceTop svg { color: var(--laton-300); }

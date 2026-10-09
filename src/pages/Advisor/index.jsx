@@ -151,7 +151,7 @@ function TrafficLight({ signals }) {
           <div style={{
             fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 600,
             color: colors[s.status], flexShrink: 0,
-            background: bg[s.status], padding: '2px 8px', borderRadius: 20,
+            background: bg[s.status], padding: '2px 8px', borderRadius: 'var(--rs)',
           }}>
             {labels[s.status]}
           </div>
@@ -413,7 +413,7 @@ export default function Advisor() {
             <div style={{
               fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 600,
               background: 'var(--grn-bg)', color: 'var(--grn)',
-              padding: '2px 8px', borderRadius: 20, letterSpacing: '0.5px',
+              padding: '2px 8px', borderRadius: 'var(--rs)', letterSpacing: '0.5px',
             }}>
               {t('adv.badge')}
             </div>

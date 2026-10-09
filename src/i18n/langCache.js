@@ -16,8 +16,10 @@ const langPromises = {}
 // vite:dynamic-import-vars no puede resolver el chunk por separado (falla con
 // "Variable imports cannot import their own directory" al estar en el mismo
 // directorio) y termina metiendo los 4 idiomas en el bundle principal igual.
+// 'es' no tiene loader: ya está en langCache (import estático de arriba); un
+// import() suyo solo generaba el aviso de Vite "dynamically imported … but
+// also statically imported" sin cambiar el bundle.
 const loaders = {
-  es: () => import('./es.js'),
   en: () => import('./en.js'),
   pt: () => import('./pt.js'),
   de: () => import('./de.js'),

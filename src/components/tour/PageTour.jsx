@@ -2,7 +2,8 @@
 // La primera visita a Inicio, Movimientos o Presupuestos lo lanza solo; después
 // se repite con el "?" de la barra superior (PageTourButton). El "visto" es del
 // dispositivo (pageTours.js). Si al llegar ya hay una hoja/diálogo abierto (la
-// hoja de inicio de mes, por ejemplo), no se superpone: se deja para la próxima.
+// hoja de inicio de mes, por ejemplo) o la página muestra una primera entrada
+// guiada, no se superpone: se deja para la próxima.
 import { useEffect, useState, useCallback } from 'react'
 import { CircleHelp } from 'lucide-react'
 import Tour from './Tour.jsx'
@@ -16,6 +17,10 @@ export function usePageTour(page, { isDemo = false } = {}) {
     if (!shouldAutoStartTour({ page, seen: readSeen(), isDemo })) return
     const id = setTimeout(() => {
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+      // Página vacía con primera entrada guiada (Presupuestos): el recorrido
+      // explicaría cifras en cero y taparía la pregunta. Sin marcar "visto":
+      // arranca la próxima visita, cuando ya hay datos.
+      if (document.querySelector('[data-empty-guided]')) return
       setOpen(true)
     }, 700)
     return () => clearTimeout(id)
