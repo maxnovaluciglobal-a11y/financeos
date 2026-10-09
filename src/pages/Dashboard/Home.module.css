@@ -73,20 +73,27 @@
   .kpis { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); }
   .kpiLeft { grid-column: auto; }
 }
-.kpi { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; min-width: 0; }
+.kpi { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; min-width: 0; container-type: inline-size; }
 .kpiLabel { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
 .kpiTap { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
 .kpiTap:hover { border-color: var(--brd2); }
 .kpiTap:active { transform: scale(.99); }
 .kpiChevron { color: var(--th); flex-shrink: 0; margin: -2px -4px -2px 0; }
-.kpiValue { font-size: clamp(18px, 6.4cqi, 24px); line-height: 1.1; color: var(--tx); overflow-wrap: anywhere; }
+/* --chars = largo del monto formateado: la cifra se achica para entrar en una
+   línea (Bs. con millones), nunca se parte en dos. 1.65 ≈ 1 / ancho medio de
+   un dígito en em; 32px = padding de la tarjeta. cqi = ancho de esta tarjeta. */
+.kpiValue { font-size: clamp(13px, calc((100cqi - 32px) * 1.65 / var(--chars, 8)), 24px); line-height: 1.1; color: var(--tx); white-space: nowrap; }
 .kpiSub { font-size: 12px; color: var(--th); line-height: 1.4; }
 .kpiDual { font-family: var(--mono); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
 
 .left { display: flex; align-items: center; gap: 14px; }
 .leftBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
 .leftValue { font-size: clamp(32px, 9cqi, 40px); line-height: 1; }
+/* Montos largos: la cifra usa todo el ancho de la tarjeta y el anillo pasa abajo. */
+.leftLong { flex-direction: column; align-items: stretch; }
+.leftLong .leftValue { font-size: clamp(22px, calc((100cqi - 32px) * 1.65 / var(--chars, 12)), 40px); }
+.leftLong .ring { flex-direction: row; align-self: flex-start; gap: 10px; }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 
 .secondary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }

@@ -41,12 +41,21 @@ export function CardHeader({ title, right }) {
   )
 }
 
+// Montos largos (Bs. con millones) en una sola línea: se achica la fuente según
+// el largo del texto en vez de cortar o partir la cifra.
+export function kpiFit(value) {
+  if (typeof value !== 'string' && typeof value !== 'number') return undefined
+  const n = String(value).length
+  if (n <= 11) return undefined
+  return { fontSize: n <= 13 ? 18 : n <= 16 ? 15 : 13, whiteSpace: 'nowrap' }
+}
+
 export function KPI({ label, value, sub, color = 'default' }) {
   return (
     <div className={styles.kpi}>
       <div className={styles.kpiLbl}>{label}</div>
       {/* value enmascarado (T13) → <Money> agrega el texto sr-only "Monto oculto" */}
-      <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')}>{value === MONEY_MASK ? <Money /> : value}</div>
+      <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')} style={kpiFit(value)}>{value === MONEY_MASK ? <Money /> : value}</div>
       {sub && <div className={styles.kpiSub}>{sub}</div>}
     </div>
   )

@@ -30,6 +30,9 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const free = cur.freeFlow
   // R12: la cifra de "Te queda" en US$ si el usuario lo eligió y hay tasa.
   const showRef = !!(refc?.rate && refc.mode === 'ref')
+  // Largo del texto de la cifra (R12 + VES): define el tamaño y el layout del hero.
+  const heroText = (free < 0 ? '−' : free > 0 ? '+' : '') + (showRef ? fmtRef(toRef(Math.abs(free), refc.rate.rate), lang) : fmtMoney(Math.abs(free), sym))
+  const heroLong = heroText.length > 11
   const freeColor = !hasData ? 'var(--th)' : free > 0 ? 'var(--pos)' : free === 0 ? 'var(--warn)' : 'var(--neg)'
 
   const tiles = [
@@ -51,11 +54,11 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
           background: hasData ? `color-mix(in srgb, ${freeColor} 7%, var(--sur))` : undefined,
           borderColor: hasData ? `color-mix(in srgb, ${freeColor} 30%, transparent)` : undefined,
         }}>
-          <div className={s.left}>
+          <div className={`${s.left} ${heroLong ? s.leftLong : ''}`}>
             <div className={s.leftBody}>
               <div className={s.kpiLabel}>{free < 0 ? t('home.kpi.short') : t('home.kpi.left')}</div>
               {hasData ? (
-                <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor }}>
+                <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor, '--chars': heroText.length }}>
                   {/* key: al cambiar de moneda la cifra arranca de cero otra vez (no anima de Bs a US$) */}
                   <span key={showRef ? 'ref' : 'local'} style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money>{showRef
                     ? <CountUp value={toRef(Math.abs(free), refc.rate.rate)} format={(v) => fmtRef(v, lang)} />
@@ -114,7 +117,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                 {k.label}
                 {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
               </div>
-              <div className={`num ${s.kpiValue}`}>
+              <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
                 <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
               </div>
               <DeltaLine delta={k.delta} prevMonth={prevMonth} />
