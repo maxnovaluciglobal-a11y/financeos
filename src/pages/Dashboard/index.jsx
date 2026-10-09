@@ -18,6 +18,7 @@ import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import CountryTool from './CountryTool.jsx'
 import HomeKpis from './HomeKpis.jsx'
+import FirstSteps from './FirstSteps.jsx'
 import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
@@ -26,13 +27,14 @@ import DeltaLine from './DeltaLine.jsx'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, currencySymbol } from '../../utils/index.js'
-import { DEFAULT_USD_RATES } from '../shared/constants.js'
+import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import { Card, CardHeader } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { monthPlan, pendingTotals } from '../../utils/recurring.js'
 import { localDateStr } from '../../utils/index.js'
+import { ChevronDown } from 'lucide-react'
 
 const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
 const pct0 = (n) => ((Number(n) || 0) * 100).toFixed(0) + '%'
@@ -462,51 +464,11 @@ export default function Dashboard({ setPage }) {
         prev={autoStart && prevHasData ? { month: prevMonthKey, balance: kpis.prev.balance } : null}
         onGoToList={setPage ? () => { closeSheet(); setPage('recurring') } : undefined} />
 
-      {/* Header — título + toggle de vista */}
-      <div style={{ marginBottom:16, display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
-        <div>
-          <div style={{ fontFamily:'var(--mono)', fontSize:11, letterSpacing:'1.2px', textTransform:'uppercase', color:'var(--grn)', marginBottom:6 }}>Dashboard · {activeMonth}</div>
-          <h1 className="display" style={{ fontSize:26, fontWeight:700, color:'var(--tx)', marginBottom:4 }}>{t('dash.title')}</h1>
-        </div>
-        <button onClick={toggleCompact} title={compact ? t('dash.view.show') : t('dash.view.hide')} aria-expanded={!compact}
-          style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'6px 12px', fontSize:11, fontFamily:'var(--mono)', color:'var(--tm)', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
-          {compact ? t('dash.view.detailed') : t('dash.view.compact')}
-        </button>
+      {/* Cabecera (R05): sin eyebrow ni h1 de "Dashboard" — el título "Inicio"
+          ya está en la barra superior; acá solo el mes que se está mirando. */}
+      <div className={hs.head}>
+        <span className={hs.monthPill}>{monthLabel(activeMonth)}</span>
       </div>
-
-      {/* Empieza aquí */}
-      {setPage && kpis.incCount === 0 && kpis.expCount === 0 && (
-        <div style={{ background:'color-mix(in srgb, var(--pos) 8%, transparent)', border:'.5px solid color-mix(in srgb, var(--pos) 28%, transparent)', borderRadius:'var(--r)', padding:'18px 20px', marginBottom:20 }}>
-          <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--accent)', textTransform:'uppercase', letterSpacing:'1px', marginBottom:6 }}>{t('dash.start.title')}</div>
-          <p style={{ fontSize:13, color:'var(--th)', fontFamily:'var(--mono)', marginBottom:14 }}>{t('dash.start.sub')}</p>
-          {/* Vía rápida: importar la cartola arma el mes de una vez. Es el activo
-              más fuerte de la app (autodetección de bancos) y estaba ausente del
-              primer minuto — solo se ofrecía a mano. Va destacado, antes de los
-              pasos manuales, que quedan como alternativa. */}
-          <button onClick={() => setPage?.('import')} style={{
-            display:'flex', alignItems:'center', gap:10, width:'100%', textAlign:'left',
-            background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:'var(--r)',
-            padding:'12px 14px', marginBottom:14, cursor:'pointer', fontFamily:'var(--mono)',
-          }}>
-            <SignalIcon kind="upload" size={18} />
-            <span style={{ flex:1, fontSize:12.5, fontWeight:600, lineHeight:1.4 }}>{t('dash.start.import')}</span>
-            <span style={{ fontSize:12, fontWeight:700, whiteSpace:'nowrap' }}>{t('dash.start.importbtn')} →</span>
-          </button>
-          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-            {[
-              { n:'1', txt:t('dash.start.s1'),   btn:t('dash.start.s1btn'),    page:'income',   color:'var(--accent)' },
-              { n:'2', txt:t('dash.start.s2'),         btn:t('dash.start.s2btn'),     page:'movements', color:'var(--red)' },
-              { n:'3', txt:t('dash.start.s3'),        btn:t('dash.start.s3btn'),  page:'budgets',  color:'var(--amb)' },
-            ].map((s,i) => (
-              <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:24, height:24, borderRadius:'50%', background:'var(--laton)', color:'var(--navy)', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.n}</div>
-                <span style={{ flex:1, fontSize:13, color:'var(--tx)' }}>{s.txt}</span>
-                <button onClick={() => setPage?.(s.page)} style={{ background:'none', border:`.5px solid ${s.color}`, borderRadius:7, padding:'5px 12px', fontSize:12, fontWeight:600, color:s.color, cursor:'pointer', fontFamily:'var(--mono)', whiteSpace:'nowrap' }}>{s.btn}</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Inicio M5 — responde en orden ¿cuánto me queda?, ¿en qué me estoy
           pasando? y ¿qué viene? Escritorio a dos columnas, móvil en una sola
@@ -518,7 +480,8 @@ export default function Dashboard({ setPage }) {
             <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
               pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
               pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
-              daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}>
+              daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
+              onOpen={setPage}>
               {/* KPIs secundarios: en móvil solo en vista detallada */}
               <div className={hs.secondary + (compact ? ' ' + hs.secondaryCompact : '')}>
                 {KPIS_SECONDARY.map((k, i) => (
@@ -534,6 +497,7 @@ export default function Dashboard({ setPage }) {
               </div>
             </HomeKpis>
           </div>
+          <div className={hs.oSteps}><FirstSteps setPage={setPage} /></div>
           <div className={`${hs.pair} ${hs.pairA}`}>
             <div className={hs.oBudget}>
               <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
@@ -544,21 +508,35 @@ export default function Dashboard({ setPage }) {
             </div>
           </div>
           <div className={`${hs.pair} ${hs.pairB}`}>
+            {/* IQ Score: fila compacta en la vista esencial, tarjeta completa
+                (siguiente paso + factores) en la detallada. ScoreCard sigue
+                montado en las dos para no cortar el historial semanal. */}
             <div className={hs.oScore}>
-              <ScoreCard healthScore={healthScore} activeMonth={activeMonth}
+              <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact={compact}
                 isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
             </div>
-            <div className={hs.oNetWorth}>
-              <NetWorthCard goals={goals} debts={debts} incomes={ctx.incomes} expenses={ctx.expenses}
-                settings={settings} sym={sym} setPage={setPage} />
-            </div>
+            {!compact && (
+              <div className={hs.oNetWorth}>
+                <NetWorthCard goals={goals} debts={debts} incomes={ctx.incomes} expenses={ctx.expenses}
+                  settings={settings} sym={sym} setPage={setPage} />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Vista detallada (R05): todo lo que no responde "¿cuánto me queda?"
+          queda detrás de este botón. La elección se guarda en el dispositivo
+          (fos_dash_compact). Nada se borró: solo se movió. */}
+      <button type="button" className={hs.viewToggle} onClick={toggleCompact} aria-expanded={!compact} aria-controls="home-detailed">
+        <span>{compact ? t('home.view.showDetailed') : t('home.view.hideDetailed')}</span>
+        <ChevronDown size={18} strokeWidth={1.8} aria-hidden="true" style={{ transform: compact ? 'none' : 'rotate(180deg)' }} />
+      </button>
+
+      <div id="home-detailed" hidden={compact}>
       {/* Para hacer hoy — fusión de señales del Diagnóstico + insights (Fase 05).
           Cada fila navega a la página donde se resuelve. */}
-      {todoItems.length > 0 && (
+      {!compact && todoItems.length > 0 && (
         <Card className="rise" style={{ padding:'16px 18px', marginBottom:20 }}>
           <CardHeader
             title={<><InlineIcon kind="diagnosis" size={13} />{t('dash.signals.title')}</>}
@@ -596,7 +574,7 @@ export default function Dashboard({ setPage }) {
       )}
 
       {/* #03 — Herramienta fiscal del país como protagonista (el foso competitivo). */}
-      <CountryTool country={settings.country} setPage={setPage} />
+      {!compact && <CountryTool country={settings.country} setPage={setPage} />}
 
       {/* Acciones rápidas — solo en vista detallada (reduce ruido inicial) */}
       {setPage && !compact && (
@@ -692,8 +670,8 @@ export default function Dashboard({ setPage }) {
 
       {/* Gráficos — el donut de categorías vive también en la vista esencial
           (da vida visual sin recargar); flujo y barras solo en detallada. */}
-      {monthExpenses.length > 0 && (
-        <div style={{ display:'grid', gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap:16, marginBottom:16 }}>
+      {!compact && monthExpenses.length > 0 && (
+        <div style={{ display:'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap:16, marginBottom:16 }}>
           {!compact && (
             <div className="fos-hide-mobile">
               <ChartCard title={t('dash.chart.flow.title')} subtitle={t('dash.chart.flow.sub')} minHeight={220}>
@@ -735,7 +713,9 @@ export default function Dashboard({ setPage }) {
         </div>
         {setPage && <button onClick={() => setPage?.('settings')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'5px 12px', fontSize:11, color:'var(--tx)', cursor:'pointer', fontFamily:'var(--mono)', whiteSpace:'nowrap', flexShrink:0 }}>{t('dash.backup.btn')}</button>}
       </div>}
-      <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.6 }}>
+      </div>
+
+      <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.6, marginTop:16 }}>
         {t('dash.disclaimer')}
       </div>
     </div>

@@ -5,6 +5,7 @@
 // El historial semanal vive acá (antes en Dashboard/index.jsx); las entradas
 // nuevas guardan además la fecha local (d) para saber a qué mes pertenecen.
 import { useEffect, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import CountUp from '../../components/CountUp.jsx'
 import { IconIQScore } from '../../components/icons/Icons.jsx'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
@@ -43,7 +44,7 @@ function Sparkline({ history, color }) {
   )
 }
 
-export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, setPage }) {
+export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, setPage, compact = false }) {
   const { t } = useT()
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem(SCORE_KEY) || '[]') } catch { return [] }
@@ -73,6 +74,25 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
     const diff = healthScore.score - prev.v
     delta = diff === 0 ? { dir: 'flat', good: null } : { dir: diff > 0 ? 'up' : 'down', good: diff > 0 }
     valueText = t('home.score.pts', { n: `${diff > 0 ? '+' : '−'}${Math.abs(diff)}` })
+  }
+
+  // Vista esencial del Inicio (R05): una fila — número, estado y "›" al
+  // Diagnóstico. La tarjeta completa queda en la vista detallada.
+  if (compact) {
+    const Tag = setPage ? 'button' : 'div'
+    return (
+      <Tag type={setPage ? 'button' : undefined} className={`${s.card} ${s.scoreRow} rise`} data-tour="iq-score"
+        onClick={setPage ? () => setPage('coach') : undefined}>
+        <span className={`num ${s.scoreRowNum}`} style={{ color: healthScore.color }}>
+          <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
+        </span>
+        <span className={s.scoreRowMeta}>
+          <span className={s.scoreLabel}><IconIQScore size={14} />{t('dash.health.title')}</span>
+          <ScoreState level={healthScore.level} label={healthScore.label} size={14} style={{ fontSize: 14, fontWeight: 600 }} />
+        </span>
+        {setPage && <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true" style={{ color: 'var(--th)' }} />}
+      </Tag>
+    )
   }
 
   const weakest = weakestFactor(healthScore.breakdown)

@@ -11,21 +11,25 @@
 
 .pair { display: contents; }
 
-.oBackup   { order: 2; }
-.oBackup:empty, .oNetWorth:empty, .oScore:empty { display: none; }
+.oBackup:empty, .oNetWorth:empty, .oScore:empty, .oSteps:empty { display: none; }
+/* Orden móvil (R05): Te queda + Ingresos|Gastos → primeros pasos → respaldo →
+   presupuesto → próximos pagos → IQ Score → patrimonio (solo detallada). */
 .oKpis     { order: 1; }
-.oScore    { order: 3; }
+.oSteps    { order: 2; }
+.oBackup   { order: 3; }
 .oBudget   { order: 4; }
 .oUpcoming { order: 5; }
-.oNetWorth { order: 6; }
+.oScore    { order: 6; }
+.oNetWorth { order: 7; }
 
 @container (min-width: 760px) {
   .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
   .pair > :only-child, .pair > :has(+ :empty), .pair > :empty + * { grid-column: 1 / -1; }
   .oBackup { order: 1; }
   .oKpis   { order: 2; }
-  .pairA   { order: 3; }
-  .pairB   { order: 4; }
+  .oSteps  { order: 3; }
+  .pairA   { order: 4; }
+  .pairB   { order: 5; }
 }
 
 /* ── Tarjeta base del Inicio ──────────────────────────────────────────────── */
@@ -62,20 +66,27 @@
 
 /* ── KPIs ──────────────────────────────────────────────────────────────── */
 .kpis { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+/* "Te queda" va primero y es la cifra protagonista (R05), en móvil a todo el
+   ancho y en escritorio como primera columna, más ancha. */
 .kpiLeft { grid-column: 1 / -1; order: -1; }
 @container (min-width: 760px) {
-  .kpis { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr); }
-  .kpiLeft { grid-column: auto; order: 0; }
+  .kpis { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .kpiLeft { grid-column: auto; }
 }
 .kpi { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; min-width: 0; }
-.kpiLabel { font-size: 12px; font-weight: 500; color: var(--tm); }
+.kpiLabel { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
+.kpiTap { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px;
+  transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
+.kpiTap:hover { border-color: var(--brd2); }
+.kpiTap:active { transform: scale(.99); }
+.kpiChevron { color: var(--th); flex-shrink: 0; margin: -2px -4px -2px 0; }
 .kpiValue { font-size: clamp(18px, 6.4cqi, 24px); line-height: 1.1; color: var(--tx); overflow-wrap: anywhere; }
 .kpiSub { font-size: 12px; color: var(--th); line-height: 1.4; }
 .kpiDual { font-family: var(--mono); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
 
 .left { display: flex; align-items: center; gap: 14px; }
 .leftBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
-.leftValue { font-size: clamp(28px, 7cqi, 36px); line-height: 1; }
+.leftValue { font-size: clamp(32px, 9cqi, 40px); line-height: 1; }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 
 .secondary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }
@@ -147,4 +158,78 @@
 @media (prefers-reduced-motion: reduce) {
   .barFill, .btnPrimary, .btnSecondary, .cardLink { transition: none; }
   .btnPrimary:active:not(:disabled) { transform: none; }
+}
+
+/* ── Primeros pasos (R06) — una fila que abre una hoja ─────────────────── */
+.steps {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
+  width: 100%; min-height: 56px; padding: 12px 12px 12px 16px; text-align: left;
+  font: inherit; color: var(--tx); cursor: pointer;
+  transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
+}
+.steps:hover { border-color: var(--brd2); }
+.steps:active { transform: scale(.99); }
+.stepsBar { display: inline-grid; grid-template-columns: repeat(3, 10px); gap: 3px; }
+.stepsSeg, .stepsSegOn { height: 6px; border-radius: 1px; background: var(--sur3); }
+.stepsSegOn { background: var(--laton); }
+.stepsText { font-size: 14px; font-weight: 600; line-height: 1.3; min-width: 0; }
+.stepsCount { font-family: var(--mono); font-size: 12px; color: var(--tm); white-space: nowrap; }
+.stepsChevron { color: var(--th); }
+
+.sheetTitle { margin: 4px 0 6px; font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); }
+.sheetSub { margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: var(--tm); }
+.stepList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.stepItem { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 0.5px solid var(--brd); }
+.stepItem:first-child { border-top: 0; padding-top: 4px; }
+.stepMark, .stepMarkDone {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--r);
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  border: 1px solid var(--brd2); color: var(--tm);
+}
+.stepMarkDone { border-color: transparent; background: color-mix(in srgb, var(--pos) 14%, transparent); color: var(--pos); }
+.stepBody { min-width: 0; }
+.stepTitle { font-size: 15px; font-weight: 600; color: var(--tx); line-height: 1.35; }
+.stepDesc { margin-top: 2px; font-size: 13px; line-height: 1.5; color: var(--tm); }
+.stepActions { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; }
+.stepDone { margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--tm); }
+
+@media (prefers-reduced-motion: reduce) {
+  .steps { transition: none; }
+  .steps:active { transform: none; }
+}
+
+/* ── Cabecera del Inicio y vista detallada (R05) ───────────────────────── */
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.monthPill {
+  display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px;
+  border-radius: var(--r); background: var(--sur2); border: 0.5px solid var(--brd);
+  font-size: 13px; font-weight: 600; color: var(--tx); text-transform: capitalize;
+}
+.viewToggle {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; min-height: 48px; margin: 0 0 16px; padding: 0 16px;
+  border: 0.5px dashed var(--brd2); border-radius: var(--rl);
+  background: transparent; color: var(--tm); cursor: pointer;
+  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.viewToggle:hover { background: var(--sur2); color: var(--tx); }
+.viewToggle svg { transition: transform var(--dur) var(--ease); }
+
+/* ── IQ Score compacto (vista esencial) ─────────────────────────────────── */
+.scoreRow {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  width: 100%; min-height: 64px; padding: 12px 12px 12px 16px; text-align: left;
+  font: inherit; color: var(--tx); cursor: pointer;
+  transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
+}
+.scoreRow:hover { border-color: var(--brd2); }
+.scoreRow:active { transform: scale(.99); }
+.scoreRowNum { font-size: 28px; line-height: 1; font-weight: 600; }
+.scoreRowMeta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kpiTap, .scoreRow, .viewToggle, .viewToggle svg { transition: none; }
+  .kpiTap:active, .scoreRow:active { transform: none; }
 }
