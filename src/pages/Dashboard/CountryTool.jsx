@@ -5,20 +5,21 @@
 // Aquí se eleva a tarjeta destacada del Dashboard: al elegir país, su
 // herramienta exclusiva aparece como protagonista, no como letra chica.
 import { useT } from '../../i18n/useT.js'
+import CountryBadge from '../../components/CountryBadge.jsx'
 
 // País → herramienta fiscal (mismo mapa que la nav en Shell.jsx).
 const TOOL_BY_COUNTRY = {
-  CL: { id: 'hipoteca',     flag: '🇨🇱', nameKey: 'nav.hipotecaCL' },
-  PT: { id: 'irspt',        flag: '🇵🇹', nameKey: 'nav.irsPT' },
-  EC: { id: 'deducciones',  flag: '🇪🇨', nameKey: 'nav.deductions' },
-  PE: { id: 'deducciones',  flag: '🇵🇪', nameKey: 'nav.deductions' },
-  MX: { id: 'resico',       flag: '🇲🇽', nameKey: 'nav.resicoMX' },
-  CO: { id: 'ahorrofiscal', flag: '🇨🇴', nameKey: 'nav.taxSavings' },
-  US: { id: 'ahorrofiscal', flag: '🇺🇸', nameKey: 'nav.taxSavings' },
-  ES: { id: 'irpfes',       flag: '🇪🇸', nameKey: 'nav.irpfES' },
-  AR: { id: 'multidolar',   flag: '🇦🇷', nameKey: 'nav.multidolarAR' },
-  VE: { id: 'multimoneda',  flag: '🇻🇪', nameKey: 'nav.multicurrency' },
-  DE: { id: 'steuer',       flag: '🇩🇪', nameKey: 'nav.steuerDE' },
+  CL: { id: 'hipoteca',     nameKey: 'nav.hipotecaCL' },
+  PT: { id: 'irspt',        nameKey: 'nav.irsPT' },
+  EC: { id: 'deducciones',  nameKey: 'nav.deductions' },
+  PE: { id: 'deducciones',  nameKey: 'nav.deductions' },
+  MX: { id: 'resico',       nameKey: 'nav.resicoMX' },
+  CO: { id: 'ahorrofiscal', nameKey: 'nav.taxSavings' },
+  US: { id: 'ahorrofiscal', nameKey: 'nav.taxSavings' },
+  ES: { id: 'irpfes',       nameKey: 'nav.irpfES' },
+  AR: { id: 'multidolar',   nameKey: 'nav.multidolarAR' },
+  VE: { id: 'multimoneda',  nameKey: 'nav.multicurrency' },
+  DE: { id: 'steuer',       nameKey: 'nav.steuerDE' },
 }
 
 export default function CountryTool({ country, setPage }) {
@@ -39,7 +40,7 @@ export default function CountryTool({ country, setPage }) {
         background: 'var(--grn-tint)', border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)',
       }}
     >
-      <span style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }} aria-hidden="true">{tool.flag}</span>
+      <span style={{ lineHeight: 0, flexShrink: 0, color: 'var(--grn)' }} aria-hidden="true"><CountryBadge code={cc} size={30} /></span>
       <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
         <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)' }}>
           {t('countryTool.eyebrow')}
@@ -55,7 +56,7 @@ export default function CountryTool({ country, setPage }) {
         flexShrink: 0, fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600,
         color: 'var(--grn)', display: 'inline-flex', alignItems: 'center', gap: 5,
         border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)',
-        borderRadius: 999, padding: '6px 12px', whiteSpace: 'nowrap',
+        borderRadius: 'var(--r)', padding: '6px 12px', whiteSpace: 'nowrap',
       }}>
         {t('countryTool.cta')} →
       </span>

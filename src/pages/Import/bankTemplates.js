@@ -5,7 +5,6 @@
 /**
  * Cada template define:
  * - name: nombre del banco
- * - flag: emoji bandera/logo
  * - delimiter: separador del CSV
  * - fingerprint: keywords únicas en headers para detectar el banco
  * - mapping: mapeo de columnas
@@ -18,7 +17,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'bancoestado',
     name: 'BancoEstado',
-    flag: '🏦',
     country: 'CL',
     delimiter: ';',
     fingerprint: ['fecha', 'descripcion', 'debito', 'credito', 'saldo'],
@@ -34,7 +32,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'bancochile',
     name: 'Banco Chile',
-    flag: '🏦',
     country: 'CL',
     delimiter: ';',
     fingerprint: ['fecha', 'glosa', 'cargo', 'abono', 'saldo'],
@@ -50,7 +47,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'santander',
     name: 'Santander Chile',
-    flag: '🏦',
     country: 'CL',
     delimiter: ';',
     fingerprint: ['fecha', 'descripcion', 'débito', 'crédito', 'saldo'],
@@ -66,7 +62,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'bci',
     name: 'BCI',
-    flag: '🏦',
     country: 'CL',
     delimiter: ',',
     fingerprint: ['fecha', 'descripción', 'cargo', 'abono', 'saldo'],
@@ -82,7 +77,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'scotiabank',
     name: 'Scotiabank Chile',
-    flag: '🏦',
     country: 'CL',
     delimiter: ';',
     fingerprint: ['fecha', 'detalle', 'débito', 'crédito', 'saldo'],
@@ -98,7 +92,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'falabella',
     name: 'Banco Falabella',
-    flag: '🏦',
     country: 'CL',
     delimiter: ',',
     fingerprint: ['fecha', 'descripcion', 'monto', 'tipo'],
@@ -113,7 +106,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'itau',
     name: 'Itaú Chile',
-    flag: '🏦',
     country: 'CL',
     delimiter: ';',
     fingerprint: ['fecha', 'descripcion', 'monto', 'saldo'],
@@ -128,7 +120,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'mach',
     name: 'MACH / Tenpo',
-    flag: '📱',
     country: 'CL',
     delimiter: ',',
     fingerprint: ['date', 'description', 'amount', 'type'],
@@ -143,7 +134,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'mercadopago_cl',
     name: 'MercadoPago',
-    flag: '💳',
     country: 'CL',
     delimiter: ',',
     fingerprint: ['fecha', 'detalle', 'monto', 'estado'],
@@ -160,7 +150,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'bbva_mx',
     name: 'BBVA México',
-    flag: '🇲🇽',
     country: 'MX',
     delimiter: ',',
     fingerprint: ['fecha', 'concepto', 'cargo', 'abono', 'saldo'],
@@ -176,7 +165,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'banamex',
     name: 'Citibanamex',
-    flag: '🇲🇽',
     country: 'MX',
     delimiter: ',',
     fingerprint: ['fecha', 'descripcion', 'retiro', 'deposito', 'saldo'],
@@ -192,7 +180,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'banorte',
     name: 'Banorte',
-    flag: '🇲🇽',
     country: 'MX',
     delimiter: ',',
     fingerprint: ['fecha', 'descripcion', 'cargo', 'abono', 'saldo'],
@@ -208,7 +195,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'santander_mx',
     name: 'Santander México',
-    flag: '🇲🇽',
     country: 'MX',
     delimiter: ';',
     fingerprint: ['fecha', 'concepto', 'movimiento', 'monto', 'saldo'],
@@ -223,7 +209,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'mercadopago_mx',
     name: 'MercadoPago MX',
-    flag: '🇲🇽',
     country: 'MX',
     delimiter: ',',
     fingerprint: ['fecha', 'operacion', 'monto', 'tipo', 'estado'],
@@ -240,7 +225,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'bancolombia',
     name: 'Bancolombia',
-    flag: '🇨🇴',
     country: 'CO',
     delimiter: ';',
     fingerprint: ['fecha', 'descripcion', 'debito', 'credito', 'saldo'],
@@ -256,7 +240,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'bbva_co',
     name: 'BBVA Colombia',
-    flag: '🇨🇴',
     country: 'CO',
     delimiter: ',',
     fingerprint: ['fecha', 'concepto', 'valor_debito', 'valor_credito', 'saldo'],
@@ -272,7 +255,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'davivienda',
     name: 'Davivienda',
-    flag: '🇨🇴',
     country: 'CO',
     delimiter: ';',
     fingerprint: ['fecha', 'descripcion', 'valor', 'tipo_movimiento', 'saldo'],
@@ -287,7 +269,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'nequi',
     name: 'Nequi',
-    flag: '🇨🇴',
     country: 'CO',
     delimiter: ',',
     fingerprint: ['fecha', 'descripcion', 'valor', 'estado', 'tipo'],
@@ -306,7 +287,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'n26',
     name: 'N26',
-    flag: '🇩🇪',
     country: 'DE',
     delimiter: ',',
     fingerprint: ['booking date', 'payment reference', 'amount', 'account name'],
@@ -322,7 +302,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'dkb',
     name: 'DKB Deutsche Kreditbank',
-    flag: '🇩🇪',
     country: 'DE',
     delimiter: ';',
     fingerprint: ['buchungsdatum', 'wertstellung', 'verwendungszweck', 'betrag'],
@@ -338,7 +317,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'sparkasse',
     name: 'Sparkasse',
-    flag: '🇩🇪',
     country: 'DE',
     delimiter: ';',
     fingerprint: ['auftragskonto', 'buchungstag', 'verwendungszweck', 'betrag'],
@@ -354,7 +332,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'ing-de',
     name: 'ING Deutschland',
-    flag: '🇩🇪',
     country: 'DE',
     delimiter: ';',
     fingerprint: ['buchung', 'valuta', 'auftraggeber', 'buchungstext', 'betrag'],
@@ -370,7 +347,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'comdirect',
     name: 'Comdirect',
-    flag: '🇩🇪',
     country: 'DE',
     delimiter: ';',
     fingerprint: ['buchungstag', 'wertstellung', 'vorgang', 'umsatz'],
@@ -403,7 +379,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'chase_card',
     name: 'Chase (credit card)',
-    flag: '🇺🇸',
     country: 'US',
     delimiter: ',',
     fingerprint: ['transaction date', 'post date', 'description', 'category', 'type', 'amount'],
@@ -419,7 +394,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'chase_checking',
     name: 'Chase (checking)',
-    flag: '🇺🇸',
     country: 'US',
     delimiter: ',',
     fingerprint: ['details', 'posting date', 'description', 'amount', 'type', 'balance'],
@@ -435,7 +409,6 @@ export const BANK_TEMPLATES = [
   {
     id: 'capitalone_card',
     name: 'Capital One (credit card)',
-    flag: '🇺🇸',
     country: 'US',
     delimiter: ',',
     fingerprint: ['transaction date', 'posted date', 'card no', 'description', 'debit', 'credit'],

@@ -9,6 +9,7 @@ import { markLocalChange } from '../../core/sync.js'
 import { useT } from '../../i18n/useT.js'
 import { dbGetAll, dbAdd } from '../../core/db/index.js'
 import { uid, fmtMoney, currencySymbol, getCategoriesExpense, getCategoriesIncome, catLabel } from '../../utils/index.js'
+import CountryBadge from '../../components/CountryBadge.jsx'
 import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplates.js'
 import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
@@ -309,18 +310,20 @@ export default function ImportMovements({ setPage } = {}) {
             <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 14 }}>
               {t('imp.banks.sub')}
             </p>
-            {/* Un grupo por país con plantilla (antes faltaban DE y US). Banderas
-                emoji como antes: Import queda fuera de D5 (ver CLAUDE.md). */}
+            {/* Un grupo por país con plantilla. El país se marca con CountryBadge
+                (D5: nada de emoji de bandera, en Windows se ven como "CL"). */}
             {[...new Set(BANK_TEMPLATES.map(b => b.country))].map(code => ({
-              label: `${{ CL: '🇨🇱', MX: '🇲🇽', CO: '🇨🇴', DE: '🇩🇪', US: '🇺🇸' }[code] || ''} ${t(`country.${code}`)}`.trim(),
+              code,
+              label: t(`country.${code}`),
               banks: BANK_TEMPLATES.filter(b => b.country === code),
             })).map(group => (
-              <div key={group.label} style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>{group.label}</div>
+              <div key={group.code} style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>
+                  <CountryBadge code={group.code} size={14} title={group.label} />{group.label}
+                </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {group.banks.map(b => (
-                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 20, background: 'var(--sur2)', border: '.5px solid var(--brd)', fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--mono)' }}>
-                      <span>{b.flag}</span>
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--sur2)', border: '.5px solid var(--brd)', fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--mono)' }}>
                       <span>{b.name}</span>
                     </div>
                   ))}
@@ -371,7 +374,7 @@ export default function ImportMovements({ setPage } = {}) {
           {/* Banner detección banco */}
           {detectedBank ? (
             <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:'rgba(10,92,62,.07)',border:'0.5px solid rgba(10,92,62,.2)',borderRadius:8,marginBottom:16}}>
-              <div style={{fontSize:22,flexShrink:0}}>{detectedBank.flag}</div>
+              <div style={{flexShrink:0,lineHeight:0,color:'var(--grn)'}}><CountryBadge code={detectedBank.country} size={22} title={t(`country.${detectedBank.country}`)} /></div>
               <div style={{flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
