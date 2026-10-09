@@ -146,7 +146,7 @@ export function Empty({ text, cta, onCta }) {
 // sugerencias de Presupuestos), entre el texto y el botón.
 export function EmptyState({ icon: Icon, title, text, cta, onCta, ctaDisabled = false, secondary, compact = false, children }) {
   return (
-    <div className={[styles.emptyState, compact ? styles.emptyStateCompact : ''].join(' ')}>
+    <div className={[styles.emptyState, compact ? styles.emptyStateCompact : ''].join(' ')} data-empty-guided={children ? '' : undefined}>
       {Icon && <span className={styles.emptyIcon} aria-hidden="true"><Icon size={22} strokeWidth={1.7} /></span>}
       <h2 className={styles.emptyTitle}>{title}</h2>
       {text && <p className={styles.emptyText}>{text}</p>}
