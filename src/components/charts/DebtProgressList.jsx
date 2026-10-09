@@ -92,9 +92,9 @@ export default function DebtProgressList({ debts, sym = '$' }) {
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <SignalIcon kind={d.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{d.creditor}</span>
-                {d.rate > 0 && <span style={{ fontSize:9, fontFamily:'var(--mono)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius:20 }}>{t('chart.debt.rate', { rate: d.rate })}</span>}
+                {d.rate > 0 && <span style={{ fontSize:9, fontFamily:'var(--mono)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: d.rate })}</span>}
               </div>
-              <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius:20 }}>
+              <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
                 {t(d.status.label)}
               </span>
             </div>

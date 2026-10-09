@@ -65,7 +65,7 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
             <span style={{
               fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 600,
               color: r.status.color, background: `${r.status.color}18`,
-              padding: '2px 8px', borderRadius: 20,
+              padding: '2px 8px', borderRadius: 'var(--rs)',
             }}>{t(r.status.label)}</span>
           </div>
 

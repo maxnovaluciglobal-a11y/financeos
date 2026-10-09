@@ -59,7 +59,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
   const pill = (text, color) => (
     <span key={text} style={{
       display: 'inline-block', padding: '2px 8px',
-      borderRadius: 20, fontSize: 10, fontFamily: 'var(--mono)',
+      borderRadius: 'var(--rs)', fontSize: 10, fontFamily: 'var(--mono)',
       background: `${color}18`, color, marginRight: 4, marginBottom: 4,
       border: `0.5px solid ${color}30`,
     }}>{text}</span>
@@ -145,7 +145,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
               </div>
               <span style={{
                 marginLeft: 'auto', fontSize: 9, fontFamily: 'var(--mono)',
-                flexShrink: 0, padding: '1px 7px', borderRadius: 20,
+                flexShrink: 0, padding: '1px 7px', borderRadius: 'var(--rs)',
                 background: g.priority === 'Alta' ? '#fdf0ee' : '#faeeda',
                 color: g.priority === 'Alta' ? '#8a2020' : '#854f0b',
               }}>{prioLabel(g.priority, lang)}</span>
@@ -405,11 +405,11 @@ export default function TemplateSelector({ compact = false, onApplied }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 <span style={{
                   fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px',
-                  borderRadius: 20, background: 'var(--sur2)', color: 'var(--th)',
+                  borderRadius: 'var(--rs)', background: 'var(--sur2)', color: 'var(--th)',
                 }}>{tr('tplsel.categoriesN', { n: t.categoriesExpense.length })}</span>
                 <span style={{
                   fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px',
-                  borderRadius: 20, background: 'var(--sur2)', color: 'var(--th)',
+                  borderRadius: 'var(--rs)', background: 'var(--sur2)', color: 'var(--th)',
                 }}>{tr('tplsel.budgetsN', { n: t.suggestedBudgets.length })}</span>
               </div>
 

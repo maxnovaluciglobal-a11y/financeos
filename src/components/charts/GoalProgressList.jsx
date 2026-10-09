@@ -89,12 +89,12 @@ export default function GoalProgressList({ goals, sym = '$' }) {
                 <SignalIcon kind={g.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{g.name}</span>
                 {g.priority && (
-                  <span style={{ fontSize:9, fontFamily:'var(--mono)', color:PRIORITY_COLOR[g.priority] || 'var(--th)', background:`${PRIORITY_COLOR[g.priority] || 'var(--th)'}18`, padding:'1px 6px', borderRadius:20 }}>
+                  <span style={{ fontSize:9, fontFamily:'var(--mono)', color:PRIORITY_COLOR[g.priority] || 'var(--th)', background:`${PRIORITY_COLOR[g.priority] || 'var(--th)'}18`, padding:'1px 6px', borderRadius: 'var(--rs)' }}>
                     {prioLabel(g.priority, lang)}
                   </span>
                 )}
               </div>
-              <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:g.status.color, background:`${g.status.color}18`, padding:'2px 8px', borderRadius:20 }}>
+              <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:g.status.color, background:`${g.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
                 {t(g.status.label)}
               </span>
             </div>

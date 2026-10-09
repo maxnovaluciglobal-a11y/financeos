@@ -56,7 +56,7 @@ const s = {
   th: { textAlign: 'left', padding: '7px 10px', fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--mono)' },
   td: { padding: '7px 10px', borderBottom: '.5px solid var(--brd)', fontFamily: 'var(--mono)', verticalAlign: 'top' },
   badge: (status) => ({
-    display: 'inline-block', padding: '2px 7px', borderRadius: 20, fontSize: 10, fontWeight: 600,
+    display: 'inline-block', padding: '2px 7px', borderRadius: 'var(--rs)', fontSize: 10, fontWeight: 600,
     background: status === 'valid' ? 'var(--accent-bg)' : status === 'duplicate' ? 'rgba(245,166,35,.12)' : 'rgba(255,77,106,.12)',
     color: status === 'valid' ? 'var(--accent)' : status === 'duplicate' ? 'var(--amb)' : 'var(--red)',
   }),
