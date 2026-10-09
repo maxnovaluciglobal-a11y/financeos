@@ -63,7 +63,7 @@ function DemoBridge({ children }) {
 }
 
 // CTA persistente al pie — aparece después de 75 s de uso del demo. Tarjeta
-// Navy plana (sin degradado); en móvil flota por encima del tabbar, no lo tapa.
+// Navy plana (sin degradado); en móvil va encima de la barra y del "+", no los tapa.
 // No se muestra mientras corre el recorrido.
 function DemoBottomCTA({ hidden }) {
   const { t, lang } = useT()

@@ -13,7 +13,7 @@ import { NAV_ICONS } from '../icons/Icons.jsx'
 import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
-import TabBar from './TabBar.jsx'
+import TabBar, { AddFab } from './TabBar.jsx'
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
@@ -203,10 +203,12 @@ export default function Shell({ page, setPage, children }) {
           </div>
         </main>
 
-        {/* TABBAR móvil — navegación primaria; "+" abre QuickAdd, "more" navega
-            a la página que lista el árbol completo de NAV. */}
+        {/* TABBAR móvil — barra anclada de 3 pestañas (Inicio · Movimientos ·
+            Menú) + el "+" propio encima, abajo a la derecha. Los dos se ocultan
+            con el teclado abierto. */}
         <div className={keyboardOpen ? s.tabbarHidden : undefined}>
-          <TabBar page={page} onNavigate={navigate} onAdd={() => setQuickAdd('expense')} t={t} />
+          <TabBar page={page} onNavigate={navigate} t={t} />
+          <AddFab onAdd={() => setQuickAdd('expense')} t={t} />
         </div>
       </div>
 

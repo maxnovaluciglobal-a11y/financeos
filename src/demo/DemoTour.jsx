@@ -52,7 +52,7 @@ function inFixedLayer(el) {
   return false
 }
 function bringIntoView(el) {
-  if (inFixedLayer(el)) return // tabbar flotante: desplazar el contenido no lo mueve
+  if (inFixedLayer(el)) return // barra o "+" fijos: desplazar el contenido no los mueve
   const r = el.getBoundingClientRect()
   const vh = window.innerHeight
   const topSafe = (document.querySelector('.demo-banner')?.getBoundingClientRect().bottom || 0) + 16
