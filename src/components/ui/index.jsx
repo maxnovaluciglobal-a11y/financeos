@@ -142,14 +142,17 @@ export function Empty({ text, cta, onCta }) {
 // Estado vacío uniforme (R10): ícono, título, una frase y UN botón (Latón,
 // texto Navy). Opcional: una acción secundaria como enlace, con su aclaración.
 // `compact` para usarlo dentro de una tarjeta que ya tiene título.
-export function EmptyState({ icon: Icon, title, text, cta, onCta, secondary, compact = false }) {
+// `children`: la pregunta guiada de la primera entrada (opciones de Metas,
+// sugerencias de Presupuestos), entre el texto y el botón.
+export function EmptyState({ icon: Icon, title, text, cta, onCta, ctaDisabled = false, secondary, compact = false, children }) {
   return (
     <div className={[styles.emptyState, compact ? styles.emptyStateCompact : ''].join(' ')}>
       {Icon && <span className={styles.emptyIcon} aria-hidden="true"><Icon size={22} strokeWidth={1.7} /></span>}
       <h2 className={styles.emptyTitle}>{title}</h2>
       {text && <p className={styles.emptyText}>{text}</p>}
+      {children}
       {cta && onCta && (
-        <button type="button" className="fos-btn-primary" style={{ width: 'auto', marginTop: 4 }} onClick={onCta}>{cta}</button>
+        <button type="button" className="fos-btn-primary" style={{ width: 'auto', marginTop: 4 }} onClick={onCta} disabled={ctaDisabled}>{cta}</button>
       )}
       {secondary && (
         <div className={styles.emptySecondary}>
@@ -158,6 +161,35 @@ export function EmptyState({ icon: Icon, title, text, cta, onCta, secondary, com
         </div>
       )}
     </div>
+  )
+}
+
+// Opciones de la pregunta guiada (Metas: "¿Para qué quieres ahorrar?").
+export function EmptyChoices({ label, children }) {
+  return <div role="group" aria-label={label} className={styles.emptyChoices}>{children}</div>
+}
+export function EmptyChoice({ icon: Icon, label, sub, onClick }) {
+  return (
+    <button type="button" className={`fos-chip fos-chip--tall ${styles.emptyChoice}`} onClick={onClick}>
+      <span className={styles.emptyChoiceTop}>{Icon && <Icon size={16} strokeWidth={1.7} aria-hidden="true" />}{label}</span>
+      {sub && <span className={styles.emptyChoiceSub}>{sub}</span>}
+    </button>
+  )
+}
+// Lista de sugerencias con casilla (Presupuestos desde el mes anterior).
+export function EmptyPickList({ label, items }) {
+  return (
+    <ul className={styles.emptyPick} aria-label={label}>
+      {items.map(it => (
+        <li key={it.key}>
+          <label>
+            <input type="checkbox" checked={it.checked} onChange={e => it.onChange(e.target.checked)} style={{ width: 16, height: 16, flexShrink: 0 }} />
+            <span className={styles.emptyPickCat}>{it.label}</span>
+            <span className={styles.emptyPickAmt}>{it.amount}</span>
+          </label>
+        </li>
+      ))}
+    </ul>
   )
 }
 

@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState } from '../../components/ui/index.jsx'
+import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState, EmptyPickList } from '../../components/ui/index.jsx'
 import { Target } from 'lucide-react'
 import { budgetsFromPreviousMonth } from './budgetCopy.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
@@ -77,12 +77,16 @@ export default function Budgets() {
   // gastó el mes anterior (ver budgetCopy.js: los presupuestos no son por mes).
   const copyCandidates = useMemo(() => budgetsFromPreviousMonth(expenses, activeMonth, budgets), [expenses, activeMonth, budgets])
   const [copying, setCopying] = useState(false)
-  async function copyPrevious() {
-    if (copying || copyCandidates.length === 0) return
+  // Primera entrada (pulido 09-oct): con la página vacía se proponen esos
+  // presupuestos como lista, todos marcados; el usuario desmarca lo que no quiere.
+  const [skipped, setSkipped] = useState(() => new Set())
+  const picked = useMemo(() => copyCandidates.filter(b => !skipped.has(b.category)), [copyCandidates, skipped])
+  async function copyPrevious(list = copyCandidates) {
+    if (copying || list.length === 0) return
     setCopying(true)
     try {
-      for (const b of copyCandidates) await addBudget({ category: b.category, limit: b.limit })
-      showToast?.(t('budgets.copy.done', { n: copyCandidates.length }))
+      for (const b of list) await addBudget({ category: b.category, limit: b.limit })
+      showToast?.(t('budgets.copy.done', { n: list.length }))
     } finally { setCopying(false) }
   }
   function focusNewBudget() {
@@ -127,15 +131,27 @@ export default function Budgets() {
           {rolloverOn ? t('budgets.rollover.on') : t('budgets.rollover.off')}
         </button>
       </div>
-      {budgets.length === 0 && (
+      {budgets.length === 0 && copyCandidates.length > 0 && (
+        <EmptyState icon={Target}
+          title={t('budgets.first.title', { month: monthLabel(prevMonth) })}
+          text={t('budgets.first.text')}
+          cta={picked.length === 1 ? t('budgets.first.create.one') : t('budgets.first.create.many', { n: picked.length })}
+          onCta={() => copyPrevious(picked)} ctaDisabled={picked.length === 0 || copying}
+          secondary={{ label: t('budgets.first.manual'), onClick: focusNewBudget }}>
+          <EmptyPickList label={t('budgets.first.listAria')} items={copyCandidates.map(b => ({
+            key: b.category,
+            label: catName(b.category, lang),
+            amount: <Money>{fmtMoneyRaw(b.limit, sym)}</Money>,
+            checked: !skipped.has(b.category),
+            onChange: (on) => setSkipped(prev => { const n = new Set(prev); on ? n.delete(b.category) : n.add(b.category); return n }),
+          }))} />
+        </EmptyState>
+      )}
+      {budgets.length === 0 && copyCandidates.length === 0 && (
         <EmptyState icon={Target}
           title={t('empty.budgets.title')}
           text={t('empty.budgets.text')}
-          cta={t('empty.budgets.cta')} onCta={focusNewBudget}
-          secondary={copyCandidates.length > 0 ? {
-            label: t('budgets.copy.cta'), onClick: copyPrevious, busy: copying,
-            hint: t('budgets.copy.hint', { month: monthLabel(prevMonth) }),
-          } : undefined} />
+          cta={t('empty.budgets.cta')} onCta={focusNewBudget} />
       )}
       {rolloverOn && (
         <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', lineHeight: 1.6 }}>

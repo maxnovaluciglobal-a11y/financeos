@@ -3,8 +3,9 @@ import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState } from '../../components/ui/index.jsx'
-import { Flag } from 'lucide-react'
+import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState, EmptyChoices, EmptyChoice } from '../../components/ui/index.jsx'
+import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap } from 'lucide-react'
+import { firstGoalPresets } from './firstGoal.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, prioEmoji, currentMonth, localMonthStr, prioLabel, currencySymbol } from '../../utils/index.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
@@ -80,6 +81,23 @@ export default function Goals({ setPage }) {
     setShow(false)
   }
 
+  // Primera meta (pulido 09-oct): "¿Para qué quieres ahorrar?" con opciones
+  // comunes que prellenan el formulario de nueva meta. El usuario completa o
+  // corrige el monto y guarda; no se crea nada sin su confirmación.
+  const presets = useMemo(() => firstGoalPresets({ emergencyBase, t }), [emergencyBase, t])
+  function startGoal(preset) {
+    setErr('')
+    setF({ name: preset?.name || '', target: preset?.target ? String(preset.target) : '', saved: '', targetDate: '', priority: preset?.priority || 'Media', color: '#14213D' })
+    setShow(true)
+    // Al campo que falta: el monto si ya hay nombre, si no el nombre.
+    setTimeout(() => {
+      const el = document.getElementById(preset?.name ? (preset?.target ? 'goal-new-submit' : 'goal-new-target') : 'goal-new-name')
+      el?.scrollIntoView?.({ block: 'center', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+      el?.focus?.({ preventScroll: true })
+    }, 0)
+  }
+  const PRESET_ICONS = { emergency: ShieldCheck, trip: Plane, purchase: ShoppingBag, education: GraduationCap }
+
   async function confirmAddSaving(goal) {
     const n = Number(addAmt)
     if (!addAmt || isNaN(n) || n <= 0) return
@@ -91,12 +109,13 @@ export default function Goals({ setPage }) {
     <div className="stack">
       <PageHeader title={t('goals.title')} sub={t('goals.sub')} />
       <p style={{fontSize:12.5,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginBottom:12,marginTop:-4}}>{t('goals.intro')}</p>
-      <div className="kpi-row">
+      {/* Sin metas, cuatro ceros no dicen nada: la pregunta guiada va primero. */}
+      {goals.length > 0 && <div className="kpi-row">
         <KPI label={t('goals.kpi.active')}  value={goals.length} />
         <KPI label={t('goals.kpi.target')} value={fmtMoney(totalTarget,sym)} />
         <KPI label={t('goals.kpi.saved')} value={fmtMoney(totalSaved,sym)} color="green" sub={totalTarget>0 ? t('goals.kpi.savedSub', { pct: fmtPct(totalSaved/totalTarget) }) : '-'} />
         <KPI label={t('goals.kpi.done')}    value={goals.filter(g=>g.saved>=g.target).length} color="green" />
-      </div>
+      </div>}
       {/* Disponible este mes para ahorrar */}
       {(() => {
         const disponible = ingresoNetoGoals - gastoMensualGoals
@@ -121,9 +140,9 @@ export default function Goals({ setPage }) {
         <Card>
           <CardHeader title={t('goals.new')} />
           {err && <Alert type="danger">{err}</Alert>}
-          <FormGroup label={t('goals.form.name')}><input type="text" value={f.name} placeholder={t('goals.form.namePh')} onChange={e=>setF(p=>({...p,name:e.target.value}))} /></FormGroup>
+          <FormGroup label={t('goals.form.name')}><input id="goal-new-name" type="text" value={f.name} placeholder={t('goals.form.namePh')} onChange={e=>setF(p=>({...p,name:e.target.value}))} /></FormGroup>
           <FormRow>
-            <FormGroup label={t('goals.form.target', { currency: settings.currency||'CLP' })}><input type="number" inputMode="decimal" min="0" step="any" value={f.target} placeholder="0" onChange={e=>setF(p=>({...p,target:e.target.value}))} /></FormGroup>
+            <FormGroup label={t('goals.form.target', { currency: settings.currency||'CLP' })}><input id="goal-new-target" type="number" inputMode="decimal" min="0" step="any" value={f.target} placeholder="0" onChange={e=>setF(p=>({...p,target:e.target.value}))} /></FormGroup>
             <FormGroup label={t('goals.form.saved')}><input type="number" inputMode="decimal" min="0" step="any" value={f.saved} placeholder="0" onChange={e=>setF(p=>({...p,saved:e.target.value}))} /></FormGroup>
           </FormRow>
           <FormRow>
@@ -131,7 +150,7 @@ export default function Goals({ setPage }) {
             <FormGroup label={t('goals.form.priority')}><select value={f.priority} onChange={e=>setF(p=>({...p,priority:e.target.value}))}>{['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioEmoji(p)} {prioLabel(p, lang)}</option>)}</select></FormGroup>
           </FormRow>
           <div style={{display:'flex',gap:8}}>
-            <Btn variant="primary" onClick={submit}>{t('goals.form.submit')}</Btn>
+            <Btn id="goal-new-submit" variant="primary" onClick={submit}>{t('goals.form.submit')}</Btn>
             <Btn variant="ghost"   onClick={() => setShow(false)}>{t('common.cancel')}</Btn>
           </div>
         </Card>
@@ -193,8 +212,16 @@ export default function Goals({ setPage }) {
       )}
 
       {goals.length === 0 && !show && (
-        <EmptyState icon={Flag} title={t('empty.goals.title')} text={t('goals.empty')}
-          cta={t('empty.goals.cta')} onCta={() => setShow(true)} />
+        <EmptyState icon={Flag} title={t('goals.first.title')} text={t('goals.first.text')}
+          secondary={{ label: t('goals.first.other'), onClick: () => startGoal(null) }}>
+          <EmptyChoices label={t('goals.first.title')}>
+            {presets.map(p => (
+              <EmptyChoice key={p.id} icon={PRESET_ICONS[p.id]} label={t(`goals.first.${p.id}`)}
+                sub={p.id === 'emergency' && p.target ? t('goals.first.emergencySub', { v: fmtMoney(p.target, sym) }) : undefined}
+                onClick={() => startGoal(p)} />
+            ))}
+          </EmptyChoices>
+        </EmptyState>
       )}
 
       <div style={{display:'flex',flexDirection:'column',gap:10}}>

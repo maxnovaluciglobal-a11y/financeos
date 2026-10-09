@@ -351,7 +351,7 @@ describe('paridad de las claves del plan "como Rial" fase 3 (R12–R14, es/en/pt
 // Pulido 09-oct-2026: claves tocadas o nuevas (multimoneda VE, textos que
 // estaban fijos en JSX, banderas, primeras entradas de Metas/Presupuestos).
 describe('paridad de las claves del pulido 09-oct (es/en/pt/de)', () => {
-  const prefixes = ['multimoneda.', 'steuer.elster.', 'mov.form.typeNeed', 'mov.form.typeWant', 'goals.suggest.perMonthSuffix']
+  const prefixes = ['multimoneda.', 'steuer.elster.', 'mov.form.typeNeed', 'mov.form.typeWant', 'goals.suggest.perMonthSuffix', 'goals.first.', 'budgets.first.']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
