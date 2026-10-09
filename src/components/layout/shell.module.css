@@ -158,56 +158,87 @@
 @media (max-width: 700px) {
   .shell { grid-template-columns: 1fr; }
   .sb    { display: none; }
-  .content { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }  /* aire para el tabbar flotante + home-indicator iOS */
+  /* Aire para la barra anclada + el botón "+" que va encima (R03): el último
+     elemento de cualquier lista queda por encima de los dos. */
+  .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 8px); }
   :global(.grid2), :global(.grid3), :global(.grid4) { grid-template-columns: 1fr; }
 }
 
-/* ── TABBAR — navegación primaria en móvil (reemplaza drawer + FAB), flotante estilo Instagram ── */
+/* ── TABBAR — barra ANCLADA de borde a borde (R01, D1) ──
+   Toca los dos bordes laterales y el inferior; el fondo llega al borde físico
+   (padding-bottom = safe area). Borde superior fino en vez de sombra, sin radio
+   (regla de marca: nunca pill). 3 pestañas con etiqueta siempre visible. */
 .tabbar {
   display: none;
   position: fixed;
-  left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom));
+  left: 0; right: 0; bottom: 0;
   z-index: 150;
-  grid-template-columns: repeat(5, 1fr);
-  align-items: end;
-  padding: 6px 6px 7px;
-  border-radius: 30px;
-  border: 0.5px solid var(--brd);
-  background: color-mix(in srgb, var(--sur) 86%, transparent);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 10px 30px rgba(20,33,61,.16), 0 2px 6px rgba(20,33,61,.08);
-  transition: transform .2s ease, opacity .2s ease;
+  grid-template-columns: repeat(3, 1fr);
+  min-height: var(--tabbar-h);
+  padding: 0 max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
+  border-top: 0.5px solid var(--brd2);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--sur) 94%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transition: transform .2s var(--ease), opacity .2s var(--ease);
 }
-.tabbarHidden .tabbar {
+.tabbarHidden .tabbar,
+.tabbarHidden .fab {
   transform: translateY(100%);
   opacity: 0;
   pointer-events: none;
 }
 .tab {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; min-height: 48px; padding: 4px 2px;
+  gap: 2px; min-height: var(--tabbar-content-h); min-width: 44px; padding: 4px 2px;
   background: none; border: none; cursor: pointer;
-  color: var(--th); font-family: var(--sans);
-  transition: color .15s ease, transform .1s ease;
+  color: var(--tm); font-family: var(--sans);
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--dur) var(--ease);
 }
-.tab:active { transform: scale(.94); }
-.tabActive  { color: var(--grn); }
-.tabLb { font-size: 10px; line-height: 1.2; }
-
-/* "+" central — reemplaza al FAB flotante, mismo acento (laton) bajo el pulgar */
-.tabAdd {
+/* Indicador del activo: placa Navy tenue detrás del ícono (52×30, --r). */
+.tabIc {
   display: flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; margin: -8px auto 0;
-  border-radius: 50%;
-  background: var(--laton); color: var(--navy);
-  border: none; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,.22);
-  transition: transform .15s ease, box-shadow .15s ease;
+  width: 52px; height: 30px; border-radius: var(--r);
+  transition: background-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.tabAdd:active { transform: scale(.92); }
+.tab:active .tabIc { transform: scale(.94); }
+.tabLb { font-size: 11px; line-height: 1.2; font-weight: 500; letter-spacing: 0; }
+.tabActive { color: var(--navy); }
+.tabActive .tabIc { background: var(--grn-bg); }
+.tabActive .tabLb { font-weight: 600; }
+:global([data-theme="dark"]) .tabActive { color: var(--laton-300); }
+:global([data-theme="dark"]) .tabActive .tabIc { background: color-mix(in srgb, var(--laton) 18%, transparent); }
+
+/* ── "+" (R02) — botón propio Latón con ícono Navy, encima de la barra ── */
+.fab {
+  display: none;
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(var(--tabbar-h) + 16px);
+  z-index: 151;
+  width: var(--fab-size); height: var(--fab-size);
+  align-items: center; justify-content: center;
+  border: none; border-radius: 50%;
+  background: var(--laton); color: var(--navy);
+  box-shadow: var(--sh-2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .2s var(--ease), opacity .2s var(--ease), box-shadow var(--dur) var(--ease);
+}
+.fab:hover { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
+.fab:active { transform: scale(.94); }
+.fab:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
+:global([data-theme="dark"]) .fab:focus-visible { outline-color: var(--laton-300); }
 
 @media (max-width: 700px) {
   .tabbar { display: grid; }
+  .fab { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabbar, .fab, .tab, .tabIc { transition: none; }
+  .tab:active .tabIc, .fab:active { transform: none; }
 }
 
 /* ── OCULTAR MONTOS (T13) ──

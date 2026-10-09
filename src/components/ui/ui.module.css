@@ -111,3 +111,20 @@
 /* PAGE HEADER — movido a components/layout/largeTitle.module.css (PageHeader
    ahora renderiza LargeTitle, que agrega la barra compacta al hacer scroll) */
 .sectionTitle  { font-size: 11px; font-weight: 500; color: var(--tm); text-transform: uppercase; letter-spacing: 0.8px; font-family: var(--mono); margin-bottom: 10px; }
+
+/* ── Estado vacío uniforme (R10) ── */
+.emptyState {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+  padding: 28px 20px; border-radius: var(--rl);
+  background: var(--sur); border: 0.5px solid var(--brd); box-shadow: var(--sh-1);
+}
+.emptyStateCompact { padding: 24px 16px; background: transparent; border: 0; box-shadow: none; }
+.emptyIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin-bottom: 4px; border-radius: var(--r);
+  background: var(--grn-bg); color: var(--grn);
+}
+.emptyTitle { margin: 0; font-family: var(--display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); text-transform: none; }
+.emptyText { margin: 0 0 6px; max-width: 360px; font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--tm); }
+.emptySecondary { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 2px; }
+.emptyHint { font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--th); max-width: 320px; }

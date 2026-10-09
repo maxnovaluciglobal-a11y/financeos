@@ -1,39 +1,61 @@
 // src/components/layout/TabBar.jsx
-// Navegación primaria en móvil — reemplaza al hamburguesa + FAB flotante.
-// El "+" central abre QuickAdd directo (mismo gesto de 1 toque que tenía el FAB,
-// ahora bajo el pulgar); "more" navega a la página src/pages/More/index.jsx,
-// que reusa el árbol completo de NAV (navConfig.js) como lista agrupada.
-import { Home, ArrowLeftRight, Plus, Target, Ellipsis } from 'lucide-react'
+// Navegación primaria en móvil (R01, decisiones D1/D2 de Walter, 08-oct-2026):
+// barra ANCLADA de borde a borde con 3 pestañas — Inicio · Movimientos · Menú.
+// Revierte a propósito la cápsula flotante de 5 ítems del 27-sep.
+// Todo lo que vivía en la barra vieja sigue a mano: Presupuestos y el resto del
+// NAV están en el Menú (pages/More), y el "+" es un botón propio (AddFab) fuera
+// de la barra, abajo a la derecha (R02).
+// La pestaña activa sale de activeTabFor(page) (R04): las páginas internas
+// encienden su pestaña madre, así la barra nunca queda sin activo.
+import { Home, ArrowLeftRight, LayoutGrid, Plus } from 'lucide-react'
+import { activeTabFor, TAB_HOME, TAB_MOVEMENTS, TAB_MENU } from './navConfig.js'
 import s from './shell.module.css'
 
 const TABS = [
-  { id: 'dashboard', Ic: Home,           lb: 'nav.dashboard' },
-  { id: 'movements', Ic: ArrowLeftRight, lb: 'nav.expenses' },
-  { id: 'add',       Ic: Plus,           lb: 'qa.title', primary: true },
-  { id: 'budgets',   Ic: Target,         lb: 'nav.budgets' },
-  { id: 'more',      Ic: Ellipsis,       lb: 'nav.more' },
+  { id: TAB_HOME,      Ic: Home,           lb: 'nav.dashboard' },
+  { id: TAB_MOVEMENTS, Ic: ArrowLeftRight, lb: 'nav.sec.movements' },
+  { id: TAB_MENU,      Ic: LayoutGrid,     lb: 'nav.menuLabel' },
 ]
 
-export default function TabBar({ page, onNavigate, onAdd, t }) {
+export default function TabBar({ page, onNavigate, t }) {
+  const active = activeTabFor(page)
   return (
-    <nav className={s.tabbar} aria-label={t('nav.menuLabel')}>
-      {TABS.map(({ id, Ic, lb, primary }) => {
-        const on = page === id
+    <nav className={s.tabbar} aria-label={t('nav.tabsLabel')} data-tabbar>
+      {TABS.map(({ id, Ic, lb }) => {
+        const on = active === id
         return (
           <button
             key={id}
             type="button"
-            className={primary ? s.tabAdd : s.tab + (on ? ' ' + s.tabActive : '')}
-            aria-current={!primary && on ? 'page' : undefined}
-            aria-label={primary ? t(lb) : undefined}
-            data-tour={primary ? 'tab-add' : undefined}
-            onClick={() => primary ? onAdd() : onNavigate(id)}
+            className={s.tab + (on ? ' ' + s.tabActive : '')}
+            // aria-current solo cuando la página visible ES la raíz; en una página
+            // interna (Metas, Ingresos) la pestaña se ve activa pero no es "la página".
+            aria-current={on ? (page === id ? 'page' : 'true') : undefined}
+            onClick={() => onNavigate(id)}
           >
-            <Ic size={primary ? 24 : 21} strokeWidth={on ? 2.2 : 1.7} aria-hidden={primary || undefined} />
-            {!primary && <span className={s.tabLb}>{t(lb)}</span>}
+            <span className={s.tabIc} aria-hidden="true">
+              <Ic size={22} strokeWidth={on ? 2.2 : 1.7} />
+            </span>
+            <span className={s.tabLb}>{t(lb)}</span>
           </button>
         )
       })}
     </nav>
+  )
+}
+
+// "+" propio (R02): Latón con ícono Navy, encima de la barra. Conserva
+// data-tour="tab-add" para el recorrido del demo.
+export function AddFab({ onAdd, t }) {
+  return (
+    <button
+      type="button"
+      className={s.fab}
+      aria-label={t('qa.title')}
+      data-tour="tab-add"
+      onClick={onAdd}
+    >
+      <Plus size={24} strokeWidth={2.2} aria-hidden="true" />
+    </button>
   )
 }

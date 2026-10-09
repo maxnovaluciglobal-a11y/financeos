@@ -129,6 +129,28 @@ export function Empty({ text, cta, onCta }) {
   )
 }
 
+// Estado vacío uniforme (R10): ícono, título, una frase y UN botón (Latón,
+// texto Navy). Opcional: una acción secundaria como enlace, con su aclaración.
+// `compact` para usarlo dentro de una tarjeta que ya tiene título.
+export function EmptyState({ icon: Icon, title, text, cta, onCta, secondary, compact = false }) {
+  return (
+    <div className={[styles.emptyState, compact ? styles.emptyStateCompact : ''].join(' ')}>
+      {Icon && <span className={styles.emptyIcon} aria-hidden="true"><Icon size={22} strokeWidth={1.7} /></span>}
+      <h2 className={styles.emptyTitle}>{title}</h2>
+      {text && <p className={styles.emptyText}>{text}</p>}
+      {cta && onCta && (
+        <button type="button" className="fos-btn-primary" style={{ width: 'auto', marginTop: 4 }} onClick={onCta}>{cta}</button>
+      )}
+      {secondary && (
+        <div className={styles.emptySecondary}>
+          <button type="button" className="fos-link" onClick={secondary.onClick} disabled={secondary.busy}>{secondary.label}</button>
+          {secondary.hint && <span className={styles.emptyHint}>{secondary.hint}</span>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
   const { t } = useT()
   const label = name || t('ui.transaction')

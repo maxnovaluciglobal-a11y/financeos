@@ -3,7 +3,9 @@ import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
+import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState } from '../../components/ui/index.jsx'
+import { Target } from 'lucide-react'
+import { budgetsFromPreviousMonth } from './budgetCopy.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
@@ -11,7 +13,7 @@ import Money, { useMoney } from '../../components/Money.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 
 export default function Budgets() {
-  const { budgets, addBudget, delBudget, expenses, incomes, settings, updateSettings, deleteWithUndo } = useApp()
+  const { budgets, addBudget, delBudget, expenses, incomes, settings, updateSettings, deleteWithUndo, showToast } = useApp()
   const { t, lang } = useT()
   const [f, setF]     = useState({ category: 'Vivienda', limit: '' })
   const [err, setErr] = useState('')
@@ -71,6 +73,24 @@ export default function Budgets() {
     setF({ category: 'Vivienda', limit: '' })
   }
 
+  // "Copiar del mes anterior" (R10): un presupuesto por categoría con lo que se
+  // gastó el mes anterior (ver budgetCopy.js: los presupuestos no son por mes).
+  const copyCandidates = useMemo(() => budgetsFromPreviousMonth(expenses, activeMonth, budgets), [expenses, activeMonth, budgets])
+  const [copying, setCopying] = useState(false)
+  async function copyPrevious() {
+    if (copying || copyCandidates.length === 0) return
+    setCopying(true)
+    try {
+      for (const b of copyCandidates) await addBudget({ category: b.category, limit: b.limit })
+      showToast?.(t('budgets.copy.done', { n: copyCandidates.length }))
+    } finally { setCopying(false) }
+  }
+  function focusNewBudget() {
+    const el = document.getElementById('budget-new-category')
+    el?.scrollIntoView({ block: 'center', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+    el?.focus({ preventScroll: true })
+  }
+
   function toggleRollover() {
     updateSettings({ ...settings, budgetRollover: !rolloverOn })
   }
@@ -107,12 +127,22 @@ export default function Budgets() {
           {rolloverOn ? t('budgets.rollover.on') : t('budgets.rollover.off')}
         </button>
       </div>
+      {budgets.length === 0 && (
+        <EmptyState icon={Target}
+          title={t('empty.budgets.title')}
+          text={t('empty.budgets.text')}
+          cta={t('empty.budgets.cta')} onCta={focusNewBudget}
+          secondary={copyCandidates.length > 0 ? {
+            label: t('budgets.copy.cta'), onClick: copyPrevious, busy: copying,
+            hint: t('budgets.copy.hint', { month: monthLabel(prevMonth) }),
+          } : undefined} />
+      )}
       {rolloverOn && (
         <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', lineHeight: 1.6 }}>
           <InlineIcon kind="subs" size={13} />{t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
         </div>
       )}
-      <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+      <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(4,1fr)' }} data-tour="bud-kpis">
         <KPI label={t('budgets.kpi.total')}     value={fmtMoney(totalBudget, sym)} />
         <KPI label={t('budgets.kpi.spent')} value={fmtMoney(totalBudgeted, sym)} color="red" sub={totalBudget > 0 ? fmtPct(totalBudgeted/totalBudget) : '-'} />
         <KPI label={t('budgets.kpi.over')}  value={overBudget.length} color={overBudget.length > 0 ? 'red' : 'green'} sub={overBudget.length > 0 ? t('budgets.kpi.review') : t('budgets.kpi.allOk')} />
@@ -133,17 +163,17 @@ export default function Budgets() {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16,marginBottom:16,alignItems:'start'}}>
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
-          <Card>
+          <Card data-tour="bud-new">
             <CardHeader title={t('budgets.new')} />
             {err && <Alert type="danger">{err}</Alert>}
             <FormRow>
-              <FormGroup label={t('budgets.form.category')}><select value={f.category} onChange={e => setF(p => ({...p,category:e.target.value}))}>{categoriesExpense.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</select></FormGroup>
+              <FormGroup label={t('budgets.form.category')}><select id="budget-new-category" value={f.category} onChange={e => setF(p => ({...p,category:e.target.value}))}>{categoriesExpense.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</select></FormGroup>
               <FormGroup label={t('budgets.form.limit', { currency: settings.currency||'CLP' })}><input type="number" inputMode="decimal" min="0" value={f.limit} placeholder="0" onChange={e => setF(p => ({...p,limit:e.target.value}))} /></FormGroup>
             </FormRow>
             <Btn variant="primary" onClick={submit}>{t('budgets.form.submit')}</Btn>
           </Card>
 
-          <Card>
+          <Card data-tour="bud-model">
             <CardHeader title={t('budgets.model.title')} />
             {ingresoNeto > 0 ? (
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
@@ -207,7 +237,7 @@ export default function Budgets() {
           </Card>
         </div>
 
-        <Card>
+        <Card data-tour="bud-summary">
           <CardHeader title={t('budgets.summary', { month: monthLabel(activeMonth) })} />
           {budgets.length === 0 ? (
             <div style={{textAlign:'center',padding:'24px 0'}}>

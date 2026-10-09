@@ -15,7 +15,9 @@ import { monthPlan, pendingTotals, toLocal } from '../../utils/recurring.js'
 import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
-import { FormGroup, KPI, Alert, Empty } from '../../components/ui/index.jsx'
+import { FormGroup, KPI, Alert, Empty, EmptyState } from '../../components/ui/index.jsx'
+import { ArrowLeftRight } from 'lucide-react'
+import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -473,7 +475,7 @@ export default function Movements({ setPage }) {
       </div>
 
       {/* KPIs */}
-      <div className="kpi-row" style={{ marginBottom:20 }}>
+      <div className="kpi-row" style={{ marginBottom:20 }} data-tour="mov-kpis">
         <KPI label={t('mov.kpi.income')} value={fmtM(totalInc, sym)} color="green"
           sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : undefined} />
         <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)} color="red"
@@ -503,7 +505,7 @@ export default function Movements({ setPage }) {
       )}
 
       {/* Botón agregar */}
-      <div style={{ marginBottom:16 }}>
+      <div style={{ marginBottom:16 }} data-tour="mov-add">
         {!showAdd && !showGasto && !showSub && (
           <button onClick={() => setShowAdd(true)} style={{
             background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:8,
@@ -575,7 +577,7 @@ export default function Movements({ setPage }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
 
         {/* Gastos únicos */}
-        <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+        <div data-tour="mov-list" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -597,7 +599,10 @@ export default function Movements({ setPage }) {
           )}
           <div style={{ maxHeight:460, overflowY:'auto' }}>
             {listExp.length === 0 ? (
-              <Empty text={drillCat ? t('mov.list.emptyCat', { cat: drillCat }) : t('mov.list.empty')} />
+              drillCat
+                ? <Empty text={t('mov.list.emptyCat', { cat: drillCat })} />
+                : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
+                    cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />
             ) : (showAllExp ? listExp : listExp.slice(0, 10)).map((e,i) => editingId === e.id ? (
               <div key={e.id} style={{padding:'10px 14px',borderBottom:i<listExp.length-1?'.5px solid var(--brd)':'none',background:'rgba(232,65,66,.03)'}}>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:6,marginBottom:6}}>
@@ -675,7 +680,7 @@ export default function Movements({ setPage }) {
         </div>
 
         {/* Fijos del mes — suscripciones, cuotas y fijos manuales (reglas) */}
-        <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+        <div data-tour="mov-fixed" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>

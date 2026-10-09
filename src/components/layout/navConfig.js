@@ -61,3 +61,42 @@ export function pageLabel(id) {
   if (id === 'more') return 'nav.menuLabel'
   return ALL_ITEMS.find(it => it.id === id)?.lb || id
 }
+
+// ── Pestañas del TabBar móvil (R01/R04) ────────────────────────────────────
+// Tres raíces: Inicio · Movimientos · Menú (decisión de Walter D2, 08-oct-2026).
+// La navegación sigue plana (setPage), así que cada página se mapea a la
+// pestaña que la contiene: todo lo de la sección "Movimientos" del NAV enciende
+// Movimientos, el Inicio enciende Inicio y el resto (incluidas las páginas
+// legales y Ajustes, que se abren desde el Menú) enciende Menú. La barra nunca
+// queda sin pestaña activa.
+export const TAB_HOME = 'dashboard'
+export const TAB_MOVEMENTS = 'movements'
+export const TAB_MENU = 'more'
+export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_MENU]
+
+const MOVEMENT_PAGES = new Set(
+  (NAV.find(g => g.sec === 'nav.sec.movements')?.items || []).map(it => it.id)
+)
+
+export function activeTabFor(page) {
+  if (!page || page === TAB_HOME) return TAB_HOME
+  if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS
+  return TAB_MENU
+}
+
+// ── Orden de secciones en la página Menú (R11) ─────────────────────────────
+// Presupuestos salió de la barra inferior, así que Planificación va primero.
+// "Principal" (Inicio) ya es una pestaña: va casi al final, antes de Cuenta,
+// para no perder ningún ítem del NAV. Ajustes (Cuenta) siempre al final.
+export const MENU_SECTION_ORDER = [
+  'nav.sec.planning', 'nav.sec.movements', 'nav.sec.analysis', 'nav.sec.country', 'nav.sec.pro', 'nav.sec.main', 'nav.sec.account',
+]
+
+export function menuSections(country) {
+  const cc = (country || 'CL').toUpperCase()
+  const rank = (sec) => { const i = MENU_SECTION_ORDER.indexOf(sec); return i === -1 ? MENU_SECTION_ORDER.length - 1.5 : i }
+  return [...NAV]
+    .sort((a, b) => rank(a.sec) - rank(b.sec))
+    .map(g => ({ sec: g.sec, items: g.items.filter(it => !it.countries || it.countries.includes(cc)) }))
+    .filter(g => g.items.length > 0)
+}

@@ -57,12 +57,14 @@ export default function CountrySelect({ value, onChange, options, labelId, id })
   }
 
   // Abre hacia abajo si entra, si no hacia arriba; la altura máxima se recorta al
-  // espacio real para que nunca se salga del viewport. En móvil se reserva el
-  // alto del tabbar flotante (~96px + safe area), que si no tapa las últimas opciones.
+  // espacio real para que nunca se salga del viewport. En móvil se reserva lo
+  // que ocupa la barra anclada (R03, se mide el elemento real: incluye la safe
+  // area) más el botón "+", que si no tapan las últimas opciones.
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) return
     const r = triggerRef.current.getBoundingClientRect()
-    const bottomReserve = window.innerWidth <= 700 ? 112 : 16
+    const bar = document.querySelector('[data-tabbar]')?.getBoundingClientRect()
+    const bottomReserve = bar && bar.height > 0 ? window.innerHeight - bar.top + 72 + 16 : 16
     const below = window.innerHeight - r.bottom - bottomReserve
     const above = r.top - 16
     const up = below < 200 && above > below

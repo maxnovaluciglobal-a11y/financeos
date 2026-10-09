@@ -5,6 +5,7 @@
 // Desde los movimientos fijos (08-oct-2026) "Te queda" es SOLO lo real
 // (ingresos − gastos registrados); lo previsto que falta va en la línea
 // "Previsto pendiente", con un enlace para revisarlo.
+import { ChevronRight } from 'lucide-react'
 import CountUp from '../../components/CountUp.jsx'
 import Money from '../../components/Money.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
@@ -17,7 +18,7 @@ import s from './Home.module.css'
 import r from '../../components/recurring/recurring.module.css'
 
 
-export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, children }) {
+export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, children }) {
   const { t } = useT()
   const prevMonth = prevMonthOf(activeMonth)
   const { cur, prev } = kpis
@@ -28,9 +29,9 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const freeColor = !hasData ? 'var(--th)' : free > 0 ? 'var(--pos)' : free === 0 ? 'var(--warn)' : 'var(--neg)'
 
   const tiles = [
-    { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc,
+    { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'income',
       delta: monthDelta(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0 }) },
-    { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp,
+    { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, page: 'movements',
       delta: monthDelta(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0 }) },
   ]
 
@@ -40,19 +41,9 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   return (
     <section aria-label={t('home.kpis.aria')}>
       <div className={s.kpis}>
-        {tiles.map((k, i) => (
-          <div key={k.key} className={`${s.card} ${s.kpi} rise`} style={{ animationDelay: `${i * 40}ms` }}>
-            <div className={s.kpiLabel}>{k.label}</div>
-            <div className={`num ${s.kpiValue}`}>
-              <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
-            </div>
-            <DeltaLine delta={k.delta} prevMonth={prevMonth} />
-            {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
-          </div>
-        ))}
-
+        {/* "Te queda" primero también en el DOM (lectores de pantalla). */}
         <div data-tour="kpi-free" className={`${s.card} ${s.kpi} ${s.kpiLeft} rise`} style={{
-          animationDelay: '80ms',
+          animationDelay: '0ms',
           background: hasData ? `color-mix(in srgb, ${freeColor} 7%, var(--sur))` : undefined,
           borderColor: hasData ? `color-mix(in srgb, ${freeColor} 30%, transparent)` : undefined,
         }}>
@@ -97,6 +88,28 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
             )}
           </div>
         </div>
+
+        {/* Ingresos | Gastos (R05/G6): tocables, llevan a su lista del mes. */}
+        {tiles.map((k, i) => {
+          const Tag = onOpen ? 'button' : 'div'
+          return (
+            <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
+              className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''} rise`}
+              style={{ animationDelay: `${40 + i * 40}ms` }}
+              onClick={onOpen ? () => onOpen(k.page) : undefined}>
+              <div className={s.kpiLabel}>
+                {k.label}
+                {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
+              </div>
+              <div className={`num ${s.kpiValue}`}>
+                <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
+              </div>
+              <DeltaLine delta={k.delta} prevMonth={prevMonth} />
+              {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
+            </Tag>
+          )
+        })}
+
       </div>
       {children}
     </section>
