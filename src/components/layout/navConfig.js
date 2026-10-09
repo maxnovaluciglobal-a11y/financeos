@@ -94,11 +94,20 @@ export const MENU_SECTION_ORDER = [
   'nav.sec.planning', 'nav.sec.movements', 'nav.sec.analysis', 'nav.sec.country', 'nav.sec.pro', 'nav.sec.main', 'nav.sec.account',
 ]
 
+// R13: en VE/AR la calculadora de tasa del país (Multimoneda / Dólar y
+// rendimientos) va primero, en "Herramientas", a un toque. Sale de "Tu país"
+// para no aparecer dos veces; el sidebar de escritorio no cambia.
+export const RATE_TOOL_BY_COUNTRY = { VE: 'multimoneda', AR: 'multidolar' }
+
 export function menuSections(country) {
   const cc = (country || 'CL').toUpperCase()
+  const tool = RATE_TOOL_BY_COUNTRY[cc]
   const rank = (sec) => { const i = MENU_SECTION_ORDER.indexOf(sec); return i === -1 ? MENU_SECTION_ORDER.length - 1.5 : i }
-  return [...NAV]
+  const secs = [...NAV]
     .sort((a, b) => rank(a.sec) - rank(b.sec))
-    .map(g => ({ sec: g.sec, items: g.items.filter(it => !it.countries || it.countries.includes(cc)) }))
+    .map(g => ({ sec: g.sec, items: g.items.filter(it => (!it.countries || it.countries.includes(cc)) && it.id !== tool) }))
     .filter(g => g.items.length > 0)
+  if (!tool) return secs
+  const base = ALL_ITEMS.find(it => it.id === tool)
+  return [{ sec: 'nav.sec.tools', items: [{ ...base, lb: 'refcur.tool', tool: true }] }, ...secs]
 }
