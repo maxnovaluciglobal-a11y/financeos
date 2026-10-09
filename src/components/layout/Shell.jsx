@@ -14,6 +14,7 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
+import { QUICK_ADD_EVENT } from '../quickAddBus.js'
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
@@ -26,6 +27,12 @@ export default function Shell({ page, setPage, children }) {
   const isDark = settings.theme === 'dark'
 
   const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income'
+  // Otras pantallas (Primeros pasos del Inicio) piden abrir el Registro rápido.
+  useEffect(() => {
+    const onOpen = (e) => setQuickAdd(e.detail?.type === 'income' ? 'income' : 'expense')
+    window.addEventListener(QUICK_ADD_EVENT, onOpen)
+    return () => window.removeEventListener(QUICK_ADD_EVENT, onOpen)
+  }, [])
 
   // Con el teclado virtual abierto, el TabBar queda flotando arriba de él o lo
   // tapa — se oculta mientras se escribe (ver useKeyboardOpen).
