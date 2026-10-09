@@ -497,7 +497,7 @@ export default function Dashboard({ setPage }) {
               </div>
             </HomeKpis>
           </div>
-          <div className={hs.oSteps}><FirstSteps setPage={setPage} /></div>
+          <div className={hs.oSteps} data-tour="first-steps"><FirstSteps setPage={setPage} /></div>
           <div className={`${hs.pair} ${hs.pairA}`}>
             <div className={hs.oBudget}>
               <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
@@ -528,7 +528,7 @@ export default function Dashboard({ setPage }) {
       {/* Vista detallada (R05): todo lo que no responde "¿cuánto me queda?"
           queda detrás de este botón. La elección se guarda en el dispositivo
           (fos_dash_compact). Nada se borró: solo se movió. */}
-      <button type="button" className={hs.viewToggle} onClick={toggleCompact} aria-expanded={!compact} aria-controls="home-detailed">
+      <button type="button" className={hs.viewToggle} data-tour="view-toggle" onClick={toggleCompact} aria-expanded={!compact} aria-controls="home-detailed">
         <span>{compact ? t('home.view.showDetailed') : t('home.view.hideDetailed')}</span>
         <ChevronDown size={18} strokeWidth={1.8} aria-hidden="true" style={{ transform: compact ? 'none' : 'rotate(180deg)' }} />
       </button>

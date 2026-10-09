@@ -45,7 +45,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
         {tiles.map((k, i) => {
           const Tag = onOpen ? 'button' : 'div'
           return (
-            <Tag key={k.key} type={onOpen ? 'button' : undefined}
+            <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
               className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''} rise`}
               style={{ animationDelay: `${40 + i * 40}ms` }}
               onClick={onOpen ? () => onOpen(k.page) : undefined}>

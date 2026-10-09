@@ -112,7 +112,7 @@ export default function Budgets() {
           <InlineIcon kind="subs" size={13} />{t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
         </div>
       )}
-      <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+      <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(4,1fr)' }} data-tour="bud-kpis">
         <KPI label={t('budgets.kpi.total')}     value={fmtMoney(totalBudget, sym)} />
         <KPI label={t('budgets.kpi.spent')} value={fmtMoney(totalBudgeted, sym)} color="red" sub={totalBudget > 0 ? fmtPct(totalBudgeted/totalBudget) : '-'} />
         <KPI label={t('budgets.kpi.over')}  value={overBudget.length} color={overBudget.length > 0 ? 'red' : 'green'} sub={overBudget.length > 0 ? t('budgets.kpi.review') : t('budgets.kpi.allOk')} />
@@ -133,7 +133,7 @@ export default function Budgets() {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16,marginBottom:16,alignItems:'start'}}>
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
-          <Card>
+          <Card data-tour="bud-new">
             <CardHeader title={t('budgets.new')} />
             {err && <Alert type="danger">{err}</Alert>}
             <FormRow>
@@ -143,7 +143,7 @@ export default function Budgets() {
             <Btn variant="primary" onClick={submit}>{t('budgets.form.submit')}</Btn>
           </Card>
 
-          <Card>
+          <Card data-tour="bud-model">
             <CardHeader title={t('budgets.model.title')} />
             {ingresoNeto > 0 ? (
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
@@ -207,7 +207,7 @@ export default function Budgets() {
           </Card>
         </div>
 
-        <Card>
+        <Card data-tour="bud-summary">
           <CardHeader title={t('budgets.summary', { month: monthLabel(activeMonth) })} />
           {budgets.length === 0 ? (
             <div style={{textAlign:'center',padding:'24px 0'}}>

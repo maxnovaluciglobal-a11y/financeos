@@ -15,6 +15,7 @@ import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
 import { QUICK_ADD_EVENT } from '../quickAddBus.js'
+import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
@@ -37,6 +38,9 @@ export default function Shell({ page, setPage, children }) {
   // Con el teclado virtual abierto, el TabBar queda flotando arriba de él o lo
   // tapa — se oculta mientras se escribe (ver useKeyboardOpen).
   const keyboardOpen = useKeyboardOpen()
+
+  // Recorrido por pantalla (R08): solo la primera visita; después, el "?".
+  const tour = usePageTour(page, { isDemo: !!settings.isDemo })
 
   // ── Foco al cambiar de página ────────────────────────────────────────────────
   // Sin esto, un lector de pantalla no se entera de que la página cambió: el foco
@@ -186,6 +190,9 @@ export default function Shell({ page, setPage, children }) {
           <div className={s.topLeft} />
           <span className={s.crumb}>{t(pageLabel(page))}</span>
           <span className={s.topRight}>
+            {tour.available && (
+              <PageTourButton className={s.amountsBtn} onClick={tour.replay} label={t('tour.replay')} />
+            )}
             <button
               type="button"
               className={s.amountsBtn}
@@ -219,6 +226,7 @@ export default function Shell({ page, setPage, children }) {
         </div>
       </div>
 
+      <PageTour page={page} open={tour.open} onClose={tour.close} />
       <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} />
     </div>
   )

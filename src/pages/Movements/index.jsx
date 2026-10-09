@@ -473,7 +473,7 @@ export default function Movements({ setPage }) {
       </div>
 
       {/* KPIs */}
-      <div className="kpi-row" style={{ marginBottom:20 }}>
+      <div className="kpi-row" style={{ marginBottom:20 }} data-tour="mov-kpis">
         <KPI label={t('mov.kpi.income')} value={fmtM(totalInc, sym)} color="green"
           sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : undefined} />
         <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)} color="red"
@@ -503,7 +503,7 @@ export default function Movements({ setPage }) {
       )}
 
       {/* Botón agregar */}
-      <div style={{ marginBottom:16 }}>
+      <div style={{ marginBottom:16 }} data-tour="mov-add">
         {!showAdd && !showGasto && !showSub && (
           <button onClick={() => setShowAdd(true)} style={{
             background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:8,
@@ -575,7 +575,7 @@ export default function Movements({ setPage }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
 
         {/* Gastos únicos */}
-        <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+        <div data-tour="mov-list" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -675,7 +675,7 @@ export default function Movements({ setPage }) {
         </div>
 
         {/* Fijos del mes — suscripciones, cuotas y fijos manuales (reglas) */}
-        <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+        <div data-tour="mov-fixed" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
