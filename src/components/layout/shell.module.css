@@ -166,7 +166,7 @@
 
 /* ── TABBAR — barra ANCLADA de borde a borde (R01, D1) ──
    Toca los dos bordes laterales y el inferior; el fondo llega al borde físico
-   (padding-bottom = safe area). Borde superior fino en vez de sombra, sin radio
+   y los íconos quedan cerca de él (padding-bottom = --tabbar-safe, globals.css). Borde superior fino en vez de sombra, sin radio
    (regla de marca: nunca pill). 3 pestañas con etiqueta siempre visible. */
 .tabbar {
   display: none;
@@ -175,7 +175,7 @@
   z-index: 150;
   grid-template-columns: repeat(3, 1fr);
   min-height: var(--tabbar-h);
-  padding: 0 max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
+  padding: 0 max(8px, env(safe-area-inset-right)) var(--tabbar-safe) max(8px, env(safe-area-inset-left));
   border-top: 0.5px solid var(--brd2);
   border-radius: 0;
   background: color-mix(in srgb, var(--sur) 94%, transparent);

@@ -123,23 +123,33 @@
    (padding del contenido, CTA del demo, CountrySelect, Toast). En escritorio
    no hay barra: 0. --fab-clear es el aire que ocupa el botón "+" encima de la
    barra (56px + 16px de margen), para que nada quede debajo de él. */
+/* --tabbar-safe (pulido 09-oct): cuánto aire deja la barra bajo los íconos.
+   Antes era el inset ENTERO (34px en iPhone con indicador de inicio) y la
+   barra se veía "despegada" del borde. El fondo sigue llegando al borde
+   físico, pero los íconos se acercan: inset − 14px (20px en iPhone), y 6px
+   donde no hay inset (Android/TWA con navegación por gestos, Safari iOS 26
+   con barra flotante, escritorio angosto). Todo lo que esquiva la barra
+   (contenido, "+", toasts, CTA del demo, pantallas empujadas) usa esta misma
+   variable vía --tabbar-h. */
 :root {
   --tabbar-content-h: 56px;
+  --tabbar-safe: 0px;
   --tabbar-h: 0px;
   --fab-size: 56px;
   --fab-clear: 0px;
 }
 @media (max-width: 700px) {
   :root {
-    --tabbar-h: calc(var(--tabbar-content-h) + env(safe-area-inset-bottom));
+    --tabbar-safe: max(6px, calc(env(safe-area-inset-bottom, 0px) - 14px));
+    --tabbar-h: calc(var(--tabbar-content-h) + var(--tabbar-safe));
     --fab-clear: calc(var(--fab-size) + 16px);
   }
 }
 /* Pantallas empujadas (R14, Shell.jsx pone data-chrome/data-fab en <html>):
-   sin barra, todo lo que la esquivaba baja al borde (solo la safe area); sin
+   sin barra, todo lo que la esquivaba baja al borde (--tabbar-safe); sin
    "+", desaparece su aire. */
 @media (max-width: 700px) {
-  :root[data-chrome="pushed"] { --tabbar-h: env(safe-area-inset-bottom); }
+  :root[data-chrome="pushed"] { --tabbar-h: var(--tabbar-safe); }
   :root[data-fab="off"] { --fab-clear: 0px; }
 }
 
