@@ -273,8 +273,9 @@ export default function Goals({ setPage }) {
                       </div>
                     )
                   })()}
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                  {/* flexWrap: con montos largos (Bs. en millones) la fila no entra en 375px; se reparte en líneas en vez de salirse de la tarjeta */}
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'4px 8px'}}>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:'2px 6px',alignItems:'baseline',minWidth:0}}>
                       <span style={{fontSize:11,fontFamily:'var(--mono)',color:clr,fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
                       <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
                       <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
