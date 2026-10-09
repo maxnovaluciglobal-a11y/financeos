@@ -47,7 +47,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
 
   return (
     <section aria-label={t('home.kpis.aria')}>
-      <div className={s.kpis}>
+      <div className={`${s.kpis} ${refc ? s.kpisTall : ''}`}>
         {/* "Te queda" primero también en el DOM (lectores de pantalla). */}
         <div data-tour="kpi-free" className={`${s.card} ${s.kpi} ${s.kpiLeft} rise`} style={{
           animationDelay: '0ms',
