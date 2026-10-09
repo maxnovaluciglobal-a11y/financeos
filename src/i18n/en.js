@@ -1727,7 +1727,7 @@ export const en = {
     'demo.tour.exit': "Exit",
     'demo.tour.replay': "Show the tour again",
     'demo.tour.kpiFree.title': "What you have left this month",
-    'demo.tour.kpiFree.body': "Income minus expenses, debt payments and subscriptions. It updates with every transaction.",
+    'demo.tour.kpiFree.body': "Income minus the expenses recorded this month. Pending fixed payments are shown separately. It updates with every transaction.",
     'demo.tour.tabAdd.title': "Record a transaction",
     'demo.tour.tabAdd.body': "This button opens quick add: amount, date and category on one sheet.",
     'demo.tour.iqScore.title': "Your IQ Score",

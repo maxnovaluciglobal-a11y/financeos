@@ -1727,7 +1727,7 @@ export const pt = {
     'demo.tour.exit': "Sair",
     'demo.tour.replay': "Ver o tour de novo",
     'demo.tour.kpiFree.title': "O que sobra este mês",
-    'demo.tour.kpiFree.body': "Receitas menos despesas, parcelas de dívidas e assinaturas. Atualiza a cada movimento.",
+    'demo.tour.kpiFree.body': "Receitas menos as despesas registradas no mês. Os pagamentos fixos pendentes aparecem à parte. Atualiza a cada movimento.",
     'demo.tour.tabAdd.title': "Registrar um movimento",
     'demo.tour.tabAdd.body': "Este botão abre o registro rápido: valor, data e categoria numa só tela.",
     'demo.tour.iqScore.title': "Seu IQ Score",
