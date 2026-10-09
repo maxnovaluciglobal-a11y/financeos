@@ -41,27 +41,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   return (
     <section aria-label={t('home.kpis.aria')}>
       <div className={s.kpis}>
-        {/* Ingresos | Gastos (R05/G6): tocables, llevan a su lista del mes. */}
-        {tiles.map((k, i) => {
-          const Tag = onOpen ? 'button' : 'div'
-          return (
-            <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
-              className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''} rise`}
-              style={{ animationDelay: `${40 + i * 40}ms` }}
-              onClick={onOpen ? () => onOpen(k.page) : undefined}>
-              <div className={s.kpiLabel}>
-                {k.label}
-                {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
-              </div>
-              <div className={`num ${s.kpiValue}`}>
-                <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
-              </div>
-              <DeltaLine delta={k.delta} prevMonth={prevMonth} />
-              {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
-            </Tag>
-          )
-        })}
-
+        {/* "Te queda" primero también en el DOM (lectores de pantalla). */}
         <div data-tour="kpi-free" className={`${s.card} ${s.kpi} ${s.kpiLeft} rise`} style={{
           animationDelay: '0ms',
           background: hasData ? `color-mix(in srgb, ${freeColor} 7%, var(--sur))` : undefined,
@@ -108,6 +88,28 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
             )}
           </div>
         </div>
+
+        {/* Ingresos | Gastos (R05/G6): tocables, llevan a su lista del mes. */}
+        {tiles.map((k, i) => {
+          const Tag = onOpen ? 'button' : 'div'
+          return (
+            <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
+              className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''} rise`}
+              style={{ animationDelay: `${40 + i * 40}ms` }}
+              onClick={onOpen ? () => onOpen(k.page) : undefined}>
+              <div className={s.kpiLabel}>
+                {k.label}
+                {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
+              </div>
+              <div className={`num ${s.kpiValue}`}>
+                <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
+              </div>
+              <DeltaLine delta={k.delta} prevMonth={prevMonth} />
+              {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
+            </Tag>
+          )
+        })}
+
       </div>
       {children}
     </section>

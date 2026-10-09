@@ -42,7 +42,7 @@ function AccountHeader({ setPage }) {
           <div className={s.accountName}>{name}</div>
           <div className={s.accountMeta}>
             {!isDemo && <span className={isPro ? s.planPro : s.plan}>{t(isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
-            <BackupStatusBadge compact />
+            {!isDemo && <BackupStatusBadge compact />}
           </div>
         </div>
       </div>
