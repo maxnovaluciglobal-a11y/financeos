@@ -126,11 +126,17 @@
 /* --tabbar-safe (pulido 09-oct): cuánto aire deja la barra bajo los íconos.
    Antes era el inset ENTERO (34px en iPhone con indicador de inicio) y la
    barra se veía "despegada" del borde. El fondo sigue llegando al borde
-   físico, pero los íconos se acercan: inset − 14px (20px en iPhone), y 6px
-   donde no hay inset (Android/TWA con navegación por gestos, Safari iOS 26
-   con barra flotante, escritorio angosto). Todo lo que esquiva la barra
-   (contenido, "+", toasts, CTA del demo, pantallas empujadas) usa esta misma
-   variable vía --tabbar-h. */
+   físico, pero los íconos se acercan: inset − 22px (12px en iPhone, 34px de
+   inset), y 6px donde no hay inset (Android/TWA con navegación por gestos,
+   Safari iOS 26 con barra flotante, escritorio angosto). Todo lo que esquiva
+   la barra (contenido, "+", toasts, CTA del demo, pantallas empujadas) usa
+   esta misma variable vía --tabbar-h.
+   Feedback 2 (09-oct): Safari de iPhone informa inset 0 con su barra de
+   herramientas expandida y 34px al colapsarla, así que la barra "subía"
+   (6 → 20px) al hacer scroll. Con −22px el salto queda en 6 → 12px y los
+   íconos y etiquetas siguen por encima del indicador de inicio (≈8–13px
+   desde el borde); la barra y el "+" además lo animan (shell.module.css,
+   sin animación con movimiento reducido). */
 :root {
   --tabbar-content-h: 56px;
   --tabbar-safe: 0px;
@@ -140,7 +146,7 @@
 }
 @media (max-width: 700px) {
   :root {
-    --tabbar-safe: max(6px, calc(env(safe-area-inset-bottom, 0px) - 14px));
+    --tabbar-safe: max(6px, calc(env(safe-area-inset-bottom, 0px) - 22px));
     --tabbar-h: calc(var(--tabbar-content-h) + var(--tabbar-safe));
     --fab-clear: calc(var(--fab-size) + 16px);
   }
