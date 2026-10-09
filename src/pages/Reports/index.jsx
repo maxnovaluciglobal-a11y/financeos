@@ -139,9 +139,11 @@ export default function Reports({ setPage }) {
             disabled={pdfLoading}
             style={{
               marginLeft:'auto', display:'flex', alignItems:'center', gap:6,
-              padding:'7px 14px', borderRadius:8, border:'.5px solid var(--grn)',
-              background: pdfLoading ? 'var(--sur2)' : 'var(--grn)', color: pdfLoading ? 'var(--th)' : '#0f1923',
-              fontFamily:'var(--mono)', fontWeight:700, fontSize:12, cursor: pdfLoading ? 'wait' : 'pointer',
+              minHeight:44, padding:'7px 14px', borderRadius:'var(--r)', border:'.5px solid ' + (pdfLoading ? 'var(--brd2)' : 'var(--laton)'),
+              // Primario de marca (Latón + texto Navy). Antes era --grn con texto
+              // #0f1923: tras el rebrand --grn es Navy y el texto no se leía en claro.
+              background: pdfLoading ? 'var(--sur2)' : 'var(--laton)', color: pdfLoading ? 'var(--th)' : 'var(--navy)',
+              fontFamily:'var(--sans)', fontWeight:600, fontSize:13, cursor: pdfLoading ? 'wait' : 'pointer',
               transition:'.2s', flexShrink:0,
             }}
           >
