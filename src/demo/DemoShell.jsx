@@ -13,6 +13,7 @@ import PageSkeleton from '../components/ui/PageSkeleton.jsx'
 import { AppContext } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
+import { usePageStack } from '../hooks/usePageStack.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -121,7 +122,8 @@ function DemoBottomCTA({ hidden }) {
 }
 
 function DemoInner() {
-  const [page, setPage] = useState('dashboard')
+  const [page, setPageState] = useState('dashboard')
+  const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
   const { t } = useT()
   // Recorrido: arranca solo en la primera visita; el "?" del banner lo repite
   // (vuelve al Dashboard, donde están los objetivos).
@@ -192,7 +194,7 @@ function DemoInner() {
   return (
     <>
       <DemoBanner onReplayTour={replayTour} />
-      <Shell page={page} setPage={setPage}>
+      <Shell page={page} setPage={setPage} onBack={goBack} backTo={backTo}>
         <Suspense fallback={<PageLoader />}>
           {renderPage(page)}
         </Suspense>

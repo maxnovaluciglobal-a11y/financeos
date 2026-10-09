@@ -135,6 +135,13 @@
     --fab-clear: calc(var(--fab-size) + 16px);
   }
 }
+/* Pantallas empujadas (R14, Shell.jsx pone data-chrome/data-fab en <html>):
+   sin barra, todo lo que la esquivaba baja al borde (solo la safe area); sin
+   "+", desaparece su aire. */
+@media (max-width: 700px) {
+  :root[data-chrome="pushed"] { --tabbar-h: env(safe-area-inset-bottom); }
+  :root[data-fab="off"] { --fab-clear: 0px; }
+}
 
 [data-theme="dark"] {
   --bg:        #12161F;
@@ -277,6 +284,19 @@ button { cursor: pointer; font-family: var(--sans); }
 @media (prefers-reduced-motion: reduce) { .rise { animation: none; } .card-hover { transition: none; } }
 
 /* Fundido entre pantallas (Shell.jsx navigate() usa document.startViewTransition) */
+/* R14: en móvil, abrir una pantalla la empuja desde la derecha y "‹" la
+   devuelve (usePageStack pone data-nav-dir). Cambiar de pestaña sigue en
+   fundido. Corto y con salida exponencial: es navegación, no decoración. */
+@media (max-width: 700px) {
+  :root[data-nav-dir="push"]::view-transition-old(root) { animation: 200ms cubic-bezier(.2,.8,.2,1) both fos-vt-out-left; }
+  :root[data-nav-dir="push"]::view-transition-new(root) { animation: 260ms cubic-bezier(.2,.8,.2,1) both fos-vt-in-right; }
+  :root[data-nav-dir="pop"]::view-transition-old(root)  { animation: 200ms cubic-bezier(.2,.8,.2,1) both fos-vt-out-right; }
+  :root[data-nav-dir="pop"]::view-transition-new(root)  { animation: 260ms cubic-bezier(.2,.8,.2,1) both fos-vt-in-left; }
+}
+@keyframes fos-vt-in-right  { from { transform: translateX(28%); opacity: 0; } }
+@keyframes fos-vt-out-left  { to   { transform: translateX(-12%); opacity: 0; } }
+@keyframes fos-vt-in-left   { from { transform: translateX(-12%); opacity: 0; } }
+@keyframes fos-vt-out-right { to   { transform: translateX(28%); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }

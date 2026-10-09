@@ -14,18 +14,20 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
+import { chromeFor } from './pageStack.js'
+import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
 import { QUICK_ADD_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
 import PushAsk from '../PushAsk.jsx'
 import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
 import { pushSupported, isPushEnabled } from '../../core/push.js'
 import { getLicenseKey } from '../../utils/licenseValidator.js'
-import { Eye, EyeOff, Lock, Sun, Moon, LogOut } from 'lucide-react'
+import { Eye, EyeOff, Lock, Sun, Moon, LogOut, ChevronLeft } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
 
-export default function Shell({ page, setPage, children }) {
+export default function Shell({ page, setPage, onBack, backTo, children }) {
   const { settings, updateSettings, incomes, expenses, showToast } = useApp()
   const { t } = useT()
   const isChile = (settings.country || 'CL') === 'CL'
@@ -64,6 +66,20 @@ export default function Shell({ page, setPage, children }) {
     else if (r?.error === 'permission_denied') showToast?.(t('settings.push.permissionDenied'), 'error')
     else showToast?.(t('settings.push.genericError'), 'error')
   }
+
+  // R14: raíces (Inicio · Movimientos · Menú) con barra; el resto se abre
+  // "empujado": "‹" arriba, sin barra y sin "+" (salvo páginas de registrar).
+  const chrome = chromeFor(page)
+  const back = onBack || (() => setPage(chrome.parent))
+  // El atributo vive en <html> para que --tabbar-h (Toast, CountrySelect, CTA
+  // del demo, aire del contenido) se recalcule también en lo que va en portal.
+  useEffect(() => {
+    const el = document.documentElement
+    el.dataset.chrome = chrome.root ? 'root' : 'pushed'
+    el.dataset.fab = chrome.fab ? 'on' : 'off'
+  }, [chrome.root, chrome.fab])
+  // iOS instalada (standalone) no tiene gesto atrás propio: borde izquierdo.
+  useEdgeSwipeBack({ enabled: chrome.back, onBack: back })
 
   // Recorrido por pantalla (R08): solo la primera visita; después, el "?".
   const tour = usePageTour(page, { isDemo: !!settings.isDemo })
@@ -211,10 +227,19 @@ export default function Shell({ page, setPage, children }) {
       <div className={s.main}>
 
         {/* Topbar — título de la página + moneda. En móvil el TabBar es la
-            navegación primaria (ver más abajo); no hay hamburguesa ni "atrás". */}
+            navegación primaria; en las pantallas empujadas (R14) aparece
+            "‹ {de dónde viniste}" en lugar de la barra inferior. */}
         <div className={s.topbar}>
-          <div className={s.topLeft} />
-          <span className={s.crumb}>{t(pageLabel(page))}</span>
+          <div className={s.topLeft}>
+            {chrome.back && (
+              <button type="button" className={s.backBtn} onClick={back}
+                aria-label={t('nav.backTo', { page: t(pageLabel(backTo || chrome.parent)) })}>
+                <ChevronLeft size={22} strokeWidth={2} aria-hidden="true" />
+                <span className={s.backLbl}>{t(pageLabel(backTo || chrome.parent))}</span>
+              </button>
+            )}
+          </div>
+          <span className={s.crumb + (chrome.back ? ' ' + s.crumbPushed : '')}>{t(pageLabel(page))}</span>
           <span className={s.topRight}>
             {tour.available && (
               <PageTourButton className={s.amountsBtn} onClick={tour.replay} label={t('tour.replay')} />
@@ -237,7 +262,7 @@ export default function Shell({ page, setPage, children }) {
           <span className="sr-only" role="status" aria-live="polite">{amountsAnnounce}</span>
         </div>
 
-        <main className={s.content} ref={contentRef} tabIndex={-1} style={{ outline: 'none' }} aria-label={t(pageLabel(page))}>
+        <main className={s.content} data-scroll-root ref={contentRef} tabIndex={-1} style={{ outline: 'none' }} aria-label={t(pageLabel(page))}>
           <div className={s.contentInner}>
             {children}
           </div>
@@ -247,8 +272,8 @@ export default function Shell({ page, setPage, children }) {
             Menú) + el "+" propio encima, abajo a la derecha. Los dos se ocultan
             con el teclado abierto. */}
         <div className={keyboardOpen ? s.tabbarHidden : undefined}>
-          <TabBar page={page} onNavigate={navigate} t={t} />
-          <AddFab onAdd={() => setQuickAdd('expense')} t={t} />
+          {chrome.tabBar && <TabBar page={page} onNavigate={navigate} t={t} />}
+          {chrome.fab && <AddFab onAdd={() => setQuickAdd(page === 'income' ? 'income' : 'expense')} t={t} />}
         </div>
       </div>
 

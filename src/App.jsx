@@ -15,6 +15,7 @@ import AdminCRM from './admin/AdminCRM.jsx'
 import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
+import { usePageStack } from './hooks/usePageStack.js'
 import { useState, useEffect } from 'react'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
@@ -65,7 +66,10 @@ function isDemoMode() {
 }
 
 function Inner() {
-  const [page, setPage] = usePersistedPage('dashboard')
+  const [page, setPageState] = usePersistedPage('dashboard')
+  // R14: setPage apila en el historial (atrás del navegador/Android/iOS).
+  // Las páginas siguen recibiendo setPage(id) como siempre.
+  const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
   const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
   // undefined = todavía verificando sesión, null = sin sesión, objeto = autenticado.
   const [session, setSession] = useState(undefined)
@@ -215,7 +219,7 @@ function Inner() {
   }
 
   return (
-    <Shell page={page} setPage={setPage}>
+    <Shell page={page} setPage={setPage} onBack={goBack} backTo={backTo}>
       <Suspense fallback={<PageLoader />}>
         {renderPage(page)}
       </Suspense>

@@ -2606,4 +2606,5 @@ export const es = {
     'menu.plan.pro': "Pro",
     'menu.plan.starter': "Starter",
     'menu.upgrade.title': "Pasar a Pro",
+    'nav.backTo': "Volver a {page}",
 }

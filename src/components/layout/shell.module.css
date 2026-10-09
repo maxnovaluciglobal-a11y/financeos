@@ -258,3 +258,32 @@
 .amountsLbl { white-space: nowrap; }
 @media (max-width: 700px) { .amountsLbl { display: none; } }
 @media (prefers-reduced-motion: reduce) { .amountsBtn { transition: none; } }
+
+/* ── PANTALLAS EMPUJADAS (R14) ──
+   "‹ {de dónde viniste}" a la izquierda de la topbar, solo en móvil (en
+   escritorio manda el sidebar). Área de toque de 44px sin agrandar la barra:
+   mismos márgenes negativos que .amountsBtn. */
+.backBtn { display: none; }
+@media (max-width: 700px) {
+  .backBtn {
+    display: inline-flex; align-items: center; gap: 2px;
+    min-width: 44px; min-height: 44px; max-width: 46vw;
+    margin: -12px 0 -12px -12px; padding: 0 10px 0 4px;
+    background: none; border: 0; border-radius: var(--r);
+    color: var(--navy); font: 500 15px/1 var(--sans); letter-spacing: 0;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
+  }
+  .backBtn:active { background: var(--sur2); transform: scale(.97); }
+  .backBtn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .backLbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* El título ya está grande en la página (LargeTitle) y en la barra compacta
+     al hacer scroll: en la pantalla empujada la miga sobra. */
+  .crumbPushed { display: none; }
+}
+:global([data-theme="dark"]) .backBtn { color: var(--laton-300); }
+:global([data-theme="dark"]) .backBtn:focus-visible { outline-color: var(--laton-300); }
+@media (prefers-reduced-motion: reduce) { .backBtn { transition: none; } .backBtn:active { transform: none; } }
+@media (max-width: 700px) {
+  :global(:root[data-chrome="pushed"]) .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 24px); }
+}

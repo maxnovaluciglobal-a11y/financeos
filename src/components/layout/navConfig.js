@@ -57,8 +57,10 @@ export const ALL_ITEMS = NAV.flatMap(g => g.items)
 
 // Key de traducción para la topbar (pageLabel devuelve una KEY, no texto — se traduce con t() al usarla)
 // 'more' no vive en NAV (es la página del TabBar que lista todo NAV agrupado, no un destino del árbol).
+// Las legales no viven en NAV (se abren desde el pie del Menú/sidebar).
+const EXTRA_LABELS = { more: 'nav.menuLabel', privacy: 'nav.legal.privacy', terms: 'nav.legal.terms', disclaimer: 'nav.legal.disclaimer' }
 export function pageLabel(id) {
-  if (id === 'more') return 'nav.menuLabel'
+  if (EXTRA_LABELS[id]) return EXTRA_LABELS[id]
   return ALL_ITEMS.find(it => it.id === id)?.lb || id
 }
 
