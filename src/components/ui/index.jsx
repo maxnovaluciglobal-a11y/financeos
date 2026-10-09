@@ -41,13 +41,14 @@ export function CardHeader({ title, right }) {
   )
 }
 
-// Montos largos (Bs. con millones) en una sola línea: se achica la fuente según
-// el largo del texto en vez de cortar o partir la cifra.
+// Montos largos (Bs. con millones) en una sola línea. El tamaño lo decide el
+// CSS según el ANCHO de la tarjeta (container query en .kpi, `cqi`) y el largo
+// del texto (--kpi-chars): a 1280 un total largo se ve grande, en una columna
+// angosta de 375 se achica hasta 13px. Nunca se parte la cifra.
 export function kpiFit(value) {
   if (typeof value !== 'string' && typeof value !== 'number') return undefined
   const n = String(value).length
-  if (n <= 11) return undefined
-  return { fontSize: n <= 13 ? 18 : n <= 16 ? 15 : 13, whiteSpace: 'nowrap' }
+  return n <= 11 ? { '--kpi-chars': n } : { '--kpi-chars': n, whiteSpace: 'nowrap' }
 }
 
 export function KPI({ label, value, sub, color = 'default' }) {

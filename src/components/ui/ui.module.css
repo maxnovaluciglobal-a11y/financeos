@@ -41,9 +41,13 @@
   background: var(--sur); border-radius: var(--rl);
   padding: 14px 16px; border: 0.5px solid var(--brd);
   box-shadow: var(--sh-1);
+  /* Todos los <KPI> viven en una celda de .kpi-row (grid con ancho definido),
+     así que la tarjeta puede ser contenedor: la cifra se mide con su ancho. */
+  container-type: inline-size;
 }
 .kpiLbl { font-size: 11px; color: var(--tm); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.kpiVal { font-size: 22px; font-weight: 700; font-family: var(--display); letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; color: var(--tx); }
+/* 1.65 ≈ 1 / ancho medio de un dígito en em; 100cqi = ancho útil de la tarjeta. */
+.kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 700; font-family: var(--display); letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; color: var(--tx); }
 /* "green" acá es semántico de DATO (positivo), no de marca → --pos (Verde), no --grn (Navy). */
 .kpi_green { color: var(--pos); }
 .kpi_red   { color: var(--red); }
