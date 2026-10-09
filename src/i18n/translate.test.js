@@ -380,3 +380,26 @@ describe('paridad de las claves del pulido 09-oct (es/en/pt/de)', () => {
     for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|deiner|dich|dir)\b/i)
   })
 })
+
+// Pulido 09-oct: el alemán va de "Sie" en TODA la app (antes solo se probaba
+// por prefijo de fase y quedaban ~95 textos con du/dein en las herramientas
+// por país, ajustes, licencia y login).
+describe('alemán formal en todas las claves', () => {
+  it('ningún texto en alemán tutea (du/dein/dich/dir)', () => {
+    const offenders = Object.entries(de).filter(([, v]) => /\b(du|dein|deine|deinen|deinem|deiner|deines|dich|dir)\b/i.test(String(v))).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+  it('ni imperativos de du al empezar una frase', () => {
+    const IMP = /(^|[.:—–]\s+)(Gib|Prüfe|Melde dich|Sieh|Erfasse|Wende dich|Simuliere|Trage|Wähle|Tippe|Speichere|Öffne|Kopiere|Erwäge|Aktualisiere|Versuche es)\b/
+    const offenders = Object.entries(de).filter(([, v]) => IMP.test(String(v))).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+})
+
+describe('sin voseo ni exclamaciones en ningún texto en español', () => {
+  it('es', () => {
+    const VOSEO = /\b(tenés|podés|querés|sabés|acá|vos|hacé|mirá|elegí|agregá|usá|probá|revisá|tocá|empezá|registrá|escribí|guardá|editá|creá|cargá|importá|definí|configurá|contanos|dejanos|escribinos|ingresá|olvidás|respaldá|consultá|usás)\b/i
+    const offenders = Object.entries(es).filter(([, v]) => VOSEO.test(String(v)) || /[¡!]/.test(String(v))).map(([k]) => k)
+    expect(offenders).toEqual([])
+  })
+})
