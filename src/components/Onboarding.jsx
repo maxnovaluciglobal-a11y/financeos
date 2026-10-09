@@ -4,7 +4,9 @@
 //   1 · Registra tu primer movimiento (QuickAddForm embebido, o importar / saltar)
 //   2 · Tu IQ Score con lo que haya, y el factor más bajo como siguiente paso
 // Lo que se dejó de preguntar usa defaults: uso 'personal', meta de ahorro de
-// config/DB (25 %), plantilla según el país (data/countries.js). Goals y Budgets
+// config/DB (25 %). La plantilla sale de UNA pregunta del paso 0, "¿Trabajas
+// por tu cuenta?" (09-oct-2026; antes dependía del país): No/sin responder →
+// 'personal', Sí → 'freelancer' sumada a la personal (data/templates.js). Goals y Budgets
 // deberían pedir lo suyo la primera vez que se entra (pendiente aparte).
 // Las claves i18n del flujo viejo de 9 pasos se borraron el 08-oct-2026 (chore
 // de fase 3) tras comprobar con grep que nada las leía.
@@ -13,9 +15,9 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { Smartphone, FileUp } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
-import TEMPLATES from '../data/templates.js'
+import { profileTemplateSettings } from '../data/templates.js'
 import CountryBadge from './CountryBadge.jsx'
-import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency, templateForCountry } from '../data/countries.js'
+import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency } from '../data/countries.js'
 import { languageForCountry } from '../i18n/region.js'
 import config from '../config.js'
 import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, fmtMoneyFor, currencyDecimals } from '../utils/index.js'
@@ -56,6 +58,7 @@ function loadOnboardingProgress() {
     const answers = {}
     if (raw.answers?.country) answers.country = raw.answers.country
     if (raw.answers?.currency) answers.currency = raw.answers.currency
+    if (typeof raw.answers?.selfEmployed === 'boolean') answers.selfEmployed = raw.answers.selfEmployed
     if (raw.v !== PROGRESS_VERSION || raw.step > TOTAL - 1 || raw.step < 0) return { step: 0, answers, firstTxSaved: false }
     return { step: raw.step, answers, firstTxSaved: !!raw.firstTxSaved }
   } catch {}
@@ -141,7 +144,10 @@ export default function Onboarding({ onComplete }) {
   const [busy, setBusy] = useState(false)
   const [answers, setAnswers] = useState(() => {
     const country = saved?.answers?.country || settings.country || 'CL'
-    return { country, currency: saved?.answers?.currency || settings.currency || suggestedCurrency(country) }
+    return {
+      country, currency: saved?.answers?.currency || settings.currency || suggestedCurrency(country),
+      selfEmployed: saved?.answers?.selfEmployed ?? (settings.activeTemplateId === 'freelancer'),
+    }
   })
   const [allCountries, setAllCountries] = useState(() => !PRIMARY_COUNTRIES.includes(answers.country))
 
@@ -162,7 +168,7 @@ export default function Onboarding({ onComplete }) {
   // mientras el usuario no haya tocado el selector de idioma: una elección
   // explícita (settings.languageExplicit) nunca se pisa.
   function chooseCountry(code) {
-    setAnswers({ country: code, currency: suggestedCurrency(code) })
+    setAnswers(a => ({ ...a, country: code, currency: suggestedCurrency(code) }))
     const suggested = languageForCountry(code)
     if (suggested && !settings.languageExplicit && suggested !== settings.language) {
       updateSettings({ ...settings, language: suggested })
@@ -173,7 +179,6 @@ export default function Onboarding({ onComplete }) {
   // del primer movimiento: QuickAddForm necesita la moneda (decimales, formato)
   // y las categorías de la plantilla, y el IQ Score el activeMonth.
   async function applySetup(extra = {}) {
-    const tpl = TEMPLATES.find(x => x.id === templateForCountry(answers.country)) || TEMPLATES[0]
     await updateSettings({
       ...settings,
       currency: answers.currency, country: answers.country,
@@ -183,10 +188,7 @@ export default function Onboarding({ onComplete }) {
       onboardingMainGoal: settings.onboardingMainGoal || '',
       estimatedMonthlyIncome: Number(settings.estimatedMonthlyIncome) || 0,
       activeMonth: currentMonth(),
-      activeTemplateId: tpl.id, activeTemplateName: tpl.name,
-      categoriesIncome: tpl.categoriesIncome, categoriesExpense: tpl.categoriesExpense,
-      templateSuggestedBudgets: tpl.suggestedBudgets,
-      templateAdvisorTip: tpl.advisorTip, templateAlerts: tpl.alerts,
+      ...profileTemplateSettings({ selfEmployed: !!answers.selfEmployed }),
       ...extra,
     })
   }
@@ -336,6 +338,21 @@ export default function Onboarding({ onComplete }) {
         </div>
         <div style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>{t('onboarding.v2.step1.preview')}</div>
       </div>
+
+      {/* Plantilla por persona (09-oct-2026): una sola pregunta, "No" por defecto */}
+      <span style={fieldLabel} id="onb-self">{t('onboarding.v2.selfEmployed')}</span>
+      <div role="group" aria-labelledby="onb-self" aria-describedby="onb-self-hint" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6, marginBottom: 6 }}>
+        {[false, true].map(v => (
+          <button key={String(v)} type="button" className="fos-chip fos-chip--tall"
+            aria-pressed={!!answers.selfEmployed === v}
+            onClick={() => setAnswers(a => ({ ...a, selfEmployed: v }))}>
+            {t(v ? 'onboarding.v2.selfEmployed.yes' : 'onboarding.v2.selfEmployed.no')}
+          </button>
+        ))}
+      </div>
+      <p id="onb-self-hint" style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
+        {t('onboarding.v2.selfEmployed.hint')}
+      </p>
 
       <p style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 18px' }}>
         <Smartphone size={16} strokeWidth={1.7} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2, color: 'var(--th)' }} />

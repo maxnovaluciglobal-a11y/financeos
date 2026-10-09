@@ -190,4 +190,35 @@ export const TEMPLATES = [
   },
 ]
 
+// ── Plantilla de arranque del onboarding ──────────────────────────────────
+// Se elige por PERSONA, no por país (feedback de Walter, 09-oct-2026). Antes
+// EC/PE/CO/VE arrancaban con 'freelancer' por la tasa de autoempleo del país,
+// y un asalariado de Bogotá veía "Marketing propio" y "Provisión impuestos" en
+// su primer gasto. Ahora todos arrancan con 'personal' y solo quien responde
+// "Sí" a "¿Trabajas por tu cuenta?" recibe 'freelancer'.
+export function templateIdForProfile({ selfEmployed = false } = {}) {
+  return selfEmployed ? 'freelancer' : 'personal'
+}
+
+// Ajustes que escribe el onboarding. Con "Sí", las categorías son las de la
+// plantilla personal MÁS las propias de freelancer (unión, personales primero):
+// Alimentación, Ropa, etc. siguen ahí y además aparecen Marketing propio,
+// Provisión impuestos… Presupuestos sugeridos, alertas y consejo son los de
+// freelancer. Las canónicas (CATS_EXPENSE) siempre siguen disponibles aparte.
+export function profileTemplateSettings({ selfEmployed = false } = {}) {
+  const personal = TEMPLATES.find(t => t.id === 'personal')
+  const tpl = TEMPLATES.find(t => t.id === templateIdForProfile({ selfEmployed })) || personal
+  const union = (a, b) => [...new Set([...(a || []), ...(b || [])])]
+  const merge = tpl.id !== personal.id
+  return {
+    activeTemplateId: tpl.id,
+    activeTemplateName: tpl.name,
+    categoriesIncome: merge ? union(personal.categoriesIncome, tpl.categoriesIncome) : [...tpl.categoriesIncome],
+    categoriesExpense: merge ? union(personal.categoriesExpense, tpl.categoriesExpense) : [...tpl.categoriesExpense],
+    templateSuggestedBudgets: tpl.suggestedBudgets,
+    templateAdvisorTip: tpl.advisorTip,
+    templateAlerts: tpl.alerts,
+  }
+}
+
 export default TEMPLATES
