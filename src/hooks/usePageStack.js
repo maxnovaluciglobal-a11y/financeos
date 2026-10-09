@@ -100,6 +100,8 @@ export function usePageStack(page, setPageState) {
     }
     setStackState(history.state)
     setPageState(to)
+    // Una pantalla nueva (o una pestaña) arranca arriba; volver restaura.
+    restoreScroll(0)
   }, [setPageState])
 
   const back = useCallback(() => {
