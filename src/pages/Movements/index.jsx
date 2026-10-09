@@ -206,7 +206,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
             {METHODS.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}</select></FormGroup>
         <FormGroup label={t('mov.form.type')}>
           <select style={inp} value={f.type} onChange={e => set('type', e.target.value)}>
-            <option>Necesidad</option><option>Deseo</option></select></FormGroup>
+            <option value="Necesidad">{t('mov.form.typeNeed')}</option><option value="Deseo">{t('mov.form.typeWant')}</option></select></FormGroup>
       </div>
       <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', marginBottom:12, lineHeight:1.4 }}>
         <input type="checkbox" checked={!!f.inv} onChange={e => set('inv', e.target.checked)} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />

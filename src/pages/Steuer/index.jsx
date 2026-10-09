@@ -275,13 +275,13 @@ function ElsterExport({ desglose, year, t }) {
   const total = lineas.reduce((s, d) => s + d.monto, 0)
 
   const texto = [
-    `Werbungskosten ${year} — resumen para Elster (Anlage N)`,
+    t('steuer.elster.heading', { year }),
     '',
     ...lineas.map(d => `${ELSTER_SECCIONES[d.key]}: ${fmtEUR(d.monto)}`),
     '',
-    `Total Werbungskosten: ${fmtEUR(total)}`,
+    `${t('steuer.elster.total')}: ${fmtEUR(total)}`,
     '',
-    'Generado con MOY IQ — verificar cifras antes de declarar.',
+    t('steuer.elster.footer'),
   ].join('\n')
 
   async function copiar() {
@@ -307,7 +307,7 @@ function ElsterExport({ desglose, year, t }) {
   return (
     <div style={{ marginTop: 16, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
       <Btn variant="ghost" size="sm" onClick={() => setAbierto(o => !o)}>
-        {abierto ? '▾' : '▸'} Exportar resumen para Elster
+        {abierto ? '▾' : '▸'} {t('steuer.elster.toggle')}
       </Btn>
       {abierto && (
         <div style={{ marginTop: 10 }}>
@@ -317,8 +317,8 @@ function ElsterExport({ desglose, year, t }) {
             whiteSpace: 'pre-wrap', lineHeight: 1.6, marginBottom: 8,
           }}>{texto}</pre>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Btn variant="ghost" size="sm" onClick={copiar}>{copiado ? '✓ Copiado' : 'Copiar'}</Btn>
-            <Btn variant="ghost" size="sm" onClick={descargar}>Descargar .txt</Btn>
+            <Btn variant="ghost" size="sm" onClick={copiar}>{copiado ? t('steuer.elster.copied') : t('steuer.elster.copy')}</Btn>
+            <Btn variant="ghost" size="sm" onClick={descargar}>{t('steuer.elster.download')}</Btn>
           </div>
         </div>
       )}

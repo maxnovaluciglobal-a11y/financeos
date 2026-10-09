@@ -172,7 +172,7 @@ export default function Goals({ setPage }) {
               </div>
               <div style={{padding:'10px 14px',background:'var(--sur2)',borderRadius:6,marginBottom:14}}>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>
-                  {t('goals.suggest.totalLine')} <span style={{color:'var(--grn)',fontWeight:700}}><Money>{fmtMoney(totalMonthlyContribution(suggestions),sym)}</Money>/mes</span>
+                  {t('goals.suggest.totalLine')} <span style={{color:'var(--grn)',fontWeight:700}}><Money>{fmtMoney(totalMonthlyContribution(suggestions),sym)}</Money>{t('goals.suggest.perMonthSuffix')}</span>
                   <span style={{marginLeft:8,color:'var(--th)'}}>{t('goals.suggest.pctIncome', { pct: ingresoNetoGoals>0?((totalMonthlyContribution(suggestions)/ingresoNetoGoals)*100).toFixed(0):0 })}</span>
                 </div>
               </div>
