@@ -27,3 +27,22 @@ describe('activeTabFor (R04): cada página enciende una de las 3 pestañas', () 
     expect(NAV.some(g => g.items.some(i => i.id === 'settings'))).toBe(true)
   })
 })
+
+import { menuSections } from './navConfig.js'
+
+describe('menuSections (R11): el Menú no pierde ningún ítem del NAV', () => {
+  it('todos los ítems sin país aparecen, Planificación primero y Cuenta al final', () => {
+    const secs = menuSections('CL')
+    expect(secs[0].sec).toBe('nav.sec.planning')
+    expect(secs[0].items[0].id).toBe('budgets')
+    expect(secs[secs.length - 1].sec).toBe('nav.sec.account')
+    const ids = secs.flatMap(g => g.items.map(i => i.id))
+    for (const it_ of ALL_ITEMS.filter(i => !i.countries)) expect(ids).toContain(it_.id)
+  })
+
+  it('las herramientas de país dependen del país', () => {
+    const de = menuSections('DE').flatMap(g => g.items.map(i => i.id))
+    expect(de).toContain('steuer')
+    expect(de).not.toContain('apv')
+  })
+})

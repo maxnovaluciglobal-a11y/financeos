@@ -1,0 +1,79 @@
+/* src/pages/More/more.module.css — pestaña Menú (R11) */
+
+/* Cabecera de cuenta */
+.account {
+  margin-bottom: 22px; padding: 16px; border-radius: var(--rl);
+  background: var(--sur); border: 0.5px solid var(--brd); box-shadow: var(--sh-1);
+}
+.accountTop { display: flex; align-items: center; gap: 14px; }
+.avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 48px; height: 48px; border-radius: var(--rxl);
+  background: var(--navy); color: var(--papel-000);
+  font-family: var(--display); font-size: 20px; font-weight: 700;
+}
+:global([data-theme="dark"]) .avatar { background: var(--laton); color: var(--navy); }
+.accountBody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.accountName { font-size: 16px; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.accountMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; }
+.plan, .planPro {
+  display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border-radius: var(--rs);
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  background: var(--sur2); color: var(--tm); border: 0.5px solid var(--brd2);
+}
+.planPro { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-700); border-color: color-mix(in srgb, var(--laton) 45%, transparent); }
+:global([data-theme="dark"]) .planPro { color: var(--laton-300); }
+
+.upgrade {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 56px; margin-top: 14px; padding: 10px 12px 10px 14px; text-align: left;
+  border: 0; border-radius: var(--r); background: var(--laton); color: var(--navy); cursor: pointer;
+  font: inherit; transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
+}
+.upgrade:hover { box-shadow: inset 0 0 0 2px rgba(20,33,61,.25); }
+.upgrade:active { transform: scale(.99); }
+.upgradeTitle { display: block; font-size: 14px; font-weight: 700; }
+.upgradeSub { display: block; font-size: 12px; line-height: 1.4; opacity: .85; }
+
+/* Grupos */
+.group { margin-bottom: 18px; }
+.groupTitle {
+  margin: 0; padding: 0 2px 6px; font: 500 12px/1.3 var(--sans);
+  color: var(--tm); letter-spacing: 0; text-transform: none;
+}
+.list { background: var(--sur); border: 0.5px solid var(--brd); border-radius: var(--rl); overflow: hidden; }
+.row {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 10px 12px 10px 14px;
+  background: none; border: 0; border-top: 0.5px solid var(--brd); text-align: left; cursor: pointer;
+  font-family: var(--sans); font-size: 15px; color: var(--tx);
+  -webkit-tap-highlight-color: transparent; transition: background var(--dur) var(--ease);
+}
+.row:first-child { border-top: 0; }
+.row:hover, .row:active { background: var(--sur2); }
+.rowIc { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rowLabel { flex: 1; min-width: 0; }
+.pro { font-size: 9px; font-family: var(--mono); background: var(--amb-bg); color: var(--amb); border-radius: var(--rs); padding: 1px 5px; letter-spacing: .5px; font-weight: 700; }
+.chev { color: var(--th); flex-shrink: 0; }
+
+/* Al final: tema, cerrar sesión, legales y versión */
+.actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 6px; }
+.action {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 12px;
+  background: var(--sur2); border: 0.5px solid var(--brd); border-radius: var(--r);
+  font-family: var(--sans); font-size: 14px; color: var(--tm); cursor: pointer;
+}
+.action:hover { color: var(--tx); }
+.legal { display: flex; flex-wrap: wrap; gap: 0 14px; margin-top: 14px; padding-top: 6px; border-top: 0.5px solid var(--brd); }
+.legalLink {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0;
+  background: none; border: 0; cursor: pointer; text-decoration: none;
+  font-family: var(--sans); font-size: 13px; color: var(--tm);
+}
+.legalLink:hover { color: var(--tx); text-decoration: underline; }
+.version { font-size: 12px; font-family: var(--mono); color: var(--th); margin-top: 6px; line-height: 1.6; }
+.versionLock { display: inline-flex; align-items: center; gap: 5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .row, .upgrade { transition: none; }
+  .upgrade:active { transform: none; }
+}

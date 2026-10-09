@@ -83,3 +83,20 @@ export function activeTabFor(page) {
   if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS
   return TAB_MENU
 }
+
+// ── Orden de secciones en la página Menú (R11) ─────────────────────────────
+// Presupuestos salió de la barra inferior, así que Planificación va primero.
+// "Principal" (Inicio) ya es una pestaña: va casi al final, antes de Cuenta,
+// para no perder ningún ítem del NAV. Ajustes (Cuenta) siempre al final.
+export const MENU_SECTION_ORDER = [
+  'nav.sec.planning', 'nav.sec.movements', 'nav.sec.analysis', 'nav.sec.country', 'nav.sec.pro', 'nav.sec.main', 'nav.sec.account',
+]
+
+export function menuSections(country) {
+  const cc = (country || 'CL').toUpperCase()
+  const rank = (sec) => { const i = MENU_SECTION_ORDER.indexOf(sec); return i === -1 ? MENU_SECTION_ORDER.length - 1.5 : i }
+  return [...NAV]
+    .sort((a, b) => rank(a.sec) - rank(b.sec))
+    .map(g => ({ sec: g.sec, items: g.items.filter(it => !it.countries || it.countries.includes(cc)) }))
+    .filter(g => g.items.length > 0)
+}

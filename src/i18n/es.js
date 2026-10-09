@@ -2600,4 +2600,10 @@ export const es = {
     'budgets.copy.cta': "Copiar del mes anterior",
     'budgets.copy.hint': "Crea un presupuesto por categoría con lo que gastaste en {month}.",
     'budgets.copy.done': "Presupuestos creados: {n}",
+    'menu.account.aria': "Tu cuenta",
+    'menu.account.demo': "Datos de ejemplo",
+    'menu.account.local': "Tu cuenta",
+    'menu.plan.pro': "Pro",
+    'menu.plan.starter': "Starter",
+    'menu.upgrade.title': "Pasar a Pro",
 }

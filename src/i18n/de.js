@@ -2600,4 +2600,10 @@ export const de = {
     'budgets.copy.cta': "Vom Vormonat übernehmen",
     'budgets.copy.hint': "Legt pro Kategorie ein Budget mit Ihren Ausgaben im {month} an.",
     'budgets.copy.done': "Budgets angelegt: {n}",
+    'menu.account.aria': "Ihr Konto",
+    'menu.account.demo': "Beispieldaten",
+    'menu.account.local': "Ihr Konto",
+    'menu.plan.pro': "Pro",
+    'menu.plan.starter': "Starter",
+    'menu.upgrade.title': "Zu Pro wechseln",
 }
