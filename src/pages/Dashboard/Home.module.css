@@ -329,3 +329,17 @@
 .rateOptName { font-size: 14px; font-weight: 500; }
 .rateOptVal { font-size: 15px; font-weight: 600; text-align: right; }
 .rateOptAt { grid-column: 1 / -1; font-size: 12px; color: var(--th); }
+
+/* ── Gastos por categoría sin gastos (09-oct-2026) ───────────────────────────
+   Anillo vacío del mismo tamaño que el donut (CategoryDonut.module.css) para
+   que la tarjeta no salte al registrar el primer gasto. */
+.donutEmpty { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.donutEmptyRing { width: min(140px, 46%); height: auto; display: block; }
+.donutEmptyBody { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; max-width: 340px; }
+.donutEmptyText { margin: 0; font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--tm); }
+.donutEmptyBtn { width: auto; color: var(--tx); }
+@media (min-width: 560px) {
+  .donutEmpty { flex-direction: row; justify-content: center; gap: 28px; }
+  .donutEmptyRing { width: 140px; flex: 0 0 auto; }
+  .donutEmptyBody { align-items: flex-start; text-align: left; }
+}

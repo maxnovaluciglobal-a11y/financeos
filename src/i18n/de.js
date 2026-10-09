@@ -926,6 +926,8 @@ export const de = {
     'dash.chart.flow.title': "Geldfluss des Monats",
     'dash.chart.flow.sub': "orientierende Verteilung",
     'dash.chart.cat.title': "Ausgaben nach Kategorie",
+    'home.donut.empty': "In diesem Monat gibt es noch keine Ausgaben. Mit der ersten sehen Sie hier, wohin Ihr Geld geht.",
+    'home.donut.add': "Ausgabe erfassen",
     'dash.chart.bar.title': "Einnahmen vs. Ausgaben",
     'dash.chart.bar.sub': "letzte 6 Monate",
     'dash.coachLink.text': "Vollständige orientierende Analyse Ihrer finanziellen Situation.",

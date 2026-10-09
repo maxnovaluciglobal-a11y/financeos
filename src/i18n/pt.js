@@ -926,6 +926,8 @@ export const pt = {
     'dash.chart.flow.title': "Fluxo de dinheiro do mês",
     'dash.chart.flow.sub': "distribuição orientativa",
     'dash.chart.cat.title': "Despesas por categoria",
+    'home.donut.empty': "Ainda não há gastos este mês. Com o primeiro, você verá aqui para onde vai seu dinheiro.",
+    'home.donut.add': "Registrar um gasto",
     'dash.chart.bar.title': "Receitas vs Despesas",
     'dash.chart.bar.sub': "últimos 6 meses",
     'dash.coachLink.text': "Análise orientativa completa da sua situação financeira.",

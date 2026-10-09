@@ -926,6 +926,8 @@ export const es = {
     'dash.chart.flow.title': "Flujo de dinero del mes",
     'dash.chart.flow.sub': "distribución orientativa",
     'dash.chart.cat.title': "Gastos por categoría",
+    'home.donut.empty': "Todavía no hay gastos este mes. Con el primero verás aquí en qué se reparte tu dinero.",
+    'home.donut.add': "Registrar un gasto",
     'dash.chart.bar.title': "Ingresos vs Gastos",
     'dash.chart.bar.sub': "últimos 6 meses",
     'dash.coachLink.text': "Análisis orientativo completo de tu situación financiera.",

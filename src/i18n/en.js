@@ -926,6 +926,8 @@ export const en = {
     'dash.chart.flow.title': "Money flow this month",
     'dash.chart.flow.sub': "indicative breakdown",
     'dash.chart.cat.title': "Expenses by category",
+    'home.donut.empty': "No expenses this month yet. With the first one you will see here where your money goes.",
+    'home.donut.add': "Add an expense",
     'dash.chart.bar.title': "Income vs Expenses",
     'dash.chart.bar.sub': "last 6 months",
     'dash.coachLink.text': "Full indicative analysis of your financial situation.",

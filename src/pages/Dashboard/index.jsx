@@ -8,6 +8,7 @@ import Sheet from '../../components/ui/Sheet.jsx'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import IncomeExpenseBar from '../../components/charts/IncomeExpenseBar.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
+import DonutEmpty from './DonutEmpty.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
 import { calcFinancialScore, SCORE_LEVELS } from '../../utils/financialScore.js'
@@ -534,15 +535,17 @@ export default function Dashboard({ setPage }) {
           <div className={hs.oSteps} data-tour="first-steps"><FirstSteps setPage={setPage} /></div>
           {/* Gasto por categoría (pulido 09-oct, pedido de Walter): vuelve a la
               vista esencial, visible por defecto, después de Ingresos/Gastos y
-              Primeros pasos. Es el único gráfico del Inicio esencial. */}
-          {monthExpenses.length > 0 && (
-            <div className={hs.oDonut}>
-              <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
-                <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
-                  onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch {} ; setPage('movements') } : undefined}/>
-              </ChartCard>
-            </div>
-          )}
+              Primeros pasos. Es el único gráfico del Inicio esencial.
+              Siempre visible (feedback 09-oct): sin gastos en el mes, la misma
+              tarjeta con un estado vacío y el atajo a "Registrar un gasto". */}
+          <div className={hs.oDonut}>
+            <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
+              {monthExpenses.some(r => Number(r?.amount) > 0)
+                ? <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
+                    onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch {} ; setPage('movements') } : undefined}/>
+                : <DonutEmpty />}
+            </ChartCard>
+          </div>
           <div className={`${hs.pair} ${hs.pairA}`}>
             <div className={hs.oBudget}>
               <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
