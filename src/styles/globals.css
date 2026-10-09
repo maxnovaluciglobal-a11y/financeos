@@ -118,6 +118,24 @@
   --dur-alert-pulse:       1200ms;  /* único loop permitido — alerta urgente genuina, ×2 */
 }
 
+/* ── Alto de la barra inferior (R03) ─────────────────────────────────────────
+   Un solo lugar para todo lo que tiene que esquivar la barra anclada del móvil
+   (padding del contenido, CTA del demo, CountrySelect, Toast). En escritorio
+   no hay barra: 0. --fab-clear es el aire que ocupa el botón "+" encima de la
+   barra (56px + 16px de margen), para que nada quede debajo de él. */
+:root {
+  --tabbar-content-h: 56px;
+  --tabbar-h: 0px;
+  --fab-size: 56px;
+  --fab-clear: 0px;
+}
+@media (max-width: 700px) {
+  :root {
+    --tabbar-h: calc(var(--tabbar-content-h) + env(safe-area-inset-bottom));
+    --fab-clear: calc(var(--fab-size) + 16px);
+  }
+}
+
 [data-theme="dark"] {
   --bg:        #12161F;
   --sur:       #181D29;
@@ -408,10 +426,10 @@ button { cursor: pointer; font-family: var(--sans); }
 .demo-banner__cta { grid-area: cta; width: auto; font-size: 14px; white-space: nowrap; text-decoration: none; }
 .demo-banner :focus-visible { outline-color: var(--laton); }
 
-/* CTA inferior del demo: tarjeta flotante sobre el tabbar (no lo tapa) */
+/* CTA inferior del demo: tarjeta encima de la barra y del botón "+" (no los tapa) */
 .demo-bottom-cta {
   position: fixed; z-index: 300;
-  left: 14px; right: 14px; bottom: calc(96px + env(safe-area-inset-bottom));
+  left: 14px; right: 14px; bottom: calc(var(--tabbar-h) + var(--fab-clear) + 12px);
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   padding: 12px 12px 12px 16px; border-radius: var(--rl);
   background: var(--navy); color: var(--papel-000); box-shadow: var(--sh-3);
