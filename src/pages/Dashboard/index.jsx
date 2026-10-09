@@ -532,6 +532,17 @@ export default function Dashboard({ setPage }) {
             </HomeKpis>
           </div>
           <div className={hs.oSteps} data-tour="first-steps"><FirstSteps setPage={setPage} /></div>
+          {/* Gasto por categoría (pulido 09-oct, pedido de Walter): vuelve a la
+              vista esencial, visible por defecto, después de Ingresos/Gastos y
+              Primeros pasos. Es el único gráfico del Inicio esencial. */}
+          {monthExpenses.length > 0 && (
+            <div className={hs.oDonut}>
+              <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
+                <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
+                  onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch {} ; setPage('movements') } : undefined}/>
+              </ChartCard>
+            </div>
+          )}
           <div className={`${hs.pair} ${hs.pairA}`}>
             <div className={hs.oBudget}>
               <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
@@ -702,20 +713,12 @@ export default function Dashboard({ setPage }) {
         )
       })()}
 
-      {/* Gráficos — el donut de categorías vive también en la vista esencial
-          (da vida visual sin recargar); flujo y barras solo en detallada. */}
+      {/* Flujo del mes (solo escritorio, vista detallada). El donut de
+          categorías vive arriba, en la vista esencial. */}
       {!compact && monthExpenses.length > 0 && (
-        <div style={{ display:'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap:16, marginBottom:16 }}>
-          {!compact && (
-            <div className="fos-hide-mobile">
-              <ChartCard title={t('dash.chart.flow.title')} subtitle={t('dash.chart.flow.sub')} minHeight={220}>
-                <MoneyFlow incomes={monthIncomes} expenses={monthExpenses} subscriptions={subs} debts={debts} sym={sym}/>
-              </ChartCard>
-            </div>
-          )}
-          <ChartCard title={t('dash.chart.cat.title')} subtitle={activeMonth} minHeight={160}>
-            <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
-              onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch {} ; setPage('movements') } : undefined}/>
+        <div className="fos-hide-mobile" style={{ marginBottom:16 }}>
+          <ChartCard title={t('dash.chart.flow.title')} subtitle={t('dash.chart.flow.sub')} minHeight={220}>
+            <MoneyFlow incomes={monthIncomes} expenses={monthExpenses} subscriptions={subs} debts={debts} sym={sym}/>
           </ChartCard>
         </div>
       )}

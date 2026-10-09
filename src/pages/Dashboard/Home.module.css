@@ -12,15 +12,17 @@
 .pair { display: contents; }
 
 .oBackup:empty, .oNetWorth:empty, .oScore:empty, .oSteps:empty { display: none; }
-/* Orden móvil (R05): Te queda + Ingresos|Gastos → primeros pasos → respaldo →
-   presupuesto → próximos pagos → IQ Score → patrimonio (solo detallada). */
+/* Orden móvil (R05): Te queda + Ingresos|Gastos → primeros pasos → gasto por
+   categoría → respaldo → presupuesto → próximos pagos → IQ Score → patrimonio
+   (solo detallada). */
 .oKpis     { order: 1; }
 .oSteps    { order: 2; }
-.oBackup   { order: 3; }
-.oBudget   { order: 4; }
-.oUpcoming { order: 5; }
-.oScore    { order: 6; }
-.oNetWorth { order: 7; }
+.oDonut    { order: 3; }
+.oBackup   { order: 4; }
+.oBudget   { order: 5; }
+.oUpcoming { order: 6; }
+.oScore    { order: 7; }
+.oNetWorth { order: 8; }
 
 @container (min-width: 760px) {
   .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -28,8 +30,9 @@
   .oBackup { order: 1; }
   .oKpis   { order: 2; }
   .oSteps  { order: 3; }
-  .pairA   { order: 4; }
-  .pairB   { order: 5; }
+  .oDonut  { order: 4; }
+  .pairA   { order: 5; }
+  .pairB   { order: 6; }
 }
 
 /* ── Tarjeta base del Inicio ──────────────────────────────────────────────── */

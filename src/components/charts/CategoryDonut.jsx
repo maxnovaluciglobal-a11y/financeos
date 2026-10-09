@@ -5,6 +5,7 @@ import { ChartEmpty } from './ChartCard.jsx'
 import { catLabel, fmtMoney, fmtMoneyCompact, catName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { useMoney } from '../Money.jsx'
+import css from './CategoryDonut.module.css'
 
 // Centavos: se redondea a 2 decimales (no a enteros) para que el tooltip de
 // US$42.50 no diga $43.00.
@@ -25,6 +26,10 @@ function CustomTooltip({ active, payload, sym, lang, m }) {
     </div>
   )
 }
+
+// Barrido de entrada del anillo (--dur-instrument-settle, 900ms); con
+// movimiento reducido aparece directo.
+const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false } }
 
 export default function CategoryDonut({ records, sym = '$', maxCategories = 6, onCategoryClick }) {
   const { t, lang } = useT()
@@ -64,11 +69,12 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
   const fmtTotal = m(fmtMoneyCompact(total, sym))
 
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
-      <div style={{ position:'relative', flex:'0 0 auto', width:'48%', minWidth:160, maxWidth:280 }}>
+    <div className={css.root}><div className={css.wrap}>
+      <div className={css.pie}>
         <ResponsiveContainer width="100%" aspect={1}>
           <PieChart>
-            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={64} outerRadius={96} strokeWidth={0} paddingAngle={2}
+            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="66%" outerRadius="98%" strokeWidth={0} paddingAngle={2}
+              isAnimationActive={!reducedMotion()} animationBegin={120} animationDuration={900} animationEasing="ease-out"
               onClick={(d) => { if (d && clickable(d.name)) onCategoryClick(d.name) }}>
               {data.map((d, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} style={{ outline:'none', cursor: clickable(d.name) ? 'pointer' : 'default' }}/>)}
             </Pie>
@@ -81,7 +87,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
           <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('chart.donut.total')}</div>
         </div>
       </div>
-      <div style={{ flex:1, minWidth:140, display:'flex', flexDirection:'column', gap:6 }}>
+      <div className={css.legend}>
         {data.map((d, i) => (
           <div
             key={i}
@@ -100,6 +106,6 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
           </div>
         ))}
       </div>
-    </div>
+    </div></div>
   )
 }
