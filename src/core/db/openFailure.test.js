@@ -42,7 +42,7 @@ beforeEach(() => {
 afterEach(() => { while (restores.length) restores.pop()() })
 
 describe('foto previa best-effort', () => {
-  it('si el put de la foto falla, el upgrade igual llega a v4 con las stores creadas', async () => {
+  it('si el put de la foto falla, el upgrade igual llega a la última versión con las stores creadas', async () => {
     await seedV3()
     patch(IDBObjectStore.prototype, 'put', function (orig, ...a) {
       if (this.name === 'backups') throw quota()
@@ -50,25 +50,28 @@ describe('foto previa best-effort', () => {
     })
     const db = await import('./index.js')
     const conn = await db.getDB()
-    expect(conn.version).toBe(4)
+    expect(conn.version).toBe(5)
     expect(conn.objectStoreNames.contains('recurring')).toBe(true)
     expect(await conn.getAll('backups')).toEqual([])
     expect(await conn.getAll('expenses')).toHaveLength(1)
     expect(db.isUsingFallback()).toBe(false)
   })
 
-  it('si la foto aborta el upgrade, getDB reintenta una vez sin foto y llega a v4', async () => {
+  it('si la foto aborta el upgrade, getDB reintenta una vez sin foto y llega a la última versión', async () => {
     await seedV3()
+    let thrown = false
     patch(IDBObjectStore.prototype, 'getAll', function (orig, ...a) {
-      // Solo dentro de la foto (transacción versionchange) falla la lectura.
-      if (this.transaction?.mode === 'versionchange' && this.name === 'incomes') throw quota()
+      // Solo dentro de la foto (transacción versionchange) y solo la primera
+      // vez falla la lectura: el reintento (sin foto) ya puede leer, como
+      // necesita la migración v5 para renombrar categorías.
+      if (!thrown && this.transaction?.mode === 'versionchange' && this.name === 'incomes') { thrown = true; throw quota() }
       return orig.apply(this, a)
     })
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const db = await import('./index.js')
     const conn = await db.getDB()
     errSpy.mockRestore()
-    expect(conn.version).toBe(4)
+    expect(conn.version).toBe(5)
     expect(conn.objectStoreNames.contains('backups')).toBe(true)
     expect(await conn.getAll('subscriptions')).toHaveLength(1)
     expect(mem.has('fos_snapshot_skipped')).toBe(true)

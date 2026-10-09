@@ -11,6 +11,7 @@ import { dbGetAll, dbAdd } from '../../core/db/index.js'
 import { uid, fmtMoney, currencySymbol, getCategoriesExpense, getCategoriesIncome, catLabel } from '../../utils/index.js'
 import CountryBadge from '../../components/CountryBadge.jsx'
 import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplates.js'
+import { canonicalCategory } from '../../utils/categoryAliases.js'
 import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
   createImportBatch, buildTransactions, MAX_ROWS,
@@ -201,7 +202,7 @@ export default function ImportMovements({ setPage } = {}) {
         description: String(r.description || ''),
         concept: String(r.concept || r.description || ''),
         amount: Number(r.amount) || 0,
-        category: String(r.category || 'Importado'),
+        category: canonicalCategory(String(r.category || 'Importado')),
         account: String(r.account || ''),
         notes: '', source: 'csv', importBatchId: batchId, importedAt: now,
         originalDescription: String(r.originalDescription || r.description || ''),

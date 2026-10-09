@@ -49,13 +49,13 @@ beforeAll(async () => {
 
 describe('migración v4', () => {
   it('es un paso nuevo, sin tocar los anteriores', () => {
-    expect(MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3, 4])
-    expect(DB_VERSION).toBe(4)
+    expect(MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3, 4, 5])
+    expect(DB_VERSION).toBe(5)
   })
 
   it('crea recurring y backups, y deja una foto completa previa (sin el PIN)', async () => {
     const conn = await db.getDB()
-    expect(conn.version).toBe(4)
+    expect(conn.version).toBe(5)
     expect(conn.objectStoreNames.contains('recurring')).toBe(true)
     expect(conn.objectStoreNames.contains('backups')).toBe(true)
     const snap = await conn.get('backups', PRE_RECURRING_SNAPSHOT_ID)

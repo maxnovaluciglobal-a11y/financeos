@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { COUNTRIES, PRIMARY_COUNTRIES, suggestedCurrency, templateForCountry } from './countries.js'
-import TEMPLATES from './templates.js'
+import { COUNTRIES, PRIMARY_COUNTRIES, suggestedCurrency } from './countries.js'
 import config from '../config.js'
 import { es } from '../i18n/es.js'
 import { en } from '../i18n/en.js'
@@ -27,19 +26,5 @@ describe('countries', () => {
     expect(suggestedCurrency('CO')).toBe('COP')
     expect(suggestedCurrency('DE')).toBe('EUR')
     expect(suggestedCurrency('ZZ')).toBe('USD')
-  })
-
-  it('templateForCountry devuelve siempre una plantilla existente', () => {
-    for (const c of [...COUNTRIES.map(c => c.code), 'ZZ']) {
-      expect(TEMPLATES.some(t => t.id === templateForCountry(c))).toBe(true)
-    }
-    expect(templateForCountry('CL')).toBe('personal')
-  })
-
-  it('templateForCountry: freelancer donde el autoempleo es ≥40 % (EC, PE, CO, VE)', () => {
-    expect(templateForCountry('CO')).toBe('freelancer')
-    for (const c of ['EC', 'PE', 'VE']) expect(templateForCountry(c)).toBe('freelancer')
-    for (const c of ['CL', 'MX', 'AR', 'ES', 'PT', 'DE', 'US']) expect(templateForCountry(c)).toBe('personal')
-    expect(templateForCountry('OTHER')).toBe('personal')
   })
 })

@@ -10,9 +10,16 @@ describe('orderQuickChips', () => {
     expect(orderQuickChips({ ranked: ['Salud'], effective })).toEqual(['Salud', 'Alimentación', 'Vivienda', 'Transporte', 'Educación', 'Ropa'])
   })
 
-  it('con plantilla freelancer y sin historial: las propias de la plantilla entran primero', () => {
+  it('con plantilla freelancer y sin historial: básicas y propias con cupo (Alimentación sigue visible)', () => {
     expect(orderQuickChips({ ranked: [], effective, canonical, templateCats: freelancer, templateActive: true }))
-      .toEqual(['Marketing propio', 'Educación / Cursos', 'Vivienda', 'Alimentación', 'Transporte', 'Tecnología'])
+      .toEqual(['Vivienda', 'Alimentación', 'Transporte', 'Tecnología', 'Marketing propio', 'Educación / Cursos'])
+  })
+
+  it('primer gasto con la plantilla de onboarding "trabajo por mi cuenta": mitad básicas, mitad propias, sin "Otro"', () => {
+    const union = ['Vivienda', 'Alimentación', 'Transporte', 'Salud', 'Entretención', 'Servicios', 'Ropa', 'Otro',
+      'Tecnología', 'Marketing propio', 'Educación / Cursos', 'Provisión impuestos']
+    expect(orderQuickChips({ ranked: [], effective, canonical, templateCats: union, templateActive: true }))
+      .toEqual(['Vivienda', 'Alimentación', 'Transporte', 'Marketing propio', 'Educación / Cursos', 'Provisión impuestos'])
   })
 
   it('con historial canónico: 3 usadas de la plantilla, las propias y la más usada ajena al final', () => {

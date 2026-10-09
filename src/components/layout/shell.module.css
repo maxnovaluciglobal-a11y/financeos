@@ -181,7 +181,10 @@
   background: color-mix(in srgb, var(--sur) 94%, transparent);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  transition: transform .2s var(--ease), opacity .2s var(--ease);
+  /* padding-bottom/min-height: el inset inferior cambia cuando Safari de
+     iPhone colapsa su barra; se acompaña en vez de saltar (globals.css). */
+  transition: transform .2s var(--ease), opacity .2s var(--ease),
+    padding-bottom .2s var(--ease), min-height .2s var(--ease);
 }
 .tabbarHidden .tabbar,
 .tabbarHidden .fab {
@@ -225,7 +228,7 @@
   box-shadow: var(--sh-2);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform .2s var(--ease), opacity .2s var(--ease), box-shadow var(--dur) var(--ease);
+  transition: transform .2s var(--ease), opacity .2s var(--ease), box-shadow var(--dur) var(--ease), bottom .2s var(--ease);
 }
 .fab:hover { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
 .fab:active { transform: scale(.94); }

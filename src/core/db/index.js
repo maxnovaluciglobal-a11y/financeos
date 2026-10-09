@@ -8,6 +8,7 @@ import { reconcileRules } from '../../utils/recurringSources.js'
 import { planConfirmations } from '../../utils/recurringConfirm.js'
 import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/money.js'
 import { regionDefaults } from '../../i18n/region.js'
+import { unifyCategoryPayload } from '../../utils/categoryAliases.js'
 
 const DB_NAME = 'financeos'
 
@@ -237,8 +238,12 @@ export async function exportAllData() {
            exportedAt: new Date().toISOString(), version: '1.2' }
 }
 
-export async function importAllData(data) {
-  if (!data || typeof data !== 'object') throw new Error('Formato inválido')
+export async function importAllData(input) {
+  if (!input || typeof input !== 'object') throw new Error('Formato inválido')
+  // Un respaldo o blob anterior a la unificación de categorías (migración v5)
+  // puede traer "Entretenimiento": se mapea a la canónica al entrar, igual
+  // que la migración (presupuestos duplicados se fusionan sumando límites).
+  const data = unifyCategoryPayload(input)
   // Un respaldo (o un blob del sync) de una versión anterior no trae
   // 'recurring': en ese caso las reglas locales se conservan en vez de
   // vaciarse — si no, sincronizar con un dispositivo sin actualizar borraría
@@ -341,12 +346,14 @@ export async function listSnapshots() {
 }
 
 // Vuelve los datos al estado de la foto (por defecto, la previa a los fijos).
-// Las reglas se vacían: las de Suscripciones/Deudas se regeneran solas.
+// Sin reglas en la foto se vacían: las de Suscripciones/Deudas se regeneran solas.
 export async function restoreSnapshot(id = PRE_RECURRING_SNAPSHOT_ID) {
   const db = await getDB()
   const snap = db ? await db.get('backups', id) : lsGet('backups').find(b => b.id === id)
   if (!snap?.data) throw new Error('snapshot_not_found')
   const { settings, ...rest } = snap.data
-  await importAllData({ ...rest, recurring: [], ...(settings ? { settings } : {}) })
+  // Una foto sin 'recurring' (la de v4, previa a los fijos) vacía las reglas;
+  // una que sí las trae (v5 en adelante) las restaura.
+  await importAllData({ recurring: [], ...rest, ...(settings ? { settings } : {}) })
   return snap
 }
