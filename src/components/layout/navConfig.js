@@ -61,3 +61,25 @@ export function pageLabel(id) {
   if (id === 'more') return 'nav.menuLabel'
   return ALL_ITEMS.find(it => it.id === id)?.lb || id
 }
+
+// ── Pestañas del TabBar móvil (R01/R04) ────────────────────────────────────
+// Tres raíces: Inicio · Movimientos · Menú (decisión de Walter D2, 08-oct-2026).
+// La navegación sigue plana (setPage), así que cada página se mapea a la
+// pestaña que la contiene: todo lo de la sección "Movimientos" del NAV enciende
+// Movimientos, el Inicio enciende Inicio y el resto (incluidas las páginas
+// legales y Ajustes, que se abren desde el Menú) enciende Menú. La barra nunca
+// queda sin pestaña activa.
+export const TAB_HOME = 'dashboard'
+export const TAB_MOVEMENTS = 'movements'
+export const TAB_MENU = 'more'
+export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_MENU]
+
+const MOVEMENT_PAGES = new Set(
+  (NAV.find(g => g.sec === 'nav.sec.movements')?.items || []).map(it => it.id)
+)
+
+export function activeTabFor(page) {
+  if (!page || page === TAB_HOME) return TAB_HOME
+  if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS
+  return TAB_MENU
+}
