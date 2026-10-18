@@ -3,7 +3,9 @@ import { lazy, Suspense } from 'react'
 import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
 import ResetPassword from './components/ResetPassword.jsx'
-import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter } from './utils/licenseValidator.js'
+import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter, getLicenseKey } from './utils/licenseValidator.js'
+import { readDeviceOwner, writeDeviceOwner, decideOwnership } from './core/deviceOwner.js'
+import DeviceSwitch from './components/DeviceSwitch.jsx'
 import { getSession, onAuthChange, syncUserLang } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
@@ -91,6 +93,11 @@ function Inner() {
   // válida, así que sin este flag caería directo a LicenseGate/la app en
   // vez de dejarlo elegir una contraseña nueva primero.
   const [passwordRecovery, setPasswordRecovery] = useState(false)
+  // 'checking' | 'ok' | 'other' — si los datos de este dispositivo son de esta
+  // cuenta (core/deviceOwner.js). Mientras no se sabe, no se muestra nada de
+  // la app: una cuenta nueva no debe ver ni un instante los datos o el plan
+  // de otra.
+  const [ownerStatus, setOwnerStatus] = useState('checking')
   // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
   // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
   // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
@@ -118,6 +125,24 @@ function Inner() {
     syncUserLang(session, settings.language)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, settings.language, loading])
+
+  useEffect(() => {
+    if (isDemo || !session?.user?.id) return
+    let cancelled = false
+    ;(async () => {
+      const owner = readDeviceOwner()
+      const deviceLicenseKey = getLicenseKey()
+      // Solo hace falta preguntar al servidor si no hay dueño registrado y el
+      // dispositivo tiene una licencia Pro guardada.
+      const serverEntitlement = !owner?.uid && deviceLicenseKey ? await getServerEntitlement(session.user.id) : null
+      const decision = decideOwnership({ owner, userId: session.user.id, deviceLicenseKey, serverEntitlement })
+      if (cancelled) return
+      if (decision === 'other') { setOwnerStatus('other'); return }
+      writeDeviceOwner(session.user)
+      setOwnerStatus('ok')
+    })()
+    return () => { cancelled = true }
+  }, [session?.user?.id])
 
   useEffect(() => {
     if (isDemo) return
@@ -160,6 +185,8 @@ function Inner() {
     }
     if (!session) return <AuthGate onAuthenticated={() => {}} />
     if (passwordRecovery) return <ResetPassword onDone={() => setPasswordRecovery(false)} />
+    if (ownerStatus === 'other') return <DeviceSwitch previousEmail={readDeviceOwner()?.email} />
+    if (ownerStatus === 'checking') return null
     if (!licensed && !entitlementChecked) {
       // Mismo criterio mientras se verifica el entitlement de la cuenta.
       if (bootTimedOut) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />
