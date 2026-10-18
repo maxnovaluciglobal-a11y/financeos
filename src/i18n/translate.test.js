@@ -145,7 +145,7 @@ describe('T17: sin glifos unicode usados como ícono dentro de los textos', () =
 })
 
 describe('paridad de las claves del bloqueo T14 (es/en/pt/de)', () => {
-  const prefixes = ['lock.']
+  const prefixes = ['lock.', 'deviceSwitch.']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
