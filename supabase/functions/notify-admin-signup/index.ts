@@ -22,9 +22,9 @@ const NEWSLETTER_PROXY_TOKEN = Deno.env.get('NEWSLETTER_PROXY_TOKEN');
 // Doble opt-in (10-oct-2026, § 7 Abs. 2 UWG): el newsletter es marketing y un
 // alta gratuita (Starter/Invest) no trae consentimiento — la casilla de
 // LicenseGate va por send-optin-confirmation y se confirma después, no acá.
-// Por eso la suscripción automática a beehiiv queda APAGADA salvo que se
-// prenda a propósito con NEWSLETTER_AUTO_SUBSCRIBE_FREE=true (p. ej. si la
-// publication de beehiiv tiene su propio doble opt-in activado).
+// Por eso la suscripción automática al newsletter queda APAGADA salvo que se
+// prenda a propósito con NEWSLETTER_AUTO_SUBSCRIBE_FREE=true. Resend (donde
+// vive el newsletter desde el 18-oct-2026) no tiene doble opt-in propio.
 const NEWSLETTER_AUTO_SUBSCRIBE_FREE = autoSubscribeEnabled(Deno.env.get('NEWSLETTER_AUTO_SUBSCRIBE_FREE'));
 
 const VALID_EVENTS: SignupEvent[] = ['starter_signup', 'invest_signup'];
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
   // Pedido de Walter 21-sep-2026: sumar también a Starter (y a Invest en su
   // propia publication) a la suscripción del newsletter — antes ningún alta
-  // gratuita quedaba conectada a beehiiv.
+  // gratuita quedaba conectada al newsletter.
   // Desde el 10-oct-2026 solo con NEWSLETTER_AUTO_SUBSCRIBE_FREE=true (ver arriba).
   if (NEWSLETTER_AUTO_SUBSCRIBE_FREE) {
     const newsletterProduct = body.event === 'invest_signup' ? 'invest' : 'moyiq';
