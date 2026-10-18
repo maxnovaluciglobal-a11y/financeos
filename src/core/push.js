@@ -4,6 +4,7 @@
 
 import { getLicenseKey } from '../utils/licenseValidator.js'
 import { licenseKeyHash } from '../utils/syncCrypto.js'
+import { authClient } from './authClient.js'
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -26,10 +27,14 @@ export function isPushEnabled() {
   try { return localStorage.getItem(LS_ON) === '1' } catch { return false }
 }
 
+// Igual que sync.js: el servidor ata la suscripción a la cuenta de la sesión.
 async function rpc(fn, body) {
+  const { data } = (await authClient?.auth.getSession()) || {}
+  const token = data?.session?.access_token
+  if (!token) throw new Error('no_session')
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
     method: 'POST',
-    headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
+    headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`${fn} ${res.status}`)

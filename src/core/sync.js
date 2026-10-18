@@ -9,6 +9,7 @@
 import { exportAllData, importAllData } from './db/index.js'
 import { getLicenseKey } from '../utils/licenseValidator.js'
 import { encryptData, decryptData, licenseKeyHash } from '../utils/syncCrypto.js'
+import { authClient } from './authClient.js'
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -36,12 +37,22 @@ export function syncAvailable() {
   return !!(SUPABASE_URL && SUPABASE_ANON && getLicenseKey())
 }
 
+// Las RPC de sync exigen la sesión de la cuenta (18-oct-2026): el servidor
+// solo acepta la licencia si está asociada a auth.uid(), así que otra cuenta
+// con la misma clave no puede leer ni pisar el respaldo. Sin sesión, no hay sync.
+async function accessToken() {
+  const { data } = (await authClient?.auth.getSession()) || {}
+  const token = data?.session?.access_token
+  if (!token) throw new Error('no_session')
+  return token
+}
+
 async function rpc(fn, body) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
     method: 'POST',
     headers: {
       apikey: SUPABASE_ANON,
-      Authorization: `Bearer ${SUPABASE_ANON}`,
+      Authorization: `Bearer ${await accessToken()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),

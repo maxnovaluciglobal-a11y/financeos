@@ -9,8 +9,12 @@ import { planConfirmations } from '../../utils/recurringConfirm.js'
 import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/money.js'
 import { regionDefaults } from '../../i18n/region.js'
 import { unifyCategoryPayload } from '../../utils/categoryAliases.js'
+import { dbNameForActiveAccount } from '../deviceOwner.js'
 
-const DB_NAME = 'financeos'
+// Una base por cuenta (core/deviceOwner.js): 'financeos' para la cuenta que ya
+// la usaba, 'financeos__<uid>' para cualquier otra. Se resuelve en cada
+// apertura, nunca queda fija en el módulo.
+const dbName = () => dbNameForActiveAccount()
 
 // Stores con datos del usuario que viajan en el respaldo JSON y en el sync
 // cifrado. 'security' (PIN) y 'backups' (copias locales) quedan fuera a propósito.
@@ -36,7 +40,7 @@ export class DbOpenError extends Error {
 }
 
 function openFinanceDB(opts) {
-  return openDB(DB_NAME, DB_VERSION, {
+  return openDB(dbName(), DB_VERSION, {
     upgrade(db, oldVersion, newVersion, transaction) {
       runMigrations(db, oldVersion, newVersion, transaction, opts)
     },
@@ -46,20 +50,24 @@ function openFinanceDB(opts) {
   })
 }
 
-// ¿Ya existe una base 'financeos' con datos (versión >= 1)? Sin
+// ¿Ya existe la base de la cuenta activa con datos (versión >= 1)? Sin
 // indexedDB.databases() (navegadores viejos) no se puede saber sin crearla:
 // se asume que no, y se conserva el comportamiento anterior (fallback).
 export async function existingDatabase() {
   try {
     if (typeof indexedDB === 'undefined' || typeof indexedDB.databases !== 'function') return false
     const list = await indexedDB.databases()
-    return list.some(d => d?.name === DB_NAME && Number(d.version) >= 1)
+    const name = dbName()
+    return list.some(d => d?.name === name && Number(d.version) >= 1)
   } catch { return false }
 }
 
 let _opening = null
 export async function getDB() {
   if (_useLocalStorage) return null
+  // Defensa extra: si cambió la cuenta activa sin recargar, nunca se sigue
+  // usando la base de la anterior.
+  if (_db && _db.name !== dbName()) { _db.close(); _db = null }
   if (_db) return _db
   if (_opening) return _opening
   _opening = (async () => {
@@ -90,6 +98,10 @@ export async function getDB() {
 }
 
 export const isUsingFallback = () => _useLocalStorage
+
+// Cierra la conexión abierta (la próxima getDB() abre la base de la cuenta
+// activa). Para tests y para quien necesite soltar la base antes de recargar.
+export function closeDB() { _db?.close(); _db = null }
 
 // ─── CRUD genérico ────────────────────────────────────────────────────────────
 export async function dbGetAll(store) {

@@ -4,7 +4,8 @@ import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
 import ResetPassword from './components/ResetPassword.jsx'
 import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter, getLicenseKey } from './utils/licenseValidator.js'
-import { readDeviceOwner, writeDeviceOwner, decideOwnership } from './core/deviceOwner.js'
+import { readDeviceOwner, readLegacyUid, planAccountSwitch, applyAccountSwitch, hasVault, legacyBagLicenseKey } from './core/deviceOwner.js'
+import { disablePush, isPushEnabled } from './core/push.js'
 import DeviceSwitch from './components/DeviceSwitch.jsx'
 import { getSession, onAuthChange, syncUserLang } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
@@ -93,11 +94,14 @@ function Inner() {
   // válida, así que sin este flag caería directo a LicenseGate/la app en
   // vez de dejarlo elegir una contraseña nueva primero.
   const [passwordRecovery, setPasswordRecovery] = useState(false)
-  // 'checking' | 'ok' | 'other' — si los datos de este dispositivo son de esta
+  // 'checking' | 'ok' | 'failed' — si el espacio local activo es el de esta
   // cuenta (core/deviceOwner.js). Mientras no se sabe, no se muestra nada de
-  // la app: una cuenta nueva no debe ver ni un instante los datos o el plan
-  // de otra.
-  const [ownerStatus, setOwnerStatus] = useState('checking')
+  // la app: una cuenta no debe ver ni un instante los datos o el plan de otra.
+  // 'failed' = no se pudo cambiar de espacio (almacenamiento lleno).
+  // Guarda para qué cuenta se resolvió: si la sesión cambia de cuenta sin
+  // recargar (otra pestaña, cerrar e iniciar sesión), el estado viejo no vale.
+  const [owner, setOwner] = useState({ uid: null, status: 'checking' })
+  const setOwnerStatus = (status) => setOwner({ uid: session?.user?.id || null, status })
   // useApp() tiene que llamarse SIEMPRE, antes que cualquier return condicional
   // (Rules of Hooks) — estaba después del `if` de abajo, así que la sesión que
   // pasa de "sin licencia" a "activada" (LicenseGate → onActivate) cambiaba la
@@ -115,6 +119,9 @@ function Inner() {
     getSession().then(setSession)
     return onAuthChange(setSession, (event) => {
       if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true)
+      // Al cerrar sesión se recarga: lo que la cuenta tenía en memoria (datos,
+      // plan, estado de las pantallas) no sobrevive para la próxima.
+      if (event === 'SIGNED_OUT') window.location.reload()
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -131,15 +138,36 @@ function Inner() {
     let cancelled = false
     ;(async () => {
       const owner = readDeviceOwner()
+      const legacyUid = readLegacyUid()
       const deviceLicenseKey = getLicenseKey()
-      // Solo hace falta preguntar al servidor si no hay dueño registrado y el
-      // dispositivo tiene una licencia Pro guardada.
-      const serverEntitlement = !owner?.uid && deviceLicenseKey ? await getServerEntitlement(session.user.id) : null
-      const decision = decideOwnership({ owner, userId: session.user.id, deviceLicenseKey, serverEntitlement })
+      const bagKey = legacyBagLicenseKey()
+      // Solo hace falta preguntar al servidor si hay una licencia que podría
+      // ser (o no) de esta cuenta: la del dispositivo sin dueño, o la de
+      // unos datos sin dueño guardados aparte.
+      const needServer = (!owner?.uid && deviceLicenseKey) || (owner?.uid !== session.user.id && bagKey)
+      const serverEntitlement = needServer ? await getServerEntitlement(session.user.id) : null
       if (cancelled) return
-      if (decision === 'other') { setOwnerStatus('other'); return }
-      writeDeviceOwner(session.user)
-      setOwnerStatus('ok')
+      const plan = planAccountSwitch({
+        owner, legacyUid, userId: session.user.id, deviceLicenseKey, serverEntitlement,
+        hasVault: hasVault(session.user.id), legacyBagLicenseKey: bagKey,
+      })
+      if (plan.action !== 'switch') {
+        try { applyAccountSwitch(session.user, plan) } catch {}
+        setOwnerStatus('ok')
+        return
+      }
+      // Cambio de cuenta: el aviso push de este navegador estaba atado a la
+      // cuenta anterior, se da de baja antes de guardar su espacio.
+      if (isPushEnabled()) await disablePush().catch(() => {})
+      try {
+        applyAccountSwitch(session.user, plan)
+      } catch {
+        if (!cancelled) setOwnerStatus('failed')
+        return
+      }
+      // Recargar: la app arranca de cero con la base y los ajustes de esta
+      // cuenta. Nada de lo que había en memoria llega a pintarse.
+      window.location.reload()
     })()
     return () => { cancelled = true }
   }, [session?.user?.id])
@@ -185,7 +213,8 @@ function Inner() {
     }
     if (!session) return <AuthGate onAuthenticated={() => {}} />
     if (passwordRecovery) return <ResetPassword onDone={() => setPasswordRecovery(false)} />
-    if (ownerStatus === 'other') return <DeviceSwitch previousEmail={readDeviceOwner()?.email} />
+    const ownerStatus = owner.uid === session.user.id ? owner.status : 'checking'
+    if (ownerStatus === 'failed') return <DeviceSwitch previousEmail={readDeviceOwner()?.email} />
     if (ownerStatus === 'checking') return null
     if (!licensed && !entitlementChecked) {
       // Mismo criterio mientras se verifica el entitlement de la cuenta.
