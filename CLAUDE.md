@@ -181,3 +181,11 @@ Proyecto en `../ios-capacitor-moyiq/` (fuera de git, sibling de este repo, mismo
 1. Cuenta Apple Developer (US$99/año) — sin esto no se puede firmar para dispositivo real ni subir a App Store, solo correr en Simulator como ahora.
 2. Bundle ID a reservar en App Store Connect: `com.moyiq.app.ios` (ya usado en el scaffold, coherente con el Android `com.moyiq.app.twa`).
 3. **Riesgo real de review, evaluar antes de someter**: Apple rechaza más fácil que Google las apps "solo una web envuelta" sin funcionalidad nativa real (App Store Review Guideline 4.2, "Minimum Functionality"). Hoy el scaffold es 100% WebView sin ningún plugin nativo — biometría (Face ID para desbloquear, encaja natural con "privacy-first"), notificaciones push, o compartir nativo son los candidatos más obvios si hace falta reforzar el caso ante Apple. Decisión de producto, no técnica — evaluar cuando se llegue a este paso, no antes.
+
+## Auditoría de seguridad (18-oct-2026) — sin vulnerabilidad activa
+
+Revisión defensiva en local contra la base real reconstruida (fundación `.sql` de la raíz + 32 migraciones). Método transversal: memoria `auditoria-seguridad-metodo`.
+
+- **10/10 tablas con RLS.** Leads PII *fail-closed* (anon y usuario común ven 0; solo admin). `user_entitlements` aislado por `auth.uid() = user_id`. Trigger `lock_entitlements_plan_column` impide auto-asignarse `pro` sin licencia (probado en vivo). `stripe-webhook` verifica firma; `send-report-email` revalida la licencia server-side.
+- **Nota:** `tax_calculator_leads` no tiene policy de SELECT ni para admin (seguro, pero el CRM no la puede leer con el cliente normal, a diferencia de `starter_leads`/`diagnostico_leads`). `cloud_backups`/`crm_funnel` están fuera de las migraciones.
+- **Candado aplicado** (`src/core/cloudSync.js`): `CLOUD_ENCRYPTION_READY=false` bloquea `cloudPush` sin cifrar. Antes de prender `CLOUD_ENABLED` hay que implementar el cifrado AES-GCM — falta decidir el modelo de clave (derivada de un secreto del usuario; el servidor nunca debe poder descifrar).
