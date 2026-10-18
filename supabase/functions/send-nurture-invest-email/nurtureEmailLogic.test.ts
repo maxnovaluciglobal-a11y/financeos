@@ -10,6 +10,7 @@ import {
   runCronBatch,
   type InvestLead,
   type NurtureEmailConfig,
+  processWelcome,
 } from './nurtureEmailLogic.ts'
 
 const CONFIG: NurtureEmailConfig = {
@@ -104,7 +105,7 @@ describe('renderEmail', () => {
 
 describe('unsubscribeUrl', () => {
   it('arma la url con t=invest', () => {
-    expect(unsubscribeUrl(CONFIG, 'abc')).toBe('https://invest.moyiq.app/unsubscribe.html?id=abc&t=invest')
+    expect(unsubscribeUrl(CONFIG, 'abc')).toBe('https://moyiq.app/unsubscribe.html?id=abc&t=invest')
   })
 })
 
@@ -209,5 +210,50 @@ describe('runCronBatch', () => {
     const result = await runCronBatch(CONFIG)
     expect(result.email2).toEqual({ attempted: 1, sent: 1, failed: 0 })
     expect(result.email3).toEqual({ attempted: 1, sent: 0, failed: 1 })
+  })
+})
+
+const BASE_ROW = { email: 'lead@ejemplo.com', perfil: 'moderado' }
+
+describe('processWelcome (bienvenida: una sola vez y nunca a quien se dio de baja)', () => {
+  const ID = '0b6f1c2e-3d4a-4b5c-8d9e-0f1a2b3c4d5e'
+  const row = (over = {}) => ({ ...BASE_ROW, id: ID, ...over })
+  function router(r: any) {
+    return vi.fn(async (url: string, init: any = {}) => {
+      if (url.startsWith('https://api.resend.com')) return { ok: true, status: 200, json: async () => ({}), text: async () => '' }
+      if ((init.method ?? 'GET') === 'GET') return { ok: true, json: async () => (r ? [r] : []) }
+      return { ok: true, json: async () => ({}) }
+    })
+  }
+  const resendCalls = (m: any) => m.mock.calls.filter((c: any[]) => c[0].startsWith('https://api.resend.com'))
+
+  it('rechaza un id que no es uuid sin tocar la red', async () => {
+    const f = vi.fn(); vi.stubGlobal('fetch', f)
+    expect(await processWelcome('x', CONFIG)).toEqual({ ok: false, error: 'invalid_lead_id' })
+    expect(f).not.toHaveBeenCalled()
+  })
+
+  it('lead inexistente', async () => {
+    vi.stubGlobal('fetch', router(null))
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: false, error: 'lead_not_found' })
+  })
+
+  it('no repite el envío si email1_sent_at ya está marcado', async () => {
+    const f = router(row({ email1_sent_at: '2026-10-08T12:00:00Z' })); vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true, state: 'already_sent' })
+    expect(resendCalls(f)).toHaveLength(0)
+  })
+
+  it('no manda nada a quien se dio de baja', async () => {
+    const f = router(row({ unsubscribed_at: '2026-10-08T12:00:00Z' })); vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true, state: 'unsubscribed' })
+    expect(resendCalls(f)).toHaveLength(0)
+  })
+
+  it('manda una vez y marca email1_sent_at', async () => {
+    const f = router(row()); vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true })
+    expect(resendCalls(f)).toHaveLength(1)
+    expect(f.mock.calls.some((c: any[]) => (c[1]?.method ?? 'GET') === 'PATCH')).toBe(true)
   })
 })

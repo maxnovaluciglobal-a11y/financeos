@@ -13,6 +13,12 @@ import { localDateStr } from '../utils/index.js'
 const ESTADOS = ['nuevo', 'contactado', 'nutriendo', 'convertido', 'perdido']
 const PRODUCTOS = ['moyiq', 'invest']
 
+// `plan` lo mantiene la base (crm_refresh_contact, migración 20261018000000):
+// null = sin cuenta, 'gratis' = tiene cuenta, 'pro' = paga. `estado` es la
+// etapa de venta que mueve Walter a mano.
+const PLAN_LABEL = { pro: 'Pro', gratis: 'Cuenta gratis' }
+const fmtDate = (ts) => (ts ? new Date(ts).toLocaleDateString('es-CL') : '—')
+
 function Row({ row, onSave, onOpenDetail }) {
   const [estado, setEstado] = useState(row.estado)
   const [notas, setNotas] = useState(row.notas || '')
@@ -34,10 +40,11 @@ function Row({ row, onSave, onOpenDetail }) {
         title="Ver detalle"
       >
         {row.email}
+        {row.nombre && <div style={{ fontFamily: 'var(--sans, sans-serif)', fontSize: 11, color: '#888', textDecoration: 'none' }}>{row.nombre}</div>}
       </td>
       <td style={{ padding: '8px 10px' }}>{row.producto_origen}</td>
       <td style={{ padding: '8px 10px', fontSize: 12 }}>{row.fuente || '—'}</td>
-      <td style={{ padding: '8px 10px', textAlign: 'center' }}>{row.score ?? '—'}</td>
+      <td style={{ padding: '8px 10px', fontSize: 12, whiteSpace: 'nowrap' }}>{PLAN_LABEL[row.plan] || '—'}</td>
       <td style={{ padding: '8px 10px' }}>
         <select
           value={estado}
@@ -56,8 +63,11 @@ function Row({ row, onSave, onOpenDetail }) {
           style={{ width: '100%', fontSize: 12, padding: '4px 6px' }}
         />
       </td>
-      <td style={{ padding: '8px 10px', fontSize: 11, color: '#888' }}>
-        {row.creado_en ? new Date(row.creado_en).toLocaleDateString('es-CL') : '—'}
+      <td style={{ padding: '8px 10px', fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>
+        {fmtDate(row.creado_en)}
+      </td>
+      <td style={{ padding: '8px 10px', fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>
+        {fmtDate(row.ultimo_contacto)}
       </td>
       <td style={{ padding: '8px 10px' }}>
         <button onClick={handleSave} disabled={!dirty || saving} style={{ fontSize: 12, padding: '4px 10px' }}>
@@ -69,7 +79,7 @@ function Row({ row, onSave, onOpenDetail }) {
 }
 
 function exportRowsToCsv(rows) {
-  const headers = ['email', 'producto_origen', 'fuente', 'score', 'estado', 'notas', 'ultimo_contacto', 'creado_en']
+  const headers = ['email', 'nombre', 'producto_origen', 'fuente', 'plan', 'score', 'estado', 'notas', 'ultimo_contacto', 'creado_en']
   const escapeCsv = (v) => {
     const s = v === null || v === undefined ? '' : String(v)
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
@@ -152,32 +162,36 @@ function FunnelSummary({ funnel }) {
   )
 }
 
-// Panel de detalle: se abre al hacer click en una fila. Trae el registro
-// crudo de diagnostico_leads (email1/2/3_sent_at) para mostrar qué parte de
-// la secuencia de nurture ya recibió ese lead — dato que no vive en
-// crm_contacts, solo en la tabla de origen del diagnóstico.
-// crm_contacts no distingue de qué tabla de origen viene cada lead de MOY IQ
-// — hay dos posibles (diagnostico_leads o starter_leads, ver migración
-// 20260918000400), diferenciadas acá por `fuente` ('starter' vs cualquier
-// otra cosa == vino del diagnóstico).
+// Panel de detalle: se abre al hacer click en una fila y trae la fila más
+// reciente de la tabla de origen del lead (qué correos de nurture recibió,
+// consentimiento, baja). crm_contacts no guarda de qué tabla vino: se deduce
+// de `producto_origen` y `fuente`. Lectura permitida por las policies de
+// admin (migraciones 20260918000400 y 20261018000000).
+function sourceTable(row) {
+  if (row.producto_origen === 'invest') return 'invest_leads'
+  if (row.fuente === 'starter') return 'starter_leads'
+  if (row.fuente === 'demo') return 'demo_leads'
+  if (row.fuente === 'calculadora') return 'tax_calculator_leads'
+  if (row.fuente === 'stripe') return null
+  return 'diagnostico_leads'
+}
+
 function LeadDetail({ row, onClose }) {
   const [nurture, setNurture] = useState(undefined)
+  const table = sourceTable(row)
 
   useEffect(() => {
     let cancelled = false
-    if (row.producto_origen !== 'moyiq') { setNurture(null); return }
-    const table = row.fuente === 'starter' ? 'starter_leads' : 'diagnostico_leads'
-    const cols = row.fuente === 'starter'
-      ? 'email1_sent_at, email2_sent_at, email3_sent_at, created_at'
-      : 'score, label, consent_marketing, email1_sent_at, email2_sent_at, email3_sent_at, creado_en'
+    if (!table) { setNurture(null); return }
     authClient
       .from(table)
-      .select(cols)
-      .eq('email', row.email)
-      .maybeSingle()
-      .then(({ data }) => { if (!cancelled) setNurture(data || null) })
+      .select('*')
+      .ilike('email', row.email)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => { if (!cancelled) setNurture(data?.[0] || null) })
     return () => { cancelled = true }
-  }, [row.email, row.producto_origen, row.fuente])
+  }, [row.email, table])
 
   const fmt = (ts) => (ts ? new Date(ts).toLocaleString('es-CL') : null)
 
@@ -201,8 +215,21 @@ function LeadDetail({ row, onClose }) {
         <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Fuente</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.fuente || '—'}</div>
 
+        {row.nombre && (
+          <>
+            <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Nombre</div>
+            <div style={{ fontSize: 13, marginBottom: 12 }}>{row.nombre}</div>
+          </>
+        )}
+
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Plan</div>
+        <div style={{ fontSize: 13, marginBottom: 12 }}>{PLAN_LABEL[row.plan] || 'Sin cuenta'}</div>
+
         <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Score</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.score ?? '—'}</div>
+
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Último contacto</div>
+        <div style={{ fontSize: 13, marginBottom: 12 }}>{fmtDate(row.ultimo_contacto)}</div>
 
         <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Estado</div>
         <div style={{ fontSize: 13, marginBottom: 16 }}>{row.estado}</div>
@@ -213,15 +240,15 @@ function LeadDetail({ row, onClose }) {
         <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, borderTop: '1px solid var(--bd, #e5e5e5)', paddingTop: 14 }}>
           Secuencia de nurture
         </div>
-        {row.producto_origen !== 'moyiq' ? (
-          <div style={{ fontSize: 12, color: '#888' }}>Invest todavía no tiene nurture automático.</div>
-        ) : nurture === undefined ? (
+        {nurture === undefined ? (
           <div style={{ fontSize: 12, color: '#888' }}>Cargando...</div>
         ) : nurture === null ? (
-          <div style={{ fontSize: 12, color: '#888' }}>Sin registro en diagnostico_leads (¿no vino del diagnóstico?).</div>
+          <div style={{ fontSize: 12, color: '#888' }}>
+            {table ? `Sin registro en ${table}.` : 'Llegó directo por Stripe, sin lead previo.'}
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[1, 2, 3].map((n) => {
+            {[1, 2, 3, 4].filter((n) => `email${n}_sent_at` in nurture).map((n) => {
               const ts = nurture[`email${n}_sent_at`]
               return (
                 <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
@@ -230,12 +257,93 @@ function LeadDetail({ row, onClose }) {
                 </div>
               )
             })}
-            {nurture.consent_marketing === false && (
-              <div style={{ fontSize: 11, color: '#c00', marginTop: 4 }}>Sin consentimiento de marketing — no recibe nurture.</div>
+            {!['email1_sent_at', 'email2_sent_at'].some((k) => k in nurture) && (
+              <div style={{ fontSize: 12, color: '#888' }}>Esta puerta no tiene secuencia de correos.</div>
+            )}
+            <div style={{ fontSize: 12, marginTop: 6, color: nurture.consent_marketing ? 'inherit' : '#c00' }}>
+              Marketing: {nurture.consent_marketing === true
+                ? (nurture.consent_confirmed_at ? `confirmado el ${fmt(nurture.consent_confirmed_at)}` : 'aceptado, falta confirmar el correo')
+                : nurture.consent_marketing === false ? 'no aceptado — solo correos de servicio' : 'sin dato'}
+            </div>
+            {nurture.unsubscribed_at && (
+              <div style={{ fontSize: 12, color: '#c00' }}>Se dio de baja el {fmt(nurture.unsubscribed_at)}.</div>
             )}
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+// Solicitudes de cancelación (cancelar.html → submit_cancellation_request).
+// Stripe no se toca desde acá: Walter procesa la baja en Stripe y marca la
+// solicitud. Lectura y escritura solo para admins (RLS).
+const CANCEL_STATUS = { received: 'Recibida', processing: 'En proceso', done: 'Procesada', rejected: 'Rechazada' }
+
+function Cancellations() {
+  const [items, setItems] = useState(null)
+  const [error, setError] = useState('')
+
+  const load = useCallback(async () => {
+    const { data, error: err } = await authClient
+      .from('cancellation_requests')
+      .select('id, created_at, name, email, plan, kind, reason, requested_date, status, processed_at')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (err) { setError(err.message); setItems([]); return }
+    setItems(data || [])
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  async function setStatus(id, status) {
+    const patch = { status, processed_at: status === 'done' || status === 'rejected' ? new Date().toISOString() : null }
+    const { error: err } = await authClient.from('cancellation_requests').update(patch).eq('id', id)
+    if (err) { setError(err.message); return }
+    load()
+  }
+
+  if (items === null) return null
+  const pending = items.filter((c) => c.status === 'received' || c.status === 'processing').length
+
+  return (
+    <div style={{ marginTop: 32 }}>
+      <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+        Solicitudes de cancelación {pending > 0 && <span style={{ color: '#c00' }}>· {pending} pendiente{pending > 1 ? 's' : ''}</span>}
+      </h2>
+      {error && <div style={{ color: '#c00', fontSize: 13, marginBottom: 8 }}>Error: {error}</div>}
+      {items.length === 0 ? (
+        <div style={{ fontSize: 13, color: '#888' }}>No hay solicitudes.</div>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid var(--bd, #ccc)', textAlign: 'left' }}>
+              <th style={{ padding: '6px 8px' }}>Fecha</th>
+              <th style={{ padding: '6px 8px' }}>Persona</th>
+              <th style={{ padding: '6px 8px' }}>Plan</th>
+              <th style={{ padding: '6px 8px' }}>Tipo</th>
+              <th style={{ padding: '6px 8px' }}>Motivo</th>
+              <th style={{ padding: '6px 8px' }}>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((c) => (
+              <tr key={c.id} style={{ borderBottom: '1px solid var(--bd, #e5e5e5)' }}>
+                <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>{fmtDate(c.created_at)}</td>
+                <td style={{ padding: '6px 8px' }}>{c.name}<div style={{ fontFamily: 'var(--mono)', color: '#888' }}>{c.email}</div></td>
+                <td style={{ padding: '6px 8px' }}>{c.plan || '—'}</td>
+                <td style={{ padding: '6px 8px' }}>{c.kind}{c.requested_date ? ` · ${fmtDate(c.requested_date)}` : ''}</td>
+                <td style={{ padding: '6px 8px', maxWidth: 260 }}>{c.reason || '—'}</td>
+                <td style={{ padding: '6px 8px' }}>
+                  <select value={c.status} onChange={(e) => setStatus(c.id, e.target.value)} style={{ fontSize: 12, padding: '4px 6px' }}>
+                    {Object.entries(CANCEL_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   )
 }
@@ -330,10 +438,11 @@ function CRMPanel({ session, onSignOut }) {
               <th style={{ padding: '8px 10px' }}>Email</th>
               <th style={{ padding: '8px 10px' }}>Producto</th>
               <th style={{ padding: '8px 10px' }}>Fuente</th>
-              <th style={{ padding: '8px 10px' }}>Score</th>
+              <th style={{ padding: '8px 10px' }}>Plan</th>
               <th style={{ padding: '8px 10px' }}>Estado</th>
               <th style={{ padding: '8px 10px' }}>Notas</th>
               <th style={{ padding: '8px 10px' }}>Creado</th>
+              <th style={{ padding: '8px 10px' }}>Últ. contacto</th>
               <th style={{ padding: '8px 10px' }}></th>
             </tr>
           </thead>
@@ -342,6 +451,8 @@ function CRMPanel({ session, onSignOut }) {
           </tbody>
         </table>
       )}
+
+      <Cancellations />
 
       {detailRow && <LeadDetail row={detailRow} onClose={() => setDetailRow(null)} />}
     </div>

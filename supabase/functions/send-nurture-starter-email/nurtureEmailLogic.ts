@@ -45,6 +45,8 @@ export type NurtureMode = "welcome" | "day2" | "day5";
 export const NURTURE_MODES: NurtureMode[] = ["welcome", "day2", "day5"];
 
 export interface StarterLead {
+  email1_sent_at?: string | null;
+  unsubscribed_at?: string | null;
   id: string;
   email: string;
   // Idioma del lead (migración 20261009000000_leads_lang.sql). Opcional: antes
@@ -241,4 +243,27 @@ export async function runCronBatch(config: NurtureEmailConfig): Promise<CronRunR
   }
 
   return result;
+}
+
+export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type WelcomeResult =
+  | { ok: true; state?: "already_sent" | "unsubscribed" }
+  | { ok: false; error: string };
+
+// La bienvenida es transaccional (la pidió la persona al registrarse), pero
+// sale una sola vez por fila y nunca a quien se dio de baja: antes cualquiera
+// con el id de un lead podía dispararla de nuevo (auditoría 18-oct-2026).
+// Mismo patrón que processWelcome de send-nurture-diagnostico-email.
+export async function processWelcome(leadId: unknown, config: NurtureEmailConfig): Promise<WelcomeResult> {
+  if (typeof leadId !== "string" || !UUID_RE.test(leadId)) return { ok: false, error: "invalid_lead_id" };
+  const lead = await fetchLeadById(leadId, config);
+  if (!lead) return { ok: false, error: "lead_not_found" };
+  if (lead.email1_sent_at) return { ok: true, state: "already_sent" };
+  if (lead.unsubscribed_at) return { ok: true, state: "unsubscribed" };
+  const rendered = renderEmail("welcome", lead, config);
+  const result = await sendViaResend(lead.email, rendered, config);
+  if (!result.ok) return { ok: false, error: result.error ?? "send_failed" };
+  await markSent(lead.id, "welcome", config);
+  return { ok: true };
 }
