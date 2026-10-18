@@ -9,6 +9,21 @@ import { exportAllData } from './db/index.js'
 
 const LS_CLOUD_KEY = 'fnos_cloud_uid'
 
+// ── CANDADO DE CIFRADO (auditoría de seguridad, oct-2026) ────────────────────
+// Regla no negociable del producto: "Nada de datos financieros al servidor sin
+// cifrar". Hoy cloudPush sube el export TAL CUAL (sin cifrar). Mientras no se
+// implemente el cifrado AES-GCM en el cliente, este candado impide que, al
+// prender CLOUD_ENABLED, se filtren datos en texto plano: la subida falla fuerte
+// en vez de filtrar en silencio.
+//
+// Para habilitar el sync hay que, ANTES de poner esto en true:
+//   1) Decidir el modelo de clave (el servidor NUNCA debe poder descifrar):
+//      la clave debe derivar de un secreto del usuario — p.ej. una frase de
+//      recuperación (PBKDF2/Argon2) — no de la sesión anónima actual.
+//   2) Cifrar `payload` con crypto.subtle (AES-GCM, IV aleatorio por subida)
+//      antes del upsert, y descifrar en cloudPull.
+const CLOUD_ENCRYPTION_READY = false
+
 // ── AUTH ANÓNIMA ─────────────────────────────────────────────────────────────
 // Genera (o recupera) una sesión anónima para este dispositivo.
 // El user_id se persiste en Supabase session storage automáticamente.
@@ -26,6 +41,10 @@ export async function ensureCloudSession() {
 // ── PUSH — sube datos locales a la nube ──────────────────────────────────────
 export async function cloudPush() {
   if (!CLOUD_ENABLED) throw new Error('Cloud no configurado')
+  // Candado fail-closed: no subir datos financieros sin cifrar (ver arriba).
+  if (!CLOUD_ENCRYPTION_READY) {
+    throw new Error('cloudPush deshabilitado: falta implementar el cifrado AES-GCM antes de subir datos (auditoría seguridad oct-2026)')
+  }
 
   const user = await ensureCloudSession()
   const payload = await exportAllData()  // mismo formato que backup local
