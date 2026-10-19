@@ -2,13 +2,23 @@
   "redirects": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "app.financeospro.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "app.financeospro.com"
+        }
+      ],
       "destination": "https://app.moyiq.app/$1",
       "permanent": true
     },
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "demo.financeospro.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "demo.financeospro.com"
+        }
+      ],
       "destination": "https://demo.moyiq.app/$1",
       "permanent": true
     },
@@ -47,7 +57,41 @@
   "headers": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "app.financeospro.com" }],
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' data: blob: https://nelwgbcddwiaimzbcuas.supabase.co wss://nelwgbcddwiaimzbcuas.supabase.co https://dolarapi.com https://ve.dolarapi.com https://mindicador.cl; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.financeospro.com"
+        }
+      ],
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -57,7 +101,12 @@
     },
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "app.moyiq.app" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "app.moyiq.app"
+        }
+      ],
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -67,7 +116,12 @@
     },
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "demo.financeospro.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "demo.financeospro.com"
+        }
+      ],
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -77,7 +131,12 @@
     },
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "demo.moyiq.app" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "demo.moyiq.app"
+        }
+      ],
       "headers": [
         {
           "key": "X-Robots-Tag",
