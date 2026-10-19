@@ -15,7 +15,10 @@ const enc = new TextEncoder();
 // Verifica la firma del webhook de Stripe (esquema t=...,v1=...) con HMAC-SHA256.
 // Prueba contra varios secrets (test + live) y acepta si alguno coincide.
 import { type EmailLang, INTL_LOCALE, langFromStripeSession, langFromStripeSubscription } from "../_shared/emailLang.ts";
+import { secretEquals } from "../_shared/secretEquals.ts";
 export { langFromStripeSession, langFromStripeSubscription };
+
+export const SIGNATURE_TOLERANCE_SECONDS = 300;
 
 export async function verifyStripeSignature(rawBody: string, sigHeader: string, secrets: string[]): Promise<boolean> {
   if (!sigHeader || secrets.length === 0) return false;
@@ -24,9 +27,11 @@ export async function verifyStripeSignature(rawBody: string, sigHeader: string, 
   const v1s = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
   if (!t || v1s.length === 0) return false;
 
-  // tolerancia de 5 min contra replay
+  // Tolerancia de 5 min contra replay. Un t no numérico daba NaN y
+  // `NaN > 300` es false: pasaba el control de tiempo (auditoría 360, C-13).
+  if (!/^\d{1,12}$/.test(t)) return false;
   const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - Number(t)) > 300) return false;
+  if (Math.abs(now - Number(t)) > SIGNATURE_TOLERANCE_SECONDS) return false;
 
   for (const secret of secrets) {
     const key = await crypto.subtle.importKey(
@@ -34,7 +39,7 @@ export async function verifyStripeSignature(rawBody: string, sigHeader: string, 
     );
     const mac = await crypto.subtle.sign("HMAC", key, enc.encode(`${t}.${rawBody}`));
     const expected = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, "0")).join("");
-    if (v1s.includes(expected)) return true;
+    if (v1s.some((v1) => secretEquals(v1, expected))) return true;
   }
   return false;
 }
@@ -48,11 +53,6 @@ export function generateKey(): string {
     out += charset[rnd[i] % charset.length];
   }
   return `FNOS-${out}`;
-}
-
-export function planFromAmount(amountTotal: number | null): "personal" | "pro" {
-  // centavos. Personal US$19 (1900) / Pro US$29 (2900) → umbral 2400.
-  return (amountTotal ?? 0) >= 2400 ? "pro" : "personal";
 }
 
 // ── Prueba de Pro por 14 días CON tarjeta (T10, fase 4 · 2026-10-08) ───────
@@ -89,26 +89,30 @@ function trialLinkEntries<T>(value: T | ((interval: "month" | "year") => T)): Re
   return out;
 }
 
-// Payment Links reales de producción (dashboard.stripe.com → Payment Links,
-// ambos "Active" desde 12-jul-2026). Clasificar por acá primero es lo que de
-// verdad habilita precio regional LATAM: un precio nuevo o un monto convertido
-// a otra moneda para el MISMO Payment Link sigue resolviendo al plan correcto
-// sin importar cuánto termine cobrándose — el umbral fijo en centavos de
-// planFromAmount (arriba) rompía justo eso. Si se crea un Payment Link nuevo
-// (otra región/moneda), agregarlo acá; hasta entonces cae al fallback de monto.
+// Payment Links de la cuenta de Stripe de MOY IQ (acct_1UEffP2L52ZuuTMr). Es
+// la ÚNICA fuente del plan: un checkout cuyo Payment Link no está acá no emite
+// licencia (auditoría 360, C-13 / FN-1). Antes caía a un umbral por monto y
+// cualquier checkout firmado con un secreto aceptado —por ejemplo uno de la
+// cuenta de DypOS, que compartía el secreto de junio— generaba una licencia.
+// Los links de la cuenta compartida (…Rxn4y6AU3r, hoy de DypOS) se retiraron
+// el 12-sep y sus productos se borraron el 10-oct: quedan en
+// RETIRED_PAYMENT_LINKS solo para que el log diga qué eran. Un Payment Link
+// nuevo (otra región o moneda) se agrega acá antes de publicarlo.
 export const PAYMENT_LINK_PLAN: Record<string, "personal" | "pro"> = {
-  plink_1TsMlSRxn4y6AU3r6CkGfuhO: "personal", // https://buy.stripe.com/dRmeVf64WdSR85HgvD3wQ02 (pago único, en retiro)
-  plink_1TsMlpRxn4y6AU3rcPN5urIw: "pro",      // https://buy.stripe.com/fZu5kFctk5ml1Hj3IR3wQ03 (pago único, en retiro)
-  plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "pro",      // https://buy.stripe.com/00w8wR3WOcON85Ha7f3wQ04 Pro mensual US$4.99 (cuenta compartida Maxnova Luci, en retiro 12-sep — separación de cuentas Stripe)
-  plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "pro",      // https://buy.stripe.com/6oU5kF3WO2a90Dfa7f3wQ05 Pro anual US$39.99 (cuenta compartida Maxnova Luci, en retiro 12-sep)
-  plink_1UEgvJ2L52ZuuTMr1Agq0t4b: "pro",      // https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00 Pro mensual US$4.99 (cuenta propia MOY IQ, acct_1UEffP2L52ZuuTMr — activo desde 12-sep)
-  plink_1UEgve2L52ZuuTMrdS1OE9fh: "pro",      // https://buy.stripe.com/3cI14gbTF7qwbeYaz7fnO01 Pro anual US$39.99 (cuenta propia MOY IQ — activo desde 12-sep)
+  plink_1UEgvJ2L52ZuuTMr1Agq0t4b: "pro",      // https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00 Pro mensual US$4.99 (activo desde 12-sep)
+  plink_1UEgve2L52ZuuTMrdS1OE9fh: "pro",      // https://buy.stripe.com/3cI14gbTF7qwbeYaz7fnO01 Pro anual US$39.99 (activo desde 12-sep)
   ...trialLinkEntries("pro"),
 };
 
-export function planFromSession(session: { payment_link?: string | null; amount_total?: number | null }): "personal" | "pro" {
-  const byLink = session.payment_link ? PAYMENT_LINK_PLAN[session.payment_link] : undefined;
-  return byLink ?? planFromAmount(session.amount_total ?? null);
+export const RETIRED_PAYMENT_LINKS: readonly string[] = [
+  "plink_1TsMlSRxn4y6AU3r6CkGfuhO", // Personal pago único (cuenta compartida)
+  "plink_1TsMlpRxn4y6AU3rcPN5urIw", // Pro pago único (cuenta compartida)
+  "plink_1UEfHBRxn4y6AU3r2Cd9SAmi", // Pro mensual (cuenta compartida)
+  "plink_1UEfI7Rxn4y6AU3rgSX3eaOQ", // Pro anual (cuenta compartida)
+];
+
+export function planFromSession(session: { payment_link?: string | null }): "personal" | "pro" | null {
+  return session?.payment_link ? PAYMENT_LINK_PLAN[session.payment_link] ?? null : null;
 }
 
 // Solo para decidir el texto del email de bienvenida (mensual/anual/pago único)
@@ -116,8 +120,6 @@ export function planFromSession(session: { payment_link?: string | null; amount_
 // SIEMPRE lo fija extendLicenseExpiry() desde invoice.payment_succeeded, esto
 // es solo cosmético/best-effort mientras esa invoice llega (segundos después).
 const SUBSCRIPTION_INTERVAL: Record<string, "month" | "year"> = {
-  plink_1UEfHBRxn4y6AU3r2Cd9SAmi: "month",
-  plink_1UEfI7Rxn4y6AU3rgSX3eaOQ: "year",
   plink_1UEgvJ2L52ZuuTMr1Agq0t4b: "month",
   plink_1UEgve2L52ZuuTMrdS1OE9fh: "year",
   ...trialLinkEntries<"month" | "year">((interval) => interval),
@@ -221,31 +223,27 @@ export function isTestModeCheckout(event: { type?: string; livemode?: boolean })
   return CHECKOUT_EVENT_TYPES.includes(event?.type as string) && event?.livemode !== true;
 }
 
-// Solo checkouts realmente pagados y con un monto válido (evita $0 / pruebas).
-// Antes descartaba en silencio cualquier pago menor a US$19 en centavos fijos
-// — con planFromSession clasificando por Payment Link, un precio regional más
-// bajo para el mismo plan ya no debe perderse acá. Sigue rechazando $0 (link
-// con cupón 100% u otro caso degenerado, ninguno esperado hoy: "Allow
-// promotion codes" está apagado en los 2 Payment Links reales).
-//
-// T10 (2026-10-08): una prueba de Pro llega con amount_total=0 y
-// payment_status "paid". Ese caso ya NO se descarta si es una suscripción de
-// un Payment Link conocido de MOY IQ (PAYMENT_LINK_PLAN, que incluye los
-// TRIAL_LINK_*). Un $0 de un link desconocido se sigue descartando, como
-// antes: puede ser la prueba de otro producto de la cuenta de Stripe, o un
-// link de prueba cuyo id todavía no se pegó acá (en ese caso index.ts avisa a
-// ALERT_EMAIL para que no pase en silencio).
-export type CheckoutSkipReason = "unpaid" | "zero_amount" | "zero_amount_unknown_link";
+// Solo checkouts pagados de un Payment Link de MOY IQ emiten licencia.
+//   - "unpaid": payment_status distinto de "paid" (OXXO/boleto pendientes:
+//     llega después como async_payment_succeeded).
+//   - "no_payment_link": checkout fuera de Payment Links (otro producto de la
+//     cuenta, p. ej. Invest). Se ignora sin aviso.
+//   - "unknown_payment_link": link que no está en PAYMENT_LINK_PLAN. Puede ser
+//     un link nuevo de MOY IQ sin cargar acá (el cliente pagó y no tiene
+//     clave) o uno ajeno: index.ts avisa a ALERT_EMAIL.
+//   - "zero_amount": $0 que no es una prueba de suscripción.
+// Una prueba de Pro llega con amount_total=0 y payment_status "paid" y se
+// acepta si el link es conocido. Ya no hay fallback por monto (C-13).
+export type CheckoutSkipReason = "unpaid" | "no_payment_link" | "unknown_payment_link" | "zero_amount";
 
 export function checkoutSkipReason(
   session: { payment_status?: string; amount_total?: number | null; mode?: string; payment_link?: string | null },
 ): CheckoutSkipReason | null {
   if (session.payment_status !== "paid") return "unpaid";
-  const amount = session.amount_total ?? 0;
-  if (amount > 0) return null;
-  if (session.mode !== "subscription") return "zero_amount";
-  const known = !!session.payment_link && session.payment_link in PAYMENT_LINK_PLAN;
-  return known ? null : "zero_amount_unknown_link";
+  if (!session.payment_link) return "no_payment_link";
+  if (!planFromSession(session)) return "unknown_payment_link";
+  if ((session.amount_total ?? 0) > 0) return null;
+  return session.mode === "subscription" ? null : "zero_amount";
 }
 
 export function shouldSkipCheckout(
@@ -853,10 +851,9 @@ export async function sendTrialEndingEmail(to: string, billing: TrialBilling, co
   }
 }
 
-// Un checkout de prueba ($0) de un Payment Link que no está en
-// PAYMENT_LINK_PLAN no emite licencia (ver checkoutSkipReason). Si es un link
-// de prueba de MOY IQ cuyo id no se pegó en TRIAL_LINK_*, el cliente queda con
-// la tarjeta registrada y sin clave — se avisa para resolverlo a mano.
+// Un checkout de un Payment Link que no está en PAYMENT_LINK_PLAN no emite
+// licencia (ver checkoutSkipReason). Si es un link de MOY IQ sin cargar, el
+// cliente queda sin clave: se avisa para resolverlo a mano.
 export async function notifyUnmappedTrialCheckout(
   details: { sessionRef: string | null; email: string | null; paymentLink: string | null },
   config: WebhookConfig,
@@ -864,13 +861,13 @@ export async function notifyUnmappedTrialCheckout(
   if (!config.resendApiKey || !config.alertEmail) return;
   const html = `
     <div style="font-family:system-ui,sans-serif">
-      <p><strong>Checkout de suscripción de $0 sin licencia emitida.</strong></p>
+      <p><strong>Checkout pagado de un Payment Link que no es de MOY IQ: no se emitió licencia.</strong></p>
       <ul>
         <li>session: ${details.sessionRef ?? "(sin session)"}</li>
         <li>email del cliente: ${details.email ?? "(sin email)"}</li>
         <li>payment_link: ${details.paymentLink ?? "(sin payment_link)"}</li>
       </ul>
-      <p>Si es un link de prueba de MOY IQ, falta pegar su id en TRIAL_LINK_MONTHLY_TODO / TRIAL_LINK_ANNUAL_TODO (webhookLogic.ts) y emitir la licencia a mano. Si es de otro producto, ignorar.</p>
+      <p>Si es un link de MOY IQ, falta agregarlo a PAYMENT_LINK_PLAN (webhookLogic.ts) y emitir la licencia a mano. Si es un link retirado o de otro producto, revisar en Stripe de qué cuenta vino el evento.</p>
     </div>`;
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -878,7 +875,7 @@ export async function notifyUnmappedTrialCheckout(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "MOY IQ: checkout de prueba sin licencia", html,
+        subject: "MOY IQ: checkout sin licencia (Payment Link desconocido)", html,
       }),
     });
     if (!res.ok) console.error(`notifyUnmappedTrialCheckout: Resend error ${res.status} ${await res.text()}`);
@@ -958,20 +955,132 @@ export async function handleTrialWillEnd(event: any, config: WebhookConfig): Pro
     return { status: 200, body: { received: true, ignored: "inactive_or_no_email" } };
   }
 
-  const eventId = typeof event?.id === "string" ? event.id : null;
-  if (eventId) {
-    const claim = await claimWebhookEvent(eventId, "customer.subscription.trial_will_end", config);
-    if (claim === "duplicate") {
-      console.log(`trial_will_end ya enviado: event=${eventId} subscription=${subscriptionId}`);
-      return { status: 200, body: { received: true, ignored: "already_sent" } };
+  const sent = await sendTrialEndingEmail(license.email, billing, config, langFromStripeSubscription(sub));
+  if (!sent) return { status: 500, body: { error: "trial reminder not sent" } };
+  console.log(`trial_will_end enviado: event=${event?.id ?? "-"} subscription=${subscriptionId} trial_end=${billing.endsAt}`);
+  return { status: 200, body: { received: true } };
+}
+
+// Fin del período pagado de una suscripción. API vieja: current_period_end en
+// la raíz; desde basil (2025-03-31) vive en cada item. Se toma el máximo.
+export function periodEndFromSubscription(sub: any): string | null {
+  const ends: number[] = [];
+  if (typeof sub?.current_period_end === "number") ends.push(sub.current_period_end);
+  for (const item of sub?.items?.data ?? []) {
+    if (typeof item?.current_period_end === "number") ends.push(item.current_period_end);
+  }
+  if (ends.length === 0) return null;
+  return new Date(Math.max(...ends) * 1000).toISOString();
+}
+
+// Estados de Stripe que terminan el acceso de inmediato. "unpaid" no está a
+// propósito: llega después de agotar los reintentos, cuando expires_at (el fin
+// del último período pagado) ya pasó, y una revocación no se deshace sola si
+// la persona paga la factura pendiente y la suscripción vuelve a "active".
+export const REVOKING_SUBSCRIPTION_STATUSES = ["canceled", "incomplete_expired"];
+
+// customer.subscription.updated (auditoría 360, META-4 / C-13): cambio de plan
+// o de intervalo en el portal, renovación, cancelación al final del período o
+// paso a un estado terminal. El acceso lo manda expires_at:
+//   - active / trialing: se lleva expires_at al fin del período vigente (solo
+//     hacia adelante, extend_license_expiry nunca lo acorta). Cubre el cambio
+//     de mensual a anual sin esperar a la próxima invoice.
+//   - canceled / incomplete_expired: revoca, igual que subscription.deleted.
+//   - past_due, unpaid, paused, incomplete: solo log; Stripe sigue cobrando o
+//     expires_at vence solo.
+// La tabla licenses no guarda plan por intervalo (todas las suscripciones son
+// "pro"), así que no hay plan que actualizar.
+export async function handleSubscriptionUpdated(sub: any, config: WebhookConfig): Promise<HandlerResult> {
+  const subscriptionId = subRefId(sub?.id);
+  const status = typeof sub?.status === "string" ? sub.status : null;
+  if (!subscriptionId || !status) return { status: 200, body: { received: true, ignored: "no_subscription_or_status" } };
+  if (REVOKING_SUBSCRIPTION_STATUSES.includes(status)) {
+    return handleSubscriptionDeleted(sub, config);
+  }
+  if (status === "active" || status === "trialing") {
+    const periodEnd = periodEndFromSubscription(sub);
+    if (!periodEnd) return { status: 200, body: { received: true, ignored: "no_period_end" } };
+    try {
+      const r = await extendLicenseExpiry(subscriptionId, periodEnd, config);
+      console.log(`customer.subscription.updated: subscription=${subscriptionId} status=${status} expires_at=${periodEnd} updated=${r.updated ?? "?"} cancel_at_period_end=${sub?.cancel_at_period_end === true}`);
+      return { status: 200, body: { received: true } };
+    } catch (err) {
+      console.error("customer.subscription.updated: error fijando el vencimiento", err);
+      return { status: 500, body: { error: "error extending subscription" } };
     }
   }
-
-  const sent = await sendTrialEndingEmail(license.email, billing, config, langFromStripeSubscription(sub));
-  if (!sent) {
-    if (eventId) await releaseWebhookEvent(eventId, config);
-    return { status: 500, body: { error: "trial reminder not sent" } };
-  }
-  console.log(`trial_will_end enviado: event=${eventId} subscription=${subscriptionId} trial_end=${billing.endsAt}`);
+  console.log(`customer.subscription.updated sin cambio de acceso: subscription=${subscriptionId} status=${status}`);
   return { status: 200, body: { received: true } };
+}
+
+// charge.refunded / charge.dispute.created (FISC-1): revoca la licencia de
+// pago único asociada al payment_intent, si la hay. "not_found" es normal
+// (licencia vieja sin payment_intent guardado, o ya revocada).
+export async function handleChargeReversal(eventType: string, charge: any, config: WebhookConfig): Promise<HandlerResult> {
+  const paymentIntent = extractPaymentIntent(charge ?? {});
+  if (!paymentIntent) {
+    console.warn(`${eventType} sin payment_intent en el payload, no se puede revocar automáticamente: charge=${charge?.id ?? "-"}`);
+    return { status: 200, body: { received: true, ignored: "no_payment_intent" } };
+  }
+  const result = await revokeLicense(paymentIntent, config);
+  console.log(`${eventType}: payment_intent=${paymentIntent} revoke_result=${JSON.stringify(result)}`);
+  if (!result.ok && typeof result.error === "string" && result.error.startsWith("http_")) {
+    return { status: 500, body: { error: "error revoking license" } };
+  }
+  return { status: 200, body: { received: true } };
+}
+
+// Idempotencia por event.id (auditoría 360, C-13) para todos los eventos que
+// no son de checkout; el checkout ya es idempotente por session id
+// (sessionAlreadyProcessed). Stripe puede reentregar un evento aunque haya
+// recibido 2xx; con esto ningún correo ni cambio se aplica dos veces. Si el
+// handler falla (5xx o excepción), se libera el evento para que el reintento
+// de Stripe lo procese. Si la tabla no responde, fail-open (ver claimWebhookEvent).
+export async function runOnce(
+  event: any, config: WebhookConfig, handler: () => Promise<HandlerResult>,
+): Promise<HandlerResult> {
+  const eventId = typeof event?.id === "string" && event.id ? event.id : null;
+  const claim = eventId ? await claimWebhookEvent(eventId, String(event?.type ?? ""), config) : "unknown";
+  if (claim === "duplicate") {
+    console.log(`Evento ya procesado, reentrega ignorada: event=${eventId} type=${event?.type}`);
+    return { status: 200, body: { received: true, ignored: "duplicate_event" } };
+  }
+  let result: HandlerResult;
+  try {
+    result = await handler();
+  } catch (err) {
+    console.error(`Error procesando event=${eventId ?? "-"} type=${event?.type}:`, err);
+    result = { status: 500, body: { error: "handler failed" } };
+  }
+  if (result.status >= 500 && claim === "claimed" && eventId) await releaseWebhookEvent(eventId, config);
+  return result;
+}
+
+export const BILLING_EVENT_TYPES = [
+  "charge.refunded", "charge.dispute.created", "invoice.payment_succeeded", "invoice.payment_failed",
+  "customer.subscription.updated", "customer.subscription.deleted", "customer.subscription.trial_will_end",
+];
+
+// Enrutador de los eventos que no son de checkout. null = tipo no manejado.
+export async function handleBillingEvent(event: any, config: WebhookConfig): Promise<HandlerResult | null> {
+  const type = event?.type;
+  if (!BILLING_EVENT_TYPES.includes(type)) return null;
+  const obj = event?.data?.object ?? {};
+  return runOnce(event, config, async () => {
+    switch (type) {
+      case "charge.refunded":
+      case "charge.dispute.created":
+        return handleChargeReversal(type, obj, config);
+      case "invoice.payment_succeeded":
+        return handleInvoicePaid(obj, config);
+      case "invoice.payment_failed":
+        return handleInvoicePaymentFailed(obj);
+      case "customer.subscription.updated":
+        return handleSubscriptionUpdated(obj, config);
+      case "customer.subscription.deleted":
+        return handleSubscriptionDeleted(obj, config);
+      default:
+        return handleTrialWillEnd(event, config);
+    }
+  });
 }

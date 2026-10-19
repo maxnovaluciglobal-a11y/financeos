@@ -121,6 +121,9 @@ Después, en Stripe → Developers → Webhooks → el endpoint de `stripe-webho
 - `customer.subscription.deleted`
 - `customer.subscription.trial_will_end`
 - `invoice.payment_failed`
+- `customer.subscription.updated` (desde el 19-oct-2026, auditoría 360 C-13: cambio de plan o de intervalo en el portal, `canceled`/`incomplete_expired` revoca)
+
+Desde C-13 un checkout solo emite licencia si su Payment Link está en `PAYMENT_LINK_PLAN` (`webhookLogic.ts`), sin fallback por monto: un Payment Link nuevo se carga ahí **antes** de publicarlo. Si no, el checkout se ignora y llega el aviso "checkout sin licencia (Payment Link desconocido)" a `ALERT_EMAIL`. Todos los eventos que no son de checkout se procesan una sola vez por `event.id` (tabla `webhook_events_processed`).
 
 Los actuales, que se mantienen: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `charge.refunded`, `charge.dispute.created`, `invoice.payment_succeeded`.
 

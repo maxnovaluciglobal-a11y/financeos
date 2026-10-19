@@ -21,16 +21,19 @@
 //   eventos: checkout.session.completed, checkout.session.async_payment_succeeded,
 //   charge.refunded, charge.dispute.created, invoice.payment_succeeded,
 //   y desde T10 (2026-10-08): customer.subscription.deleted,
-//   customer.subscription.trial_will_end, invoice.payment_failed.
+//   customer.subscription.trial_will_end, invoice.payment_failed;
+//   desde C-13 (19-oct-2026): customer.subscription.updated.
 //   Ver docs/billing-trial-runbook.md.
+//
+// Logs: sin emails ni nombres (auditoría 360, C-13). Para correlacionar
+// alcanzan session, subscription y payment_intent.
 
 import {
   verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, checkoutSkipReason,
-  extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail, langFromStripeSession,
+  extractPaymentIntent, issueLicense, sessionAlreadyProcessed, sendKeyEmail, langFromStripeSession,
   notifyKeyDeliveryFailure, notifyNewProPurchase, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
   subscriptionIdFromSession, initialExpiryFromSession, isTrialCheckout, trialBillingFromSession,
-  notifyUnmappedTrialCheckout, handleInvoicePaid, handleSubscriptionDeleted, handleInvoicePaymentFailed,
-  handleTrialWillEnd, TRIAL_DAYS, type WebhookConfig, type HandlerResult,
+  notifyUnmappedTrialCheckout, handleBillingEvent, TRIAL_DAYS, type WebhookConfig, type HandlerResult,
 } from "./webhookLogic.ts";
 import { subscribeToNewsletter, autoSubscribeEnabled } from "../_shared/newsletterSubscribe.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
@@ -100,9 +103,9 @@ Deno.serve(async (req) => {
     const skipReason = checkoutSkipReason(session);
     if (skipReason) {
       console.warn(`Checkout ignorado (${skipReason}): payment_status=${session.payment_status} amount=${session.amount_total ?? 0} mode=${session.mode} payment_link=${session.payment_link ?? "-"} session=${session.id}`);
-      if (skipReason === "zero_amount_unknown_link") {
-        // Posible link de prueba de MOY IQ sin mapear: el cliente dejó su
-        // tarjeta y no recibió clave. Aviso best-effort, no cambia el 200.
+      if (skipReason === "unknown_payment_link") {
+        // Link sin mapear: si es de MOY IQ, el cliente pagó (o dejó su
+        // tarjeta) y no recibió clave. Aviso best-effort, no cambia el 200.
         notifyUnmappedTrialCheckout({
           sessionRef: session.id ?? null,
           email: session.customer_details?.email ?? session.customer_email ?? null,
@@ -122,7 +125,7 @@ Deno.serve(async (req) => {
       });
     }
     const email = session.customer_details?.email ?? session.customer_email ?? null;
-    const plan = planFromSession(session);
+    const plan = planFromSession(session) ?? "pro";
     const key = generateKey();
     // session.payment_intent viene en el propio evento para checkouts de pago
     // único (mode:'payment') — se guarda para poder revocar más adelante si
@@ -143,7 +146,7 @@ Deno.serve(async (req) => {
       const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config, interval, trial, langFromStripeSession(session)) : false;
       // Sin `key` a propósito — ver el comentario de sendKeyEmail(). session.id
       // identifica la fila igual de bien y no es material criptografico.
-      console.log(`Licencia emitida: plan=${plan} email=${email ?? "(sin email)"} session=${session.id} payment_intent=${paymentIntent} subscription=${subscriptionId ?? "-"} expires_at=${expiresAt ?? "null"} prueba=${!!trial} email_enviado=${emailSent}`);
+      console.log(`Licencia emitida: plan=${plan} con_email=${!!email} session=${session.id} payment_intent=${paymentIntent} subscription=${subscriptionId ?? "-"} expires_at=${expiresAt ?? "null"} prueba=${!!trial} email_enviado=${emailSent}`);
       // Fire-and-forget: una falla acá no debe tumbar la respuesta 200 a
       // Stripe (eso sí reintenta el webhook entero, con riesgo de doble
       // emisión pese a sessionAlreadyProcessed).
@@ -163,7 +166,7 @@ Deno.serve(async (req) => {
         // devolvia 200 y nadie se enteraba de que el cliente no tenia su clave.
         // El log se mantiene (primera línea de diagnóstico); notifyKeyDeliveryFailure
         // agrega la alerta real para no depender de que alguien mire el dashboard.
-        console.error(`CRITICO: licencia emitida pero el cliente NO recibio su clave. session=${session.id} email=${email ?? "(sin email)"} payment_intent=${paymentIntent} — la clave original NO es recuperable (el servidor solo guarda su hash): resolver reemitiendo una licencia nueva.`);
+        console.error(`CRITICO: licencia emitida pero el cliente NO recibio su clave. session=${session.id} con_email=${!!email} payment_intent=${paymentIntent} — la clave original NO es recuperable (el servidor solo guarda su hash): resolver reemitiendo una licencia nueva.`);
         await notifyKeyDeliveryFailure({ sessionRef: session.id ?? null, email, plan, paymentIntent }, config);
       }
     } catch (err) {
@@ -172,47 +175,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  // FISC-1 — reembolso o disputa: revocar la licencia asociada, si la hay.
-  // Silencioso en el caso "not_found" (licencia emitida antes de este fix, sin
-  // payment_intent_id guardado, o ya revocada) — no es un error del webhook.
-  if (event?.type === "charge.refunded" || event?.type === "charge.dispute.created") {
-    const charge = event.data?.object ?? {};
-    const paymentIntent = extractPaymentIntent(charge);
-    if (paymentIntent) {
-      const result = await revokeLicense(paymentIntent, config);
-      console.log(`${event.type}: payment_intent=${paymentIntent} revoke_result=${JSON.stringify(result)}`);
-    } else {
-      console.warn(`${event.type} sin payment_intent en el payload — no se puede revocar automáticamente, charge=${charge.id}`);
-    }
-  }
-
-  // Suscripciones (MOY IQ Pro mensual/anual, desde 2026-09-12): cada invoice
-  // pagada — alta o renovación, mismo handler para las dos — fija hasta cuándo
-  // vale el acceso. OJO: este endpoint puede recibir invoice.payment_succeeded
-  // de otros productos de la cuenta de Stripe (DypOS, Alika, FinanceOS
-  // Invest) — un subscription id que no matchea ninguna licencia nuestra es
-  // el caso esperado para esos eventos, no un error. Lógica en handleInvoicePaid().
-  if (event?.type === "invoice.payment_succeeded") {
-    const r = await handleInvoicePaid(event.data?.object ?? {}, config);
-    if (r.status !== 200) return json(r);
-  }
-
-  // T10 (2026-10-08): cancelación (al final de la prueba o del período, o por
-  // cobro fallido tras el dunning de Stripe) → revoca la licencia.
-  if (event?.type === "customer.subscription.deleted") {
-    return json(await handleSubscriptionDeleted(event.data?.object ?? {}, config));
-  }
-
-  // T10: aviso previo al primer cobro (3 días antes de trial_end), una vez por evento.
-  if (event?.type === "customer.subscription.trial_will_end") {
-    return json(await handleTrialWillEnd(event, config));
-  }
-
-  // T10: cobro fallido. Solo log; Stripe reintenta y, si se rinde, cancela la
-  // suscripción → customer.subscription.deleted.
-  if (event?.type === "invoice.payment_failed") {
-    return json(handleInvoicePaymentFailed(event.data?.object ?? {}));
-  }
+  // Reembolsos, disputas, invoices y ciclo de la suscripción, con
+  // idempotencia por event.id (ver handleBillingEvent en webhookLogic.ts).
+  const billing = await handleBillingEvent(event, config);
+  if (billing) return json(billing);
 
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },

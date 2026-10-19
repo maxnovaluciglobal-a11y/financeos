@@ -3,7 +3,7 @@
 // esto, cero tests; cada cambio se probaba en producción con dinero real.
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
-  verifyStripeSignature, generateKey, planFromAmount, planFromSession, isTestModeCheckout, shouldSkipCheckout,
+  verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, shouldSkipCheckout,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, revokeLicense, sendKeyEmail,
   notifyKeyDeliveryFailure, notifyNewProPurchase, subscriptionIntervalFromSession, subscriptionIdFromSession,
   extendLicenseExpiry, periodEndFromInvoice,
@@ -11,7 +11,8 @@ import {
   TRIAL_LINK_MONTHLY_TODO, TRIAL_LINK_ANNUAL_TODO, TRIAL_DAYS, revokeLicenseBySubscription, claimWebhookEvent,
   handleInvoicePaid, handleSubscriptionDeleted, handleTrialWillEnd, handleInvoicePaymentFailed,
   trialBillingFromSubscription, trialBillingFromSession, sendTrialEndingEmail, formatDateEs,
-  notifyUnmappedTrialCheckout,
+  notifyUnmappedTrialCheckout, RETIRED_PAYMENT_LINKS, handleBillingEvent, handleSubscriptionUpdated,
+  periodEndFromSubscription, runOnce, handleChargeReversal,
 } from './webhookLogic.ts'
 import { resolveResendApiKey } from '../_shared/resendKey.ts'
 
@@ -52,6 +53,28 @@ describe('verifyStripeSignature — vectores conocidos', () => {
     expect(await verifyStripeSignature(rawBody, `t=${t},v1=${v1}`, [secret])).toBe(true)
   })
 
+  it('rechaza un t no numérico aunque la firma sea válida (antes NaN pasaba la tolerancia)', async () => {
+    const enc = new TextEncoder()
+    const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+    for (const t of ['abc', '1e9', '']) {
+      const mac = await crypto.subtle.sign('HMAC', key, enc.encode(`${t}.${rawBody}`))
+      const v1 = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, '0')).join('')
+      expect(await verifyStripeSignature(rawBody, `t=${t},v1=${v1}`, [secret])).toBe(false)
+    }
+  })
+
+  it('rechaza un timestamp del futuro fuera de la tolerancia', async () => {
+    const tFuture = Math.floor(Date.now() / 1000) + 301
+    const v1 = await signPayload(secret, rawBody, tFuture)
+    expect(await verifyStripeSignature(rawBody, `t=${tFuture},v1=${v1}`, [secret])).toBe(false)
+  })
+
+  it('acepta si alguna de varias firmas v1 coincide (rotación de secretos de Stripe)', async () => {
+    const t = Math.floor(Date.now() / 1000)
+    const v1 = await signPayload(secret, rawBody, t)
+    expect(await verifyStripeSignature(rawBody, `t=${t},v1=${'0'.repeat(64)},v1=${v1}`, [secret])).toBe(true)
+  })
+
   it('rechaza un header sin t= o sin v1=', async () => {
     expect(await verifyStripeSignature(rawBody, 'v1=abc', [secret])).toBe(false)
     expect(await verifyStripeSignature(rawBody, 't=123', [secret])).toBe(false)
@@ -89,49 +112,38 @@ describe('generateKey', () => {
   })
 })
 
-describe('planFromAmount', () => {
-  it.each([
-    [1900, 'personal'], [2399, 'personal'], [0, 'personal'], [null, 'personal'],
-    [2400, 'pro'], [2900, 'pro'],
-  ])('%i centavos → %s', (amount, expected) => {
-    expect(planFromAmount(amount as number | null)).toBe(expected)
-  })
-})
-
-describe('planFromSession — clasifica por Payment Link real, con fallback a monto', () => {
-  it('Payment Link real de Personal → personal, sin importar el monto', () => {
-    expect(planFromSession({ payment_link: 'plink_1TsMlSRxn4y6AU3r6CkGfuhO', amount_total: 999999 })).toBe('personal')
+describe('planFromSession — solo Payment Links de MOY IQ, sin fallback por monto (C-13)', () => {
+  it('links de la cuenta de MOY IQ → pro', () => {
+    expect(planFromSession({ payment_link: 'plink_1UEgvJ2L52ZuuTMr1Agq0t4b' })).toBe('pro')
+    expect(planFromSession({ payment_link: 'plink_1UEgve2L52ZuuTMrdS1OE9fh' })).toBe('pro')
   })
 
-  it('Payment Link real de Pro → pro, sin importar el monto', () => {
-    expect(planFromSession({ payment_link: 'plink_1TsMlpRxn4y6AU3rcPN5urIw', amount_total: 1 })).toBe('pro')
+  it('link desconocido → null, sin importar el monto (antes caía al umbral de US$24)', () => {
+    expect(planFromSession({ payment_link: 'plink_no_registrado', amount_total: 2900 } as any)).toBeNull()
+    expect(planFromSession({ amount_total: 2400 } as any)).toBeNull()
+    expect(planFromSession({ payment_link: null })).toBeNull()
   })
 
-  it('Payment Link desconocido cae al umbral de monto (fallback)', () => {
-    expect(planFromSession({ payment_link: 'plink_no_registrado', amount_total: 2900 })).toBe('pro')
-    expect(planFromSession({ payment_link: 'plink_no_registrado', amount_total: 1900 })).toBe('personal')
-  })
-
-  it('sin payment_link (checkout fuera de Payment Links) cae al umbral de monto', () => {
-    expect(planFromSession({ amount_total: 2400 })).toBe('pro')
-    expect(planFromSession({ amount_total: 0 })).toBe('personal')
-  })
-
-  it('Payment Links de suscripción (mensual/anual) → pro, agregados 2026-09-11', () => {
-    expect(planFromSession({ payment_link: 'plink_1UEfHBRxn4y6AU3r2Cd9SAmi', amount_total: 499 })).toBe('pro')
-    expect(planFromSession({ payment_link: 'plink_1UEfI7Rxn4y6AU3rgSX3eaOQ', amount_total: 3999 })).toBe('pro')
+  it('los links retirados de la cuenta compartida (hoy DypOS) ya no emiten licencia', () => {
+    expect(RETIRED_PAYMENT_LINKS).toHaveLength(4)
+    for (const link of RETIRED_PAYMENT_LINKS) {
+      expect(planFromSession({ payment_link: link })).toBeNull()
+      expect(link in PAYMENT_LINK_PLAN).toBe(false)
+      expect(link).toContain('Rxn4y6AU3r')
+    }
+    for (const link of Object.keys(PAYMENT_LINK_PLAN)) expect(link).toContain('2L52ZuuTMr')
   })
 })
 
 describe('subscriptionIntervalFromSession', () => {
   it('month para el Payment Link de Pro mensual', () => {
-    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEfHBRxn4y6AU3r2Cd9SAmi' })).toBe('month')
+    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEgvJ2L52ZuuTMr1Agq0t4b' })).toBe('month')
   })
   it('year para el Payment Link de Pro anual', () => {
-    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEfI7Rxn4y6AU3rgSX3eaOQ' })).toBe('year')
+    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEgve2L52ZuuTMrdS1OE9fh' })).toBe('year')
   })
-  it('null para pago único o sin payment_link (no es una suscripción)', () => {
-    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1TsMlpRxn4y6AU3rcPN5urIw' })).toBeNull()
+  it('null para un link retirado o sin payment_link', () => {
+    expect(subscriptionIntervalFromSession({ payment_link: 'plink_1UEfHBRxn4y6AU3r2Cd9SAmi' })).toBeNull()
     expect(subscriptionIntervalFromSession({})).toBeNull()
   })
 })
@@ -178,31 +190,28 @@ describe('isTestModeCheckout — guard de livemode', () => {
   })
 })
 
-describe('shouldSkipCheckout', () => {
+describe('shouldSkipCheckout / checkoutSkipReason', () => {
+  const PRO = 'plink_1UEgvJ2L52ZuuTMr1Agq0t4b'
   it('salta si no está pagado', () => {
-    expect(shouldSkipCheckout({ payment_status: 'unpaid', amount_total: 2900 })).toBe(true)
+    expect(checkoutSkipReason({ payment_status: 'unpaid', amount_total: 2900, payment_link: PRO })).toBe('unpaid')
   })
 
-  it('YA NO salta un pago real por debajo de US$19 — precio regional (fix 2026-09-11, ver planFromSession)', () => {
-    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 999 })).toBe(false)
+  it('no salta un pago real de un link de MOY IQ, aunque el monto sea bajo (precio regional)', () => {
+    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 999, mode: 'subscription', payment_link: PRO })).toBe(false)
   })
 
-  it('no salta con el mínimo exacto pagado', () => {
-    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 1900 })).toBe(false)
+  it('salta un checkout sin payment_link (otro producto de la cuenta)', () => {
+    expect(checkoutSkipReason({ payment_status: 'paid', amount_total: 1900 })).toBe('no_payment_link')
   })
 
-  // T10 (2026-10-08): este test fijaba "todo $0 se descarta", que es justo lo
-  // que impedía emitir la licencia de una prueba de Pro (amount_total=0,
-  // payment_status 'paid'). Se acota a propósito: un $0 de pago único (sin
-  // mode 'subscription') se sigue descartando; la prueba de un Payment Link
-  // conocido ya no — ver el describe "T10 · checkout de prueba" más abajo.
-  it('salta si el monto pagado es $0 en un pago único (no suscripción)', () => {
-    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 0 })).toBe(true)
-    expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 0, mode: 'payment' })).toBe(true)
+  it('salta un checkout pagado de un link desconocido o retirado (FN-1)', () => {
+    expect(checkoutSkipReason({ payment_status: 'paid', amount_total: 2900, payment_link: 'plink_x' })).toBe('unknown_payment_link')
+    expect(checkoutSkipReason({ payment_status: 'paid', amount_total: 499, mode: 'subscription', payment_link: 'plink_1UEfHBRxn4y6AU3r2Cd9SAmi' })).toBe('unknown_payment_link')
   })
 
-  it('salta si falta amount_total (trata como 0)', () => {
-    expect(shouldSkipCheckout({ payment_status: 'paid' })).toBe(true)
+  it('salta un $0 de pago único aunque el link sea conocido', () => {
+    expect(checkoutSkipReason({ payment_status: 'paid', amount_total: 0, mode: 'payment', payment_link: PRO })).toBe('zero_amount')
+    expect(checkoutSkipReason({ payment_status: 'paid', payment_link: PRO })).toBe('zero_amount')
   })
 })
 
@@ -459,7 +468,7 @@ describe('T10 · checkout de prueba', () => {
   it('los links de prueba reales están mapeados a Pro con su intervalo', () => {
     expect(TRIAL_LINK_MONTHLY_TODO).toBe('plink_1UOR0c2L52ZuuTMrpgyjokRi')
     expect(TRIAL_LINK_ANNUAL_TODO).toBe('plink_1UOR1S2L52ZuuTMrZXDa0fNY')
-    expect(Object.keys(PAYMENT_LINK_PLAN)).toHaveLength(8)
+    expect(Object.keys(PAYMENT_LINK_PLAN)).toHaveLength(4)
     expect(TRIAL_DAYS).toBe(14)
   })
 
@@ -475,18 +484,17 @@ describe('T10 · checkout de prueba', () => {
     expect(initialExpiryFromSession(trialSession())).toBe('2026-10-23T00:00:00.000Z')
   })
 
-  it('$0 de un link desconocido se sigue descartando, como antes (posible producto ajeno o link sin pegar)', () => {
+  it('$0 de un link desconocido se descarta (posible producto ajeno o link sin cargar)', () => {
     const s = trialSession({ payment_link: 'plink_desconocido' })
-    expect(checkoutSkipReason(s)).toBe('zero_amount_unknown_link')
+    expect(checkoutSkipReason(s)).toBe('unknown_payment_link')
     expect(shouldSkipCheckout(s)).toBe(true)
-    expect(checkoutSkipReason(trialSession({ payment_link: null }))).toBe('zero_amount_unknown_link')
+    expect(checkoutSkipReason(trialSession({ payment_link: null }))).toBe('no_payment_link')
   })
 
-  it('un link desconocido CON monto sigue el fallback de siempre (planFromAmount), sin cambios', () => {
+  it('un link desconocido CON monto también se descarta: ya no hay fallback por monto (C-13)', () => {
     const s = { mode: 'subscription', payment_status: 'paid', amount_total: 2900, payment_link: 'plink_desconocido' }
-    expect(shouldSkipCheckout(s)).toBe(false)
-    expect(planFromSession(s)).toBe('pro')
-    expect(planFromSession({ ...s, amount_total: 499 })).toBe('personal')
+    expect(checkoutSkipReason(s)).toBe('unknown_payment_link')
+    expect(planFromSession(s)).toBeNull()
   })
 
   it('una sesión de prueba sin pagar (unpaid) se descarta igual', () => {
@@ -647,10 +655,10 @@ describe('T10 · eventos de suscripción (fetch mockeado)', () => {
 
     it('manda el aviso una vez; la segunda entrega del mismo event id NO lo reenvía', async () => {
       const { emails } = fakeBackend()
-      expect((await handleTrialWillEnd(event(), CONFIG)).status).toBe(200)
-      const second = await handleTrialWillEnd(event(), CONFIG)
+      expect((await handleBillingEvent(event(), CONFIG))!.status).toBe(200)
+      const second = (await handleBillingEvent(event(), CONFIG))!
       expect(second.status).toBe(200)
-      expect(second.body.ignored).toBe('already_sent')
+      expect(second.body.ignored).toBe('duplicate_event')
       expect(emails).toHaveLength(1)
       expect(emails[0].to).toBe('cliente@x.com')
     })
@@ -705,7 +713,7 @@ describe('T10 · eventos de suscripción (fetch mockeado)', () => {
         if (url.includes('webhook_events_processed') && init.method === 'DELETE') { deletes.push(url); return { ok: true } }
         return { ok: false, status: 500, text: async () => 'resend down' }
       }))
-      const r = await handleTrialWillEnd(event(), CONFIG)
+      const r = (await handleBillingEvent(event(), CONFIG))!
       expect(r.status).toBe(500)
       expect(deletes).toHaveLength(1)
     })
@@ -939,5 +947,141 @@ describe('C-05 · clave de Resend del correo de la licencia', () => {
     vi.stubGlobal('fetch', fetchMock)
     await notifyKeyDeliveryFailure({ sessionRef: 'cs_1', email: 'c@x.com', plan: 'pro', paymentIntent: null }, configFromEnv({}))
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+// ── C-13 (auditoría 360): idempotencia por event.id y subscription.updated ──
+describe('C-13 · eventos de facturación con idempotencia por event.id', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  function backend(handlers: Record<string, (body: any) => any> = {}) {
+    const processed = new Set<string>()
+    const calls: Array<{ url: string; method: string; body: any }> = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: any = {}) => {
+      const body = init.body ? JSON.parse(init.body) : null
+      calls.push({ url, method: init.method ?? 'GET', body })
+      if (url.includes('/rest/v1/webhook_events_processed') && init.method === 'POST') {
+        if (processed.has(body.event_id)) return { ok: true, json: async () => [] }
+        processed.add(body.event_id)
+        return { ok: true, json: async () => [body] }
+      }
+      if (url.includes('/rest/v1/webhook_events_processed') && init.method === 'DELETE') {
+        const id = decodeURIComponent(url.split('event_id=eq.')[1])
+        processed.delete(id)
+        return { ok: true }
+      }
+      for (const [suffix, fn] of Object.entries(handlers)) {
+        if (url.endsWith(suffix)) return fn(body)
+      }
+      throw new Error(`fetch inesperado: ${url}`)
+    }))
+    return { calls, processed }
+  }
+  const rpc = (suffix: string, calls: Array<{ url: string }>) => calls.filter((c) => c.url.endsWith(suffix))
+
+  it('una reentrega del mismo event id no vuelve a revocar (charge.refunded)', async () => {
+    const { calls } = backend({ '/rpc/revoke_license': () => ({ ok: true, json: async () => ({ ok: true }) }) })
+    const ev = { id: 'evt_ref_1', type: 'charge.refunded', data: { object: { id: 'ch_1', payment_intent: 'pi_1' } } }
+    expect((await handleBillingEvent(ev, CONFIG))!.status).toBe(200)
+    const again = (await handleBillingEvent(ev, CONFIG))!
+    expect(again.body.ignored).toBe('duplicate_event')
+    expect(rpc('/rpc/revoke_license', calls)).toHaveLength(1)
+  })
+
+  it('si el handler falla, libera el evento y el reintento de Stripe lo procesa', async () => {
+    let fail = true
+    const { calls } = backend({
+      '/rpc/revoke_license_by_subscription': () => fail
+        ? { ok: false, status: 503, text: async () => 'down' }
+        : { ok: true, json: async () => ({ ok: true, revoked: 1 }) },
+    })
+    const ev = { id: 'evt_del_1', type: 'customer.subscription.deleted', data: { object: { id: 'sub_1' } } }
+    expect((await handleBillingEvent(ev, CONFIG))!.status).toBe(500)
+    fail = false
+    expect((await handleBillingEvent(ev, CONFIG))!.status).toBe(200)
+    expect(rpc('/rpc/revoke_license_by_subscription', calls)).toHaveLength(2)
+  })
+
+  it('runOnce convierte una excepción del handler en 500 y libera el evento', async () => {
+    const { processed } = backend()
+    const r = await runOnce({ id: 'evt_x', type: 't' }, CONFIG, async () => { throw new Error('boom') })
+    expect(r.status).toBe(500)
+    expect(processed.has('evt_x')).toBe(false)
+  })
+
+  it('sin event id procesa igual (no hay con qué deduplicar)', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const r = await runOnce({ type: 't' }, CONFIG, async () => ({ status: 200, body: { received: true } }))
+    expect(r.status).toBe(200)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('tipos de checkout y desconocidos no pasan por el enrutador', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await handleBillingEvent({ id: 'e', type: 'checkout.session.completed' }, CONFIG)).toBeNull()
+    expect(await handleBillingEvent({ id: 'e', type: 'customer.created' }, CONFIG)).toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('handleChargeReversal sin payment_intent: 200 sin llamar a la base', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const r = await handleChargeReversal('charge.dispute.created', { id: 'ch_1' }, CONFIG)
+    expect(r.body.ignored).toBe('no_payment_intent')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  describe('customer.subscription.updated', () => {
+    const periodEnd = Date.parse('2027-10-19T00:00:00Z') / 1000
+
+    it('active con período en los items (basil) → fija expires_at al fin del período', async () => {
+      const { calls } = backend({ '/rpc/extend_license_expiry': () => ({ ok: true, json: async () => ({ ok: true, updated: 1 }) }) })
+      const ev = { id: 'evt_up_1', type: 'customer.subscription.updated',
+        data: { object: { id: 'sub_1', status: 'active', items: { data: [{ current_period_end: periodEnd }] } } } }
+      expect((await handleBillingEvent(ev, CONFIG))!.status).toBe(200)
+      expect(rpc('/rpc/extend_license_expiry', calls)[0].body).toEqual({ p_subscription: 'sub_1', p_expires_at: '2027-10-19T00:00:00.000Z' })
+    })
+
+    it('API vieja: current_period_end en la raíz', () => {
+      expect(periodEndFromSubscription({ current_period_end: periodEnd })).toBe('2027-10-19T00:00:00.000Z')
+      expect(periodEndFromSubscription({ items: { data: [] } })).toBeNull()
+    })
+
+    it('trialing también fija el vencimiento (fin de la prueba)', async () => {
+      const { calls } = backend({ '/rpc/extend_license_expiry': () => ({ ok: true, json: async () => ({ ok: true, updated: 1 }) }) })
+      await handleSubscriptionUpdated({ id: 'sub_t', status: 'trialing', current_period_end: periodEnd }, CONFIG)
+      expect(rpc('/rpc/extend_license_expiry', calls)).toHaveLength(1)
+    })
+
+    it.each(['canceled', 'incomplete_expired'])('%s → revoca la licencia', async (status) => {
+      const { calls } = backend({ '/rpc/revoke_license_by_subscription': () => ({ ok: true, json: async () => ({ ok: true, revoked: 1 }) }) })
+      const r = await handleSubscriptionUpdated({ id: 'sub_c', status }, CONFIG)
+      expect(r.status).toBe(200)
+      expect(rpc('/rpc/revoke_license_by_subscription', calls)[0].body).toEqual({ p_subscription_id: 'sub_c' })
+    })
+
+    it.each(['past_due', 'unpaid', 'paused', 'incomplete'])('%s → no toca la licencia', async (status) => {
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+      const r = await handleSubscriptionUpdated({ id: 'sub_p', status, current_period_end: periodEnd }, CONFIG)
+      expect(r.status).toBe(200)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('si la RPC falla responde 500 (Stripe reintenta)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'boom' }))
+      const r = await handleSubscriptionUpdated({ id: 'sub_1', status: 'active', current_period_end: periodEnd }, CONFIG)
+      expect(r.status).toBe(500)
+    })
+
+    it('sin id o sin status se ignora', async () => {
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+      expect((await handleSubscriptionUpdated({ status: 'active' }, CONFIG)).body.ignored).toBe('no_subscription_or_status')
+      expect((await handleSubscriptionUpdated({ id: 'sub_1' }, CONFIG)).body.ignored).toBe('no_subscription_or_status')
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
   })
 })
