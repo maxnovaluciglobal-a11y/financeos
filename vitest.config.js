@@ -7,6 +7,6 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/**/*.test.js', 'api/**/*.test.js', 'supabase/functions/**/*.test.ts'],
+    include: ['src/**/*.test.js', 'api/**/*.test.js', 'supabase/functions/**/*.test.ts', 'scripts/**/*.test.js'],
   },
 })

@@ -32,6 +32,15 @@ Y repetir con `demo.financeospro.com`, `app.moyiq.app`, `demo.moyiq.app`. Si sol
 
 El navegador integrado tiene bloqueado `*.financeospro.com`/`*.moyiq.app` por política: verificar producción con `curl` por contenido, o en `localhost` con el servidor de desarrollo.
 
+## Sesiones paralelas y despliegue
+
+Varias sesiones de Claude trabajan este repo a la vez, y `vercel deploy` sube el árbol de trabajo tal como está. El 18-oct-2026 una sesión dejó el árbol en `security/cloudsync-encryption-guard` (sin mergear) y `./deploy.sh` publicó esa rama en producción (auditoría 360: OPS-5, GOB-5). Reglas:
+
+1. **Trabajar en worktrees.** El árbol principal se queda siempre en `main`: nadie le cambia la rama. Todo cambio, y toda sesión que no sea la principal, va en un worktree propio: `git worktree add "/private/tmp/claude-501/moyiq-wt/financeos-app-<tema>" -b <fix|feat>/<tema> main`, con `node_modules` enlazado al del árbol principal (`ln -s`) salvo que el cambio toque `package.json`.
+2. **Desplegar solo desde `main` limpio y con el candado.** Antes de integrar o desplegar: `mkdir /private/tmp/claude-501/moyiq-locks/financeos-app.lock` (atómico; si existe, esperar y reintentar hasta 20 min; si tiene más de 60 min es de una sesión caída y se toma). Al terminar: `rmdir` del mismo directorio. Secuencia: suite completa de tests → `git merge --ff-only` a `main` → `git push origin main` → `./deploy.sh` desde el árbol principal.
+3. **`./deploy.sh` lo hace cumplir**, antes de cualquier paso: aborta si la rama no es `main`, si hay cambios rastreados sin commitear (los archivos no rastreados no cuentan) o si `HEAD` no coincide con `origin/main` tras `git fetch` (ni atrás ni adelante). `./deploy.sh --check` corre solo esa verificación, sin desplegar. Test del guard: `scripts/deployGuard.test.js` (corre con `npm test`).
+4. **CI:** `.github/workflows/test.yml` corre `npm ci` y `npm test` en cada push y en cada PR a `main`. Proteger `main` (PR obligatorio con el check en verde) necesita permisos de dueño en GitHub: queda con Walter (W-27 de la auditoría).
+
 ## Reglas que no son negociables
 
 **Paridad i18n.** Los textos viven en `src/i18n/{es,en,pt,de}.js` (objetos planos `'seccion.sub.campo': "texto"`, 1755 claves por idioma al 08-oct-2026); `translate.js` tiene la traducción pura (fallback a español y luego a la propia clave), `useT.js` el hook que carga el idioma activo con `import()` dinámico y `translations.js` solo agrega los 4 para los pocos consumidores síncronos. Toda clave nueva va en los CUATRO, y `translate.test.js` verifica paridad, variables `{x}`, voseo/exclamaciones y "Sie" por prefijo de fase: al crear un prefijo nuevo, sumarlo ahí. Una clave que falta no rompe el build pero cae al fallback español (ver `useT.js`) — el usuario alemán ve una isla en su UI. Antes de escribir el texto de una clave nueva, ver `../financeos-workspace/branding/voz-de-producto.md` — nunca exclamaciones/emoji de entusiasmo fabricado, nunca personificar la app, y los 4 idiomas tienen que sonar igual de secos entre sí, no solo decir lo mismo.

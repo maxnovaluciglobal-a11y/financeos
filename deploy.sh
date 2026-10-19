@@ -7,6 +7,72 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# ── Guard de despliegue (auditoría 360, C-06: OPS-5 / GOB-5 / ING-2) ──────────
+# `vercel deploy` sube el árbol de trabajo tal como está. El 18-oct-2026 otra
+# sesión dejó este árbol en `security/cloudsync-encryption-guard` (sin mergear)
+# y un deploy publicó esa rama en producción. Para que producción nunca salga
+# de algo que no está en git (y se pueda revertir con git), antes de cualquier
+# paso se exige: rama `main`, cero cambios RASTREADOS sin commitear (los
+# archivos no rastreados no cuentan) y HEAD igual a origin/main tras un fetch
+# (ni atrás ni adelante). `./deploy.sh --check` corre solo esta verificación.
+guard_abort() {
+  {
+    echo "ERROR: deploy abortado, no se tocó nada."
+    printf '%s\n' "$@"
+    echo "Regla completa: CLAUDE.md, sección 'Sesiones paralelas y despliegue'."
+  } >&2
+  exit 1
+}
+
+deploy_guard() {
+  local branch head origin_head ahead behind
+
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) \
+    || guard_abort "No se pudo leer la rama de git: ¿esto es un repo con commits?"
+  if [[ "$branch" == "HEAD" ]]; then
+    guard_abort "HEAD está desacoplado (sin rama)." \
+      "Un deploy a producción sale solo de 'main'. Vuelve con: git switch main"
+  elif [[ "$branch" != "main" ]]; then
+    guard_abort "La rama actual es '$branch', no 'main'." \
+      "Un deploy a producción sale solo de 'main' (integra con fast-forward y haz push antes)." \
+      "Si otra sesión usa este árbol, no le cambies la rama: trabaja en un worktree propio."
+  fi
+
+  if ! git diff --quiet HEAD --; then
+    guard_abort "Hay cambios sin commitear en archivos rastreados:" \
+      "$(git status --porcelain --untracked-files=no | head -10)" \
+      "Commitéalos o descártalos (git restore / git stash) y vuelve a correr. Los archivos no rastreados no cuentan."
+  fi
+
+  if ! git fetch --quiet origin '+refs/heads/main:refs/remotes/origin/main'; then
+    guard_abort "No se pudo hacer git fetch de origin/main (¿sin red o sin permisos?)." \
+      "Sin poder comparar contra origin/main no se despliega."
+  fi
+  head=$(git rev-parse HEAD)
+  origin_head=$(git rev-parse origin/main)
+  if [[ "$head" != "$origin_head" ]]; then
+    read -r ahead behind < <(git rev-list --left-right --count HEAD...origin/main)
+    if [[ "$behind" -eq 0 ]]; then
+      guard_abort "main tiene $ahead commit(s) que no están en origin/main." \
+        "Producción debe salir de lo que está en origin/main: git push origin main, y vuelve a correr."
+    elif [[ "$ahead" -eq 0 ]]; then
+      guard_abort "main está $behind commit(s) atrás de origin/main." \
+        "Actualiza con: git pull --ff-only origin main, y vuelve a correr."
+    else
+      guard_abort "main y origin/main divergieron ($ahead commit(s) locales, $behind remotos)." \
+        "Resuelve la divergencia (merge o rebase) antes de desplegar."
+    fi
+  fi
+  echo "==> Guard OK: rama main, sin cambios rastreados sin commitear, igual a origin/main (${head:0:7})"
+}
+
+case "${1:-}" in
+  "") ;;
+  --check) deploy_guard; exit 0 ;;
+  *) echo "uso: ./deploy.sh [--check]   (--check solo verifica el guard, no despliega)" >&2; exit 2 ;;
+esac
+deploy_guard
+
 echo "==> Tests"
 npm test
 
