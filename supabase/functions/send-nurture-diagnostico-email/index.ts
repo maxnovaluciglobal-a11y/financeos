@@ -14,11 +14,12 @@
 // reportEmailLogic.ts: este archivo lee Deno.env.get() a nivel de módulo.
 //
 // Secrets necesarios (Supabase → Edge Functions → Secrets):
-//   RESEND_API_KEY                          ← ya configurado, se reusa
+//   NURTURE_RESEND_API_KEY (RESEND_API_KEY de respaldo, ../_shared/resendKey.ts, APP-N5)
 //   NURTURE_FROM_EMAIL                      ← "MOY IQ <hola@moyiq.app>", nuevo, ver reporte
 //   CRON_SECRET                             ← nuevo, generar con `openssl rand -hex 32`
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 
+import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import {
   runCronBatch,
   processWelcome,
@@ -30,12 +31,9 @@ import { corsHeaders } from "./cors.ts";
 const config: NurtureEmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  // Key propia, NO la RESEND_API_KEY compartida con stripe-webhook/send-report-email:
-  // esa está scoped en Resend a financeospro.com/dypos.app y devuelve 403 al mandar
-  // desde moyiq.app (encontrado y verificado en vivo el 13-sep-2026 al probar el
-  // envío end-to-end). moyiq-nurture es una key nueva, "Sending access" scoped
-  // específicamente a moyiq.app, creada en Resend en esta misma sesión.
-  resendApiKey: Deno.env.get("NURTURE_RESEND_API_KEY"),
+  // NURTURE_RESEND_API_KEY primero (scopeada a moyiq.app); RESEND_API_KEY solo
+  // de respaldo, como en optin, cancelación y stripe-webhook (APP-N5).
+  resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
   fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
   cronSecret: Deno.env.get("CRON_SECRET"),
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",

@@ -15,6 +15,7 @@ const CONFIG_PATH = join(FUNCTIONS_DIR, '..', 'config.toml');
 const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'auth-email-hook': false,
   'cron-health-alert': false,
+  'lead-unsubscribe': false,
   'newsletter-sync': false,
   'notify-admin-signup': false,
   'send-cancellation-confirmation': false,

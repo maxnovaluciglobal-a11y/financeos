@@ -20,6 +20,7 @@
 //   CRON_SECRET                             ← mismo secreto compartido (private.get_secret('cron_secret'))
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 
+import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import {
   runCronBatch,
   renderEmail,
@@ -35,7 +36,7 @@ import { corsHeaders } from "./cors.ts";
 const config: NurtureEmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  resendApiKey: Deno.env.get("NURTURE_RESEND_API_KEY"),
+  resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
   fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
   cronSecret: Deno.env.get("CRON_SECRET"),
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",

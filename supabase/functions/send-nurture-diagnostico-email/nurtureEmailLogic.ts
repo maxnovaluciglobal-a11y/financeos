@@ -42,6 +42,7 @@
 import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
 import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
 import { DIAGNOSTICO_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
+import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";
 
 export type NurtureMode = "welcome" | "day2" | "day5" | "day12";
 export const NURTURE_MODES: NurtureMode[] = ["welcome", "day2", "day5", "day12"];
@@ -107,7 +108,7 @@ function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): s
     <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a;line-height:1.55">
       ${bodyHtml}
       <p style="color:#999;font-size:11px;margin-top:32px;border-top:1px solid #eee;padding-top:12px">
-        MOY IQ · MAXNOVA &amp; LUCI Global LLC.
+        MOY IQ · ${COMPANY_POSTAL_HTML}.
         <a href="${unsubUrl}" style="color:#999">${UNSUBSCRIBE_LABEL[lang]}</a>.
       </p>
     </div>`;
@@ -116,6 +117,7 @@ function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): s
 export interface RenderedEmail {
   subject: string;
   html: string;
+  headers?: Record<string, string>;
 }
 
 // day12 (reactivación, revisión 18-sep) no repite el pitch de Starter/Pro y
@@ -131,7 +133,11 @@ export function renderEmail(mode: NurtureMode, lead: DiagnosticoLead, config: Nu
     landingUrl: config.landingUrl.replace(/\/$/, ""),
     marketingConfirmed: !!(lead.consent_marketing !== false && lead.consent_confirmed_at),
   });
-  return { subject: copy.subject, html: wrapHtml(copy.body, unsub, lang) };
+  return {
+    subject: copy.subject,
+    html: wrapHtml(copy.body, unsub, lang),
+    headers: listUnsubscribeHeaders(config.supabaseUrl, "diagnostico", lead.id),
+  };
 }
 
 // --- Envío con reintento (mismo patrón que reportEmailLogic.sendReportEmail) --
@@ -143,7 +149,7 @@ export async function sendViaResend(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html };
+  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, ...(rendered.headers ? { headers: rendered.headers } : {}) };
   const attempt = () =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -206,12 +212,16 @@ export async function fetchLeadById(id: string, config: NurtureEmailConfig): Pro
 
 const BATCH_LIMIT = 200; // tope por corrida del cron — este volumen de leads nunca se acerca a esto hoy, es una salvaguarda contra un bug de filtro, no una expectativa de tráfico.
 
-// Email 2: sin edad mínima a propósito (ver nota de diseño anti-spam en la
-// migración) — se manda una sola vez a quien todavía no lo tenga marcado.
-export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<DiagnosticoLead[]> {
+// Email 2: una sola vez, y no antes de 2 días desde el alta: el correo 1 dice
+// "En dos días te cuento…" y antes salía en el próximo cron después del
+// opt-in, a veces el mismo día (auditoría 360, COM-11).
+export const EMAIL2_MIN_AGE_DAYS = 2;
+export async function fetchEligibleForEmail2(config: NurtureEmailConfig, nowMs: number = Date.now()): Promise<DiagnosticoLead[]> {
+  const cutoff = new Date(nowMs - EMAIL2_MIN_AGE_DAYS * 24 * 60 * 60 * 1000).toISOString();
   return restGet<DiagnosticoLead[]>(
     `diagnostico_leads?select=*` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null&email2_sent_at=is.null` +
+      `&created_at=lte.${encodeURIComponent(cutoff)}` +
       `&limit=${BATCH_LIMIT}`,
     config,
   );

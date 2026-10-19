@@ -61,7 +61,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     <h2 style="color:#14213D">Sin testimonios inventados</h2>
     <p>Hola,</p>
     <p>No te vamos a inventar un testimonio de "Fulano ahorró X% en 3 meses". No tenemos esos casos documentados todavía, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
-    <p>Lo que sí podemos ser específicos es en la diferencia real entre lo que ya estás usando en Starter y lo que suma Pro:</p>
+    <p>Lo que sí podemos mostrar con precisión es la diferencia real entre lo que ya usas en Starter y lo que suma Pro:</p>
     <p><strong>Starter (lo que ya tienes, sin fecha de vencimiento):</strong><br>
     — Dashboard con IQ Score<br>
     — Movimientos y categorización automática<br>
@@ -72,8 +72,9 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     — Advisor: proyección de escenarios antes de tomar una decisión grande<br>
     — Goals con seguimiento de múltiples objetivos y ajuste automático<br>
     — Reports exportables</p>
-    <p>Si tu situación es simple, seguir en Starter no te falta nada. Si tienes varias metas corriendo en paralelo o una decisión grande en el horizonte cercano, ahí es donde Pro paga solo.</p>
-    <p><a href="${appLink("upgrade", "starter-d5")}" ${BTN}>Ver Pro →</a></p>
+    <p>Si tu situación es simple, con Starter no te falta nada. Si tienes varias metas corriendo en paralelo o una decisión grande en el horizonte cercano, ahí es donde Pro paga solo.</p>
+    <p>Pruébalo 14 días gratis: se pide una tarjeta y, si cancelas antes de que termine la prueba, no se cobra nada.</p>
+    <p><a href="${appLink("upgrade", "starter-d5")}" ${BTN}>Probar Pro 14 días gratis →</a></p>
     <p style="color:#666;font-size:13px">Si no es para ti, sigues en Starter sin perder nada de lo que ya armaste.</p>
     `,
     },

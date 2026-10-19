@@ -282,3 +282,33 @@ describe('processWelcome (bienvenida: una sola vez y nunca a quien se dio de baj
     expect(f.mock.calls.some((c: any[]) => (c[1]?.method ?? 'GET') === 'PATCH')).toBe(true)
   })
 })
+
+describe('C-35 · List-Unsubscribe y dirección postal (COM-9)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it('el correo trae baja con un clic a lead-unsubscribe y la dirección de la LLC', () => {
+    const r = renderEmail('welcome', LEAD, CONFIG)
+    expect(r.headers?.['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
+    expect(r.headers?.['List-Unsubscribe']).toContain(`/functions/v1/lead-unsubscribe?t=invest&id=${LEAD.id}`)
+    expect(r.headers?.['List-Unsubscribe']).toContain('mailto:support@moyiq.app')
+    expect(r.html).toContain('10482 NW 31st Terrace, Office 1D, Doral, FL 33172, USA')
+  })
+
+  it('sendViaResend manda las cabeceras a Resend', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', f)
+    await sendViaResend('a@x.com', renderEmail('welcome', LEAD, CONFIG), CONFIG)
+    const body = JSON.parse(f.mock.calls[0][1].body)
+    expect(body.headers['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
+  })
+})
+
+describe('C-35 · bienvenida de Invest con select acotado (COM-7)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  it('fetchLeadById pide las columnas de control (email1_sent_at, unsubscribed_at), no select=*', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true, json: async () => [] })
+    vi.stubGlobal('fetch', f)
+    await fetchLeadById(LEAD.id, CONFIG)
+    expect(f.mock.calls[0][0]).toContain('select=id,email,perfil,email1_sent_at,unsubscribed_at&')
+  })
+})

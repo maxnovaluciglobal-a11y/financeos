@@ -67,11 +67,25 @@ describe('renderEmail', () => {
     expect(r.subject).toContain('presupuesto')
   })
 
-  it('day5 no menciona ningún trial — Pro no tiene trial', () => {
+  it('day5 ofrece la prueba de 14 días de Pro y dice que pide tarjeta (COM-11, C-03)', () => {
     const r = renderEmail('day5', LEAD, CONFIG)
     expect(r.html.toLowerCase()).not.toContain('trial')
-    expect(r.html).toContain('Actualizar a Pro')
+    expect(r.html).toContain('Pruébalo 14 días gratis')
+    expect(r.html).toContain('se pide una tarjeta')
+    expect(r.html).toContain('Probar Pro 14 días gratis')
     expect(r.html).toContain('ref=diagnostico-d5')
+  })
+
+  it('copy en español neutro: sin "acá", "plata" ni "sin vueltas", y el CTA del día 2 dice que crea una cuenta (COM-11)', () => {
+    for (const mode of ['welcome', 'day2', 'day5', 'day12'] as const) {
+      for (const label of ['Crítico', 'Bueno', null]) {
+        const r = renderEmail(mode, { ...LEAD, label } as any, CONFIG)
+        const text = `${r.subject} ${r.html}`
+        expect(text).not.toMatch(/\bacá\b|\bplata\b|sin vueltas|No te escribo por MOY IQ/i)
+      }
+    }
+    expect(renderEmail('day2', LEAD, CONFIG).html).toContain('Crear mi cuenta gratis')
+    expect(renderEmail('day2', LEAD, CONFIG).html).not.toContain('Ver mi dashboard')
   })
 
   it('day5 no incluye ningún testimonio inventado (regla explícita del plan)', () => {
@@ -81,7 +95,7 @@ describe('renderEmail', () => {
 
   it('day12 (reactivación) no repite el pitch de Starter/Pro y menciona el unsubscribe en el cuerpo', () => {
     const r = renderEmail('day12', LEAD, CONFIG)
-    expect(r.subject).toBe('Tu IQ Score sigue ahí (no venció)')
+    expect(r.subject).toBe('Tu diagnóstico sigue guardado (no venció)')
     expect(r.html).not.toContain('Actualizar a Pro')
     expect(r.html).not.toContain('Starter (gratis')
     expect(r.html).toContain('ref=diagnostico-d12')
@@ -155,7 +169,7 @@ describe('fetchEligibleForEmail2', () => {
     expect(url).toContain('account_created_at=is.null')
     expect(url).toContain('email2_sent_at=is.null')
     expect(url).toContain('consent_confirmed_at=not.is.null') // doble opt-in: solo confirmados
-    expect(url).not.toContain('created_at=lte') // sin filtro de edad, a propósito
+    expect(url).toMatch(/&created_at=lte\./) // 2 días desde el alta (COM-11)
   })
 })
 
@@ -300,5 +314,35 @@ describe('processWelcome (email 1 = resultado pedido, transaccional)', () => {
     expect(resendCalls(f)).toHaveLength(1)
     const patch = f.mock.calls.find((c: any[]) => c[1]?.method === 'PATCH')
     expect(Object.keys(JSON.parse(patch[1].body))).toEqual(['email1_sent_at'])
+  })
+})
+
+describe('C-35 · List-Unsubscribe y dirección postal (COM-9)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it('el correo trae baja con un clic a lead-unsubscribe y la dirección de la LLC', () => {
+    const r = renderEmail('welcome', LEAD, CONFIG)
+    expect(r.headers?.['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
+    expect(r.headers?.['List-Unsubscribe']).toContain(`/functions/v1/lead-unsubscribe?t=diagnostico&id=${LEAD.id}`)
+    expect(r.headers?.['List-Unsubscribe']).toContain('mailto:support@moyiq.app')
+    expect(r.html).toContain('10482 NW 31st Terrace, Office 1D, Doral, FL 33172, USA')
+  })
+
+  it('sendViaResend manda las cabeceras a Resend', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', f)
+    await sendViaResend('a@x.com', renderEmail('welcome', LEAD, CONFIG), CONFIG)
+    const body = JSON.parse(f.mock.calls[0][1].body)
+    expect(body.headers['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
+  })
+})
+
+describe('C-35 · el correo 2 espera 2 días desde el alta (COM-11)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  it('created_at <= ahora - 2 días', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true, json: async () => [] })
+    vi.stubGlobal('fetch', f)
+    await fetchEligibleForEmail2(CONFIG, Date.parse('2026-10-19T12:00:00Z'))
+    expect(f.mock.calls[0][0]).toContain('created_at=lte.2026-10-17T12%3A00%3A00.000Z')
   })
 })

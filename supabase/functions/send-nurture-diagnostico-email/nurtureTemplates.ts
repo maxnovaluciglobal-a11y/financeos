@@ -73,11 +73,11 @@ function scoreText(lang: EmailLang, score: number | null): string {
 // por qué el label se usa como proxy del hallazgo dominante.
 const ACTION_BLOCKS: Record<EmailLang, Record<string, string> & { _default: string }> = {
   es: {
-    "Crítico": "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en MOY IQ: el Dashboard te va a mostrar exactamente en qué categoría se te va la plata, sin que tengas que armar una planilla.",
+    "Crítico": "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en MOY IQ: el Dashboard te va a mostrar exactamente en qué categoría se te va el dinero, sin que tengas que armar una planilla.",
     "Regular": "Tu resultado está en la zona donde un cambio chico rinde mucho: ordenar el colchón de emergencia o la carga de deuda. Con tus movimientos reales cargados, MOY IQ te muestra cuál de los dos te conviene atacar primero según tu propio flujo de caja.",
     "Bueno": "Ya estás manejando bien lo básico. El siguiente paso es que ese resultado no dependa de que te acuerdes de revisarlo — con tus movimientos importados, el Dashboard te avisa solo cuando algo se corre de lo normal.",
     "Excelente": "Tu resultado ya está en el nivel donde el foco pasa de \"ordenar\" a \"optimizar\" — metas en paralelo, proyección de decisiones grandes. Eso es exactamente lo que hace Goals y Advisor con tus datos reales.",
-    _default: "Registra tus movimientos de esta semana en MOY IQ. El Dashboard te muestra en qué categoría se te va más plata cada mes, sin que tengas que actualizar nada a mano.",
+    _default: "Registra tus movimientos de esta semana en MOY IQ. El Dashboard te muestra en qué categoría se te va más dinero cada mes, sin que tengas que actualizar nada a mano.",
   },
   en: {
     "Crítico": "With your result, the problem is most likely in month-to-month cash flow — more goes out than comes in, or nearly. Record this week's transactions in MOY IQ: the Dashboard shows exactly which category your money goes to, without you having to build a spreadsheet.",
@@ -121,9 +121,9 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       return {
         subject: "Tu diagnóstico completo (y el dato que se quedó afuera)",
         body: `
-      <h2 style="color:#14213D">Acá está tu diagnóstico completo</h2>
+      <h2 style="color:#14213D">Tu diagnóstico completo</h2>
       <p>Hola,</p>
-      <p>Acá está tu diagnóstico completo — sin el recorte que viste en el preview.</p>
+      <p>Este es tu diagnóstico completo, sin el recorte que viste en la vista previa.</p>
       <p><strong>Tu puntaje MOY IQ exprés: ${scoreText("es", c.score)}${label ? ` (${label})` : ""}</strong></p>
       <p>Un paso concreto para esta semana, según tu resultado:</p>
       <p>${actionBlock("es", c.label)}</p>
@@ -139,16 +139,16 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       body: `
       <h2 style="color:#14213D">El problema no es cuánto ganas</h2>
       <p>Hola,</p>
-      <p>Como prometí, acá va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
+      <p>Como prometí, aquí va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
       <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
-      <p>Cuando importas tus movimientos en MOY IQ, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más plata este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
+      <p>Cuando importas tus movimientos en MOY IQ, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más dinero este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
       <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
-      <p><a href="${appLink("signup", "diagnostico-d2")}" ${BTN}>Ver mi dashboard →</a></p>
+      <p><a href="${appLink("signup", "diagnostico-d2")}" ${BTN}>Crear mi cuenta gratis →</a></p>
       <p style="color:#666;font-size:13px">Starter incluye Dashboard, Movimientos y Presupuestos sin costo.</p>
       `,
     }),
     day5: () => ({
-      subject: "Starter o Pro: la diferencia, sin vueltas",
+      subject: "Starter o Pro: la diferencia en concreto",
       body: `
       <h2 style="color:#14213D">Sin testimonios inventados</h2>
       <p>Hola,</p>
@@ -157,19 +157,20 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Dashboard con IQ Score, Movimientos y categorización automática, Presupuestos básicos, Metas simples.</p>
       <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitas mostrarle tus números a otra persona.</p>
       <p>Si tu situación es simple, Starter alcanza. Si tienes varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
-      <p><a href="${appLink("upgrade", "diagnostico-d5")}" ${BTN}>Actualizar a Pro →</a></p>
+      <p>Pruébalo 14 días gratis: se pide una tarjeta y, si cancelas antes de que termine la prueba, no se cobra nada.</p>
+      <p><a href="${appLink("upgrade", "diagnostico-d5")}" ${BTN}>Probar Pro 14 días gratis →</a></p>
       <p style="color:#666;font-size:13px">Si no es para ti ahora, sigues en Starter sin perder nada de lo que ya armaste.</p>
       `,
     }),
     day12: (c) => ({
-      subject: "Tu IQ Score sigue ahí (no venció)",
+      subject: "Tu diagnóstico sigue guardado (no venció)",
       body: `
-    <h2 style="color:#14213D">No te escribo por MOY IQ</h2>
+    <h2 style="color:#14213D">Tu diagnóstico sigue guardado</h2>
     <p>Hola,</p>
     <p>No te vengo a insistir con Starter o Pro — ya te los mostré. Esto es distinto: tu diagnóstico de hace 12 días sigue guardado, pero doce días es tiempo suficiente para que algo haya cambiado — un gasto grande, un ingreso nuevo, una deuda que se movió.</p>
     <p><a href="${diagnosticoPage("es", c.landingUrl)}?ref=diagnostico-d12" ${BTN}>Volver a ver mi diagnóstico →</a></p>
     <p>Si tu situación es la misma, no hace falta que hagas nada — el resultado sigue siendo válido. Si cambió algo, es un buen momento para volver a correrlo y ver qué mueve.</p>
-    <p style="color:#666;font-size:13px">Este es el último correo de esta secuencia. Si prefieres no recibir más, date de baja <a href="${c.unsubUrl}" style="color:#666">acá</a> — no hay problema.</p>
+    <p style="color:#666;font-size:13px">Este es el último correo de esta secuencia. Si prefieres no recibir más, date de baja <a href="${c.unsubUrl}" style="color:#666">aquí</a>, sin problema.</p>
     `,
     }),
   },
@@ -221,9 +222,9 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       `,
     }),
     day12: (c) => ({
-      subject: "Your IQ Score is still there (it didn't expire)",
+      subject: "Your diagnosis is still saved (it didn't expire)",
       body: `
-    <h2 style="color:#14213D">This is not about MOY IQ</h2>
+    <h2 style="color:#14213D">Your diagnosis is still saved</h2>
     <p>Hello,</p>
     <p>I'm not writing to push Starter or Pro again — you have already seen them. This is different: your diagnosis from 12 days ago is still saved, but twelve days is enough time for something to have changed — a large expense, a new income, a debt that moved.</p>
     <p><a href="${diagnosticoPage("en", c.landingUrl)}?ref=diagnostico-d12" ${BTN}>See my diagnosis again →</a></p>
@@ -280,9 +281,9 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       `,
     }),
     day12: (c) => ({
-      subject: "Seu IQ Score continua aí (não venceu)",
+      subject: "Seu diagnóstico continua salvo (não venceu)",
       body: `
-    <h2 style="color:#14213D">Não escrevo por causa do MOY IQ</h2>
+    <h2 style="color:#14213D">Seu diagnóstico continua salvo</h2>
     <p>Olá,</p>
     <p>Não venho insistir com Starter ou Pro — você já os viu. Isto é diferente: seu diagnóstico de 12 dias atrás continua salvo, mas doze dias é tempo suficiente para algo ter mudado — um gasto grande, uma renda nova, uma dívida que se mexeu.</p>
     <p><a href="${diagnosticoPage("pt", c.landingUrl)}?ref=diagnostico-d12" ${BTN}>Ver meu diagnóstico de novo →</a></p>
@@ -339,9 +340,9 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       `,
     }),
     day12: (c) => ({
-      subject: "Ihr IQ Score ist noch da (er ist nicht abgelaufen)",
+      subject: "Ihre Auswertung ist noch gespeichert (sie ist nicht abgelaufen)",
       body: `
-    <h2 style="color:#14213D">Es geht nicht um MOY IQ</h2>
+    <h2 style="color:#14213D">Ihre Auswertung ist noch gespeichert</h2>
     <p>Guten Tag,</p>
     <p>Ich schreibe nicht, um noch einmal auf Starter oder Pro hinzuweisen — die kennen Sie bereits. Hier geht es um etwas anderes: Ihre Auswertung von vor 12 Tagen ist weiterhin gespeichert, aber zwölf Tage reichen aus, damit sich etwas geändert hat — eine große Ausgabe, ein neues Einkommen, eine Schuld, die sich bewegt hat.</p>
     <p><a href="${diagnosticoPage("de", c.landingUrl)}?ref=diagnostico-d12" ${BTN}>Meine Auswertung erneut ansehen →</a></p>

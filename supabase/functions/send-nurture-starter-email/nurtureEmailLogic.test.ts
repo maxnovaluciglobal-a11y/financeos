@@ -41,10 +41,13 @@ describe('renderEmail', () => {
     expect(r.html).toContain('ref=starter-d2')
   })
 
-  it('day5 no menciona ningún trial — Pro no tiene trial', () => {
+  it('day5 ofrece la prueba de 14 días de Pro, en español neutro (COM-11)', () => {
     const r = renderEmail('day5', LEAD, CONFIG)
     expect(r.html.toLowerCase()).not.toContain('trial')
+    expect(r.html).toContain('Pruébalo 14 días gratis')
     expect(r.html).toContain('ref=starter-d5')
+    expect(r.html).not.toContain('podemos ser específicos es en')
+    expect(r.html).not.toContain('seguir en Starter no te falta nada')
   })
 
   it('day5 no incluye ningún testimonio inventado (misma regla que diagnóstico)', () => {
@@ -270,5 +273,25 @@ describe('processWelcome (bienvenida: una sola vez y nunca a quien se dio de baj
     expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true })
     expect(resendCalls(f)).toHaveLength(1)
     expect(f.mock.calls.some((c: any[]) => (c[1]?.method ?? 'GET') === 'PATCH')).toBe(true)
+  })
+})
+
+describe('C-35 · List-Unsubscribe y dirección postal (COM-9)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it('el correo trae baja con un clic a lead-unsubscribe y la dirección de la LLC', () => {
+    const r = renderEmail('welcome', LEAD, CONFIG)
+    expect(r.headers?.['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
+    expect(r.headers?.['List-Unsubscribe']).toContain(`/functions/v1/lead-unsubscribe?t=starter&id=${LEAD.id}`)
+    expect(r.headers?.['List-Unsubscribe']).toContain('mailto:support@moyiq.app')
+    expect(r.html).toContain('10482 NW 31st Terrace, Office 1D, Doral, FL 33172, USA')
+  })
+
+  it('sendViaResend manda las cabeceras a Resend', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', f)
+    await sendViaResend('a@x.com', renderEmail('welcome', LEAD, CONFIG), CONFIG)
+    const body = JSON.parse(f.mock.calls[0][1].body)
+    expect(body.headers['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
   })
 })

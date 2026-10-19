@@ -80,7 +80,7 @@ function wrapHtml(bodyHtml: string, unsubUrl: string): string {
         ${bodyHtml}
         <p style="color:${MUTED};font-size:11px;margin-top:32px;border-top:1px solid #232838;padding-top:12px">
           ${DISCLAIMER}<br>
-          MOY IQ Invest · MAXNOVA &amp; Luci Global LLC.
+          MOY IQ Invest · ${COMPANY_POSTAL_HTML}.
           <a href="${unsubUrl}" style="color:${MUTED}">Darme de baja de estos correos</a>.
         </p>
       </div>
@@ -90,6 +90,7 @@ function wrapHtml(bodyHtml: string, unsubUrl: string): string {
 export interface RenderedEmail {
   subject: string;
   html: string;
+  headers?: Record<string, string>;
 }
 
 // Relanzamiento v2 (beta pública gratuita, oct-2026): el copy describe el
@@ -130,7 +131,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       `,
       unsub,
     );
-    return { subject, html };
+    return { subject, html, headers: listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id) };
   }
 
   if (mode === "day2") {
@@ -146,7 +147,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       `,
       unsub,
     );
-    return { subject, html };
+    return { subject, html, headers: listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id) };
   }
 
   // day5
@@ -169,7 +170,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     `,
     unsub,
   );
-  return { subject, html };
+  return { subject, html, headers: listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id) };
 }
 
 // --- Envío con reintento (mismo patrón que las otras nurture) ---------------
@@ -181,7 +182,7 @@ export async function sendViaResend(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html };
+  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, ...(rendered.headers ? { headers: rendered.headers } : {}) };
   const attempt = () =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -231,7 +232,7 @@ async function restPatch(path: string, body: unknown, config: NurtureEmailConfig
 
 export async function fetchLeadById(id: string, config: NurtureEmailConfig): Promise<InvestLead | null> {
   const rows = await restGet<InvestLead[]>(
-    `invest_leads?id=eq.${encodeURIComponent(id)}&select=id,email,perfil&limit=1`,
+    `invest_leads?id=eq.${encodeURIComponent(id)}&select=id,email,perfil,email1_sent_at,unsubscribed_at&limit=1`,
     config,
   );
   return rows[0] ?? null;
@@ -339,3 +340,4 @@ export async function processWelcome(leadId: unknown, config: NurtureEmailConfig
   return { ok: true };
 }
 import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
+import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";

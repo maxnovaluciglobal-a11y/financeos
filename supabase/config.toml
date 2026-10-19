@@ -25,6 +25,9 @@ verify_jwt = false
 verify_jwt = false
 
 # Trigger SQL (pg_net) o cliente anon; autentica con el header x-internal-secret.
+[functions.lead-unsubscribe]
+verify_jwt = false
+
 [functions.newsletter-sync]
 verify_jwt = false
 
