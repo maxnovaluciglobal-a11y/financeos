@@ -20,6 +20,10 @@ project_id = "financeos-prod"
 [functions.auth-email-hook]
 verify_jwt = false
 
+# La llama la app con la sesión; el JWT se verifica adentro contra Auth (C-22, 20-oct-2026).
+[functions.delete-account]
+verify_jwt = false
+
 # pg_cron diario (header x-cron-secret): aviso de jobs con HTTP ≠ 2xx (C-12, 19-oct-2026).
 [functions.cron-health-alert]
 verify_jwt = false

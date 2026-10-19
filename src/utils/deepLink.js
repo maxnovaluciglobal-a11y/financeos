@@ -10,7 +10,8 @@
 
 // ?open=<destino> -> id de página de la app. "upgrade" abre Modo Asesor: para quien
 // no es Pro es la pantalla de ProGate (qué incluye Pro, precio y prueba de 14 días).
-const PAGE_BY_OPEN = { import: 'import', dashboard: 'dashboard', upgrade: 'advisor' }
+// "delete-account" (C-22) abre Ajustes con la sección de borrar la cuenta desplegada.
+const PAGE_BY_OPEN = { import: 'import', dashboard: 'dashboard', upgrade: 'advisor', 'delete-account': 'settings' }
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
@@ -74,4 +75,9 @@ function computeInitialSearch(search, storage, now) {
     return `?open=${stashed.open}`
   }
   return search
+}
+
+// ?open=delete-account (C-22): Ajustes abre la confirmación de borrado.
+export function wantsDeleteAccount(search) {
+  return openParam(search) === 'delete-account'
 }

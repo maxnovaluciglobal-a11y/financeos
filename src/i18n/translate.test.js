@@ -480,3 +480,21 @@ describe('paridad de authGate. y resetPassword. (es/en/pt/de)', () => {
     for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
   })
 })
+
+// C-22 (auditoría 360): borrado de la cuenta desde Ajustes.
+describe('paridad de deleteAccount. (es/en/pt/de)', () => {
+  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('deleteAccount.')).sort()
+  it('las 4 lenguas tienen las mismas claves y variables', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    for (const d of [en, pt, de]) expect(pick(d)).toEqual(base)
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of base) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+  it('sin voseo, exclamaciones ni "por favor"; el alemán no tutea; palabra de confirmación en mayúsculas', () => {
+    const VOSEO = /\b(podés|tenés|querés|vos|escribí|descargá|usá|eliminá|preferís|cancelaste vos)\b/i
+    for (const k of pick(es)) { expect(es[k], k).not.toMatch(VOSEO); expect(es[k], k).not.toMatch(/[¡!]|por favor/i) }
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
+    for (const d of [es, en, pt, de]) expect(d['deleteAccount.confirmWord']).toBe(d['deleteAccount.confirmWord'].toUpperCase())
+  })
+})

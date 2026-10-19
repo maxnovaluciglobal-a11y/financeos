@@ -220,6 +220,12 @@ function EsBody() {
           porque nosotros no los tenemos.
         </p>
         <p>
+          La cuenta también se puede eliminar sin escribirnos, desde Ajustes → Eliminar la cuenta
+          (o en app.moyiq.app/delete-account). Eso borra al instante la cuenta y lo que el servidor
+          guarda de ella en MOY IQ y MOY IQ Invest. Solo se conservan los comprobantes de pago y la
+          constancia de una cancelación, como se indica en esta política.
+        </p>
+        <p>
           Respondemos en un plazo máximo de 30 días. Los datos se tratan en EE. UU.; para usuarios
           del Espacio Económico Europeo, el Reino Unido o Suiza, la transferencia se apoya en el
           Marco de Privacidad de Datos UE-EE. UU. cuando el destinatario está certificado y, si no,
@@ -457,6 +463,12 @@ function EnBody() {
           To access the data we store, correct it, or request its deletion (including deletion of
           the account), write to <strong>support@moyiq.app</strong>. Financial data stored only on
           the device is controlled and deleted by the user, because we do not hold it.
+        </p>
+        <p>
+          The account can also be deleted without writing to us, from Settings → Delete account
+          (or at app.moyiq.app/delete-account). This immediately deletes the account and what the
+          server keeps about it in MOY IQ and MOY IQ Invest. Only payment receipts and the record
+          of a cancellation are kept, as described in this policy.
         </p>
         <p>
           We reply within 30 days. Data is processed in the USA; for users in the European Economic
@@ -698,6 +710,12 @@ function PtBody() {
           conta), basta escrever para <strong>support@moyiq.app</strong>. Os dados financeiros
           armazenados apenas no dispositivo são controlados e apagados pelo próprio usuário, porque
           nós não os temos.
+        </p>
+        <p>
+          A conta também pode ser excluída sem nos escrever, em Ajustes → Excluir a conta (ou em
+          app.moyiq.app/delete-account). Isso apaga na hora a conta e o que o servidor guarda dela
+          no MOY IQ e no MOY IQ Invest. Ficam apenas os comprovantes de pagamento e o registro de
+          um cancelamento, como indica esta política.
         </p>
         <p>
           Respondemos em até 30 dias. Os dados são tratados nos EUA; para usuários do Espaço
@@ -969,7 +987,11 @@ function DeBody() {
       <div className={s.section}>
         <h2>11. Speicherdauer</h2>
         <ul className={s.list}>
-          <li>Kontodaten: bis zur Löschung Ihres Kontos.</li>
+          <li>
+            Kontodaten: bis zur Löschung Ihres Kontos. Sie können das Konto jederzeit selbst unter
+            Einstellungen → Konto löschen (oder unter app.moyiq.app/delete-account) löschen; die beim
+            Server gespeicherten Daten in MOY IQ und MOY IQ Invest werden dabei sofort gelöscht.
+          </li>
           <li>E-Mail-Adressen für Neuigkeiten: bis zu Ihrer Abmeldung oder dem Widerruf Ihrer Einwilligung.</li>
           <li>
             Pro-Daten (Lizenz-Hash, Tarif, Zeiträume, Zahlungsnachweise): für die Dauer des Vertrags

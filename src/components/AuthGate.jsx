@@ -63,12 +63,20 @@ export default function AuthGate({ onAuthenticated }) {
   const [resendState, setResendState] = useState('idle') // 'idle' | 'sending' | 'sent' | 'error'
   const [forgotMode, setForgotMode] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
+  // C-22: aviso tras borrar la cuenta desde Ajustes (la app recarga y llega acá).
+  // La marca se borra al volver a entrar, no al leerla: la app puede montar
+  // esta pantalla dos veces (cierre de sesión y recarga).
+  const [accountDeleted] = useState(() => {
+    try { return sessionStorage.getItem('fnos_account_deleted') === '1' } catch { return false }
+  })
+  const clearDeletedNotice = () => { try { sessionStorage.removeItem('fnos_account_deleted') } catch {} }
 
   async function handleSubmit() {
     const cleanEmail = email.trim()
     if (!cleanEmail || !password) { setError(t('authGate.errorMissingFields')); return }
     if (tab === 'signup' && password.length < MIN_PASSWORD_LENGTH) { setError(t('authGate.errorWeakPassword')); return }
     setError('')
+    clearDeletedNotice()
     setLoading(true)
     const result = tab === 'login'
       ? await signInWithPassword(cleanEmail, password)
@@ -133,6 +141,7 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleGoogle() {
     setError('')
+    clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
     const result = await signInWithGoogle()
     if (result.error) setError(friendlyError(t, result.error))
@@ -316,6 +325,11 @@ export default function AuthGate({ onAuthenticated }) {
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
           {t('authGate.subtitle')}
         </div>
+        {accountDeleted && (
+          <div role="status" style={{ fontSize: 13, color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
+            {t('deleteAccount.doneNotice')}
+          </div>
+        )}
 
         <div role="tablist" aria-label={t('authGate.tabsLabel')} style={{ display: 'flex', gap: 4, background: 'var(--sur2)', borderRadius: 9, padding: 4, marginBottom: 18 }}>
           <button type="button" role="tab" id="authgate-tab-login" style={s.tabBtn(tab === 'login')} aria-selected={tab === 'login'} tabIndex={tab === 'login' ? 0 : -1} onKeyDown={onTabKey} onClick={() => { setTab('login'); setError('') }}>{t('authGate.tabLogin')}</button>

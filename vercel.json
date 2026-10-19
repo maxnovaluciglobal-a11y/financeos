@@ -33,6 +33,11 @@
       "permanent": true
     },
     {
+      "source": "/delete-account",
+      "destination": "/app/?open=delete-account",
+      "permanent": true
+    },
+    {
       "source": "/upgrade",
       "destination": "/app/?open=upgrade",
       "permanent": true

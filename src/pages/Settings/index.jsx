@@ -11,6 +11,8 @@ import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
 import UpgradeCard from './UpgradeCard.jsx'
+import DeleteAccountSection from './DeleteAccountSection.jsx'
+import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
 import { CURRENCY_OPTIONS, currencyOptionLabel } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
@@ -364,6 +366,7 @@ export default function Settings() {
           <div style={{fontSize:12,fontFamily:'var(--mono)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
         </div>
       </Card>
+      {!isDemo && accountEmail && <DeleteAccountSection autoOpen={wantsDeleteAccount(initialSearch(window.location.search))} />}
       {(installPrompt || installed || (isIOS && !isStandalone)) && (
         <Card>
           <CardHeader title={t('settings.install.title')} />

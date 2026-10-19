@@ -7,7 +7,8 @@
 // acá, en deepLink.js y en las redirecciones de vercel.json.
 export const APP_URL = "https://app.moyiq.app/app/";
 
-export const APP_DESTINATIONS = ["import", "dashboard", "upgrade", "signup"] as const;
+// "delete-account" (C-22): enlace público de borrado de cuenta que piden las tiendas.
+export const APP_DESTINATIONS = ["import", "dashboard", "upgrade", "signup", "delete-account"] as const;
 
 export type AppDestination = typeof APP_DESTINATIONS[number];
 
