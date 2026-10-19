@@ -121,7 +121,7 @@ describe('v2 desde cero (nube vacía)', () => {
     setLocal(DATA_A); meta({ lastLocalChange: 5 })
     await sync.pushNow()
     expect(crypto2.isV2Blob(row.blob)).toBe(true)
-    expect(row.blob).not.toContain('a1')
+    expect(row.blob).not.toContain('"amount"')
     expect(sync.syncMode()).toBe('v2')
   })
 })

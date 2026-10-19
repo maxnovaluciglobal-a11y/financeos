@@ -59,8 +59,8 @@ describe('v2 (frase de paso + PBKDF2-SHA256)', () => {
     const blob = await encryptV2(PAYLOAD, k, salt, 1000)
     expect(isV2Blob(blob)).toBe(true)
     expect(blob.startsWith(V2_PREFIX)).toBe(true)
-    expect(blob).not.toContain('frase')
-    expect(blob).not.toContain('1500')
+    expect(blob).not.toContain('"expenses"')
+    expect(blob).not.toContain('"amount"')
     expect(await decryptV2(blob, k, { minIterations: 1000 })).toEqual(PAYLOAD)
   })
   it('frase incorrecta: wrong_key', async () => {
