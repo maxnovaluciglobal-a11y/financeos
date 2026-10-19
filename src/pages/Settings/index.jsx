@@ -498,7 +498,7 @@ function PushSection() {
               <div style={lbl}>{on ? t('settings.push.on') : t('settings.push.off')}</div>
               <div style={sub}>{t('settings.push.desc')}</div>
             </div>
-            <Btn variant={on ? 'ghost' : 'primary'} onClick={toggle} disabled={busy}>
+            <Btn variant={on ? 'ghost' : 'primary'} onClick={toggle} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')} · ${t('settings.push.title')}`}>
               {busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')}
             </Btn>
           </div>

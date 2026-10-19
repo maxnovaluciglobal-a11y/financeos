@@ -162,8 +162,8 @@ export default function SyncSection() {
           <div style={sub}>{on ? t('settings.sync.lastSync', { time: lastTxt }) : t('settings.sync.offDesc')}</div>
         </div>
         {on
-          ? <Btn variant="ghost" onClick={toggleOff} disabled={busy}>{t('settings.sync.disable')}</Btn>
-          : !need && <Btn variant="primary" onClick={() => start()} disabled={busy}>{busy ? t('settings.sync.busy') : t('settings.sync.enable')}</Btn>}
+          ? <Btn variant="ghost" onClick={toggleOff} disabled={busy} aria-label={`${t('settings.sync.disable')} · ${t('settings.sync.title')}`}>{t('settings.sync.disable')}</Btn>
+          : !need && <Btn variant="primary" onClick={() => start()} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : t('settings.sync.enable')} · ${t('settings.sync.title')}`}>{busy ? t('settings.sync.busy') : t('settings.sync.enable')}</Btn>}
       </div>
 
       {!on && need === 'new_passphrase' && (
