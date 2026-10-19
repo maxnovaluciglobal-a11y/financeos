@@ -12,7 +12,7 @@ import {
   handleInvoicePaid, handleSubscriptionDeleted, handleTrialWillEnd, handleInvoicePaymentFailed,
   trialBillingFromSubscription, trialBillingFromSession, sendTrialEndingEmail, formatDateEs,
   notifyUnmappedTrialCheckout, RETIRED_PAYMENT_LINKS, handleBillingEvent, handleSubscriptionUpdated,
-  periodEndFromSubscription, runOnce, handleChargeReversal,
+  periodEndFromSubscription, runOnce, handleChargeReversal, renderPaymentFailedEmail, renderProEndedEmail,
 } from './webhookLogic.ts'
 import { resolveResendApiKey } from '../_shared/resendKey.ts'
 
@@ -609,10 +609,10 @@ describe('T10 · eventos de suscripción (fetch mockeado)', () => {
     expect(await revokeLicenseBySubscription('sub_1', CONFIG)).toEqual({ ok: false, error: 'http_503' })
   })
 
-  it('invoice.payment_failed solo registra, no llama a nada', () => {
+  it('invoice.payment_failed en un reintento (attempt_count > 1) solo registra, no llama a nada', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
-    expect(handleInvoicePaymentFailed({ subscription: 'sub_1', attempt_count: 1 }).status).toBe(200)
+    expect((await handleInvoicePaymentFailed({ subscription: 'sub_1', attempt_count: 2 }, CONFIG)).status).toBe(200)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -1083,5 +1083,79 @@ describe('C-13 · eventos de facturación con idempotencia por event.id', () => 
       expect((await handleSubscriptionUpdated({ id: 'sub_1' }, CONFIG)).body.ignored).toBe('no_subscription_or_status')
       expect(fetchMock).not.toHaveBeenCalled()
     })
+  })
+})
+
+// ── C-35 (auditoría 360): correos del ciclo de pago ───────────────────────
+describe('C-35 · cobro fallido y "tu Pro terminó"', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  function backend(license: any) {
+    const emails: any[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: any = {}) => {
+      if (url.includes('/rest/v1/licenses?')) return { ok: true, json: async () => (license ? [license] : []) }
+      if (url.endsWith('/rpc/revoke_license_by_subscription')) return { ok: true, json: async () => ({ ok: true, revoked: 1 }) }
+      if (url === 'https://api.resend.com/emails') { emails.push(JSON.parse(init.body)); return { ok: true } }
+      throw new Error('fetch inesperado ' + url)
+    }))
+    return emails
+  }
+
+  it('primer cobro fallido: correo a la licencia con el portal, en español neutro', async () => {
+    const emails = backend({ email: 'c@x.com', status: 'active' })
+    const r = await handleInvoicePaymentFailed({ subscription: 'sub_1', attempt_count: 1 }, { ...CONFIG, portalUrl: 'https://billing.stripe.com/p/login/x' })
+    expect(r.status).toBe(200)
+    expect(emails).toHaveLength(1)
+    expect(emails[0].to).toBe('c@x.com')
+    expect(emails[0].reply_to).toBe('support@moyiq.app')
+    expect(emails[0].html).toContain('https://billing.stripe.com/p/login/x')
+    const text = `${emails[0].subject} ${emails[0].html}`
+    expect(text).not.toMatch(/[¡!]/)
+    expect(text).not.toMatch(/actualizá|escribinos|tenés|podés/i)
+  })
+
+  it('cobro fallido de una suscripción ajena (sin licencia) no manda nada', async () => {
+    const emails = backend(null)
+    const r = await handleInvoicePaymentFailed({ subscription: 'sub_x', attempt_count: 1 }, CONFIG)
+    expect(r.body.ignored).toBe('not_moyiq_subscription')
+    expect(emails).toHaveLength(0)
+  })
+
+  it('si Resend falla en el cobro fallido responde 500 (runOnce libera el evento y Stripe reintenta)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/rest/v1/licenses?')) return { ok: true, json: async () => [{ email: 'c@x.com', status: 'active' }] }
+      return { ok: false, status: 500, text: async () => 'x' }
+    }))
+    expect((await handleInvoicePaymentFailed({ subscription: 'sub_1', attempt_count: 1 }, CONFIG)).status).toBe(500)
+  })
+
+  it('subscription.deleted que revoca manda "tu Pro terminó, tus datos siguen" con el botón para volver', async () => {
+    const emails = backend({ email: 'c@x.com', status: 'revoked' })
+    const r = await handleSubscriptionDeleted({ id: 'sub_1', status: 'canceled' }, CONFIG)
+    expect(r.status).toBe(200)
+    expect(emails).toHaveLength(1)
+    expect(emails[0].subject).toBe('Tu MOY IQ Pro terminó. Tus datos siguen ahí')
+    expect(emails[0].html).toContain('https://app.moyiq.app/app/?open=upgrade&ref=pro-ended')
+  })
+
+  it('subscription.deleted sin revocar nada (ajena o ya revocada) no manda correo', async () => {
+    const emails: any[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: any = {}) => {
+      if (url.endsWith('/rpc/revoke_license_by_subscription')) return { ok: true, json: async () => ({ ok: false, error: 'not_found_or_already_revoked' }) }
+      if (url === 'https://api.resend.com/emails') emails.push(init.body)
+      return { ok: true, json: async () => [] }
+    }))
+    await handleSubscriptionDeleted({ id: 'sub_1' }, CONFIG)
+    expect(emails).toHaveLength(0)
+  })
+
+  it('los dos correos existen en los 4 idiomas, sin exclamaciones', () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      for (const m of [renderPaymentFailedEmail(CONFIG, lang), renderProEndedEmail(lang)]) {
+        expect(m.subject.length).toBeGreaterThan(10)
+        expect(`${m.subject} ${m.html}`).not.toMatch(/[¡!]/)
+        expect(m.html).toContain(`lang="${lang}"`)
+      }
+    }
   })
 })

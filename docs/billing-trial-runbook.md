@@ -123,7 +123,7 @@ Después, en Stripe → Developers → Webhooks → el endpoint de `stripe-webho
 - `invoice.payment_failed`
 - `customer.subscription.updated` (desde el 19-oct-2026, auditoría 360 C-13: cambio de plan o de intervalo en el portal, `canceled`/`incomplete_expired` revoca)
 
-Desde C-13 un checkout solo emite licencia si su Payment Link está en `PAYMENT_LINK_PLAN` (`webhookLogic.ts`), sin fallback por monto: un Payment Link nuevo se carga ahí **antes** de publicarlo. Si no, el checkout se ignora y llega el aviso "checkout sin licencia (Payment Link desconocido)" a `ALERT_EMAIL`. Todos los eventos que no son de checkout se procesan una sola vez por `event.id` (tabla `webhook_events_processed`).
+Desde C-13 un checkout solo emite licencia si su Payment Link está en `PAYMENT_LINK_PLAN` (`webhookLogic.ts`), sin fallback por monto: un Payment Link nuevo se carga ahí **antes** de publicarlo. Si no, el checkout se ignora y llega el aviso "checkout sin licencia (Payment Link desconocido)" a `ALERT_EMAIL`. Todos los eventos que no son de checkout se procesan una sola vez por `event.id` (tabla `webhook_events_processed`). Desde C-35 el webhook manda dos correos propios del ciclo de pago, transaccionales y en los 4 idiomas: el primer `invoice.payment_failed` (`attempt_count = 1`) de una suscripción de MOY IQ avisa con el portal de facturación (`STRIPE_PORTAL_URL`) para actualizar la tarjeta, y la revocación por `customer.subscription.deleted` (o `updated` a `canceled`/`incomplete_expired`) avisa "tu Pro terminó, tus datos siguen" con el botón para volver a Pro.
 
 Los actuales, que se mantienen: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `charge.refunded`, `charge.dispute.created`, `invoice.payment_succeeded`.
 

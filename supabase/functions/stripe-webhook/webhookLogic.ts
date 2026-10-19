@@ -14,8 +14,9 @@ const enc = new TextEncoder();
 
 // Verifica la firma del webhook de Stripe (esquema t=...,v1=...) con HMAC-SHA256.
 // Prueba contra varios secrets (test + live) y acepta si alguno coincide.
-import { type EmailLang, INTL_LOCALE, langFromStripeSession, langFromStripeSubscription } from "../_shared/emailLang.ts";
+import { type EmailLang, INTL_LOCALE, langFromStripeSession, langFromStripeSubscription, pickLang } from "../_shared/emailLang.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
+import { appLink } from "../_shared/appLinks.ts";
 export { langFromStripeSession, langFromStripeSubscription };
 
 export const SIGNATURE_TOLERANCE_SECONDS = 300;
@@ -675,6 +676,18 @@ interface MailText {
   activate: (link: string) => string;
   staySame: string;
   privacy: string;
+  // C-35 (auditoría 360, COM-10 / META-4)
+  paymentFailedSubject: string;
+  paymentFailedIntro: string;
+  paymentFailedPortal: (portal: string, support: string) => string;
+  paymentFailedNoPortal: (support: string) => string;
+  paymentFailedAfter: string;
+  proEndedSubject: string;
+  proEndedIntro: string;
+  proEndedData: string;
+  proEndedBack: string;
+  proEndedButton: string;
+  questions: (support: string) => string;
 }
 const MAIL: Record<EmailLang, MailText> = {
   es: {
@@ -694,6 +707,17 @@ const MAIL: Record<EmailLang, MailText> = {
     activate: (l) => `Para activarla, abre ${l} e ingresa la clave.`,
     staySame: "Si sigues, no tienes que hacer nada: tu clave de acceso es la misma.",
     privacy: "Tus datos financieros se guardan solo en tu dispositivo.",
+    paymentFailedSubject: "No se pudo cobrar tu suscripción de MOY IQ Pro",
+    paymentFailedIntro: "El cobro de tu suscripción de MOY IQ Pro no se pudo hacer con la tarjeta registrada. Stripe lo va a reintentar en los próximos días.",
+    paymentFailedPortal: (portal, sup) => `Para que Pro siga activo, actualiza tu método de pago desde <a href="${portal}">tu portal de facturación</a> o escribe a ${sup}.`,
+    paymentFailedNoPortal: (sup) => `Para que Pro siga activo, escribe a ${sup} y te ayudamos a actualizar el método de pago.`,
+    paymentFailedAfter: "Si los reintentos no funcionan, la suscripción se cancela y la cuenta vuelve a Starter. Tus datos siguen en tu dispositivo.",
+    proEndedSubject: "Tu MOY IQ Pro terminó. Tus datos siguen ahí",
+    proEndedIntro: "Tu suscripción de MOY IQ Pro se canceló, así que las funciones de Pro ya no están activas en tu cuenta.",
+    proEndedData: "No se borró nada: tus movimientos, presupuestos y metas siguen en tu dispositivo, y puedes seguir usándolos con las funciones gratuitas de Starter.",
+    proEndedBack: "Si quieres volver a Pro, puedes hacerlo cuando quieras desde la app.",
+    proEndedButton: "Volver a Pro",
+    questions: (sup) => `Si tienes dudas, escribe a ${sup}.`,
   },
   en: {
     licenseSubject: "Your MOY IQ license",
@@ -712,6 +736,17 @@ const MAIL: Record<EmailLang, MailText> = {
     activate: (l) => `To activate it, open ${l} and enter the key.`,
     staySame: "If you continue, you don't need to do anything: your access key stays the same.",
     privacy: "Your financial data is stored only on your device.",
+    paymentFailedSubject: "Your MOY IQ Pro payment didn't go through",
+    paymentFailedIntro: "We couldn't charge your MOY IQ Pro subscription to the card on file. Stripe will retry over the next few days.",
+    paymentFailedPortal: (portal, sup) => `To keep Pro active, update your payment method from <a href="${portal}">your billing portal</a> or write to ${sup}.`,
+    paymentFailedNoPortal: (sup) => `To keep Pro active, write to ${sup} and we'll help you update your payment method.`,
+    paymentFailedAfter: "If the retries don't work, the subscription is canceled and the account goes back to Starter. Your data stays on your device.",
+    proEndedSubject: "Your MOY IQ Pro ended. Your data is still there",
+    proEndedIntro: "Your MOY IQ Pro subscription was canceled, so the Pro features are no longer active on your account.",
+    proEndedData: "Nothing was deleted: your transactions, budgets and goals are still on your device, and you can keep using them with the free Starter features.",
+    proEndedBack: "If you want to go back to Pro, you can do it at any time from the app.",
+    proEndedButton: "Go back to Pro",
+    questions: (sup) => `If you have questions, write to ${sup}.`,
   },
   pt: {
     licenseSubject: "Sua licença do MOY IQ",
@@ -730,6 +765,17 @@ const MAIL: Record<EmailLang, MailText> = {
     activate: (l) => `Para ativá-la, abra ${l} e insira a chave.`,
     staySame: "Se continuar, não precisa fazer nada: sua chave de acesso é a mesma.",
     privacy: "Seus dados financeiros ficam salvos apenas no seu dispositivo.",
+    paymentFailedSubject: "Não foi possível cobrar sua assinatura do MOY IQ Pro",
+    paymentFailedIntro: "A cobrança da sua assinatura do MOY IQ Pro não pôde ser feita no cartão cadastrado. O Stripe vai tentar de novo nos próximos dias.",
+    paymentFailedPortal: (portal, sup) => `Para que o Pro continue ativo, atualize sua forma de pagamento no <a href="${portal}">seu portal de cobrança</a> ou escreva para ${sup}.`,
+    paymentFailedNoPortal: (sup) => `Para que o Pro continue ativo, escreva para ${sup} e ajudamos você a atualizar a forma de pagamento.`,
+    paymentFailedAfter: "Se as novas tentativas não funcionarem, a assinatura é cancelada e a conta volta ao Starter. Seus dados continuam no seu dispositivo.",
+    proEndedSubject: "Seu MOY IQ Pro terminou. Seus dados continuam aí",
+    proEndedIntro: "Sua assinatura do MOY IQ Pro foi cancelada, então as funções do Pro não estão mais ativas na sua conta.",
+    proEndedData: "Nada foi apagado: seus movimentos, orçamentos e metas continuam no seu dispositivo, e você pode seguir usando-os com as funções gratuitas do Starter.",
+    proEndedBack: "Se quiser voltar ao Pro, pode fazer isso quando quiser pelo app.",
+    proEndedButton: "Voltar ao Pro",
+    questions: (sup) => `Se tiver dúvidas, escreva para ${sup}.`,
   },
   de: {
     licenseSubject: "Ihre MOY IQ-Lizenz",
@@ -748,6 +794,17 @@ const MAIL: Record<EmailLang, MailText> = {
     activate: (l) => `Zum Aktivieren öffnen Sie ${l} und geben den Schlüssel ein.`,
     staySame: "Wenn Sie weitermachen, müssen Sie nichts tun: Ihr Zugangsschlüssel bleibt gleich.",
     privacy: "Ihre Finanzdaten werden nur auf Ihrem Gerät gespeichert.",
+    paymentFailedSubject: "Ihr MOY IQ Pro-Abonnement konnte nicht abgebucht werden",
+    paymentFailedIntro: "Die Zahlung für Ihr MOY IQ Pro-Abonnement konnte nicht von der hinterlegten Karte abgebucht werden. Stripe versucht es in den nächsten Tagen erneut.",
+    paymentFailedPortal: (portal, sup) => `Damit Pro aktiv bleibt, aktualisieren Sie Ihre Zahlungsmethode in <a href="${portal}">Ihrem Abrechnungsportal</a> oder schreiben Sie an ${sup}.`,
+    paymentFailedNoPortal: (sup) => `Damit Pro aktiv bleibt, schreiben Sie an ${sup}; wir helfen Ihnen, die Zahlungsmethode zu aktualisieren.`,
+    paymentFailedAfter: "Wenn die weiteren Versuche nicht funktionieren, wird das Abonnement gekündigt und das Konto kehrt zu Starter zurück. Ihre Daten bleiben auf Ihrem Gerät.",
+    proEndedSubject: "Ihr MOY IQ Pro ist beendet. Ihre Daten sind noch da",
+    proEndedIntro: "Ihr MOY IQ Pro-Abonnement wurde gekündigt, daher sind die Pro-Funktionen in Ihrem Konto nicht mehr aktiv.",
+    proEndedData: "Es wurde nichts gelöscht: Ihre Buchungen, Budgets und Ziele bleiben auf Ihrem Gerät, und Sie können sie mit den kostenlosen Starter-Funktionen weiter nutzen.",
+    proEndedBack: "Wenn Sie zu Pro zurückkehren möchten, können Sie das jederzeit in der App tun.",
+    proEndedButton: "Zurück zu Pro",
+    questions: (sup) => `Bei Fragen schreiben Sie an ${sup}.`,
   },
 };
 
@@ -851,6 +908,70 @@ export async function sendTrialEndingEmail(to: string, billing: TrialBilling, co
   }
 }
 
+// ── C-35 (auditoría 360, COM-10 / META-4): correos del ciclo de pago ───────
+// Transaccionales (no piden opt-in): cobro fallido con el portal para
+// actualizar la tarjeta, y "tu Pro terminó, tus datos siguen" al revocar.
+
+async function sendCustomerEmail(to: string, subject: string, html: string, config: WebhookConfig, tag: string): Promise<boolean> {
+  if (!config.resendApiKey) {
+    console.error(`${tag}: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas`);
+    return false;
+  }
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_EMAIL, subject, html }),
+    });
+    if (!res.ok) {
+      console.error(`${tag}: Resend error ${res.status}`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`${tag}: fallo de red`, err);
+    return false;
+  }
+}
+
+export function renderPaymentFailedEmail(config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string } {
+  const T = MAIL[lang] ?? MAIL.es;
+  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
+  const html = `
+    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
+      <h2 style="color:#14213D">${T.paymentFailedSubject}</h2>
+      <p>${T.paymentFailedIntro}</p>
+      <p>${config.portalUrl ? T.paymentFailedPortal(config.portalUrl, support) : T.paymentFailedNoPortal(support)}</p>
+      <p>${T.paymentFailedAfter}</p>
+      <p style="color:#888;font-size:12px">${T.privacy}</p>
+    </div>`;
+  return { subject: T.paymentFailedSubject, html };
+}
+
+export function renderProEndedEmail(lang: EmailLang = "es"): { subject: string; html: string } {
+  const T = MAIL[lang] ?? MAIL.es;
+  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
+  const html = `
+    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
+      <h2 style="color:#14213D">${T.proEndedSubject}</h2>
+      <p>${T.proEndedIntro}</p>
+      <p>${T.proEndedData}</p>
+      <p>${T.proEndedBack}</p>
+      <p><a href="${appLink("upgrade", "pro-ended")}" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${T.proEndedButton}</a></p>
+      <p style="color:#888;font-size:12px">${T.questions(support)}</p>
+    </div>`;
+  return { subject: T.proEndedSubject, html };
+}
+
+// Idioma de una invoice: metadata de la suscripción si viene (no hay otro
+// dato de idioma en el evento). Sin señal, español.
+export function langFromInvoice(invoice: any): EmailLang {
+  return pickLang(
+    invoice?.parent?.subscription_details?.metadata?.lang,
+    invoice?.subscription_details?.metadata?.lang,
+  );
+}
+
 // Un checkout de un Payment Link que no está en PAYMENT_LINK_PLAN no emite
 // licencia (ver checkoutSkipReason). Si es un link de MOY IQ sin cargar, el
 // cliente queda sin clave: se avisa para resolverlo a mano.
@@ -911,6 +1032,9 @@ export async function handleInvoicePaid(invoice: any, config: WebhookConfig): Pr
 
 // customer.subscription.deleted: revoca por suscripción. Un fallo de red de
 // la RPC devuelve 500 para que Stripe reintente; "not found" es normal.
+// Si revocó una licencia de MOY IQ, avisa "tu Pro terminó, tus datos siguen"
+// (C-35). Best-effort: la revocación ya está hecha y un reintento de Stripe
+// encontraría la licencia revocada (revoked=0) y no reenviaría el correo.
 export async function handleSubscriptionDeleted(subscription: any, config: WebhookConfig): Promise<HandlerResult> {
   const subscriptionId = subRefId(subscription?.id);
   if (!subscriptionId) return { status: 200, body: { received: true, ignored: "no_subscription_id" } };
@@ -919,15 +1043,44 @@ export async function handleSubscriptionDeleted(subscription: any, config: Webho
   if (!result.ok && typeof result.error === "string" && result.error.startsWith("http_")) {
     return { status: 500, body: { error: "error revoking subscription" } };
   }
+  if (result.ok && (result.revoked ?? 0) > 0) {
+    try {
+      const license = await findLicenseBySubscription(subscriptionId, config);
+      if (license?.email) {
+        const mail = renderProEndedEmail(langFromStripeSubscription(subscription));
+        const sent = await sendCustomerEmail(license.email, mail.subject, mail.html, config, "pro_ended");
+        console.log(`pro_ended: subscription=${subscriptionId} enviado=${sent}`);
+      }
+    } catch (err) {
+      console.error(`pro_ended: no se pudo avisar subscription=${subscriptionId}`, err);
+    }
+  }
   return { status: 200, body: { received: true } };
 }
 
 // invoice.payment_failed: no se revoca nada acá. Stripe reintenta el cobro
 // (Smart Retries / dunning) y, si se agotan los intentos, cancela la
-// suscripción → customer.subscription.deleted → revoca. Solo log.
-export function handleInvoicePaymentFailed(invoice: any): HandlerResult {
+// suscripción → customer.subscription.deleted → revoca. Desde C-35, en el
+// PRIMER intento fallido se avisa a la persona con el portal para actualizar
+// la tarjeta (los reintentos siguientes no repiten el correo; Stripe además
+// manda los suyos si están activados en Billing → Revenue recovery).
+export async function handleInvoicePaymentFailed(invoice: any, config: WebhookConfig): Promise<HandlerResult> {
   const subscriptionId = subscriptionIdFromInvoice(invoice ?? {});
-  console.warn(`invoice.payment_failed: subscription=${subscriptionId ?? "(sin suscripción)"} attempt_count=${invoice?.attempt_count ?? "?"} billing_reason=${invoice?.billing_reason ?? "?"}`);
+  const attempt = typeof invoice?.attempt_count === "number" ? invoice.attempt_count : null;
+  console.warn(`invoice.payment_failed: subscription=${subscriptionId ?? "(sin suscripción)"} attempt_count=${attempt ?? "?"} billing_reason=${invoice?.billing_reason ?? "?"}`);
+  if (!subscriptionId || attempt !== 1) return { status: 200, body: { received: true } };
+  let license: Awaited<ReturnType<typeof findLicenseBySubscription>>;
+  try {
+    license = await findLicenseBySubscription(subscriptionId, config);
+  } catch (err) {
+    console.error("invoice.payment_failed: no se pudo buscar la licencia", err);
+    return { status: 500, body: { error: "license lookup failed" } };
+  }
+  if (!license) return { status: 200, body: { received: true, ignored: "not_moyiq_subscription" } };
+  if (license.status !== "active" || !license.email) return { status: 200, body: { received: true, ignored: "inactive_or_no_email" } };
+  const mail = renderPaymentFailedEmail(config, langFromInvoice(invoice));
+  const sent = await sendCustomerEmail(license.email, mail.subject, mail.html, config, "payment_failed");
+  if (!sent) return { status: 500, body: { error: "payment failed email not sent" } };
   return { status: 200, body: { received: true } };
 }
 
@@ -1074,7 +1227,7 @@ export async function handleBillingEvent(event: any, config: WebhookConfig): Pro
       case "invoice.payment_succeeded":
         return handleInvoicePaid(obj, config);
       case "invoice.payment_failed":
-        return handleInvoicePaymentFailed(obj);
+        return handleInvoicePaymentFailed(obj, config);
       case "customer.subscription.updated":
         return handleSubscriptionUpdated(obj, config);
       case "customer.subscription.deleted":
