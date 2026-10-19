@@ -11,7 +11,8 @@
 // desde Node/vitest.
 //
 // Secrets necesarios (Supabase → Edge Functions → Secrets):
-//   RESEND_API_KEY, FROM_EMAIL              ← ya configurados para stripe-webhook, se reusan
+//   NURTURE_RESEND_API_KEY (o RESEND_API_KEY como respaldo), FROM_EMAIL ← los mismos que usa stripe-webhook
+//     (ver ../_shared/resendKey.ts: RESEND_API_KEY sola da 403 desde @moyiq.app)
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 //
 // Frontend: src/pages/Advisor/ReportePDF.jsx → sendReportePDFByEmail()
@@ -20,11 +21,12 @@
 
 import { isValidEmail, isPdfSizeOk, checkProLicense, sendReportEmail, pickLang, type EmailConfig } from "./reportEmailLogic.ts";
 import { corsHeaders } from "./cors.ts";
+import { resolveResendApiKey } from "../_shared/resendKey.ts";
 
 const config: EmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  resendApiKey: Deno.env.get("RESEND_API_KEY"),
+  resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
   fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
 };
 

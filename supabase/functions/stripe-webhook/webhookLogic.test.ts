@@ -13,6 +13,7 @@ import {
   trialBillingFromSubscription, trialBillingFromSession, sendTrialEndingEmail, formatDateEs,
   notifyUnmappedTrialCheckout,
 } from './webhookLogic.ts'
+import { resolveResendApiKey } from '../_shared/resendKey.ts'
 
 const CONFIG = { supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key', resendApiKey: 're_key', fromEmail: 'a@b.com', alertEmail: 'admin@x.com' }
 
@@ -851,5 +852,92 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
     const resendCall = fetchMock.mock.calls.find(c => String(c[0]).includes('api.resend.com'))
     expect(resendCall).toBeTruthy()
     expect(JSON.parse(resendCall![1].body).subject).toBe('Your MOY IQ Pro trial ends soon')
+  })
+})
+
+
+// Auditoría 360, C-05 / VEN-3: stripe-webhook leía solo RESEND_API_KEY (secret del
+// 29-jun, que da 403 desde @moyiq.app). index.ts arma la config con
+// resolveResendApiKey (NURTURE_RESEND_API_KEY primero, RESEND_API_KEY de respaldo);
+// estos tests arman la misma config y siguen la clave hasta el header de Resend en
+// el correo de la licencia y en los otros cuatro mensajes que manda esta función.
+describe('C-05 · clave de Resend del correo de la licencia', () => {
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks() })
+
+  // Lo mismo que stripe-webhook/index.ts, con las variables de entorno inyectadas.
+  const configFromEnv = (vars: Record<string, string | undefined>) => ({
+    supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key',
+    resendApiKey: resolveResendApiKey((name) => vars[name]),
+    fromEmail: 'MOY IQ <licencias@moyiq.app>', alertEmail: 'maxnovaluciglobal@gmail.com',
+  })
+  const sentWith = (fetchMock: ReturnType<typeof vi.fn>) => fetchMock.mock.calls.map(([url, init]: any) => ({
+    url, auth: init.headers.Authorization, body: JSON.parse(init.body),
+  }))
+
+  it('con las dos claves cargadas, el correo de la licencia sale con NURTURE_RESEND_API_KEY', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const cfg = configFromEnv({ NURTURE_RESEND_API_KEY: 're_nurture', RESEND_API_KEY: 're_vieja' })
+    expect(await sendKeyEmail('cliente@ejemplo.com', 'FNOS-AAAA-BBBB-CCCC', 'pro', 'cs_1', cfg, 'month')).toBe(true)
+    const [call] = sentWith(fetchMock)
+    expect(call.url).toBe('https://api.resend.com/emails')
+    expect(call.auth).toBe('Bearer re_nurture')
+    expect(call.body.from).toBe('MOY IQ <licencias@moyiq.app>')
+    expect(call.body.to).toBe('cliente@ejemplo.com')
+    expect(call.body.html).toContain('FNOS-AAAA-BBBB-CCCC')
+    expect(call.body.html).toContain('https://app.moyiq.app/app/')
+  })
+
+  it('si solo existe RESEND_API_KEY se usa como respaldo (no se rompe lo que hoy funciona)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const cfg = configFromEnv({ RESEND_API_KEY: 're_vieja' })
+    expect(await sendKeyEmail('cliente@ejemplo.com', 'FNOS-AAAA-BBBB-CCCC', 'pro', 'cs_1', cfg)).toBe(true)
+    expect(sentWith(fetchMock)[0].auth).toBe('Bearer re_vieja')
+  })
+
+  it('sin ninguna de las dos claves no manda nada, avisa en el log con los dos nombres y devuelve false', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const cfg = configFromEnv({})
+    expect(cfg.resendApiKey).toBeUndefined()
+    expect(await sendKeyEmail('cliente@ejemplo.com', 'FNOS-AAAA-BBBB-CCCC', 'pro', 'cs_1', cfg)).toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(String(errors.mock.calls[0][0])).toMatch(/NURTURE_RESEND_API_KEY.*RESEND_API_KEY/)
+  })
+
+  it('un 403 de Resend (clave de otra cuenta) cuenta como correo no entregado, tras el reintento', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 403, text: async () => 'domain is not verified' })
+    vi.stubGlobal('fetch', fetchMock)
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const cfg = configFromEnv({ RESEND_API_KEY: 're_vieja' })
+    expect(await sendKeyEmail('cliente@ejemplo.com', 'FNOS-AAAA-BBBB-CCCC', 'pro', 'cs_1', cfg)).toBe(false)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('la misma clave elegida firma los otros mensajes: aviso de venta, falla de entrega, fin de prueba y link sin mapear', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const cfg = configFromEnv({ NURTURE_RESEND_API_KEY: 're_nurture', RESEND_API_KEY: 're_vieja' })
+    await notifyNewProPurchase({ email: 'c@x.com', plan: 'pro', interval: 'month' }, cfg)
+    await notifyKeyDeliveryFailure({ sessionRef: 'cs_1', email: 'c@x.com', plan: 'pro', paymentIntent: null }, cfg)
+    await sendTrialEndingEmail('c@x.com', { endsAt: '2026-10-23T00:00:00Z', amountCents: 499, currency: 'usd', interval: 'month' }, cfg)
+    await notifyUnmappedTrialCheckout({ sessionRef: 'cs_2', email: 'c@x.com', paymentLink: 'plink_x' }, cfg)
+    const calls = sentWith(fetchMock)
+    expect(calls).toHaveLength(4)
+    for (const c of calls) {
+      expect(c.url).toBe('https://api.resend.com/emails')
+      expect(c.auth).toBe('Bearer re_nurture')
+      expect(c.body.from).toBe('MOY IQ <licencias@moyiq.app>')
+    }
+  })
+
+  it('el aviso interno de "no recibió su clave" no sale sin clave: por eso el fallo del correo de la licencia exige la clave correcta', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    await notifyKeyDeliveryFailure({ sessionRef: 'cs_1', email: 'c@x.com', plan: 'pro', paymentIntent: null }, configFromEnv({}))
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

@@ -9,7 +9,9 @@
 //
 // Secrets necesarios (Supabase → Edge Functions → Secrets):
 //   STRIPE_WEBHOOK_SECRET   (whsec_...)   ← obligatorio
-//   RESEND_API_KEY, FROM_EMAIL            ← opcional (email de la clave)
+//   NURTURE_RESEND_API_KEY (o RESEND_API_KEY como respaldo), FROM_EMAIL ← opcional (email de la clave).
+//     Con RESEND_API_KEY sola, el correo de la licencia da 403 desde @moyiq.app: ver
+//     ../_shared/resendKey.ts (auditoría 360, C-05)
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 //
 //   STRIPE_PORTAL_URL                     ← opcional (link del Customer Portal en los emails de prueba)
@@ -31,6 +33,7 @@ import {
   handleTrialWillEnd, TRIAL_DAYS, type WebhookConfig, type HandlerResult,
 } from "./webhookLogic.ts";
 import { subscribeToNewsletter, autoSubscribeEnabled } from "../_shared/newsletterSubscribe.ts";
+import { resolveResendApiKey } from "../_shared/resendKey.ts";
 
 const NEWSLETTER_PROXY_URL = Deno.env.get("NEWSLETTER_PROXY_URL");
 const NEWSLETTER_PROXY_TOKEN = Deno.env.get("NEWSLETTER_PROXY_TOKEN");
@@ -49,7 +52,7 @@ const WEBHOOK_SECRETS = [
 const config: WebhookConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  resendApiKey: Deno.env.get("RESEND_API_KEY"),
+  resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
   fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
   alertEmail: Deno.env.get("ALERT_EMAIL") ?? "maxnovaluciglobal@gmail.com",
   portalUrl: Deno.env.get("STRIPE_PORTAL_URL") || undefined,

@@ -497,7 +497,7 @@ export async function sendKeyEmail(
   lang: EmailLang = "es",
 ): Promise<boolean> {
   if (!config.resendApiKey) {
-    console.error(`CRITICO: RESEND_API_KEY no configurada — el cliente pago y NO recibio su clave. session=${sessionRef}`);
+    console.error(`CRITICO: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas — el cliente pago y NO recibio su clave. session=${sessionRef}`);
     return false;
   }
   const appUrl = "https://app.moyiq.app/app/";
@@ -824,7 +824,7 @@ export function trialBillingFromSubscription(sub: any): TrialBilling | null {
 // cancelar. Solo español, igual que el email de la licencia.
 export async function sendTrialEndingEmail(to: string, billing: TrialBilling, config: WebhookConfig, lang: EmailLang = "es"): Promise<boolean> {
   if (!config.resendApiKey) {
-    console.error("sendTrialEndingEmail: RESEND_API_KEY no configurada");
+    console.error("sendTrialEndingEmail: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas");
     return false;
   }
   const T = MAIL[lang] ?? MAIL.es;

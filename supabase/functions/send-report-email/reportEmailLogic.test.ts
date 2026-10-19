@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { isValidEmail, base64ByteLength, isPdfSizeOk, checkProLicense, sendReportEmail, pickLang } from './reportEmailLogic.ts'
+import { resolveResendApiKey } from '../_shared/resendKey.ts'
 
 const CONFIG = { supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key', resendApiKey: 're_key', fromEmail: 'a@b.com' }
 
@@ -134,5 +135,42 @@ describe('sendReportEmail por idioma (lang del cliente)', () => {
     const b = await body('en', '<b>x</b>')
     expect(b.html).toContain('&lt;b&gt;x&lt;/b&gt;')
     expect(b.html).not.toContain('<b>x</b>')
+  })
+})
+
+// Auditoría 360, C-05 / VEN-3: send-report-email leía solo RESEND_API_KEY (secret del
+// 29-jun, 403 desde @moyiq.app). index.ts arma la config con resolveResendApiKey.
+describe('C-05 · clave de Resend del reporte por correo', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  const params = { to: 'cliente@ejemplo.com', clientName: 'Sofía', month: '2026-09', pdfBase64: 'aG9sYQ==', filename: 'reporte.pdf' }
+  const configFromEnv = (vars: Record<string, string | undefined>) => ({
+    supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key',
+    resendApiKey: resolveResendApiKey((name) => vars[name]),
+    fromEmail: 'MOY IQ <licencias@moyiq.app>',
+  })
+
+  it('con las dos claves cargadas, el reporte sale con NURTURE_RESEND_API_KEY', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const cfg = configFromEnv({ NURTURE_RESEND_API_KEY: 're_nurture', RESEND_API_KEY: 're_vieja' })
+    expect(await sendReportEmail(params, cfg)).toEqual({ ok: true })
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('https://api.resend.com/emails')
+    expect(init.headers.Authorization).toBe('Bearer re_nurture')
+    expect(JSON.parse(init.body).from).toBe('MOY IQ <licencias@moyiq.app>')
+  })
+
+  it('si solo existe RESEND_API_KEY se usa como respaldo', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await sendReportEmail(params, configFromEnv({ RESEND_API_KEY: 're_vieja' }))).toEqual({ ok: true })
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer re_vieja')
+  })
+
+  it('sin ninguna de las dos claves no llama a la red', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await sendReportEmail(params, configFromEnv({}))).toEqual({ ok: false, error: 'resend_not_configured' })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
