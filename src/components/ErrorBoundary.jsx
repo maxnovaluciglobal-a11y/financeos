@@ -6,6 +6,7 @@
 
 import { Component } from 'react'
 import { translate, detectLanguage } from '../i18n/translate.js'
+import { logClientError } from '../utils/errorLog.js'
 
 // Está FUERA de AppProvider (envuelve a <App/>): no hay useT(). El idioma sale
 // de <html lang>, que AppContext/DemoContext mantienen con settings.language;
@@ -23,8 +24,11 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // Sin telemetría externa (privacidad). Solo consola para depurar en soporte.
+    // Sin telemetría externa (privacidad): queda en el registro local, que la
+    // persona puede copiar desde Ajustes para soporte (ING-4 / D-16).
     console.error('[MOY IQ] Error de render capturado:', error, info?.componentStack)
+    const firstFrame = String(info?.componentStack || '').trim().split('\n')[0]?.trim().slice(0, 120)
+    logClientError({ type: 'render', message: error?.message || String(error), source: firstFrame || undefined })
   }
 
   handleReload = () => {

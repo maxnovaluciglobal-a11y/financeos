@@ -10,6 +10,7 @@ import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/mone
 import { regionDefaults } from '../../i18n/region.js'
 import { unifyCategoryPayload } from '../../utils/categoryAliases.js'
 import { dbNameForActiveAccount } from '../deviceOwner.js'
+import { logClientError } from '../../utils/errorLog.js'
 
 // Una base por cuenta (core/deviceOwner.js): 'financeos' para la cuenta que ya
 // la usaba, 'financeos__<uid>' para cualquier otra. Se resuelve en cada
@@ -74,6 +75,7 @@ export async function getDB() {
     let err
     try {
       _db = await openFinanceDB({})
+      queueMicrotask(() => { pruneSnapshots() })
       return _db
     } catch (e1) {
       err = e1
@@ -234,19 +236,38 @@ export async function wipeLocalDevice() {
 }
 
 // ─── Export / Import ──────────────────────────────────────────────────────────
+// ING-5: 'importBatches' y 'recurring' pueden no existir en una base vieja
+// (NotFoundError): se omiten y quien importa conserva lo suyo. Una lectura que
+// FALLA por otra causa también se omite (como lista vacía borraría las reglas
+// del otro dispositivo), queda en el registro de errores y el payload lo
+// declara en `incomplete` para que la UI avise.
+export async function readOptionalStore(store, read = dbGetAll, log = logClientError) {
+  try {
+    return { ok: true, items: await read(store) }
+  } catch (e) {
+    const missing = e?.name === 'NotFoundError'
+    if (!missing) log({ type: 'export', message: `${store}: ${e?.name || e?.message || String(e)}` })
+    return { ok: false, missing }
+  }
+}
+
 export async function exportAllData() {
   const [incomes, expenses, budgets, debts, goals, subscriptions, settings] = await Promise.all([
     dbGetAll('incomes'), dbGetAll('expenses'), dbGetAll('budgets'),
     dbGetAll('debts'),   dbGetAll('goals'),   dbGetAll('subscriptions'), getSettings(),
   ])
-  let importBatches = []
-  try { importBatches = await dbGetAll('importBatches') } catch {}
-  let recurring = []
-  try { recurring = await dbGetAll('recurring') } catch {}
+  const optional = {}
+  const incomplete = []
+  for (const store of ['importBatches', 'recurring']) {
+    const r = await readOptionalStore(store)
+    if (r.ok) optional[store] = r.items
+    else if (!r.missing) incomplete.push(store)
+  }
   // settings sin los ajustes de dispositivo (hideAmounts): este payload es el
   // mismo del respaldo JSON y del sync cifrado, ver utils/money.js.
-  return { incomes, expenses, budgets, debts, goals, subscriptions, importBatches, recurring,
+  return { incomes, expenses, budgets, debts, goals, subscriptions, ...optional,
            settings: stripDeviceOnlySettings(settings),
+           ...(incomplete.length ? { incomplete } : {}),
            exportedAt: new Date().toISOString(), version: '1.2' }
 }
 
@@ -261,7 +282,7 @@ export async function importAllData(input) {
   // vaciarse — si no, sincronizar con un dispositivo sin actualizar borraría
   // los fijos creados a mano. Las de Suscripciones/Deudas se vuelven a
   // alinear solas (reconcileRecurringSources).
-  const stores = DATA_STORES.filter(s => s !== 'recurring' || Array.isArray(data.recurring))
+  const stores = DATA_STORES.filter(s => (s !== 'recurring' && s !== 'importBatches') || Array.isArray(data[s]))
   const db = await getDB()
   if (!db) {
     stores.forEach(lsClear)
@@ -355,6 +376,26 @@ export async function listSnapshots() {
       counts: Object.fromEntries(Object.entries(data || {}).filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v.length])),
     }))
   } catch { return [] }
+}
+
+// ING-13: retención de las fotos previas a migraciones. Cada foto es una copia
+// completa de los datos: se conservan solo las `keep` más recientes.
+export function snapshotIdsToPrune(list, keep = 2) {
+  const sorted = [...(list || [])].filter(s => s?.id).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+  return sorted.slice(keep).map(s => s.id)
+}
+
+export async function pruneSnapshots(keep = 2) {
+  try {
+    const db = await getDB()
+    if (!db) return []
+    const ids = snapshotIdsToPrune(await db.getAll('backups'), keep)
+    for (const id of ids) await db.delete('backups', id)
+    return ids
+  } catch (e) {
+    logClientError({ type: 'snapshots', message: e?.name || e?.message || String(e) })
+    return []
+  }
 }
 
 // Vuelve los datos al estado de la foto (por defecto, la previa a los fijos).

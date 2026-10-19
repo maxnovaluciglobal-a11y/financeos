@@ -279,7 +279,7 @@ function Inner() {
   }
 
   // La base local existe pero no abrió: bloquear (no mostrar una app vacía).
-  if (dbError) return <DbErrorScreen />
+  if (dbError) return <DbErrorScreen kind={dbError} />
 
   const showOnboarding = !loading && !settings.onboardingDone
 

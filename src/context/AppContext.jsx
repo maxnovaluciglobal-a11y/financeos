@@ -22,6 +22,9 @@ import { hapticTap } from '../utils/haptics.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
 import { requestPersistentStorage } from '../utils/storagePersist.js'
+import { toCsv } from '../utils/csvSafe.js'
+import { logClientError } from '../utils/errorLog.js'
+import { isNewerDbError } from '../utils/forceUpdate.js'
 
 export const AppContext = createContext(null)
 
@@ -106,7 +109,12 @@ export function AppProvider({ children }) {
     const [incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings] = await Promise.all([
       dbGetAll('incomes'), dbGetAll('expenses'), dbGetAll('budgets'),
       dbGetAll('debts'),   dbGetAll('goals'),    dbGetAll('subscriptions'),
-      dbGetAll('recurring').catch(() => []), getSettings(),
+      dbGetAll('recurring').catch((e) => {
+        // ING-5: antes se tragaba en silencio y los fijos desaparecían de la vista.
+        logClientError({ type: 'rehydrate', message: `recurring: ${e?.name || e?.message || String(e)}` })
+        showToast(tr('toast.recurringLoadError'), 'error')
+        return []
+      }), getSettings(),
     ])
     const payload = { incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings }
     if (opts?.notLocalChange) quietRef.current = payload
@@ -115,7 +123,7 @@ export function AppProvider({ children }) {
     // Sin esto un lector de pantalla pronuncia toda la app con reglas fonéticas
     // españolas aunque el idioma elegido sea inglés, portugués o alemán.
     document.documentElement.setAttribute('lang', settings.language || 'es')
-  }, [])
+  }, [showToast, tr])
 
   // Alinea las reglas de Suscripciones/Deudas después de un cambio en el origen.
   const syncSources = useCallback(async () => {
@@ -213,7 +221,7 @@ export function AppProvider({ children }) {
         console.error('Hydration error:', e)
         // Base existente que no abre: pantalla de error bloqueante (App.jsx),
         // nunca la app vacía sobre localStorage (ver DbOpenError en core/db).
-        if (e?.name === 'DbOpenError') { dispatch({ type: 'HYDRATE', payload: { dbError: true } }); return }
+        if (e?.name === 'DbOpenError') { dispatch({ type: 'HYDRATE', payload: { dbError: isNewerDbError(e) ? 'version' : true } }); return }
         dispatch({ type: 'HYDRATE', payload: {} })
         hydratedRef.current = true
         showToast(tr('toast.loadError'), 'error')
@@ -527,7 +535,7 @@ export function AppProvider({ children }) {
         ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, lang), r.amount,  '',                           recurrenceLabel(r.recurrence, lang), r.notes || '']),
         ...state.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, lang), -r.amount, methodLabel(r.method, lang), recurrenceLabel(r.recurrence, lang), r.notes || '']),
       ]
-      const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+      const csv  = toCsv(rows)
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }) // FIX: BOM
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
@@ -569,7 +577,8 @@ export function AppProvider({ children }) {
       a.download = `moyiq-backup-${localDateStr()}.json`
       a.click()
       URL.revokeObjectURL(url)
-      showToast(tr('toast.backupCreated'), 'ok')
+      if (data.incomplete?.length) showToast(tr('toast.backupIncomplete'), 'error')
+      else showToast(tr('toast.backupCreated'), 'ok')
     } catch (e) {
       showToast(tr('toast.backupError'), 'error')
     }

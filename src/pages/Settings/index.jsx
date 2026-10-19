@@ -13,6 +13,7 @@ import SecuritySection from './SecuritySection.jsx'
 import UpgradeCard from './UpgradeCard.jsx'
 import DeleteAccountSection from './DeleteAccountSection.jsx'
 import SyncSection from './SyncSection.jsx'
+import DiagnosticsRow from './DiagnosticsRow.jsx'
 import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
 import { CURRENCY_OPTIONS, currencyOptionLabel } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
@@ -311,6 +312,7 @@ export default function Settings() {
             <Btn variant="danger" size="sm" onClick={()=>setConfirmAction({type:'loadDemo'})}>{t('settings.loadDemo.btn')}</Btn>
           </div>
         )}
+        <DiagnosticsRow rowStyle={srow} labelStyle={slbl} subStyle={ssub} />
         <div style={srow}>
           <div><div style={slbl}>{t('settings.resetOnboarding.label')}</div><div style={ssub}>{t('settings.resetOnboarding.sub')}</div></div>
           <Btn variant="ghost" size="sm" onClick={()=>updateSettings({...settings,onboardingDone:false})}>{t('settings.resetOnboarding.btn')}</Btn>
