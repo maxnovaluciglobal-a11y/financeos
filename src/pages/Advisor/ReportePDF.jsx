@@ -582,15 +582,26 @@ export async function downloadReportePDF(data) {
 // eso requiere un clic explícito, nunca dispararla sin que el usuario la pida.
 const FUNCTIONS_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '') + '/functions/v1/send-report-email'
 
+// C-20 (auditoría 360): la función exige la sesión de la cuenta dueña de la
+// licencia y tiene un tope diario de envíos. Errores: session_required,
+// not_owner, license_required, daily_limit.
 export async function sendReportePDFByEmail(data, to) {
   const { getLicenseKey } = await import('../../utils/licenseValidator.js')
+  const { authClient } = await import('../../core/authClient.js')
+  const { data: sessionData } = (await authClient?.auth.getSession()) || {}
+  const token = sessionData?.session?.access_token
+  if (!token) throw new Error('session_required')
   const filename = reportFilename(data)
   const blob = await buildReportePDFBlob(data)
   const pdfBase64 = await blobToBase64(blob)
 
   const res = await fetch(FUNCTIONS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({
       licenseKey: getLicenseKey(),
       to,

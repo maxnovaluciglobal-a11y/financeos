@@ -248,6 +248,8 @@ export const en = {
     'adv.pdf.emailSent': "✓ Sent",
     'adv.pdf.emailInvalid': "Enter a valid email.",
     'adv.pdf.emailErrorGeneric': "Couldn't send it. Try again.",
+    'adv.pdf.emailDailyLimit': "You reached today's email sending limit. Download the PDF and send it yourself.",
+    'adv.pdf.emailSession': "Your session expired. Sign in again and resend.",
     'adv.pdf.emailConsent': "The PDF travels unencrypted by email. Only use this with your client's consent.",
     'adv.subs.title': "Estimated recurring expenses",
     'adv.subs.note': "Projected spend · not included in recorded expenses · indicative",

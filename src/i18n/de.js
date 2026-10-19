@@ -248,6 +248,8 @@ export const de = {
     'adv.pdf.emailSent': "✓ Gesendet",
     'adv.pdf.emailInvalid': "Geben Sie eine gültige E-Mail-Adresse ein.",
     'adv.pdf.emailErrorGeneric': "Senden fehlgeschlagen. Bitte erneut versuchen.",
+    'adv.pdf.emailDailyLimit': "Sie haben das heutige Limit für den E-Mail-Versand erreicht. Laden Sie das PDF herunter und senden Sie es selbst.",
+    'adv.pdf.emailSession': "Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an und senden Sie noch einmal.",
     'adv.pdf.emailConsent': "Die PDF wird unverschlüsselt per E-Mail versendet. Nur mit Einwilligung Ihres Kunden verwenden.",
     'adv.subs.title': "Geschätzte wiederkehrende Ausgaben",
     'adv.subs.note': "Prognostizierte Ausgaben · nicht in den erfassten Ausgaben enthalten · orientierend",

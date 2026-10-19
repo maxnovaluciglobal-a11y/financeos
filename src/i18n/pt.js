@@ -248,6 +248,8 @@ export const pt = {
     'adv.pdf.emailSent': "✓ Enviado",
     'adv.pdf.emailInvalid': "Digite um e-mail válido.",
     'adv.pdf.emailErrorGeneric': "Não foi possível enviar. Tente novamente.",
+    'adv.pdf.emailDailyLimit': "Você atingiu o limite de envios por e-mail de hoje. Baixe o PDF e envie você mesmo.",
+    'adv.pdf.emailSession': "Sua sessão expirou. Entre de novo e envie outra vez.",
     'adv.pdf.emailConsent': "O PDF viaja sem criptografia por e-mail. Use isso só com o consentimento do seu cliente.",
     'adv.subs.title': "Gastos recorrentes estimados",
     'adv.subs.note': "Gasto projetado · não incluído nos gastos registrados · orientativo",

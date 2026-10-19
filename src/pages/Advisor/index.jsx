@@ -348,7 +348,10 @@ export default function Advisor() {
     } catch (e) {
       console.error('send-report-email error:', e)
       setEmailStatus('error')
-      setEmailErrorMsg(t('adv.pdf.emailErrorGeneric'))
+      const code = e?.message
+      setEmailErrorMsg(t(code === 'daily_limit' ? 'adv.pdf.emailDailyLimit'
+        : code === 'session_required' ? 'adv.pdf.emailSession'
+        : 'adv.pdf.emailErrorGeneric'))
     }
   }
 
