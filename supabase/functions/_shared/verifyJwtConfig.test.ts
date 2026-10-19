@@ -14,6 +14,7 @@ const CONFIG_PATH = join(FUNCTIONS_DIR, '..', 'config.toml');
 // Valores de producción al 19-oct-2026 (`supabase functions list -o json`).
 const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'auth-email-hook': false,
+  'cron-health-alert': false,
   'notify-admin-signup': false,
   'send-cancellation-confirmation': false,
   'send-nurture-diagnostico-email': false,
@@ -23,6 +24,7 @@ const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'send-push': true,
   'send-report-email': false,
   'stripe-webhook': false,
+  'uptime-alert': false,
 };
 
 // Parser estricto del subconjunto que usamos: project_id y [functions.<slug>] con

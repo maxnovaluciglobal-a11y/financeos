@@ -20,6 +20,10 @@ project_id = "financeos-prod"
 [functions.auth-email-hook]
 verify_jwt = false
 
+# pg_cron diario (header x-cron-secret): aviso de jobs con HTTP ≠ 2xx (C-12, 19-oct-2026).
+[functions.cron-health-alert]
+verify_jwt = false
+
 # Trigger SQL (pg_net) o cliente anon; autentica con el header x-internal-secret.
 [functions.notify-admin-signup]
 verify_jwt = false
@@ -52,4 +56,8 @@ verify_jwt = false
 
 # Stripe firma el evento (stripe-signature); no manda JWT.
 [functions.stripe-webhook]
+verify_jwt = false
+
+# pg_cron cada 5 min desde public.uptime_tick() (header x-cron-secret): C-11, 19-oct-2026.
+[functions.uptime-alert]
 verify_jwt = false
