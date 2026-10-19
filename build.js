@@ -2,9 +2,18 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { checkDist } from './scripts/bundleBudget.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 execSync('npx vite build', { stdio: 'inherit' })
+
+// Presupuesto de carga inicial (C-32): sin PDF/gráficos/exceljs en la entrada.
+const budget = checkDist(path.join(path.dirname(fileURLToPath(import.meta.url)), 'dist', 'app'))
+if (budget.errors.length) {
+  console.error('Presupuesto de bundle excedido:\n  ' + budget.errors.join('\n  '))
+  process.exit(1)
+}
+console.log(`JS inicial: ${Math.round(budget.total / 1024)} kB gzip (${budget.files.join(', ')})`)
 
 const dist = path.join(__dirname, 'dist')
 // dist/index.html: vercel.json ya redirige "/" a financeos-landing (la única

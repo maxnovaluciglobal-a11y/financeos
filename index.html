@@ -19,9 +19,19 @@
     <link rel="preload" as="style" href="/fonts.css" />
     <link href="/fonts.css" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="/fonts.css" rel="stylesheet" /></noscript>
+    <!-- Pantalla de carga (C-32): se ve mientras baja el JS y mientras la app
+         verifica la sesión; antes era una pantalla en blanco de varios segundos. -->
+    <style>
+      .boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: #F1EEE6; color: #14213D; font: 600 15px/1 system-ui, sans-serif; letter-spacing: .02em; }
+      .boot-bar { width: 120px; height: 3px; border-radius: 2px; background: rgba(20,33,61,.12); overflow: hidden; }
+      .boot-bar::after { content: ""; display: block; width: 40%; height: 100%; background: #B8863B; animation: boot-slide 1.1s ease-in-out infinite; }
+      @keyframes boot-slide { from { transform: translateX(-100%) } to { transform: translateX(250%) } }
+      @media (prefers-color-scheme: dark) { .boot { background: #12161F; color: #F1EEE6; } .boot-bar { background: rgba(241,238,230,.14); } }
+      @media (prefers-reduced-motion: reduce) { .boot-bar::after { animation: none; width: 100%; opacity: .5; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="boot" role="status" aria-label="MOY IQ"><span>MOY IQ</span><div class="boot-bar"></div></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

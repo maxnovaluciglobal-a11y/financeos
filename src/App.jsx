@@ -12,6 +12,7 @@ import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
 import PageSkeleton from './components/ui/PageSkeleton.jsx'
+import BootSplash from './components/ui/BootSplash.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
@@ -210,17 +211,17 @@ function Inner() {
       // cumplió, dejamos de esperar y mostramos LicenseGate en vez de null
       // — el usuario puede reintentar en lugar de ver blanco para siempre.
       if (bootTimedOut) return <main><LicenseGate onActivate={() => setLicensed(true)} /></main>
-      return null
+      return <BootSplash />
     }
     if (!session) return <main><AuthGate onAuthenticated={() => {}} /></main>
     if (passwordRecovery) return <main><ResetPassword onDone={() => setPasswordRecovery(false)} /></main>
     const ownerStatus = owner.uid === session.user.id ? owner.status : 'checking'
     if (ownerStatus === 'failed') return <main><DeviceSwitch previousEmail={readDeviceOwner()?.email} /></main>
-    if (ownerStatus === 'checking') return null
+    if (ownerStatus === 'checking') return <BootSplash />
     if (!licensed && !entitlementChecked) {
       // Mismo criterio mientras se verifica el entitlement de la cuenta.
       if (bootTimedOut) return <main><LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} /></main>
-      return null
+      return <BootSplash />
     }
     if (!licensed) return <main><LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} /></main>
   }

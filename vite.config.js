@@ -8,12 +8,27 @@ export default defineConfig({
     outDir: 'dist/app',
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor:  ['react', 'react-dom'],
-          charts:  ['recharts'],
-          pdf:     ['@react-pdf/renderer'],
-          idb:     ['idb'],
-          exceljs: ['exceljs'],
+        // Auditoría 360, ING-1/C-32: con `manualChunks` en forma de objeto,
+        // Rollup metía react, jsx-runtime y otras dependencias compartidas
+        // (tslib, events, @babel/runtime, lodash…) dentro de los chunks `pdf`
+        // y `charts`, y la entrada los precargaba (~590 kB gzip) en cada
+        // apertura, incluso en la pantalla de acceso. Ahora solo react va a
+        // un chunk manual; PDF, gráficos y exceljs se parten solos por los
+        // import() de las páginas lazy. El nombre pdf-/charts-/exceljs- lo
+        // pone chunkFileNames (el service worker excluye pdf-* y exceljs-* del
+        // precache). Lo verifica scripts/bundleBudget.test.js.
+        manualChunks(id) {
+          // Solo el react de la raíz: @react-pdf trae su propio scheduler anidado.
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id) && !id.includes('@react-pdf')) return 'vendor'
+          if (/node_modules\/idb\//.test(id)) return 'idb'
+          return undefined
+        },
+        chunkFileNames(chunk) {
+          const ids = chunk.moduleIds || []
+          if (ids.some(id => id.includes('node_modules/@react-pdf/'))) return 'assets/pdf-[hash].js'
+          if (ids.some(id => id.includes('node_modules/exceljs/'))) return 'assets/exceljs-[hash].js'
+          if (ids.some(id => id.includes('node_modules/recharts/'))) return 'assets/charts-[hash].js'
+          return 'assets/[name]-[hash].js'
         }
       }
     }
