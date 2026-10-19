@@ -403,3 +403,62 @@ describe('sin voseo ni exclamaciones en ningún texto en español', () => {
     expect(offenders).toEqual([])
   })
 })
+
+// Oferta de Pro con prueba de 14 días y selector anual/mensual (auditoría 360, C-03):
+// prefijo nuevo 'billing.' y las tres claves de LicenseGate/Ajustes que cambiaron.
+describe('paridad de las claves de la oferta de Pro con prueba (es/en/pt/de)', () => {
+  const changed = ['settings.upgrade.title', 'settings.upgrade.btn', 'licenseGate.planProDesc']
+  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('billing.') || changed.includes(k)).sort()
+  const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBe(11)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    for (const k of pick(es)) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+
+  it('el título y el botón de Ajustes llevan {days}; ya no llevan el precio mensual fijo', () => {
+    for (const d of [es, en, pt, de]) {
+      expect(d['settings.upgrade.title']).toContain('{days}')
+      expect(d['settings.upgrade.btn']).toContain('{days}')
+      expect(d['settings.upgrade.title']).not.toContain('{m}')
+      expect(d['licenseGate.planProDesc']).not.toMatch(/\{m\}|US\$/)
+    }
+  })
+
+  it('las notas dicen que se pide tarjeta, cuándo es el primer cobro y que se puede cancelar', () => {
+    expect(es['billing.trialNote']).toMatch(/tarjeta/i)
+    expect(en['billing.trialNote']).toMatch(/card/i)
+    expect(pt['billing.trialNote']).toMatch(/cartão/i)
+    expect(de['billing.trialNote']).toMatch(/Karte/)
+    for (const d of [es, en, pt, de]) expect(d['billing.trialNote']).toContain('{next}')
+    expect(es['billing.then.annual']).toMatch(/Cancela cuando quieras/)
+    expect(en['billing.then.monthly']).toMatch(/Cancel anytime/)
+    expect(pt['billing.then.annual']).toMatch(/Cancele quando quiser/)
+    expect(de['billing.then.annual']).toMatch(/kündbar/)
+  })
+
+  it('sin voseo, exclamaciones, "por favor" ni "please"; el alemán va de Sie', () => {
+    for (const k of pick(es)) {
+      expect(es[k], k).not.toMatch(/\b(podés|tenés|querés|vos|probá|elegí|cancelá|usá|empezá|pasá)\b/i)
+      expect(es[k], k).not.toMatch(/por favor/i)
+    }
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/[¡!]/)
+    for (const k of pick(en)) expect(en[k], k).not.toMatch(/\bplease\b/i)
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
+  })
+
+  it('ninguna frase en inglés, portugués o alemán quedó igual al español', () => {
+    const offenders = []
+    for (const k of pick(es).filter(k => String(es[k]).trim().split(/\s+/).filter(w => /\p{L}/u.test(w)).length >= 3)) {
+      for (const [lang, d] of [['en', en], ['pt', pt], ['de', de]]) if (d[k] === es[k]) offenders.push(`${lang}:${k}`)
+    }
+    expect(offenders).toEqual([])
+  })
+})

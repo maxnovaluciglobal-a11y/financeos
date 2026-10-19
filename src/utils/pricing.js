@@ -43,3 +43,31 @@ export function proCta(pricing = config.pricing, fallbackUrl = 'https://moyiq.ap
   }
   return { trial: false, href: fallbackUrl, labelKey: 'pro.gate.cta' }
 }
+
+// ── Períodos de facturación de Pro (auditoría 360, C-03 / COM-3) ─────────────
+// LicenseGate y Ajustes ofrecen Pro con la prueba de 14 días y la elección
+// anual/mensual, igual que la landing (moyiq.app/#pricing): el anual va primero
+// y preseleccionado.
+export const BILLING_PERIODS = ['annual', 'monthly']
+export const DEFAULT_BILLING_PERIOD = 'annual'
+
+// Anual expresado por mes (39.99 / 12 = 3.33), como lo muestra la landing.
+export function annualPerMonth(pricing = config.pricing) {
+  return Math.round((pricing.proAnnual / 12) * 100) / 100
+}
+
+// Ahorro del anual frente a pagar 12 meses sueltos, en % entero (4.99 × 12 vs 39.99 = 33).
+export function annualSavingPct(pricing = config.pricing) {
+  return Math.round((1 - pricing.proAnnual / (pricing.proMonthly * 12)) * 100)
+}
+
+// Payment Link de Pro para el período elegido (cualquier valor que no sea
+// 'monthly' cuenta como anual). Con la prueba habilitada y un link https real es
+// el link CON prueba; si no, la página de precios de la landing y sin promesa de
+// prueba (mismo criterio que proCta).
+export function checkoutFor(period, pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
+  const raw = period === 'monthly' ? pricing?.trialCheckoutUrl : pricing?.trialCheckoutUrlAnnual
+  const url = typeof raw === 'string' ? raw.trim() : ''
+  if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) return { trial: true, href: url }
+  return { trial: false, href: fallbackUrl }
+}

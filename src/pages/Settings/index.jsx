@@ -10,8 +10,9 @@ import BackupManager from '../../components/backup/BackupManager.jsx'
 import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
+import UpgradeCard from './UpgradeCard.jsx'
 import { CURRENCY_OPTIONS, DEFAULT_USD_RATES, currencyOptionLabel } from '../shared/constants.js'
-import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey, PRO_CHECKOUT_URL } from '../../utils/licenseValidator.js'
+import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
 import { pushSupported, isPushEnabled, enablePush, disablePush } from '../../core/push.js'
@@ -19,7 +20,6 @@ import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
 import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
-import { proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 
 export default function Settings() {
@@ -336,15 +336,7 @@ export default function Settings() {
             <Btn variant="ghost" size="sm" onClick={() => window.open(cancelUrl(lang), '_blank', 'noopener,noreferrer')}>{t('settings.cancelSub.btn')}</Btn>
           </div>
         )}
-        {!isDemo && getLicensePlan() !== 'pro' && (
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border:'1px solid var(--laton)',borderRadius:'var(--r)'}}>
-            <div>
-              <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('settings.upgrade.title', proPriceVars(lang))}</div>
-              <div style={ssub}>{t('settings.upgrade.sub')}</div>
-            </div>
-            <Btn variant="primary" size="sm" onClick={()=>window.location.href=withCheckoutLang(PRO_CHECKOUT_URL, lang)} style={{flexShrink:0}}>{t('settings.upgrade.btn')}</Btn>
-          </div>
-        )}
+        {!isDemo && getLicensePlan() !== 'pro' && <UpgradeCard subStyle={ssub} />}
         {confirmAction?.type === 'clearAll' ? (
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
             <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmDeleteAll')}</span>

@@ -219,11 +219,16 @@ const config = {
   // la migración esté aplicada (docs/billing-trial-runbook.md). Con true y
   // trialCheckoutUrl cargado, ProGate muestra "Probar 14 días" y abre ese
   // link; si falta cualquiera de los dos, ProGate sigue como antes.
-  // trialCheckoutUrl: URL https://buy.stripe.com/... del link de prueba Pro mensual.
+  // trialCheckoutUrl / trialCheckoutUrlAnnual: URL https://buy.stripe.com/... de los
+  // Payment Links de Pro CON prueba de 14 días (mensual plink_1UOR0c…, anual
+  // plink_1UOR1S…): los mismos que la landing. Los links sin prueba (…O00 / …O01)
+  // ya no se ofrecen desde la app (auditoría 360, C-03 / COM-3), pero el webhook
+  // los sigue reconociendo.
   pricing: {
     proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
     trialEnabled: true,
     trialCheckoutUrl: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
+    trialCheckoutUrlAnnual: 'https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05',
   },
 
 }

@@ -1,33 +1,39 @@
 // src/components/LicenseGate.jsx
 import { useState } from 'react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
-import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement, PRO_CHECKOUT_URL } from '../utils/licenseValidator.js'
+import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
-import { formatPrice, proPriceVars, withCheckoutLang } from '../utils/pricing.js'
+import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, annualPerMonth, DEFAULT_BILLING_PERIOD } from '../utils/pricing.js'
+import PeriodToggle from './ui/PeriodToggle.jsx'
 import config from '../config.js'
 import { activateUrl } from '../utils/landingLinks.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 
-function usePlans(t, lang) {
+// Pro se ofrece con la prueba de 14 días y la elección anual/mensual, igual que la
+// landing (auditoría 360, C-03 / COM-3). Anual preseleccionado: el precio grande es
+// el mensual equivalente (US$ 3,33) y el cobro real va en la nota de abajo. Si la
+// prueba estuviera apagada en la config, vuelve la tarjeta de siempre (mensual, sin
+// selector ni promesa de prueba).
+function usePlans(t, lang, period) {
+  const trial = checkoutFor(period).trial
+  const proPrice = trial && period === 'annual' ? annualPerMonth() : config.pricing.proMonthly
   return [
     { name: 'Starter', price: t('licenseGate.free'), suffix: '',                     desc: t('licenseGate.planStarterDesc'), product: 'starter', highlight: false },
-    { name: 'Pro',      price: `US$ ${formatPrice(config.pricing.proMonthly, lang)}`, suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc', proPriceVars(lang)),      product: 'pro',      highlight: true },
+    { name: 'Pro',      price: `US$ ${formatPrice(proPrice, lang)}`, suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc'), badge: trial ? t('billing.trialBadge', { days: config.pricing.trialDays }) : null, product: 'pro', highlight: true },
   ]
 }
 
-const CHECKOUT_LINKS = {
-  pro: PRO_CHECKOUT_URL,
-}
-
-async function startCheckout(product, lang) {
-  const url = CHECKOUT_LINKS[product] || 'https://moyiq.app/#pricing'
+async function startCheckout(product, lang, period) {
+  const url = product === 'pro' ? checkoutFor(period).href : 'https://moyiq.app/#pricing'
   window.location.href = withCheckoutLang(url, lang)
 }
 
 export default function LicenseGate({ onActivate, userEmail, userId }) {
   const { t, lang } = useT()
-  const PLANS = usePlans(t, lang)
+  const [period, setPeriod]     = useState(DEFAULT_BILLING_PERIOD)
+  const PLANS = usePlans(t, lang, period)
+  const trialOn = checkoutFor(period).trial
   const [key, setKey]           = useState('')
   const [loading, setLoading]   = useState(false)
   const [buying, setBuying]     = useState(null)
@@ -68,7 +74,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   async function handleBuy(product) {
     setBuying(product)
     try {
-      await startCheckout(product, lang)
+      await startCheckout(product, lang, period)
     } catch {
       setError(t('licenseGate.errorPayment'))
       setBuying(null)
@@ -197,6 +203,9 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
               <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>
                 {p.price}{p.suffix && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--th)' }}>{p.suffix}</span>}
               </div>
+              {p.badge && (
+                <div style={{ display: 'inline-block', fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 600, color: 'var(--navy)', background: 'var(--laton)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
+              )}
               <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)', lineHeight: 1.45 }}>{p.desc}</div>
               {buying === p.product && (
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--grn)', marginTop: 6 }}>{t('licenseGate.redirecting')}</div>
@@ -204,6 +213,16 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             </button>
           ))}
         </div>
+
+        {trialOn && (
+          <div style={{ marginBottom: 18 }}>
+            <PeriodToggle value={period} onChange={setPeriod} />
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, marginTop: 8 }}>
+              {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', proPriceVars(lang))}{' '}
+              {t('billing.trialNote', { next: config.pricing.trialDays + 1 })}
+            </div>
+          </div>
+        )}
 
         {MARKETING_DOI_ENABLED && (
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 18, cursor: 'pointer', minHeight: 44 }}>

@@ -18,12 +18,6 @@ const KEY_RE = /^FNOS-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Stripe Payment Link (Live) — cuenta propia MOY IQ (acct_1UEffP2L52ZuuTMr,
-// separada de la cuenta compartida Maxnova Luci el 12-sep-2026). Pro mensual;
-// el anual (US$39.99) se ofrece en moyiq.app/#pricing. Usado por LicenseGate
-// y por el CTA de upgrade en Settings — un solo lugar para no desincronizar.
-export const PRO_CHECKOUT_URL = 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00'
-
 function readCache()  { try { return JSON.parse(localStorage.getItem(LS_V2) || 'null') } catch { return null } }
 function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch {} }
 
