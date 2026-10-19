@@ -129,13 +129,13 @@ describe('confirmar ocurrencias', () => {
     expect(exp).toHaveLength(1)
     expect(exp[0]).toMatchObject({ amount: 100, category: 'Deudas', occurrenceDate: '2026-10-20', date: '2026-10-20' })
     const debt = (await db.dbGetAll('debts'))[0]
-    // 1000 + 1 % de interés mensual − 100
-    expect(debt.balance).toBeCloseTo(910)
+    // 1000 + interés mensual de una TAE de 12 % (0,9489 %, FIN-6) − 100
+    expect(debt.balance).toBeCloseTo(909.49, 2)
     expect(debt.paidInstallments).toBe(3)
     // y una tercera vez, más tarde, tampoco duplica
     const c = await db.confirmOccurrencesInDb([item], { today: '2026-10-25' })
     expect(c.records).toEqual([])
-    expect((await db.dbGetAll('debts'))[0].balance).toBeCloseTo(910)
+    expect((await db.dbGetAll('debts'))[0].balance).toBeCloseTo(909.49, 2)
   })
 
   it('"Confirmar todos" con monto "solo este mes"', async () => {

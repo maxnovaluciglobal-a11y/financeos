@@ -60,8 +60,8 @@ export default function Goals({ setPage }) {
 
   async function createSuggestedGoals() {
     for (const s of suggestions.filter(s => s.selected && !s.alreadyExists)) {
-      const targetDate = new Date()
-      targetDate.setMonth(targetDate.getMonth() + (s.monthsToGoal || 12))
+      const now = new Date()
+      const targetDate = new Date(now.getFullYear(), now.getMonth() + (s.monthsToGoal || 12), 1)
       await addGoal({ name:`${s.emoji} ${s.name}`, target:s.target, saved:0, targetDate:localMonthStr(targetDate), priority:s.goalPriority, color:s.color })
     }
     setShowSuggest(false); setSuggestions([])

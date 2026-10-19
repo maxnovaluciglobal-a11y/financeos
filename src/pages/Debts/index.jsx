@@ -9,7 +9,7 @@ import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
-import { nextPaymentAmount } from '../../utils/debtPayment.js'
+import { applyDebtPayment, monthlyRate, nextPaymentAmount } from '../../utils/debtPayment.js'
 import { monthPlan } from '../../utils/recurring.js'
 import { debtRuleId } from '../../utils/recurringSources.js'
 
@@ -33,7 +33,7 @@ function calcPayoffPlan(debts, extraPayment, method) {
     // Aplicar interés mensual
     pool = pool.map(d => {
       if (d.balance <= 0) return d
-      const interest = d.balance * (d.rate / 100 / 12)
+      const interest = d.balance * monthlyRate(d)
       totalInterest += interest
       return { ...d, balance: d.balance + interest }
     })
@@ -242,22 +242,16 @@ export default function Debts() {
       }
       return
     }
-    const rate = (Number(d.rate) || 0) / 100 / 12
-    const balanceWithInterest = Number(d.balance) + Number(d.balance) * rate
-    const monto = nextPaymentAmount(d)
-    if (monto <= 0) return
-    const newBalance = Math.max(0, balanceWithInterest - monto)
     const todayStr = localDateStr()
-    const ufFields = (Number(d.ufBalance) > 0 && ufValue > 0)
-      ? { ufBalance: Math.max(0, (Number(d.ufBalance) + Number(d.ufBalance) * rate) - monto / ufValue) }
-      : {}
-    await updateDebt({...d, ...ufFields, balance:newBalance, paidInstallments:(Number(d.paidInstallments)||0)+1})
+    const { debt: paidDebt, amount: monto } = applyDebtPayment(d, undefined, { ufValue, month: todayStr.slice(0, 7) })
+    if (monto <= 0) return
+    await updateDebt(paidDebt)
     await addExpense({
       date: todayStr,
       description: t('debts.payment.desc', { creditor: d.creditor }),
       amount: monto,
       category: 'Deudas',
-      notes: t('debts.payment.note', { n: (Number(d.paidInstallments)||0)+1 }),
+      notes: t('debts.payment.note', { n: paidDebt.paidInstallments }),
     })
     setConfirmPay(null)
     setPayMsg({id:d.id, text:t('debts.card.paidMsg', { amt: m(fmtMoneyRaw(monto, sym)) })})
@@ -362,7 +356,7 @@ export default function Debts() {
         // Si el pago mínimo no cubre el interés, la deuda no se amortiza → null.
         const monthsLeft = (() => {
           if (d.minPayment > 0 && d.balance > 0) {
-            const r = (Number(d.rate) || 0) / 100 / 12
+            const r = monthlyRate(d)
             if (r <= 0) return Math.ceil(d.balance / d.minPayment)
             if (d.minPayment <= d.balance * r) return null  // no converge
             return Math.ceil(-Math.log(1 - (r * d.balance) / d.minPayment) / Math.log(1 + r))
@@ -372,7 +366,7 @@ export default function Debts() {
         // Meses calendario reales, no monthsLeft*30 días — ese redondeo se
         // acumulaba hasta ~9 meses de error en deudas largas (600 meses).
         const finDate   = monthsLeft > 0
-          ? (() => { const dt = new Date(); dt.setMonth(dt.getMonth() + monthsLeft); return dt.toLocaleDateString(dateLocale(),{month:'short',year:'numeric'}) })()
+          ? (() => { const now = new Date(); const dt = new Date(now.getFullYear(), now.getMonth() + monthsLeft, 1); return dt.toLocaleDateString(dateLocale(),{month:'short',year:'numeric'}) })()
           : null
         return (
           <Card key={d.id}>

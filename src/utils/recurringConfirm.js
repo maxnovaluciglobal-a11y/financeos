@@ -20,7 +20,7 @@ export function planConfirmations(items, existingRecords, debtsById, { today, no
     let amt = amount
     let debt = null
     if (rule.source === 'debt' && rule.sourceId && debtsById?.has(rule.sourceId)) {
-      const res = applyDebtPayment(debtsById.get(rule.sourceId), amount)
+      const res = applyDebtPayment(debtsById.get(rule.sourceId), amount, { month: String(date).slice(0, 7) })
       if (!(res.amount > 0)) continue          // ya saldada: nada que pagar
       debt = res.debt; amt = res.amount
       debtsById.set(debt.id, debt)
