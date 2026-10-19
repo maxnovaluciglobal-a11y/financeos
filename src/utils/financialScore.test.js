@@ -80,7 +80,7 @@ describe('calcFinancialScore — casos límite', () => {
       ], // 100% importado, sin categorizar
       goals: [], // sin metas → ni colchón ni progreso
       incomes: [{ date: '2026-09-01', amount: 0 }],
-      debts: [{ balance: 5000 }], // ingreso $0 + deuda > 0 = ratio máximo (personalDebtRatio)
+      debts: [{ balance: 5000, minPayment: 200 }], // ingreso $0 + cuotas > 0 = ratio máximo (personalDebtRatio)
       syncEnabled: true,
       lastSyncAt: NOW - 30 * 86400000, // 30 días sin sincronizar
     }), rawT)
@@ -156,18 +156,30 @@ describe('calcFinancialScore — Colchón de emergencia (0-20)', () => {
   })
 })
 
-describe('calcFinancialScore — Carga de deuda (0-20, sin cambios respecto al modelo anterior)', () => {
-  const incomes = [{ date: '2026-09-01', amount: 1000 }] // monthlyIncome=1000 → annualIncome=12000
+describe('calcFinancialScore — Carga de deuda (0-20): cuotas mensuales ÷ ingreso mensual (FIN-11)', () => {
+  const incomes = [{ date: '2026-09-01', amount: 1000 }] // ingreso mensual 1000
 
   it.each([
-    [0, 20],     // sin deuda
-    [1000, 15],  // ratio 0.083 < 0.20
-    [3000, 10],  // ratio 0.25, entre 0.20 y 0.50
-    [7000, 0],   // ratio 0.583 ≥ 0.50
-  ])('balance de deuda %i (ingreso anual 12000) → %i pts', (balance, expected) => {
-    const debts = balance > 0 ? [{ balance }] : []
+    [0, 20],    // sin deuda
+    [100, 15],  // 10 % ≤ 30 %
+    [300, 15],  // 30 % (borde inclusive)
+    [350, 10],  // 35 %: atención
+    [400, 10],  // 40 % (borde inclusive)
+    [450, 0],   // 45 %: riesgo
+  ])('cuota mínima %i (ingreso mensual 1000) → %i pts', (minPayment, expected) => {
+    const debts = minPayment > 0 ? [{ balance: 50000, minPayment }] : []
     const r = calcFinancialScore(baseInput({ incomes, debts }), rawT)
     expect(r.breakdown[2].pts).toBe(expected)
+  })
+
+  it('hipoteca de 60M con dividendo de 450.000 e ingreso de 2M (22,5 %) ya no da 0/20', () => {
+    const r = calcFinancialScore(baseInput({ incomes: [{ date: '2026-09-01', amount: 2000000 }], debts: [{ balance: 60000000, minPayment: 450000 }] }), rawT)
+    expect(r.breakdown[2].pts).toBe(15)
+  })
+
+  it('una deuda saldada (saldo 0) no cuenta', () => {
+    const r = calcFinancialScore(baseInput({ incomes, debts: [{ balance: 0, minPayment: 900 }] }), rawT)
+    expect(r.breakdown[2].pts).toBe(20)
   })
 })
 
@@ -294,11 +306,11 @@ describe('calcFinancialScore — etiqueta y color según score total', () => {
       incomes: [{ date: '2026-09-01', amount: 1000 }], // sin categoría: cuenta en el denominador
       debts: [{ balance: 1000 }],
       expenses: [
-        { date: '2026-09-01', amount: 10, category: 'Comida' },
-        { date: '2026-09-02', amount: 10, category: 'Importado' },
-        { date: '2026-09-03', amount: 10, category: 'Importado' },
-        { date: '2026-09-04', amount: 10, category: 'Importado' },
-      ], // 3 de 5 movimientos (4 expenses + 1 income) importados → ratio 0.4 < 0.50 → 0 pts
+        { date: '2026-09-01', amount: 245, category: 'Comida' },
+        { date: '2026-09-02', amount: 245, category: 'Importado' },
+        { date: '2026-09-03', amount: 245, category: 'Importado' },
+        { date: '2026-09-04', amount: 245, category: 'Importado' },
+      ], // flujo (1000 − 980) / 1000 = 2 % (desde FIN-2 sale de los datos, no del savingRate pasado). 3 de 5 movimientos (4 expenses + 1 income) importados → ratio 0.4 < 0.50 → 0 pts
       syncEnabled: false,
     }), rawT)
     expect(r.score).toBe(38)
@@ -331,5 +343,47 @@ describe('scoreLevel — 3 niveles de D3 (Bien ≥70 · Atención 40–69 · Rie
     expect(SCORE_LEVELS.ok).toEqual({ key: 'score.ok', color: 'var(--pos)' })
     expect(SCORE_LEVELS.attention).toEqual({ key: 'score.attention', color: 'var(--warn)' })
     expect(SCORE_LEVELS.risk).toEqual({ key: 'score.risk', color: 'var(--neg)' })
+  })
+})
+
+// Auditoría 360, FIN-2 (caso de t4.mjs): fondo de 1.000.000 y gasto real de
+// 1.500.000 al mes (0,67 meses de colchón), sueldo de 2.000.000.
+describe('calcFinancialScore — mes en curso a medio cargar (FIN-2)', () => {
+  const goals = [{ name: 'Fondo de emergencia', saved: 1000000, target: 3000000 }]
+  const history = { incomes: [], expenses: [] }
+  for (const m of ['2026-07', '2026-08', '2026-09']) {
+    history.incomes.push({ date: `${m}-01`, amount: 2000000, category: 'Salario' })
+    history.expenses.push({ date: `${m}-20`, amount: 1500000, category: 'Alimentación' })
+  }
+  const day = (d) => new Date(2026, 9, d, 12).getTime()
+
+  it('el día 2 (sueldo cobrado, 20.000 gastados) ya no da 100: colchón 5/20 y flujo 30/30 sobre el mes típico', () => {
+    const incomes = [...history.incomes, { date: '2026-10-01', amount: 2000000, category: 'Salario' }]
+    const expenses = [...history.expenses, { date: '2026-10-02', amount: 20000, category: 'Alimentación' }]
+    const r = calcFinancialScore(baseInput({ incomes, expenses, goals, activeMonth: '2026-10', now: day(2), savingRate: 0.99 }), rawT)
+    expect(r.breakdown.find(b => b.key === 'emergencyCushion').pts).toBe(5)
+    expect(r.breakdown.find(b => b.key === 'cashFlow').pts).toBe(30)
+    expect(r.score).toBeLessThan(100)
+  })
+
+  it('el mismo usuario a fin de mes da el mismo colchón (el número no oscila con el día)', () => {
+    const incomes = [...history.incomes, { date: '2026-10-01', amount: 2000000, category: 'Salario' }]
+    const d2 = calcFinancialScore(baseInput({ incomes, expenses: [...history.expenses, { date: '2026-10-02', amount: 20000, category: 'Alimentación' }], goals, activeMonth: '2026-10', now: day(2) }), rawT)
+    const d30 = calcFinancialScore(baseInput({ incomes, expenses: [...history.expenses, { date: '2026-10-30', amount: 1500000, category: 'Alimentación' }], goals, activeMonth: '2026-10', now: day(30) }), rawT)
+    expect(d2.breakdown[1].pts).toBe(d30.breakdown[1].pts)
+    expect(d2.score).toBe(d30.score)
+  })
+
+  it('el día 1, antes del sueldo, el flujo usa el ingreso típico (no cae a 10/30)', () => {
+    const r = calcFinancialScore(baseInput({ incomes: history.incomes, expenses: [...history.expenses, { date: '2026-10-01', amount: 5000, category: 'Alimentación' }], goals, activeMonth: '2026-10', now: day(1) }), rawT)
+    expect(r.breakdown[0].pts).toBe(30)
+  })
+
+  it('un arriendo fijo pendiente cuenta en el gasto del mes', () => {
+    const incomes = [{ date: '2026-10-01', amount: 1000000, category: 'Salario' }]
+    const expenses = [{ date: '2026-10-02', amount: 20000, category: 'Alimentación' }]
+    const sin = calcFinancialScore(baseInput({ incomes, expenses, activeMonth: '2026-10', now: day(2) }), rawT)
+    const con = calcFinancialScore(baseInput({ incomes, expenses, activeMonth: '2026-10', now: day(2), pending: { income: 0, expense: 700000 } }), rawT)
+    expect(con.breakdown[0].pts).toBeLessThan(sin.breakdown[0].pts)
   })
 })

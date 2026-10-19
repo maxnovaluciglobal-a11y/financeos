@@ -191,7 +191,7 @@ export default function Coach() {
             label={t('coach.kpi.debtLoad')}
             value={fmtP(metrics.debtLoad)}
             pct={metrics.debtLoad}
-            level={lvl3(metrics.debtLoad < 0.30, metrics.debtLoad < 0.50)}
+            level={lvl3(metrics.debtLoad <= COACH_CONFIG.thresholds.debtLoadWarn, metrics.debtLoad <= COACH_CONFIG.thresholds.debtLoadHigh)}
           />
           {metrics.monthlyExpense > 0 && (
             <KpiBar

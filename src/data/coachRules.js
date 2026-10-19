@@ -4,11 +4,12 @@
 // de seguridad; en la app real siempre se pasa t() de useT()), así que nunca
 // necesita otro idioma que español.
 import { es } from '../i18n/es.js'
-import { effectiveBudgetLimits } from '../utils/budgets.js'
+import { effectiveBudgetLimits, budgetStatus, BUDGET_WARN_PCT } from '../utils/budgets.js'
 import { currentMonth, fmtSignedMoney, currencySymbol } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
 import { findEmergencyGoal } from '../utils/emergencyGoal.js'
 import { maskMoney } from '../utils/money.js'
+import { projectEndOfMonth } from '../utils/projection.js'
 // Motor de reglas del FinanceOS Coach
 // Configurable sin tocar componentes React
 // Cada regla: id, categoría, condición, severidad, mensaje, acción sugerida
@@ -20,10 +21,10 @@ export const COACH_CONFIG = {
     savingsRateWarn:        0.10,   // 10% ahorro = atención
     subscriptionRatioWarn:  0.07,   // 7% suscripciones/ingreso = atención
     subscriptionRatioHigh:  0.12,   // 12% = warning
-    budgetOverUsePct:       0.90,   // 90% del presupuesto usado = atención
-    budgetExceededPct:      1.00,   // 100% = warning
-    debtLoadWarn:           0.30,   // 30% deuda/ingreso anual = atención
-    debtLoadHigh:           0.50,   // 50% = warning
+    budgetOverUsePct:       BUDGET_WARN_PCT, // 80% usado = atención (misma regla que Presupuestos, FIN-16)
+    budgetExceededPct:      1.00,   // gasto > límite = excedido (budgetStatus)
+    debtLoadWarn:           0.30,   // cuotas/ingreso mensual > 30% = atención (FIN-11)
+    debtLoadHigh:           0.40,   // > 40% = riesgo
     emergencyFundMonthsGood: 3,     // 3 meses = bueno
     emergencyFundMonthsWarn: 1,     // 1 mes = atención
     goalsProgressWarn:      0.25,   // menos del 25% en meta = atención
@@ -170,7 +171,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.monthlyIncome > 0 && m.debtLoad >= COACH_CONFIG.thresholds.debtLoadHigh ? {
       severity: 'warning',
       title: tr('cr.debtHigh.title'),
-      msg: tr('cr.debtHigh.msg', { v: money(m, m.totalDebt), pct: pct(m.debtLoad) }),
+      msg: tr('cr.debtHigh.msg', { v: money(m, m.debtMonthlyPayments), pct: pct(m.debtLoad) }),
       action: tr('cr.debtHigh.action'),
     } : null,
   },
@@ -313,7 +314,13 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
   const monthlyIncome  = incomes.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + (r.amount || 0), 0)
   const monthlyExpense = expenses.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + (r.amount || 0), 0)
   const cashFlow       = monthlyIncome - monthlyExpense
-  const savingsRate    = monthlyIncome > 0 ? cashFlow / monthlyIncome : 0
+  // FIN-2: tasa de ahorro, colchón y carga de deuda sobre el mes PROYECTADO
+  // (mismo criterio que el IQ Score); los montos de los mensajes siguen siendo
+  // los registrados.
+  const ref = projectEndOfMonth({ incomes, expenses, activeMonth })
+  const refIncome  = ref.projInc
+  const refExpense = ref.projExp
+  const savingsRate    = refIncome > 0 ? (refIncome - refExpense) / refIncome : 0
 
   // Suscripciones
   const activeSubs = (subs || []).filter(s => s.status === 'active')
@@ -337,22 +344,17 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
   })
   // Límite EFECTIVO (con rollover si está activo) — coincide con la página Presupuestos.
   const effLimits = effectiveBudgetLimits({ budgets, expenses, activeMonth, settings })
-  const budgetsExceeded  = budgets.filter(b => (expByCat[b.category] || 0) >= (effLimits[b.category] || 0) * COACH_CONFIG.thresholds.budgetExceededPct).length
-  const budgetsNearLimit = budgets.filter(b => {
-    const lim = effLimits[b.category] || 0
-    const used = lim > 0 ? (expByCat[b.category] || 0) / lim : 0
-    return used >= COACH_CONFIG.thresholds.budgetOverUsePct && used < COACH_CONFIG.thresholds.budgetExceededPct
-  }).length
+  const budgetsExceeded  = budgets.filter(b => budgetStatus(expByCat[b.category] || 0, effLimits[b.category] || 0).over).length
+  const budgetsNearLimit = budgets.filter(b => budgetStatus(expByCat[b.category] || 0, effLimits[b.category] || 0).warn).length
 
   // Deudas — solo ámbito personal (excluye deudas de propiedad/inversión), mismo
   // cálculo que el score y el Modo Asesor (ver personalDebtRatio en utils/personal.js).
-  const annualIncome = monthlyIncome * 12
-  const { totalDebt, ratio: debtLoad } = personalDebtRatio(debts, annualIncome)
+  const { totalDebt, monthlyPayments: debtMonthlyPayments, ratio: debtLoad } = personalDebtRatio(debts, refIncome)
 
   // Fondo de emergencia
   const emergencyGoal = findEmergencyGoal(goals)
-  const emergencyFundMonths = emergencyGoal && monthlyExpense > 0
-    ? (emergencyGoal.saved || 0) / monthlyExpense
+  const emergencyFundMonths = emergencyGoal && refExpense > 0
+    ? (emergencyGoal.saved || 0) / refExpense
     : 0
 
   // Metas
@@ -374,7 +376,7 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
     monthlyIncome, monthlyExpense, cashFlow, savingsRate,
     subscriptionMonthly, subscriptionAnnual, subscriptionRatio, subscriptionCount,
     budgetsExceeded, budgetsNearLimit,
-    totalDebt, debtLoad,
+    totalDebt, debtMonthlyPayments, debtLoad,
     emergencyFundMonths,
     goalsStalled, goalsOnTrack,
     daysSinceBackup,

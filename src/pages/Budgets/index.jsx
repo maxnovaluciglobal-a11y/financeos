@@ -6,6 +6,7 @@ import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState, EmptyPickList } from '../../components/ui/index.jsx'
 import { Target } from 'lucide-react'
 import { budgetsFromPreviousMonth } from './budgetCopy.js'
+import { budgetRollover, budgetStatus } from '../../utils/budgets.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
@@ -36,22 +37,15 @@ export default function Budgets() {
 
   // El presupuesto personal excluye los movimientos marcados como inversión (r.inv)
   const mExpenses     = useMemo(() => expenses.filter(r => r.date?.startsWith(activeMonth) && !r.inv), [expenses, activeMonth])
-  const prevExpenses  = useMemo(() => expenses.filter(r => r.date?.startsWith(prevMonth) && !r.inv),   [expenses, prevMonth])
   const mIncomes      = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth) && !r.inv), [incomes, activeMonth])
   const ingresoNeto   = useMemo(() => mIncomes.reduce((s, r) => s + r.amount, 0), [mIncomes])
   const expByCat      = useMemo(() => { const m = {}; mExpenses.forEach(e => { m[e.category] = (m[e.category] || 0) + e.amount }); return m }, [mExpenses])
-  const prevExpByCat  = useMemo(() => { const m = {}; prevExpenses.forEach(e => { m[e.category] = (m[e.category] || 0) + e.amount }); return m }, [prevExpenses])
 
-  // Rollover por categoría: lo no gastado el mes anterior (máx = limit, no puede ser negativo)
-  const rolloverByCat = useMemo(() => {
-    if (!rolloverOn) return {}
-    const r = {}
-    budgets.forEach(b => {
-      const prevSpent = prevExpByCat[b.category] || 0
-      r[b.category] = Math.max(0, Math.min(b.limit - prevSpent, b.limit))
-    })
-    return r
-  }, [rolloverOn, budgets, prevExpByCat])
+  // Rollover por categoría: cálculo único de utils/budgets.js (FIN-8: sin
+  // arrastre si el presupuesto es nuevo o el mes anterior no tiene datos).
+  const rolloverByCat = useMemo(
+    () => budgetRollover({ budgets, expenses, activeMonth, settings: { budgetRollover: rolloverOn } }),
+    [rolloverOn, budgets, expenses, activeMonth])
 
   // Límite efectivo = base + rollover
   const effectiveLimitByCat = useMemo(() => {
@@ -63,7 +57,7 @@ export default function Budgets() {
   const totalBudget   = useMemo(() => budgets.reduce((s, b) => s + (effectiveLimitByCat[b.category] || b.limit), 0), [budgets, effectiveLimitByCat])
   const budgetedCats  = useMemo(() => new Set(budgets.map(b => b.category)), [budgets])
   const totalBudgeted = useMemo(() => mExpenses.filter(e => budgetedCats.has(e.category)).reduce((s, r) => s + r.amount, 0), [mExpenses, budgetedCats])
-  const overBudget    = useMemo(() => budgets.filter(b => (expByCat[b.category] || 0) > (effectiveLimitByCat[b.category] || b.limit)), [budgets, expByCat, effectiveLimitByCat])
+  const overBudget    = useMemo(() => budgets.filter(b => budgetStatus(expByCat[b.category] || 0, effectiveLimitByCat[b.category] || b.limit).over), [budgets, expByCat, effectiveLimitByCat])
 
   async function submit() {
     if (!f.limit || Number(f.limit) <= 0)             { setErr(t('budgets.err.limit')); return }
@@ -297,9 +291,7 @@ export default function Budgets() {
                       const spent    = expByCat[b.category] || 0
                       const effLimit = effectiveLimitByCat[b.category] || b.limit
                       const carry    = rolloverByCat[b.category] || 0
-                      const p        = effLimit > 0 ? spent / effLimit : 0
-                      const over     = spent > effLimit
-                      const warn     = !over && p >= 0.8
+                      const { pct: p, over, warn } = budgetStatus(spent, effLimit)
                       // Estado con ícono + palabra (T15), no solo color: excedido = riesgo,
                       // ≥80% = atención, resto = bien.
                       const lvl      = over ? 'risk' : warn ? 'attention' : 'ok'

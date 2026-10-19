@@ -122,9 +122,19 @@ export const fmtFixed = (n, locale, symbol = '$') =>
 
 // Cifra SIN símbolo con los decimales de la moneda activa (conserva el signo).
 // Para los textos que arman el símbolo aparte o necesitan el número solo.
+// Redondeo decimal sin el error binario de x*100 (1.005 -> 1.01, no 1.00;
+// FIN-13): desplaza la coma con notación exponencial y redondea el valor
+// absoluto (mitad hacia afuera, igual para negativos).
+export function roundTo(n, decimals = 2) {
+  const x = Number(n) || 0
+  const abs = Math.abs(x)
+  let v = Number(`${Math.round(Number(`${abs}e${decimals}`))}e-${decimals}`)
+  if (!Number.isFinite(v)) v = Math.round(abs * 10 ** decimals) / 10 ** decimals
+  return x < 0 ? -v : v
+}
+
 export function fmtAmount(n, decimals = _moneyDecimals, locale = _moneyLocale) {
-  const f = 10 ** decimals
-  let v = Math.round((Number(n) || 0) * f) / f
+  let v = roundTo(n, decimals)
   if (Object.is(v, -0)) v = 0
   return v.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 }

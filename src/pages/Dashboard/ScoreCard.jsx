@@ -44,6 +44,9 @@ function Sparkline({ history, color }) {
   )
 }
 
+// Aviso del cambio de método del IQ Score (FIN-2 y FIN-11, 19-oct-2026).
+const SCORE_METHOD_NOTICE_UNTIL = new Date(2026, 11, 31).getTime()
+
 export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, setPage, compact = false }) {
   const { t } = useT()
   const [history, setHistory] = useState(() => {
@@ -152,6 +155,9 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
           )
         })}
       </div>
+      {Date.now() < SCORE_METHOD_NOTICE_UNTIL && (
+        <p style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, margin: '10px 0 0' }}>{t('score.debtLoadChanged')}</p>
+      )}
     </section>
   )
 }

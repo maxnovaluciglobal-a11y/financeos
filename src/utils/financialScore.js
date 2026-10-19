@@ -17,12 +17,13 @@ import { es } from '../i18n/es.js'
 import { personalDebtRatio } from './personal.js'
 import { COACH_CONFIG } from '../data/coachRules.js'
 import { findEmergencyGoal } from './emergencyGoal.js'
+import { projectEndOfMonth } from './projection.js'
 
 function esFallback(key) { return es?.[key] ?? key }
 
 export function calcFinancialScore({
   savingRate, expenses, debts, goals, incomes, activeMonth,
-  syncEnabled, lastSyncAt, now,
+  syncEnabled, lastSyncAt, now, pending,
 }, t) {
   const tr = t || esFallback
   let score = 0
@@ -30,11 +31,18 @@ export function calcFinancialScore({
 
   const expArr = Array.isArray(expenses) ? expenses : []
   const incArr = Array.isArray(incomes) ? incomes : []
-  const monthExp = expArr.filter(e => e?.date?.startsWith(activeMonth))
-  const monthlyExpense = monthExp.reduce((s, e) => s + (Number(e.amount) || 0), 0)
-  const monthlyIncome = incArr
-    .filter(r => r?.date?.startsWith(activeMonth))
-    .reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  const nowMs = typeof now === 'number' ? now : Date.now()
+
+  // Mes de referencia (auditoría 360, FIN-2): con el mes en curso a medio
+  // cargar, el gasto y el ingreso del mes son los PROYECTADOS a fin de mes
+  // (ritmo, promedio de meses completos y fijos pendientes, projection.js),
+  // no lo registrado hasta hoy. El día 2 ya no da colchón "de 50 meses" ni
+  // flujo del 98 %. Un mes cerrado usa su resultado real.
+  const ref = activeMonth
+    ? projectEndOfMonth({ incomes: incArr, expenses: expArr, activeMonth, pending, now: nowMs })
+    : { projInc: 0, projExp: 0 }
+  const monthlyExpense = ref.projExp
+  const monthlyIncome = ref.projInc
 
   // 1. Flujo de caja (0-30) — misma señal que la vieja "tasa de ahorro"
   // (balance/ingreso del mes activo, ya calculado en Dashboard como
@@ -42,7 +50,7 @@ export function calcFinancialScore({
   // nuevo. Umbrales reusados de COACH_CONFIG (savingsRateGood/Warn) en vez
   // de inventar otros: es el mismo criterio de "bueno"/"atención" que ya
   // usa el Coach para la misma métrica.
-  const sr = Number(savingRate) || 0
+  const sr = monthlyIncome > 0 ? (monthlyIncome - monthlyExpense) / monthlyIncome : (Number(savingRate) || 0)
   const { savingsRateGood, savingsRateWarn } = COACH_CONFIG.thresholds
   const cashFlowPts = sr >= savingsRateGood ? 30 : sr >= savingsRateWarn ? 20 : sr >= 0 ? 10 : 0
   score += cashFlowPts
@@ -70,9 +78,11 @@ export function calcFinancialScore({
   // 20pts (=20%) en el modelo anterior y coincide con el brand book.
   // personalDebtRatio() es la fuente única compartida con el Modo Asesor
   // y el Coach (ver utils/personal.js).
-  const annualIncome = monthlyIncome * 12
-  const { totalDebt, ratio: debtLoad } = personalDebtRatio(debts, annualIncome)
-  const debtPts = totalDebt === 0 ? 20 : debtLoad < 0.20 ? 15 : debtLoad < 0.50 ? 10 : 0
+  // FIN-11 (19-oct-2026): cuotas mensuales ÷ ingreso mensual del mes de
+  // referencia. Sin deuda 20; hasta 30 % 15; hasta 40 % 10; más, 0.
+  const { totalDebt, ratio: debtLoad } = personalDebtRatio(debts, monthlyIncome)
+  const { debtLoadWarn, debtLoadHigh } = COACH_CONFIG.thresholds
+  const debtPts = totalDebt === 0 ? 20 : debtLoad <= debtLoadWarn ? 15 : debtLoad <= debtLoadHigh ? 10 : 0
   score += debtPts
   breakdown.push({ key: 'debtLoad', label: tr('score.debtLoad'), pts: debtPts, max: 20 })
 
@@ -106,7 +116,6 @@ export function calcFinancialScore({
   const categorizedRatio = allRecords.length > 0 ? 1 - importedCount / allRecords.length : 1
   const catPts = categorizedRatio >= 0.95 ? 9 : categorizedRatio >= 0.80 ? 6 : categorizedRatio >= 0.50 ? 3 : 0
 
-  const nowMs = typeof now === 'number' ? now : Date.now()
   let syncPts
   if (!syncEnabled) {
     syncPts = 6 // local-only por elección — no aplica, no se penaliza

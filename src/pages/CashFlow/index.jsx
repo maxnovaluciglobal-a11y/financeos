@@ -10,7 +10,7 @@ import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '..
 import ProGate from '../../components/ui/ProGate.jsx'
 import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName, catName, currencySymbol, localDateStr } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
-import { recurringMonthlyTotals } from '../../utils/recurring.js'
+import { recurringMonthlyTotals, monthPlan, pendingTotals } from '../../utils/recurring.js'
 import { freqText } from '../../components/recurring/labels.js'
 import Money from '../../components/Money.jsx'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -56,7 +56,6 @@ export default function CashFlow({ setPage }) {
   const activeMonth = settings.activeMonth || currentMonth()
   const curInc  = incomes.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + r.amount, 0)
   const curExp  = expenses.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + r.amount, 0)
-  const curBal  = curInc - curExp
 
   // ── Estimación mensual REALISTA: promedio de los últimos meses con datos ──────
   // Incluye TODOS los movimientos (recurrentes + únicos/variables), porque los
@@ -69,7 +68,7 @@ export default function CashFlow({ setPage }) {
   }, [incomes, expenses])
 
   const monthlyEstimate = useMemo(() => {
-    const nowMonth = currentMonth()
+    const nowMonth = activeMonth
     // Preferimos meses COMPLETOS (distintos del mes en curso); si no hay, usamos lo que haya
     let months = monthsWithData.filter(m => m < nowMonth)
     let partial = false
@@ -83,7 +82,7 @@ export default function CashFlow({ setPage }) {
       monthsUsed: last.length,
       partial,
     }
-  }, [incomes, expenses, monthsWithData])
+  }, [incomes, expenses, monthsWithData, activeMonth])
 
   const monthlyNetFlow = monthlyEstimate.avgInc - monthlyEstimate.avgExp
 
@@ -93,23 +92,31 @@ export default function CashFlow({ setPage }) {
   // gasto" se calculaba contra un presupuesto más chico del que el usuario
   // realmente tenía disponible ese mes.
   const effLimits = useMemo(() => effectiveBudgetLimits({ budgets, expenses, activeMonth, settings }), [budgets, expenses, activeMonth, settings])
+  const todayIso = localDateStr()
+  const pendingSum = useMemo(
+    () => pendingTotals(monthPlan(recurring || [], activeMonth, { incomes: _incAll || [], expenses: _expAll || [], today: todayIso })),
+    [recurring, activeMonth, _incAll, _expAll, todayIso])
   const eomProjection = useMemo(() => {
     // Núcleo compartido con el Dashboard (mismos números en ambas vistas)
-    const core = projectEndOfMonth({ incomes, expenses, activeMonth })
+    const core = projectEndOfMonth({ incomes, expenses, activeMonth, pending: pendingSum })
     const totalBudget = budgets.reduce((s, b) => s + (effLimits[b.category] || 0), 0)
     const pctBudgetUsed = totalBudget > 0 ? core.curExp / totalBudget : null
     const pace = pctBudgetUsed !== null ? pctBudgetUsed - core.pctElapsed : null
     return { ...core, pctMonthElapsed: core.pctElapsed, totalBudget, pctBudgetUsed, pace }
-  }, [incomes, expenses, activeMonth, budgets, effLimits])
+  }, [incomes, expenses, activeMonth, budgets, effLimits, pendingSum])
 
   // ── Proyección 6 meses hacia adelante ────────────────────────────────────
+  // FIN-10 (auditoría 360): el mes activo cierra en su saldo PROYECTADO (con lo
+  // que falta gastar y los fijos pendientes), no en el saldo parcial de hoy; los
+  // meses siguientes suman el flujo neto promedio desde ahí.
+  const startBal = eomProjection.projBal
   const projectionData = useMemo(() => {
     const result = []
-    let balance = curBal
+    let balance = startBal
+    const [ay, am] = activeMonth.split('-').map(Number)
 
     for (let i = 0; i < 6; i++) {
-      const base = new Date()
-      const d = new Date(base.getFullYear(), base.getMonth() + i, 1)
+      const d = new Date(ay, am - 1 + i, 1)
       const label = monthShortName(d.getMonth()) + ' ' + d.getFullYear().toString().slice(2)
       if (i === 0) {
         // Mes actual = DATO. Sirve de puente: aparece en ambas series para que
@@ -123,12 +130,12 @@ export default function CashFlow({ setPage }) {
     return result
     // settings.language: el nombre del mes cambia con el idioma
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [curBal, monthlyEstimate, monthlyNetFlow, settings.language])
+  }, [startBal, activeMonth, monthlyEstimate, monthlyNetFlow, settings.language])
 
   // ── Hitos de 30/60/90 días ────────────────────────────────────────────────
-  const bal30  = curBal + monthlyNetFlow
-  const bal60  = curBal + monthlyNetFlow * 2
-  const bal90  = curBal + monthlyNetFlow * 3
+  const bal30  = startBal + monthlyNetFlow
+  const bal60  = startBal + monthlyNetFlow * 2
+  const bal90  = startBal + monthlyNetFlow * 3
   const trend  = monthlyNetFlow > 0 ? 'positivo' : monthlyNetFlow < 0 ? 'negativo' : 'neutro'
 
   const axisStyle = { fill: 'var(--th)', fontSize: 10 }

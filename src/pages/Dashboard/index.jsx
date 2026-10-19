@@ -252,8 +252,9 @@ export default function Dashboard({ setPage }) {
       expenses, debts, goals, incomes, activeMonth,
       syncEnabled: isSyncEnabled() && syncAvailable(),
       lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
+      pending: pendingSum,
     }, t)
-  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, settings.language])
+  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, settings.language, pendingSum])
 
   // ── Vista compacta (progressive disclosure) ───────────────────────────────
   // Vista esencial por defecto (calma): la primera pantalla muestra lo esencial y
@@ -674,8 +675,8 @@ export default function Dashboard({ setPage }) {
       {/* Proyección fin de mes */}
       {!compact && (kpis.totalInc > 0 || kpis.totalExp > 0) && (() => {
         // Cálculo compartido con la página Proyección — mismos números en ambas vistas
-        const { today, daysInMonth, daysLeft, dailyExp, medianDaily, projInc, projExp, projBal, avgExp, avgExpMonths } =
-          projectEndOfMonth({ incomes, expenses, activeMonth })
+        const { today, daysInMonth, daysLeft, dailyExp, medianDaily, projInc, projExp, projBal, avgExp, avgExpMonths, pendingExp, pendingInc } =
+          projectEndOfMonth({ incomes, expenses, activeMonth, pending: pendingSum })
         const pctMonth = (today / daysInMonth * 100).toFixed(0)
         const over     = projBal < 0
         return (
@@ -705,6 +706,11 @@ export default function Dashboard({ setPage }) {
             {avgExp > 0 && avgExpMonths > 0 && (
               <div style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
                 {t('dash.proj.basis', { cur: money(kpis.totalExp), med: money(medianDaily), left: daysLeft, avg: money(avgExp) })}
+              </div>
+            )}
+            {(pendingExp > 0 || pendingInc > 0) && (
+              <div style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
+                {t('dash.proj.pendingBasis', { exp: money(pendingExp), inc: money(pendingInc) })}
               </div>
             )}
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontFamily:'var(--mono)', color:'var(--th)' }}>

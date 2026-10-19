@@ -8,14 +8,25 @@
 //   ponderada por % del mes transcurrido (a inicio de mes pesa el histórico;
 //   a fin de mes, el gasto real). Evita extrapolar cuotas mensuales pagadas
 //   temprano como si fueran gasto diario.
+//
+// Fijos pendientes (auditoría 360, FIN-1): `pending` = pendingTotals(monthPlan)
+// del mes activo. Lo que la app ya sabe que falta (arriendo, sueldo, cuotas)
+// se suma a lo registrado; la mediana diaria excluye los registros de fijos
+// (recurringId) para no contarlos dos veces.
+// Mes cerrado (FIN-9): la proyección es el resultado real. Mes futuro: solo lo
+// registrado más lo previsto, sin ritmo ni promedio.
 
-export function projectEndOfMonth({ incomes, expenses, activeMonth }) {
-  const now = new Date()
+export function projectEndOfMonth({ incomes, expenses, activeMonth, pending = null, now: nowArg = null }) {
+  const now = nowArg == null ? new Date() : new Date(nowArg)
   const [y, mo] = activeMonth.split('-').map(Number)
   const daysInMonth = new Date(y, mo, 0).getDate()
-  const today = (now.getFullYear() === y && now.getMonth() + 1 === mo) ? now.getDate() : daysInMonth
+  const nowMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const mode = activeMonth < nowMonth ? 'past' : activeMonth > nowMonth ? 'future' : 'current'
+  const today = mode === 'current' ? now.getDate() : mode === 'past' ? daysInMonth : 0
   const daysLeft = daysInMonth - today
   const pctElapsed = daysInMonth > 0 ? today / daysInMonth : 1
+  const pendInc = mode === 'past' ? 0 : Math.max(0, Number(pending?.income) || 0)
+  const pendExp = mode === 'past' ? 0 : Math.max(0, Number(pending?.expense) || 0)
 
   const sumMonth = (arr, m) => (arr || []).filter(r => r?.date?.startsWith(m)).reduce((s, r) => s + (Number(r.amount) || 0), 0)
   const curInc = sumMonth(incomes, activeMonth)
@@ -33,7 +44,6 @@ export function projectEndOfMonth({ incomes, expenses, activeMonth }) {
   // previo completo" en completeOrAll() y contaminaba el promedio histórico
   // con datos parciales. Se deriva del mismo `now` local para que ambos
   // cálculos coincidan siempre.
-  const nowMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const monthsOf = (arr) => [...new Set((arr || []).map(r => r?.date?.slice(0, 7)).filter(Boolean))].sort()
   const completeOrAll = (ms) => { const prev = ms.filter(m => m < nowMonth); return (prev.length ? prev : ms).slice(-3) }
   const avg = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0
@@ -45,13 +55,19 @@ export function projectEndOfMonth({ incomes, expenses, activeMonth }) {
 
   const dailyExp = today > 0 ? curExp / today : 0
 
+  if (mode !== 'current') {
+    const projInc = curInc + pendInc
+    const projExp = Math.round(curExp + pendExp)
+    return { mode, today, daysInMonth, daysLeft, pctElapsed, dailyExp, medianDaily: 0, curInc, curExp, avgInc, avgExp, avgExpMonths, pendingInc: pendInc, pendingExp: pendExp, projInc, projExp, projBal: projInc - projExp }
+  }
+
   // Día típico (MEDIANA de los totales diarios del mes en curso, incluyendo días
   // en cero): robusto frente a cuentas grandes pagadas a inicio de mes (arriendo,
   // colegio, hipotecas). El promedio diario extrapolaba esas cuentas como si se
   // repitieran; la mediana representa un día normal (supermercado, transporte).
   const byDay = {}
   ;(expenses || []).forEach(r => {
-    if (!r?.date?.startsWith(activeMonth)) return
+    if (!r?.date?.startsWith(activeMonth) || r.recurringId) return
     const d = Number(r.date.slice(8, 10))
     if (d >= 1 && d <= today) byDay[d] = (byDay[d] || 0) + (Number(r.amount) || 0)
   })
@@ -64,13 +80,13 @@ export function projectEndOfMonth({ incomes, expenses, activeMonth }) {
     : (dailyTotals[mid - 1] + dailyTotals[mid]) / 2
 
   // Proyección de gasto = el MAYOR de:
-  //  (a) lo ya gastado + día típico × días restantes  (mes con cuentas ya pagadas)
+  //  (a) lo ya gastado + día típico × días restantes + fijos pendientes
   //  (b) promedio histórico mensual                   (cuentas grandes aún pendientes)
   //  (c) lo ya gastado                                 (piso lógico)
-  const paceTypical = curExp + medianDaily * daysLeft
+  const paceTypical = curExp + medianDaily * daysLeft + pendExp
   const projExp = Math.round(Math.max(curExp, avgExp, paceTypical))
-  const projInc  = Math.max(curInc, avgInc || curInc)
+  const projInc  = Math.max(curInc + pendInc, avgInc || 0)
   const projBal  = projInc - projExp
 
-  return { today, daysInMonth, daysLeft, pctElapsed, dailyExp, medianDaily, curInc, curExp, avgInc, avgExp, avgExpMonths, projInc, projExp, projBal }
+  return { mode, today, daysInMonth, daysLeft, pctElapsed, dailyExp, medianDaily, curInc, curExp, avgInc, avgExp, avgExpMonths, pendingInc: pendInc, pendingExp: pendExp, projInc, projExp, projBal }
 }

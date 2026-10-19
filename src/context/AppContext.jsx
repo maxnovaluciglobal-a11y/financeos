@@ -304,7 +304,7 @@ export function AppProvider({ children }) {
   }, [showToast, tr])
 
   const addBudget = useCallback(async (data) => {
-    const item = { ...data, id: uid() }
+    const item = { ...data, id: uid(), createdAt: new Date().toISOString() }
     try {
       await dbAdd('budgets', item)
       dispatch({ type: 'ADD_BUDGET', item })

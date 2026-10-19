@@ -51,3 +51,58 @@ describe('projectEndOfMonth — mes activo no debe contaminar el promedio histó
     expect(result.curExp).toBe(30)
   })
 })
+
+// Auditoría 360 (12-logica-financiera.md, casos de t1.mjs).
+describe('projectEndOfMonth — fijos pendientes y meses cerrados (FIN-1, FIN-9)', () => {
+  it('FIN-1: día 5, sueldo 1.000.000, 20.000 diarios y arriendo fijo de 450.000 pendiente -> gasto 1.070.000 y saldo -70.000', () => {
+    const now = new Date(2026, 9, 5, 12)
+    const incomes = [{ date: '2026-10-01', amount: 1000000 }]
+    const expenses = ['01', '02', '03', '04', '05'].map(d => ({ date: `2026-10-${d}`, amount: 20000 }))
+    const before = projectEndOfMonth({ incomes, expenses, activeMonth: '2026-10', now })
+    expect(before.projBal).toBe(380000)
+    const after = projectEndOfMonth({ incomes, expenses, activeMonth: '2026-10', now, pending: { income: 0, expense: 450000 } })
+    expect(after.projExp).toBe(1070000)
+    expect(after.projBal).toBe(-70000)
+  })
+
+  it('FIN-1: un fijo ya registrado (recurringId) no entra en la mediana diaria', () => {
+    const now = new Date(2026, 9, 3, 12)
+    const expenses = [
+      { date: '2026-10-01', amount: 450000, recurringId: 'r1' },
+      { date: '2026-10-02', amount: 10000 },
+      { date: '2026-10-03', amount: 10000 },
+    ]
+    const r = projectEndOfMonth({ incomes: [], expenses, activeMonth: '2026-10', now })
+    expect(r.medianDaily).toBe(10000)
+    expect(r.projExp).toBe(470000 + 10000 * 28)
+  })
+
+  it('FIN-1: el sueldo fijo pendiente cuenta como ingreso previsto', () => {
+    const now = new Date(2026, 9, 2, 12)
+    const r = projectEndOfMonth({ incomes: [], expenses: [{ date: '2026-10-01', amount: 1000 }], activeMonth: '2026-10', now, pending: { income: 900000, expense: 0 } })
+    expect(r.projInc).toBe(900000)
+  })
+
+  it('FIN-9: septiembre cerrado (ingreso 1.000, gasto 500, meses previos de 1.100) proyecta el resultado real', () => {
+    const now = new Date(2026, 9, 18, 12)
+    const incomes = [], expenses = []
+    for (const m of ['2026-07', '2026-08', '2026-09']) {
+      incomes.push({ date: `${m}-01`, amount: 1000 })
+      expenses.push({ date: `${m}-05`, amount: m === '2026-09' ? 500 : 1100 })
+    }
+    const r = projectEndOfMonth({ incomes, expenses, activeMonth: '2026-09', now, pending: { income: 0, expense: 999 } })
+    expect(r.mode).toBe('past')
+    expect(r.projExp).toBe(500)
+    expect(r.projInc).toBe(1000)
+    expect(r.projBal).toBe(500)
+    expect(r.daysLeft).toBe(0)
+  })
+
+  it('mes futuro: solo lo registrado y lo previsto, sin promedio', () => {
+    const now = new Date(2026, 9, 18, 12)
+    const r = projectEndOfMonth({ incomes: [{ date: '2026-09-01', amount: 5000 }], expenses: [{ date: '2026-09-02', amount: 4000 }], activeMonth: '2026-11', now, pending: { income: 1000, expense: 300 } })
+    expect(r.mode).toBe('future')
+    expect(r.projInc).toBe(1000)
+    expect(r.projExp).toBe(300)
+  })
+})

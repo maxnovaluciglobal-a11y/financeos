@@ -19,6 +19,8 @@ import config from '../../config.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { personalDebtRatio, personalDebts } from '../../utils/personal.js'
+import { projectEndOfMonth } from '../../utils/projection.js'
+import { COACH_CONFIG } from '../../data/coachRules.js'
 import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
 import { monthLabel } from '../shared/constants.js'
 
@@ -43,9 +45,9 @@ function calcTrafficLight(metrics, t) {
   // máxima (1), no 0 — antes este semáforo decía "Saludable" en verde
   // exactamente cuando el score daba 0 de 20 puntos para la misma situación.
   const debtRatio = metrics.debtRatio ?? 0
-  if (debtRatio <= 0.30) {
+  if (debtRatio <= COACH_CONFIG.thresholds.debtLoadWarn) {
     signals.push({ id: 'debt', label: t('adv.tl.debt'), status: 'green',  value: fmtPct(debtRatio), note: t('adv.tl.debt.green', { pct: fmtPct(debtRatio) }) })
-  } else if (debtRatio <= 0.60) {
+  } else if (debtRatio <= COACH_CONFIG.thresholds.debtLoadHigh) {
     signals.push({ id: 'debt', label: t('adv.tl.debt'), status: 'yellow', value: fmtPct(debtRatio), note: t('adv.tl.debt.yellow', { pct: fmtPct(debtRatio) }) })
   } else {
     signals.push({ id: 'debt', label: t('adv.tl.debt'), status: 'red',    value: fmtPct(debtRatio), note: t('adv.tl.debt.red', { pct: fmtPct(debtRatio) }) })
@@ -367,7 +369,7 @@ export default function Advisor() {
   const savingRate = mIncome > 0 ? mBalance / mIncome : 0
   // Solo deuda del ámbito personal (excluye propiedades de inversión) — mismo
   // cálculo que el score y el Coach, ver personalDebtRatio en utils/personal.js.
-  const { totalDebt, ratio: debtRatio } = personalDebtRatio(debts, mIncome * 12)
+  const { totalDebt, ratio: debtRatio } = personalDebtRatio(debts, projectEndOfMonth({ incomes, expenses, activeMonth }).projInc)
   const totalMinPayments = personalDebts(debts).reduce((s, d) => s + (d.minPayment || 0), 0)
 
   // Presupuestos excedidos

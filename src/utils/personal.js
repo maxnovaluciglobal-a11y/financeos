@@ -43,8 +43,16 @@ export function pendingDebtMonthly(debts, monthExpenses) {
 //      verde mientras el score daba 0 de 20 puntos.
 // Convención correcta: ingreso $0 + deuda personal > 0 es el escenario de MÁS
 // riesgo, no de menos — así que el ratio debe ser el máximo (1), no 0.
-export function personalDebtRatio(debts, annualIncome) {
-  const totalDebt = personalDebts(debts).reduce((s, d) => s + (Number(d.balance) || 0), 0)
-  const ratio = annualIncome > 0 ? totalDebt / annualIncome : (totalDebt > 0 ? 1 : 0)
-  return { totalDebt, ratio }
+//
+// Desde el 19-oct-2026 (auditoría 360, FIN-11; D-13) la carga se mide como
+// SERVICIO de la deuda: cuotas mínimas mensuales de las deudas personales con
+// saldo ÷ ingreso mensual (DTI). El saldo total contra el ingreso anual
+// castigaba cualquier hipoteca con dividendo sano. Umbrales únicos en
+// COACH_CONFIG.thresholds (debtLoadWarn 30 %, debtLoadHigh 40 %).
+export function personalDebtRatio(debts, monthlyIncome) {
+  const active = personalDebts(debts).filter(d => (Number(d.balance) || 0) > 0)
+  const totalDebt = active.reduce((s, d) => s + (Number(d.balance) || 0), 0)
+  const monthlyPayments = active.reduce((s, d) => s + (Number(d.minPayment) || 0), 0)
+  const ratio = monthlyIncome > 0 ? monthlyPayments / monthlyIncome : (monthlyPayments > 0 ? 1 : 0)
+  return { totalDebt, monthlyPayments, ratio }
 }
