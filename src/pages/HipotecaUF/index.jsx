@@ -15,6 +15,8 @@ import { fmtFixed } from '../../utils/index.js'
 const fmtCLP = (n) => fmtFixed(n, 'es-CL')
 const fmtUF = (n) => `${(Number(n) || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} UF`
 
+// Los hooks del cuerpo no pueden quedar detrás del `return` por país (ING-9:
+// rules-of-hooks); cambiar el país con la página abierta rompía el render.
 export default function HipotecaUF() {
   const { settings } = useApp()
   const { t } = useT()
@@ -27,6 +29,11 @@ export default function HipotecaUF() {
       </div>
     )
   }
+  return <HipotecaUFBody />
+}
+
+function HipotecaUFBody() {
+  const { t } = useT()
 
   const [uf, setUf] = useState(null)
   const [ufSource, setUfSource] = useState(null)

@@ -27,6 +27,8 @@ const DOLARES = [
   { key: 'mayorista', label: 'Mayorista' },
 ]
 
+// Los hooks del cuerpo no pueden quedar detrás del `return` por país (ING-9:
+// rules-of-hooks); cambiar el país con la página abierta rompía el render.
 export default function MultiDolarAR() {
   const { settings } = useApp()
   const { t } = useT()
@@ -39,6 +41,11 @@ export default function MultiDolarAR() {
       </div>
     )
   }
+  return <MultiDolarARBody />
+}
+
+function MultiDolarARBody() {
+  const { t } = useT()
 
   const [live, setLive] = useState(null)
   useEffect(() => { loadTasaAR().then(setLive) }, [])
