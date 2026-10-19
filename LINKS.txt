@@ -1,38 +1,23 @@
-FinanceOS v1.5 — Links oficiales
-=================================
+MOY IQ (ex FinanceOS) — links oficiales (actualizado el 19-oct-2026)
+====================================================================
 
 LANDING
-https://financeospro.com
+https://moyiq.app
 
 APP
-https://financeos-hazel.vercel.app/app/
+https://app.moyiq.app/app/
 
 DEMO INTERACTIVA
-https://financeos-hazel.vercel.app/app/?demo=true
-
-DOCUMENTACIÓN
-https://financeospro.com/docs/
-
-INICIO RÁPIDO
-https://financeospro.com/docs/getting-started.html
-
-GUÍA WHITE-LABEL
-https://financeospro.com/docs/white-label.html
-
-GUÍA DEPLOY
-https://financeospro.com/docs/deploy.html
-
-GUÍA BACKUPS
-https://financeospro.com/docs/backups.html
-
-GUÍA MODO ASESOR
-https://financeospro.com/docs/advisor.html
+https://demo.moyiq.app/app/?demo=true
 
 SOPORTE
-maxnovaluciglobal@gmail.com
+support@moyiq.app
 
 EMPRESA
 MAXNOVA & LUCI Global LLC
 
 DESARROLLADO POR
 Walter La Madriz
+
+Nota: las guías de https://moyiq.app/docs/ son de la era de pago único (v1.x) y están
+desactualizadas (auditoría 360, UXP-1): no enlazarlas.

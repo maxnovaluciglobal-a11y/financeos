@@ -1,125 +1,44 @@
-# FinanceOS — Guía de Deploy
+# Deploy de MOY IQ (financeos-app)
 
-## Requisito previo: Node.js
+Esta guía reemplaza a la de FinanceOS v1.5 (junio de 2026), que describía un deploy manual en Vercel o Netlify sin backend. Lo que sigue se verificó contra el repo y contra producción el 19-oct-2026; el detalle y las reglas completas están en `CLAUDE.md`, secciones "Deploy" y "Sesiones paralelas y despliegue".
 
-Si no tienes Node.js instalado:
-1. Ve a https://nodejs.org
-2. Descarga la versión **LTS** (18 o superior)
-3. Instala y reinicia la terminal
-4. Verifica: `node --version` debe mostrar v18+
+## Dónde corre
 
----
+- Vercel, team `maxnovaluci-global`, proyecto `financeos-app`, enlazado al repo `maxnovaluciglobal-a11y/financeos` con `main` como rama de producción.
+- Dominios: `app.moyiq.app` y `demo.moyiq.app` (primarios). `app.financeospro.com` y `demo.financeospro.com` redirigen con 308 a los de `moyiq.app`.
+- Supabase `nelwgbcddwiaimzbcuas` (`financeos-prod`): base de datos y Edge Functions, compartido con Invest.
+- Netlify no forma parte de la infraestructura actual (ver el `CLAUDE.md` de `01 - Maxnova Luci Global/`); `netlify.toml` es un resto de la guía vieja.
 
-## Opción A — Deploy en Vercel (recomendado, gratis)
+## Front (la PWA)
 
-### Método 1: Drag & Drop (más rápido, sin GitHub)
+1. Trabajar en un worktree propio y correr `npm test` completo.
+2. Tomar el candado: `mkdir /private/tmp/claude-501/moyiq-locks/financeos-app.lock` (soltarlo con `rmdir` al terminar).
+3. Integrar con `git merge --ff-only` a `main` y `git push origin main`. El push ya dispara un deploy de producción por la integración git de Vercel.
+4. `./deploy.sh` desde el árbol principal. Antes de cualquier paso verifica que la rama sea `main`, que no haya cambios rastreados sin commitear y que `HEAD` sea igual a `origin/main`; después corre tests y build, publica con la CLI, aliasea los cuatro dominios y hace un smoke test con `curl`. `./deploy.sh --check` solo corre la verificación.
 
-```bash
-# 1. Entra a la carpeta del proyecto
-cd financeos
+## Edge Functions
 
-# 2. Instala dependencias
-npm install
-
-# 3. Genera el build de producción
-npm run build
-# → Crea la carpeta dist/
-```
-
-4. Ve a **https://vercel.com** → crea cuenta gratis
-5. En el dashboard haz clic en **"Add New → Project"**
-6. Elige **"Deploy without Git"** → arrastra la carpeta `dist/` completa
-7. Vercel te da una URL tipo `financeos-abc123.vercel.app` en 30 segundos ✅
-
-### Método 2: Conectar con GitHub (recomendado para actualizaciones)
+No pasan por `deploy.sh`. Desde el árbol principal en `main`, con el mismo candado, una a una:
 
 ```bash
-# 1. Instala Git si no lo tienes: https://git-scm.com
-git init
-git add .
-git commit -m "feat: FinanceOS v1.5 inicial"
-
-# 2. Crea repo en github.com → botón "New repository"
-# 3. Copia la URL del repo y ejecuta:
-git remote add origin https://github.com/TU_USUARIO/financeos.git
-git push -u origin main
+supabase functions deploy <funcion> --project-ref nelwgbcddwiaimzbcuas --no-verify-jwt
 ```
 
-4. En Vercel → "Add New → Project" → "Import Git Repository"
-5. Selecciona el repo → Vercel detecta Vite automáticamente
-6. Haz clic en **Deploy** → URL lista en 1-2 minutos ✅
-7. Cada `git push` en el futuro redeploya automáticamente
+La bandera `--no-verify-jwt` va en todas menos en `send-push`, que verifica JWT. `supabase/config.toml` fija `verify_jwt` por función. No correr `supabase config push`. Correr el CLI desde la raíz del repo o con `--workdir`, nunca con el cwd en `supabase/functions/`.
 
----
+## Migraciones
 
-## Opción B — Deploy en Netlify (alternativa)
+Van en `supabase/migrations/`, aditivas e idempotentes. Antes: `supabase db push --dry-run`. Después: verificar con un `SELECT`. Ver `supabase/migrations/README.md`.
 
-### Método 1: Drag & Drop
+## Verificar en producción
 
 ```bash
-npm install
-npm run build
+for d in app.moyiq.app demo.moyiq.app; do curl -sL -o /dev/null -w "$d %{http_code}\n" "https://$d/app/"; done
+curl -sL https://app.moyiq.app/app/fonts.css | head -c 200   # tiene que ser CSS real (@font-face), no el index.html del rewrite
 ```
 
-1. Ve a **https://app.netlify.com/drop**
-2. Arrastra la carpeta `dist/` → URL instantánea ✅
+El rewrite de `vercel.json` devuelve 200 para cualquier ruta bajo `/app/`: un 200 solo no prueba que sirva el deploy correcto, hay que mirar el contenido. Después de un deploy, el service worker cachea: para ver el cambio en un navegador hay que desregistrarlo y recargar.
 
-### Método 2: Conectar GitHub
-1. Netlify → "Add new site → Import from Git"
-2. Conecta GitHub → selecciona repo
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. Deploy ✅
+## Volver atrás
 
----
-
-## Dominio personalizado (opcional)
-
-Una vez deployado en Vercel o Netlify:
-
-1. En el dashboard del proyecto → **"Domains"**
-2. Agrega tu dominio (ej. `financeos.financeospro.com`)
-3. Sigue las instrucciones para apuntar el DNS
-4. SSL automático incluido ✅
-
-Dominios gratis disponibles en Vercel: `tu-proyecto.vercel.app`
-
----
-
-## Verificar que el PWA funciona
-
-Una vez live en HTTPS:
-1. Abre la URL en Chrome (móvil o desktop)
-2. En móvil: menú → "Agregar a pantalla de inicio"
-3. En desktop: ícono de instalación en la barra de URL
-4. La app funciona offline después de la primera carga ✅
-
----
-
-## Correr localmente (desarrollo)
-
-```bash
-npm install
-npm run dev
-# → http://localhost:5173
-```
-
-## Build y preview local antes de subir
-
-```bash
-npm run build
-npm run preview
-# → http://localhost:4173
-```
-
----
-
-## Checklist antes de compartir
-
-- [ ] `npm run build` corre sin errores
-- [ ] La app carga en la URL de producción
-- [ ] Dashboard muestra datos demo al cargar
-- [ ] Formularios guardan datos (IndexedDB)
-- [ ] Dark mode funciona
-- [ ] En móvil se ve bien
-- [ ] PWA instalable desde el navegador
+Revertir con git (`git revert <commit>` en un worktree, integrar y `./deploy.sh`). Para un corte rápido, apuntar los cuatro dominios al deployment anterior con los mismos comandos que usa `deploy.sh` (`npx vercel alias <url-del-deployment-anterior> <dominio>`, uno por dominio); la URL anterior es la penúltima fila con entorno Production de `npx vercel ls financeos-app --scope maxnovaluci-global`. Ojo: un push posterior a `main` vuelve a publicar lo nuevo.

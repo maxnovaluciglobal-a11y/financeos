@@ -1,75 +1,31 @@
-# FinanceOS v1.5
+# MOY IQ (ex FinanceOS) — app
 
-App de finanzas personales PWA · React 18 + Vite · Offline · Sin backend
+PWA de finanzas personales (React 18 + Vite + IndexedDB). Los datos financieros se guardan en el dispositivo; Supabase guarda cuentas, licencias y leads.
 
-**Demo:** https://financeos-hazel.vercel.app/app/?demo=true  
-**Docs:** https://financeos-landing-omega.vercel.app/docs/  
-**Soporte:** maxnovaluciglobal@gmail.com
+- App: https://app.moyiq.app/app/
+- Demo: https://demo.moyiq.app/app/?demo=true
+- Landing: https://moyiq.app
+- Soporte: support@moyiq.app
 
----
+El producto se llamó FinanceOS hasta septiembre de 2026: el repo (`financeos`), la carpeta y algunos nombres internos lo conservan a propósito.
 
-## Inicio rápido
+## Para trabajar en el repo
 
-### Requisitos
-- Node.js 18+ → https://nodejs.org
+`CLAUDE.md` tiene las reglas vigentes: deploy, sesiones paralelas, i18n, Supabase y Edge Functions.
 
-### Instalación
 ```bash
 npm install
-npm run dev
-# Abrí: http://localhost:5173/app/
+npm run dev      # http://localhost:5173/app/
+npm test         # vitest
+npm run build    # dist/index.html (redirect a la landing) + dist/app/ (la app)
 ```
-
-### Build para producción
-```bash
-npm run build
-# Genera dist/ listo para deploy
-```
-
----
-
-## Personalización (plan Pro)
-
-Abrí `src/config.js`:
-```js
-app: {
-  name: 'Tu nombre de app',
-  supportEmail: 'tu@email.com',
-},
-defaults: {
-  currency: 'CLP', // CLP, USD, EUR, VES, MXN, ARS, COP
-}
-```
-
-Colores en `src/styles/globals.css`:
-```css
---grn: #tu-color;
-```
-
----
 
 ## Deploy
 
-**Vercel:** Build Command `node build.js` · Output Directory `dist`
+Producción sale de `main`, con `./deploy.sh` desde el árbol principal limpio y al día con `origin/main` (el script lo verifica antes de hacer nada). Las Edge Functions se despliegan aparte. Detalle en `DEPLOY.md`.
 
-**Netlify Drop:** `npm run build` → arrastrá `dist/` a netlify.com/drop
+## Datos locales
 
----
-
-## Documentación completa
-
-https://financeos-landing-omega.vercel.app/docs/
-
----
-
-## Datos locales — importante
-
-Los datos se guardan en el navegador del usuario. Sin backup previo,
-los datos no se pueden recuperar — ni por el usuario ni por
-MAXNOVA & LUCI Global LLC.
-
-Exportá backup JSON desde Ajustes regularmente.
-
----
+Los datos viven en el navegador del usuario. Sin un respaldo previo no se pueden recuperar, ni por el usuario ni por MAXNOVA & LUCI Global LLC. Ajustes permite exportar un respaldo JSON.
 
 © 2026 MAXNOVA & LUCI Global LLC · Desarrollado por Walter La Madriz

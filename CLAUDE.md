@@ -1,20 +1,23 @@
-# FinanceOS — App
+# MOY IQ (ex FinanceOS) — App
 
-PWA de finanzas personales. React 18 + Vite + IndexedDB. **Privacy-first: los datos viven en el dispositivo**, no hay backend que los lea. Supabase se usa solo para licencias y para sincronizar *blobs ya cifrados en el cliente*.
+PWA de finanzas personales. React 18 + Vite + IndexedDB. **Privacy-first: los datos financieros viven en el dispositivo** y el servidor no los lee. Supabase (proyecto compartido con Invest) guarda cuentas (login obligatorio desde el 12-sep-2026), licencias y entitlements, leads/CRM y el estado de los correos de seguimiento; el sync de blobs *ya cifrados en el cliente* existe pero está apagado (ver "Auth compartido" y "Sync en la nube").
 
 ```bash
 npm run dev      # vite
 npm run build    # node build.js -> dist/index.html (redirect) + dist/app/ (la app real)
-npm test         # vitest run — src/**/*.test.js y api/**/*.test.js (desde 2026-08-22, ver abajo)
+npm test         # vitest run — src/, api/, supabase/functions/ y scripts/ (ver "Testing")
 ```
 
 **El build produce dos cosas.** `dist/index.html` es solo un redirect a la landing; la app de verdad está en `dist/app/index.html`. Para verificar algo del `<head>` (fuentes, meta), mirar **`dist/app/index.html`**, no el de la raíz.
 
 ## Deploy
 
-Push a git **no** actualiza el dominio.
+**Hay dos caminos a producción y los dos salen de `main`** (verificado con la API de Vercel el 19-oct-2026):
 
-**`./deploy.sh`** (desde 2026-09-06, actualizado a 4 dominios el 11-sep): tests + build local (gate) + deploy + los CUATRO alias + smoke test de `curl` a `/app/` en los cuatro dominios. Aborta si algo falla en cualquier paso — no llega a aliasear con una build rota. Es el camino recomendado; reemplaza la secuencia manual de abajo.
+1. **Push a `main`.** El proyecto de Vercel `financeos-app` está enlazado al repo `maxnovaluciglobal-a11y/financeos` con `main` como rama de producción, y los cuatro dominios (`app.` y `demo.` de `moyiq.app` y de `financeospro.com`) están asignados al proyecto: cada push a `main` compila y publica a producción solo. (Esta sección decía que un push no actualizaba el dominio: era falso, casi todos los deploys de producción del 18-oct fueron `source=git`.)
+2. **`./deploy.sh`** (desde 2026-09-06; cuatro dominios desde el 11-sep; guard desde el 19-oct): guard (rama `main`, sin cambios rastreados sin commitear, igual a `origin/main`, ver "Sesiones paralelas y despliegue"), tests, build local (gate), `vercel deploy --prod` por CLI, los CUATRO alias y un smoke test de `curl` a `/app/` y a `fonts.css` en los cuatro dominios. Aborta si falla cualquier paso. Con el guard, el CLI y git publican el mismo commit.
+
+`app.financeospro.com` y `demo.financeospro.com` ya no sirven la app: redirigen con 308 a `app.moyiq.app` y `demo.moyiq.app` (`vercel.json`, verificado con `curl` el 19-oct-2026).
 
 Manual, si hace falta un paso suelto:
 
@@ -22,7 +25,7 @@ Manual, si hace falta un paso suelto:
 npx vercel --prod --yes
 ```
 
-Con la URL que devuelve, aliasear **los cuatro** dominios (`moyiq.app` es el primario desde 11-sep-2026, `financeospro.com` sigue vivo sin redirect):
+Con la URL que devuelve, aliasear **los cuatro** dominios (`moyiq.app` es el primario desde 11-sep-2026):
 
 ```bash
 npx vercel alias <url-nueva> app.financeospro.com
@@ -44,7 +47,7 @@ Varias sesiones de Claude trabajan este repo a la vez, y `vercel deploy` sube el
 
 ## Reglas que no son negociables
 
-**Paridad i18n.** Los textos viven en `src/i18n/{es,en,pt,de}.js` (objetos planos `'seccion.sub.campo': "texto"`, 1755 claves por idioma al 08-oct-2026); `translate.js` tiene la traducción pura (fallback a español y luego a la propia clave), `useT.js` el hook que carga el idioma activo con `import()` dinámico y `translations.js` solo agrega los 4 para los pocos consumidores síncronos. Toda clave nueva va en los CUATRO, y `translate.test.js` verifica paridad, variables `{x}`, voseo/exclamaciones y "Sie" por prefijo de fase: al crear un prefijo nuevo, sumarlo ahí. Una clave que falta no rompe el build pero cae al fallback español (ver `useT.js`) — el usuario alemán ve una isla en su UI. Antes de escribir el texto de una clave nueva, ver `../financeos-workspace/branding/voz-de-producto.md` — nunca exclamaciones/emoji de entusiasmo fabricado, nunca personificar la app, y los 4 idiomas tienen que sonar igual de secos entre sí, no solo decir lo mismo.
+**Paridad i18n.** Los textos viven en `src/i18n/{es,en,pt,de}.js` (objetos planos `'seccion.sub.campo': "texto"`, 2692 claves por idioma al 19-oct-2026); `translate.js` tiene la traducción pura (fallback a español y luego a la propia clave), `useT.js` el hook que carga el idioma activo con `import()` dinámico y `translations.js` solo agrega los 4 para los pocos consumidores síncronos. Toda clave nueva va en los CUATRO, y `translate.test.js` verifica paridad, variables `{x}`, voseo/exclamaciones y "Sie" por prefijo de fase: al crear un prefijo nuevo, sumarlo ahí. Una clave que falta no rompe el build pero cae al fallback español (ver `useT.js`) — el usuario alemán ve una isla en su UI. Antes de escribir el texto de una clave nueva, ver `../financeos-workspace/branding/voz-de-producto.md` — nunca exclamaciones/emoji de entusiasmo fabricado, nunca personificar la app, y los 4 idiomas tienen que sonar igual de secos entre sí, no solo decir lo mismo.
 
 **Ocultar montos (T13, 08-oct-2026).** `settings.hideAmounts` reemplaza toda cifra de dinero por "•••" (no blur: el número no llega al DOM). Toda cifra NUEVA en pantalla pasa por `<Money>{fmtMoney(x, sym)}</Money>` o, dentro de strings (frases i18n, aria-label, `tickFormatter`), por `useMoney().m(...)` (`components/Money.jsx`). PDFs y Modo Asesor quedan fuera a propósito. El flag es de dispositivo: `exportAllData` lo saca del respaldo/sync y `importAllData` conserva el local (`utils/money.js`).
 
@@ -86,13 +89,13 @@ Este proyecto Supabase (`nelwgbcddwiaimzbcuas`) es compartido con `invest-web` (
 - **`supabase/functions/auth-email-hook/`**: Send Email Hook de Supabase Auth — reemplaza la plantilla nativa (sin marca) para reset/confirmación en los dos productos, detectando cuál por el host de `redirect_to`. **Usa `NURTURE_RESEND_API_KEY`, no `RESEND_API_KEY`** (esa da 403, parece scopeada a otro remitente). Habilitado vía Management API (`PATCH /v1/projects/{ref}/config/auth`), no por dashboard.
 - **`supabase/functions/notify-admin-signup/`**: notifica altas nuevas (Starter, Invest) a `maxnovaluciglobal@gmail.com`. Starter dispara desde un trigger SQL (`pg_net`); Invest llama a la RPC pública `notify_invest_signup` desde su propio cliente (no hay tabla server-side de "nuevo signup" en Invest, `profiles` es compartida con MOY IQ).
 - **`register_starter_lead`** ahora devuelve `id` — el cliente (`licenseValidator.js`) lo usa para disparar el email 1 (bienvenida) de la secuencia de nurture de Starter justo al registrarse, mismo patrón que `diagnostico.html`.
-- **Doble opt-in de marketing (10-oct-2026)**: migración `20261010010000_marketing_double_optin.sql` (consent_token/consent_confirmed_at/optin_email_sent_at en starter/diagnostico/demo_leads, RPC `confirm_marketing_consent`, `register_starter_lead` gana `p_consent_marketing`), función `send-optin-confirmation` (`--no-verify-jwt`) y flag `MARKETING_DOI_ENABLED` en `src/utils/marketingConsent.js` (apagado hasta aplicar la migración). Las nurture solo mandan marketing (emails 2+) con `consent_confirmed_at`; la bienvenida de Starter y el email 1 del diagnóstico (el resultado pedido) son transaccionales. El token nunca vuelve al cliente: solo viaja en el correo.
+- **Doble opt-in de marketing (10-oct-2026)**: migración `20261010010000_marketing_double_optin.sql` (consent_token/consent_confirmed_at/optin_email_sent_at en starter/diagnostico/demo_leads, RPC `confirm_marketing_consent`, `register_starter_lead` gana `p_consent_marketing`), función `send-optin-confirmation` (`--no-verify-jwt`) y flag `MARKETING_DOI_ENABLED` en `src/utils/marketingConsent.js` (encendido; la migración está aplicada en producción, verificado el 19-oct-2026). Las nurture solo mandan marketing (emails 2+) con `consent_confirmed_at`; la bienvenida de Starter y el email 1 del diagnóstico (el resultado pedido) son transaccionales. El token nunca vuelve al cliente: solo viaja en el correo.
 
 Detalle completo, gotchas de debug y decisiones: memoria `financeos_moy_iq_invest_crm_20260914`, `financeos_moy_iq_auth_email_hook_20260914`, `financeos_moy_iq_admin_notify_20260914`.
 
 ## Sistema visual — rebranding MOY IQ (mergeado y desplegado)
 
-**Estado (11-sep-2026): mergeado a `main` y en producción**, ahora en `app.moyiq.app`/`demo.moyiq.app` (dominio primario) además de `app.financeospro.com`/`demo.financeospro.com` (siguen vivos, sin redirect) — decisión explícita de Walter. ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
+**Estado (11-sep-2026): mergeado a `main` y en producción**, ahora en `app.moyiq.app`/`demo.moyiq.app` (dominio primario) y `app.financeospro.com`/`demo.financeospro.com`, que hoy redirigen con 308 a los de `moyiq.app` (`vercel.json`; verificado el 19-oct-2026). ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
 
 Tokens en `src/styles/globals.css`.
 
@@ -124,16 +127,16 @@ Tokens en `src/styles/globals.css`.
 - `src/utils/apvCalc.js` — fórmula de valor futuro
 - `src/utils/taxIdValidation.js` — checksums de ID fiscal (6 países), tiene tests en `taxIdValidation.test.js`
 - `src/pages/Import/fileParser.js` — `GENERIC_WORDS` en `suggestCategory()`: sin esa lista de exclusión, palabras de cartola como "COMPRA"/"PAGO" generan falsos positivos en la sugerencia de categoría (bug real, atrapado por `fileParser.test.js` antes de llegar a producción)
-- `supabase/functions/stripe-webhook/` — el branch de `checkout.session.completed` es lo único que emite licencias pagas. Desde 2026-09-05 la lógica vive en `webhookLogic.ts` (firma, guards, `planFromAmount`, llamadas a Supabase/Resend), con 37 tests vía vitest (`webhookLogic.test.ts`, fetch mockeado) — `index.ts` es solo wiring y NO se testea (lee `Deno.env.get()`, no importable desde Node). Correr `npm test` antes de deployar; un error acá rompe la entrega de licencias a clientes nuevos. `CHECKOUT_EVENT_TYPES` vive una sola vez en `webhookLogic.ts` — no volver a hardcodear la lista de eventos en `index.ts` (así se desincronizó una vez, ver auditoría 2026-09-01 más abajo). **Clave de Resend (19-oct-2026, auditoría 360 C-05):** `index.ts` la arma con `resolveResendApiKey` (`_shared/resendKey.ts`): `NURTURE_RESEND_API_KEY` (cuenta de empresa, scopeada a `moyiq.app`) primero y `RESEND_API_KEY` solo de respaldo, porque ese secret es del 29-jun y da 403 desde `@moyiq.app`; el aviso interno de "pagó y no recibió su clave" usa la misma clave, así que un fallo ahí es silencioso. `send-report-email` igual. La prueba de punta a punta con un pago real queda para el primer pago (o un pago de prueba de Walter): este camino nunca se probó en vivo.
-- `docs/novedades.html` — histórico, preservar
+- `supabase/functions/stripe-webhook/` — el branch de `checkout.session.completed` es lo único que emite licencias pagas. Desde 2026-09-05 la lógica vive en `webhookLogic.ts` (firma, guards, `planFromAmount`, llamadas a Supabase/Resend), con 120 tests vía vitest (`webhookLogic.test.ts`, fetch mockeado; 19-oct-2026) — `index.ts` es solo wiring y NO se testea (lee `Deno.env.get()`, no importable desde Node). Correr `npm test` antes de deployar; un error acá rompe la entrega de licencias a clientes nuevos. `CHECKOUT_EVENT_TYPES` vive una sola vez en `webhookLogic.ts` — no volver a hardcodear la lista de eventos en `index.ts` (así se desincronizó una vez, ver auditoría 2026-09-01 más abajo). **Clave de Resend (19-oct-2026, auditoría 360 C-05):** `index.ts` la arma con `resolveResendApiKey` (`_shared/resendKey.ts`): `NURTURE_RESEND_API_KEY` (cuenta de empresa, scopeada a `moyiq.app`) primero y `RESEND_API_KEY` solo de respaldo, porque ese secret es del 29-jun y da 403 desde `@moyiq.app`; el aviso interno de "pagó y no recibió su clave" usa la misma clave, así que un fallo ahí es silencioso. `send-report-email` igual. La prueba de punta a punta con un pago real queda para el primer pago (o un pago de prueba de Walter): este camino nunca se probó en vivo.
+- `docs/novedades.html` (vive en `../financeos-landing/docs/`, no en este repo) — histórico, preservar
 
 ## Testing (desde 2026-08-22)
 
-`npm test` corre vitest sobre `src/**/*.test.js` y `api/**/*.test.js` (509 tests en 32 archivos al 08-oct-2026; además `supabase/functions/**/*.test.ts`). Antes del 2026-08-22 no había ningún test en el repo. `vitest.config.js` está separado de `vite.config.js` a propósito (no carga el plugin de React ni VitePWA, innecesario para funciones puras) y corre en `environment: 'node'`. Cobertura actual: `api/fixer.js` (cross-rate), `taxIdValidation.js` (6 países), `apvCalc.js`, `taxCalcCL.js`/`taxCalcDE.js` (regresión contra los cálculos reales), `fileParser.js` (dedup + sugerencia de categoría), `Subscriptions/generateAlerts` (suba de precio), `AppContext.jsx` (reducer, 36 tests por dominio), `core/db/migrations.js` (motor de migraciones de IndexedDB vía `fake-indexeddb`, ver sección de arriba). **No** cubre nada que toque DOM real ni las acciones async de `AppContext` (dependen de `document`/`Blob`/`FileReader`, fuera del alcance de este `environment: 'node'` a propósito).
+`npm test` corre vitest sobre `src/**/*.test.js`, `api/**/*.test.js`, `supabase/functions/**/*.test.ts` y `scripts/**/*.test.js` (1344 tests en 86 archivos al 19-oct-2026; GitHub Actions lo corre en cada push y PR a `main`). Antes del 2026-08-22 no había ningún test en el repo. `vitest.config.js` está separado de `vite.config.js` a propósito (no carga el plugin de React ni VitePWA) y corre en `environment: 'node'`, con `esbuild.jsx: 'automatic'` para poder renderizar componentes con `renderToStaticMarkup` (ver `components/planOffer.test.js`, que reemplaza `useT`, y `pages/legal/legal.test.js`, que renderiza el contenido sin contexto). Cobertura: funciones puras de `src/utils/` (impuestos por país, `apvCalc`, `taxIdValidation`, `fileParser`, `pricing`, `deepLink`…), `api/fixer.js`, `AppContext.jsx` (reducer, 36 tests por dominio), `core/db/migrations.js` (motor de migraciones de IndexedDB vía `fake-indexeddb`, ver sección de arriba), la lógica de las Edge Functions (`*Logic.test.ts` con fetch mockeado), el guard de `deploy.sh` (`scripts/deployGuard.test.js`) y `supabase/config.toml`. **No** cubre nada que toque DOM real ni las acciones async de `AppContext` (dependen de `document`/`Blob`/`FileReader`, fuera del alcance de `environment: 'node'` a propósito); eso se verifica a mano o con un navegador headless contra un build local.
 
-## Historial: Plaid se probó y se retiró (2026-08-22)
+## Historial
 
-El commit `205228d` (17-ago) agregó conectar banco vía Plaid (solo EEUU). Una auditoría (panel de 18 agentes) encontró que contradecía el DNA privacy-first documentado (desconectar no revocaba el token real en Plaid, los endpoints no exigían licencia) y que no generaba ningún uso en marketing. Se retiró por completo el 22-ago — código, endpoints, claves i18n. **No reintroducir sin releer la auditoría** (memoria `financeos_audit_plaid_valor_20260821`) — el trade-off contra "sin bank connections" sigue siendo el mismo si se reconsidera.
+**Plaid se retiró el 22-ago-2026: no reintroducirlo sin releer la auditoría** (contradecía el ADN privacy-first). Ese caso y la auditoría de seguridad del 18-oct viven en `docs/historial.md`.
 
 ## Convenciones sensibles al no violar
 
@@ -148,11 +151,12 @@ El commit `205228d` (17-ago) agregó conectar banco vía Plaid (solo EEUU). Una 
 6. Página `pages/<Tool>/index.jsx` — usando `useT()` para todos los textos
 7. `src/i18n/{es,en,pt,de}.js` — claves de la página en los 4 idiomas
 
-**Agregar un idioma nuevo requiere:**
-1. Bloque nuevo `<code>: { ... }` en `translations.js` con paridad completa
-2. `SUPPORTED_LANGUAGES` al final del archivo
-3. `<option>` en `Settings/index.jsx` (~L74)
-4. `LANGUAGES` array en `Onboarding.jsx` (~L39)
+**Agregar un idioma nuevo requiere** (lugares verificados con `grep` el 19-oct-2026; los diccionarios viven en `src/i18n/<code>.js`, `translations.js` solo los agrega):
+1. `src/i18n/<code>.js` exportando `<code>` con paridad completa de claves (`translate.test.js` lo exige) y su loader en `src/i18n/langCache.js`
+2. `src/i18n/translations.js` (el objeto `translations` y `SUPPORTED_LANGUAGES`) y `SUPPORTED_LANGS` en `src/i18n/translate.js`
+3. `<option>` en `pages/Settings/index.jsx` y el array `LANGUAGES` en `components/Onboarding.jsx`
+4. Listas fijas de los 4 idiomas: `core/auth.js` (`syncUserLang`), `utils/index.js` (`LANG_DATE_LOCALE`), `utils/leadsLang.js`, `utils/pricing.js` (`LANG_NUMBER_LOCALE` y `withCheckoutLang`), `components/lock/AppLock.jsx`, `pages/legal/legalMeta.js` (`LEGAL_LANGS`, más el contenido legal en cada idioma)
+5. Edge Functions de correo: `supabase/functions/_shared/emailLang.ts` y las plantillas de cada función
 
 **Textos hardcoded en JSX = bug.** Si escribís `<div>Título</div>`, el usuario que cambie idioma va a ver solo esa isla en español. Todo texto visible debe pasar por `useT()` con `t('key')`. Aplica también a `label`/`placeholder`/`title`/`aria-*`.
 
@@ -162,43 +166,12 @@ El commit `205228d` (17-ago) agregó conectar banco vía Plaid (solo EEUU). Una 
 - **Service worker cachea agresivamente**. Post-deploy, para verificar cambios: `navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()))` + `caches.keys().then(ks => ks.forEach(k => caches.delete(k)))` + hard reload.
 - **`~/Documents/.claude/launch.json`** es la config raíz de preview servers (fuera del repo). Si la ruta canónica del repo cambia, ese archivo también.
 
-## Android (TWA)
+## Android e iOS (envoltorios fuera de git; detalle en `docs/moviles.md`)
 
-**Paquete viejo (22-ago-2026, OBSOLETO — no usar)**: generado bajo el nombre "FinanceOS" antes del rename a MOY IQ, package ID `com.financeospro.app.twa`, en `../android-twa/package/` (fuera de git). Nunca se publicó. El bloqueo original (marca "FINANCEOS®" de Datarails viva en USPTO, ver `financeos_android_twa_20260822`) ya no aplica — el rename a MOY IQ lo resolvió.
+- **Android (TWA):** `05 - Producto/moyiq-android-twa/` (no `~/moyiq-android-twa/`, que ya no existe). **Package real `app.moyiq.app.twa`** (`twa-manifest.json`, `app/build.gradle`), no `com.moyiq.app.twa`. ⚠️ `public/.well-known/assetlinks.json` declara `com.moyiq.app.twa`: no coinciden, así que el TWA no valida el dominio y abriría con barra de URL (auditoría 360, OPS-7; el package definitivo se decide antes de subir a Play, C-28/D-09). El keystore está en esa carpeta y no tiene respaldo fuera de la Mac (OPS-8).
+- **iOS (Capacitor):** `05 - Producto/moyiq-ios-capacitor/` (no `../ios-capacitor-moyiq/`). Bundle `com.moyiq.app.ios`; carga `https://app.moyiq.app/app/` en un `WKWebView` (no empaqueta el código).
+- Nada está publicado en tiendas ni se publica hasta tener 10 pagos (D-09). Las dos rutas tienen espacios: citarlas siempre.
 
-**Estado (17-sep-2026): regenerado y firmado, listo para instalar/probar.** Proyecto real en `~/moyiq-android-twa/` (fuera de git, no-space path — un intento anterior con `cd` a `android-twa-moyiq/` con espacio en el path falló silenciosamente, ver historial de esa sesión). Package `com.moyiq.app.twa`, alias del keystore `moyiq-upload`, cert CN=Walter La Madriz / OU=Engineering / O=MAXNOVA & LUCI Global LLC / C=US.
+## Sync en la nube: apagado y con candado
 
-- `bubblewrap build` (no `gradlew assembleRelease` directo — ese genera un APK sin firmar; `bubblewrap build` orquesta Gradle + firma con `apksigner`) generó `app-release-signed.apk` y `app-release-bundle.aab` en la raíz del proyecto. Requirió antes completar el SDK con `sdkmanager` (`bubblewrap init` solo había instalado los cmdline-tools, no `platform-tools`/`build-tools`/`platforms;android-34`) y un `local.properties` con `sdk.dir` apuntando a `~/.bubblewrap/android_sdk`.
-- Fingerprint SHA-256 sacado con `keytool -list -v -keystore android.keystore -alias moyiq-upload` (el subcomando `bubblewrap fingerprint` pide argumentos que no vienen documentados en la ayuda — usar `keytool` directo es más simple).
-- **`public/.well-known/assetlinks.json` ya actualizado y deployado en producción** (commit `9575951`, verificado con `curl https://app.moyiq.app/.well-known/assetlinks.json`) con `com.moyiq.app.twa` + el fingerprint real. Antes de instalar el `.apk` en un dispositivo, no hace falta ningún paso extra de este archivo — ya matchea.
-
-**Pendiente inmediato, no delegable**: respaldar `~/moyiq-android-twa/android.keystore` + sus dos contraseñas (Walter las generó sin pasarlas por chat, correcto) en algún lugar fuera de esta Mac. Sin ese archivo, ninguna actualización futura de la app se puede firmar bajo este package ID nunca más — es irrecuperable si se pierde.
-
-**Íconos maskable ya listos** (17-sep-2026, `public/icon-{192,512}-maskable.png` + `manifest`) — Bubblewrap los tomó solos del manifest.
-
-Pendiente de Walter, no delegable: crear la cuenta de Google Play Console (pago propio, US$25 único), instalar/probar el `.apk` en un dispositivo real, y la publicación pública en sí (subir el `.aab` a Play Console).
-
-## iOS (Capacitor, scaffold armado y funcionando — 17-sep-2026)
-
-Proyecto en `../ios-capacitor-moyiq/` (fuera de git, sibling de este repo, mismo criterio que `android-twa`). `npx cap init` + `npx cap add ios`, **sin CocoaPods** — Capacitor 7 usa Swift Package Manager por defecto para el template de iOS, evitó ese dolor de cabeza clásico.
-
-**Modo "servidor remoto"**, igual que el TWA de Android: `capacitor.config.json` tiene `server.url: "https://app.moyiq.app/app/"` — la app nativa carga la PWA real en vivo dentro de un `WKWebView`, no empaqueta el código en el binario. Mismo modelo de privacidad que hoy: los datos financieros siguen viviendo solo en el dispositivo vía IndexedDB dentro del WebView, nunca en el servidor. Ventaja extra sobre bundlear el build: actualizar la app no requiere subir una versión nueva a App Store, el usuario ve el cambio la próxima vez que abre (mismo mecanismo que la PWA/TWA).
-
-**Verificado end-to-end**: `xcodebuild -project ios/App/App.xcodeproj -scheme App -destination 'generic/platform=iOS Simulator' build` → `BUILD SUCCEEDED`. Corrido en el iOS Simulator (iPhone 17 Pro): abre, carga `app.moyiq.app` real, muestra el login de MOY IQ con logo/marca correctos. No es una maqueta — es la app real corriendo nativa.
-
-**Notch/Dynamic Island (17-sep-2026, resuelto)**: overlap del banner de modo demo con el status bar/notch. Causa raíz investigada antes de tocar código (no fue el wrapper nativo — se descartó leyendo `CAPBridgeViewController.swift`/`CAPInstanceDescriptor.swift` reales y probando `contentInset: "never"` sin efecto): `src/demo/DemoBanner.jsx` no tenía el `env(safe-area-inset-top)` que sí tenía el header real de `Shell.jsx`. Fix de una línea (`paddingTop: 'max(8px, env(safe-area-inset-top))'`), commit `e4b8fc9`, deployado y verificado con screenshot real en Simulator.
-
-**Ícono de App Store (17-sep-2026, resuelto)**: `public/icon-1024-appstore.png` — 1024×1024, sin canal alpha, generado con `rsvg-convert` desde `icon-maskable-source.svg` (el mismo monograma que el maskable de Android). Copiado a `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png` en el scaffold, reemplazando el placeholder de Capacitor. Verificado con rebuild (`BUILD SUCCEEDED`) + screenshot del home screen del Simulator mostrando el ícono real.
-
-**Falta para publicar** (todo bloqueado en Walter, no delegable):
-1. Cuenta Apple Developer (US$99/año) — sin esto no se puede firmar para dispositivo real ni subir a App Store, solo correr en Simulator como ahora.
-2. Bundle ID a reservar en App Store Connect: `com.moyiq.app.ios` (ya usado en el scaffold, coherente con el Android `com.moyiq.app.twa`).
-3. **Riesgo real de review, evaluar antes de someter**: Apple rechaza más fácil que Google las apps "solo una web envuelta" sin funcionalidad nativa real (App Store Review Guideline 4.2, "Minimum Functionality"). Hoy el scaffold es 100% WebView sin ningún plugin nativo — biometría (Face ID para desbloquear, encaja natural con "privacy-first"), notificaciones push, o compartir nativo son los candidatos más obvios si hace falta reforzar el caso ante Apple. Decisión de producto, no técnica — evaluar cuando se llegue a este paso, no antes.
-
-## Auditoría de seguridad (18-oct-2026) — sin vulnerabilidad activa
-
-Revisión defensiva en local contra la base real reconstruida (fundación `.sql` de la raíz + 32 migraciones). Método transversal: memoria `auditoria-seguridad-metodo`.
-
-- **10/10 tablas con RLS.** Leads PII *fail-closed* (anon y usuario común ven 0; solo admin). `user_entitlements` aislado por `auth.uid() = user_id`. Trigger `lock_entitlements_plan_column` impide auto-asignarse `pro` sin licencia (probado en vivo). `stripe-webhook` verifica firma; `send-report-email` revalida la licencia server-side.
-- **Nota:** `tax_calculator_leads` no tiene policy de SELECT ni para admin (seguro, pero el CRM no la puede leer con el cliente normal, a diferencia de `starter_leads`/`diagnostico_leads`). `cloud_backups`/`crm_funnel` están fuera de las migraciones.
-- **Candado aplicado** (`src/core/cloudSync.js`): `CLOUD_ENCRYPTION_READY=false` bloquea `cloudPush` sin cifrar. Antes de prender `CLOUD_ENABLED` hay que implementar el cifrado AES-GCM — falta decidir el modelo de clave (derivada de un secreto del usuario; el servidor nunca debe poder descifrar).
+`src/core/cloudSync.js`: `CLOUD_ENCRYPTION_READY = false` bloquea `cloudPush` sin cifrar. Antes de prender `CLOUD_ENABLED` hay que implementar el cifrado AES-GCM con una clave que el servidor no pueda derivar (D-05 de la auditoría 360: frase de paso con KDF, opt-in y plan de rollback; sin implementar al 19-oct-2026). El resultado de la auditoría de seguridad del 18-oct está en `docs/historial.md`.

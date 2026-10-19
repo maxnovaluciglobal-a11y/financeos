@@ -1,5 +1,12 @@
 # Activación de licencias escalables (Stripe + Supabase) — Plan v2.0
 
+> **HISTÓRICO (19-oct-2026).** Este plan se ejecutó hace tiempo y lo que sigue ya no describe el estado actual.
+> El validador online de Supabase está **activo en producción desde el 29-jun-2026** (commit `fb7d464`, "Fase A, verificado en prod") y
+> vive en `src/utils/licenseValidator.js`; `licenseValidator.supabase.js` ya no existe. El webhook decide el plan por Payment Link
+> (`PAYMENT_LINK_PLAN` en `webhookLogic.ts`) y usa el monto solo como respaldo. El correo de la licencia sale con
+> `NURTURE_RESEND_API_KEY` (con `RESEND_API_KEY` de respaldo, ver `supabase/functions/_shared/resendKey.ts`), no con la
+> `RESEND_API_KEY` del paso 2. Estado vigente: `CLAUDE.md` (secciones Supabase y "Oferta de Pro") y `docs/billing-trial-runbook.md`.
+
 Estado: **groundwork listo y commiteado, INERTE.** Producción sigue con el validador
 offline (funciona). Nada cambia para los usuarios hasta el **Paso 6**.
 

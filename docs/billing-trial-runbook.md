@@ -2,7 +2,13 @@
 
 Rama `ux/f4-billing`. Decisión D2 (07-oct-2026): prueba de 14 días **con tarjeta**, se mantiene la "garantía técnica".
 
-El código ya está listo pero apagado. Nada de esto se activa solo: sin los ids de los links, sin la migración y sin `trialEnabled`, el comportamiento en producción es el de hoy.
+> **Estado al 19-oct-2026 (verificado contra el repo y producción).** El texto de abajo es el runbook original del 08-oct y ya no es cierto que el código esté "listo pero apagado": la prueba está encendida.
+>
+> - Hecho: los dos Payment Links con prueba existen y sus ids están pegados en `webhookLogic.ts` (`TRIAL_LINK_MONTHLY_TODO` y `TRIAL_LINK_ANNUAL_TODO` ya no son `null`); `trialEnabled: true` y las dos URLs en `config.pricing`; la landing, ProGate, LicenseGate y Ajustes ofrecen la prueba (estas dos últimas desde la auditoría 360, C-03).
+> - Hecho: la migración `20261008000000_trial_subscription_billing` **está aplicada** (existen `revoke_license_by_subscription`, `extend_license_expiry` e `issue_license` de 7 argumentos en producción), y `stripe-webhook` está desplegada (versión 45, 08-oct) con el secret `STRIPE_PORTAL_URL` cargado.
+> - Sin verificar: qué eventos tiene el endpoint en Stripe (el Stripe CLI local apunta a otra cuenta, COM-1) y la prueba de punta a punta del paso 6. El 18-oct la auditoría registró 0 suscripciones y 0 filas en `webhook_events_processed`: el camino de pago real nunca corrió en vivo.
+> - Pendiente de Walter: la clave de Resend de `moyiq.app` (W-09). Mientras tanto el correo de la licencia sale con `NURTURE_RESEND_API_KEY` (C-05).
+
 
 **Orden obligatorio.** Respetar la secuencia de abajo. El paso que más importa: **migración (paso 4) antes del deploy de la función (paso 5)**. La función nueva manda `p_expires_at` a `issue_license` para las suscripciones; si la migración no está aplicada, la RPC no existe con ese parámetro y la emisión de licencias de suscripción falla con 500. Los pagos únicos no se ven afectados.
 
