@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { pageFromSearch, authTabFromSearch } from './deepLink.js'
+import { pageFromSearch, authTabFromSearch, stashOpenForOAuth, initialSearch } from './deepLink.js'
 import { APP_DESTINATIONS, APP_URL, appLink } from '../../supabase/functions/_shared/appLinks.ts'
 import { STARTER_TEMPLATES } from '../../supabase/functions/send-nurture-starter-email/nurtureTemplates.ts'
 import { DIAGNOSTICO_TEMPLATES } from '../../supabase/functions/send-nurture-diagnostico-email/nurtureTemplates.ts'
@@ -141,5 +141,44 @@ describe('redirecciones de vercel.json para los correos que ya salieron', () => 
     const rewrite = vercel.rewrites.find((r) => r.destination === '/app/index.html')
     expect(rewrite).toBeTruthy()
     expect(new RegExp(`^${rewrite.source}$`).test('/app/')).toBe(true)
+  })
+})
+
+describe('AuthGate: pestaña de registro y destino tras Google (C-31, APP-N2)', () => {
+  const memStore = () => {
+    const m = new Map()
+    return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }
+  }
+
+  it('abre en "Crear cuenta" con ?signup, ?signup=1, #signup y ?open=signup', () => {
+    expect(authTabFromSearch('?signup')).toBe('signup')
+    expect(authTabFromSearch('?signup=1&ref=landing')).toBe('signup')
+    expect(authTabFromSearch('', '#signup')).toBe('signup')
+    expect(authTabFromSearch('?open=signup')).toBe('signup')
+    expect(authTabFromSearch('')).toBe('login')
+    expect(authTabFromSearch('?ref=dos-monedas', '#privacy')).toBe('login')
+  })
+
+  it('guarda ?open= antes de ir a Google y lo recupera al volver sin query', () => {
+    const st = memStore()
+    stashOpenForOAuth('?open=import&ref=nurture', st, 1000)
+    expect(initialSearch('?code=abc', st, 2000)).toBe('?open=import')
+    expect(pageFromSearch(initialSearch('?code=abc', st, 2000))).toBe('import')
+    expect(st.m.size).toBe(0)
+  })
+
+  it('no guarda destinos desconocidos y caduca a los 15 minutos', () => {
+    const st = memStore()
+    stashOpenForOAuth('?open=evil', st, 0)
+    expect(st.m.size).toBe(0)
+    stashOpenForOAuth('?open=upgrade', st, 0)
+    expect(initialSearch('', st, 16 * 60 * 1000)).toBe('')
+    expect(st.m.size).toBe(0)
+  })
+
+  it('la query de la URL manda sobre lo guardado', () => {
+    const st = memStore()
+    stashOpenForOAuth('?open=upgrade', st, 0)
+    expect(initialSearch('?open=dashboard', st, 10)).toBe('?open=dashboard')
   })
 })

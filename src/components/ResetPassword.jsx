@@ -5,7 +5,7 @@
 // nueva y llamar updatePassword().
 import { useState } from 'react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
-import { updatePassword } from '../core/auth.js'
+import { updatePassword, MIN_PASSWORD_LENGTH } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 
@@ -16,7 +16,7 @@ export default function ResetPassword({ onDone }) {
   const [error, setError] = useState('')
 
   async function handleSubmit() {
-    if (!password || password.length < 6) { setError(t('authGate.errorWeakPassword')); return }
+    if (!password || password.length < MIN_PASSWORD_LENGTH) { setError(t('authGate.errorWeakPassword')); return }
     setError('')
     setLoading(true)
     const result = await updatePassword(password)

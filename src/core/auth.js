@@ -92,6 +92,10 @@ export async function signInWithPassword(email, password) {
   return { data }
 }
 
+// Mínimo de la app al crear o cambiar contraseña (C-31). El mínimo del servidor
+// (Supabase Auth, hoy 6) lo sube Walter en el panel (SEG-7).
+export const MIN_PASSWORD_LENGTH = 8
+
 export async function signInWithGoogle() {
   if (!authClient) return { error: 'auth_not_configured' }
   const { error } = await authClient.auth.signInWithOAuth({

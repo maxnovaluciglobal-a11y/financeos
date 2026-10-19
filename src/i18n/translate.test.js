@@ -462,3 +462,21 @@ describe('paridad de las claves de la oferta de Pro con prueba (es/en/pt/de)', (
     expect(offenders).toEqual([])
   })
 })
+
+// C-31 (auditoría 360): pantalla de acceso y cambio de contraseña.
+describe('paridad de authGate. y resetPassword. (es/en/pt/de)', () => {
+  const prefixes = ['authGate.', 'resetPassword.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves y variables', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    for (const d of [en, pt, de]) expect(pick(d)).toEqual(base)
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of base) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+  it('sin voseo ni "por favor"; el alemán no tutea', () => {
+    const VOSEO = /\b(podés|tenés|querés|vos|registrá|empezá|ingresá|olvidás|usá|creá|mirá|revisá|elegí|aceptás)\b/i
+    for (const k of pick(es)) { expect(es[k], k).not.toMatch(VOSEO); expect(es[k], k).not.toMatch(/por favor/i) }
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
+  })
+})

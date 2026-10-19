@@ -6,10 +6,40 @@
 // real (email/contraseña o Google) como puerta de entrada.
 import { useState } from 'react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
-import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation } from '../core/auth.js'
+import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
-import { authTabFromSearch } from '../utils/deepLink.js'
+import { authTabFromSearch, stashOpenForOAuth } from '../utils/deepLink.js'
+
+const LEGAL_URLS = {
+  es: { terms: 'https://moyiq.app/terms.html', privacy: 'https://moyiq.app/privacy.html' },
+  pt: { terms: 'https://moyiq.app/terms.html', privacy: 'https://moyiq.app/privacy.html' },
+  en: { terms: 'https://moyiq.app/en/terms.html', privacy: 'https://moyiq.app/en/privacy.html' },
+  de: { terms: 'https://moyiq.app/en/terms.html', privacy: 'https://moyiq.app/en/privacy.html' },
+}
+
+export function legalUrls(lang) {
+  return LEGAL_URLS[lang] || LEGAL_URLS.es
+}
+
+// Aviso de Términos y Privacidad del registro: la frase lleva {terms} y
+// {privacy} y cada marcador se reemplaza por su enlace.
+export function LegalNotice({ t, lang }) {
+  const urls = legalUrls(lang)
+  const parts = String(t('authGate.legalNotice')).split(/(\{terms\}|\{privacy\})/)
+  const link = (href, label) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tx)', textDecoration: 'underline' }}>{label}</a>
+  )
+  return (
+    <p data-testid="authgate-legal" style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>
+      {parts.map((part, i) => (
+        part === '{terms}' ? <span key={i}>{link(urls.terms, t('authGate.legalTerms'))}</span>
+          : part === '{privacy}' ? <span key={i}>{link(urls.privacy, t('authGate.legalPrivacy'))}</span>
+            : <span key={i}>{part}</span>
+      ))}
+    </p>
+  )
+}
 
 function friendlyError(t, raw) {
   const m = String(raw || '')
@@ -23,7 +53,7 @@ function friendlyError(t, raw) {
 
 export default function AuthGate({ onAuthenticated }) {
   const { t, lang } = useT()
-  const [tab, setTab] = useState(() => authTabFromSearch(window.location.search)) // 'login' | 'signup' (?open=signup lo pide un correo)
+  const [tab, setTab] = useState(() => authTabFromSearch(window.location.search, window.location.hash)) // 'login' | 'signup' (?open=signup de un correo, ?signup de la landing)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -37,6 +67,7 @@ export default function AuthGate({ onAuthenticated }) {
   async function handleSubmit() {
     const cleanEmail = email.trim()
     if (!cleanEmail || !password) { setError(t('authGate.errorMissingFields')); return }
+    if (tab === 'signup' && password.length < MIN_PASSWORD_LENGTH) { setError(t('authGate.errorWeakPassword')); return }
     setError('')
     setLoading(true)
     const result = tab === 'login'
@@ -93,6 +124,7 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleGoogle() {
     setError('')
+    stashOpenForOAuth(window.location.search)
     const result = await signInWithGoogle()
     if (result.error) setError(friendlyError(t, result.error))
     // Éxito: signInWithGoogle redirige a Google, no hay nada más que hacer acá.
@@ -270,7 +302,7 @@ export default function AuthGate({ onAuthenticated }) {
         </div>
 
         <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
-          {t('authGate.title')}
+          {tab === 'signup' ? t('authGate.titleSignup') : t('authGate.title')}
         </h1>
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
           {t('authGate.subtitle')}
@@ -358,6 +390,8 @@ export default function AuthGate({ onAuthenticated }) {
         >
           {loading ? t('authGate.loading') : (tab === 'login' ? t('authGate.loginBtn') : t('authGate.signupBtn'))}
         </button>
+
+        {tab === 'signup' && <LegalNotice t={t} lang={lang} />}
 
       </div>
     </div>

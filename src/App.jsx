@@ -18,7 +18,7 @@ import AdminCRM from './admin/AdminCRM.jsx'
 import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
-import { pageFromSearch } from './utils/deepLink.js'
+import { pageFromSearch, initialSearch } from './utils/deepLink.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { useState, useEffect } from 'react'
 
@@ -70,7 +70,7 @@ function isDemoMode() {
 }
 
 function Inner() {
-  const [page, setPageState] = usePersistedPage('dashboard', pageFromSearch(typeof window !== 'undefined' ? window.location.search : ''))
+  const [page, setPageState] = usePersistedPage('dashboard', pageFromSearch(typeof window !== 'undefined' ? initialSearch(window.location.search) : ''))
   // R14: setPage apila en el historial (atrás del navegador/Android/iOS).
   // Las páginas siguen recibiendo setPage(id) como siempre.
   const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
