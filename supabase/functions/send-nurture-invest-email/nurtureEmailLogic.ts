@@ -323,9 +323,19 @@ export async function processWelcome(leadId: unknown, config: NurtureEmailConfig
   if (!lead) return { ok: false, error: "lead_not_found" };
   if (lead.email1_sent_at) return { ok: true, state: "already_sent" };
   if (lead.unsubscribed_at) return { ok: true, state: "unsubscribed" };
+  const gate = await welcomeGate(
+    "invest_leads",
+    { id: lead.id, email: lead.email, email1_sent_at: lead.email1_sent_at ?? null, unsubscribed_at: lead.unsubscribed_at ?? null },
+    { supabaseUrl: config.supabaseUrl, serviceRole: config.serviceRole },
+  );
+  if (gate === "unsubscribed") return { ok: true, state: "unsubscribed" };
+  if (gate !== "send") return { ok: true, state: "already_sent" };
   const rendered = renderEmail("welcome", lead, config);
   const result = await sendViaResend(lead.email, rendered, config);
-  if (!result.ok) return { ok: false, error: result.error ?? "send_failed" };
-  await markSent(lead.id, "welcome", config);
+  if (!result.ok) {
+    await releaseWelcome("invest_leads", lead.id, { supabaseUrl: config.supabaseUrl, serviceRole: config.serviceRole });
+    return { ok: false, error: result.error ?? "send_failed" };
+  }
   return { ok: true };
 }
+import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";

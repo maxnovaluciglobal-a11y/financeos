@@ -29,6 +29,7 @@ import {
   processWelcome,
   type NurtureEmailConfig,
 } from "./nurtureEmailLogic.ts";
+import { secretEquals } from "../_shared/secretEquals.ts";
 import { corsHeaders } from "./cors.ts";
 
 const config: NurtureEmailConfig = {
@@ -69,7 +70,7 @@ Deno.serve(async (req) => {
 
   if (mode === "cron") {
     const secret = req.headers.get("x-cron-secret");
-    if (!config.cronSecret || !secret || secret !== config.cronSecret) {
+    if (!secretEquals(secret, config.cronSecret)) {
       return json({ ok: false, error: "unauthorized" }, 401, origin);
     }
     const result = await runCronBatch(config);

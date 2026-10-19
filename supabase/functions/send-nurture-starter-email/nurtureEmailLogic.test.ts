@@ -212,7 +212,7 @@ describe('processWelcome (bienvenida: una sola vez y nunca a quien se dio de baj
     return vi.fn(async (url: string, init: any = {}) => {
       if (url.startsWith('https://api.resend.com')) return { ok: true, status: 200, json: async () => ({}), text: async () => '' }
       if ((init.method ?? 'GET') === 'GET') return { ok: true, json: async () => (r ? [r] : []) }
-      return { ok: true, json: async () => ({}) }
+      return { ok: true, json: async () => [{ id: ID }] }
     })
   }
   const resendCalls = (m: any) => m.mock.calls.filter((c: any[]) => c[0].startsWith('https://api.resend.com'))
@@ -238,6 +238,31 @@ describe('processWelcome (bienvenida: una sola vez y nunca a quien se dio de baj
     const f = router(row({ unsubscribed_at: '2026-10-08T12:00:00Z' })); vi.stubGlobal('fetch', f)
     expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true, state: 'unsubscribed' })
     expect(resendCalls(f)).toHaveLength(0)
+  })
+
+  it('no manda si otra fila con la misma dirección ya recibió la bienvenida (tope por dirección)', async () => {
+    const other = { ...BASE_ROW, id: 'otra', email1_sent_at: '2026-10-01T00:00:00Z' }
+    const f = vi.fn(async (url: string, init: any = {}) => {
+      if (url.startsWith('https://api.resend.com')) return { ok: true, status: 200, json: async () => ({}), text: async () => '' }
+      if ((init.method ?? 'GET') === 'GET') return { ok: true, json: async () => (url.includes('email=ilike.') ? [row(), other] : [row()]) }
+      return { ok: true, json: async () => [{ id: ID }] }
+    })
+    vi.stubGlobal('fetch', f)
+    expect(await processWelcome(ID, CONFIG)).toEqual({ ok: true, state: 'already_sent' })
+    expect(resendCalls(f)).toHaveLength(0)
+  })
+
+  it('si Resend falla, libera la fila para reintentar', async () => {
+    const f = vi.fn(async (url: string, init: any = {}) => {
+      if (url.startsWith('https://api.resend.com')) return { ok: false, status: 422, json: async () => ({}), text: async () => 'bad' }
+      if ((init.method ?? 'GET') === 'GET') return { ok: true, json: async () => [row()] }
+      return { ok: true, json: async () => [{ id: ID }] }
+    })
+    vi.stubGlobal('fetch', f)
+    const r = await processWelcome(ID, CONFIG)
+    expect(r.ok).toBe(false)
+    const patches = f.mock.calls.filter((c: any[]) => c[1]?.method === 'PATCH').map((c: any[]) => JSON.parse(c[1].body))
+    expect(patches.at(-1)).toEqual({ email1_sent_at: null })
   })
 
   it('manda una vez y marca email1_sent_at', async () => {

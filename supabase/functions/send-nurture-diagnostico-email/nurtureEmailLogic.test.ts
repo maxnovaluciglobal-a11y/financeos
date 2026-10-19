@@ -266,7 +266,7 @@ describe('processWelcome (email 1 = resultado pedido, transaccional)', () => {
     return vi.fn(async (url: string, init: any = {}) => {
       if (url.startsWith('https://api.resend.com')) return { ok: true, status: 200, json: async () => ({}), text: async () => '' }
       if ((init.method ?? 'GET') === 'GET') return { ok: true, json: async () => (r ? [r] : []) }
-      return { ok: true, json: async () => ({}) }
+      return { ok: true, json: async () => [{ id: ID }] }
     })
   }
   const resendCalls = (m: any) => m.mock.calls.filter((c: any[]) => c[0].startsWith('https://api.resend.com'))

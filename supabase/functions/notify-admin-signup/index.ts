@@ -10,6 +10,7 @@
 // guardado en private.app_secrets — reusado, no es un secreto nuevo que
 // mantener. No usa verify_jwt porque el caller es SQL (pg_net) o un cliente
 // anon, ninguno de los dos trae un JWT de servicio.
+import { secretEquals } from '../_shared/secretEquals.ts';
 import { sendAdminNotify, type SignupEvent, type SignupDetails } from './notifyLogic.ts';
 import { subscribeToNewsletter, autoSubscribeEnabled } from '../_shared/newsletterSubscribe.ts';
 
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405 });
 
   const provided = req.headers.get('x-internal-secret') ?? '';
-  if (!INTERNAL_SECRET || provided !== INTERNAL_SECRET) {
+  if (!secretEquals(provided, INTERNAL_SECRET)) {
     return Response.json({ error: { message: 'unauthorized' } }, { status: 401 });
   }
 

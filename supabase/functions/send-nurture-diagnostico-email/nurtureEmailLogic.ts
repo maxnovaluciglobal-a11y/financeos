@@ -39,6 +39,7 @@
 //     confirmar dejan de recibirlos.
 // Ver supabase/migrations/20261010010000_marketing_double_optin.sql.
 
+import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
 import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
 import { DIAGNOSTICO_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
 
@@ -57,6 +58,7 @@ export interface DiagnosticoLead {
   // Doble opt-in (20261010010000_marketing_double_optin.sql).
   consent_confirmed_at?: string | null;
   email1_sent_at?: string | null;
+  unsubscribed_at?: string | null;
 }
 
 export interface NurtureEmailConfig {
@@ -316,7 +318,7 @@ export async function runCronBatch(config: NurtureEmailConfig): Promise<CronRunR
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type WelcomeResult =
-  | { ok: true; state?: "already_sent" }
+  | { ok: true; state?: "already_sent" | "unsubscribed" }
   | { ok: false; error: string };
 
 // El email 1 lo pide la persona al marcar la casilla del diagnóstico: solo sale
@@ -328,9 +330,18 @@ export async function processWelcome(leadId: unknown, config: NurtureEmailConfig
   if (!lead) return { ok: false, error: "lead_not_found" };
   if (lead.consent_marketing === false) return { ok: false, error: "not_requested" };
   if (lead.email1_sent_at) return { ok: true, state: "already_sent" };
+  const gate = await welcomeGate(
+    "diagnostico_leads",
+    { id: lead.id, email: lead.email, email1_sent_at: lead.email1_sent_at ?? null, unsubscribed_at: lead.unsubscribed_at ?? null },
+    { supabaseUrl: config.supabaseUrl, serviceRole: config.serviceRole },
+  );
+  if (gate === "unsubscribed") return { ok: true, state: "unsubscribed" };
+  if (gate !== "send") return { ok: true, state: "already_sent" };
   const rendered = renderEmail("welcome", lead, config);
   const result = await sendViaResend(lead.email, rendered, config);
-  if (!result.ok) return { ok: false, error: result.error ?? "send_failed" };
-  await markSent(lead.id, "welcome", config);
+  if (!result.ok) {
+    await releaseWelcome("diagnostico_leads", lead.id, { supabaseUrl: config.supabaseUrl, serviceRole: config.serviceRole });
+    return { ok: false, error: result.error ?? "send_failed" };
+  }
   return { ok: true };
 }
