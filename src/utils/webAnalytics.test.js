@@ -24,12 +24,19 @@ describe('Vercel Web Analytics en la app (C-14)', () => {
     const st = store(); markInternalUser('walterlamadriz@gmail.com', st); expect(st.getItem(INTERNAL_KEY)).toBe('1')
     markInternalUser('ana@gmail.com', st); expect(st.getItem(INTERNAL_KEY)).toBe(null)
   })
-  it('solo se instala en los dominios de producción', () => {
-    expect(installWebAnalytics({ location: { hostname: 'localhost' } })).toBe(false)
-    const appended = []
-    const win = { location: { hostname: 'app.moyiq.app' }, navigator: {}, localStorage: store(), document: { createElement: () => ({}), head: { appendChild: (s) => appended.push(s) } } }
-    expect(installWebAnalytics(win)).toBe(true)
-    expect(appended[0].src).toBe('/_vercel/insights/script.js')
-    expect(win.vaq[0][0]).toBe('beforeSend')
+  it('solo se instala en los dominios de producción y si el script existe', async () => {
+    expect(await installWebAnalytics({ location: { hostname: 'localhost' } })).toBe(false)
+    const mk = (ok, ct) => {
+      const appended = []
+      const win = { location: { hostname: 'app.moyiq.app' }, navigator: {}, localStorage: store(), fetch: async () => ({ ok, headers: { get: () => ct } }), document: { createElement: () => ({}), head: { appendChild: (s) => appended.push(s) } } }
+      return { win, appended }
+    }
+    const a = mk(true, 'application/javascript; charset=utf-8')
+    expect(await installWebAnalytics(a.win)).toBe(true)
+    expect(a.appended[0].src).toBe('/_vercel/insights/script.js')
+    expect(a.win.vaq[0][0]).toBe('beforeSend')
+    const b = mk(false, 'text/plain')
+    expect(await installWebAnalytics(b.win)).toBe(false)
+    expect(b.appended).toHaveLength(0)
   })
 })

@@ -3,10 +3,9 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // Skew Protection de Vercel (C-49): con la protección activa en el proyecto,
-// Vercel expone VERCEL_DEPLOYMENT_ID al build. El index.html pide la entrada y
-// el CSS con ?dpl=<id> (renderBuiltUrl), así que una pestaña abierta sigue en
-// su propio deploy aunque salga otro; los chunks lazy se piden sin query y los
-// fija la cookie __vdpl que pone main.jsx (Vercel acepta los dos). En un build
+// Vercel expone VERCEL_DEPLOYMENT_ID al build. El index.html pide el CSS y las
+// fuentes con ?dpl=<id> (renderBuiltUrl); los módulos JS van sin query (ver
+// abajo) y los fija la cookie __vdpl que pone main.jsx al arrancar. En un build
 // local DPL queda vacío y todo sale igual que antes.
 const DPL = process.env.VERCEL_SKEW_PROTECTION_ENABLED === '1' ? (process.env.VERCEL_DEPLOYMENT_ID || '') : ''
 
@@ -15,15 +14,16 @@ export default defineConfig({
   define: { __VERCEL_DPL__: JSON.stringify(DPL) },
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
-      if (!DPL || hostType === 'js') return undefined
+      // Nunca en JS: la entrada con ?dpl y los chunks importándola sin query
+      // son dos módulos distintos para el navegador (dos instancias de React
+      // y del contexto: "useApp debe usarse dentro de AppProvider"). Los JS
+      // quedan fijados por la cookie __vdpl.
+      if (!DPL || hostType === 'js' || /\.m?js$/.test(filename)) return undefined
       return `/app/${filename}?dpl=${DPL}`
     },
   },
   build: {
     outDir: 'dist/app',
-    // Sin modulepreload en el HTML: con ?dpl en el href y el import del chunk
-    // sin query, el navegador bajaba dos veces vendor e idb (C-49).
-    modulePreload: { resolveDependencies: () => [] },
     rollupOptions: {
       output: {
         // Auditoría 360, ING-1/C-32: con `manualChunks` en forma de objeto,

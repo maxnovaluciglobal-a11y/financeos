@@ -41,12 +41,22 @@ export function markInternalUser(email, storage = typeof localStorage !== 'undef
 }
 
 export function installWebAnalytics(win = typeof window !== 'undefined' ? window : null) {
-  if (!win || !ANALYTICS_HOSTS.includes(win.location?.hostname)) return false
+  if (!win || !ANALYTICS_HOSTS.includes(win.location?.hostname)) return Promise.resolve(false)
   win.va = win.va || function () { (win.vaq = win.vaq || []).push(arguments) }
   win.va('beforeSend', makeBeforeSend({ nav: win.navigator, win, storage: win.localStorage }))
-  const s = win.document.createElement('script')
-  s.defer = true
-  s.src = '/_vercel/insights/script.js'
-  win.document.head.appendChild(s)
-  return true
+  // Mientras Web Analytics no esté habilitado en el proyecto de Vercel, el
+  // script responde 404 text/plain: se comprueba antes de insertarlo para no
+  // dejar un error de MIME en la consola.
+  const src = '/_vercel/insights/script.js'
+  const inject = () => {
+    const s = win.document.createElement('script')
+    s.defer = true
+    s.src = src
+    win.document.head.appendChild(s)
+  }
+  const check = typeof win.fetch === 'function' ? win.fetch(src, { method: 'HEAD' }) : Promise.resolve(null)
+  return check.then(r => {
+    if (r && r.ok && /javascript/.test(r.headers?.get?.('content-type') || '')) { inject(); return true }
+    return false
+  }).catch(() => false)
 }
