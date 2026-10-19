@@ -33,3 +33,12 @@ describe('computeCrossRates', () => {
     expect(computeCrossRates({ CLP: 950 })).toBeNull()
   })
 })
+
+describe('CORS de /api/fixer (C-24)', () => {
+  it('no permite financeospro.com, que ya redirige a moyiq.app', async () => {
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(new URL('./fixer.js', import.meta.url), 'utf8')
+    expect(src).not.toMatch(/financeospro/)
+    expect(src).toContain("'https://app.moyiq.app'")
+  })
+})

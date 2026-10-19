@@ -8,10 +8,6 @@ export const ALLOWED_ORIGINS = [
   "https://www.moyiq.app",
   "https://app.moyiq.app",
   "https://demo.moyiq.app",
-  "https://app.financeospro.com",
-  "https://demo.financeospro.com",
-  "https://financeospro.com",
-  "https://www.financeospro.com",
   "http://localhost:4323",
   "http://localhost:5173",
 ] as const;
