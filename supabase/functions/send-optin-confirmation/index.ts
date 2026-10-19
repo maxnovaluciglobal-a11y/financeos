@@ -5,6 +5,10 @@
 //   - app (licenseValidator.js): registerStarterLead → { source: "starter", id }
 //                                registerDemoLead    → { source: "demo", id }
 //   - landing (diagnostico.html, en/score-check.html) → { source: "diagnostico", id }
+//   - Invest (quiz, register_invest_lead)               → { source: "invest", id }
+//   - formularios de newsletter (register_newsletter_signup) → { source: "newsletter", id }
+// Al confirmar, el job newsletter-sync agrega la dirección al segmento del
+// newsletter (auditoría 360, C-16).
 // POST { source, id }. El enlace del correo lleva a confirmar.html /
 // en/confirm.html, que llaman a la RPC confirm_marketing_consent.
 //
@@ -28,11 +32,12 @@
 
 import { processOptin, type OptinConfig } from "./optinLogic.ts";
 import { corsHeaders } from "./cors.ts";
+import { resolveResendApiKey } from "../_shared/resendKey.ts";
 
 const config: OptinConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  resendApiKey: Deno.env.get("NURTURE_RESEND_API_KEY") ?? Deno.env.get("RESEND_API_KEY"),
+  resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
   fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
   replyTo: Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app",
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",

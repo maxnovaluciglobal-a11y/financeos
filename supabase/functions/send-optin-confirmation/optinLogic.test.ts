@@ -95,14 +95,26 @@ describe('renderOptinEmail', () => {
 describe('processOptin', () => {
   it('valida source e id sin tocar la red', async () => {
     const f = vi.fn(); vi.stubGlobal('fetch', f)
-    expect(await processOptin({ source: 'invest', id: ID }, CONFIG)).toEqual({ ok: false, error: 'invalid_source' })
+    expect(await processOptin({ source: 'tax_calculator', id: ID }, CONFIG)).toEqual({ ok: false, error: 'invalid_source' })
     expect(await processOptin({ source: 'starter', id: 'x' }, CONFIG)).toEqual({ ok: false, error: 'invalid_id' })
     expect(await processOptin(null, CONFIG)).toEqual({ ok: false, error: 'invalid_source' })
     expect(f).not.toHaveBeenCalled()
   })
 
-  it('las tres fuentes apuntan a su tabla', () => {
-    expect(SOURCES).toEqual({ starter: 'starter_leads', diagnostico: 'diagnostico_leads', demo: 'demo_leads' })
+  it('cada fuente apunta a su tabla (invest y newsletter desde C-16/COM-7)', () => {
+    expect(SOURCES).toEqual({
+      starter: 'starter_leads', diagnostico: 'diagnostico_leads', demo: 'demo_leads',
+      invest: 'invest_leads', newsletter: 'newsletter_signups',
+    })
+  })
+
+  it('invest y newsletter: manda la confirmación a la fila de su tabla', async () => {
+    for (const [source, table] of [['invest', 'invest_leads'], ['newsletter', 'newsletter_signups']]) {
+      const f = router(); vi.stubGlobal('fetch', f)
+      expect(await processOptin({ source, id: ID }, CONFIG)).toEqual({ ok: true, state: 'sent' })
+      expect(f.mock.calls[0][0]).toContain(`/rest/v1/${table}?id=eq.${ID}`)
+      expect(resendCalls(f)).toHaveLength(1)
+    }
   })
 
   it('sin API key de Resend no lee nada', async () => {
@@ -165,5 +177,26 @@ describe('processOptin', () => {
     const f = router({ resend: [fail(503), ok()] }); vi.stubGlobal('fetch', f)
     expect(await processOptin({ source: 'starter', id: ID }, CONFIG)).toEqual({ ok: true, state: 'sent' })
     expect(resendCalls(f)).toHaveLength(2)
+  })
+})
+
+describe('renderOptinEmail por producto (C-16 / COM-7)', () => {
+  it('Invest y newsletter de Invest nombran MOY IQ Invest', () => {
+    const inv = renderOptinEmail(row(), CONFIG, 'invest')
+    expect(inv.subject).toBe(COPY.es.subjectInvest)
+    expect(inv.text).toContain('MOY IQ Invest')
+    const nl = renderOptinEmail(row({ product: 'invest' }), CONFIG, 'newsletter')
+    expect(nl.subject).toBe(COPY.es.subjectInvest)
+    expect(nl.text).toContain('el newsletter de MOY IQ Invest')
+  })
+
+  it('newsletter de MOY IQ: asunto de siempre e intro del newsletter, en los 4 idiomas', () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      const e = renderOptinEmail(row({ lang, product: 'moyiq' }), CONFIG, 'newsletter')
+      expect(e.subject).toBe(COPY[lang].subject)
+      expect(e.text).toContain(COPY[lang].introNewsletter.replace('{brand}', 'MOY IQ'))
+      expect(e.text + e.subject).not.toMatch(/[!¡{}]/)
+      expect(e.text).not.toMatch(/querés|podés|tenés|confirmá/i)
+    }
   })
 })
