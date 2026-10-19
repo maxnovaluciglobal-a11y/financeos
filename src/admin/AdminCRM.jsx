@@ -471,7 +471,7 @@ export default function AdminCRM() {
 
   if (!authClient) return <div style={{ padding: 24 }}>Auth no configurado.</div>
   if (session === undefined) return null
-  if (!session) return <AuthGate onAuthenticated={setSession} />
+  if (!session) return <main><AuthGate onAuthenticated={setSession} /></main>
 
   return <CRMPanel session={session} onSignOut={() => authClient.auth.signOut()} />
 }

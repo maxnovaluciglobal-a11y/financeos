@@ -67,13 +67,18 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
   if (!data.length || total === 0) return <ChartEmpty msg={t('chart.donut.empty')} />
 
   const fmtTotal = m(fmtMoneyCompact(total, sym))
+  const pctText = (p) => `${Number(p).toLocaleString(lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`
+  // A11Y-3: el anillo se anuncia como UNA imagen con el resumen; Recharts queda
+  // fuera del árbol accesible y sin foco (rootTabIndex -1).
+  const summary = t('chart.donut.summary', { total: fmtTotal, items: data.map(d => `${catName(d.name, lang)} ${pctText(d.pct)}`).join(', ') })
 
   return (
     <div className={css.root}><div className={css.wrap}>
-      <div className={css.pie}>
+      <div className={css.pie} role="img" aria-label={summary}>
+        <div aria-hidden="true" style={{ width: '100%', height: '100%' }}>
         <ResponsiveContainer width="100%" aspect={1}>
           <PieChart>
-            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="66%" outerRadius="98%" strokeWidth={0} paddingAngle={2}
+            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="66%" outerRadius="98%" strokeWidth={0} paddingAngle={2} rootTabIndex={-1}
               isAnimationActive={!reducedMotion()} animationBegin={120} animationDuration={900} animationEasing="ease-out"
               onClick={(d) => { if (d && clickable(d.name)) onCategoryClick(d.name) }}>
               {data.map((d, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} style={{ outline:'none', cursor: clickable(d.name) ? 'pointer' : 'default' }}/>)}
@@ -81,8 +86,9 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
             <Tooltip content={<CustomTooltip sym={sym} lang={lang} m={m}/>}/>
           </PieChart>
         </ResponsiveContainer>
+        </div>
         {/* Label central */}
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center', pointerEvents:'none' }}>
+        <div aria-hidden="true" style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center', pointerEvents:'none' }}>
           <div style={{ fontSize:15, fontWeight:700, color:'var(--tx)', fontFamily:'var(--mono)' }}>{fmtTotal}</div>
           <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('chart.donut.total')}</div>
         </div>
@@ -95,13 +101,14 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
               role: 'button', tabIndex: 0,
               onClick: () => onCategoryClick(d.name),
               onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCategoryClick(d.name) } },
-              'aria-label': t('chart.donut.viewMovements', { cat: catName(d.name, lang) }),
+              // A11Y-10: el nombre empieza por lo que se ve ("Vivienda 40,0 %").
+              'aria-label': `${catLabel(d.name, lang)} ${d.pct}%, ${t('chart.donut.viewAction')}`,
             } : {})}
             title={clickable(d.name) ? t('chart.donut.viewMovements', { cat: catName(d.name, lang) }) : undefined}
             style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d.name) ? 'pointer' : 'default', padding:'2px 0' }}
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>
-            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catLabel(d.name, lang)}{clickable(d.name) ? ' ›' : ''}</div>
+            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catLabel(d.name, lang)}{clickable(d.name) ? <span aria-hidden="true"> ›</span> : ''}</div>
             <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{d.pct}%</div>
           </div>
         ))}

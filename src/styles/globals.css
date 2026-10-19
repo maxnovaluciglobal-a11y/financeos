@@ -24,7 +24,7 @@
   --ceniza-700:  #5F5236;
   --ceniza-300:  #B8AC91;
   --warning:     #C97A3D;
-  --warning-800: #9C5419;   /* siempre esta variante en texto */
+  --warning-800: #8A4A14;   /* siempre esta variante en texto (5,3:1 sobre el aviso, A11Y-2) */
   --warning-dark:#E0975A;
   --error:       #A23E2E;
   --error-dark:  #C96856;
@@ -404,6 +404,12 @@ button { cursor: pointer; font-family: var(--sans); }
      DEMO · etiqueta · Ver planes · ?
      escenario ··········· Empezar con mis datos
    desde 760px una sola fila. Texto sobre Navy en Papel (no blanco puro). */
+/* El demo apila la franja y la app en una columna del alto de la pantalla: sin
+   esto, la franja sumaba su alto al de la app (100dvh), la ventana se
+   desplazaba y la franja fija tapaba la barra superior ("Ocultar montos"
+   quedaba con 10 px de área táctil, A11Y-6). */
+.demo-frame { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+.demo-frame > .demo-banner { flex-shrink: 0; }
 .demo-banner {
   position: sticky; top: 0; z-index: 200;
   background: var(--navy); color: var(--papel-000);

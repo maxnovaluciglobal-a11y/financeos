@@ -79,18 +79,20 @@ export function ProgressBar({ value, max = 100, color = 'green', height = 5, lab
 
 export function FormGroup({ label, children }) {
   const autoId = useId()
-  let assigned = false
+  let fieldId = null
   const kids = Children.map(children, (child) => {
-    if (!assigned && isValidElement(child) && typeof child.type === 'string' &&
-        ['input', 'select', 'textarea'].includes(child.type) && !child.props.id) {
-      assigned = true
-      return cloneElement(child, { id: autoId })
+    if (!fieldId && isValidElement(child) && typeof child.type === 'string' &&
+        ['input', 'select', 'textarea'].includes(child.type)) {
+      // Un campo con id propio (p. ej. #budget-new-category) también queda
+      // asociado a su etiqueta.
+      fieldId = child.props.id || autoId
+      return child.props.id ? child : cloneElement(child, { id: autoId })
     }
     return child
   })
   return (
     <div className={styles.fg}>
-      {label && <label className={styles.fl} htmlFor={assigned ? autoId : undefined}>{label}</label>}
+      {label && <label className={styles.fl} htmlFor={fieldId || undefined}>{label}</label>}
       {kids}
     </div>
   )

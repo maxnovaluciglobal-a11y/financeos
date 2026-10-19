@@ -441,7 +441,7 @@ export default function Debts() {
               <div style={{display:'flex',justifyContent:'space-between',fontSize:10,fontFamily:'var(--mono)',color:'var(--th)',marginBottom:3}}>
                 <span>{t('debts.card.progressAmt')}</span><span>{t('debts.card.paidPct', { pct: fmtPct(prog) })}</span>
               </div>
-              <ProgressBar value={paid} max={d.initial} color="green" height={5}/>
+              <ProgressBar value={paid} max={d.initial} color="green" height={5} label={`${t('debts.card.progressAmt')}: ${t('debts.card.paidPct', { pct: fmtPct(prog) })}`}/>
               <div style={{display:'flex',justifyContent:'space-between',marginTop:3,fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>
                 <span>{t('debts.card.paidLb', { v: fmtMoney(paid,sym) })}{Number(d.ufInitial) > 0 && Number(d.ufBalance) >= 0 ? ' · ' + t('debts.uf.paid', { uf: m((d.ufInitial - d.ufBalance).toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })) }) : ''}</span><span>{t('debts.card.initialLb', { v: fmtMoney(d.initial,sym) })}</span>
               </div>

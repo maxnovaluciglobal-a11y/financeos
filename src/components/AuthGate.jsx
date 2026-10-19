@@ -98,6 +98,15 @@ export default function AuthGate({ onAuthenticated }) {
     onAuthenticated(result.data.session.user)
   }
 
+  // Pestañas (patrón APG): flechas izquierda/derecha cambian de pestaña.
+  function onTabKey(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const next = tab === 'login' ? 'signup' : 'login'
+    setTab(next); setError('')
+    document.getElementById(`authgate-tab-${next}`)?.focus()
+  }
+
   async function handleForgotSubmit() {
     const cleanEmail = email.trim()
     if (!cleanEmail) { setError(t('authGate.errorMissingFields')); return }
@@ -142,7 +151,7 @@ export default function AuthGate({ onAuthenticated }) {
     input: {
       width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8,
       fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)',
-      marginBottom: 10, boxSizing: 'border-box', outline: 'none',
+      marginBottom: 10, boxSizing: 'border-box',
     },
     // Mismo criterio visual que .fl en ui.module.css (label chico mono mayúsculas).
     label: {
@@ -308,9 +317,9 @@ export default function AuthGate({ onAuthenticated }) {
           {t('authGate.subtitle')}
         </div>
 
-        <div style={{ display: 'flex', gap: 4, background: 'var(--sur2)', borderRadius: 9, padding: 4, marginBottom: 18 }}>
-          <button style={s.tabBtn(tab === 'login')} aria-selected={tab === 'login'} onClick={() => { setTab('login'); setError('') }}>{t('authGate.tabLogin')}</button>
-          <button style={s.tabBtn(tab === 'signup')} aria-selected={tab === 'signup'} onClick={() => { setTab('signup'); setError('') }}>{t('authGate.tabSignup')}</button>
+        <div role="tablist" aria-label={t('authGate.tabsLabel')} style={{ display: 'flex', gap: 4, background: 'var(--sur2)', borderRadius: 9, padding: 4, marginBottom: 18 }}>
+          <button type="button" role="tab" id="authgate-tab-login" style={s.tabBtn(tab === 'login')} aria-selected={tab === 'login'} tabIndex={tab === 'login' ? 0 : -1} onKeyDown={onTabKey} onClick={() => { setTab('login'); setError('') }}>{t('authGate.tabLogin')}</button>
+          <button type="button" role="tab" id="authgate-tab-signup" style={s.tabBtn(tab === 'signup')} aria-selected={tab === 'signup'} tabIndex={tab === 'signup' ? 0 : -1} onKeyDown={onTabKey} onClick={() => { setTab('signup'); setError('') }}>{t('authGate.tabSignup')}</button>
         </div>
 
         <button

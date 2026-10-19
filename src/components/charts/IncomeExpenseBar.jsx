@@ -53,7 +53,11 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
   // Ocultar montos (T13): el eje Y también es una cifra legible.
   const tickFmt = v => hidden ? MONEY_MASK : fmtAxis(v)
 
+  // A11Y-3: Recharts no expone los datos; tabla oculta solo visualmente con la
+  // misma información (patrón de Reportes) y el gráfico fuera del árbol accesible.
   return (
+    <>
+    <div aria-hidden="true">
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} barGap={3} barCategoryGap="30%">
         <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false}/>
@@ -65,5 +69,12 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
         <Bar dataKey="gastos"   name={t('chart.expenses')} fill="var(--red)"    radius={[3,3,0,0]} maxBarSize={32}/>
       </BarChart>
     </ResponsiveContainer>
+    </div>
+    <table className="sr-only">
+      <caption>{t('chart.bar.summary', { n: months })}</caption>
+      <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('chart.income')}</th><th scope="col">{t('chart.expenses')}</th></tr></thead>
+      <tbody>{data.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td>{m(fmtMoney(d.ingresos, sym))}</td><td>{m(fmtMoney(d.gastos, sym))}</td></tr>)}</tbody>
+    </table>
+    </>
   )
 }

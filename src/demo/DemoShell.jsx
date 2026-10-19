@@ -192,7 +192,7 @@ function DemoInner() {
   }
 
   return (
-    <>
+    <div className="demo-frame">
       <DemoBanner onReplayTour={replayTour} />
       <Shell page={page} setPage={setPage} onBack={goBack} backTo={backTo}>
         <Suspense fallback={<PageLoader />}>
@@ -202,7 +202,7 @@ function DemoInner() {
       </Shell>
       <DemoBottomCTA hidden={tourOpen} />
       <DemoTour open={tourOpen} onClose={closeTour} />
-    </>
+    </div>
   )
 }
 
@@ -210,7 +210,7 @@ export default function DemoShell() {
   const [gatePassed, setGatePassed] = useState(() => hasPassedDemoGate())
 
   if (!gatePassed) {
-    return <DemoGate onPass={() => setGatePassed(true)} />
+    return <main><DemoGate onPass={() => setGatePassed(true)} /></main>
   }
 
   return (

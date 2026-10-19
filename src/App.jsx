@@ -209,20 +209,20 @@ function Inner() {
       // Verificando sesión (evita flash del gate). Si bootTimedOut ya se
       // cumplió, dejamos de esperar y mostramos LicenseGate en vez de null
       // — el usuario puede reintentar en lugar de ver blanco para siempre.
-      if (bootTimedOut) return <LicenseGate onActivate={() => setLicensed(true)} />
+      if (bootTimedOut) return <main><LicenseGate onActivate={() => setLicensed(true)} /></main>
       return null
     }
-    if (!session) return <AuthGate onAuthenticated={() => {}} />
-    if (passwordRecovery) return <ResetPassword onDone={() => setPasswordRecovery(false)} />
+    if (!session) return <main><AuthGate onAuthenticated={() => {}} /></main>
+    if (passwordRecovery) return <main><ResetPassword onDone={() => setPasswordRecovery(false)} /></main>
     const ownerStatus = owner.uid === session.user.id ? owner.status : 'checking'
-    if (ownerStatus === 'failed') return <DeviceSwitch previousEmail={readDeviceOwner()?.email} />
+    if (ownerStatus === 'failed') return <main><DeviceSwitch previousEmail={readDeviceOwner()?.email} /></main>
     if (ownerStatus === 'checking') return null
     if (!licensed && !entitlementChecked) {
       // Mismo criterio mientras se verifica el entitlement de la cuenta.
-      if (bootTimedOut) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />
+      if (bootTimedOut) return <main><LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} /></main>
       return null
     }
-    if (!licensed) return <LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} />
+    if (!licensed) return <main><LicenseGate onActivate={() => setLicensed(true)} userEmail={session.user?.email} userId={session.user?.id} /></main>
   }
 
   function renderPage(page) {

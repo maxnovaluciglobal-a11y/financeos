@@ -511,6 +511,7 @@ export default function Dashboard({ setPage }) {
       {/* Cabecera (R05): sin eyebrow ni h1 de "Dashboard" — el título "Inicio"
           ya está en la barra superior; acá solo el mes que se está mirando. */}
       <div className={hs.head}>
+        <h1 className="sr-only">{t('home.title')}</h1>
         <span className={hs.monthPill}>{monthLabel(activeMonth)}</span>
       </div>
 

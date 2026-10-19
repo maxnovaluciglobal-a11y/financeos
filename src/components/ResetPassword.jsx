@@ -50,7 +50,7 @@ export default function ResetPassword({ onDone }) {
           placeholder={t('authGate.passwordPlaceholderSignup')}
           autoComplete="new-password"
           autoFocus
-          style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box', outline: 'none' }}
+          style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box' }}
         />
 
         {error && (

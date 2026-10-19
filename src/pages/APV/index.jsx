@@ -228,7 +228,7 @@ export default function APVPage() {
                       const dash = pct * circ
                       return (
                         <div style={{flexShrink:0,textAlign:'center'}}>
-                          <svg width="100" height="100" viewBox="0 0 100 100">
+                          <svg width="100" height="100" viewBox="0 0 100 100" role="img" aria-label={`${(pct*100).toFixed(0)}% ${t('apv.less')} · ${t('apv.tax.donutLabel')}`}>
                             <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--brd)" strokeWidth="12"/>
                             <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--grn)" strokeWidth="12"
                               strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ/4} strokeLinecap="round"/>

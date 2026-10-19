@@ -117,11 +117,13 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
     updateSettings({ ...settings, hideAmounts: next })
     setAmountsAnnounce(t(next ? 'money.announce.hidden' : 'money.announce.shown'))
   }
-  // Atajo "H" en escritorio, solo si el foco no está en un campo editable.
+  // Atajo Alt+H (Opción+H en Mac) en escritorio, solo si el foco no está en un
+  // campo editable. Antes era la tecla H sola: WCAG 2.1.4 (A11Y-5) pide un
+  // modificador para que el control por voz no lo dispare al dictar.
   useEffect(() => {
     function onKey(e) {
-      if (e.key !== 'h' && e.key !== 'H') return
-      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || e.defaultPrevented) return
+      if (!e.altKey || e.code !== 'KeyH') return
+      if (e.metaKey || e.ctrlKey || e.repeat || e.defaultPrevented) return
       const el = e.target
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return
       if (!window.matchMedia?.('(min-width: 701px)').matches) return
@@ -262,7 +264,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
           <span className="sr-only" role="status" aria-live="polite">{amountsAnnounce}</span>
         </div>
 
-        <main className={s.content} data-scroll-root ref={contentRef} tabIndex={-1} style={{ outline: 'none' }} aria-label={t(pageLabel(page))}>
+        <main className={s.content} data-scroll-root ref={contentRef} tabIndex={0} aria-label={t(pageLabel(page))}>
           <div className={s.contentInner}>
             {children}
           </div>
