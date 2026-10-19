@@ -6,8 +6,10 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { installGlobalErrorLog } from './utils/errorLog.js'
 import { detectLanguage } from './i18n/translate.js'
+import { installWebAnalytics } from './utils/webAnalytics.js'
 
 installGlobalErrorLog()
+installWebAnalytics()
 
 // index.html trae lang="es" fijo; hasta que AppContext/DemoContext lean los
 // ajustes, el primer pintado usa el idioma del navegador (mismo criterio que el

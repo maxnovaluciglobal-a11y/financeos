@@ -20,6 +20,7 @@ import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
 import { pageFromSearch, initialSearch } from './utils/deepLink.js'
+import { markInternalUser } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { useState, useEffect } from 'react'
 
@@ -115,6 +116,9 @@ function Inner() {
 
   // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
+
+  // Analítica (C-14): las cuentas internas no se miden.
+  useEffect(() => { if (session?.user?.email) markInternalUser(session.user.email) }, [session?.user?.email])
 
   useEffect(() => {
     if (isDemo) return

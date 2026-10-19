@@ -355,6 +355,9 @@ function CRMPanel({ session, onSignOut }) {
   const [filtroProducto, setFiltroProducto] = useState('todos')
   const [filtroEstado, setFiltroEstado] = useState('todos')
   const [soloSinContactoReciente, setSoloSinContactoReciente] = useState(false)
+  // DAT-9 (auditoría 360): las filas internas y de prueba (columna generada
+  // is_internal) quedan ocultas por defecto.
+  const [mostrarInternos, setMostrarInternos] = useState(false)
   const [detailRow, setDetailRow] = useState(null)
 
   const load = useCallback(async () => {
@@ -373,6 +376,7 @@ function CRMPanel({ session, onSignOut }) {
   useEffect(() => { load() }, [load])
 
   const visibleRows = (rows || []).filter((row) => {
+    if (!mostrarInternos && row.is_internal) return false
     if (!soloSinContactoReciente) return true
     if (!row.ultimo_contacto) return true
     const dias = (Date.now() - new Date(row.ultimo_contacto).getTime()) / 86400000
@@ -415,6 +419,15 @@ function CRMPanel({ session, onSignOut }) {
             onChange={(e) => setSoloSinContactoReciente(e.target.checked)}
           />
           Sin contacto hace 14+ días
+        </label>
+        <label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input
+            type="checkbox"
+            style={{ width: 16, height: 16, flexShrink: 0 }}
+            checked={mostrarInternos}
+            onChange={(e) => setMostrarInternos(e.target.checked)}
+          />
+          Mostrar internos y de prueba
         </label>
         <button
           onClick={() => exportRowsToCsv(visibleRows)}
