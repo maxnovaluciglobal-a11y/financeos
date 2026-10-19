@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { initialScripts, checkBudget, MAX_INITIAL_GZIP } from './bundleBudget.js'
+import { initialScripts, checkBudget, staticImports, MAX_INITIAL_GZIP } from './bundleBudget.js'
 
 const html = (extra = '') => `<script type="module" crossorigin src="/app/assets/index-A.js"></script>
 <link rel="modulepreload" crossorigin href="/app/assets/vendor-B.js">${extra}`
@@ -15,5 +15,12 @@ describe('presupuesto de carga inicial (C-32)', () => {
   it('falla si el JS inicial pasa del tope y pasa por debajo', () => {
     expect(checkBudget(html(), () => MAX_INITIAL_GZIP).errors).toHaveLength(1)
     expect(checkBudget(html(), () => 100 * 1024).errors).toEqual([])
+  })
+  it('cuenta los imports estáticos de la entrada (sin modulepreload) y tolera ?dpl', () => {
+    expect(staticImports('import{r as h}from"./vendor-X.js";import"./charts-Y.js";const a=import("./lazy-Z.js")')).toEqual(['vendor-X.js', 'charts-Y.js'])
+    const h = '<script type="module" crossorigin src="/app/assets/index-A.js?dpl=dpl_1"></script>'
+    const r = checkBudget(h, () => 10, (f) => f === 'assets/index-A.js' ? 'import"./charts-Y.js"' : '')
+    expect(r.files).toEqual(['assets/index-A.js', 'assets/charts-Y.js'])
+    expect(r.errors[0]).toMatch(/charts-Y/)
   })
 })

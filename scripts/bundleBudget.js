@@ -9,16 +9,30 @@ import zlib from 'zlib'
 export const MAX_INITIAL_GZIP = 300 * 1024
 const HEAVY = /^assets\/(pdf|charts|exceljs)-/
 
-// JS que el index.html carga de entrada: el <script type=module> y los modulepreload.
+// JS que el index.html carga de entrada: el <script type=module>, los modulepreload
+// y (con readChunk) los imports estáticos de esos chunks.
 export function initialScripts(html) {
   const out = new Set()
-  for (const m of html.matchAll(/<script[^>]+type="module"[^>]+src="\/app\/([^"]+\.js)"/g)) out.add(m[1])
-  for (const m of html.matchAll(/<link[^>]+rel="modulepreload"[^>]+href="\/app\/([^"]+\.js)"/g)) out.add(m[1])
+  for (const m of html.matchAll(/<script[^>]+type="module"[^>]+src="\/app\/([^"?]+\.js)/g)) out.add(m[1])
+  for (const m of html.matchAll(/<link[^>]+rel="modulepreload"[^>]+href="\/app\/([^"?]+\.js)/g)) out.add(m[1])
   return [...out]
 }
 
-export function checkBudget(html, sizeOf) {
-  const files = initialScripts(html)
+// Imports estáticos de un chunk ya emitido (import{..}from"./x.js" / import"./x.js").
+export function staticImports(code) {
+  return [...String(code).matchAll(/import(?:[\w${},\s*]+from)?\s*"\.\/([\w.-]+\.js)"/g)].map(m => m[1])
+}
+
+export function checkBudget(html, sizeOf, readChunk = null) {
+  const files = initialScripts(html).map(f => f.replace(/\?.*$/, ''))
+  if (readChunk) {
+    for (let i = 0; i < files.length; i++) {
+      for (const dep of staticImports(readChunk(files[i]))) {
+        const f = 'assets/' + dep
+        if (!files.includes(f)) files.push(f)
+      }
+    }
+  }
   const errors = []
   const heavy = files.filter(f => HEAVY.test(f))
   if (heavy.length) errors.push(`la entrada precarga chunks pesados: ${heavy.join(', ')}`)
@@ -29,5 +43,6 @@ export function checkBudget(html, sizeOf) {
 
 export function checkDist(distApp) {
   const html = fs.readFileSync(path.join(distApp, 'index.html'), 'utf8')
-  return checkBudget(html, (f) => zlib.gzipSync(fs.readFileSync(path.join(distApp, f))).length)
+  return checkBudget(html, (f) => zlib.gzipSync(fs.readFileSync(path.join(distApp, f))).length,
+    (f) => fs.readFileSync(path.join(distApp, f), 'utf8'))
 }

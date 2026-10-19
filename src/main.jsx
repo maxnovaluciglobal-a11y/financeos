@@ -8,6 +8,11 @@ import { installGlobalErrorLog } from './utils/errorLog.js'
 import { detectLanguage } from './i18n/translate.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
 
+// Skew Protection (C-49): fija este deploy para los chunks lazy que se pidan
+// después (cookie técnica de Vercel, sin seguimiento). Vacío en local.
+/* global __VERCEL_DPL__ */
+try { if (typeof __VERCEL_DPL__ === 'string' && __VERCEL_DPL__) document.cookie = `__vdpl=${__VERCEL_DPL__}; path=/app; secure; samesite=lax` } catch {}
+
 installGlobalErrorLog()
 installWebAnalytics()
 
