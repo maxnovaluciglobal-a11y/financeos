@@ -17,7 +17,7 @@ import {
 import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel, currentMonth } from '../utils/index.js'
 import { dueAutoConfirmations, ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { monthAdvance } from '../utils/monthAdvance.js'
-import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow } from '../core/sync.js'
+import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow, syncRequirement, setupPassphrase, unlockWithPassphrase } from '../core/sync.js'
 import { hapticTap } from '../utils/haptics.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
@@ -97,13 +97,20 @@ export function AppProvider({ children }) {
   }, [])
 
   // ── Re-hidratar desde la DB (reutilizado por hydrate inicial y por el sync) ────
-  const rehydrate = useCallback(async () => {
+  // C-21: una relectura de la base que no viene de un cambio del usuario
+  // (arranque, mantenimiento de fijos, datos que llegan del sync) no marca
+  // "cambio local". Antes sí lo hacía y un dispositivo nuevo y vacío ganaba la
+  // comparación por fecha y pisaba la copia de la nube.
+  const quietRef = useRef(null)
+  const rehydrate = useCallback(async (opts) => {
     const [incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings] = await Promise.all([
       dbGetAll('incomes'), dbGetAll('expenses'), dbGetAll('budgets'),
       dbGetAll('debts'),   dbGetAll('goals'),    dbGetAll('subscriptions'),
       dbGetAll('recurring').catch(() => []), getSettings(),
     ])
-    dispatch({ type: 'HYDRATE', payload: { incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings } })
+    const payload = { incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings }
+    if (opts?.notLocalChange) quietRef.current = payload
+    dispatch({ type: 'HYDRATE', payload })
     document.documentElement.setAttribute('data-theme', settings.theme || 'light')
     // Sin esto un lector de pantalla pronuncia toda la app con reglas fonéticas
     // españolas aunque el idioma elegido sea inglés, portugués o alemán.
@@ -173,7 +180,7 @@ export function AppProvider({ children }) {
       const due = dueAutoConfirmations(rules, { incomes, expenses, today: localDateStr() })
       let created = 0
       if (due.length) created = (await confirmOccurrencesInDb(due.map(o => ({ rule: o.rule, date: o.date })))).records.length
-      if (upserts.length || adv || created) await rehydrate()
+      if (upserts.length || adv || created) await rehydrate({ notLocalChange: true })
       if (created) showToast(tr(created === 1 ? 'rec.toast.autoOne' : 'rec.toast.autoMany', { n: created }), 'ok')
     } catch (e) {
       console.error('[MOY IQ] mantenimiento de fijos:', e)
@@ -187,7 +194,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     async function hydrate() {
       try {
-        await rehydrate()
+        await rehydrate({ notLocalChange: true })
         if (isUsingFallback()) {
           showToast(tr('toast.fallbackMode'), 'ok')
         }
@@ -195,8 +202,11 @@ export function AppProvider({ children }) {
         hydratedRef.current = true
         // Sync opcional: si está activo, baja los cambios de otros dispositivos (no-op si apagado)
         if (isSyncEnabled()) {
-          pullAndApplyIfNewer(rehydrate)
-            .then(r => { if (r?.applied) { showToast(tr('toast.syncedFromOther'), 'ok'); runRecurringMaintenance() } })
+          pullAndApplyIfNewer(() => rehydrate({ notLocalChange: true }))
+            .then(r => {
+              if (r?.applied) { showToast(tr('toast.syncedFromOther'), 'ok'); runRecurringMaintenance() }
+              if (r?.blocked) setSyncBlocked(r.blocked)
+            })
             .catch(() => {})
         }
       } catch (e) {
@@ -222,6 +232,8 @@ export function AppProvider({ children }) {
   // ── Observa cambios locales → agenda push al sync (no-op si sync apagado) ──────
   useEffect(() => {
     if (!hydratedRef.current) return  // no dispara durante la hidratación inicial
+    const q = quietRef.current
+    if (q && ['incomes', 'expenses', 'budgets', 'debts', 'goals', 'subscriptions', 'recurring'].every(k => state[k] === q[k])) return
     markLocalChange()
   }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions, state.recurring])
   // ── Formato de dinero según la moneda (y el idioma) del usuario ──────────────
@@ -414,18 +426,33 @@ export function AppProvider({ children }) {
   }, [showToast, tr])
 
   // ── Controles de sync (opt-in) para Ajustes ──────────────────────────────────
-  const enableSync = useCallback(async () => {
+  // C-21 / D-05: activar el sync desde cero pide crear una frase de paso; si la
+  // nube ya tiene una copia con frase, hay que escribirla. Devuelve
+  // { ok:false, need } para que Ajustes muestre el formulario que corresponde.
+  const [syncBlocked, setSyncBlocked] = useState(null)
+  const enableSync = useCallback(async ({ passphrase } = {}) => {
     setSyncEnabled(true)
     try {
-      const r = await initialSync(rehydrate)
+      const need = await syncRequirement()
+      if (need === 'license_key' || ((need === 'new_passphrase' || need === 'passphrase') && !passphrase)) {
+        setSyncEnabled(false)
+        return { ok: false, need }
+      }
+      if (need === 'new_passphrase') await setupPassphrase(passphrase)
+      else if (need === 'passphrase') await unlockWithPassphrase(passphrase)
+      const r = await initialSync(() => rehydrate({ notLocalChange: true }))
+      if (r?.blocked) throw new Error(r.blocked)
       // Verificación real: initialSync es resiliente y se traga los fallos de
       // push. Forzamos un push que SÍ propaga el error para no reportar un
       // "activado" falso cuando la nube rechaza la licencia (bug histórico).
       await pushNow()
+      setSyncBlocked(null)
       showToast(tr(r?.applied ? 'toast.syncOnApplied' : 'toast.syncOn'), 'ok')
       return { ok: true, applied: !!r?.applied }
     } catch (e) {
       setSyncEnabled(false)
+      const msg = String(e?.message || '')
+      if (msg === 'wrong_key' || msg === 'passphrase_too_short') return { ok: false, error: msg }
       const invalid = /invalid_license/.test(String(e?.message || ''))
       // (El texto viejo en español además decía "Falta aplicar el fix de sync en
       // Supabase": eso es para el equipo, no para el usuario. Ver CLAUDE.md,
@@ -650,7 +677,7 @@ export function AppProvider({ children }) {
     updateSettings,
     clearAll,   loadDemo,
     exportData, exportCSV,  importData,
-    enableSync, disableSync,
+    enableSync, disableSync, syncBlocked, setSyncBlocked,
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
   }), [
@@ -665,7 +692,7 @@ export function AppProvider({ children }) {
     updateSettings,
     clearAll, loadDemo,
     exportData, exportCSV, importData,
-    enableSync, disableSync,
+    enableSync, disableSync, syncBlocked, setSyncBlocked,
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
   ])

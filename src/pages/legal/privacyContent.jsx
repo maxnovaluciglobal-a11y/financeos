@@ -121,14 +121,18 @@ function EsBody() {
         <p>
           La sincronización viene desactivada. Si el usuario la activa en Ajustes, sus datos se
           cifran en el dispositivo con <strong>AES-GCM</strong> antes de enviarse y se almacenan
-          cifrados. La llave de cifrado se deriva de la clave de licencia, y nuestro servidor
-          guarda esa clave para validar el plan Pro. Por eso, hoy no podemos asegurar que sea
-          técnicamente imposible para nosotros leer los datos sincronizados; solo los usamos para
-          sincronizar los dispositivos del usuario. Estamos preparando el cambio a una frase de
-          paso que solo conozca el usuario, para que la llave no dependa de nada que guarde el
-          servidor. Quien prefiera que sus datos no salgan del dispositivo puede dejar la
-          sincronización desactivada. Desactivarla detiene las subidas, pero no borra la copia ya
-          guardada: para borrarla, escribir a support@moyiq.app.
+          cifrados. Desde el 20 de octubre de 2026, al activarla se crea una frase de paso: la
+          llave se deriva de esa frase en el dispositivo (PBKDF2 con 600 000 iteraciones y sal
+          aleatoria), la frase no se envía ni se guarda en nuestro servidor y, por eso, no podemos
+          leer esa copia ni recuperarla si se olvida la frase. Quien ya sincronizaba antes de esa
+          fecha sigue con el modelo anterior hasta que elija pasar a una frase de paso en Ajustes:
+          en ese modelo la llave se deriva de la clave de licencia, que nuestro servidor conserva
+          mientras exista esa copia, así que para esas copias no podemos asegurar que sea
+          técnicamente imposible leerlas; solo las usamos para sincronizar los dispositivos del
+          usuario. Para el resto de las cuentas, el servidor guarda solo un hash de la licencia.
+          Quien prefiera que sus datos no salgan del dispositivo puede dejar la sincronización
+          desactivada. Desactivarla detiene las subidas, pero no borra la copia ya guardada: para
+          borrarla, escribir a support@moyiq.app o eliminar la cuenta desde Ajustes.
         </p>
       </div>
 
@@ -369,14 +373,19 @@ function EnBody() {
         <h2>5. Cross-device sync (optional and encrypted)</h2>
         <p>
           Sync is off by default. If the user turns it on in Settings, their data is encrypted on
-          the device with <strong>AES-GCM</strong> before it is sent and is stored encrypted. The
-          encryption key is derived from the license key, and our server stores that key to
-          validate the Pro plan. For that reason, we cannot currently guarantee that it is
-          technically impossible for us to read synced data; we only use it to sync the user's
-          devices. We are preparing a move to a passphrase known only to the user, so the key no
-          longer depends on anything the server stores. Anyone who prefers that their data never
+          the device with <strong>AES-GCM</strong> before it is sent and is stored encrypted.
+          Since October 20, 2026, turning it on creates a passphrase: the key is derived from that
+          phrase on the device (PBKDF2 with 600,000 iterations and a random salt), the phrase is
+          never sent to or stored on our server and, for that reason, we cannot read that copy or
+          recover it if the phrase is forgotten. Users who were already syncing before that date
+          keep the previous model until they choose to move to a passphrase in Settings: in that
+          model the key is derived from the license key, which our server keeps while that copy
+          exists, so for those copies we cannot guarantee that reading them is technically
+          impossible; we only use them to sync the user's devices. For all other accounts, the
+          server stores only a hash of the license. Anyone who prefers that their data never
           leaves the device can keep sync turned off. Turning it off stops uploads but does not
-          delete the copy already stored: to delete it, write to support@moyiq.app.
+          delete the copy already stored: to delete it, write to support@moyiq.app or delete the
+          account from Settings.
         </p>
       </div>
 
@@ -613,14 +622,18 @@ function PtBody() {
         <p>
           A sincronização vem desativada. Se o usuário a ativar em Configurações, os dados são
           criptografados no dispositivo com <strong>AES-GCM</strong> antes do envio e armazenados
-          criptografados. A chave de criptografia é derivada da chave de licença, e nosso servidor
-          guarda essa chave para validar o plano Pro. Por isso, hoje não podemos garantir que seja
-          tecnicamente impossível para nós ler os dados sincronizados; só os usamos para
-          sincronizar os dispositivos do usuário. Estamos preparando a mudança para uma frase-senha
-          que só o usuário conheça, para que a chave não dependa de nada que o servidor guarde.
-          Quem preferir que os dados não saiam do dispositivo pode manter a sincronização
-          desativada. Desativá-la interrompe os envios, mas não apaga a cópia já armazenada: para
-          apagá-la, escreva para support@moyiq.app.
+          criptografados. Desde 20 de outubro de 2026, ao ativá-la se cria uma frase-senha: a chave
+          é derivada dessa frase no dispositivo (PBKDF2 com 600.000 iterações e sal aleatório), a
+          frase não é enviada nem guardada no nosso servidor e, por isso, não podemos ler essa
+          cópia nem recuperá-la se a frase for esquecida. Quem já sincronizava antes dessa data
+          continua no modelo anterior até escolher passar para uma frase-senha em Configurações:
+          nesse modelo a chave é derivada da chave de licença, que nosso servidor conserva enquanto
+          existir essa cópia, então para essas cópias não podemos garantir que seja tecnicamente
+          impossível lê-las; só as usamos para sincronizar os dispositivos do usuário. Para as
+          demais contas, o servidor guarda apenas um hash da licença. Quem preferir que os dados
+          não saiam do dispositivo pode manter a sincronização desativada. Desativá-la interrompe os
+          envios, mas não apaga a cópia já armazenada: para apagá-la, escreva para
+          support@moyiq.app ou exclua a conta em Configurações.
         </p>
       </div>
 
@@ -885,15 +898,20 @@ function DeBody() {
         <p>
           Die Synchronisierung ist standardmäßig ausgeschaltet. Aktivieren Sie sie in den
           Einstellungen, werden Ihre Daten auf Ihrem Gerät mit <strong>AES-GCM</strong>
-          verschlüsselt, bevor sie übertragen und verschlüsselt gespeichert werden. Der Schlüssel
-          wird aus Ihrem Lizenzschlüssel abgeleitet, und unser Server speichert diesen
-          Lizenzschlüssel, um den Pro-Tarif zu prüfen. Deshalb können wir derzeit nicht zusichern,
-          dass es für uns technisch unmöglich ist, synchronisierte Daten zu lesen; wir nutzen sie
-          ausschließlich zur Synchronisierung Ihrer Geräte. Wir bereiten die Umstellung auf eine
-          Passphrase vor, die nur Sie kennen, damit der Schlüssel nicht mehr von serverseitig
-          gespeicherten Daten abhängt. Wenn Ihre Daten das Gerät nicht verlassen sollen, lassen Sie
-          die Synchronisierung ausgeschaltet. Das Ausschalten stoppt neue Uploads, löscht aber die
-          bereits gespeicherte Kopie nicht; zur Löschung schreiben Sie an support@moyiq.app.
+          verschlüsselt, bevor sie übertragen und verschlüsselt gespeichert werden. Seit dem
+          20. Oktober 2026 erstellen Sie beim Aktivieren eine Passphrase: Der Schlüssel wird auf
+          Ihrem Gerät aus dieser Phrase abgeleitet (PBKDF2 mit 600.000 Iterationen und zufälligem
+          Salt), die Phrase wird weder an unseren Server gesendet noch dort gespeichert, und
+          deshalb können wir diese Kopie weder lesen noch wiederherstellen, wenn Sie die Phrase
+          vergessen. Wer schon vor diesem Datum synchronisiert hat, behält das bisherige Modell,
+          bis er in den Einstellungen zu einer Passphrase wechselt: Dort wird der Schlüssel aus dem
+          Lizenzschlüssel abgeleitet, den unser Server aufbewahrt, solange diese Kopie besteht;
+          für diese Kopien können wir daher nicht zusichern, dass ein Lesen technisch unmöglich
+          ist, und wir nutzen sie ausschließlich zur Synchronisierung Ihrer Geräte. Für alle
+          anderen Konten speichert der Server nur einen Hash der Lizenz. Wenn Ihre Daten das Gerät
+          nicht verlassen sollen, lassen Sie die Synchronisierung ausgeschaltet. Das Ausschalten
+          stoppt neue Uploads, löscht aber die bereits gespeicherte Kopie nicht; zur Löschung
+          schreiben Sie an support@moyiq.app oder löschen Sie das Konto in den Einstellungen.
           Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.
         </p>
       </div>

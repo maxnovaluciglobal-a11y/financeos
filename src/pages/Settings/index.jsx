@@ -12,11 +12,11 @@ import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
 import UpgradeCard from './UpgradeCard.jsx'
 import DeleteAccountSection from './DeleteAccountSection.jsx'
+import SyncSection from './SyncSection.jsx'
 import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
 import { CURRENCY_OPTIONS, currencyOptionLabel } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
-import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
 import { pushSupported, isPushEnabled, enablePush, disablePush } from '../../core/push.js'
 import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
@@ -25,7 +25,7 @@ import { loadFixerRates } from '../../utils/tasaFixer.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 
 export default function Settings() {
-  const { settings, updateSettings, clearAll, loadDemo, exportCSV, enableSync, disableSync } = useApp()
+  const { settings, updateSettings, clearAll, loadDemo, exportCSV } = useApp()
   const { t, lang } = useT()
   const [installPrompt, setInstallPrompt] = useState(null)
   const [accountEmail, setAccountEmail] = useState(null)
@@ -285,7 +285,7 @@ export default function Settings() {
       <SecuritySection />
       <Card>
         <CardHeader title={t('settings.sync.title')} />
-        <SyncSection enableSync={enableSync} disableSync={disableSync} />
+        <SyncSection />
       </Card>
       <Card>
         <CardHeader title={t('settings.push.title')} />
@@ -454,60 +454,6 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
 }
 
 // ── Sincronización entre dispositivos (opt-in, ligada a la licencia, cifrada) ──
-function SyncSection({ enableSync, disableSync }) {
-  const { t } = useT()
-  const [on, setOn]       = useState(isSyncEnabled())
-  const [busy, setBusy]   = useState(false)
-  const [tick, setTick]   = useState(0) // refresca el estado tras acciones
-  const available = syncAvailable()
-  const hasKey    = !!getLicenseKey()
-  const meta      = syncMeta()
-  const lastSync  = meta.lastPushedAt || meta.lastPulledAt || meta.lastLocalChange
-  const lastTxt   = lastSync ? new Date(lastSync).toLocaleString() : '—'
-
-  async function toggle() {
-    if (busy) return
-    setBusy(true)
-    try {
-      if (on) { disableSync(); setOn(false) }
-      else {
-        const r = await enableSync()
-        setOn(!!(r && r.ok))
-      }
-    } finally { setBusy(false); setTick(t => t + 1) }
-  }
-
-  const lbl = { fontSize: 13, color: 'var(--tx)', fontWeight: 500 }
-  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 4 }
-
-  return (
-    <div>
-      {!hasKey ? (
-        <div style={sub}>{t('settings.sync.noLicense')}</div>
-      ) : !available ? (
-        <div style={sub}>{t('settings.sync.unavailable')}</div>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div>
-              <div style={lbl}>{on ? t('settings.sync.on') : t('settings.sync.off')}</div>
-              <div style={sub}>
-                {on ? t('settings.sync.lastSync', { time: lastTxt }) : t('settings.sync.offDesc')}
-              </div>
-            </div>
-            <Btn variant={on ? 'ghost' : 'primary'} onClick={toggle} disabled={busy}>
-              {busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')}
-            </Btn>
-          </div>
-          <div style={{ ...sub, marginTop: 10, padding: '8px 10px', background: 'var(--sur2)', borderRadius: 'var(--r)', border: '0.5px solid var(--brd)' }}>
-            <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.sync.e2e')}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
 // ── Notificaciones push (opt-in, ligadas a la licencia) ────────────────────────
 function PushSection() {
   const { t } = useT()
