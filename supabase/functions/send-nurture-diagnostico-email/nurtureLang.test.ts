@@ -73,9 +73,9 @@ describe('renderEmail por idioma', () => {
 
   it('welcome muestra score y label traducido (label llega siempre en español)', () => {
     const en = renderEmail('welcome', lead('en', 'Regular', 42), CONFIG).html
-    expect(en).toContain('42/100 (Fair)')
-    expect(renderEmail('welcome', lead('de', 'Crítico', 10), CONFIG).html).toContain('10/100 (Kritisch)')
-    expect(renderEmail('welcome', lead('pt', 'Bueno', 70), CONFIG).html).toContain('70/100 (Bom)')
+    expect(en).toContain('42/100 (Attention)')
+    expect(renderEmail('welcome', lead('de', 'Crítico', 10), CONFIG).html).toContain('10/100 (Risiko)')
+    expect(renderEmail('welcome', lead('pt', 'Bueno', 70), CONFIG).html).toContain('70/100 (Bem)')
     expect(renderEmail('welcome', lead('en', null, null), CONFIG).html).toContain('your result')
   })
 
@@ -129,6 +129,37 @@ describe('lecturas compatibles antes y después de la migración de lang', () =>
     for (const [url] of fetchMock.mock.calls) {
       expect(url).toContain('select=*')
       expect(url).not.toContain('lang')
+    }
+  })
+})
+
+// LND-13: la etiqueta guardada (escala vieja) se muestra con la escala de 3 estados.
+describe('escala Bien/Atención/Riesgo en los correos del diagnóstico', () => {
+  it('los 4 valores viejos sin puntaje -> etiqueta nueva', async () => {
+    const { displayLabel } = await import('./nurtureTemplates.ts')
+    expect(['Excelente', 'Bueno', 'Regular', 'Crítico'].map(l => displayLabel('es', l))).toEqual(['Bien', 'Bien', 'Atención', 'Riesgo'])
+    expect(['Excelente', 'Bueno', 'Regular', 'Crítico'].map(l => displayLabel('en', l))).toEqual(['Good', 'Good', 'Attention', 'Risk'])
+    expect(displayLabel('de', 'Crítico')).toBe('Risiko')
+    expect(displayLabel('pt', 'Regular')).toBe('Atenção')
+  })
+  it('con puntaje manda el puntaje (Bueno con 65 es Atención)', async () => {
+    const { displayLabel } = await import('./nurtureTemplates.ts')
+    expect(displayLabel('es', 'Bueno', 65)).toBe('Atención')
+    expect(displayLabel('es', 'Regular', 70)).toBe('Bien')
+    expect(displayLabel('es', null, 39)).toBe('Riesgo')
+    expect(displayLabel('es', null, null)).toBe(null)
+  })
+  it('acepta la escala nueva y elige el bloque de acción equivalente', async () => {
+    const { displayLabel, actionBlock } = await import('./nurtureTemplates.ts')
+    expect(displayLabel('es', 'Atención')).toBe('Atención')
+    expect(actionBlock('es', 'Riesgo')).toBe(actionBlock('es', 'Crítico'))
+    expect(actionBlock('en', 'Bien')).toBe(actionBlock('en', 'Bueno'))
+  })
+  it('el correo de bienvenida ya no muestra la escala vieja', async () => {
+    const { DIAGNOSTICO_TEMPLATES } = await import('./nurtureTemplates.ts')
+    for (const lang of ['es', 'en', 'pt', 'de']) {
+      const html = DIAGNOSTICO_TEMPLATES[lang].welcome({ score: 82, label: 'Excelente', unsubUrl: 'u', landingUrl: 'https://moyiq.app' }).body
+      expect(html).not.toMatch(/Excelente|Excellent|Ausgezeichnet|\(Bueno\)/)
     }
   })
 })

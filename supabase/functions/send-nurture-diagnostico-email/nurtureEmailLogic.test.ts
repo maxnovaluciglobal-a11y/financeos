@@ -32,7 +32,7 @@ describe('renderEmail', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
     expect(r.subject).toBe('Tu diagnóstico completo (y el dato que se quedó afuera)')
     expect(r.html).toContain('42/100')
-    expect(r.html).toContain('Regular')
+    expect(r.html).toContain('42/100 (Atención)')
     expect(r.html).toContain('unsubscribe.html?id=lead-1')
   })
 

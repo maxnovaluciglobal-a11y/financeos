@@ -12,10 +12,10 @@
 // pt/de no hay versión propia, así que se deja la página en español. El link
 // de baja no cambia.
 //
-// `label` llega SIEMPRE en español (Excelente/Bueno/Regular/Crítico): la
-// landing en inglés (en/score-check.html) lo traduce a español antes de
-// mandarlo (LABEL_ES). Por eso los bloques de acción se indexan por el label
-// en español y LABEL_DISPLAY lo traduce para mostrarlo.
+// `label` llega en español (Excelente/Bueno/Regular/Crítico, o la escala nueva
+// Bien/Atención/Riesgo): la landing en inglés lo traduce a español antes de
+// mandarlo (LABEL_ES). Los bloques de acción se indexan por el label viejo en
+// español; lo que se muestra es la escala de 3 estados (ver displayLabel).
 
 import type { EmailLang } from "../_shared/emailLang.ts";
 import { appLink } from "../_shared/appLinks.ts";
@@ -46,16 +46,36 @@ export const UNSUBSCRIBE_LABEL: Record<EmailLang, string> = {
   de: "Diese E-Mails abbestellen",
 };
 
-const LABEL_DISPLAY: Record<EmailLang, Record<string, string>> = {
-  es: { "Crítico": "Crítico", "Regular": "Regular", "Bueno": "Bueno", "Excelente": "Excelente" },
-  en: { "Crítico": "Critical", "Regular": "Fair", "Bueno": "Good", "Excelente": "Excellent" },
-  pt: { "Crítico": "Crítico", "Regular": "Regular", "Bueno": "Bom", "Excelente": "Excelente" },
-  de: { "Crítico": "Kritisch", "Regular": "Mittel", "Bueno": "Gut", "Excelente": "Ausgezeichnet" },
+// Escala de 3 estados (LND-13, 19-oct-2026), la misma de la app y de la
+// pantalla del diagnóstico (diag-score.js): Bien ≥70 · Atención 40–69 ·
+// Riesgo <40. El lead sigue guardando la etiqueta vieja por compatibilidad
+// (Excelente/Bueno/Regular/Crítico): al mostrarla se traduce a la nueva, con
+// el puntaje si está (la etiqueta vieja "Bueno" cubría 60–79 y no alcanza).
+export type ScoreLevel = "ok" | "attention" | "risk";
+
+const LEVEL_DISPLAY: Record<EmailLang, Record<ScoreLevel, string>> = {
+  es: { ok: "Bien", attention: "Atención", risk: "Riesgo" },
+  en: { ok: "Good", attention: "Attention", risk: "Risk" },
+  pt: { ok: "Bem", attention: "Atenção", risk: "Risco" },
+  de: { ok: "Gut", attention: "Achtung", risk: "Risiko" },
 };
 
-export function displayLabel(lang: EmailLang, label: string | null): string | null {
-  if (!label) return null;
-  return LABEL_DISPLAY[lang][label] ?? label;
+const LEVEL_BY_LABEL: Record<string, ScoreLevel> = {
+  "Excelente": "ok", "Bueno": "ok", "Regular": "attention", "Crítico": "risk",
+  "Bien": "ok", "Atención": "attention", "Riesgo": "risk",
+};
+
+// Bloque de acción (indexado por la etiqueta vieja) para una etiqueta nueva.
+const ACTION_KEY_BY_NEW_LABEL: Record<string, string> = { "Bien": "Bueno", "Atención": "Regular", "Riesgo": "Crítico" };
+
+export function scoreLevel(score: number | null, label: string | null): ScoreLevel | null {
+  if (typeof score === "number" && Number.isFinite(score)) return score >= 70 ? "ok" : score >= 40 ? "attention" : "risk";
+  return (label && LEVEL_BY_LABEL[label]) || null;
+}
+
+export function displayLabel(lang: EmailLang, label: string | null, score: number | null = null): string | null {
+  const level = scoreLevel(score, label);
+  return level ? LEVEL_DISPLAY[lang][level] : null;
 }
 
 const SCORE_FALLBACK: Record<EmailLang, string> = {
@@ -104,7 +124,8 @@ const ACTION_BLOCKS: Record<EmailLang, Record<string, string> & { _default: stri
 
 export function actionBlock(lang: EmailLang, label: string | null): string {
   const blocks = ACTION_BLOCKS[lang];
-  return (label && blocks[label]) || blocks._default;
+  const key = label ? (ACTION_KEY_BY_NEW_LABEL[label] ?? label) : null;
+  return (key && blocks[key]) || blocks._default;
 }
 
 // Página del diagnóstico para el email 4: versión en inglés donde existe.
@@ -117,7 +138,7 @@ type Render = (ctx: DiagnosticoCopyContext) => DiagnosticoCopy;
 export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Render>> = {
   es: {
     welcome: (c) => {
-      const label = displayLabel("es", c.label);
+      const label = displayLabel("es", c.label, c.score);
       return {
         subject: "Tu diagnóstico completo (y el dato que se quedó afuera)",
         body: `
@@ -177,7 +198,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
 
   en: {
     welcome: (c) => {
-      const label = displayLabel("en", c.label);
+      const label = displayLabel("en", c.label, c.score);
       return {
         subject: "Your full diagnosis (and the figure that was left out)",
         body: `
@@ -236,7 +257,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
 
   pt: {
     welcome: (c) => {
-      const label = displayLabel("pt", c.label);
+      const label = displayLabel("pt", c.label, c.score);
       return {
         subject: "Seu diagnóstico completo (e o dado que ficou de fora)",
         body: `
@@ -295,7 +316,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
 
   de: {
     welcome: (c) => {
-      const label = displayLabel("de", c.label);
+      const label = displayLabel("de", c.label, c.score);
       return {
         subject: "Ihre vollständige Auswertung (und die Angabe, die gefehlt hat)",
         body: `
