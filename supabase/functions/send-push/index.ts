@@ -13,6 +13,9 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 //
 // Se invoca por cron (ver supabase-push.sql, sección CRON) — corre 1 vez al día.
+// Solo POST con el header x-cron-secret (CRON_SECRET), ver requestGuard.ts (C-45).
+
+import { guardPushRequest } from "./requestGuard.ts";
 
 const SUPABASE_URL   = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -139,7 +142,15 @@ async function sbFetch(path: string, init: RequestInit = {}) {
   });
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const denied = guardPushRequest(req.method, req.headers.get("x-cron-secret"), Deno.env.get("CRON_SECRET"));
+  if (denied) {
+    return new Response(denied.status === 204 ? null : JSON.stringify({ ok: false, error: denied.error }), {
+      status: denied.status,
+      headers: denied.status === 204 ? {} : { "Content-Type": "application/json" },
+    });
+  }
+
   const results = { trial_reminders: 0, errors: 0 };
 
   // Licencias de prueba que vencen en las próximas 72h y no recibieron aviso en las últimas 20h

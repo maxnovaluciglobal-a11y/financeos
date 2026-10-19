@@ -46,7 +46,8 @@ verify_jwt = false
 [functions.send-optin-confirmation]
 verify_jwt = false
 
-# pg_cron la invoca con `Authorization: Bearer <service role>`: ESTA SÍ verifica JWT.
+# pg_cron la invoca con `Authorization: Bearer <JWT>` y x-cron-secret: ESTA SÍ verifica JWT
+# (y desde el 19-oct-2026 además exige x-cron-secret, ver send-push/requestGuard.ts).
 [functions.send-push]
 verify_jwt = true
 
