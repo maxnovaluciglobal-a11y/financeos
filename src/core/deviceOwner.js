@@ -35,7 +35,7 @@ const LEGACY_BAG = 'legacy'
 const DEVICE_KEYS = new Set([
   OWNER_KEY, LEGACY_KEY,
   'fnos_tasa_ar_v1', 'fnos_tasa_fixer_v1', 'fnos_tasa_ve_v1', 'fnos_indicadores_v1',
-  'fnos_error_log', 'fnos_demo_tour_done', 'fnos_demo_gate_passed',
+  'fnos_error_log', 'fnos_demo_tour_done', 'fnos_demo_gate_passed', 'fnos_safari_storage_notice',
 ])
 
 export function isAccountKey(k) {

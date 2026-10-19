@@ -32,6 +32,7 @@ import hs from './Home.module.css'
 import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, currencySymbol } from '../../utils/index.js'
 import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
+import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
 import { Card, CardHeader } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
@@ -518,7 +519,7 @@ export default function Dashboard({ setPage }) {
           (orden en Home.module.css). */}
       <div className={hs.home}>
         <div className={hs.stack}>
-          <div className={hs.oBackup}><BackupReminderBanner /></div>
+          <div className={hs.oBackup}><SafariStorageNotice /><BackupReminderBanner /></div>
           <div className={hs.oKpis}>
             <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
               pending={pendingSum} onReviewPending={() => setReviewOpen(true)}

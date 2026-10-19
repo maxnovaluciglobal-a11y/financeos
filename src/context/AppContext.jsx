@@ -21,6 +21,7 @@ import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, in
 import { hapticTap } from '../utils/haptics.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
+import { requestPersistentStorage } from '../utils/storagePersist.js'
 
 export const AppContext = createContext(null)
 
@@ -242,6 +243,7 @@ export function AppProvider({ children }) {
     try {
       await dbAdd('incomes', item)          // DB primero
       dispatch({ type: 'ADD_INCOME', item }) // UI después de confirmar
+      requestPersistentStorage()
     } catch (e) {
       showToast(tr('toast.save.income'), 'error')
       throw e
@@ -275,6 +277,7 @@ export function AppProvider({ children }) {
     try {
       await dbAdd('expenses', item)
       dispatch({ type: 'ADD_EXPENSE', item })
+      requestPersistentStorage()
     } catch (e) {
       showToast(tr('toast.save.expense'), 'error')
       throw e
