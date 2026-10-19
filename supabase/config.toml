@@ -1,0 +1,55 @@
+# Configuración MÍNIMA del CLI de Supabase para este repo: solo fija `verify_jwt`
+# de cada Edge Function (auditoría 360, C-12 / OPS-3). Antes dependía de
+# acordarse de `--no-verify-jwt` en cada deploy: un redeploy sin la bandera
+# dejó el nurture de Starter con 401 del 08 al 18-oct-2026 sin que nadie lo notara.
+#
+# Los valores son los de producción (proyecto nelwgbcddwiaimzbcuas) al 19-oct-2026,
+# leídos con `supabase functions list -o json --project-ref nelwgbcddwiaimzbcuas`.
+# Cambiar uno es una decisión de seguridad: actualizar también
+# supabase/functions/_shared/verifyJwtConfig.test.ts, que verifica este archivo.
+#
+# ⚠️ NO correr `supabase config push`: este archivo no describe Auth, SMTP, hooks
+# ni OAuth de producción y los pisaría con valores por defecto.
+# ⚠️ Correr el CLI desde la raíz del repo (o con `--workdir`), siempre con
+# `--project-ref nelwgbcddwiaimzbcuas` y nunca con el cwd en `supabase/functions/`
+# (ahí crea `supabase/functions/supabase/.temp`).
+
+project_id = "financeos-prod"
+
+# Supabase Auth "Send Email Hook": firma propia (standardwebhooks, SEND_EMAIL_HOOK_SECRET).
+[functions.auth-email-hook]
+verify_jwt = false
+
+# Trigger SQL (pg_net) o cliente anon; autentica con el header x-internal-secret.
+[functions.notify-admin-signup]
+verify_jwt = false
+
+# Llamada pública desde la landing; actúa solo sobre una fila ya existente.
+[functions.send-cancellation-confirmation]
+verify_jwt = false
+
+# pg_cron (header x-cron-secret) y bienvenida pedida desde el navegador.
+[functions.send-nurture-diagnostico-email]
+verify_jwt = false
+
+[functions.send-nurture-invest-email]
+verify_jwt = false
+
+[functions.send-nurture-starter-email]
+verify_jwt = false
+
+# Llamada pública desde la app y la landing; actúa solo sobre una fila existente.
+[functions.send-optin-confirmation]
+verify_jwt = false
+
+# pg_cron la invoca con `Authorization: Bearer <service role>`: ESTA SÍ verifica JWT.
+[functions.send-push]
+verify_jwt = true
+
+# La llama el navegador sin sesión; la autorización real es checkProLicense().
+[functions.send-report-email]
+verify_jwt = false
+
+# Stripe firma el evento (stripe-signature); no manda JWT.
+[functions.stripe-webhook]
+verify_jwt = false
