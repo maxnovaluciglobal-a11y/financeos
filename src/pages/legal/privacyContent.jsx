@@ -23,9 +23,10 @@ function EsBody() {
       <div className={s.highlight}>
         <strong>Resumen:</strong> Para usar MOY IQ se necesita una cuenta gratuita, asociada a un
         email. Los datos financieros del usuario se guardan en su dispositivo y no los recibimos.
-        Solo salen del dispositivo si el usuario activa la sincronización (viajan y se guardan{' '}
-        <strong>cifrados de extremo a extremo</strong>, no podemos leerlos) o si envía un reporte
-        PDF por email. No usamos analítica ni seguimiento de comportamiento, y la app no se
+        Solo salen del dispositivo si el usuario activa la sincronización (se cifran en el
+        dispositivo antes de subirse; ver el punto 5 sobre la llave) o si envía un reporte PDF por
+        email. Contamos las aperturas de la app de forma anónima y sin cookies (punto 8), sin
+        seguimiento de comportamiento, y la app no se
         conecta con bancos.
       </div>
 
@@ -100,9 +101,9 @@ function EsBody() {
             recibir novedades.
           </li>
           <li>
-            <strong>Plan Pro:</strong> el email de la compra, un hash irreversible de la clave de
-            licencia (nunca la clave en texto plano), el plan y las fechas de activación y
-            vencimiento.
+            <strong>Plan Pro:</strong> el email de la compra, un hash de la clave de licencia en el
+            registro de licencias, la clave asociada a la cuenta (para reponer el plan al iniciar
+            sesión en otro dispositivo), el plan y las fechas de activación y vencimiento.
           </li>
           <li>
             <strong>Notificaciones push (opcional):</strong> el identificador técnico (endpoint)
@@ -110,21 +111,24 @@ function EsBody() {
             avisos del sistema, nunca datos financieros.
           </li>
           <li>
-            <strong>Sincronización (opcional):</strong> los datos cifrados descritos en el punto 5,
-            que no podemos leer.
+            <strong>Sincronización (opcional):</strong> la copia cifrada descrita en el punto 5.
           </li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>5. Sincronización entre dispositivos (opcional, cifrada de extremo a extremo)</h2>
+        <h2>5. Sincronización entre dispositivos (opcional y cifrada)</h2>
         <p>
-          Si el usuario activa la sincronización en Ajustes, sus datos se cifran en el dispositivo
-          con <strong>AES-GCM</strong> antes de enviarse y se almacenan solo en esa forma. La llave
-          de cifrado se deriva en el dispositivo a partir de la clave de licencia y{' '}
-          <strong>nunca sale de él</strong>: ni MAXNOVA & LUCI Global LLC ni el proveedor de
-          infraestructura pueden leer el contenido. La sincronización es opcional y puede
-          desactivarse en cualquier momento desde Ajustes.
+          La sincronización viene desactivada. Si el usuario la activa en Ajustes, sus datos se
+          cifran en el dispositivo con <strong>AES-GCM</strong> antes de enviarse y se almacenan
+          cifrados. La llave de cifrado se deriva de la clave de licencia, y nuestro servidor
+          guarda esa clave para validar el plan Pro. Por eso, hoy no podemos asegurar que sea
+          técnicamente imposible para nosotros leer los datos sincronizados; solo los usamos para
+          sincronizar los dispositivos del usuario. Estamos preparando el cambio a una frase de
+          paso que solo conozca el usuario, para que la llave no dependa de nada que guarde el
+          servidor. Quien prefiera que sus datos no salgan del dispositivo puede dejar la
+          sincronización desactivada. Desactivarla detiene las subidas, pero no borra la copia ya
+          guardada: para borrarla, escribir a support@moyiq.app.
         </p>
       </div>
 
@@ -149,7 +153,7 @@ function EsBody() {
             recibimos solo la confirmación del pago y el email asociado a la compra.
           </li>
           <li><strong>Resend:</strong> envío de correos.</li>
-          <li><strong>Vercel:</strong> alojamiento de la app y del sitio web.</li>
+          <li><strong>Vercel:</strong> alojamiento de la app y del sitio web, y estadísticas de uso anónimas (punto 8).</li>
           <li><strong>Formspree:</strong> recibe el formulario de contacto del sitio web.</li>
           <li><strong>Google:</strong> solo si el usuario elige entrar con Google.</li>
         </ul>
@@ -161,11 +165,23 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>8. Analítica, seguimiento y bancos</h2>
+        <h2>8. Estadísticas de uso, seguimiento y bancos</h2>
         <p>
-          MOY IQ <strong>no incluye</strong> herramientas de analítica (Google Analytics, Mixpanel,
-          Hotjar u otras) ni seguimiento de comportamiento. No se registran eventos, sesiones ni
-          clics. La app no se conecta con cuentas bancarias y nunca pide credenciales del banco.
+          Para saber cuántas veces se abre la app usamos <strong>Vercel Web Analytics</strong>, sin
+          cookies. Registra la apertura de forma anónima: la dirección de la app sin datos
+          personales (solo las etiquetas de campaña utm y ref), el sitio de origen, un país y
+          región aproximados, el navegador, el sistema operativo y el tipo de dispositivo. No
+          recibe datos financieros, el email ni el identificador de la cuenta, no usa cookies ni
+          crea perfiles, y para distinguir visitas del mismo día usa un identificador temporal que
+          se descarta a las 24 horas. El encargado es Vercel Inc. (EE. UU.). Base: nuestro interés
+          legítimo en conocer, de forma agregada, el uso de la app. No medimos si el navegador
+          envía la señal «No rastrear» o Global Privacy Control; también se puede bloquear el
+          script o pedirnos la exclusión en support@moyiq.app.
+        </p>
+        <p>
+          MOY IQ no incluye otras herramientas de analítica (Google Analytics, Mixpanel, Hotjar u
+          otras) ni seguimiento de comportamiento: no se registran eventos ni clics. La app no se
+          conecta con cuentas bancarias y nunca pide credenciales del banco.
         </p>
         <p>
           La plataforma de alojamiento puede registrar datos técnicos estándar (como direcciones
@@ -217,9 +233,9 @@ function EsBody() {
         <h2>12. Seguridad</h2>
         <p>
           Los datos locales dependen de la seguridad del dispositivo del usuario. Los datos
-          sincronizados están cifrados de extremo a extremo: una filtración del servidor no
-          expondría contenido legible. Recomendamos exportar respaldos JSON periódicamente y
-          guardar la clave de licencia en un lugar seguro (de ella se deriva la llave de cifrado).
+          sincronizados se guardan cifrados con una llave derivada de la clave de licencia (ver el
+          punto 5 sobre sus límites actuales). Recomendamos exportar respaldos JSON periódicamente y
+          guardar la clave de licencia en un lugar seguro.
         </p>
       </div>
 
@@ -254,9 +270,10 @@ function EnBody() {
       <div className={s.highlight}>
         <strong>Summary:</strong> You need a free account, tied to an email address, to use
         MOY IQ. Your financial data is stored on your device and we do not receive it. It only
-        leaves the device if you turn on sync (it travels and is stored{' '}
-        <strong>end-to-end encrypted</strong>, and we cannot read it) or if you email a PDF report.
-        We do not use analytics or behavior tracking, and the app does not connect to banks.
+        leaves the device if you turn on sync (it is encrypted on the device before upload; see
+        section 5 about the key) or if you email a PDF report. We count app openings anonymously
+        and without cookies (section 8), with no behavior tracking, and the app does not connect
+        to banks.
       </div>
 
       <div className={s.section}>
@@ -327,8 +344,9 @@ function EnBody() {
             receive product news.
           </li>
           <li>
-            <strong>Pro plan:</strong> the purchase email, an irreversible hash of the license key
-            (never the key in plain text), the plan, and the activation and expiration dates.
+            <strong>Pro plan:</strong> the purchase email, a hash of the license key in the license
+            registry, the key linked to the account (to restore the plan when signing in on another
+            device), the plan, and the activation and expiration dates.
           </li>
           <li>
             <strong>Push notifications (optional):</strong> the browser's technical identifier
@@ -336,21 +354,23 @@ function EnBody() {
             never financial data.
           </li>
           <li>
-            <strong>Sync (optional):</strong> the encrypted data described in section 5, which we
-            cannot read.
+            <strong>Sync (optional):</strong> the encrypted copy described in section 5.
           </li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>5. Cross-device sync (optional, end-to-end encrypted)</h2>
+        <h2>5. Cross-device sync (optional and encrypted)</h2>
         <p>
-          If the user turns on sync in Settings, their data is encrypted on the device with{' '}
-          <strong>AES-GCM</strong> before it is sent, and it is stored only in that form. The
-          encryption key is derived on the device from the license key and{' '}
-          <strong>never leaves it</strong>: neither MAXNOVA & LUCI Global LLC nor the
-          infrastructure provider can read the content. Sync is optional and can be turned off at
-          any time in Settings.
+          Sync is off by default. If the user turns it on in Settings, their data is encrypted on
+          the device with <strong>AES-GCM</strong> before it is sent and is stored encrypted. The
+          encryption key is derived from the license key, and our server stores that key to
+          validate the Pro plan. For that reason, we cannot currently guarantee that it is
+          technically impossible for us to read synced data; we only use it to sync the user's
+          devices. We are preparing a move to a passphrase known only to the user, so the key no
+          longer depends on anything the server stores. Anyone who prefers that their data never
+          leaves the device can keep sync turned off. Turning it off stops uploads but does not
+          delete the copy already stored: to delete it, write to support@moyiq.app.
         </p>
       </div>
 
@@ -374,7 +394,7 @@ function EnBody() {
             receive the payment confirmation and the email used for the purchase.
           </li>
           <li><strong>Resend:</strong> sending emails.</li>
-          <li><strong>Vercel:</strong> hosting for the app and the website.</li>
+          <li><strong>Vercel:</strong> hosting for the app and the website, and anonymous usage statistics (section 8).</li>
           <li><strong>Formspree:</strong> receives the contact form on the website.</li>
           <li><strong>Google:</strong> only if the user chooses to sign in with Google.</li>
         </ul>
@@ -386,11 +406,23 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>8. Analytics, tracking, and banks</h2>
+        <h2>8. Usage statistics, tracking, and banks</h2>
         <p>
-          MOY IQ <strong>does not include</strong> analytics tools (Google Analytics, Mixpanel,
-          Hotjar, or others) or behavior tracking. No events, sessions, or clicks are recorded. The
-          app does not connect to bank accounts and never asks for bank credentials.
+          To know how often the app is opened we use <strong>Vercel Web Analytics</strong>, without
+          cookies. It records each opening anonymously: the app address without personal data
+          (only the utm and ref campaign tags), the referring site, an approximate country and
+          region, the browser, the operating system, and the device type. It does not receive
+          financial data, the email, or the account identifier, does not use cookies or build
+          profiles, and to tell same-day visits apart it uses a temporary identifier discarded after
+          24 hours. The processor is Vercel Inc. (USA). Basis: our legitimate interest in knowing,
+          in aggregate, how the app is used. We do not measure when the browser sends Do Not Track
+          or Global Privacy Control; you can also block the script or ask us to exclude you at
+          support@moyiq.app.
+        </p>
+        <p>
+          MOY IQ does not include other analytics tools (Google Analytics, Mixpanel, Hotjar, or
+          others) or behavior tracking: no events or clicks are recorded. The app does not connect
+          to bank accounts and never asks for bank credentials.
         </p>
         <p>
           The hosting platform may log standard technical data (such as IP addresses) to operate
@@ -438,10 +470,9 @@ function EnBody() {
       <div className={s.section}>
         <h2>12. Security</h2>
         <p>
-          Local data depends on the security of the user's device. Synced data is end-to-end
-          encrypted: a server breach would not expose readable content. We recommend exporting
-          JSON backups periodically and keeping the license key somewhere safe (the encryption key
-          is derived from it).
+          Local data depends on the security of the user's device. Synced data is stored encrypted
+          with a key derived from the license key (see section 5 about its current limits). We
+          recommend exporting JSON backups periodically and keeping the license key somewhere safe.
         </p>
       </div>
 
@@ -476,10 +507,10 @@ function PtBody() {
       <div className={s.highlight}>
         <strong>Resumo:</strong> Para usar o MOY IQ é preciso ter uma conta gratuita, vinculada a
         um email. Os dados financeiros do usuário ficam no dispositivo dele e nós não os
-        recebemos. Eles só saem do dispositivo se o usuário ativar a sincronização (trafegam e são
-        armazenados <strong>criptografados de ponta a ponta</strong>, e não podemos lê-los) ou se
-        enviar um relatório PDF por email. Não usamos analytics nem rastreamento de comportamento,
-        e o app não se conecta a bancos.
+        recebemos. Eles só saem do dispositivo se o usuário ativar a sincronização (são
+        criptografados no dispositivo antes do envio; veja o item 5 sobre a chave) ou se enviar um
+        relatório PDF por email. Contamos as aberturas do app de forma anônima e sem cookies (item
+        8), sem rastreamento de comportamento, e o app não se conecta a bancos.
       </div>
 
       <div className={s.section}>
@@ -550,8 +581,9 @@ function PtBody() {
             receber novidades.
           </li>
           <li>
-            <strong>Plano Pro:</strong> o email da compra, um hash irreversível da chave de licença
-            (nunca a chave em texto puro), o plano e as datas de ativação e vencimento.
+            <strong>Plano Pro:</strong> o email da compra, um hash da chave de licença no registro de
+            licenças, a chave vinculada à conta (para restaurar o plano ao entrar em outro
+            dispositivo), o plano e as datas de ativação e vencimento.
           </li>
           <li>
             <strong>Notificações push (opcional):</strong> o identificador técnico (endpoint) do
@@ -559,21 +591,24 @@ function PtBody() {
             sistema, nunca dados financeiros.
           </li>
           <li>
-            <strong>Sincronização (opcional):</strong> os dados criptografados descritos no item 5,
-            que não podemos ler.
+            <strong>Sincronização (opcional):</strong> a cópia criptografada descrita no item 5.
           </li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>5. Sincronização entre dispositivos (opcional, criptografada de ponta a ponta)</h2>
+        <h2>5. Sincronização entre dispositivos (opcional e criptografada)</h2>
         <p>
-          Se o usuário ativar a sincronização em Configurações, os dados são criptografados no
-          dispositivo com <strong>AES-GCM</strong> antes do envio e armazenados apenas nessa
-          forma. A chave de criptografia é derivada no dispositivo a partir da chave de licença e{' '}
-          <strong>nunca sai dele</strong>: nem a MAXNOVA & LUCI Global LLC nem o provedor de
-          infraestrutura podem ler o conteúdo. A sincronização é opcional e pode ser desativada a
-          qualquer momento em Configurações.
+          A sincronização vem desativada. Se o usuário a ativar em Configurações, os dados são
+          criptografados no dispositivo com <strong>AES-GCM</strong> antes do envio e armazenados
+          criptografados. A chave de criptografia é derivada da chave de licença, e nosso servidor
+          guarda essa chave para validar o plano Pro. Por isso, hoje não podemos garantir que seja
+          tecnicamente impossível para nós ler os dados sincronizados; só os usamos para
+          sincronizar os dispositivos do usuário. Estamos preparando a mudança para uma frase-senha
+          que só o usuário conheça, para que a chave não dependa de nada que o servidor guarde.
+          Quem preferir que os dados não saiam do dispositivo pode manter a sincronização
+          desativada. Desativá-la interrompe os envios, mas não apaga a cópia já armazenada: para
+          apagá-la, escreva para support@moyiq.app.
         </p>
       </div>
 
@@ -598,7 +633,7 @@ function PtBody() {
             recebemos apenas a confirmação do pagamento e o email da compra.
           </li>
           <li><strong>Resend:</strong> envio de emails.</li>
-          <li><strong>Vercel:</strong> hospedagem do app e do site.</li>
+          <li><strong>Vercel:</strong> hospedagem do app e do site, e estatísticas de uso anônimas (item 8).</li>
           <li><strong>Formspree:</strong> recebe o formulário de contato do site.</li>
           <li><strong>Google:</strong> apenas se o usuário escolher entrar com o Google.</li>
         </ul>
@@ -610,12 +645,23 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>8. Analytics, rastreamento e bancos</h2>
+        <h2>8. Estatísticas de uso, rastreamento e bancos</h2>
         <p>
-          O MOY IQ <strong>não inclui</strong> ferramentas de analytics (Google Analytics,
-          Mixpanel, Hotjar ou outras) nem rastreamento de comportamento. Não são registrados
-          eventos, sessões nem cliques. O app não se conecta a contas bancárias e nunca pede
-          credenciais do banco.
+          Para saber quantas vezes o app é aberto usamos o <strong>Vercel Web Analytics</strong>,
+          sem cookies. Ele registra cada abertura de forma anônima: o endereço do app sem dados
+          pessoais (apenas as etiquetas de campanha utm e ref), o site de origem, um país e região
+          aproximados, o navegador, o sistema operacional e o tipo de dispositivo. Não recebe dados
+          financeiros, o email nem o identificador da conta, não usa cookies nem cria perfis e,
+          para distinguir visitas do mesmo dia, usa um identificador temporário descartado após 24
+          horas. O operador é a Vercel Inc. (EUA). Base: nosso interesse legítimo em conhecer, de
+          forma agregada, o uso do app. Não medimos quando o navegador envia «Não rastrear» ou
+          Global Privacy Control; também é possível bloquear o script ou pedir a exclusão em
+          support@moyiq.app.
+        </p>
+        <p>
+          O MOY IQ não inclui outras ferramentas de analytics (Google Analytics, Mixpanel, Hotjar
+          ou outras) nem rastreamento de comportamento: não são registrados eventos nem cliques. O
+          app não se conecta a contas bancárias e nunca pede credenciais do banco.
         </p>
         <p>
           A plataforma de hospedagem pode registrar dados técnicos padrão (como endereços IP) para
@@ -667,9 +713,9 @@ function PtBody() {
         <h2>12. Segurança</h2>
         <p>
           Os dados locais dependem da segurança do dispositivo do usuário. Os dados sincronizados
-          são criptografados de ponta a ponta: um vazamento do servidor não exporia conteúdo
-          legível. Recomendamos exportar backups JSON periodicamente e guardar a chave de licença
-          em local seguro (a chave de criptografia é derivada dela).
+          são armazenados criptografados com uma chave derivada da chave de licença (veja o item 5
+          sobre seus limites atuais). Recomendamos exportar backups JSON periodicamente e guardar
+          a chave de licença em local seguro.
         </p>
       </div>
 
@@ -707,10 +753,10 @@ function DeBody() {
       <div className={s.highlight}>
         <strong>Kurz gesagt:</strong> Für die Nutzung von MOY IQ benötigen Sie ein kostenloses
         Konto mit Ihrer E-Mail-Adresse. Ihre Finanzdaten bleiben auf Ihrem Gerät; wir erhalten sie
-        nicht. Sie verlassen das Gerät nur, wenn Sie die Synchronisierung aktivieren (dann{' '}
-        <strong>Ende-zu-Ende-verschlüsselt</strong>, für uns nicht lesbar) oder einen PDF-Bericht
-        per E-Mail versenden. Wir setzen keine Analyse- oder Tracking-Werkzeuge ein, und die App
-        verbindet sich nicht mit Ihrer Bank.
+        nicht. Sie verlassen das Gerät nur, wenn Sie die Synchronisierung aktivieren (dann vor dem
+        Hochladen auf dem Gerät verschlüsselt; zum Schlüssel siehe Abschnitt 5) oder einen
+        PDF-Bericht per E-Mail versenden. App-Aufrufe zählen wir anonym und ohne Cookies
+        (Abschnitt 8), ohne Verhaltens-Tracking, und die App verbindet sich nicht mit Ihrer Bank.
       </div>
 
       <div className={s.section}>
@@ -790,8 +836,9 @@ function DeBody() {
             Neuigkeiten nur mit Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).
           </li>
           <li>
-            <strong>Pro-Abo:</strong> E-Mail-Adresse des Kaufs, irreversibler Hash des
-            Lizenzschlüssels (nie der Schlüssel im Klartext), Tarif, Aktivierungs- und Ablaufdatum,
+            <strong>Pro-Abo:</strong> E-Mail-Adresse des Kaufs, Hash des Lizenzschlüssels im
+            Lizenzregister, der mit dem Konto verknüpfte Schlüssel (um den Tarif bei der Anmeldung
+            auf einem anderen Gerät wiederherzustellen), Tarif, Aktivierungs- und Ablaufdatum,
             Zahlungsbestätigung. Vertragserfüllung und Prüfung der Berechtigung (Art. 6 Abs. 1
             lit. b DSGVO); gesetzliche Aufbewahrungspflichten (Art. 6 Abs. 1 lit. c DSGVO).
             Kartendaten erhalten wir nicht.
@@ -818,13 +865,18 @@ function DeBody() {
       <div className={s.section}>
         <h2>5. Optionale Synchronisierung</h2>
         <p>
-          Aktivieren Sie in den Einstellungen die Synchronisierung zwischen Geräten, werden Ihre
-          Daten auf Ihrem Gerät mit <strong>AES-GCM</strong> verschlüsselt, bevor sie übertragen und
-          gespeichert werden (Ende-zu-Ende-Verschlüsselung). Der Schlüssel wird auf Ihrem Gerät aus
-          Ihrem Lizenzschlüssel abgeleitet und <strong>verlässt Ihr Gerät nicht</strong>. Weder wir
-          noch unser Infrastruktur-Dienstleister können den Inhalt lesen. Die Synchronisierung ist
-          freiwillig und lässt sich jederzeit in den Einstellungen deaktivieren. Rechtsgrundlage ist
-          Art. 6 Abs. 1 lit. b DSGVO.
+          Die Synchronisierung ist standardmäßig ausgeschaltet. Aktivieren Sie sie in den
+          Einstellungen, werden Ihre Daten auf Ihrem Gerät mit <strong>AES-GCM</strong>
+          verschlüsselt, bevor sie übertragen und verschlüsselt gespeichert werden. Der Schlüssel
+          wird aus Ihrem Lizenzschlüssel abgeleitet, und unser Server speichert diesen
+          Lizenzschlüssel, um den Pro-Tarif zu prüfen. Deshalb können wir derzeit nicht zusichern,
+          dass es für uns technisch unmöglich ist, synchronisierte Daten zu lesen; wir nutzen sie
+          ausschließlich zur Synchronisierung Ihrer Geräte. Wir bereiten die Umstellung auf eine
+          Passphrase vor, die nur Sie kennen, damit der Schlüssel nicht mehr von serverseitig
+          gespeicherten Daten abhängt. Wenn Ihre Daten das Gerät nicht verlassen sollen, lassen Sie
+          die Synchronisierung ausgeschaltet. Das Ausschalten stoppt neue Uploads, löscht aber die
+          bereits gespeicherte Kopie nicht; zur Löschung schreiben Sie an support@moyiq.app.
+          Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.
         </p>
       </div>
 
@@ -853,10 +905,23 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>8. Keine Analyse, kein Tracking, keine Bankverbindung</h2>
+        <h2>8. Nutzungsstatistik, kein Tracking, keine Bankverbindung</h2>
         <p>
-          Wir setzen keine Analysewerkzeuge, keine Werbenetzwerke und keine Cookies zu Analyse- oder
-          Werbezwecken ein. Ereignisse, Sitzungen oder Klicks werden nicht aufgezeichnet. MOY IQ
+          Um zu wissen, wie oft die App geöffnet wird, nutzen wir <strong>Vercel Web
+          Analytics</strong> ohne Cookies. Erfasst wird jeder Aufruf anonym: die App-Adresse ohne
+          personenbezogene Daten (nur die Kampagnenparameter utm und ref), die verweisende Website,
+          ungefähres Land und Region, Browser, Betriebssystem und Gerätetyp. Finanzdaten,
+          E-Mail-Adresse und Konto-Kennung werden nicht übermittelt; es werden keine Cookies gesetzt
+          und keine Profile gebildet. Zur Unterscheidung von Aufrufen desselben Tages dient eine
+          temporäre Kennung, die nach 24 Stunden verworfen wird. Auftragsverarbeiter ist Vercel Inc.
+          (USA). Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt
+          darin, die Nutzung der App in zusammengefasster Form zu kennen. Sendet Ihr Browser „Do Not
+          Track" oder Global Privacy Control, messen wir nicht; Sie können das Skript auch blockieren
+          oder uns unter support@moyiq.app um Ausschluss bitten.
+        </p>
+        <p>
+          Darüber hinaus setzen wir keine Analysewerkzeuge, keine Werbenetzwerke und keine Cookies
+          zu Analyse- oder Werbezwecken ein. Ereignisse oder Klicks werden nicht aufgezeichnet. MOY IQ
           verbindet sich nicht mit Ihrem Bankkonto und fragt keine Bankzugangsdaten ab. Für den
           Betrieb nutzt die App ausschließlich den technisch erforderlichen Speicher Ihres Browsers
           (IndexedDB, localStorage).
@@ -878,7 +943,7 @@ function DeBody() {
             Kaufs, nie Kartendaten.
           </li>
           <li><strong>Resend (USA):</strong> Versand von E-Mails.</li>
-          <li><strong>Vercel Inc. (USA):</strong> Hosting von App und Website.</li>
+          <li><strong>Vercel Inc. (USA):</strong> Hosting von App und Website sowie anonyme Nutzungsstatistik (Abschnitt 8).</li>
           <li><strong>Formspree Inc. (USA):</strong> Entgegennahme von Website-Formularen.</li>
           <li><strong>Google (Google Ireland Ltd. / Google LLC):</strong> Anmeldung mit Google, nur wenn Sie diese wählen.</li>
         </ul>
