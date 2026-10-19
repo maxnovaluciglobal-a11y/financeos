@@ -56,7 +56,7 @@ const KV_KRANKENGELD_ABSCHLAG = 0.04
 const DE_VIGENTE_DESDE_ANO = 2026
 if (new Date().getFullYear() > DE_VIGENTE_DESDE_ANO) {
   console.warn(
-    `[FinanceOS] taxCalcDE.js está calibrado para ${DE_VIGENTE_DESDE_ANO} — revisar Beitragsbemessungsgrenzen/tarifa §32a contra bmf-steuerrechner.de y actualizar DE_VIGENTE_DESDE_ANO.`
+    `[MOY IQ] taxCalcDE.js está calibrado para ${DE_VIGENTE_DESDE_ANO} — revisar Beitragsbemessungsgrenzen/tarifa §32a contra bmf-steuerrechner.de y actualizar DE_VIGENTE_DESDE_ANO.`
   )
 }
 

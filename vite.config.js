@@ -61,6 +61,9 @@ export default defineConfig({
         // (igual en los 4 idiomas). Declarar 'es' afirmaba un idioma que la app
         // no tiene fijo; el idioma real lo pone <html lang> en tiempo de ejecución.
         name: 'MOY IQ', short_name: 'MOY IQ',
+        // PRD-9: descripción, id estable y categoría para la ficha de instalación.
+        id: '/app/', description: 'Finanzas personales en dos monedas, con tus datos en tu dispositivo.',
+        categories: ['finance', 'productivity'],
         theme_color: '#14213D', background_color: '#F1EEE6',
         display: 'standalone', start_url: '/app/',
         icons: [

@@ -2143,6 +2143,8 @@ export const es = {
     'cat.Ahorro/Inversión': "Ahorro/Inversión",
     'settings.dualCurrency.alreadyUsd': "Tu moneda principal ya es USD — el equivalente dual no aplica.",
     'settings.footer': "MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Datos locales · No asesoría financiera certificada",
+    'settings.support.line': "Soporte:",
+    'settings.support.time': "respondemos normalmente en 1 día hábil",
     'adv.notes.nextStepsPh': "1. Revisar gastos de entretenimiento\n2. Definir meta de fondo de emergencia\n3. Evaluar refinanciamiento de la tarjeta",
     'tpl.personal.description': "Ideal para comenzar. Cubre los gastos del día a día, una meta de ahorro y control básico del presupuesto mensual.",
     'tpl.personal.advisorTip': "Empezar por el orden básico. El cliente necesita ver sus números reales antes de cualquier estrategia.",

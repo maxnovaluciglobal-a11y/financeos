@@ -5,10 +5,10 @@
 // must never reach the browser bundle or a request the browser makes.
 //
 // Fixer's free tier only allows EUR as the `base` currency (requesting any
-// other base needs a paid plan), and only allows plain HTTP, not HTTPS, to
-// data.fixer.io. Both constraints are handled here regardless of which plan
-// this account is on: always fetch EUR-based, then convert to "1 USD = X"
-// server-side, so the client never has to know about either limitation.
+// other base needs a paid plan): always fetch EUR-based, then convert to
+// "1 USD = X" server-side. HTTPS is included in every plan (verified on
+// fixer.io/pricing, 19-oct-2026; audit VEN-12), so the key no longer travels
+// over plain HTTP.
 //
 // AR, VE and CL are intentionally NOT special-cased away from this endpoint:
 // this only feeds Settings' single usdRate field (the dashboard's dual-
@@ -71,7 +71,7 @@ export default async function handler(req) {
     // No `base` param on purpose — see file header. HTTP, not HTTPS — Fixer's
     // free tier rejects https_access_restricted otherwise; paid plans accept
     // plain HTTP too, so this is safe on either tier.
-    const url = `http://data.fixer.io/api/latest?access_key=${apiKey}&symbols=${SYMBOLS.join(',')}`;
+    const url = `https://data.fixer.io/api/latest?access_key=${apiKey}&symbols=${SYMBOLS.join(',')}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const json = await res.json();
 

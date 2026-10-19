@@ -24,7 +24,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     // Sin telemetría externa (privacidad). Solo consola para depurar en soporte.
-    console.error('[FinanceOS] Error de render capturado:', error, info?.componentStack)
+    console.error('[MOY IQ] Error de render capturado:', error, info?.componentStack)
   }
 
   handleReload = () => {

@@ -115,7 +115,7 @@ export default function More({ setPage }) {
         <button type="button" onClick={() => setPage('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
         <button type="button" onClick={() => setPage('terms')} className={s.legalLink}>{t('nav.legal.terms')}</button>
         <button type="button" onClick={() => setPage('disclaimer')} className={s.legalLink}>{t('nav.legal.disclaimer')}</button>
-        <a href="https://www.moyiq.app/docs/" target="_blank" rel="noreferrer" className={s.legalLink}>{t('nav.legal.help')}</a>
+        <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noreferrer" className={s.legalLink}>{t('nav.legal.help')}</a>
       </div>
 
       <div className={s.version}>

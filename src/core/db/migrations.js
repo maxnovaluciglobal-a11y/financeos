@@ -29,13 +29,13 @@ function putSnapshotBestEffort(transaction, record, label) {
     try {
       req = unwrap(transaction).objectStore('backups').put(record)
     } catch (e) {
-      console.warn(`[FinanceOS] foto previa (${label}) omitida:`, e?.name || e)
+      console.warn(`[MOY IQ] foto previa (${label}) omitida:`, e?.name || e)
       resolve(); return
     }
     req.onsuccess = () => resolve()
     req.onerror = (ev) => {
       ev.preventDefault(); ev.stopPropagation?.()
-      console.warn(`[FinanceOS] foto previa (${label}) omitida:`, req.error?.name || req.error)
+      console.warn(`[MOY IQ] foto previa (${label}) omitida:`, req.error?.name || req.error)
       resolve()
     }
   })
@@ -123,13 +123,13 @@ export const MIGRATIONS = [
           // sin que aborte la transacción de upgrade.
           req = unwrap(transaction).objectStore('backups').put(record)
         } catch (e) {
-          console.warn('[FinanceOS] foto previa a fijos omitida:', e?.name || e)
+          console.warn('[MOY IQ] foto previa a fijos omitida:', e?.name || e)
           resolve(); return
         }
         req.onsuccess = () => resolve()
         req.onerror = (ev) => {
           ev.preventDefault(); ev.stopPropagation?.()
-          console.warn('[FinanceOS] foto previa a fijos omitida:', req.error?.name || req.error)
+          console.warn('[MOY IQ] foto previa a fijos omitida:', req.error?.name || req.error)
           resolve()
         }
       })
@@ -207,7 +207,7 @@ export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps
   }
   if (!chain) return undefined
   return chain.catch((err) => {
-    console.error('[FinanceOS] migración de IndexedDB fallida, se aborta:', err)
+    console.error('[MOY IQ] migración de IndexedDB fallida, se aborta:', err)
     try { transaction?.done?.catch?.(() => {}) } catch {}
     try { transaction?.abort() } catch {}
   })

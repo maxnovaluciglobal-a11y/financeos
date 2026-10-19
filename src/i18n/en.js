@@ -2143,6 +2143,8 @@ export const en = {
     'cat.Ahorro/Inversión': "Savings/Investing",
     'settings.dualCurrency.alreadyUsd': "Your main currency is already USD, so the dual equivalent doesn't apply.",
     'settings.footer': "MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Local data · Not certified financial advice",
+    'settings.support.line': "Support:",
+    'settings.support.time': "we usually reply within 1 business day",
     'adv.notes.nextStepsPh': "1. Review entertainment spending\n2. Set an emergency fund goal\n3. Look into refinancing the card",
     'tpl.personal.description': "A good place to start. Covers day-to-day spending, one savings goal and basic control of the monthly budget.",
     'tpl.personal.advisorTip': "Start with basic order. The client needs to see their real numbers before any strategy.",

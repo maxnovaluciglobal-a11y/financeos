@@ -37,7 +37,7 @@ export const TOPE_CESANTIA_UF  = 135.2  // seguro de cesantía
 const TOPES_VIGENTES_DESDE_ANO = 2026
 if (new Date().getFullYear() > TOPES_VIGENTES_DESDE_ANO) {
   console.warn(
-    `[FinanceOS] TOPE_AFP_SALUD_UF/TOPE_CESANTIA_UF/COMISION_AFP_PROMEDIO_PCT en indicadores.js están vigentes desde ${TOPES_VIGENTES_DESDE_ANO} — revisar contra spensiones.cl y actualizar TOPES_VIGENTES_DESDE_ANO.`
+    `[MOY IQ] TOPE_AFP_SALUD_UF/TOPE_CESANTIA_UF/COMISION_AFP_PROMEDIO_PCT en indicadores.js están vigentes desde ${TOPES_VIGENTES_DESDE_ANO} — revisar contra spensiones.cl y actualizar TOPES_VIGENTES_DESDE_ANO.`
   )
 }
 

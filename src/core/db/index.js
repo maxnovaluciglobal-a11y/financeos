@@ -81,13 +81,13 @@ export async function getDB() {
       // abortó el upgrade fue la foto (cuota llena), la base igual llega a v4.
       try {
         _db = await openFinanceDB({ skipSnapshot: true })
-        console.warn('[FinanceOS] upgrade completado sin la foto previa:', e1?.name || e1)
+        console.warn('[MOY IQ] upgrade completado sin la foto previa:', e1?.name || e1)
         try { localStorage.setItem('fos_snapshot_skipped', new Date().toISOString()) } catch {}
         return _db
       } catch (e2) { err = e2 }
     }
     if (await existingDatabase()) {
-      console.error('[FinanceOS] no se pudo abrir la base existente:', err)
+      console.error('[MOY IQ] no se pudo abrir la base existente:', err)
       throw new DbOpenError(err)
     }
     console.warn('IndexedDB no disponible → localStorage fallback:', err?.message)

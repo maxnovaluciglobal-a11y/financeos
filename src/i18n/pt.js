@@ -2143,6 +2143,8 @@ export const pt = {
     'cat.Ahorro/Inversión': "Poupança/Investimentos",
     'settings.dualCurrency.alreadyUsd': "Sua moeda principal já é USD — o equivalente duplo não se aplica.",
     'settings.footer': "MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Dados locais · Não é assessoria financeira certificada",
+    'settings.support.line': "Suporte:",
+    'settings.support.time': "normalmente respondemos em 1 dia útil",
     'adv.notes.nextStepsPh': "1. Revisar gastos com lazer\n2. Definir meta de reserva de emergência\n3. Avaliar refinanciamento do cartão",
     'tpl.personal.description': "Ideal para começar. Cobre os gastos do dia a dia, uma meta de poupança e o controle básico do orçamento mensal.",
     'tpl.personal.advisorTip': "Comece pela organização básica. O cliente precisa ver seus números reais antes de qualquer estratégia.",

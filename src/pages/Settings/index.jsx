@@ -380,6 +380,13 @@ export default function Settings() {
           </div>
         </Card>
       )}
+      {/* UXP-6: mismo tiempo de respuesta que publica moyiq.app/ayuda. */}
+      <p style={{fontSize:13,color:'var(--tm)',lineHeight:1.6,margin:'12px 2px 0'}}>
+        {t('settings.support.line')}{' '}
+        <a href="mailto:support@moyiq.app" style={{color:'var(--tx)'}}>support@moyiq.app</a>
+        {' · '}{t('settings.support.time')}{' · '}
+        <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
+      </p>
       <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
         {t('settings.footer')}
       </div>

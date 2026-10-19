@@ -515,7 +515,7 @@ export async function sendKeyEmail(
     ? `<p>${T.trialStarted(TRIAL_DAYS, formatDateFor(trial.endsAt, lang))}</p>
       <p>${chargeSentence(trial, lang)}${T.renews(trial.interval)}</p>
       ${cancelSentence(config, lang)}`
-    : `<p>${T.purchase(plan === "pro" ? "Pro" : "Personal")}</p>`;
+    : `<p>${T.purchase(plan === "pro" ? "Pro" : "Starter")}</p>`;
   const subject = heading;
   const html = `
     <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">

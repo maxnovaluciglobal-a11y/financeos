@@ -2142,6 +2142,8 @@ export const de = {
     'cat.Ahorro/Inversión': "Sparen/Anlage",
     'settings.dualCurrency.alreadyUsd': "Ihre Hauptwährung ist bereits USD – der Doppelbetrag entfällt.",
     'settings.footer': "MOY IQ v1.5 · MAXNOVA & LUCI Global LLC · Lokale Daten · Keine zertifizierte Finanzberatung",
+    'settings.support.line': "Support:",
+    'settings.support.time': "Antwort in der Regel innerhalb von 1 Werktag",
     'adv.notes.nextStepsPh': "1. Freizeitausgaben prüfen\n2. Ziel für den Notgroschen festlegen\n3. Umschuldung der Kreditkarte prüfen",
     'tpl.personal.description': "Gut für den Einstieg. Deckt die täglichen Ausgaben, ein Sparziel und die grundlegende Kontrolle des Monatsbudgets ab.",
     'tpl.personal.advisorTip': "Mit der Grundordnung beginnen. Der Kunde muss seine echten Zahlen sehen, bevor es um Strategie geht.",

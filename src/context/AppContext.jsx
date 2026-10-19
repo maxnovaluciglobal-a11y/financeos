@@ -115,7 +115,7 @@ export function AppProvider({ children }) {
     try {
       const ups = await reconcileRecurringSources()
       if (ups.length) dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') })
-    } catch (e) { console.error('[FinanceOS] fijos de suscripciones/deudas:', e) }
+    } catch (e) { console.error('[MOY IQ] fijos de suscripciones/deudas:', e) }
   }, [])
 
   // ── Borrado con deshacer ──────────────────────────────────────────────────────
@@ -135,7 +135,7 @@ export function AppProvider({ children }) {
     try {
       const next = ruleAfterLinkedRecord(await dbGetAll('recurring'), record, { deleted })
       if (next) { await dbAdd('recurring', next); dispatch({ type: 'UPSERT_RULE', item: next }) }
-    } catch (e) { console.error('[FinanceOS] fijo del registro borrado:', e) }
+    } catch (e) { console.error('[MOY IQ] fijo del registro borrado:', e) }
   }
   const deleteWithUndo = useCallback(async (store, item, deletedMsg, undoLabel) => {
     if (!item?.id) return
@@ -176,7 +176,7 @@ export function AppProvider({ children }) {
       if (upserts.length || adv || created) await rehydrate()
       if (created) showToast(tr(created === 1 ? 'rec.toast.autoOne' : 'rec.toast.autoMany', { n: created }), 'ok')
     } catch (e) {
-      console.error('[FinanceOS] mantenimiento de fijos:', e)
+      console.error('[MOY IQ] mantenimiento de fijos:', e)
     } finally {
       maintRef.current = false
     }
