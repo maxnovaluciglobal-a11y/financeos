@@ -25,6 +25,11 @@ export function defaultFuenteVE(data) {
   return DEFAULT_FUENTE_VE
 }
 
+export function sourceDate(iso, fallback = Date.now()) {
+  const t = Date.parse(iso || '')
+  return Number.isFinite(t) ? t : fallback
+}
+
 const LS_KEY = 'fnos_tasa_ve_v1'
 const TTL_MS = 6 * 60 * 60 * 1000 // 6h — el paralelo se mueve rápido
 const URL = 'https://ve.dolarapi.com/v1/dolares'
@@ -46,8 +51,10 @@ export async function loadTasaVE() {
   try {
     const res = await fetch(URL)
     const data = await res.json()
-    const oficial = data.find(d => d.fuente === 'oficial')?.promedio
-    const paralelo = data.find(d => d.fuente === 'paralelo')?.promedio
+    const rowOficial = data.find(d => d.fuente === 'oficial')
+    const rowParalelo = data.find(d => d.fuente === 'paralelo')
+    const oficial = rowOficial?.promedio
+    const paralelo = rowParalelo?.promedio
     if (!oficial) throw new Error('sin datos')
     const result = {
       oficial,
@@ -57,11 +64,15 @@ export async function loadTasaVE() {
       paralelo: paralelo || null,
       paraleloDisponible: Boolean(paralelo),
       ts: Date.now(),
+      // FIN-17: fecha de la FUENTE (el BCV publica con días de atraso), no la
+      // de la consulta. `ts` sigue siendo la hora de la consulta (caché).
+      at: sourceDate(rowOficial?.fechaActualizacion),
+      paraleloAt: sourceDate(rowParalelo?.fechaActualizacion),
       source: 'api',
     }
     localStorage.setItem(LS_KEY, JSON.stringify(result))
     return result
   } catch {
-    return { ...FALLBACK, paraleloDisponible: true, ts: FALLBACK_AT, source: 'fallback' }
+    return { ...FALLBACK, paraleloDisponible: true, ts: FALLBACK_AT, at: FALLBACK_AT, source: 'fallback' }
   }
 }

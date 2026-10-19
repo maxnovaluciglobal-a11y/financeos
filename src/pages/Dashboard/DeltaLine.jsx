@@ -10,16 +10,18 @@ import s from './Home.module.css'
 
 // delta: resultado de monthDelta() o null (no se muestra nada).
 // valueText: reemplaza el porcentaje (ej. "+3 pts" del IQ Score).
-export default function DeltaLine({ delta, prevMonth, valueText, style }) {
+// untilDay: la comparación es contra el mes anterior hasta ese día (FIN-14).
+export default function DeltaLine({ delta, prevMonth, valueText, style, untilDay = null }) {
   const { t, lang } = useT()
   if (!delta) return null
   const month = monthName(prevMonth, lang)
   const flat = delta.dir === 'flat'
   const Ic = flat ? Equal : delta.dir === 'up' ? ArrowUp : ArrowDown
   const color = flat || delta.good === null ? 'var(--th)' : delta.good ? 'var(--pos)' : 'var(--neg)'
-  const text = flat
-    ? t('home.delta.flat', { month })
-    : t('home.delta.vs', { pct: valueText ?? fmtSignedPct(delta.pct, lang), month })
+  const pct = valueText ?? fmtSignedPct(delta.pct, lang)
+  const text = untilDay != null
+    ? (flat ? t('home.delta.flatDay', { month, d: untilDay }) : t('home.delta.vsDay', { pct, month, d: untilDay }))
+    : (flat ? t('home.delta.flat', { month }) : t('home.delta.vs', { pct, month }))
   return (
     <span className={s.delta} style={{ color, ...style }}>
       <Ic size={14} strokeWidth={2} aria-hidden="true" />

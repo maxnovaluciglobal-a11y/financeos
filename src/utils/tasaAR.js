@@ -4,6 +4,8 @@
 // Cache localStorage 3h — el blue se mueve rápido durante el día.
 // Mismo patrón que indicadores.js (Chile) y tasaVE.js (Venezuela).
 
+import { sourceDate } from './tasaVE.js'
+
 const LS_KEY = 'fnos_tasa_ar_v1'
 const TTL_MS = 3 * 60 * 60 * 1000
 const URL = 'https://dolarapi.com/v1/dolares'
@@ -17,6 +19,10 @@ export const FALLBACK = {
   cripto: 1575.22,
   tarjeta: 1963,
 }
+
+// Fecha de esos valores (commit 0b09e31, 14-ago-2026): sin red se muestran con
+// esta fecha, nunca con la de hoy (FIN-17).
+export const FALLBACK_AT = new Date(2026, 7, 14).getTime()
 
 const CASA_MAP = { oficial: 'oficial', blue: 'blue', mep: 'bolsa', ccl: 'contadoconliqui', mayorista: 'mayorista', cripto: 'cripto', tarjeta: 'tarjeta' }
 
@@ -43,10 +49,11 @@ export async function loadTasaAR() {
       byCasa[key] = found?.venta ?? null
     }
     if (!byCasa.oficial) throw new Error('sin datos')
-    const result = { ...byCasa, ts: Date.now(), source: 'api' }
+    const oficialRow = data.find(d => d.casa === 'oficial')
+    const result = { ...byCasa, ts: Date.now(), at: sourceDate(oficialRow?.fechaActualizacion), source: 'api' }
     localStorage.setItem(LS_KEY, JSON.stringify(result))
     return result
   } catch {
-    return { ...FALLBACK, ts: Date.now(), source: 'fallback' }
+    return { ...FALLBACK, ts: FALLBACK_AT, at: FALLBACK_AT, source: 'fallback' }
   }
 }

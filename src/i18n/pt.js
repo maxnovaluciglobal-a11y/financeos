@@ -1868,6 +1868,8 @@ export const pt = {
     'home.kpi.daysLeft.many': "{n} dias restantes",
     'home.delta.vs': "{pct} vs. {month}",
     'home.delta.flat': "igual a {month}",
+    'home.delta.vsDay': "{pct} vs. {month} até o dia {d}",
+    'home.delta.flatDay': "igual a {month} até o dia {d}",
     'home.kpis.aria': "Resumo do mês",
     'home.budget.title': "Orçamento por categoria",
     'home.budget.hint': "gasto / limite",

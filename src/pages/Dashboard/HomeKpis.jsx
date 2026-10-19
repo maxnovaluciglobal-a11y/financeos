@@ -23,7 +23,9 @@ import r from '../../components/recurring/recurring.module.css'
 export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
   const { t, lang } = useT()
   const prevMonth = prevMonthOf(activeMonth)
-  const { cur, prev } = kpis
+  const { cur } = kpis
+  const prev = kpis.prevToDate || kpis.prev
+  const cutDay = kpis.prevCutDay ?? null
   const hasData = cur.incCount > 0 || cur.expCount > 0
   const prevHasData = prev.incCount > 0 || prev.expCount > 0
 
@@ -67,7 +69,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
               )}
-              {hasData && <DeltaLine delta={monthDelta(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} />}
+              {hasData && <DeltaLine delta={monthDelta(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} untilDay={cutDay} />}
               {hasData && <div className={s.kpiSub}>{subParts.join(' · ')}</div>}
               {pending && pending.count > 0 && (
                 <div className={r.pending}>
@@ -120,7 +122,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
                 <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
               </div>
-              <DeltaLine delta={k.delta} prevMonth={prevMonth} />
+              <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} />
               {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
             </Tag>
           )

@@ -1867,6 +1867,8 @@ export const de = {
     'home.kpi.daysLeft.many': "Noch {n} Tage",
     'home.delta.vs': "{pct} ggü. {month}",
     'home.delta.flat': "wie im {month}",
+    'home.delta.vsDay': "{pct} ggü. {month} bis zum {d}.",
+    'home.delta.flatDay': "wie im {month} bis zum {d}.",
     'home.kpis.aria': "Monatsübersicht",
     'home.budget.title': "Budget nach Kategorie",
     'home.budget.hint': "ausgegeben / Limit",

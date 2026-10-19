@@ -11,7 +11,7 @@ import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
 import UpgradeCard from './UpgradeCard.jsx'
-import { CURRENCY_OPTIONS, DEFAULT_USD_RATES, currencyOptionLabel } from '../shared/constants.js'
+import { CURRENCY_OPTIONS, currencyOptionLabel } from '../shared/constants.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { isSyncEnabled, syncMeta, syncAvailable } from '../../core/sync.js'
@@ -38,7 +38,10 @@ export default function Settings() {
   useEffect(() => { loadFixerRates().then(setFx) }, [])
   // Tasa a usar: la de Fixer si ya cargó, si no el hardcodeado de siempre —
   // nunca deja al usuario esperando un fetch para ver/editar el campo.
-  const liveRate = (currency) => fx?.rates?.[currency] ?? DEFAULT_USD_RATES[currency]
+  // FIN-17: solo una tasa consultada de verdad (Fixer). El respaldo fijo
+  // DEFAULT_USD_RATES (VES 36 frente a ~880 reales) ya no se guarda como
+  // usdRate: sin tasa, el campo queda vacío y el Inicio pide agregarla.
+  const liveRate = (currency) => (fx?.source === 'fixer' ? fx?.rates?.[currency] : undefined)
   // R12: la tasa guarda su fecha y fuente (el Inicio nunca muestra una tasa sin
   // fecha). Solo una tasa consultada de verdad (Fixer) lleva fecha de consulta;
   // el valor fijo de respaldo queda "sin fecha" para que el Inicio lo diga.
@@ -202,7 +205,7 @@ export default function Settings() {
             aria-label={t('settings.dualCurrency.label')}
             onClick={() => {
               const next = !settings.showDualCurrency
-              const rate = settings.usdRate || liveRate(settings.currency || 'CLP') || 1
+              const rate = settings.usdRate || liveRate(settings.currency || 'CLP') || 0
               const meta = settings.usdRate ? {} : rateMeta(settings.currency || 'CLP', rate)
               updateSettings({ ...settings, showDualCurrency: next, usdRate: rate, ...meta })
             }}
@@ -241,7 +244,7 @@ export default function Settings() {
                 {t('settings.exchangeRate.perUsd', { currency: settings.currency || 'CLP' })}
               </span>
               <Btn variant="ghost" size="sm"
-                onClick={() => { const r = liveRate(settings.currency) || 1; updateSettings({...settings, usdRate: r, ...rateMeta(settings.currency, r)}) }}>
+                onClick={() => { const r = liveRate(settings.currency) || 0; updateSettings({...settings, usdRate: r, ...rateMeta(settings.currency, r)}) }}>
                 {t('settings.exchangeRate.reset')}
               </Btn>
             </div>

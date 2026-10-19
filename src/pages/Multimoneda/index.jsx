@@ -77,8 +77,8 @@ export default function Multimoneda() {
 
   const fmtUSD = (n) => fmtRef(n, lang)
   const tasaMeta = !live ? null
-    : live.source !== 'api' ? t('multimoneda.tasa.offline', { date: fmtDay(live.ts) })
-    : tasaEsLive ? `${t(SOURCE_LABEL[fuenteTasa === 'oficial' ? 'bcv' : 'paralelo'])} · ${t('multimoneda.tasa.live', { host: 've.dolarapi.com', date: fmtDay(live.ts, true) })}`
+    : live.source !== 'api' ? t('multimoneda.tasa.offline', { date: fmtDay(live.at ?? live.ts) })
+    : tasaEsLive ? `${t(SOURCE_LABEL[fuenteTasa === 'oficial' ? 'bcv' : 'paralelo'])} · ${t('multimoneda.tasa.live', { host: 've.dolarapi.com', date: fmtDay(live.at ?? live.ts, true) })}`
     : t('multimoneda.tasa.edited')
 
   return (

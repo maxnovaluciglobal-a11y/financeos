@@ -86,9 +86,10 @@ export default function Dashboard({ setPage }) {
     const [y, mo] = activeMonth.split('-').map(Number)
     const prevMo  = mo === 1 ? `${y - 1}-12` : `${y}-${String(mo - 1).padStart(2, '0')}`
 
-    function monthTotals(month) {
-      const inc = incomes.filter(r  => r?.date?.startsWith(month))
-      const exp = expenses.filter(r => r?.date?.startsWith(month))
+    function monthTotals(month, untilDay = null) {
+      const inDay = (r) => untilDay == null || Number(r.date.slice(8, 10)) <= untilDay
+      const inc = incomes.filter(r  => r?.date?.startsWith(month) && inDay(r))
+      const exp = expenses.filter(r => r?.date?.startsWith(month) && inDay(r))
       const totalInc = inc.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
       const totalExp = exp.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
       const balance  = totalInc - totalExp                        // Balance neto = ingresos − gastos
@@ -104,6 +105,12 @@ export default function Dashboard({ setPage }) {
 
     const cur  = monthTotals(activeMonth)
     const prev = monthTotals(prevMo)
+    // FIN-14: con el mes en curso, las variaciones del Inicio comparan contra
+    // el mes anterior HASTA EL MISMO DÍA, no contra el mes completo.
+    const now = new Date()
+    const isCurrent = now.getFullYear() === y && now.getMonth() + 1 === mo
+    const prevCutDay = isCurrent ? now.getDate() : null
+    const prevToDate = prevCutDay == null ? prev : monthTotals(prevMo, prevCutDay)
 
     function delta(cur, prev) {
       if (prev === 0) return null
@@ -112,7 +119,7 @@ export default function Dashboard({ setPage }) {
 
     return {
       ...cur,
-      cur, prev,
+      cur, prev, prevToDate, prevCutDay,
       delta: {
         inc:  delta(cur.totalInc,    prev.totalInc),
         exp:  delta(cur.totalExp,    prev.totalExp),

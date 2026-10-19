@@ -60,11 +60,11 @@ export function cachedRate({ country, currency }, read) {
   const parse = (key) => { try { const raw = read(key); return raw ? JSON.parse(raw) : null } catch { return null } }
   if (cc === 'VE' && cur === 'VES') {
     const d = parse(CACHE_KEYS.VE)
-    if (d?.source === 'api' && validRate(d.oficial) && d.ts) return { rate: Number(d.oficial), at: Number(d.ts), source: 'bcv' }
+    if (d?.source === 'api' && validRate(d.oficial) && d.ts) return { rate: Number(d.oficial), at: Number(d.at ?? d.ts), source: 'bcv' }
   }
   if (cc === 'AR' && cur === 'ARS') {
     const d = parse(CACHE_KEYS.AR)
-    if (d?.source === 'api' && validRate(d.oficial) && d.ts) return { rate: Number(d.oficial), at: Number(d.ts), source: 'oficial' }
+    if (d?.source === 'api' && validRate(d.oficial) && d.ts) return { rate: Number(d.oficial), at: Number(d.at ?? d.ts), source: 'oficial' }
   }
   const f = parse(CACHE_KEYS.FIXER)
   if (f?.source === 'fixer' && validRate(f.rates?.[cur]) && f.ts) return { rate: Number(f.rates[cur]), at: Number(f.ts), source: 'fixer' }
@@ -102,11 +102,11 @@ export function rateOptions({ country, currency }, { ve, ar, fixer } = {}) {
   const cur = String(currency || '').toUpperCase()
   const out = []
   if (cc === 'VE' && cur === 'VES' && ve?.source === 'api') {
-    if (validRate(ve.oficial)) out.push({ source: 'bcv', rate: Number(ve.oficial), at: Number(ve.ts) })
-    if (ve.paraleloDisponible && validRate(ve.paralelo)) out.push({ source: 'paralelo', rate: Number(ve.paralelo), at: Number(ve.ts) })
+    if (validRate(ve.oficial)) out.push({ source: 'bcv', rate: Number(ve.oficial), at: Number(ve.at ?? ve.ts) })
+    if (ve.paraleloDisponible && validRate(ve.paralelo)) out.push({ source: 'paralelo', rate: Number(ve.paralelo), at: Number(ve.paraleloAt ?? ve.at ?? ve.ts) })
   }
   if (cc === 'AR' && cur === 'ARS' && ar?.source === 'api') {
-    for (const k of ['oficial', 'blue', 'mep']) if (validRate(ar[k])) out.push({ source: k, rate: Number(ar[k]), at: Number(ar.ts) })
+    for (const k of ['oficial', 'blue', 'mep']) if (validRate(ar[k])) out.push({ source: k, rate: Number(ar[k]), at: Number(ar.at ?? ar.ts) })
   }
   if (out.length === 0 && fixer?.source === 'fixer' && validRate(fixer.rates?.[cur])) {
     out.push({ source: 'fixer', rate: Number(fixer.rates[cur]), at: Number(fixer.ts) })
