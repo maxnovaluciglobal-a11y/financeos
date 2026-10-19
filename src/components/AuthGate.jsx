@@ -5,6 +5,7 @@
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.
 import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
@@ -63,6 +64,7 @@ export default function AuthGate({ onAuthenticated }) {
   const [resendState, setResendState] = useState('idle') // 'idle' | 'sending' | 'sent' | 'error'
   const [forgotMode, setForgotMode] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   // C-22: aviso tras borrar la cuenta desde Ajustes (la app recarga y llega acá).
   // La marca se borra al volver a entrar, no al leerla: la app puede montar
   // esta pantalla dos veces (cierre de sesión y recarga).
@@ -162,13 +164,13 @@ export default function AuthGate({ onAuthenticated }) {
       fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)',
       marginBottom: 10, boxSizing: 'border-box',
     },
-    // Mismo criterio visual que .fl en ui.module.css (label chico mono mayúsculas).
+    // PRD-8 (C-39): etiqueta en sans, legible; el ejemplo queda en el placeholder.
     label: {
-      fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--tm)',
-      textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 4,
+      fontSize: 13, fontFamily: 'var(--sans)', fontWeight: 500, color: 'var(--tx)',
+      display: 'block', marginBottom: 6,
     },
     tabBtn: (active) => ({
-      flex: 1, padding: '9px', border: 'none', borderRadius: 7,
+      flex: 1, minHeight: 44, padding: '9px', border: 'none', borderRadius: 7,
       background: active ? 'var(--sur)' : 'transparent',
       color: active ? 'var(--tx)' : 'var(--th)',
       fontWeight: active ? 600 : 500, fontSize: 13, cursor: 'pointer',
@@ -179,8 +181,8 @@ export default function AuthGate({ onAuthenticated }) {
   if (forgotMode) {
     if (forgotSent) {
       return (
-        <div style={s.wrap}>
-          <div style={s.box}>
+        <div className="fos-auth-wrap" style={s.wrap}>
+          <div className="fos-auth-box" style={s.box}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
               <Logo size={22} />
             </div>
@@ -201,8 +203,8 @@ export default function AuthGate({ onAuthenticated }) {
       )
     }
     return (
-      <div style={s.wrap}>
-        <div style={s.box}>
+      <div className="fos-auth-wrap" style={s.wrap}>
+        <div className="fos-auth-box" style={s.box}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
             <Logo size={22} />
           </div>
@@ -212,7 +214,7 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
             {t('authGate.forgotSubtitle')}
           </div>
-          <label htmlFor="authgate-forgot-email" style={s.label}>{t('authGate.emailPlaceholder')}</label>
+          <label htmlFor="authgate-forgot-email" style={s.label}>{t('authGate.emailLabel')}</label>
           <input
             id="authgate-forgot-email"
             style={s.input}
@@ -251,8 +253,8 @@ export default function AuthGate({ onAuthenticated }) {
 
   if (emailExists) {
     return (
-      <div style={s.wrap}>
-        <div style={s.box}>
+      <div className="fos-auth-wrap" style={s.wrap}>
+        <div className="fos-auth-box" style={s.box}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <Logo size={22} />
           </div>
@@ -281,8 +283,8 @@ export default function AuthGate({ onAuthenticated }) {
 
   if (checkEmail) {
     return (
-      <div style={s.wrap}>
-        <div style={s.box}>
+      <div className="fos-auth-wrap" style={s.wrap}>
+        <div className="fos-auth-box" style={s.box}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <Logo size={22} />
           </div>
@@ -312,8 +314,8 @@ export default function AuthGate({ onAuthenticated }) {
   }
 
   return (
-    <div style={s.wrap}>
-      <div style={s.box}>
+    <div className="fos-auth-wrap" style={s.wrap}>
+      <div className="fos-auth-box" style={s.box}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
           <Logo size={22} />
@@ -360,7 +362,7 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
         </div>
 
-        <label htmlFor="authgate-email" style={s.label}>{t('authGate.emailPlaceholder')}</label>
+        <label htmlFor="authgate-email" style={s.label}>{t('authGate.emailLabel')}</label>
         <input
           id="authgate-email"
           style={s.input}
@@ -374,17 +376,35 @@ export default function AuthGate({ onAuthenticated }) {
           autoFocus
           autoComplete="email"
         />
-        <label htmlFor="authgate-password" style={s.label}>{tab === 'signup' ? t('authGate.passwordPlaceholderSignup') : t('authGate.passwordPlaceholder')}</label>
-        <input
-          id="authgate-password"
-          style={s.input}
-          type="password"
-          placeholder={tab === 'signup' ? t('authGate.passwordPlaceholderSignup') : t('authGate.passwordPlaceholder')}
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
-        />
+        <label htmlFor="authgate-password" style={s.label}>{t('authGate.passwordLabel')}</label>
+        <div style={{ position: 'relative' }}>
+          <input
+            id="authgate-password"
+            style={{ ...s.input, paddingRight: 52 }}
+            type={showPassword ? 'text' : 'password'}
+            placeholder={tab === 'signup' ? t('authGate.passwordPlaceholderSignup') : ''}
+            aria-describedby={tab === 'signup' ? 'authgate-password-hint' : undefined}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+            autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(v => !v)}
+            aria-label={showPassword ? t('authGate.hidePassword') : t('authGate.showPassword')}
+            aria-pressed={showPassword}
+            aria-controls="authgate-password"
+            style={{ position: 'absolute', top: 0, right: 0, width: 48, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--tm)', cursor: 'pointer', borderRadius: 8 }}
+          >
+            {showPassword ? <EyeOff size={18} strokeWidth={1.7} aria-hidden="true" /> : <Eye size={18} strokeWidth={1.7} aria-hidden="true" />}
+          </button>
+        </div>
+        {tab === 'signup' && (
+          <p id="authgate-password-hint" style={{ fontSize: 12, color: 'var(--tm)', margin: '-4px 0 10px' }}>{t('authGate.passwordPlaceholderSignup')}</p>
+        )}
 
         {tab === 'login' && (
           <button

@@ -61,6 +61,10 @@ verify_jwt = false
 [functions.send-push]
 verify_jwt = true
 
+# Comentarios del Menú (C-39): el JWT se verifica adentro contra Auth.
+[functions.send-feedback]
+verify_jwt = false
+
 # La llama el navegador sin sesión; la autorización real es checkProLicense().
 [functions.send-report-email]
 verify_jwt = false

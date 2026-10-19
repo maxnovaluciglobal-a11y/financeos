@@ -30,3 +30,16 @@ describe('Stripe', () => {
     expect(langFromStripeSubscription({ customer: 'cus_123' })).toBe('es')
   })
 })
+
+describe('client_reference_id con la cuenta (C-39 / PRD-2)', () => {
+  it('lee el idioma y el id de la cuenta de u_<uuid>_lang_xx', async () => {
+    const { userIdFromClientReference } = await import('./emailLang.ts')
+    const ref = 'u_0f8fad5b-d9cb-469f-a165-70867728950e_lang_pt'
+    expect(langFromClientReference(ref)).toBe('pt')
+    expect(userIdFromClientReference(ref)).toBe('0f8fad5b-d9cb-469f-a165-70867728950e')
+    expect(userIdFromClientReference('lang_en')).toBeNull()
+    for (const bad of ['u_123_lang_es', 'u_0f8fad5b-d9cb-469f-a165-70867728950e', 'u__lang_es', null, 7]) {
+      expect(userIdFromClientReference(bad)).toBeNull()
+    }
+  })
+})

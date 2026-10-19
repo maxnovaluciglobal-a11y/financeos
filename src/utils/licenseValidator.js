@@ -1,6 +1,6 @@
 // src/utils/licenseValidator.js
 // VALIDADOR v2.0 — Supabase. ACTIVO en producción (lo usan App.jsx, LicenseGate, Settings).
-import { licenseKeyHash } from './syncCrypto.js'
+import { licenseKeyHash, LICENSE_HASH_RE } from './syncCrypto.js'
 import { authClient } from '../core/authClient.js'
 import { withLeadLang } from './leadsLang.js'
 import { withStarterConsent, shouldRequestOptin } from './marketingConsent.js'
@@ -62,11 +62,22 @@ async function verifyOnline(key) {
   } catch { return { offline: true } }
 }
 
-// Activación: el usuario ingresa una clave (LicenseGate)
+// Activación: el usuario ingresa una clave (LicenseGate) o la cuenta devuelve
+// el hash de la suya (App.jsx, user_entitlements; C-39/C-21). El hash se guarda
+// tal cual: sirve para validar, el sync por frase de paso y los avisos, pero no
+// para descifrar una copia vieja del sync (esa llave salía de la clave).
+export function normalizeLicenseInput(key) {
+  const raw = String(key || '').trim()
+  if (LICENSE_HASH_RE.test(raw)) return raw.toLowerCase()
+  const up = raw.toUpperCase()
+  return KEY_RE.test(up) ? up : null
+}
+export function isLicenseHash(key) { return LICENSE_HASH_RE.test(String(key || '').trim()) }
+
 export async function validateLicense(key) {
   if (!key) return false
-  const clean = key.trim().toUpperCase()
-  if (!KEY_RE.test(clean)) return false
+  const clean = normalizeLicenseInput(key)
+  if (!clean) return false
 
   const r = await verifyOnline(clean)
   if (r.valid) { writeCache({ key: clean, plan: r.plan, exp: r.exp ?? null, ts: Date.now() }); return true }

@@ -482,8 +482,8 @@ describe('paridad de authGate. y resetPassword. (es/en/pt/de)', () => {
 })
 
 // C-22 (auditoría 360): borrado de la cuenta desde Ajustes.
-describe('paridad de deleteAccount. (es/en/pt/de)', () => {
-  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('deleteAccount.')).sort()
+describe('paridad de deleteAccount. y feedback. (es/en/pt/de)', () => {
+  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('deleteAccount.') || k.startsWith('feedback.')).sort()
   it('las 4 lenguas tienen las mismas claves y variables', () => {
     const base = pick(es)
     expect(base.length).toBeGreaterThan(0)

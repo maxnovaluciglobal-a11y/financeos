@@ -1159,3 +1159,39 @@ describe('C-35 · cobro fallido y "tu Pro terminó"', () => {
     }
   })
 })
+
+describe('C-39 / PRD-2: Pro queda en la cuenta que inició la compra', () => {
+  it('attachLicenseToAccount llama a la RPC con el id de la cuenta y la clave', async () => {
+    const { attachLicenseToAccount } = await import('./webhookLogic.ts')
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await attachLicenseToAccount('uid-1', 'FNOS-AAAA-BBBB-CCCC', CONFIG)).toEqual({ ok: true })
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('https://proj.supabase.co/rest/v1/rpc/attach_license_to_account')
+    expect(JSON.parse(init.body)).toEqual({ p_user_id: 'uid-1', p_key: 'FNOS-AAAA-BBBB-CCCC' })
+    expect(init.headers.Authorization).toBe('Bearer srv-key')
+  })
+  it('devuelve el motivo si la cuenta ya era Pro, si falla HTTP o la red', async () => {
+    const { attachLicenseToAccount } = await import('./webhookLogic.ts')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: false, error: 'already_pro' }) }))
+    expect(await attachLicenseToAccount('u', 'k', CONFIG)).toEqual({ ok: false, error: 'already_pro' })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }))
+    expect(await attachLicenseToAccount('u', 'k', CONFIG)).toEqual({ ok: false, error: 'http_500' })
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('net')))
+    expect(await attachLicenseToAccount('u', 'k', CONFIG)).toEqual({ ok: false, error: 'network' })
+  })
+  it('el correo dice que Pro ya está activo cuando quedó en la cuenta (4 idiomas) y sigue llevando la clave', async () => {
+    for (const [lang, word] of [['es', 'ya quedó activado'], ['en', 'already active'], ['pt', 'já está ativado'], ['de', 'bereits in Ihrem Konto']]) {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', fetchMock)
+      await sendKeyEmail('a@b.com', 'FNOS-AAAA-BBBB-CCCC', 'pro', 's', CONFIG, 'month', null, lang, true)
+      const html = JSON.parse(fetchMock.mock.calls[0][1].body).html
+      expect(html, lang).toContain(word)
+      expect(html).toContain('FNOS-AAAA-BBBB-CCCC')
+    }
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 's', CONFIG, 'month', null, 'es')
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).html).toContain('ingresa la clave')
+  })
+})

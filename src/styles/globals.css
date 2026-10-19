@@ -521,3 +521,14 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-cselect__opt[aria-selected="true"] { font-weight: 600; }
 .fos-cselect__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .fos-cselect, .fos-cselect__chev { transition: none; } }
+
+/* Pantalla de acceso (C-39 / PRD-8): en el teléfono ocupa la pantalla, sin
+   tarjeta flotante (patrón de modal de escritorio). */
+@media (max-width: 480px) {
+  .fos-auth-wrap { align-items: flex-start !important; padding: 0 !important; }
+  .fos-auth-box {
+    border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+    max-width: none !important; min-height: 100dvh; background: var(--bg) !important;
+    padding: calc(32px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+}

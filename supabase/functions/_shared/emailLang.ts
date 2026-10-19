@@ -35,11 +35,21 @@ export function pickLang(...candidates: unknown[]): EmailLang {
 // El Payment Link no acepta un parámetro de idioma, pero sí
 // client_reference_id (alfanumérico, guion y guion bajo; documentado en
 // https://docs.stripe.com/payment-links/url-parameters) y Stripe lo devuelve
-// en checkout.session.completed. La app manda 'lang_en', 'lang_pt', etc.
+// en checkout.session.completed. La app manda 'lang_en', 'lang_pt', etc. y,
+// desde el 20-oct-2026 (auditoría 360, C-39 / PRD-2), con sesión iniciada,
+// 'u_<id de la cuenta>_lang_xx': stripe-webhook activa Pro en esa cuenta.
+const CLIENT_REF_RE = /^(?:u_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_)?lang[_-]([a-z]{2})$/i;
+
 export function langFromClientReference(ref: unknown): EmailLang | null {
   if (typeof ref !== 'string') return null;
-  const m = ref.match(/^lang[_-]([a-z]{2})$/i);
-  return m ? normalizeLang(m[1]) : null;
+  const m = ref.match(CLIENT_REF_RE);
+  return m ? normalizeLang(m[2]) : null;
+}
+
+export function userIdFromClientReference(ref: unknown): string | null {
+  if (typeof ref !== 'string') return null;
+  const m = ref.match(CLIENT_REF_RE);
+  return m && m[1] ? m[1].toLowerCase() : null;
 }
 
 // session.locale puede ser 'auto' (= idioma del navegador, que Stripe no nos

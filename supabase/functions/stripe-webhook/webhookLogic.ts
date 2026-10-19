@@ -380,6 +380,27 @@ export async function issueLicense(
   if (!res.ok) throw new Error(`issue_license failed: ${res.status} ${await res.text()}`);
 }
 
+// C-39 / PRD-2: el checkout salió de la app con la sesión iniciada
+// (client_reference_id u_<uid>_lang_xx). Deja Pro activado en esa cuenta con
+// el hash de la clave; si la cuenta ya tenía otro Pro vigente, o la licencia ya
+// es de otra cuenta, no toca nada y el correo con la clave queda como camino.
+export async function attachLicenseToAccount(
+  userId: string, key: string, config: WebhookConfig,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${config.supabaseUrl}/rest/v1/rpc/attach_license_to_account`, {
+      method: "POST",
+      headers: serviceHeaders(config),
+      body: JSON.stringify({ p_user_id: userId, p_key: key }),
+    });
+    if (!res.ok) return { ok: false, error: `http_${res.status}` };
+    const data = await res.json().catch(() => null);
+    return data?.ok === true ? { ok: true } : { ok: false, error: typeof data?.error === "string" ? data.error : "unknown" };
+  } catch {
+    return { ok: false, error: "network" };
+  }
+}
+
 // Fija/extiende el vencimiento de una suscripción — se llama desde
 // invoice.payment_succeeded, tanto en el alta (primera invoice) como en cada
 // renovación. No hay revocación explícita al cancelar: si no llega una
@@ -494,6 +515,7 @@ export async function sendKeyEmail(
   interval: "month" | "year" | null = null,
   trial: TrialBilling | null = null,
   lang: EmailLang = "es",
+  attachedToAccount = false,
 ): Promise<boolean> {
   if (!config.resendApiKey) {
     console.error(`CRITICO: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas — el cliente pago y NO recibio su clave. session=${sessionRef}`);
@@ -524,7 +546,7 @@ export async function sendKeyEmail(
       <p>${T.keyLabel}</p>
       <p style="font-family:monospace;font-size:20px;font-weight:700;background:#f0f7f3;
                 padding:14px;border-radius:8px;text-align:center;letter-spacing:2px">${key}</p>
-      <p>${T.activate(`<a href="${appUrl}">${appUrl}</a>`)}</p>
+      <p>${(attachedToAccount ? T.activatedOnAccount : T.activate)(`<a href="${appUrl}">${appUrl}</a>`)}</p>
       ${billingNote}
       <p style="color:#888;font-size:12px">${T.privacy}</p>
     </div>`;
@@ -674,6 +696,7 @@ interface MailText {
   purchase: (plan: string) => string;
   keyLabel: string;
   activate: (link: string) => string;
+  activatedOnAccount: (link: string) => string;
   staySame: string;
   privacy: string;
   // C-35 (auditoría 360, COM-10 / META-4)
@@ -705,6 +728,7 @@ const MAIL: Record<EmailLang, MailText> = {
     purchase: (p) => `Compra confirmada. Plan: <strong>${p}</strong>.`,
     keyLabel: "Tu clave de acceso:",
     activate: (l) => `Para activarla, abre ${l} e ingresa la clave.`,
+    activatedOnAccount: (l) => `Pro ya quedó activado en tu cuenta: abre ${l} con la misma cuenta y no tienes que ingresar la clave. Guárdala por si la necesitas para soporte.`,
     staySame: "Si sigues, no tienes que hacer nada: tu clave de acceso es la misma.",
     privacy: "Tus datos financieros se guardan solo en tu dispositivo.",
     paymentFailedSubject: "No se pudo cobrar tu suscripción de MOY IQ Pro",
@@ -734,6 +758,7 @@ const MAIL: Record<EmailLang, MailText> = {
     purchase: (p) => `Purchase confirmed. Plan: <strong>${p}</strong>.`,
     keyLabel: "Your access key:",
     activate: (l) => `To activate it, open ${l} and enter the key.`,
+    activatedOnAccount: (l) => `Pro is already active on your account: open ${l} with the same account and you don't need to enter the key. Keep it in case support asks for it.`,
     staySame: "If you continue, you don't need to do anything: your access key stays the same.",
     privacy: "Your financial data is stored only on your device.",
     paymentFailedSubject: "Your MOY IQ Pro payment didn't go through",
@@ -763,6 +788,7 @@ const MAIL: Record<EmailLang, MailText> = {
     purchase: (p) => `Compra confirmada. Plano: <strong>${p}</strong>.`,
     keyLabel: "Sua chave de acesso:",
     activate: (l) => `Para ativá-la, abra ${l} e insira a chave.`,
+    activatedOnAccount: (l) => `O Pro já está ativado na sua conta: abra ${l} com a mesma conta e não precisa inserir a chave. Guarde-a caso o suporte peça.`,
     staySame: "Se continuar, não precisa fazer nada: sua chave de acesso é a mesma.",
     privacy: "Seus dados financeiros ficam salvos apenas no seu dispositivo.",
     paymentFailedSubject: "Não foi possível cobrar sua assinatura do MOY IQ Pro",
@@ -792,6 +818,7 @@ const MAIL: Record<EmailLang, MailText> = {
     purchase: (p) => `Kauf bestätigt. Plan: <strong>${p}</strong>.`,
     keyLabel: "Ihr Zugangsschlüssel:",
     activate: (l) => `Zum Aktivieren öffnen Sie ${l} und geben den Schlüssel ein.`,
+    activatedOnAccount: (l) => `Pro ist bereits in Ihrem Konto aktiviert: Öffnen Sie ${l} mit demselben Konto, eine Eingabe des Schlüssels ist nicht nötig. Bewahren Sie ihn für Rückfragen des Supports auf.`,
     staySame: "Wenn Sie weitermachen, müssen Sie nichts tun: Ihr Zugangsschlüssel bleibt gleich.",
     privacy: "Ihre Finanzdaten werden nur auf Ihrem Gerät gespeichert.",
     paymentFailedSubject: "Ihr MOY IQ Pro-Abonnement konnte nicht abgebucht werden",

@@ -24,9 +24,9 @@ function usePlans(t, lang, period) {
   ]
 }
 
-async function startCheckout(product, lang, period) {
+async function startCheckout(product, lang, period, account) {
   const url = product === 'pro' ? checkoutFor(period).href : 'https://moyiq.app/#pricing'
-  window.location.href = withCheckoutLang(url, lang)
+  window.location.href = withCheckoutLang(url, lang, account)
 }
 
 export default function LicenseGate({ onActivate, userEmail, userId }) {
@@ -74,7 +74,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   async function handleBuy(product) {
     setBuying(product)
     try {
-      await startCheckout(product, lang, period)
+      await startCheckout(product, lang, period, { id: userId, email: userEmail })
     } catch {
       setError(t('licenseGate.errorPayment'))
       setBuying(null)

@@ -21,10 +21,13 @@
 // prueba, con la nota de cobro debajo (tarjeta requerida, cuándo se cobra).
 // Con el flag apagado o sin URL, todo queda como antes (utils/pricing.js, proCta).
 
+import { useState } from 'react'
 import { usePlan } from '../../hooks/usePlan.js'
+import { useAccount } from '../../hooks/useAccount.js'
+import PeriodToggle from './PeriodToggle.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
-import { proPriceVars, proCta, withCheckoutLang } from '../../utils/pricing.js'
+import { proPriceVars, proCta, withCheckoutLang, checkoutFor, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
 import { IconIQScore } from '../icons/Icons.jsx'
 import styles from './ui.module.css'
 
@@ -38,12 +41,17 @@ export const DEFAULT_PRO_BENEFITS = [
 export default function ProGate({ children, feature, featureKey, benefits = DEFAULT_PRO_BENEFITS, feminine }) {
   const { isPro } = usePlan()
   const { t, lang } = useT()
+  const account = useAccount()
+  // APP-N3 (C-39): la misma elección anual/mensual que LicenseGate y Ajustes.
+  const [period, setPeriod] = useState(DEFAULT_BILLING_PERIOD)
 
   if (isPro) return children
 
   const featureName = featureKey ? t(featureKey) : (feature || t('pro.gate.featureDefault'))
   const list = Array.isArray(benefits) && benefits.length ? benefits : DEFAULT_PRO_BENEFITS
-  const cta = proCta(config.pricing)
+  const base = proCta(config.pricing)
+  const periodCta = checkoutFor(period)
+  const cta = base.trial && periodCta.trial ? { ...base, href: periodCta.href } : base
   const trialDays = config.pricing.trialDays
   const priceVars = proPriceVars(lang)
   const ctaLabel = t(cta.labelKey, { days: trialDays })
@@ -80,8 +88,14 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         {t('pro.gate.price', priceVars)}
       </p>
 
+      {cta.trial && (
+        <div style={{ maxWidth: 320, margin: '0 auto 16px' }}>
+          <PeriodToggle value={period} onChange={setPeriod} />
+        </div>
+      )}
+
       <a
-        href={withCheckoutLang(cta.href, lang)}
+        href={withCheckoutLang(cta.href, lang, account)}
         target="_blank"
         rel="noopener noreferrer"
         className={`${styles.btn} ${styles.btn_primary}`}
@@ -94,7 +108,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
 
       {cta.trial && (
         <p style={{ fontSize: 12, color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
-          {t('pro.gate.trialNote', { m: priceVars.m, next: trialDays + 1 })}
+          {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}
         </p>
       )}
     </div>

@@ -26,12 +26,25 @@ export function proPriceVars(lang = 'es', pricing = config.pricing) {
 // https://docs.stripe.com/payment-links/url-parameters) y Stripe lo devuelve
 // en checkout.session.completed; stripe-webhook lo lee con
 // langFromClientReference ('lang_en' → inglés). Solo para links de Stripe.
-export function withCheckoutLang(url, lang) {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+//
+// C-39 / PRD-2 (20-oct-2026): con la cuenta de la sesión (account = { id, email })
+// el client_reference_id pasa a 'u_<id>_lang_xx' y el checkout llega con el email
+// precargado (prefilled_email): stripe-webhook deja Pro activado en esa cuenta y
+// el usuario no pega la clave a mano. Sin cuenta, queda como antes.
+export function withCheckoutLang(url, lang, account = null) {
   if (typeof url !== 'string' || !/^https:\/\/buy\.stripe\.com\//.test(url)) return url
   if (!['es', 'en', 'pt', 'de'].includes(lang)) return url
   try {
     const u = new URL(url)
-    if (!u.searchParams.has('client_reference_id')) u.searchParams.set('client_reference_id', `lang_${lang}`)
+    if (!u.searchParams.has('client_reference_id')) {
+      const id = account && UUID_RE.test(String(account.id || '')) ? String(account.id).toLowerCase() : null
+      u.searchParams.set('client_reference_id', id ? `u_${id}_lang_${lang}` : `lang_${lang}`)
+    }
+    const email = account && typeof account.email === 'string' ? account.email.trim() : ''
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !u.searchParams.has('prefilled_email')) {
+      u.searchParams.set('prefilled_email', email)
+    }
     return u.toString()
   } catch { return url }
 }

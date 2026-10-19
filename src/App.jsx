@@ -20,6 +20,7 @@ import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
 import { pageFromSearch, initialSearch } from './utils/deepLink.js'
+import { licenseKeyHash } from './utils/syncCrypto.js'
 import { markInternalUser } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { useState, useEffect } from 'react'
@@ -151,11 +152,19 @@ function Inner() {
       // ser (o no) de esta cuenta: la del dispositivo sin dueño, o la de
       // unos datos sin dueño guardados aparte.
       const needServer = (!owner?.uid && deviceLicenseKey) || (owner?.uid !== session.user.id && bagKey)
-      const serverEntitlement = needServer ? await getServerEntitlement(session.user.id) : null
+      const rawEntitlement = needServer ? await getServerEntitlement(session.user.id) : null
+      // La cuenta puede guardar el hash de la licencia en vez de la clave
+      // (C-21/C-04): se compara siempre por hash.
+      const hashOrEmpty = async (k) => (k ? licenseKeyHash(k) : '')
+      const serverEntitlement = rawEntitlement
+        ? { ...rawEntitlement, license_key: await hashOrEmpty(rawEntitlement.license_key) }
+        : null
+      const deviceHash = await hashOrEmpty(deviceLicenseKey)
+      const bagHash = await hashOrEmpty(bagKey)
       if (cancelled) return
       const plan = planAccountSwitch({
-        owner, legacyUid, userId: session.user.id, deviceLicenseKey, serverEntitlement,
-        hasVault: hasVault(session.user.id), legacyBagLicenseKey: bagKey,
+        owner, legacyUid, userId: session.user.id, deviceLicenseKey: deviceHash, serverEntitlement,
+        hasVault: hasVault(session.user.id), legacyBagLicenseKey: bagHash,
       })
       if (plan.action !== 'switch') {
         try { applyAccountSwitch(session.user, plan) } catch {}

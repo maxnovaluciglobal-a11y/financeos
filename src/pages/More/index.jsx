@@ -5,7 +5,7 @@
 // la barra — y Cuenta (Ajustes), tema y cerrar sesión al final.
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator } from 'lucide-react'
+import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { menuSections } from '../../components/layout/navConfig.js'
@@ -14,6 +14,7 @@ import CountryBadge from '../../components/CountryBadge.jsx'
 import { BackupStatusBadge } from '../../components/backup/BackupManager.jsx'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
+import FeedbackSheet from '../../components/FeedbackSheet.jsx'
 import s from './more.module.css'
 
 const SHOW_FIRMA = true
@@ -63,6 +64,7 @@ export default function More({ setPage }) {
   const { settings, updateSettings } = useApp()
   const { t } = useT()
   const isDark = settings.theme === 'dark'
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
 
   function toggleTheme() {
     updateSettings({ ...settings, theme: isDark ? 'light' : 'dark' })
@@ -97,6 +99,20 @@ export default function More({ setPage }) {
           </div>
         </div>
       ))}
+
+      {!settings.isDemo && (
+        <div className={s.group}>
+          <h2 className={s.groupTitle}>{t('feedback.section')}</h2>
+          <div className={s.list}>
+            <button type="button" className={s.row} onClick={() => setFeedbackOpen(true)} aria-haspopup="dialog">
+              <span className={s.rowIc} aria-hidden="true"><MessageSquare size={18} strokeWidth={1.7} /></span>
+              <span className={s.rowLabel}>{t('feedback.title')}</span>
+              <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.chev} />
+            </button>
+          </div>
+          <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+        </div>
+      )}
 
       <div className={s.actions}>
         <button type="button" onClick={toggleTheme} className={s.action}>

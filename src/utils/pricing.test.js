@@ -142,3 +142,18 @@ describe('la app solo ofrece Payment Links con prueba', () => {
     expect(offenders).toEqual([])
   })
 })
+
+describe('checkout atado a la cuenta (C-39 / PRD-2)', () => {
+  const ID = '0F8FAD5B-D9CB-469F-A165-70867728950E'
+  it('lleva el id de la cuenta y el idioma en client_reference_id y el email precargado', () => {
+    const u = new URL(withCheckoutLang('https://buy.stripe.com/abc', 'pt', { id: ID, email: 'ana@ejemplo.com' }))
+    expect(u.searchParams.get('client_reference_id')).toBe('u_0f8fad5b-d9cb-469f-a165-70867728950e_lang_pt')
+    expect(u.searchParams.get('prefilled_email')).toBe('ana@ejemplo.com')
+    expect(u.searchParams.get('client_reference_id')).toMatch(/^[A-Za-z0-9_-]{1,200}$/)
+  })
+  it('sin cuenta válida queda como antes; un email raro no se manda', () => {
+    expect(withCheckoutLang('https://buy.stripe.com/abc', 'es', { id: 'no-uuid', email: 'x' })).toBe('https://buy.stripe.com/abc?client_reference_id=lang_es')
+    expect(withCheckoutLang('https://buy.stripe.com/abc', 'es', null)).toBe('https://buy.stripe.com/abc?client_reference_id=lang_es')
+    expect(withCheckoutLang('https://moyiq.app/#pricing', 'es', { id: ID, email: 'a@b.co' })).toBe('https://moyiq.app/#pricing')
+  })
+})

@@ -52,8 +52,14 @@ export async function decryptData(blobB64, licenseKey) {
 // que calcula el servidor: encode(digest(upper(trim(key)),'sha256'),'hex').
 // Se envía al servidor en vez de la clave cruda: el servidor autentica por hash
 // y NUNCA recibe la clave (que es también la base de la llave de cifrado local).
+// Desde el 20-oct-2026 la cuenta puede devolver el hash en vez de la clave
+// (user_entitlements guarda el hash, C-21/C-04): un hash de 64 hex se usa tal
+// cual, igual que fnos_resolve_hash() en el servidor.
+export const LICENSE_HASH_RE = /^[0-9a-f]{64}$/i
 export async function licenseKeyHash(licenseKey) {
-  const norm = String(licenseKey || '').trim().toUpperCase()
+  const raw = String(licenseKey || '').trim()
+  if (LICENSE_HASH_RE.test(raw)) return raw.toLowerCase()
+  const norm = raw.toUpperCase()
   const digest = await crypto.subtle.digest('SHA-256', enc.encode(norm))
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('')
 }

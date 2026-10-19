@@ -33,8 +33,9 @@ import {
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, sendKeyEmail, langFromStripeSession,
   notifyKeyDeliveryFailure, notifyNewProPurchase, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
   subscriptionIdFromSession, initialExpiryFromSession, isTrialCheckout, trialBillingFromSession,
-  notifyUnmappedTrialCheckout, handleBillingEvent, TRIAL_DAYS, type WebhookConfig, type HandlerResult,
+  notifyUnmappedTrialCheckout, handleBillingEvent, TRIAL_DAYS, attachLicenseToAccount, type WebhookConfig, type HandlerResult,
 } from "./webhookLogic.ts";
+import { userIdFromClientReference } from "../_shared/emailLang.ts";
 import { subscribeToNewsletter, autoSubscribeEnabled } from "../_shared/newsletterSubscribe.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 
@@ -141,9 +142,13 @@ Deno.serve(async (req) => {
     const trial = isTrialCheckout(session) && expiresAt ? trialBillingFromSession(session, expiresAt) : null;
     try {
       await issueLicense(key, plan, email, session.id ?? null, paymentIntent, config, subscriptionId, expiresAt);
+      // C-39 / PRD-2: compra iniciada desde la app con sesión → Pro queda en la cuenta.
+      const accountId = userIdFromClientReference(session.client_reference_id);
+      const attached = accountId ? await attachLicenseToAccount(accountId, key, config) : null;
+      if (attached && !attached.ok) console.warn(`Licencia no asociada a la cuenta (${attached.error}) session=${session.id}`);
       // Idioma del correo: client_reference_id 'lang_xx' del Payment Link (la app
       // lo agrega), session.locale o el customer si viene expandido; si no, es.
-      const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config, interval, trial, langFromStripeSession(session)) : false;
+      const emailSent = email ? await sendKeyEmail(email, key, plan, session.id ?? null, config, interval, trial, langFromStripeSession(session), attached?.ok === true) : false;
       // Sin `key` a propósito — ver el comentario de sendKeyEmail(). session.id
       // identifica la fila igual de bien y no es material criptografico.
       console.log(`Licencia emitida: plan=${plan} con_email=${!!email} session=${session.id} payment_intent=${paymentIntent} subscription=${subscriptionId ?? "-"} expires_at=${expiresAt ?? "null"} prueba=${!!trial} email_enviado=${emailSent}`);
