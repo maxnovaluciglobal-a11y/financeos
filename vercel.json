@@ -16,6 +16,26 @@
       "source": "/",
       "destination": "https://www.moyiq.app/",
       "permanent": true
+    },
+    {
+      "source": "/signup",
+      "destination": "/app/?open=signup",
+      "permanent": true
+    },
+    {
+      "source": "/upgrade",
+      "destination": "/app/?open=upgrade",
+      "permanent": true
+    },
+    {
+      "source": "/import",
+      "destination": "/app/?open=import",
+      "permanent": true
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/app/?open=dashboard",
+      "permanent": true
     }
   ],
   "rewrites": [

@@ -5,8 +5,11 @@ import { useState } from 'react'
 const STORAGE_KEY = 'fos_active_page'
 const SKIP_PERSIST = new Set(['privacy', 'terms', 'license', 'disclaimer'])
 
-export function usePersistedPage(initial = 'dashboard') {
+// `override`: página pedida por un enlace de correo (utils/deepLink.js). Gana sobre
+// la guardada: es una intención explícita de esta visita.
+export function usePersistedPage(initial = 'dashboard', override = null) {
   const [page, setPageState] = useState(() => {
+    if (override) return override
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       return saved && !SKIP_PERSIST.has(saved) ? saved : initial

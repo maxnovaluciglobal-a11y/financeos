@@ -9,6 +9,7 @@ import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
+import { authTabFromSearch } from '../utils/deepLink.js'
 
 function friendlyError(t, raw) {
   const m = String(raw || '')
@@ -22,7 +23,7 @@ function friendlyError(t, raw) {
 
 export default function AuthGate({ onAuthenticated }) {
   const { t, lang } = useT()
-  const [tab, setTab] = useState('login') // 'login' | 'signup'
+  const [tab, setTab] = useState(() => authTabFromSearch(window.location.search)) // 'login' | 'signup' (?open=signup lo pide un correo)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)

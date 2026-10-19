@@ -18,6 +18,7 @@
 // en español y LABEL_DISPLAY lo traduce para mostrarlo.
 
 import type { EmailLang } from "../_shared/emailLang.ts";
+import { appLink } from "../_shared/appLinks.ts";
 
 export type DiagnosticoStep = "welcome" | "day2" | "day5" | "day12";
 
@@ -127,7 +128,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Un paso concreto para esta semana, según tu resultado:</p>
       <p>${actionBlock("es", c.label)}</p>
       <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomas, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Crear cuenta gratis →</a></p>
+      <p><a href="${appLink("signup", "diagnostico")}" ${BTN}>Crear cuenta gratis →</a></p>
       <p style="color:#666;font-size:13px">Sin tarjeta, sin trial que vencer. Starter no tiene fecha de corte.</p>
       ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">En dos días te cuento por qué la mayoría de los presupuestos armados en una hoja de cálculo no llegan al segundo mes — y no es por falta de disciplina.</p>` : ""}
       `,
@@ -142,7 +143,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
       <p>Cuando importas tus movimientos en MOY IQ, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más plata este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
       <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico-d2" ${BTN}>Ver mi dashboard →</a></p>
+      <p><a href="${appLink("signup", "diagnostico-d2")}" ${BTN}>Ver mi dashboard →</a></p>
       <p style="color:#666;font-size:13px">Starter incluye Dashboard, Movimientos y Presupuestos sin costo.</p>
       `,
     }),
@@ -156,7 +157,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Dashboard con IQ Score, Movimientos y categorización automática, Presupuestos básicos, Metas simples.</p>
       <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitas mostrarle tus números a otra persona.</p>
       <p>Si tu situación es simple, Starter alcanza. Si tienes varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
-      <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" ${BTN}>Actualizar a Pro →</a></p>
+      <p><a href="${appLink("upgrade", "diagnostico-d5")}" ${BTN}>Actualizar a Pro →</a></p>
       <p style="color:#666;font-size:13px">Si no es para ti ahora, sigues en Starter sin perder nada de lo que ya armaste.</p>
       `,
     }),
@@ -186,7 +187,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>One concrete step for this week, based on your result:</p>
       <p>${actionBlock("en", c.label)}</p>
       <p>This diagnosis is a snapshot of one moment. To see how it changes with each decision you make, you need to record your real transactions — that is what the free account does.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Create a free account →</a></p>
+      <p><a href="${appLink("signup", "diagnostico")}" ${BTN}>Create a free account →</a></p>
       <p style="color:#666;font-size:13px">No card, no trial to expire. Starter has no end date.</p>
       ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">In two days I'll explain why most budgets built in a spreadsheet don't make it to the second month — and it is not a lack of discipline.</p>` : ""}
       `,
@@ -201,7 +202,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>The problem is not the budget. It is that it depends on someone typing it in.</p>
       <p>When you import your transactions into MOY IQ, you don't build the budget — it builds itself from what you already spent. The Transactions section categorizes each transaction automatically, and the Dashboard shows which category took the most money this month compared with the last. Nothing has to be updated by hand to see it.</p>
       <p>If your diagnosis showed a low score, this is probably why: not a lack of income, a lack of visibility into where it goes.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico-d2" ${BTN}>See my dashboard →</a></p>
+      <p><a href="${appLink("signup", "diagnostico-d2")}" ${BTN}>See my dashboard →</a></p>
       <p style="color:#666;font-size:13px">Starter includes Dashboard, Transactions and Budgets at no cost.</p>
       `,
     }),
@@ -215,7 +216,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p><strong>Starter (free, with no expiry date):</strong> Dashboard with IQ Score, Transactions and automatic categorization, basic Budgets, simple Goals.</p>
       <p><strong>Pro (US$4.99/month or US$39.99/year):</strong> Coach (recommendations that adjust with every new transaction, not once when the budget is set up), Advisor (projects a scenario before a big decision, not after), Goals with multiple objectives at the same time, exportable Reports if you need to show your numbers to someone else.</p>
       <p>If your situation is simple, Starter is enough. If you have several goals running or a big decision coming up, that is where Pro pays for itself.</p>
-      <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" ${BTN}>Upgrade to Pro →</a></p>
+      <p><a href="${appLink("upgrade", "diagnostico-d5")}" ${BTN}>Upgrade to Pro →</a></p>
       <p style="color:#666;font-size:13px">If it's not for you right now, you stay on Starter without losing anything you have set up.</p>
       `,
     }),
@@ -245,7 +246,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Um passo concreto para esta semana, de acordo com o seu resultado:</p>
       <p>${actionBlock("pt", c.label)}</p>
       <p>Este diagnóstico é uma foto de um momento. Para ver como ele muda com cada decisão que você toma, é preciso registrar os movimentos reais — é isso que a conta gratuita faz.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Criar conta grátis →</a></p>
+      <p><a href="${appLink("signup", "diagnostico")}" ${BTN}>Criar conta grátis →</a></p>
       <p style="color:#666;font-size:13px">Sem cartão, sem trial para vencer. O Starter não tem data de término.</p>
       ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">Em dois dias eu conto por que a maioria dos orçamentos montados em uma planilha não chega ao segundo mês — e não é por falta de disciplina.</p>` : ""}
       `,
@@ -260,7 +261,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>O problema não é o orçamento. É que ele depende de alguém digitá-lo.</p>
       <p>Quando você importa seus movimentos no MOY IQ, não monta o orçamento — ele se monta sozinho a partir do que você já gastou. A seção de Movimentos categoriza automaticamente cada transação, e o Painel mostra em qual categoria foi mais dinheiro este mês em comparação com o anterior. Não é preciso atualizar nada à mão para ver isso.</p>
       <p>Se o seu diagnóstico marcou uma pontuação baixa, provavelmente é isto: não falta de renda, falta de visibilidade de para onde ela vai.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico-d2" ${BTN}>Ver meu painel →</a></p>
+      <p><a href="${appLink("signup", "diagnostico-d2")}" ${BTN}>Ver meu painel →</a></p>
       <p style="color:#666;font-size:13px">O Starter inclui Painel, Movimentos e Orçamentos sem custo.</p>
       `,
     }),
@@ -274,7 +275,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p><strong>Starter (grátis, sem data de vencimento):</strong> Painel com IQ Score, Movimentos e categorização automática, Orçamentos básicos, Metas simples.</p>
       <p><strong>Pro (US$4.99/mês ou US$39.99/ano):</strong> Coach (recomendações que se ajustam a cada novo movimento, não uma vez ao montar o orçamento), Advisor (projeta um cenário antes de uma decisão grande, não depois), Goals com vários objetivos ao mesmo tempo, Relatórios exportáveis se você precisar mostrar seus números a outra pessoa.</p>
       <p>Se a sua situação é simples, o Starter basta. Se você tem várias metas em andamento ou uma decisão grande por perto, é aí que o Pro se paga.</p>
-      <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" ${BTN}>Atualizar para o Pro →</a></p>
+      <p><a href="${appLink("upgrade", "diagnostico-d5")}" ${BTN}>Atualizar para o Pro →</a></p>
       <p style="color:#666;font-size:13px">Se não for para você agora, você continua no Starter sem perder nada do que já montou.</p>
       `,
     }),
@@ -304,7 +305,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Ein konkreter Schritt für diese Woche, abhängig von Ihrem Ergebnis:</p>
       <p>${actionBlock("de", c.label)}</p>
       <p>Diese Auswertung ist eine Momentaufnahme. Um zu sehen, wie sie sich mit jeder Entscheidung verändert, müssen die echten Buchungen erfasst werden — genau das leistet das kostenlose Konto.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico" ${BTN}>Kostenloses Konto anlegen →</a></p>
+      <p><a href="${appLink("signup", "diagnostico")}" ${BTN}>Kostenloses Konto anlegen →</a></p>
       <p style="color:#666;font-size:13px">Keine Karte, keine Testphase, die abläuft. Starter hat kein Enddatum.</p>
       ${c.marketingConfirmed ? `<p style="color:#666;font-size:13px">In zwei Tagen erkläre ich, warum die meisten in einer Tabelle angelegten Budgets den zweiten Monat nicht erreichen — und es liegt nicht an fehlender Disziplin.</p>` : ""}
       `,
@@ -319,7 +320,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Das Problem ist nicht das Budget. Sondern dass es davon abhängt, dass jemand es eintippt.</p>
       <p>Wenn Sie Ihre Buchungen in MOY IQ importieren, legen Sie das Budget nicht an — es entsteht aus dem, was Sie bereits ausgegeben haben. Der Bereich Buchungen ordnet jede Transaktion automatisch einer Kategorie zu, und das Dashboard zeigt, in welche Kategorie in diesem Monat im Vergleich zum Vormonat am meisten Geld geflossen ist. Dafür muss nichts von Hand aktualisiert werden.</p>
       <p>Wenn Ihre Auswertung einen niedrigen Score ergeben hat, liegt es wahrscheinlich daran: nicht an fehlendem Einkommen, sondern an fehlendem Überblick, wohin es geht.</p>
-      <p><a href="https://app.moyiq.app/signup?ref=diagnostico-d2" ${BTN}>Mein Dashboard ansehen →</a></p>
+      <p><a href="${appLink("signup", "diagnostico-d2")}" ${BTN}>Mein Dashboard ansehen →</a></p>
       <p style="color:#666;font-size:13px">Starter enthält Dashboard, Buchungen und Budgets ohne Kosten.</p>
       `,
     }),
@@ -333,7 +334,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p><strong>Starter (kostenlos, ohne Ablaufdatum):</strong> Dashboard mit IQ Score, Buchungen und automatische Kategorisierung, einfache Budgets, einfache Ziele.</p>
       <p><strong>Pro (US$4.99/Monat oder US$39.99/Jahr):</strong> Coach (Empfehlungen, die sich mit jeder neuen Buchung anpassen, nicht nur einmal beim Anlegen des Budgets), Advisor (rechnet ein Szenario vor einer großen Entscheidung durch, nicht danach), Goals mit mehreren Zielen gleichzeitig, exportierbare Berichte, falls Sie Ihre Zahlen jemand anderem zeigen müssen.</p>
       <p>Wenn Ihre Situation einfach ist, reicht Starter. Wenn mehrere Ziele laufen oder eine große Entscheidung bevorsteht, rechnet sich Pro.</p>
-      <p><a href="https://app.moyiq.app/upgrade?ref=diagnostico-d5" ${BTN}>Auf Pro upgraden →</a></p>
+      <p><a href="${appLink("upgrade", "diagnostico-d5")}" ${BTN}>Auf Pro upgraden →</a></p>
       <p style="color:#666;font-size:13px">Wenn es gerade nicht passt, bleiben Sie bei Starter, ohne etwas von dem zu verlieren, was Sie bereits eingerichtet haben.</p>
       `,
     }),

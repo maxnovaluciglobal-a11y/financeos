@@ -156,6 +156,7 @@ El commit `205228d` (17-ago) agregó conectar banco vía Plaid (solo EEUU). Una 
 
 ## Gotchas de deploy y verificación
 
+- **Los botones de los correos van a `https://app.moyiq.app/app/?open=<destino>&ref=<origen>`** (`supabase/functions/_shared/appLinks.ts`, `appLink()`). La app vive bajo `/app/` y no enruta por ruta: `src/utils/deepLink.js` lee `?open=` (`import`, `dashboard`, `upgrade` → Modo Asesor, que para quien no es Pro es la pantalla `ProGate` con precio y prueba de 14 días, `signup` → pestaña de crear cuenta en `AuthGate`) y cualquier otro valor se ignora. `vercel.json` redirige `/signup`, `/upgrade`, `/import` y `/dashboard` a esa forma (para los correos ya enviados, que apuntaban a rutas que daban 404; auditoría 360, COM-2). Destino nuevo = `appLinks.ts` + `deepLink.js` + `vercel.json`; `src/utils/deepLink.test.js` verifica las tres piezas y todos los botones de las plantillas.
 - **Service worker cachea agresivamente**. Post-deploy, para verificar cambios: `navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()))` + `caches.keys().then(ks => ks.forEach(k => caches.delete(k)))` + hard reload.
 - **`~/Documents/.claude/launch.json`** es la config raíz de preview servers (fuera del repo). Si la ruta canónica del repo cambia, ese archivo también.
 
