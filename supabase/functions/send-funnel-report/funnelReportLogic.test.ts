@@ -44,10 +44,12 @@ describe("send-funnel-report (EST-9)", () => {
     expect(variation(null, 1)).toBe("s/d");
   });
 
-  it("renders the 6 numbers, the variation and an empty goal row, on the brand layout", () => {
+  it("renders the 6 numbers, the variation and the 90-day goal of each one, on the brand layout", () => {
     const { subject, html } = renderReport(DATA);
     expect(subject).toContain("embudo semanal");
-    for (const l of ["Visitas a la landing", "Altas", "Activas", "Pruebas Pro iniciadas", "Pagos", "Bajas", "Meta", "definir"]) expect(html).toContain(l);
+    for (const l of ["Visitas a la landing", "Altas", "Activas", "Pruebas Pro iniciadas", "Pagos", "Bajas", "Meta al 17-ene-2027", "300 cuentas Starter reales", "10 suscriptores Pro", "40 %"]) expect(html).toContain(l);
+    expect(html).not.toContain("definir");
+    expect(html.match(/Meta al 17-ene-2027/g)).toHaveLength(6);
     expect(html).toContain("+1 (+50 %)");
     expect(html).toContain("s/d");
     expect(html).toContain("background:#14213D");

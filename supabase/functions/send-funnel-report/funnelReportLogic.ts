@@ -2,7 +2,7 @@
 //
 // Reporte semanal de los 6 números del embudo (auditoría 360, EST-9): visitas,
 // altas, activas, pruebas, pagos y bajas de la semana que terminó, con la
-// variación contra la anterior y una fila de metas que fija Walter. Va SOLO a
+// variación contra la anterior y la meta a 90 días de cada número (OKR aprobados por Walter). Va SOLO a
 // la cuenta de empresa (REPORT_TO, constante: no hay forma de pedir otro
 // destinatario). Los números salen de la RPC funnel_report_data (migración
 // 20261020060000), sin cuentas internas ni de prueba.
@@ -39,13 +39,17 @@ export interface ReportConfig {
   cronSecret?: string;
 }
 
-export const METRIC_ROWS: { key: MetricKey; label: string; help: string }[] = [
-  { key: "visitas", label: "Visitas a la landing", help: "Vercel Web Analytics; la base no las ve" },
-  { key: "altas", label: "Altas", help: "cuentas nuevas (MOY IQ e Invest comparten cuentas)" },
-  { key: "activas", label: "Activas", help: "cuentas con sesión iniciada en la semana" },
-  { key: "pruebas", label: "Pruebas Pro iniciadas", help: "licencias de prueba emitidas" },
-  { key: "pagos", label: "Pagos", help: "compras directas y pruebas que pasaron a pago" },
-  { key: "bajas", label: "Bajas", help: "pedidos de cancelación recibidos" },
+// Metas: OKR a 90 días (19-oct-2026 → 17-ene-2027) del plan de acción de la
+// auditoría 360 (32-PLAN-DE-ACCION.md 1.1/3.1; detalle en 10-estrategia §8),
+// aprobadas por Walter el 20-oct. Donde el OKR no da número, va el objetivo en texto.
+export const GOAL_DEADLINE = "17-ene-2027";
+export const METRIC_ROWS: { key: MetricKey; label: string; help: string; goal: string }[] = [
+  { key: "visitas", label: "Visitas a la landing", help: "Vercel Web Analytics; la base no las ve", goal: "sin número: encontrar un canal que traiga ≥ 30 % de las altas, con sus horas medidas" },
+  { key: "altas", label: "Altas", help: "cuentas nuevas (MOY IQ e Invest comparten cuentas)", goal: "300 cuentas Starter reales (≈ 23 por semana)" },
+  { key: "activas", label: "Activas", help: "cuentas con sesión iniciada en la semana", goal: "40 % de las cuentas nuevas con ≥ 10 movimientos en sus primeros 7 días" },
+  { key: "pruebas", label: "Pruebas Pro iniciadas", help: "licencias de prueba emitidas", goal: "sin número: el camino a los 10 pagos" },
+  { key: "pagos", label: "Pagos", help: "compras directas y pruebas que pasaron a pago", goal: "10 suscriptores Pro con al menos un cobro (con menos de 5, MOY IQ pasa a mantenimiento)" },
+  { key: "bajas", label: "Bajas", help: "pedidos de cancelación recibidos", goal: "sin número: conocer el motivo de cada baja" },
 ];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -100,15 +104,15 @@ function varColor(cur: number | null, prev: number | null, key: MetricKey): stri
 export function renderReport(data: ReportData, opts: { preview?: boolean } = {}): { subject: string; html: string } {
   const label = weekLabel(data.week_start);
   const subject = `${opts.preview ? "[Vista previa] " : ""}MOY IQ · embudo semanal · ${label}`;
-  const rows = METRIC_ROWS.map(({ key, label: l, help }) => {
+  const rows = METRIC_ROWS.map(({ key, label: l, help, goal }) => {
     const cur = data.current[key];
     const prev = data.previous[key];
-    return `<tr><td ${TD}><strong style="color:${EMAIL_BRAND.navy}">${l}</strong><br><span style="${EMAIL_MUTED_STYLE}">${help}</span></td>`
+    return `<tr><td ${TD}><strong style="color:${EMAIL_BRAND.navy}">${l}</strong><br><span style="${EMAIL_MUTED_STYLE}">${help}</span>`
+      + `<br><span style="font-size:12px;color:${EMAIL_BRAND.laton700}">Meta al ${GOAL_DEADLINE}: ${goal}</span></td>`
       + `<td ${TDN}>${fmt(cur)}</td><td ${TDN}>${fmt(prev)}</td>`
       + `<td ${TDN}><span style="color:${varColor(cur, prev, key)}">${variation(cur, prev)}</span></td></tr>`;
   }).join("\n");
-  const goals = `<tr><td ${TD}><strong style="color:${EMAIL_BRAND.navy}">Meta</strong><br><span style="${EMAIL_MUTED_STYLE}">la fija Walter (EST-9)</span></td>`
-    + `<td ${TDN} colspan="3"><span style="color:${EMAIL_BRAND.laton700}">definir</span></td></tr>`;
+  const goals = `<tr><td ${TD} colspan="4"><span style="${EMAIL_MUTED_STYLE}">Metas: OKR a 90 días del plan de acción (19-oct-2026 al ${GOAL_DEADLINE}). Además: 300 suscriptores confirmados al newsletter y 30 conversaciones con el segmento "dos monedas" registradas en el CRM.</span></td></tr>`;
   const prevLeads = new Map(data.leads_previous.map((r) => [r.etapa, r]));
   const leadRows = data.leads.length
     ? data.leads.map((r) => `<tr><td ${TD}>${esc(r.etapa)}</td><td ${TDN}>${r.emails}</td><td ${TDN}>${r.confirmados}</td><td ${TDN}>${variation(r.emails, prevLeads.get(r.etapa)?.emails ?? 0)}</td></tr>`).join("\n")
