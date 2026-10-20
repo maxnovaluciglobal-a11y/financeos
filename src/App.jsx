@@ -16,6 +16,8 @@ import BootSplash from './components/ui/BootSplash.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
+import TrialUnsubscribe from './components/TrialUnsubscribe.jsx'
+import { trialUnsubscribeTarget } from './utils/trialUnsubscribe.js'
 import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
@@ -300,6 +302,9 @@ function Inner() {
 }
 
 export default function App() {
+  // C-35: baja de los correos de la prueba (?unsub=trial&id=), sin sesión.
+  const trialUnsubId = typeof window !== 'undefined' ? trialUnsubscribeTarget(window.location.search) : null
+  if (trialUnsubId) return <TrialUnsubscribe id={trialUnsubId} />
   // Si URL tiene ?admin=crm, cargar el panel CRM interno (sin AppProvider, sin
   // IndexedDB, sin onboarding/licencia) — solo Walter puede leer datos reales,
   // la policy RLS de crm_contacts hace el gate real, no esta condición.

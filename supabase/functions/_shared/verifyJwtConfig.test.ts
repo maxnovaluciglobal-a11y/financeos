@@ -27,6 +27,7 @@ const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'send-optin-confirmation': false,
   'send-push': true,
   'send-report-email': false,
+  'send-trial-activation-email': false,
   'stripe-webhook': false,
   'uptime-alert': false,
 };

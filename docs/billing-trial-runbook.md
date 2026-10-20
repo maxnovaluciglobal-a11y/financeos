@@ -204,3 +204,11 @@ El aviso de fin de prueba se queda como está mientras la prueba siga apagada: t
 3. **El aviso de fin de prueba lo lee**: `findLicenseBySubscription` pasa a pedir `select=*` (no `select=email,status,plan,lang`, porque PostgREST responde 400 si la columna todavía no existe) y devuelve `lang`. `handleTrialWillEnd` elige con `pickLang(license.lang, langFromStripeSubscription(sub))`: primero el idioma guardado, después lo que traiga el evento y, al final, español.
 4. **Orden**: migración, después deploy de `stripe-webhook`. El webhook manda `p_lang` solo con la migración aplicada; antes, `issue_license` responde 404 y la licencia no se emite. Por eso este paso no se puede invertir. Las licencias ya emitidas quedan con `lang` null y siguen recibiendo los correos en español.
 5. **Tests**: en `webhookLogic.test.ts`, el body de `issue_license` lleva `p_lang` y el aviso de fin de prueba usa `license.lang` cuando existe y cae a español cuando es null o `'fr'`.
+
+## Secuencia de activación de la prueba (C-35 / COM-10, 20-oct-2026)
+
+- Al emitir una licencia de prueba, `stripe-webhook` llama a `mark_license_trial` (migración `20261020030000`): `licenses.is_trial = true`, `trial_ends_at`, y una fila en `trial_activation_emails` con el email y el idioma del checkout.
+- `send-trial-activation-email` corre por pg_cron (`trial-activation-daily`, 14:47 UTC) y manda los correos de los días 1 (importar), 3 (Modo Asesor) y 10 (fin de la prueba y cómo cancelar), en es/en/pt/de. Un solo correo por corrida; si el cron se atrasa, manda solo el que corresponde. No manda nada si la licencia no está activa, si la prueba venció o si la persona se dio de baja.
+- Baja: cabecera `List-Unsubscribe` (POST a `lead-unsubscribe?t=trial&id=`) y enlace del pie a `app.moyiq.app/app/?unsub=trial&id=` (la página de baja de la landing no conoce esta tabla).
+- Probar sin escribirle a nadie: `{"mode":"dry_run"}` (cuenta qué mandaría) y `{"mode":"preview","to":"maxnovaluciglobal@gmail.com","step":"day1|day3|day10","lang":"es|en|pt|de"}` (solo esa dirección), siempre con el header `x-cron-secret`.
+- El idioma del aviso de `trial_will_end` sigue saliendo de la suscripción; `trial_activation_emails.lang` ya guarda el del checkout si hace falta reusarlo.

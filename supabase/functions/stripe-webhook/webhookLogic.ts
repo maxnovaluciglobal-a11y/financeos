@@ -380,6 +380,27 @@ export async function issueLicense(
   if (!res.ok) throw new Error(`issue_license failed: ${res.status} ${await res.text()}`);
 }
 
+// C-35 / COM-10: marca la licencia recién emitida como prueba (is_trial,
+// trial_ends_at) y la anota en la secuencia de activación de los días 1, 3 y
+// 10 (send-trial-activation-email). Nunca rompe la emisión: un fallo se
+// registra y la licencia sigue válida, solo sin la secuencia.
+export async function markLicenseTrial(
+  key: string, trialEndsAt: string, email: string | null, lang: string | null, config: WebhookConfig,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${config.supabaseUrl}/rest/v1/rpc/mark_license_trial`, {
+      method: "POST",
+      headers: serviceHeaders(config),
+      body: JSON.stringify({ p_key: key, p_trial_ends_at: trialEndsAt, p_email: email, p_lang: lang }),
+    });
+    if (!res.ok) return { ok: false, error: `http_${res.status}` };
+    const data = await res.json().catch(() => null);
+    return data?.ok === true ? { ok: true } : { ok: false, error: typeof data?.error === "string" ? data.error : "unknown" };
+  } catch {
+    return { ok: false, error: "network" };
+  }
+}
+
 // C-39 / PRD-2: el checkout salió de la app con la sesión iniciada
 // (client_reference_id u_<uid>_lang_xx). Deja Pro activado en esa cuenta con
 // el hash de la clave; si la cuenta ya tenía otro Pro vigente, o la licencia ya

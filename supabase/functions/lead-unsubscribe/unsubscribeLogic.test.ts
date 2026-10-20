@@ -16,6 +16,7 @@ describe('lead-unsubscribe (C-35 / COM-9)', () => {
     expect(RPC_BY_TABLE).toEqual({
       starter: 'unsubscribe_starter_lead', diagnostico: 'unsubscribe_diagnostico_lead',
       invest: 'unsubscribe_invest_lead', demo: 'unsubscribe_demo_lead',
+      trial: 'unsubscribe_trial_activation',
     })
   })
 
@@ -31,6 +32,11 @@ describe('lead-unsubscribe (C-35 / COM-9)', () => {
 
   it('GET redirige a la página de baja de la landing con la tabla', () => {
     expect(landingUnsubscribeUrl('https://moyiq.app/', 'demo', ID)).toBe(`https://moyiq.app/unsubscribe.html?id=${ID}&t=demo`)
+  })
+
+  it('la baja de la prueba (C-35) va a la página de la app, que conoce esa tabla', () => {
+    expect(parseTarget(`https://x/f?t=trial&id=${ID}`)).toEqual({ table: 'trial', id: ID })
+    expect(landingUnsubscribeUrl('https://moyiq.app/', 'trial', ID)).toBe(`https://app.moyiq.app/app/?unsub=trial&id=${ID}`)
   })
 
   it('cabeceras List-Unsubscribe con URL https de un clic y mailto', () => {

@@ -56,6 +56,10 @@ verify_jwt = false
 [functions.send-optin-confirmation]
 verify_jwt = false
 
+# pg_cron diario (header x-cron-secret): secuencia de activación de la prueba (C-35, 20-oct-2026).
+[functions.send-trial-activation-email]
+verify_jwt = false
+
 # pg_cron la invoca con `Authorization: Bearer <JWT>` y x-cron-secret: ESTA SÍ verifica JWT
 # (y desde el 19-oct-2026 además exige x-cron-secret, ver send-push/requestGuard.ts).
 [functions.send-push]

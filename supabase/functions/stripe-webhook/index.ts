@@ -32,7 +32,7 @@ import {
   verifyStripeSignature, generateKey, planFromSession, isTestModeCheckout, checkoutSkipReason,
   extractPaymentIntent, issueLicense, sessionAlreadyProcessed, sendKeyEmail, langFromStripeSession,
   notifyKeyDeliveryFailure, notifyNewProPurchase, CHECKOUT_EVENT_TYPES, subscriptionIntervalFromSession,
-  subscriptionIdFromSession, initialExpiryFromSession, isTrialCheckout, trialBillingFromSession,
+  subscriptionIdFromSession, initialExpiryFromSession, isTrialCheckout, trialBillingFromSession, markLicenseTrial,
   notifyUnmappedTrialCheckout, handleBillingEvent, TRIAL_DAYS, attachLicenseToAccount, type WebhookConfig, type HandlerResult,
 } from "./webhookLogic.ts";
 import { userIdFromClientReference } from "../_shared/emailLang.ts";
@@ -142,6 +142,10 @@ Deno.serve(async (req) => {
     const trial = isTrialCheckout(session) && expiresAt ? trialBillingFromSession(session, expiresAt) : null;
     try {
       await issueLicense(key, plan, email, session.id ?? null, paymentIntent, config, subscriptionId, expiresAt);
+      if (trial) {
+        const marked = await markLicenseTrial(key, trial.endsAt, email, langFromStripeSession(session), config);
+        if (!marked.ok) console.warn(`Prueba sin secuencia de activación (${marked.error}) session=${session.id}`);
+      }
       // C-39 / PRD-2: compra iniciada desde la app con sesión → Pro queda en la cuenta.
       const accountId = userIdFromClientReference(session.client_reference_id);
       const attached = accountId ? await attachLicenseToAccount(accountId, key, config) : null;

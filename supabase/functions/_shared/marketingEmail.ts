@@ -9,7 +9,8 @@
 export const COMPANY_POSTAL_TEXT = "MAXNOVA & LUCI Global LLC · 10482 NW 31st Terrace, Office 1D, Doral, FL 33172, USA";
 export const COMPANY_POSTAL_HTML = COMPANY_POSTAL_TEXT.replace("&", "&amp;");
 
-export const UNSUBSCRIBE_TABLES = ["starter", "diagnostico", "invest", "demo"] as const;
+// "trial": secuencia de activación de la prueba (C-35 / COM-10).
+export const UNSUBSCRIBE_TABLES = ["starter", "diagnostico", "invest", "demo", "trial"] as const;
 export type UnsubscribeTable = typeof UNSUBSCRIBE_TABLES[number];
 
 export function oneClickUnsubscribeUrl(supabaseUrl: string, table: UnsubscribeTable, leadId: string): string {

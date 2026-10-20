@@ -1195,3 +1195,23 @@ describe('C-39 / PRD-2: Pro queda en la cuenta que inició la compra', () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).html).toContain('ingresa la clave')
   })
 })
+
+describe('markLicenseTrial (C-35 / COM-10)', () => {
+  it('marca la prueba con la clave, el fin, el email y el idioma', async () => {
+    const { markLicenseTrial } = await import('./webhookLogic.ts')
+    const f = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true, id: 'x' }) })
+    vi.stubGlobal('fetch', f)
+    expect(await markLicenseTrial('FNOS-AAAA-BBBB-CCCC', '2026-11-03T00:00:00.000Z', 'a@b.com', 'pt', CONFIG as any)).toEqual({ ok: true })
+    expect(f.mock.calls[0][0]).toBe('https://proj.supabase.co/rest/v1/rpc/mark_license_trial')
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ p_key: 'FNOS-AAAA-BBBB-CCCC', p_trial_ends_at: '2026-11-03T00:00:00.000Z', p_email: 'a@b.com', p_lang: 'pt' })
+    vi.unstubAllGlobals()
+  })
+  it('nunca tira: devuelve el error', async () => {
+    const { markLicenseTrial } = await import('./webhookLogic.ts')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }))
+    expect(await markLicenseTrial('k', 'd', null, null, CONFIG as any)).toEqual({ ok: false, error: 'http_404' })
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('down')))
+    expect(await markLicenseTrial('k', 'd', null, null, CONFIG as any)).toEqual({ ok: false, error: 'network' })
+    vi.unstubAllGlobals()
+  })
+})

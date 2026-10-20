@@ -13,6 +13,7 @@ export const RPC_BY_TABLE: Record<UnsubscribeTable, string> = {
   diagnostico: "unsubscribe_diagnostico_lead",
   invest: "unsubscribe_invest_lead",
   demo: "unsubscribe_demo_lead",
+  trial: "unsubscribe_trial_activation",
 };
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,7 +27,12 @@ export function parseTarget(url: string): { table: UnsubscribeTable; id: string 
   return { table: table as UnsubscribeTable, id };
 }
 
+// La página de baja de la landing no conoce la secuencia de la prueba: esa
+// baja se muestra en la app (?unsub=trial&id=…).
+export const APP_UNSUBSCRIBE_URL = "https://app.moyiq.app/app/";
+
 export function landingUnsubscribeUrl(landingUrl: string, table: UnsubscribeTable, id: string): string {
+  if (table === "trial") return `${APP_UNSUBSCRIBE_URL}?unsub=trial&id=${encodeURIComponent(id)}`;
   return `${landingUrl.replace(/\/$/, "")}/unsubscribe.html?id=${encodeURIComponent(id)}&t=${table}`;
 }
 
