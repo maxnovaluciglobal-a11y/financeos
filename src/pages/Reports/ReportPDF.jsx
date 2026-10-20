@@ -23,9 +23,9 @@ const s = StyleSheet.create({
   // Header
   header:  { backgroundColor: DARK, marginHorizontal: -36, marginTop: -32, paddingHorizontal: 36, paddingVertical: 20, marginBottom: 20, borderBottomWidth: 3, borderBottomColor: P.laton },
   wordmark:{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
-  plate:   { backgroundColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 5 },
-  plateTx: { fontSize: 15, fontFamily: F.display, fontWeight: 600, color: DARK },
-  hTitle:  { fontSize: 20, fontFamily: F.display, fontWeight: 600, color: P.page, letterSpacing: 0.2, marginBottom: 3 },
+  plate:   { borderWidth: 1.2, borderColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 },
+  plateTx: { fontSize: 11.5, fontFamily: F.mono, fontWeight: 600, color: BRAND },
+  hTitle:  { fontSize: 20, fontFamily: F.display, fontWeight: 600, color: P.page, letterSpacing: 1.6, marginBottom: 3 },
   hSub:    { fontSize: 9, color: BRAND, fontFamily: F.body },
   hRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   hMeta:   { fontSize: 8, color: P.navySub, textAlign: 'right' },

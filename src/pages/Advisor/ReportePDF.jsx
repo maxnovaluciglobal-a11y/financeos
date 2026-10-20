@@ -48,10 +48,10 @@ const s = StyleSheet.create({
     marginBottom: 20,
   },
   headerLeft: {},
-  brandName: { fontSize: 18, fontFamily: F.display, fontWeight: 600, color: P.navy, letterSpacing: -0.2 },
+  brandName: { fontSize: 18, fontFamily: F.display, fontWeight: 600, color: P.navy },
   wordmark:  { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  plate:     { backgroundColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 4 },
-  plateTx:   { fontSize: 13, fontFamily: F.display, fontWeight: 600, color: P.navy },
+  plate:     { borderWidth: 1.2, borderColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 5 },
+  plateTx:   { fontSize: 10.5, fontFamily: F.mono, fontWeight: 600, color: P.laton700 },
   brandSub:  { fontSize: 8, color: C.ink3, letterSpacing: 0.5 },
   headerRight: { alignItems: 'flex-end' },
   reportTitle: { fontSize: 13, fontFamily: F.display, fontWeight: 600, color: C.ink, marginBottom: 3 },
@@ -174,8 +174,8 @@ function BrandMark({ name, size }) {
   if (name !== 'MOY IQ') return <Text style={[s.brandName, fs]}>{name}</Text>
   return (
     <View style={s.wordmark}>
-      <Text style={[s.brandName, fs]}>MOY</Text>
-      <View style={s.plate}><Text style={[s.plateTx, size ? { fontSize: Math.round(size * 0.75) } : null]}>IQ</Text></View>
+      <Text style={[s.brandName, { letterSpacing: 1.4 }, fs]}>MOY</Text>
+      <View style={s.plate}><Text style={[s.plateTx, size ? { fontSize: Math.round(size * 0.58 * 10) / 10 } : null]}>IQ</Text></View>
     </View>
   )
 }
