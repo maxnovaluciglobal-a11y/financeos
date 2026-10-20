@@ -17,19 +17,23 @@ export interface FeedbackConfig {
 }
 
 export interface FeedbackInput {
+  kind?: "nps";
   message: string;
   nps: number | null;
   log: string | null;
   meta: Record<string, string>;
 }
 
-const META_KEYS = ["version", "lang", "country", "plan", "screen"] as const;
+const META_KEYS = ["version", "lang", "country", "plan", "screen", "trigger"] as const;
 
 export function parseFeedback(body: unknown): FeedbackInput | null {
   if (!body || typeof body !== "object") return null;
   const b = body as Record<string, unknown>;
+  // kind "nps" (PRD-5): el NPS automático; el puntaje es obligatorio y el comentario, opcional.
+  const isNps = b.kind === "nps";
   const message = typeof b.message === "string" ? b.message.trim() : "";
-  if (!message || message.length > MAX_MESSAGE) return null;
+  if ((!message && !isNps) || message.length > MAX_MESSAGE) return null;
+  if (isNps && (b.nps === undefined || b.nps === null)) return null;
   let nps: number | null = null;
   if (b.nps !== undefined && b.nps !== null) {
     if (typeof b.nps !== "number" || !Number.isInteger(b.nps) || b.nps < 0 || b.nps > 10) return null;
@@ -42,7 +46,7 @@ export function parseFeedback(body: unknown): FeedbackInput | null {
     const v = rawMeta[k];
     if (typeof v === "string" && v.trim()) meta[k] = v.trim().slice(0, 40);
   }
-  return { message, nps, log, meta };
+  return isNps ? { kind: "nps", message, nps, log, meta } : { message, nps, log, meta };
 }
 
 export function bearerToken(header: string | null | undefined): string | null {
@@ -82,20 +86,38 @@ export async function claimFeedback(userId: string, config: FeedbackConfig): Pro
   }
 }
 
+// NPS automático: una vez por cuenta (RPC nps_claim, migración 20261020080000).
+export async function claimNps(userId: string, config: FeedbackConfig): Promise<"ok" | "already_answered" | "claim_failed"> {
+  try {
+    const res = await fetch(`${config.supabaseUrl}/rest/v1/rpc/nps_claim`, {
+      method: "POST",
+      headers: { apikey: config.serviceRole, Authorization: `Bearer ${config.serviceRole}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_user_id: userId }),
+    });
+    if (!res.ok) return "claim_failed";
+    const data = await res.json().catch(() => null);
+    if (data?.ok === true) return "ok";
+    return data?.error === "already_answered" ? "already_answered" : "claim_failed";
+  } catch {
+    return "claim_failed";
+  }
+}
+
 export function renderFeedbackEmail(input: FeedbackInput, from: { email: string | null }): { subject: string; text: string; html: string } {
   const nps = input.nps === null ? "sin NPS" : `NPS ${input.nps}`;
   const metaLine = Object.entries(input.meta).map(([k, v]) => `${k}: ${v}`).join(" · ");
+  const auto = input.kind === "nps";
   const lines = [
-    `Comentario desde la app (${nps})`,
+    auto ? `NPS automático de la app (${nps})` : `Comentario desde la app (${nps})`,
     `Cuenta: ${from.email ?? "(sin email)"}`,
     metaLine ? `App: ${metaLine}` : "",
     "",
-    input.message,
+    input.message || "(sin comentario)",
   ];
   if (input.log) lines.push("", "Registro técnico adjunto:", input.log);
   const text = lines.filter((l, i) => l !== "" || i > 2).join("\n");
   const html = `<pre style="font-family:ui-monospace,Menlo,monospace;font-size:13px;white-space:pre-wrap">${escapeHtml(text)}</pre>`;
-  return { subject: `MOY IQ · comentario de la app (${nps})`, text, html };
+  return { subject: auto ? `MOY IQ · NPS automático (${nps})` : `MOY IQ · comentario de la app (${nps})`, text, html };
 }
 
 export async function sendFeedbackEmail(

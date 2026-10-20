@@ -64,6 +64,7 @@ const Terms         = lazy(() => import('./pages/legal/Terms.jsx'))
 const License       = lazy(() => import('./pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
 const More          = lazy(() => import('./pages/More/index.jsx'))
+const NpsPrompt     = lazy(() => import('./components/NpsPrompt.jsx'))
 
 const PageLoader = () => <PageSkeleton />
 
@@ -306,6 +307,9 @@ function Inner() {
       <Suspense fallback={<PageLoader />}>
         {renderPage(page)}
       </Suspense>
+      {session?.user && !isDemo && (
+        <Suspense fallback={null}><NpsPrompt createdAt={session.user.created_at} /></Suspense>
+      )}
       <Toast />
     </Shell>
   )

@@ -21,4 +21,9 @@ describe('comentarios (C-39 / PRD-5)', () => {
     expect(await sendFeedback({ accessToken: 't', message: 'x' }, async () => ({ ok: false, status: 429, json: async () => ({ ok: false, error: 'rate_limited' }) }))).toEqual({ ok: false, error: 'rate_limited' })
     expect(await sendFeedback({ accessToken: 't', message: 'x' }, async () => { throw new Error('x') })).toEqual({ ok: false, error: 'network' })
   })
+  it('el NPS automático manda kind nps y el motivo, sin registro técnico', async () => {
+    const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }))
+    await sendFeedback({ accessToken: 't', message: '', nps: 9, kind: 'nps', meta: { trigger: 'day14' } }, f)
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ kind: 'nps', message: '', nps: 9, meta: { trigger: 'day14' } })
+  })
 })

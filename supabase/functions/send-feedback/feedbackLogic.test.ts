@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { parseFeedback, claimFeedback, sendFeedbackEmail, renderFeedbackEmail, MAX_MESSAGE } from './feedbackLogic.ts'
+import { parseFeedback, claimFeedback, claimNps, sendFeedbackEmail, renderFeedbackEmail, MAX_MESSAGE } from './feedbackLogic.ts'
 import { corsHeaders, ALLOWED_ORIGINS, FALLBACK_ORIGIN } from './cors.ts'
 
 const CONFIG = { supabaseUrl: 'https://p.supabase.co', serviceRole: 'srv', resendApiKey: 're', supportEmail: 'support@moyiq.app', fromEmail: 'MOY IQ <hola@moyiq.app>' }
@@ -45,6 +45,29 @@ describe('send-feedback: tope y envío', () => {
   it('el registro técnico va al final del correo', () => {
     const m = renderFeedbackEmail({ message: 'msg', nps: null, log: 'TypeError at x', meta: {} }, { email: 'a@b.co' })
     expect(m.text.indexOf('msg')).toBeLessThan(m.text.indexOf('TypeError'))
+  })
+})
+
+describe('send-feedback: NPS automático (PRD-5)', () => {
+  it('kind nps: puntaje obligatorio, comentario opcional, trigger en meta y nunca montos', () => {
+    expect(parseFeedback({ kind: 'nps', nps: 8, message: '', meta: { trigger: 'day14', amount: '9' } }))
+      .toEqual({ kind: 'nps', message: '', nps: 8, log: null, meta: { trigger: 'day14' } })
+    expect(parseFeedback({ kind: 'nps', message: 'ok' })).toBeNull()
+    expect(parseFeedback({ kind: 'nps', nps: 12 })).toBeNull()
+  })
+  it('claimNps: una vez por cuenta', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) }))
+    expect(await claimNps('u', CONFIG)).toBe('ok')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: false, error: 'already_answered' }) }))
+    expect(await claimNps('u', CONFIG)).toBe('already_answered')
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('net')))
+    expect(await claimNps('u', CONFIG)).toBe('claim_failed')
+  })
+  it('el correo dice que es el NPS automático y aguanta el comentario vacío', () => {
+    const m = renderFeedbackEmail({ kind: 'nps', message: '', nps: 7, log: null, meta: { trigger: 'movements10' } }, { email: 'a@b.co' })
+    expect(m.subject).toBe('MOY IQ · NPS automático (NPS 7)')
+    expect(m.text).toContain('(sin comentario)')
+    expect(m.text).toContain('trigger: movements10')
   })
 })
 

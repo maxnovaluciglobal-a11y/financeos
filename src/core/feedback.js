@@ -17,9 +17,11 @@ function functionsUrl() {
   return (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '') + '/functions/v1/send-feedback'
 }
 
-export async function sendFeedback({ accessToken, message, nps = null, includeLog = false, meta = {} }, fetchImpl = fetch) {
+// kind 'nps': el NPS automático (PRD-5), con el comentario opcional.
+export async function sendFeedback({ accessToken, message, nps = null, includeLog = false, meta = {}, kind = null }, fetchImpl = fetch) {
   if (!accessToken) return { ok: false, error: 'session_required' }
   const body = { message, nps, meta }
+  if (kind === 'nps') body.kind = 'nps'
   if (includeLog) body.log = technicalLog()
   let res
   try {
