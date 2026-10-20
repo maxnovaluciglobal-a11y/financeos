@@ -7,7 +7,7 @@ Esta guía reemplaza a la de FinanceOS v1.5 (junio de 2026), que describía un d
 - Vercel, team `maxnovaluci-global`, proyecto `financeos-app`, enlazado al repo `maxnovaluciglobal-a11y/financeos` con `main` como rama de producción.
 - Dominios: `app.moyiq.app` y `demo.moyiq.app` (los únicos; el dominio anterior de FinanceOS se desconectó el 20-oct-2026).
 - Supabase `nelwgbcddwiaimzbcuas` (`financeos-prod`): base de datos y Edge Functions, compartido con Invest.
-- Netlify no forma parte de la infraestructura actual (ver el `CLAUDE.md` de `01 - Maxnova Luci Global/`); `netlify.toml` es un resto de la guía vieja.
+- Netlify no forma parte de la infraestructura actual (ver el `CLAUDE.md` de `01 - Maxnova Luci Global/`) (`netlify.toml` y los `generar-zips*.sh` de la venta por ZIP se retiraron el 20-oct-2026, ING-7; copia en la Papelera).
 
 ## Front (la PWA)
 
