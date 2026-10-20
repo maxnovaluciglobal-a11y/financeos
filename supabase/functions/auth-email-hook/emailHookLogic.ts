@@ -29,10 +29,9 @@ export type Brand = 'moyiq' | 'invest';
 
 export function detectBrand(redirectTo: string | null | undefined): Brand {
   const url = String(redirectTo || '');
-  // invest.moyiq.app es el dominio real; invest.financeospro.com queda como
-  // red de seguridad por si algún link viejo todavía apunta ahí (mismo
-  // criterio que el resto del código con el legacy financeospro.com).
-  if (/invest\.moyiq\.app|invest\.financeospro\.com/i.test(url)) return 'invest';
+  // invest.moyiq.app es el único dominio de Invest (el anterior de FinanceOS
+  // se desconectó el 20-oct-2026).
+  if (/invest\.moyiq\.app/i.test(url)) return 'invest';
   return 'moyiq'; // default: MOY IQ es el producto primario, con más usuarios reales
 }
 

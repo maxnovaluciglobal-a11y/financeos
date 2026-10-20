@@ -129,12 +129,8 @@ describe('redirecciones de vercel.json para los correos que ya salieron', () => 
     expect(r.has).toBeUndefined()
   })
 
-  it('las redirecciones de dominio (financeospro.com) siguen antes que las de ruta', () => {
-    const idx = (pred) => redirects.findIndex(pred)
-    const lastHost = Math.max(...redirects.map((r, i) => (r.has ? i : -1)))
-    const firstPath = idx((r) => APP_DESTINATIONS.some((d) => r.source === `/${d}`))
-    expect(lastHost).toBeGreaterThanOrEqual(0)
-    expect(firstPath).toBeGreaterThan(lastHost)
+  it('no quedan redirecciones por host (el dominio anterior se desconectó el 20-oct-2026)', () => {
+    expect(redirects.filter((r) => r.has)).toEqual([])
   })
 
   it('el rewrite de /app/ sigue sirviendo el destino de las redirecciones', () => {

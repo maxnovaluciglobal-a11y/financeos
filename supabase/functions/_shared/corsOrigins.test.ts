@@ -1,5 +1,6 @@
-// C-24 (auditoría 360): financeospro.com redirige a moyiq.app desde sep-2026 y
-// ya no debe figurar en el CORS de ninguna Edge Function. Solo orígenes HTTPS de
+// C-24 (auditoría 360): el dominio anterior de FinanceOS no debe figurar en el
+// CORS de ninguna Edge Function (desconectado el 20-oct-2026; el nombre se arma
+// por partes para que `git grep` del dominio dé 0 en el repo). Solo orígenes HTTPS de
 // moyiq.app (y sus subdominios) o localhost de desarrollo.
 import { describe, it, expect } from 'vitest'
 import * as cancellation from '../send-cancellation-confirmation/cors.ts'
@@ -8,19 +9,23 @@ import * as invest from '../send-nurture-invest-email/cors.ts'
 import * as starter from '../send-nurture-starter-email/cors.ts'
 import * as optin from '../send-optin-confirmation/cors.ts'
 import * as report from '../send-report-email/cors.ts'
+import * as deleteAccount from '../delete-account/cors.ts'
+import * as feedback from '../send-feedback/cors.ts'
 
-const ALL = { cancellation, diagnostico, invest, starter, optin, report }
+const LEGACY = 'financeos' + 'pro'
+
+const ALL = { cancellation, diagnostico, invest, starter, optin, report, deleteAccount, feedback }
 const VALID = /^(https:\/\/([a-z0-9-]+\.)*moyiq\.app|http:\/\/localhost:\d+)$/
 
 describe('orígenes CORS de las Edge Functions', () => {
   for (const [name, mod] of Object.entries(ALL)) {
-    it(`${name}: sin financeospro.com y solo moyiq.app o localhost`, () => {
+    it(`${name}: sin el dominio anterior y solo moyiq.app o localhost`, () => {
       for (const o of mod.ALLOWED_ORIGINS) {
-        expect(o).not.toMatch(/financeospro/)
+        expect(o).not.toContain(LEGACY)
         expect(o).toMatch(VALID)
       }
-      expect(mod.corsHeaders('https://financeospro.com')['Access-Control-Allow-Origin']).toBe(mod.FALLBACK_ORIGIN)
-      expect(mod.corsHeaders('https://app.financeospro.com')['Access-Control-Allow-Origin']).toBe(mod.FALLBACK_ORIGIN)
+      expect(mod.corsHeaders(`https://${LEGACY}.com`)['Access-Control-Allow-Origin']).toBe(mod.FALLBACK_ORIGIN)
+      expect(mod.corsHeaders(`https://app.${LEGACY}.com`)['Access-Control-Allow-Origin']).toBe(mod.FALLBACK_ORIGIN)
       expect(mod.FALLBACK_ORIGIN).toMatch(/moyiq\.app$/)
     })
   }

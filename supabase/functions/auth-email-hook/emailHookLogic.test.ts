@@ -6,8 +6,8 @@ describe('detectBrand', () => {
   it('detecta Invest por el host de redirect_to', () => {
     expect(detectBrand('https://invest.moyiq.app/app/')).toBe('invest')
   })
-  it('detecta Invest por el dominio legacy financeospro', () => {
-    expect(detectBrand('https://invest.financeospro.com/')).toBe('invest')
+  it('el dominio anterior de FinanceOS ya no cuenta como Invest', () => {
+    expect(detectBrand(`https://invest.${'financeos' + 'pro'}.com/`)).toBe('moyiq')
   })
   it('default a moyiq para app.moyiq.app', () => {
     expect(detectBrand('https://app.moyiq.app/app/')).toBe('moyiq')

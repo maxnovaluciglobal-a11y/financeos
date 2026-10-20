@@ -13,8 +13,8 @@ const config = {
   // financeos_renaming_moy_ronda. Walter compró moyiq.app el 11-sep sin
   // esperar esa confirmación. moyiq.app es ahora el dominio PRIMARIO (11-sep):
   // DNS + hosting en Vercel (app./demo. incluidos) + Resend para envío.
-  // financeospro.com sigue funcionando (mismo deploy, alias vigente) — no se
-  // agregó redirect 301, es decisión aparte si se quiere más adelante.
+  // El dominio anterior de FinanceOS se desconectó el 20-oct-2026 (decisión
+  // de Walter): la app solo vive en app.moyiq.app y demo.moyiq.app.
   app: {
     name:        'MOY IQ',              // Nombre que aparece en sidebar y título
     tagline:     'Tu dinero, bajo control total',

@@ -5,7 +5,7 @@ Esta guía reemplaza a la de FinanceOS v1.5 (junio de 2026), que describía un d
 ## Dónde corre
 
 - Vercel, team `maxnovaluci-global`, proyecto `financeos-app`, enlazado al repo `maxnovaluciglobal-a11y/financeos` con `main` como rama de producción.
-- Dominios: `app.moyiq.app` y `demo.moyiq.app` (primarios). `app.financeospro.com` y `demo.financeospro.com` redirigen con 308 a los de `moyiq.app`.
+- Dominios: `app.moyiq.app` y `demo.moyiq.app` (los únicos; el dominio anterior de FinanceOS se desconectó el 20-oct-2026).
 - Supabase `nelwgbcddwiaimzbcuas` (`financeos-prod`): base de datos y Edge Functions, compartido con Invest.
 - Netlify no forma parte de la infraestructura actual (ver el `CLAUDE.md` de `01 - Maxnova Luci Global/`); `netlify.toml` es un resto de la guía vieja.
 
@@ -14,7 +14,7 @@ Esta guía reemplaza a la de FinanceOS v1.5 (junio de 2026), que describía un d
 1. Trabajar en un worktree propio y correr `npm test` completo.
 2. Tomar el candado: `mkdir /private/tmp/claude-501/moyiq-locks/financeos-app.lock` (soltarlo con `rmdir` al terminar).
 3. Integrar con `git merge --ff-only` a `main` y `git push origin main`. El push ya dispara un deploy de producción por la integración git de Vercel.
-4. `./deploy.sh` desde el árbol principal. Antes de cualquier paso verifica que la rama sea `main`, que no haya cambios rastreados sin commitear y que `HEAD` sea igual a `origin/main`; después corre tests y build, publica con la CLI, aliasea los cuatro dominios y hace un smoke test con `curl`. `./deploy.sh --check` solo corre la verificación.
+4. `./deploy.sh` desde el árbol principal. Antes de cualquier paso verifica que la rama sea `main`, que no haya cambios rastreados sin commitear y que `HEAD` sea igual a `origin/main`; después corre tests y build, publica con la CLI, aliasea los dos dominios y hace un smoke test con `curl`. `./deploy.sh --check` solo corre la verificación.
 
 ## Edge Functions
 
@@ -41,4 +41,4 @@ El rewrite de `vercel.json` devuelve 200 para cualquier ruta bajo `/app/`: un 20
 
 ## Volver atrás
 
-Revertir con git (`git revert <commit>` en un worktree, integrar y `./deploy.sh`). Para un corte rápido, apuntar los cuatro dominios al deployment anterior con los mismos comandos que usa `deploy.sh` (`npx vercel alias <url-del-deployment-anterior> <dominio>`, uno por dominio); la URL anterior es la penúltima fila con entorno Production de `npx vercel ls financeos-app --scope maxnovaluci-global`. Ojo: un push posterior a `main` vuelve a publicar lo nuevo.
+Revertir con git (`git revert <commit>` en un worktree, integrar y `./deploy.sh`). Para un corte rápido, apuntar los dos dominios al deployment anterior con los mismos comandos que usa `deploy.sh` (`npx vercel alias <url-del-deployment-anterior> <dominio>`, uno por dominio); la URL anterior es la penúltima fila con entorno Production de `npx vercel ls financeos-app --scope maxnovaluci-global`. Ojo: un push posterior a `main` vuelve a publicar lo nuevo.

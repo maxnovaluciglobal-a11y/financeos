@@ -28,7 +28,7 @@
 // Verificado en vivo (2026-08-16, curl): responde 200 OK a un GET normal,
 // pero al preflight CORS (OPTIONS con Origin) responde 403 Forbidden y NO
 // manda Access-Control-Allow-Origin en ningún caso. Eso significa que un
-// fetch() hecho desde el navegador en app.financeospro.com será bloqueado
+// fetch() hecho desde el navegador en app.moyiq.app será bloqueado
 // por CORS — no es un tema de API key, es que el servicio no está pensado
 // para llamarse directo desde un cliente web. FinanceOS es 100% cliente
 // (sin backend que pueda hacer de proxy, ver CLAUDE.md del repo), así que

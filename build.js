@@ -22,8 +22,8 @@ const dist = path.join(__dirname, 'dist')
 // un modelo de negocio ya abandonado y quedó sirviéndose en vivo sin que nadie
 // lo notara (ver auditoría 2026-08-27). Un redirect real, no HTML estático.
 fs.writeFileSync(path.join(dist, 'index.html'),
-  '<!doctype html><meta http-equiv="refresh" content="0; url=https://www.financeospro.com/">' +
-  '<link rel="canonical" href="https://www.financeospro.com/">'
+  '<!doctype html><meta http-equiv="refresh" content="0; url=https://www.moyiq.app/">' +
+  '<link rel="canonical" href="https://www.moyiq.app/">'
 )
 fs.copyFileSync(path.join(__dirname, 'public', 'favicon.svg'), path.join(dist, 'favicon.svg'))
 

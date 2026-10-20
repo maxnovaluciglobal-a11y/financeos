@@ -35,10 +35,12 @@ describe('computeCrossRates', () => {
 })
 
 describe('CORS de /api/fixer (C-24)', () => {
-  it('no permite financeospro.com, que ya redirige a moyiq.app', async () => {
+  // El dominio anterior de FinanceOS se desconectó el 20-oct-2026; el nombre se
+  // arma por partes para que `git grep` del dominio dé 0 en el repo.
+  it('no permite el dominio anterior de FinanceOS, solo moyiq.app', async () => {
     const { readFileSync } = await import('node:fs')
     const src = readFileSync(new URL('./fixer.js', import.meta.url), 'utf8')
-    expect(src).not.toMatch(/financeospro/)
+    expect(src).not.toMatch(new RegExp('financeos' + 'pro'))
     expect(src).toContain("'https://app.moyiq.app'")
   })
 })

@@ -14,10 +14,10 @@ npm test         # vitest run — src/, api/, supabase/functions/ y scripts/ (ve
 
 **Hay dos caminos a producción y los dos salen de `main`** (verificado con la API de Vercel el 19-oct-2026):
 
-1. **Push a `main`.** El proyecto de Vercel `financeos-app` está enlazado al repo `maxnovaluciglobal-a11y/financeos` con `main` como rama de producción, y los cuatro dominios (`app.` y `demo.` de `moyiq.app` y de `financeospro.com`) están asignados al proyecto: cada push a `main` compila y publica a producción solo. (Esta sección decía que un push no actualizaba el dominio: era falso, casi todos los deploys de producción del 18-oct fueron `source=git`.)
-2. **`./deploy.sh`** (desde 2026-09-06; cuatro dominios desde el 11-sep; guard desde el 19-oct): guard (rama `main`, sin cambios rastreados sin commitear, igual a `origin/main`, ver "Sesiones paralelas y despliegue"), tests, build local (gate), `vercel deploy --prod` por CLI, los CUATRO alias y un smoke test de `curl` a `/app/` y a `fonts.css` en los cuatro dominios. Aborta si falla cualquier paso. Con el guard, el CLI y git publican el mismo commit.
+1. **Push a `main`.** El proyecto de Vercel `financeos-app` está enlazado al repo `maxnovaluciglobal-a11y/financeos` con `main` como rama de producción, y los dos dominios (`app.moyiq.app` y `demo.moyiq.app`) están asignados al proyecto: cada push a `main` compila y publica a producción solo. (Esta sección decía que un push no actualizaba el dominio: era falso, casi todos los deploys de producción del 18-oct fueron `source=git`.)
+2. **`./deploy.sh`** (desde 2026-09-06; guard desde el 19-oct; dos dominios desde el 20-oct): guard (rama `main`, sin cambios rastreados sin commitear, igual a `origin/main`, ver "Sesiones paralelas y despliegue"), tests, build local (gate), `vercel deploy --prod` por CLI, los DOS alias y un smoke test de `curl` a `/app/` y a `fonts.css` en los dos dominios. Aborta si falla cualquier paso. Con el guard, el CLI y git publican el mismo commit.
 
-`app.financeospro.com` y `demo.financeospro.com` ya no sirven la app: redirigen con 308 a `app.moyiq.app` y `demo.moyiq.app` (`vercel.json`, verificado con `curl` el 19-oct-2026).
+El dominio anterior de FinanceOS (app./demo.) **se desconectó el 20-oct-2026** por decisión de Walter (sin redirección; quien tuviera datos solo locales en ese origen los pierde): no figura en `vercel.json`, `deploy.sh`, CORS ni código. No volver a agregarlo.
 
 Manual, si hace falta un paso suelto:
 
@@ -28,12 +28,12 @@ npx vercel --prod --yes
 Con la URL que devuelve, aliasear **los cuatro** dominios (`moyiq.app` es el primario desde 11-sep-2026):
 
 ```bash
-npx vercel alias <url-nueva> app.financeospro.com
+npx vercel alias <url-nueva> app.moyiq.app
 ```
 
-Y repetir con `demo.financeospro.com`, `app.moyiq.app`, `demo.moyiq.app`. Si solo se aliasean algunos, el resto se queda en la versión vieja.
+Y repetir con `demo.moyiq.app`. Si solo se aliasea uno, el otro se queda en la versión vieja.
 
-El navegador integrado tiene bloqueado `*.financeospro.com`/`*.moyiq.app` por política: verificar producción con `curl` por contenido, o en `localhost` con el servidor de desarrollo.
+El navegador integrado tiene bloqueado `*.moyiq.app` por política: verificar producción con `curl` por contenido, o en `localhost` con el servidor de desarrollo.
 
 ## Sesiones paralelas y despliegue
 
@@ -96,7 +96,7 @@ Detalle completo, gotchas de debug y decisiones: memoria `financeos_moy_iq_inves
 
 ## Sistema visual — rebranding MOY IQ (mergeado y desplegado)
 
-**Estado (11-sep-2026): mergeado a `main` y en producción**, ahora en `app.moyiq.app`/`demo.moyiq.app` (dominio primario) y `app.financeospro.com`/`demo.financeospro.com`, que hoy redirigen con 308 a los de `moyiq.app` (`vercel.json`; verificado el 19-oct-2026). ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
+**Estado (11-sep-2026): mergeado a `main` y en producción**, en `app.moyiq.app`/`demo.moyiq.app` (únicos dominios desde el 20-oct-2026). ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
 
 Tokens en `src/styles/tokens.css` (único origen; `globals.css` lo importa, `tokens.js` lo repite para los PDF y `tokens.test.js` falla con un hex fuera de la paleta: ver `docs/tokens-de-diseno.md`).
 

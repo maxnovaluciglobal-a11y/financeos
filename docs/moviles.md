@@ -12,7 +12,7 @@ Ningún envoltorio está publicado en tiendas, y no se publica hasta tener al me
 
 **Desajuste con `assetlinks.json` (OPS-7, pendiente en C-28).** `public/.well-known/assetlinks.json` (publicado en `https://app.moyiq.app/.well-known/assetlinks.json`, verificado con `curl` el 19-oct) declara `com.moyiq.app.twa`, y el APK es `app.moyiq.app.twa`. Con paquetes distintos Android no valida Digital Asset Links y la app abre como pestaña personalizada con barra de URL, no a pantalla completa. La huella SHA-256 sí coincide (OPS-7). Hay que elegir el package ID definitivo **antes** de subir a Play, porque después no se cambia (recomendado `com.moyiq.app.twa`, como iOS). Con Play App Signing, además, hay que sumar al JSON la huella de "App signing key" de Play Console.
 
-**Paquete de agosto (OBSOLETO, no usar).** Generado como "FinanceOS" antes del rename, con package `com.financeospro.app.twa`; nunca se publicó. El bloqueo de marca de entonces (FINANCEOS® de Datarails en USPTO, memoria `financeos_android_twa_20260822`) lo resolvió el rename a MOY IQ.
+**Paquete de agosto (OBSOLETO, no usar).** Generado como "FinanceOS" antes del rename, con un package del dominio anterior de FinanceOS; nunca se publicó. El bloqueo de marca de entonces (FINANCEOS® de Datarails en USPTO, memoria `financeos_android_twa_20260822`) lo resolvió el rename a MOY IQ.
 
 **Estado del build (17-sep, no reverificado).** Regenerado y firmado; alias del keystore `moyiq-upload`, certificado CN=Walter La Madriz / OU=Engineering / O=MAXNOVA & LUCI Global LLC / C=US.
 
