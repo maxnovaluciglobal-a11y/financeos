@@ -101,7 +101,7 @@ export const dateLocale = () => _dateLocale
 // punto final que agregan algunos locales ("jan.", "Jan."). monthIndex: 0..11.
 export function monthShortName(monthIndex, locale = _dateLocale) {
   let s = ''
-  try { s = new Date(2000, monthIndex, 1).toLocaleDateString(locale, { month: 'short' }) } catch {}
+  try { s = new Date(2000, monthIndex, 1).toLocaleDateString(locale, { month: 'short' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
   s = String(s).replace(/\.$/, '')
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
 }

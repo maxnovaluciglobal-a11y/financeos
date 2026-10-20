@@ -82,7 +82,7 @@ function DemoBottomCTA({ hidden }) {
   if (!visible || dismissed || hidden) return null
 
   function dismiss() {
-    try { localStorage.setItem('fos_demo_cta_dismissed', '1') } catch {}
+    try { localStorage.setItem('fos_demo_cta_dismissed', '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     setDismissed(true)
   }
 

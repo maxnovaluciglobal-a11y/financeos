@@ -9,7 +9,7 @@ import Tour from '../components/tour/Tour.jsx'
 
 export const TOUR_DONE_KEY = 'fnos_demo_tour_done'
 export const hasSeenDemoTour = () => { try { return localStorage.getItem(TOUR_DONE_KEY) === '1' } catch { return true } }
-const markTourSeen = () => { try { localStorage.setItem(TOUR_DONE_KEY, '1') } catch {} }
+const markTourSeen = () => { try { localStorage.setItem(TOUR_DONE_KEY, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 
 // Orden del recorrido. title/body son claves i18n.
 const STEPS = [

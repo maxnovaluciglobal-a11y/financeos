@@ -33,13 +33,13 @@ export default class ErrorBoundary extends Component {
 
   handleReload = () => {
     // Recarga tomando la última versión (útil si fue un chunk viejo tras deploy)
-    try { sessionStorage.removeItem('fnos_chunk_reload_at') } catch {}
+    try { sessionStorage.removeItem('fnos_chunk_reload_at') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     window.location.reload()
   }
 
   handleHome = () => {
     this.setState({ hasError: false, error: null })
-    try { window.location.hash = '' } catch {}
+    try { window.location.hash = '' } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     window.location.assign('/app/')
   }
 

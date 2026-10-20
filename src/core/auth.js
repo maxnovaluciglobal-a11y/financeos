@@ -2,6 +2,7 @@
 // Login obligatorio — email/contraseña + Google. Requerido para usar la app
 // desde el 12-sep-2026 (antes MOY IQ no tenía ningún concepto de cuenta).
 import { authClient, AUTH_ENABLED } from './authClient.js'
+import { logClientError } from '../utils/errorLog.js'
 
 export function isAuthConfigured() {
   return AUTH_ENABLED
@@ -113,7 +114,7 @@ export async function signInWithGoogle() {
 export async function syncUserLang(session, lang) {
   if (!authClient || !session?.user || !['es', 'en', 'pt', 'de'].includes(lang)) return
   if (session.user.user_metadata?.lang === lang) return
-  try { await authClient.auth.updateUser({ data: { lang } }) } catch {}
+  try { await authClient.auth.updateUser({ data: { lang } }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'auth.updateLang' }) }
 }
 
 export async function signOutAuth() {

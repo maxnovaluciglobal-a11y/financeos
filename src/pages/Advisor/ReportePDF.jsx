@@ -176,7 +176,7 @@ function monthLabel(m) {
   if (!m) return '—'
   const [y, mo] = m.split('-').map(Number)
   let s = ''
-  try { s = new Date(y, mo - 1, 1).toLocaleDateString(dateLocale(), { month: 'long' }) } catch {}
+  try { s = new Date(y, mo - 1, 1).toLocaleDateString(dateLocale(), { month: 'long' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
   return s ? `${s.charAt(0).toUpperCase()}${s.slice(1)} ${y}` : monthYearLabel(m)
 }
 

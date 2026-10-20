@@ -10,6 +10,7 @@ import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import TEMPLATES from '../../data/templates.js'
 import { catName, prioLabel } from '../../utils/index.js'
 import { User, Users, Laptop, Store, CreditCard, PiggyBank, GraduationCap, Target } from 'lucide-react'
+import { logClientError } from '../../utils/errorLog.js'
 
 // Ícono por plantilla (T17): antes un glifo unicode en data/templates.js
 // (◈ ◑ ⟶ ▤ ⊖ ◎ ⊞). lucide con trazo 1.7; hereda el color del contenedor.
@@ -277,7 +278,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
       for (const b of template.suggestedBudgets) {
         if (existing.has((b.category || '').toLowerCase())) continue
         const limit = Math.round(income * (Number(b.pct) || 0) / 100)
-        if (limit > 0) { try { await addBudget({ category: b.category, limit }) } catch {} }
+        if (limit > 0) { try { await addBudget({ category: b.category, limit }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'templates.addBudget' }) } }
       }
     }
 

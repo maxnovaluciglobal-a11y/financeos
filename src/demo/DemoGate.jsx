@@ -31,7 +31,7 @@ export function hasPassedDemoGate() {
 }
 
 function markPassed() {
-  try { localStorage.setItem(LS_KEY, '1') } catch {}
+  try { localStorage.setItem(LS_KEY, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/

@@ -18,6 +18,7 @@ import { wipeLocalDevice, importAllData } from '../../core/db/index.js'
 import { signOutAuth } from '../../core/auth.js'
 import { validateBackupFile } from '../backup/BackupManager.jsx'
 import s from './appLock.module.css'
+import { logClientError } from '../../utils/errorLog.js'
 
 const LANGS = ['es', 'en', 'pt', 'de']
 function docLang() {
@@ -82,7 +83,7 @@ function PinView({ t, config, onUnlocked, onForgot }) {
       await resetAttempts().catch(() => {})
       // Re-hash transparente si el registro es de antes de subir las iteraciones.
       if (config.pin.iterations < PBKDF2_ITERATIONS) {
-        try { await updateLockConfig({ pin: await hashPin(pin) }) } catch {}
+        try { await updateLockConfig({ pin: await hashPin(pin) }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'lock.updatePin' }) }
       }
       onUnlocked()
       return
@@ -224,7 +225,7 @@ function ForgotFlow({ t, view, setView }) {
   useEffect(() => { headRef.current?.focus(); setAck(false) }, [view])
 
   async function finish() {
-    try { await signOutAuth() } catch {}
+    try { await signOutAuth() } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'lock.signOut' }) }
     window.location.reload()
   }
 
@@ -274,7 +275,7 @@ function ForgotFlow({ t, view, setView }) {
       .reduce((n, k) => n + (Array.isArray(data[k]) ? data[k].length : 0), 0)
     const created = data._meta?.createdAt || data.exportedAt
     let date = '—'
-    try { if (created) date = new Date(created).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' }) } catch {}
+    try { if (created) date = new Date(created).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
     setBackup({ name: file.name, data, count, date })
     setView('confirmRestore')
   }

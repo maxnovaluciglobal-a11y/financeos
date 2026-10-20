@@ -62,7 +62,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
       const next = [...prev.filter(e => e.w !== w), { w, s: healthScore.score, d: localDateStr() }]
         .sort((a, b) => a.w.localeCompare(b.w))
         .slice(-8)
-      try { localStorage.setItem(SCORE_KEY, JSON.stringify(next)) } catch {}
+      try { localStorage.setItem(SCORE_KEY, JSON.stringify(next)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
       return next
     })
   }, [healthScore?.score])

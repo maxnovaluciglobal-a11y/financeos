@@ -5,6 +5,7 @@
 import { getLicenseKey } from '../utils/licenseValidator.js'
 import { licenseKeyHash } from '../utils/syncCrypto.js'
 import { authClient } from './authClient.js'
+import { logClientError } from '../utils/errorLog.js'
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -64,12 +65,12 @@ export async function enablePush() {
   })
   if (!(r && r.ok)) return { ok: false, error: r?.error || 'save_failed' }
 
-  try { localStorage.setItem(LS_ON, '1') } catch {}
+  try { localStorage.setItem(LS_ON, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   return { ok: true }
 }
 
 export async function disablePush() {
-  try { localStorage.setItem(LS_ON, '0') } catch {}
+  try { localStorage.setItem(LS_ON, '0') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   if (!pushSupported()) return { ok: true }
   try {
     const reg = await navigator.serviceWorker.ready
@@ -78,6 +79,6 @@ export async function disablePush() {
       await rpc('delete_push_subscription', { p_endpoint: sub.endpoint }).catch(() => {})
       await sub.unsubscribe()
     }
-  } catch {}
+  } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'push.disable' }) }
   return { ok: true }
 }

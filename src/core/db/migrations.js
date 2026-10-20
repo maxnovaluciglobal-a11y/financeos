@@ -208,8 +208,8 @@ export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps
   if (!chain) return undefined
   return chain.catch((err) => {
     console.error('[MOY IQ] migración de IndexedDB fallida, se aborta:', err)
-    try { transaction?.done?.catch?.(() => {}) } catch {}
-    try { transaction?.abort() } catch {}
+    try { transaction?.done?.catch?.(() => {}) } catch { /* la transacción ya terminó: abortar no aplica */ }
+    try { transaction?.abort() } catch { /* la transacción ya terminó: abortar no aplica */ }
   })
 }
 

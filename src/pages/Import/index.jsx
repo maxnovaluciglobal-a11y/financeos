@@ -12,6 +12,7 @@ import { uid, fmtMoney, currencySymbol, getCategoriesExpense, getCategoriesIncom
 import CountryBadge from '../../components/CountryBadge.jsx'
 import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplates.js'
 import { canonicalCategory } from '../../utils/categoryAliases.js'
+import { logClientError } from '../../utils/errorLog.js'
 import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
   createImportBatch, buildTransactions, MAX_ROWS,
@@ -214,15 +215,15 @@ export default function ImportMovements({ setPage } = {}) {
       const total = incomes.length + expenses.length
       const batch = createImportBatch(file.name, rows)
       batch.id = batchId; batch.importedAt = now; batch.importedRows = ok
-      try { await dbAdd('importBatches', batch) } catch {}
-      try { localStorage.setItem('fos_recent_import', JSON.stringify(batch)) } catch {}
+      try { await dbAdd('importBatches', batch) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'import.saveBatch' }) }
+      try { localStorage.setItem('fos_recent_import', JSON.stringify(batch)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
       setHistory(prev => [batch, ...prev])
       // P0 — reflejar lo importado en TODA la app al instante (antes solo quedaba
       // en IndexedDB y no se veía hasta recargar) y marcar el cambio para que el
       // sync lo suba a la nube.
       if (ok > 0) {
-        try { await rehydrate() } catch {}
-        try { markLocalChange() } catch {}
+        try { await rehydrate() } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'import.rehydrate' }) }
+        try { markLocalChange() } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'import.markChange' }) }
       }
       if (fail > 0 && ok === 0) { setWarning(t('imp.err.partial', { ok, total, fail })); return }
       if (fail > 0) setWarning(t('imp.err.partial', { ok, total, fail }))

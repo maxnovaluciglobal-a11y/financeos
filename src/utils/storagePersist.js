@@ -43,5 +43,5 @@ export function safariNoticeDismissed(storage = typeof localStorage !== 'undefin
 }
 
 export function dismissSafariNotice(storage = typeof localStorage !== 'undefined' ? localStorage : null) {
-  try { storage?.setItem(SAFARI_NOTICE_KEY, '1') } catch {}
+  try { storage?.setItem(SAFARI_NOTICE_KEY, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }

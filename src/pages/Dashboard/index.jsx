@@ -274,7 +274,7 @@ export default function Dashboard({ setPage }) {
   function toggleCompact() {
     setCompact(c => {
       const next = !c
-      try { localStorage.setItem('fos_dash_compact', next ? '1' : '0') } catch {}
+      try { localStorage.setItem('fos_dash_compact', next ? '1' : '0') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
       return next
     })
   }
@@ -303,20 +303,20 @@ export default function Dashboard({ setPage }) {
     try { return localStorage.getItem(`fos_mstart_${activeMonth}`) === '1' } catch { return false }
   })
   useEffect(() => {
-    try { setStartDismissed(localStorage.getItem(`fos_mstart_${activeMonth}`) === '1') } catch {}
+    try { setStartDismissed(localStorage.getItem(`fos_mstart_${activeMonth}`) === '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   }, [activeMonth])
   const [reviewOpen, setReviewOpen] = useState(false)
   const autoStart = isCurrent && !startDismissed && !settings.isDemo &&
     (plan.some(o => !o.rule.inv) || prevHasData) && (kpis.incCount > 0 || kpis.expCount > 0 || rules.length > 0)
   const sheetOpen = reviewOpen || autoStart
   const closeSheet = useCallback(() => {
-    try { localStorage.setItem(`fos_mstart_${activeMonth}`, '1') } catch {}
+    try { localStorage.setItem(`fos_mstart_${activeMonth}`, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     setStartDismissed(true)
     setReviewOpen(false)
   }, [activeMonth])
 
   function dismissClose() {
-    try { localStorage.setItem(`fos_close_${activeMonth}`, '1') } catch {}
+    try { localStorage.setItem(`fos_close_${activeMonth}`, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     setCloseDismissed(true)
   }
 
@@ -552,7 +552,7 @@ export default function Dashboard({ setPage }) {
             <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
               {monthExpenses.some(r => Number(r?.amount) > 0)
                 ? <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
-                    onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch {} ; setPage('movements') } : undefined}/>
+                    onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; setPage('movements') } : undefined}/>
                 : <DonutEmpty />}
             </ChartCard>
           </div>

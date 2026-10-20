@@ -289,7 +289,7 @@ function ElsterExport({ desglose, year, t }) {
       await navigator.clipboard.writeText(texto)
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
-    } catch {}
+    } catch { /* portapapeles no disponible: el texto sigue visible para copiarlo a mano */ }
   }
 
   function descargar() {

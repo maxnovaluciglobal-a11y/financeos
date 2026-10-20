@@ -19,7 +19,7 @@ const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 function readCache()  { try { return JSON.parse(localStorage.getItem(LS_V2) || 'null') } catch { return null } }
-function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch {} }
+function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 
 // Sin esto, una llamada colgada (red rara, Supabase caído) deja a quien la
 // espera sin resolver nunca — App.jsx usa el resultado para decidir si
@@ -39,7 +39,7 @@ function withTimeout(promiseLike, ms) {
     if (localStorage.getItem(LS_V2)) return
     const old = localStorage.getItem(LS_V1)
     if (old) writeCache({ key: old.trim().toUpperCase(), plan: 'personal', ts: 0 }) // ts:0 → revalida online pronto
-  } catch {}
+  } catch { /* sin almacenamiento o clave v1 ilegible: no hay nada que migrar */ }
 })()
 
 async function verifyOnline(key) {
@@ -109,7 +109,7 @@ export function isLicenseActive() {
 export function saveLicense(_key) {}                       // no-op: validateLicense persiste
 export function getLicenseKey()  { return readCache()?.key  || '' }
 export function getLicensePlan() { return readCache()?.plan || 'starter' }
-export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch {} }
+export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 
 // Starter (gratis, sin clave): un flag propio, separado de fnos_license_v2 a
 // propósito — isLicenseActive() exige un `key` real y no debe empezar a
@@ -118,8 +118,8 @@ export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch 
 // cuando el usuario elige "Empezar gratis" en vez de comprar o activar.
 const LS_STARTER = 'fnos_starter_ack'
 export function isStarterAcknowledged() { try { return localStorage.getItem(LS_STARTER) === '1' } catch { return false } }
-export function acknowledgeStarter()    { try { localStorage.setItem(LS_STARTER, '1') } catch {} }
-export function clearStarterAck()       { try { localStorage.removeItem(LS_STARTER) } catch {} }
+export function acknowledgeStarter()    { try { localStorage.setItem(LS_STARTER, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
+export function clearStarterAck()       { try { localStorage.removeItem(LS_STARTER) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 
 // Asocia un email a la licencia activa (best-effort: no bloquea la activación si falla).
 // Se usa en el momento de activar la clave, para poder contactar al cliente

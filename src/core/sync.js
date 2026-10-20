@@ -22,6 +22,7 @@ import {
   bytesToB64, b64ToBytes, V2_ITERATIONS, MIN_PASSPHRASE_LENGTH, normalizePassphrase,
 } from '../utils/syncCrypto.js'
 import { authClient } from './authClient.js'
+import { logClientError } from '../utils/errorLog.js'
 
 const env = () => ({ url: import.meta.env.VITE_SUPABASE_URL, anon: import.meta.env.VITE_SUPABASE_ANON_KEY })
 
@@ -35,8 +36,8 @@ let pushTimer = null
 
 // ── estado / meta ─────────────────────────────────────────────────────────────
 const lsGet = (k) => { try { return localStorage.getItem(k) } catch { return null } }
-const lsSet = (k, v) => { try { localStorage.setItem(k, v) } catch {} }
-const lsDel = (k) => { try { localStorage.removeItem(k) } catch {} }
+const lsSet = (k, v) => { try { localStorage.setItem(k, v) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
+const lsDel = (k) => { try { localStorage.removeItem(k) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 const lsJSON = (k) => { try { return JSON.parse(lsGet(k) || 'null') } catch { return null } }
 
 export function isSyncEnabled() { return lsGet(LS_ON) === '1' }
@@ -169,7 +170,7 @@ export function markLocalChange() {
 }
 
 async function applyRemote(remote, onApplied) {
-  try { localStorage.setItem(LS_BACKUP, JSON.stringify(await exportAllData())) } catch {}
+  try { localStorage.setItem(LS_BACKUP, JSON.stringify(await exportAllData())) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'sync.preSyncBackup' }) }
   await importAllData(remote.payload)
   writeMeta({ lastLocalChange: remote.updatedAt, lastPulledAt: Date.now(), lastPushedAt: remote.updatedAt })
   if (onApplied) await onApplied()

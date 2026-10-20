@@ -20,7 +20,7 @@ export default function SnapshotRestore() {
   }, [settings?.isDemo])
   if (!snap) return null
   let when = ''
-  try { when = new Date(snap.createdAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) } catch {}
+  try { when = new Date(snap.createdAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
 
   async function restore() {
     try {

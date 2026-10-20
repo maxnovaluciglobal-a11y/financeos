@@ -25,10 +25,10 @@ let _useLocalStorage = false
 
 // ─── localStorage fallback ────────────────────────────────────────────────────
 function lsGet(store)       { try { return JSON.parse(localStorage.getItem(`fos_${store}`) || '[]') } catch { return [] } }
-function lsSet(store, data) { try { localStorage.setItem(`fos_${store}`, JSON.stringify(data)) } catch {} }
+function lsSet(store, data) { try { localStorage.setItem(`fos_${store}`, JSON.stringify(data)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 function lsPut(store, item) { const a = lsGet(store).filter(r => r.id !== item.id); lsSet(store, [...a, item]) }
 function lsDel(store, id)   { lsSet(store, lsGet(store).filter(r => r.id !== id)) }
-function lsClear(store)     { try { localStorage.removeItem(`fos_${store}`) } catch {} }
+function lsClear(store)     { try { localStorage.removeItem(`fos_${store}`) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 
 // ─── getDB ────────────────────────────────────────────────────────────────────
 // Error que NO cae a localStorage: ya hay datos del usuario en IndexedDB pero
@@ -84,7 +84,7 @@ export async function getDB() {
       try {
         _db = await openFinanceDB({ skipSnapshot: true })
         console.warn('[MOY IQ] upgrade completado sin la foto previa:', e1?.name || e1)
-        try { localStorage.setItem('fos_snapshot_skipped', new Date().toISOString()) } catch {}
+        try { localStorage.setItem('fos_snapshot_skipped', new Date().toISOString()) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
         return _db
       } catch (e2) { err = e2 }
     }
@@ -148,7 +148,7 @@ export function firstRunSettings(locales) {
 export async function getSettings() {
   const db = await getDB()
   let saved = null
-  if (!db) { try { saved = JSON.parse(localStorage.getItem('fos_settings')) } catch {} }
+  if (!db) { try { saved = JSON.parse(localStorage.getItem('fos_settings')) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
   else      { saved = await db.get('settings', SETTINGS_KEY) }
   if (!saved) return firstRunSettings()
   return { ...DEFAULT_SETTINGS, ...saved }
@@ -156,7 +156,7 @@ export async function getSettings() {
 
 export async function saveSettings(settings) {
   const db = await getDB()
-  if (!db) { try { localStorage.setItem('fos_settings', JSON.stringify(settings)) } catch {} }
+  if (!db) { try { localStorage.setItem('fos_settings', JSON.stringify(settings)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
   else     { await db.put('settings', settings, SETTINGS_KEY) }
   return settings
 }
@@ -188,14 +188,14 @@ export async function securityGet(key) {
 
 export async function securityPut(key, value) {
   const db = await getDB()
-  if (!db) { try { localStorage.setItem(LS_SECURITY, JSON.stringify({ ...lsSecurity(), [key]: value })) } catch {} ; return value }
+  if (!db) { try { localStorage.setItem(LS_SECURITY, JSON.stringify({ ...lsSecurity(), [key]: value })) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; return value }
   await db.put('security', value, key)
   return value
 }
 
 export async function securityDelete(key) {
   const db = await getDB()
-  if (!db) { const all = lsSecurity(); delete all[key]; try { localStorage.setItem(LS_SECURITY, JSON.stringify(all)) } catch {} ; return }
+  if (!db) { const all = lsSecurity(); delete all[key]; try { localStorage.setItem(LS_SECURITY, JSON.stringify(all)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; return }
   await db.delete('security', key)
 }
 
@@ -232,7 +232,7 @@ export async function wipeLocalDevice() {
       }
     }
     localStorage.setItem('fnos_sync_on', '0')
-  } catch {}
+  } catch { /* sin acceso a localStorage: no hay claves que limpiar */ }
 }
 
 // ─── Export / Import ──────────────────────────────────────────────────────────

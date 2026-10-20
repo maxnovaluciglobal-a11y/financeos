@@ -9,6 +9,7 @@ import { getSession, signOutAuth } from '../../core/auth.js'
 import { requestAccountDeletion, wipeAccountFromDevice } from '../../core/deleteAccount.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
+import { logClientError } from '../../utils/errorLog.js'
 
 export const DELETED_FLAG = 'fnos_account_deleted'
 
@@ -58,9 +59,9 @@ export default function DeleteAccountSection({ autoOpen = false }) {
       setError(r.error === 'session_required' ? t('deleteAccount.errorSession') : t('deleteAccount.errorGeneric'))
       return
     }
-    try { sessionStorage.setItem(DELETED_FLAG, '1') } catch {}
+    try { sessionStorage.setItem(DELETED_FLAG, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     await wipeAccountFromDevice(uid)
-    try { await signOutAuth() } catch {}
+    try { await signOutAuth() } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'deleteAccount.signOut' }) }
     window.location.reload()
   }
 

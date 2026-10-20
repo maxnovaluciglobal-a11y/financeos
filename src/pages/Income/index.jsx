@@ -11,6 +11,7 @@ import { parseTransactionText } from '../../utils/smsParser.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 import { FREQS } from '../../utils/recurring.js'
 import rs from '../../components/recurring/recurring.module.css'
+import { logClientError } from '../../utils/errorLog.js'
 
 export default function Income({ setPage }) {
   const { incomes, expenses, addIncome, delIncome, updateIncome, settings, deleteWithUndo, addWithRule } = useApp()
@@ -74,7 +75,7 @@ export default function Income({ setPage }) {
       if (repeat && addWithRule) await addWithRule('income', { ...f, amount: Number(f.amount), recurrence: LEGACY[freq] || 'Único' }, freq)
       else await addIncome({ ...f, amount: Number(f.amount), recurrence: 'Único' })
     }
-    catch {}
+    catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'income.submit' }) }
     finally {
       setSaving(false); setRepeat(false); setFreq('monthly')
       setF({ source: '', amount: '', date: today(), category: 'Salario', recurrence: 'Único', notes: '' })

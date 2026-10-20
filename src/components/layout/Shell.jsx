@@ -57,7 +57,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
     try { asked = localStorage.getItem(PUSH_ASKED_KEY) === '1' } catch { asked = true }
     if (shouldAskPush({ supported: pushSupported(), enabled: isPushEnabled(), asked,
       hasLicense: !!getLicenseKey(), isDemo: !!settings.isDemo, movementCount })) {
-      try { localStorage.setItem(PUSH_ASKED_KEY, '1') } catch {}
+      try { localStorage.setItem(PUSH_ASKED_KEY, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
       setTimeout(() => setPushAskOpen(true), 400)
     }
   }, [pushCheck, movementCount, settings.isDemo])

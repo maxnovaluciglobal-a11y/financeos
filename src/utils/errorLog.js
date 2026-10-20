@@ -12,7 +12,7 @@ export function logClientError(entry) {
     list.push({ ...entry, at: new Date().toISOString() })
     while (list.length > MAX_ENTRIES) list.shift()
     localStorage.setItem(KEY, JSON.stringify(list))
-  } catch {}
+  } catch { /* el propio registro de errores no puede fallar en voz alta */ }
 }
 
 export function getClientErrorLog() {
@@ -24,7 +24,7 @@ export function getClientErrorLog() {
 }
 
 export function clearClientErrorLog() {
-  try { localStorage.removeItem(KEY) } catch {}
+  try { localStorage.removeItem(KEY) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 
 export function installGlobalErrorLog() {

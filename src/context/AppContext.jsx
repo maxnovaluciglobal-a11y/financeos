@@ -143,7 +143,7 @@ export function AppProvider({ children }) {
   // la regla se alinea (termina o se reabre) — ver reconcileRecurringSources.
   const resyncIfSource = async (store) => {
     if (store !== 'subscriptions' && store !== 'debts') return
-    try { await reconcileRecurringSources(); dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') }) } catch {}
+    try { await reconcileRecurringSources(); dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'context.reconcileRecurring' }) }
   }
   // Registro de una ocurrencia borrado → la ocurrencia queda omitida (no la
   // recrea el registro automático); restaurado → se reabre. utils/recurring.js.

@@ -368,7 +368,7 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
     if (lastBackup) {
       daysSinceBackup = Math.floor((Date.now() - new Date(lastBackup).getTime()) / 86400000)
     }
-  } catch {}
+  } catch { /* sin acceso a localStorage: se asume que nunca hubo respaldo */ }
 
   return {
     sym, activeMonth,

@@ -61,7 +61,7 @@ function clearAccountKeys(uid, active, legacyUid) {
     }
     localStorage.removeItem(VAULT_PREFIX + uid)
     if (legacyUid === uid) localStorage.removeItem(LEGACY_KEY)
-  } catch {}
+  } catch { /* sin acceso a localStorage: no hay claves locales que borrar */ }
 }
 
 // Borra del dispositivo lo de la cuenta uid (que acaba de dejar de existir).

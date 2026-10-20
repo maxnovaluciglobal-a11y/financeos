@@ -79,17 +79,17 @@ function stashRecord(search, now) {
 export function stashOpenForOAuth(search, storage = sessionStore(), now = Date.now()) {
   const rec = stashRecord(search, now)
   if (!storage || !rec) return
-  try { storage.setItem(OAUTH_OPEN_KEY, rec) } catch {}
+  try { storage.setItem(OAUTH_OPEN_KEY, rec) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 
 export function stashOpenForSignup(search, storage = localStore(), now = Date.now()) {
   const rec = stashRecord(search, now)
   if (!storage || !rec) return
-  try { storage.setItem(SIGNUP_OPEN_KEY, rec) } catch {}
+  try { storage.setItem(SIGNUP_OPEN_KEY, rec) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 
 export function clearSignupStash(storage = localStore()) {
-  try { storage?.removeItem(SIGNUP_OPEN_KEY) } catch {}
+  try { storage?.removeItem(SIGNUP_OPEN_KEY) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 
 const isAuthReturn = (search, hash) => /(^|[#&?])(access_token|code)=/.test(hash || '') || /[?&]code=/.test(search || '')

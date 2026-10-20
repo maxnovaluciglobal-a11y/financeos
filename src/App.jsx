@@ -26,6 +26,7 @@ import { licenseKeyHash } from './utils/syncCrypto.js'
 import { markInternalUser } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { useState, useEffect } from 'react'
+import { logClientError } from './utils/errorLog.js'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -169,7 +170,7 @@ function Inner() {
         hasVault: hasVault(session.user.id), legacyBagLicenseKey: bagHash,
       })
       if (plan.action !== 'switch') {
-        try { applyAccountSwitch(session.user, plan) } catch {}
+        try { applyAccountSwitch(session.user, plan) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'app.accountSwitch' }) }
         setOwnerStatus('ok')
         return
       }

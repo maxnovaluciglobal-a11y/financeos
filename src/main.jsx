@@ -11,7 +11,7 @@ import { installWebAnalytics } from './utils/webAnalytics.js'
 // Skew Protection (C-49): fija este deploy para los chunks lazy que se pidan
 // después (cookie técnica de Vercel, sin seguimiento). Vacío en local.
 /* global __VERCEL_DPL__ */
-try { if (typeof __VERCEL_DPL__ === 'string' && __VERCEL_DPL__) document.cookie = `__vdpl=${__VERCEL_DPL__}; path=/app; secure; samesite=lax` } catch {}
+try { if (typeof __VERCEL_DPL__ === 'string' && __VERCEL_DPL__) document.cookie = `__vdpl=${__VERCEL_DPL__}; path=/app; secure; samesite=lax` } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 
 installGlobalErrorLog()
 installWebAnalytics()
@@ -19,7 +19,7 @@ installWebAnalytics()
 // index.html trae lang="es" fijo; hasta que AppContext/DemoContext lean los
 // ajustes, el primer pintado usa el idioma del navegador (mismo criterio que el
 // primer arranque). Después lo actualiza rehydrate()/updateSettings().
-try { document.documentElement.lang = detectLanguage() } catch {}
+try { document.documentElement.lang = detectLanguage() } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 
 // REVERTIDO 2026-08-27: se probó Object.freeze(Object.prototype) acá como mitigación
 // de la vulnerabilidad de prototype pollution de xlsx@0.18.5 (GHSA-4r6h-8v6p-xvw6).
@@ -42,7 +42,7 @@ window.addEventListener('vite:preloadError', (event) => {
     const last = Number(sessionStorage.getItem(KEY) || 0)
     if (Date.now() - last < 15000) return // evita bucles de recarga
     sessionStorage.setItem(KEY, String(Date.now()))
-  } catch {}
+  } catch { /* sin sessionStorage: se recarga igual, una vez */ }
   window.location.reload()
 })
 

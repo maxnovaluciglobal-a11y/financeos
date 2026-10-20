@@ -329,7 +329,7 @@ export default function Movements({ setPage }) {
     try { return sessionStorage.getItem('fos_drill_category') || null } catch { return null }
   })
   useEffect(() => {
-    try { sessionStorage.removeItem('fos_drill_category') } catch {}
+    try { sessionStorage.removeItem('fos_drill_category') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   }, [])
 
   async function saveEdit(e) {

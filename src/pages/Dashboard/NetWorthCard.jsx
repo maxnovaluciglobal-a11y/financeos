@@ -36,7 +36,7 @@ export default function NetWorthCard({ goals, debts, incomes, expenses, settings
     setHistory(prev => {
       if (prev.some(e => e.m === month && e.v === value)) return prev
       const next = upsertMonthly(prev, month, value)
-      try { localStorage.setItem(NW_KEY, JSON.stringify(next)) } catch {}
+      try { localStorage.setItem(NW_KEY, JSON.stringify(next)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
       return next
     })
   }, [show, value, month, settings?.isDemo])

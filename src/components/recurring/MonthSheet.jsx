@@ -17,13 +17,13 @@ import s from './recurring.module.css'
 function monthTitle(ym, lang) {
   const [y, m] = ym.split('-').map(Number)
   let t = ym
-  try { t = new Date(y, m - 1, 1).toLocaleDateString(lang, { month: 'long', year: 'numeric' }) } catch {}
+  try { t = new Date(y, m - 1, 1).toLocaleDateString(lang, { month: 'long', year: 'numeric' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
   return t.charAt(0).toUpperCase() + t.slice(1)   // "Octubre de 2026", no "Octubre De 2026"
 }
 function monthOnly(ym, lang) {
   const [y, m] = ym.split('-').map(Number)
   let name = ym
-  try { name = new Date(y, m - 1, 1).toLocaleDateString(lang, { month: 'long' }) } catch {}
+  try { name = new Date(y, m - 1, 1).toLocaleDateString(lang, { month: 'long' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
   return name.charAt(0).toUpperCase() + name.slice(1)   // va al comienzo de la frase
 }
 

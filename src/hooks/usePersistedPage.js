@@ -21,7 +21,7 @@ export function usePersistedPage(initial = 'dashboard', override = null) {
   function setPage(next) {
     setPageState(next)
     if (!SKIP_PERSIST.has(next)) {
-      try { localStorage.setItem(STORAGE_KEY, next) } catch {}
+      try { localStorage.setItem(STORAGE_KEY, next) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     }
   }
 

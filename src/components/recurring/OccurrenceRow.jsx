@@ -13,8 +13,8 @@ export function dateParts(dateStr, lang) {
   const [y, m, d] = dateStr.split('-').map(Number)
   const dt = new Date(y, m - 1, d)
   let mon = '', full = dateStr
-  try { mon = dt.toLocaleDateString(lang, { month: 'short' }).replace('.', '') } catch {}
-  try { full = dt.toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' }) } catch {}
+  try { mon = dt.toLocaleDateString(lang, { month: 'short' }).replace('.', '') } catch { /* idioma no soportado: queda el valor por defecto */ }
+  try { full = dt.toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' }) } catch { /* idioma no soportado: queda el valor por defecto */ }
   return { day: d, mon, full }
 }
 

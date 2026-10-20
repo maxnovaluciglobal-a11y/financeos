@@ -37,7 +37,7 @@ export function markInternalUser(email, storage = typeof localStorage !== 'undef
   try {
     if (isInternalEmail(email)) storage?.setItem(INTERNAL_KEY, '1')
     else storage?.removeItem(INTERNAL_KEY)
-  } catch {}
+  } catch { /* sin almacenamiento: el navegador no queda marcado como interno */ }
 }
 
 export function installWebAnalytics(win = typeof window !== 'undefined' ? window : null) {

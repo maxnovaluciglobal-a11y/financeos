@@ -26,6 +26,7 @@ import {
 } from '../utils/keypad.js'
 import { FREQS, monthPlan, findPendingMatch, detectRecurring, ruleFromRecord } from '../utils/recurring.js'
 import rs from './recurring/recurring.module.css'
+import { logClientError } from '../utils/errorLog.js'
 
 // Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
 const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()
@@ -94,7 +95,7 @@ function DateSegment({ date, setDate, t }) {
           type="date"
           value={date}
           onChange={e => { if (e.target.value) setDate(e.target.value) }}
-          onClick={e => { try { e.currentTarget.showPicker?.() } catch {} }}
+          onClick={e => { try { e.currentTarget.showPicker?.() } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }}
           aria-label={isCustom ? `${t('qa.pickDate')}: ${fmtShortDate(date)}` : t('qa.pickDate')}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, padding: 0, border: 'none', cursor: 'pointer', fontSize: 16 }}
         />
@@ -217,7 +218,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (k && category && merchantRules[k] !== category) patch.merchantRules = { ...merchantRules, [k]: category }
     if (usedMethod && settings?.lastPaymentMethod !== usedMethod) patch.lastPaymentMethod = usedMethod
     if (Object.keys(patch).length === 0) return
-    try { await updateSettings?.({ ...settings, ...patch }) } catch {}
+    try { await updateSettings?.({ ...settings, ...patch }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'quickadd.updateSettings' }) }
   }
 
   const amt = keypadToNumber(amount)

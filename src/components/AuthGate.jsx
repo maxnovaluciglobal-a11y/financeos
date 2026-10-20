@@ -71,7 +71,7 @@ export default function AuthGate({ onAuthenticated }) {
   const [accountDeleted] = useState(() => {
     try { return sessionStorage.getItem('fnos_account_deleted') === '1' } catch { return false }
   })
-  const clearDeletedNotice = () => { try { sessionStorage.removeItem('fnos_account_deleted') } catch {} }
+  const clearDeletedNotice = () => { try { sessionStorage.removeItem('fnos_account_deleted') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
 
   async function handleSubmit() {
     const cleanEmail = email.trim()

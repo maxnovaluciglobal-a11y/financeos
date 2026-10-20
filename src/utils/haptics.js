@@ -4,5 +4,5 @@
 // (WebView de Capacitor sí lo soporta parcialmente) ni si el usuario desactivó
 // permisos de sensores; por eso todo pasa por un try/catch silencioso.
 export function hapticTap() {
-  try { navigator.vibrate?.(8) } catch {}
+  try { navigator.vibrate?.(8) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }

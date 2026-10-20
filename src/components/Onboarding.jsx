@@ -61,14 +61,14 @@ function loadOnboardingProgress() {
     if (typeof raw.answers?.selfEmployed === 'boolean') answers.selfEmployed = raw.answers.selfEmployed
     if (raw.v !== PROGRESS_VERSION || raw.step > TOTAL - 1 || raw.step < 0) return { step: 0, answers, firstTxSaved: false }
     return { step: raw.step, answers, firstTxSaved: !!raw.firstTxSaved }
-  } catch {}
+  } catch { /* progreso guardado ilegible o sin almacenamiento: se empieza de cero */ }
   return null
 }
 function saveOnboardingProgress(step, answers, firstTxSaved) {
-  try { localStorage.setItem(ONBOARDING_LS_KEY, JSON.stringify({ v: PROGRESS_VERSION, step, answers, firstTxSaved })) } catch {}
+  try { localStorage.setItem(ONBOARDING_LS_KEY, JSON.stringify({ v: PROGRESS_VERSION, step, answers, firstTxSaved })) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 function clearOnboardingProgress() {
-  try { localStorage.removeItem(ONBOARDING_LS_KEY) } catch {}
+  try { localStorage.removeItem(ONBOARDING_LS_KEY) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 }
 
 // Cómo se verá un monto con esa moneda: mismo formato que fmtMoney (símbolo,
