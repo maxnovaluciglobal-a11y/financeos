@@ -337,9 +337,9 @@ export function ReporteFinancieroPDF({ data }) {
             <Text style={s.sectionTitle}>{t('apdf.alerts', { n: alerts.length })}</Text>
             {alerts.slice(0, 5).map((a, i) => {
               const alertColors = {
-                danger: { bg: C.redL, border: C.red, icon: '⚠' },
+                danger: { bg: C.redL, border: C.red, icon: '!' },
                 warn:   { bg: C.ambL, border: C.amb, icon: '→' },
-                info:   { bg: P.infoBg, border: P.info, icon: 'ℹ' },
+                info:   { bg: P.infoBg, border: P.info, icon: 'i' },
               }
               const ac = alertColors[a.type] || alertColors.info
               return (

@@ -19,7 +19,7 @@ const LGRAY   = P.card
 const WHITE   = P.page
 
 const s = StyleSheet.create({
-  page:    { fontFamily: F.body, backgroundColor: WHITE, paddingHorizontal: 36, paddingVertical: 32, fontSize: 9, color: DARK },
+  page:    { fontFamily: F.body, backgroundColor: WHITE, paddingHorizontal: 36, paddingTop: 32, paddingBottom: 64, fontSize: 9, color: DARK },
   // Header
   header:  { backgroundColor: DARK, marginHorizontal: -36, marginTop: -32, paddingHorizontal: 36, paddingVertical: 20, marginBottom: 20, borderBottomWidth: 3, borderBottomColor: P.laton },
   wordmark:{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
@@ -165,28 +165,28 @@ export default function ReportPDF({ data }) {
           <View style={s.kpiRow}>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('chart.flow.subs')}</Text>
-              <Text style={[s.kpiVal, { color: AMBER, fontSize: 11 }]}>{t('rpdf.perMonth', { amount: fmt(totalSubs, sym) })}</Text>
+              <Text style={[s.kpiVal, { color: AMBER, fontSize: 11, fontFamily: F.body, fontWeight: 600 }]}>{t('rpdf.perMonth', { amount: fmt(totalSubs, sym) })}</Text>
               <Text style={s.kpiSub}>{t('rpdf.perYear', { amount: fmt(totalSubs * 12, sym) })}</Text>
             </View>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('chart.flow.debt')}</Text>
-              <Text style={[s.kpiVal, { color: RED, fontSize: 11 }]}>{t('rpdf.perMonth', { amount: fmt(totalDebt, sym) })}</Text>
+              <Text style={[s.kpiVal, { color: RED, fontSize: 11, fontFamily: F.body, fontWeight: 600 }]}>{t('rpdf.perMonth', { amount: fmt(totalDebt, sym) })}</Text>
             </View>
             {netWorth && (
               <View style={s.kpiBox}>
                 <Text style={s.kpiLabel}>{t('rpdf.netWorth')}</Text>
-                <Text style={[s.kpiVal, { color: netWorth.netWorth >= 0 ? ACCENT : RED, fontSize: 11 }]}>{fmt(netWorth.netWorth, sym)}</Text>
+                <Text style={[s.kpiVal, { color: netWorth.netWorth >= 0 ? ACCENT : RED, fontSize: 11, fontFamily: F.body, fontWeight: 600 }]}>{fmt(netWorth.netWorth, sym)}</Text>
                 <Text style={s.kpiSub}>{t('rpdf.assetsLiabilities', { assets: fmt(netWorth.totalActivos, sym), liabilities: fmt(netWorth.totalPasivos, sym) })}</Text>
               </View>
             )}
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('rpdf.needs')}</Text>
-              <Text style={[s.kpiVal, { fontSize: 11 }]}>{fmt(necesidad, sym)}</Text>
+              <Text style={[s.kpiVal, { fontSize: 11, fontFamily: F.body, fontWeight: 600 }]}>{fmt(necesidad, sym)}</Text>
               <Text style={s.kpiSub}>{t('rpdf.ofSpending', { pct: totalExpense > 0 ? pct(necesidad / totalExpense) : '—' })}</Text>
             </View>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('rpdf.wants')}</Text>
-              <Text style={[s.kpiVal, { fontSize: 11 }]}>{fmt(deseos, sym)}</Text>
+              <Text style={[s.kpiVal, { fontSize: 11, fontFamily: F.body, fontWeight: 600 }]}>{fmt(deseos, sym)}</Text>
               <Text style={s.kpiSub}>{t('rpdf.ofSpending', { pct: totalExpense > 0 ? pct(deseos / totalExpense) : '—' })}</Text>
             </View>
           </View>
