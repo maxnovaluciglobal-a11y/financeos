@@ -21,6 +21,7 @@ const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'notify-admin-signup': false,
   'send-cancellation-confirmation': false,
   'send-feedback': false,
+  'send-funnel-report': false,
   'send-nurture-diagnostico-email': false,
   'send-nurture-invest-email': false,
   'send-nurture-starter-email': false,

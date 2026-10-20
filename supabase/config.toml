@@ -56,6 +56,10 @@ verify_jwt = false
 [functions.send-optin-confirmation]
 verify_jwt = false
 
+# pg_cron los lunes (header x-cron-secret): reporte semanal del embudo a la cuenta de empresa (EST-9, 20-oct-2026).
+[functions.send-funnel-report]
+verify_jwt = false
+
 # pg_cron diario (header x-cron-secret): secuencia de activación de la prueba (C-35, 20-oct-2026).
 [functions.send-trial-activation-email]
 verify_jwt = false
