@@ -34,6 +34,7 @@ begin
   -- Job mensual y cron_health lo espera cada 31 días.
   assert exists (select 1 from cron.job where jobname = 'leads-retention-monthly' and schedule = '17 6 1 * *'), 'job';
   assert public.cron_expected_interval('17 6 1 * *') = interval '31 days', 'mensual';
+  assert (select ok and problem is null from public.cron_health where jobname = 'leads-retention-monthly'), 'cron_health no lo da por fallado antes de su primera corrida (20261020070000)';
   assert public.cron_expected_interval('0 15,16 * * 1') = interval '7 days', 'semanal con 2 horas';
   assert public.cron_expected_interval('47 14 * * *') = interval '1 day', 'diario sin cambios';
   assert public.cron_expected_interval('*/10 * * * *') = interval '10 minutes', 'cada 10 min sin cambios';
