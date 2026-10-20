@@ -1,5 +1,7 @@
+// @ts-check
 import { unwrap } from 'idb'
 import { planCategoryUnification } from '../../utils/categoryAliases.js'
+/** @typedef {import('idb').IDBPTransaction<any, any, 'versionchange'>} UpgradeTx */
 // src/core/db/migrations.js — pasos de esquema versionados para IndexedDB.
 //
 // Cada entrada de MIGRATIONS es un paso irreversible: una vez que un usuario
@@ -23,6 +25,7 @@ export const PRE_CATEGORY_UNIFY_SNAPSHOT_ID = 'pre-category-unify-v5'
 // (sin el wrapper de idb) para cancelar su error (cuota llena) con
 // preventDefault. Mismo patrón que la foto de v4, que no se toca (paso ya
 // shippeado); este helper es para los pasos nuevos.
+/** @param {UpgradeTx} transaction @param {any} record @param {string} label */
 function putSnapshotBestEffort(transaction, record, label) {
   return new Promise((resolve) => {
     let req
@@ -99,6 +102,7 @@ export const MIGRATIONS = [
     // unificación no borra ni modifica Suscripciones/Deudas, así que la foto
     // es una red extra, no la única. Una instalación nueva no tiene foto.
     version: 4,
+    /** @param {any} db @param {UpgradeTx} transaction @param {number} oldVersion @param {any} [opts] */
     async migrate(db, transaction, oldVersion, opts = {}) {
       if (!db.objectStoreNames.contains('recurring')) db.createObjectStore('recurring', { keyPath: 'id' })
       if (!db.objectStoreNames.contains('backups'))   db.createObjectStore('backups',   { keyPath: 'id' })
@@ -208,6 +212,7 @@ export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps
   if (!chain) return undefined
   return chain.catch((err) => {
     console.error('[MOY IQ] migración de IndexedDB fallida, se aborta:', err)
+    // eslint-disable-next-line no-restricted-syntax -- al abortar, transaction.done rechaza siempre; el error real ya se registró arriba
     try { transaction?.done?.catch?.(() => {}) } catch { /* la transacción ya terminó: abortar no aplica */ }
     try { transaction?.abort() } catch { /* la transacción ya terminó: abortar no aplica */ }
   })

@@ -15,6 +15,12 @@ export function logClientError(entry) {
   } catch { /* el propio registro de errores no puede fallar en voz alta */ }
 }
 
+// Para promesas "best-effort" (ING-5): en vez de .catch(() => {}), que el
+// fallo quede en el registro local. source = dónde ocurrió (sin datos).
+export function logRejection(source) {
+  return (err) => logClientError({ type: 'rejection', message: String(err?.message || err || ''), source })
+}
+
 export function getClientErrorLog() {
   try {
     return JSON.parse(localStorage.getItem(KEY) || '[]')

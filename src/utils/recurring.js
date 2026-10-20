@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/recurring.js — motor de movimientos fijos (reglas recurrentes).
 //
 // Lógica PURA, sin React ni IndexedDB (tests en recurring.test.js). Decisiones
@@ -62,7 +63,7 @@ export function addDays(dateStr, n) {
 export function diffDays(a, b) {
   const da = toLocal(a), db = toLocal(b)
   if (!da || !db) return NaN
-  return Math.round((db - da) / 86400000)
+  return Math.round((db.getTime() - da.getTime()) / 86400000)
 }
 
 export function addMonthsYM(ym, n) {
@@ -347,6 +348,7 @@ const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100
 
 // Equivalente mensual de las reglas vigentes (Proyección). Cada regla cuenta
 // UNA vez, con su monto vigente — nunca la suma de su historial.
+/** @param {any[]} rules @param {{ today?: string, personalOnly?: boolean }} [opts] */
 export function recurringMonthlyTotals(rules, { today, personalOnly = true } = {}) {
   const ym = monthOf(today)
   const incomeRules = [], expenseRules = []
@@ -377,6 +379,7 @@ export const occurrenceRecordId = (ruleId, date) => `rc-${ruleId}-${date}`
 // Registro real (ingreso o gasto) para una ocurrencia confirmada. La fecha del
 // registro es la de la ocurrencia, salvo que se confirme por adelantado (pagué
 // el arriendo el 25 aunque vence el 30): ahí es hoy.
+/** @param {any} rule @param {string} date @param {{ amount?: number, today?: string, createdAt?: string|number }} [opts] */
 export function buildConfirmedRecord(rule, date, { amount, today, createdAt } = {}) {
   const amt = Number(amount ?? amountAt(rule, monthOf(date))) || 0
   const recDate = today && date > today ? today : date
@@ -400,6 +403,7 @@ export function buildConfirmedRecord(rule, date, { amount, today, createdAt } = 
 
 // Ocurrencias de reglas con autoConfirm que ya pasaron y siguen pendientes,
 // desde el inicio de la regla (máximo `monthsBack` meses atrás) hasta hoy.
+/** @param {any[]} rules @param {{ incomes?: any[], expenses?: any[], today?: string, monthsBack?: number }} [opts] */
 export function dueAutoConfirmations(rules, { incomes = [], expenses = [], today, monthsBack = 12 } = {}) {
   if (!today) return []
   const auto = (rules || []).filter(r => r && r.autoConfirm && !r.paused)
@@ -435,6 +439,7 @@ export function ruleAfterLinkedRecord(rules, record, { deleted }) {
 // ── Nueva regla a partir de un movimiento ────────────────────────────────────
 // "Se repite cada mes" en QuickAdd / Ingresos: la regla nace con este registro
 // como su primera ocurrencia confirmada.
+/** @param {any} record @param {{ kind?: string, freq?: string, id?: string, createdAt?: string|number }} [opts] */
 export function ruleFromRecord(record, { kind, freq = 'monthly', id, createdAt } = {}) {
   const p = parseYMD(record.date)
   const lastDay = p && p.d === daysInMonth(p.y, p.m) && p.d >= 28

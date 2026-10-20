@@ -25,7 +25,7 @@ import { requestPersistentStorage } from '../utils/storagePersist.js'
 import { toCsv } from '../utils/csvSafe.js'
 import { extraCsvRows } from '../utils/csvExtraRows.js'
 import { encryptBackupFile } from '../utils/backupFile.js'
-import { logClientError } from '../utils/errorLog.js'
+import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
 
 export const AppContext = createContext(null)
@@ -217,7 +217,7 @@ export function AppProvider({ children }) {
               if (r?.applied) { showToast(tr('toast.syncedFromOther'), 'ok'); runRecurringMaintenance() }
               if (r?.blocked) setSyncBlocked(r.blocked)
             })
-            .catch(() => {})
+            .catch(logRejection('AppContext:220'))
         }
       } catch (e) {
         console.error('Hydration error:', e)
@@ -597,7 +597,7 @@ export function AppProvider({ children }) {
         try {
           const data = JSON.parse(e.target.result)
           await importAllData(data)
-          await reconcileRecurringSources().catch(() => {})
+          await reconcileRecurringSources().catch(logRejection('AppContext:600'))
           await rehydrate()
           showToast(tr('toast.imported'), 'ok')
           resolve()

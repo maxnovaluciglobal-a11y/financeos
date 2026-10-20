@@ -61,6 +61,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       .then(reg => {
         // Buscar versión nueva al volver a la app (pestaña visible de nuevo)
         document.addEventListener('visibilitychange', () => {
+          // eslint-disable-next-line no-restricted-syntax -- chequeo de versión nueva del SW: sin red falla y se reintenta al volver a la pestaña
           if (document.visibilityState === 'visible') reg.update().catch(() => {})
         })
       })

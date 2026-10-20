@@ -8,6 +8,7 @@ import { Btn } from '../ui/index.jsx'
 import { listSnapshots, restoreSnapshot } from '../../core/db/index.js'
 import { PRE_RECURRING_SNAPSHOT_ID } from '../../core/db/migrations.js'
 import { dateLocale } from '../../utils/index.js'
+import { logRejection } from '../../utils/errorLog.js'
 
 export default function SnapshotRestore() {
   const { settings, rehydrate, showToast } = useApp()
@@ -16,7 +17,7 @@ export default function SnapshotRestore() {
   const [confirming, setConfirming] = useState(false)
   useEffect(() => {
     if (settings?.isDemo) return
-    listSnapshots().then(list => setSnap(list.find(x => x.id === PRE_RECURRING_SNAPSHOT_ID) || null)).catch(() => {})
+    listSnapshots().then(list => setSnap(list.find(x => x.id === PRE_RECURRING_SNAPSHOT_ID) || null)).catch(logRejection('SnapshotRestore:19'))
   }, [settings?.isDemo])
   if (!snap) return null
   let when = ''

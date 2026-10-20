@@ -27,6 +27,12 @@ export default [
       ...warnAll(jsxA11y.flatConfigs.recommended.rules),
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_', caughtErrors: 'none' }],
       'no-empty': ['error', { allowEmptyCatch: false }],
+      // ING-5: tampoco .catch(() => {}); se usa logRejection('archivo:línea') o un comentario dentro.
+      'no-restricted-syntax': ['error', {
+        selector: "CallExpression[callee.property.name='catch'] > ArrowFunctionExpression[body.type='BlockStatement'][body.body.length=0]",
+        message: 'Promesa ignorada en silencio: usa .catch(logRejection(...)) o explica en un comentario por qué es seguro.',
+      }],
     },
   },
+  { files: ['**/*.test.{js,jsx}'], rules: { 'no-restricted-syntax': 'off' } },
 ]

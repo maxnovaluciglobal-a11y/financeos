@@ -17,6 +17,7 @@ import { getLicensePlan } from '../../utils/licenseValidator.js'
 import FeedbackSheet from '../../components/FeedbackSheet.jsx'
 import { STRIPE_PORTAL_URL } from '../legal/legalMeta.js'
 import s from './more.module.css'
+import { logRejection } from '../../utils/errorLog.js'
 
 const SHOW_FIRMA = true
 
@@ -28,7 +29,7 @@ function AccountHeader({ setPage }) {
   useEffect(() => {
     if (isDemo) return
     let alive = true
-    getSession().then(sess => { if (alive) setEmail(sess?.user?.email || null) }).catch(() => {})
+    getSession().then(sess => { if (alive) setEmail(sess?.user?.email || null) }).catch(logRejection('More:31'))
     return () => { alive = false }
   }, [isDemo])
 

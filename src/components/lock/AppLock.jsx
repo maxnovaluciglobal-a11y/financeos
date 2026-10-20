@@ -18,7 +18,7 @@ import { wipeLocalDevice, importAllData } from '../../core/db/index.js'
 import { signOutAuth } from '../../core/auth.js'
 import { validateBackupFile } from '../backup/BackupManager.jsx'
 import s from './appLock.module.css'
-import { logClientError } from '../../utils/errorLog.js'
+import { logClientError, logRejection } from '../../utils/errorLog.js'
 
 const LANGS = ['es', 'en', 'pt', 'de']
 function docLang() {
@@ -80,7 +80,7 @@ function PinView({ t, config, onUnlocked, onForgot }) {
     let ok = false
     try { ok = await verifyPin(pin, config.pin) } catch { ok = false }
     if (ok) {
-      await resetAttempts().catch(() => {})
+      await resetAttempts().catch(logRejection('AppLock:83'))
       // Re-hash transparente si el registro es de antes de subir las iteraciones.
       if (config.pin.iterations < PBKDF2_ITERATIONS) {
         try { await updateLockConfig({ pin: await hashPin(pin) }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'lock.updatePin' }) }
@@ -89,7 +89,7 @@ function PinView({ t, config, onUnlocked, onForgot }) {
       return
     }
     const next = registerFailure(await getAttempts(), Date.now())
-    await saveAttempts(next).catch(() => {})
+    await saveAttempts(next).catch(logRejection('AppLock:92'))
     setAttempts(next)
     setNow(Date.now())
     entryRef.current = ''
@@ -137,7 +137,7 @@ function PinView({ t, config, onUnlocked, onForgot }) {
     let ok = false
     try { ok = await verifyBiometric(config.biometric.credentialId) } catch { ok = false }
     if (ok) {
-      await resetAttempts().catch(() => {})
+      await resetAttempts().catch(logRejection('AppLock:140'))
       onUnlocked()
       return
     }

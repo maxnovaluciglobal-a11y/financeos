@@ -12,6 +12,7 @@ import Money, { useMoney } from '../../components/Money.jsx'
 import { applyDebtPayment, monthlyRate, nextPaymentAmount } from '../../utils/debtPayment.js'
 import { monthPlan } from '../../utils/recurring.js'
 import { debtRuleId } from '../../utils/recurringSources.js'
+import { logRejection } from '../../utils/errorLog.js'
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
@@ -194,7 +195,7 @@ export default function Debts() {
     if (!isChile) return
     loadIndicadores().then(ind => {
       if (ind?.uf > 0) { setUfValue(ind.uf); setUfIsFallback(ind.source !== 'api') }
-    }).catch(() => {})
+    }).catch(logRejection('Debts:197'))
   }, [isChile])
 
   // Revaluación silenciosa: si el CLP guardado difiere >0.5% de ufBalance × UF de hoy, actualizar

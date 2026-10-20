@@ -5,7 +5,7 @@
 import { getLicenseKey } from '../utils/licenseValidator.js'
 import { licenseKeyHash } from '../utils/syncCrypto.js'
 import { authClient } from './authClient.js'
-import { logClientError } from '../utils/errorLog.js'
+import { logClientError, logRejection } from '../utils/errorLog.js'
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -76,7 +76,7 @@ export async function disablePush() {
     const reg = await navigator.serviceWorker.ready
     const sub = await reg.pushManager.getSubscription()
     if (sub) {
-      await rpc('delete_push_subscription', { p_endpoint: sub.endpoint }).catch(() => {})
+      await rpc('delete_push_subscription', { p_endpoint: sub.endpoint }).catch(logRejection('push:79'))
       await sub.unsubscribe()
     }
   } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'push.disable' }) }

@@ -2,6 +2,7 @@
 // (C-39 / PRD-2). null mientras carga, en el demo o sin sesión.
 import { useEffect, useState } from 'react'
 import { getSession } from '../core/auth.js'
+import { logRejection } from '../utils/errorLog.js'
 
 export function useAccount() {
   const [account, setAccount] = useState(null)
@@ -9,7 +10,7 @@ export function useAccount() {
     let alive = true
     getSession().then((s) => {
       if (alive && s?.user?.id) setAccount({ id: s.user.id, email: s.user.email || null })
-    }).catch(() => {})
+    }).catch(logRejection('useAccount:12'))
     return () => { alive = false }
   }, [])
   return account

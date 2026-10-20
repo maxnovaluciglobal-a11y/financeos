@@ -4,6 +4,7 @@ import { licenseKeyHash, LICENSE_HASH_RE } from './syncCrypto.js'
 import { authClient } from '../core/authClient.js'
 import { withLeadLang } from './leadsLang.js'
 import { withStarterConsent, shouldRequestOptin } from './marketingConsent.js'
+import { logRejection } from './errorLog.js'
 // Valida la clave contra la RPC `validate_license` de Supabase y cachea en localStorage
 // (fnos_license_v2). VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY están en Vercel.
 //
@@ -101,7 +102,7 @@ export function isLicenseActive() {
       if (r.valid) writeCache({ key: c.key, plan: r.plan, exp: r.exp ?? null, ts: Date.now() })
       else if (r.valid === false) clearLicense() // revocada o vencida → desloguear
       // offline: dejar la cache como está
-    }).catch(() => {})
+    }).catch(logRejection('licenseValidator:105'))
   }
   return true
 }
@@ -161,7 +162,7 @@ function requestOptinEmail(source, id) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ source, id }),
-  }).catch(() => {})
+  }).catch(logRejection('licenseValidator:165'))
 }
 
 // Registra el email de quien elige Starter (best-effort: no bloquea la
@@ -203,7 +204,7 @@ export async function registerStarterLead(email, lang, consentMarketing = false)
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ mode: 'welcome', leadId: data.id }),
-      }).catch(() => {})
+      }).catch(logRejection('licenseValidator:207'))
     }
     if (shouldRequestOptin(data, consentMarketing)) requestOptinEmail('starter', data.id)
     return !!(data && data.ok)

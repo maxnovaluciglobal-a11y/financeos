@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/money.js — lógica pura de "ocultar montos" (T13), sin React.
 // La usan Money.jsx (componente + hook) y los tests.
 

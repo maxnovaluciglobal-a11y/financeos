@@ -28,7 +28,7 @@ import { usePageStack } from './hooks/usePageStack.js'
 import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
 import { useState, useEffect } from 'react'
-import { logClientError } from './utils/errorLog.js'
+import { logClientError, logRejection } from './utils/errorLog.js'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -186,7 +186,7 @@ function Inner() {
       }
       // Cambio de cuenta: el aviso push de este navegador estaba atado a la
       // cuenta anterior, se da de baja antes de guardar su espacio.
-      if (isPushEnabled()) await disablePush().catch(() => {})
+      if (isPushEnabled()) await disablePush().catch(logRejection('App:189'))
       try {
         applyAccountSwitch(session.user, plan)
       } catch {

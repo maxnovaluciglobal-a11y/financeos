@@ -1,3 +1,4 @@
+// @ts-check
 // src/core/db/index.js — wiring de IndexedDB. Los pasos de esquema versionados
 // viven en ./migrations.js (ver ahí antes de tocar DB_VERSION).
 

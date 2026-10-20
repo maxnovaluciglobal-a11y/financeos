@@ -9,6 +9,7 @@ import PeriodToggle from './ui/PeriodToggle.jsx'
 import config from '../config.js'
 import { activateUrl } from '../utils/landingLinks.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
+import { logRejection } from '../utils/errorLog.js'
 
 // Pro se ofrece con la prueba de 14 días y la elección anual/mensual, igual que la
 // landing (auditoría 360, C-03 / COM-3). Anual preseleccionado: el precio grande es
@@ -55,11 +56,11 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
       if (valid) {
         // Best-effort: asocia el email de la cuenta ya autenticada (AuthGate)
         // para avisos/soporte. No bloquea la activación si falla.
-        if (userEmail) setLicenseEmail(userEmail).catch(() => {})
+        if (userEmail) setLicenseEmail(userEmail).catch(logRejection('LicenseGate:58'))
         // Guarda la key ya validada contra la cuenta para que un login en
         // otro dispositivo la revalide solo (ver App.jsx) en vez de volver
         // a pedirla.
-        if (userId) setServerEntitlement(userId, 'pro', clean).catch(() => {})
+        if (userId) setServerEntitlement(userId, 'pro', clean).catch(logRejection('LicenseGate:62'))
         onActivate()
       } else {
         setError(t('licenseGate.errorInvalid'))
@@ -87,10 +88,10 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
     // clave, así que sin esto nadie que arranca gratis quedaba registrado
     // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
     // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
-    if (userEmail) registerStarterLead(userEmail, lang, marketing).catch(() => {})
+    if (userEmail) registerStarterLead(userEmail, lang, marketing).catch(logRejection('LicenseGate:90'))
     // Recuerda la elección contra la cuenta — sin esto, loguearse desde otro
     // dispositivo volvía a mostrar esta misma pantalla de elegir plan.
-    if (userId) setServerEntitlement(userId, 'starter').catch(() => {})
+    if (userId) setServerEntitlement(userId, 'starter').catch(logRejection('LicenseGate:93'))
     onActivate()
   }
 

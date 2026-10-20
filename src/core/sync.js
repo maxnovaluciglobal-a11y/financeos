@@ -22,7 +22,7 @@ import {
   bytesToB64, b64ToBytes, V2_ITERATIONS, MIN_PASSPHRASE_LENGTH, normalizePassphrase,
 } from '../utils/syncCrypto.js'
 import { authClient } from './authClient.js'
-import { logClientError } from '../utils/errorLog.js'
+import { logClientError, logRejection } from '../utils/errorLog.js'
 
 const env = () => ({ url: import.meta.env.VITE_SUPABASE_URL, anon: import.meta.env.VITE_SUPABASE_ANON_KEY })
 
@@ -166,7 +166,7 @@ export function markLocalChange() {
   writeMeta({ lastLocalChange: Date.now() })
   if (!isSyncEnabled() || !syncAvailable()) return
   clearTimeout(pushTimer)
-  pushTimer = setTimeout(() => { pushNow().catch(() => {}) }, 2500)
+  pushTimer = setTimeout(() => { pushNow().catch(logRejection('sync:169')) }, 2500)
 }
 
 async function applyRemote(remote, onApplied) {
@@ -182,7 +182,7 @@ async function applyRemote(remote, onApplied) {
 export async function pullAndApplyIfNewer(onApplied) {
   if (!isSyncEnabled() || !syncAvailable()) return { applied: false }
   const raw = await remoteRaw()
-  if (raw.empty) { await pushNow().catch(() => {}); return { applied: false } }
+  if (raw.empty) { await pushNow().catch(logRejection('sync:185')); return { applied: false } }
   const d = await decodeRemote(raw)
   if (d.blocked) return { applied: false, blocked: d.blocked }
   const remote = { payload: d.payload, updatedAt: raw.updatedAt }
@@ -193,7 +193,7 @@ export async function pullAndApplyIfNewer(onApplied) {
     await applyRemote(remote, onApplied)
     return { applied: true }
   }
-  await pushNow().catch(() => {})
+  await pushNow().catch(logRejection('sync:196'))
   return { applied: false }
 }
 
@@ -265,8 +265,8 @@ export async function migrateToPassphrase(passphrase, { onApplied, iterations = 
     const back = await decryptV2(check.blob, key, { minIterations: Math.min(iterations, V2_ITERATIONS) })
     if (countsOf(back) !== countsOf(local)) throw new Error('verify_failed')
   } catch {
-    if (hasRollbackSnapshot()) await restoreV1Snapshot().catch(() => {})
-    else if (rawLicenseKey()) await rawPush(await encryptData(local, rawLicenseKey()), updatedAt).catch(() => {})
+    if (hasRollbackSnapshot()) await restoreV1Snapshot().catch(logRejection('sync:268'))
+    else if (rawLicenseKey()) await rawPush(await encryptData(local, rawLicenseKey()), updatedAt).catch(logRejection('sync:269'))
     throw new Error('verify_failed')
   }
   storeV2Key(key, salt, iterations)
