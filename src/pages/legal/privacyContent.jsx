@@ -101,9 +101,10 @@ function EsBody() {
             recibir novedades.
           </li>
           <li>
-            <strong>Plan Pro:</strong> el email de la compra, un hash de la clave de licencia en el
-            registro de licencias, la clave asociada a la cuenta (para reponer el plan al iniciar
-            sesión en otro dispositivo), el plan y las fechas de activación y vencimiento.
+            <strong>Plan Pro:</strong> el email de la compra, la cuenta a la que está asociado, un
+            hash irreversible de la clave de licencia (la clave misma solo si el usuario sincroniza
+            con el modelo anterior; ver el punto 5), el plan y las fechas de activación y
+            vencimiento.
           </li>
           <li>
             <strong>Notificaciones push (opcional):</strong> el identificador técnico (endpoint)
@@ -121,7 +122,7 @@ function EsBody() {
         <p>
           La sincronización viene desactivada. Si el usuario la activa en Ajustes, sus datos se
           cifran en el dispositivo con <strong>AES-GCM</strong> antes de enviarse y se almacenan
-          cifrados. Desde el 20 de octubre de 2026, al activarla se crea una frase de paso: la
+          cifrados. Desde el 19 de octubre de 2026, al activarla se crea una frase de paso: la
           llave se deriva de esa frase en el dispositivo (PBKDF2 con 600 000 iteraciones y sal
           aleatoria), la frase no se envía ni se guarda en nuestro servidor y, por eso, no podemos
           leer esa copia ni recuperarla si se olvida la frase. Quien ya sincronizaba antes de esa
@@ -226,8 +227,12 @@ function EsBody() {
         <p>
           La cuenta también se puede eliminar sin escribirnos, desde Ajustes → Eliminar la cuenta
           (o en app.moyiq.app/delete-account). Eso borra al instante la cuenta y lo que el servidor
-          guarda de ella en MOY IQ y MOY IQ Invest. Solo se conservan los comprobantes de pago y la
-          constancia de una cancelación, como se indica en esta política.
+          guarda de ella en MOY IQ y MOY IQ Invest. Dos pasos no son automáticos y los hacemos
+          nosotros: si hay un plan Pro activo, cancelamos la suscripción en Stripe en un día hábil
+          (quien prefiera hacerlo antes puede usar la página de cancelación), y si el correo estaba
+          suscrito a un newsletter, lo quitamos de la lista de nuestro proveedor de envío. Solo se
+          conservan los comprobantes de pago y la constancia de una cancelación, como se indica en
+          esta política.
         </p>
         <p>
           Respondemos en un plazo máximo de 30 días. Los datos se tratan en EE. UU.; para usuarios
@@ -243,9 +248,9 @@ function EsBody() {
         <h2>12. Seguridad</h2>
         <p>
           Los datos locales dependen de la seguridad del dispositivo del usuario. Los datos
-          sincronizados se guardan cifrados con una llave derivada de la clave de licencia (ver el
-          punto 5 sobre sus límites actuales). Recomendamos exportar respaldos JSON periódicamente y
-          guardar la clave de licencia en un lugar seguro.
+          sincronizados se guardan cifrados con una llave derivada de la frase de paso del usuario
+          (o, en el modelo anterior, de la clave de licencia; ver el punto 5). Recomendamos exportar
+          respaldos JSON periódicamente y guardar la frase de paso en un lugar seguro.
         </p>
       </div>
 
@@ -354,9 +359,9 @@ function EnBody() {
             receive product news.
           </li>
           <li>
-            <strong>Pro plan:</strong> the purchase email, a hash of the license key in the license
-            registry, the key linked to the account (to restore the plan when signing in on another
-            device), the plan, and the activation and expiration dates.
+            <strong>Pro plan:</strong> the purchase email, the account it is linked to, an
+            irreversible hash of the license key (the key itself only if the user syncs with the
+            previous model; see section 5), the plan, and the activation and expiration dates.
           </li>
           <li>
             <strong>Push notifications (optional):</strong> the browser's technical identifier
@@ -374,7 +379,7 @@ function EnBody() {
         <p>
           Sync is off by default. If the user turns it on in Settings, their data is encrypted on
           the device with <strong>AES-GCM</strong> before it is sent and is stored encrypted.
-          Since October 20, 2026, turning it on creates a passphrase: the key is derived from that
+          Since October 19, 2026, turning it on creates a passphrase: the key is derived from that
           phrase on the device (PBKDF2 with 600,000 iterations and a random salt), the phrase is
           never sent to or stored on our server and, for that reason, we cannot read that copy or
           recover it if the phrase is forgotten. Users who were already syncing before that date
@@ -476,8 +481,12 @@ function EnBody() {
         <p>
           The account can also be deleted without writing to us, from Settings → Delete account
           (or at app.moyiq.app/delete-account). This immediately deletes the account and what the
-          server keeps about it in MOY IQ and MOY IQ Invest. Only payment receipts and the record
-          of a cancellation are kept, as described in this policy.
+          server keeps about it in MOY IQ and MOY IQ Invest. Two steps are not automatic and we do
+          them: if there is an active Pro plan, we cancel the subscription in Stripe within one
+          business day (anyone who prefers to do it sooner can use the cancellation page), and if
+          the email was subscribed to a newsletter, we remove it from our email provider's list.
+          Only payment receipts and the record of a cancellation are kept, as described in this
+          policy.
         </p>
         <p>
           We reply within 30 days. Data is processed in the USA; for users in the European Economic
@@ -492,8 +501,9 @@ function EnBody() {
         <h2>12. Security</h2>
         <p>
           Local data depends on the security of the user's device. Synced data is stored encrypted
-          with a key derived from the license key (see section 5 about its current limits). We
-          recommend exporting JSON backups periodically and keeping the license key somewhere safe.
+          with a key derived from the user's passphrase (or, in the previous model, from the
+          license key; see section 5). We recommend exporting JSON backups periodically and keeping
+          the passphrase somewhere safe.
         </p>
       </div>
 
@@ -602,9 +612,9 @@ function PtBody() {
             receber novidades.
           </li>
           <li>
-            <strong>Plano Pro:</strong> o email da compra, um hash da chave de licença no registro de
-            licenças, a chave vinculada à conta (para restaurar o plano ao entrar em outro
-            dispositivo), o plano e as datas de ativação e vencimento.
+            <strong>Plano Pro:</strong> o email da compra, a conta à qual está vinculado, um hash
+            irreversível da chave de licença (a própria chave só se o usuário sincroniza com o
+            modelo anterior; veja o item 5), o plano e as datas de ativação e vencimento.
           </li>
           <li>
             <strong>Notificações push (opcional):</strong> o identificador técnico (endpoint) do
@@ -622,7 +632,7 @@ function PtBody() {
         <p>
           A sincronização vem desativada. Se o usuário a ativar em Configurações, os dados são
           criptografados no dispositivo com <strong>AES-GCM</strong> antes do envio e armazenados
-          criptografados. Desde 20 de outubro de 2026, ao ativá-la se cria uma frase-senha: a chave
+          criptografados. Desde 19 de outubro de 2026, ao ativá-la se cria uma frase-senha: a chave
           é derivada dessa frase no dispositivo (PBKDF2 com 600.000 iterações e sal aleatório), a
           frase não é enviada nem guardada no nosso servidor e, por isso, não podemos ler essa
           cópia nem recuperá-la se a frase for esquecida. Quem já sincronizava antes dessa data
@@ -727,8 +737,11 @@ function PtBody() {
         <p>
           A conta também pode ser excluída sem nos escrever, em Ajustes → Excluir a conta (ou em
           app.moyiq.app/delete-account). Isso apaga na hora a conta e o que o servidor guarda dela
-          no MOY IQ e no MOY IQ Invest. Ficam apenas os comprovantes de pagamento e o registro de
-          um cancelamento, como indica esta política.
+          no MOY IQ e no MOY IQ Invest. Dois passos não são automáticos e nós os fazemos: se houver
+          um plano Pro ativo, cancelamos a assinatura na Stripe em um dia útil (quem preferir fazer
+          antes pode usar a página de cancelamento), e se o email estava inscrito em uma
+          newsletter, nós o retiramos da lista do nosso provedor de envio. Ficam apenas os
+          comprovantes de pagamento e o registro de um cancelamento, como indica esta política.
         </p>
         <p>
           Respondemos em até 30 dias. Os dados são tratados nos EUA; para usuários do Espaço
@@ -744,9 +757,9 @@ function PtBody() {
         <h2>12. Segurança</h2>
         <p>
           Os dados locais dependem da segurança do dispositivo do usuário. Os dados sincronizados
-          são armazenados criptografados com uma chave derivada da chave de licença (veja o item 5
-          sobre seus limites atuais). Recomendamos exportar backups JSON periodicamente e guardar
-          a chave de licença em local seguro.
+          são armazenados criptografados com uma chave derivada da frase-senha do usuário (ou, no
+          modelo anterior, da chave de licença; veja o item 5). Recomendamos exportar backups JSON
+          periodicamente e guardar a frase-senha em local seguro.
         </p>
       </div>
 
@@ -868,8 +881,9 @@ function DeBody() {
           </li>
           <li>
             <strong>Pro-Abo:</strong> E-Mail-Adresse des Kaufs, Hash des Lizenzschlüssels im
-            Lizenzregister, der mit dem Konto verknüpfte Schlüssel (um den Tarif bei der Anmeldung
-            auf einem anderen Gerät wiederherzustellen), Tarif, Aktivierungs- und Ablaufdatum,
+            Lizenzregister (irreversibel; den Schlüssel selbst nur, wenn Sie mit dem bisherigen
+            Modell synchronisieren, siehe Abschnitt 5), das Konto, mit dem das Abo verknüpft ist,
+            Tarif, Aktivierungs- und Ablaufdatum,
             Zahlungsbestätigung. Vertragserfüllung und Prüfung der Berechtigung (Art. 6 Abs. 1
             lit. b DSGVO); gesetzliche Aufbewahrungspflichten (Art. 6 Abs. 1 lit. c DSGVO).
             Kartendaten erhalten wir nicht.
@@ -899,7 +913,7 @@ function DeBody() {
           Die Synchronisierung ist standardmäßig ausgeschaltet. Aktivieren Sie sie in den
           Einstellungen, werden Ihre Daten auf Ihrem Gerät mit <strong>AES-GCM</strong>
           verschlüsselt, bevor sie übertragen und verschlüsselt gespeichert werden. Seit dem
-          20. Oktober 2026 erstellen Sie beim Aktivieren eine Passphrase: Der Schlüssel wird auf
+          19. Oktober 2026 erstellen Sie beim Aktivieren eine Passphrase: Der Schlüssel wird auf
           Ihrem Gerät aus dieser Phrase abgeleitet (PBKDF2 mit 600.000 Iterationen und zufälligem
           Salt), die Phrase wird weder an unseren Server gesendet noch dort gespeichert, und
           deshalb können wir diese Kopie weder lesen noch wiederherstellen, wenn Sie die Phrase
@@ -1009,6 +1023,10 @@ function DeBody() {
             Kontodaten: bis zur Löschung Ihres Kontos. Sie können das Konto jederzeit selbst unter
             Einstellungen → Konto löschen (oder unter app.moyiq.app/delete-account) löschen; die beim
             Server gespeicherten Daten in MOY IQ und MOY IQ Invest werden dabei sofort gelöscht.
+            Zwei Schritte erfolgen nicht automatisch und werden von uns erledigt: Bei einem aktiven
+            Pro-Abo kündigen wir das Abonnement bei Stripe innerhalb eines Werktags (wer es früher
+            erledigen möchte, nutzt die Kündigungsseite), und war die E-Mail-Adresse für einen
+            Newsletter angemeldet, entfernen wir sie aus der Liste unseres E-Mail-Dienstleisters.
           </li>
           <li>E-Mail-Adressen für Neuigkeiten: bis zu Ihrer Abmeldung oder dem Widerruf Ihrer Einwilligung.</li>
           <li>

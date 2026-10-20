@@ -29,6 +29,7 @@ import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
 import { proPriceVars, proCta, withCheckoutLang, checkoutFor, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
 import { IconIQScore } from '../icons/Icons.jsx'
+import { initialSearch, planParam } from '../../utils/deepLink.js'
 import styles from './ui.module.css'
 
 export const DEFAULT_PRO_BENEFITS = [
@@ -43,7 +44,8 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
   const { t, lang } = useT()
   const account = useAccount()
   // APP-N3 (C-39): la misma elección anual/mensual que LicenseGate y Ajustes.
-  const [period, setPeriod] = useState(DEFAULT_BILLING_PERIOD)
+  // APP-N12: ?plan=annual|monthly de la landing (también tras confirmar el correo).
+  const [period, setPeriod] = useState(() => (typeof window !== 'undefined' && planParam(initialSearch(window.location.search))) || DEFAULT_BILLING_PERIOD)
 
   if (isPro) return children
 

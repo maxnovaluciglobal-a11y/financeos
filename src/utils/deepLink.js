@@ -33,47 +33,98 @@ export function authTabFromSearch(search, hash = '') {
   try { return new URLSearchParams(search || '').has('signup') ? 'signup' : 'login' } catch { return 'login' }
 }
 
+// ?plan=annual|monthly (landing, "Probar 14 días"): período que ProGate
+// preselecciona. Cualquier otro valor se ignora.
+const PLANS = new Set(['annual', 'monthly'])
+export function planParam(search) {
+  try { const p = new URLSearchParams(search || '').get('plan'); return PLANS.has(p) ? p : null } catch { return null }
+}
+
 // El retorno de Google (OAuth) vuelve a origin + pathname, sin la query: el
-// destino de ?open= se guarda en sessionStorage antes de salir y se recupera
-// en la primera carga de vuelta (APP-N2). Caduca a los 15 minutos.
+// destino de ?open= (y ?plan=) se guarda en sessionStorage antes de salir y se
+// recupera en la primera carga de vuelta (APP-N2). Caduca a los 15 minutos.
+// El enlace de confirmación del correo de registro (APP-N12) también vuelve
+// sin la query y suele abrirse en otra pestaña, donde sessionStorage está
+// vacío: ese destino va a localStorage, dura 48 horas y solo se consume en la
+// carga que vuelve de Auth (hash con access_token o ?code=).
 const OAUTH_OPEN_KEY = 'fnos_oauth_open'
 const OAUTH_OPEN_TTL_MS = 15 * 60 * 1000
+export const SIGNUP_OPEN_KEY = 'fnos_signup_open'
+const SIGNUP_OPEN_TTL_MS = 48 * 60 * 60 * 1000
 
 function sessionStore() {
   try { return typeof sessionStorage !== 'undefined' ? sessionStorage : null } catch { return null }
 }
+function localStore() {
+  try { return typeof localStorage !== 'undefined' ? localStorage : null } catch { return null }
+}
+// Marca de "vuelve de Auth" leída al evaluar el módulo: supabase-js limpia el
+// hash (#access_token) o el ?code= de la URL apenas procesa la sesión, que
+// puede ser antes del primer render.
+const BOOT_AUTH_MARK = (() => {
+  try {
+    if (typeof window === 'undefined') return ''
+    const { hash = '', search = '' } = window.location
+    return /[?&]code=/.test(search) ? `${hash}&code=1` : hash
+  } catch { return '' }
+})()
 
-export function stashOpenForOAuth(search, storage = sessionStore(), now = Date.now()) {
+function stashRecord(search, now) {
   const target = openParam(search)
-  if (!storage || target === null || !hasOwn(PAGE_BY_OPEN, target)) return
-  try { storage.setItem(OAUTH_OPEN_KEY, JSON.stringify({ open: target, at: now })) } catch {}
+  if (target === null || !hasOwn(PAGE_BY_OPEN, target)) return null
+  const plan = planParam(search)
+  return JSON.stringify({ open: target, ...(plan ? { plan } : {}), at: now })
 }
 
+export function stashOpenForOAuth(search, storage = sessionStore(), now = Date.now()) {
+  const rec = stashRecord(search, now)
+  if (!storage || !rec) return
+  try { storage.setItem(OAUTH_OPEN_KEY, rec) } catch {}
+}
+
+export function stashOpenForSignup(search, storage = localStore(), now = Date.now()) {
+  const rec = stashRecord(search, now)
+  if (!storage || !rec) return
+  try { storage.setItem(SIGNUP_OPEN_KEY, rec) } catch {}
+}
+
+export function clearSignupStash(storage = localStore()) {
+  try { storage?.removeItem(SIGNUP_OPEN_KEY) } catch {}
+}
+
+const isAuthReturn = (search, hash) => /(^|[#&?])(access_token|code)=/.test(hash || '') || /[?&]code=/.test(search || '')
+
 // Search efectiva para elegir la página inicial: la de la URL si trae ?open=;
-// si no, la guardada antes del OAuth (y se borra en cualquier caso).
+// si no, la guardada antes del OAuth o del registro (y se borra al usarla).
 // Tolera que React llame dos veces al inicializador (StrictMode): el resultado
 // se recuerda por search.
 let lastInitial = null
 
-export function initialSearch(search, storage = sessionStore(), now = Date.now()) {
-  if (lastInitial && lastInitial.search === search && lastInitial.storage === storage) return lastInitial.result
-  const result = computeInitialSearch(search, storage, now)
-  lastInitial = { search, storage, result }
+export function initialSearch(search, storage = sessionStore(), now = Date.now(), { local = localStore(), hash = BOOT_AUTH_MARK } = {}) {
+  if (lastInitial && lastInitial.search === search && lastInitial.storage === storage && lastInitial.local === local && lastInitial.hash === hash) return lastInitial.result
+  const result = computeInitialSearch(search, storage, now, local, hash)
+  lastInitial = { search, storage, local, hash, result }
   return result
 }
 
-function computeInitialSearch(search, storage, now) {
-  let stashed = null
-  if (storage) {
-    try {
-      stashed = JSON.parse(storage.getItem(OAUTH_OPEN_KEY) || 'null')
-      storage.removeItem(OAUTH_OPEN_KEY)
-    } catch { stashed = null }
-  }
+function readStash(store, key, consume) {
+  if (!store) return null
+  try {
+    const v = JSON.parse(store.getItem(key) || 'null')
+    if (consume) store.removeItem(key)
+    return v
+  } catch { return null }
+}
+
+const toSearch = (st) => `?open=${st.open}${PLANS.has(st.plan) ? `&plan=${st.plan}` : ''}`
+
+function computeInitialSearch(search, storage, now, local, hash) {
+  const oauth = readStash(storage, OAUTH_OPEN_KEY, true)
+  const authReturn = isAuthReturn(search, hash)
+  const signup = readStash(local, SIGNUP_OPEN_KEY, authReturn)
   if (openParam(search) !== null) return search
-  if (stashed && hasOwn(PAGE_BY_OPEN, stashed.open) && now - Number(stashed.at) < OAUTH_OPEN_TTL_MS) {
-    return `?open=${stashed.open}`
-  }
+  if (oauth && hasOwn(PAGE_BY_OPEN, oauth.open) && now - Number(oauth.at) < OAUTH_OPEN_TTL_MS) return toSearch(oauth)
+  if (authReturn && signup && hasOwn(PAGE_BY_OPEN, signup.open) && now - Number(signup.at) < SIGNUP_OPEN_TTL_MS) return toSearch(signup)
   return search
 }
 

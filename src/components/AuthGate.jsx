@@ -10,7 +10,7 @@ import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
-import { authTabFromSearch, stashOpenForOAuth } from '../utils/deepLink.js'
+import { authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash } from '../utils/deepLink.js'
 
 const LEGAL_URLS = {
   es: { terms: 'https://moyiq.app/terms.html', privacy: 'https://moyiq.app/privacy.html' },
@@ -80,6 +80,7 @@ export default function AuthGate({ onAuthenticated }) {
     setError('')
     clearDeletedNotice()
     setLoading(true)
+    if (tab === 'signup') stashOpenForSignup(window.location.search)
     const result = tab === 'login'
       ? await signInWithPassword(cleanEmail, password)
       : await signUpWithPassword(cleanEmail, password, lang)
@@ -88,6 +89,7 @@ export default function AuthGate({ onAuthenticated }) {
       setError(friendlyError(t, result.error))
       return
     }
+    if (result.data?.session) clearSignupStash()
     if (tab === 'signup' && !result.data?.session) {
       // Supabase nunca revela si un email ya está registrado (protección
       // anti-enumeración): un signUp() sobre una cuenta YA confirmada

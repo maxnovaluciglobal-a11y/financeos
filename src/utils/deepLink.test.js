@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { pageFromSearch, authTabFromSearch, stashOpenForOAuth, initialSearch } from './deepLink.js'
+import { pageFromSearch, authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash, initialSearch, planParam, SIGNUP_OPEN_KEY } from './deepLink.js'
 import { APP_DESTINATIONS, APP_URL, appLink } from '../../supabase/functions/_shared/appLinks.ts'
 import { STARTER_TEMPLATES } from '../../supabase/functions/send-nurture-starter-email/nurtureTemplates.ts'
 import { DIAGNOSTICO_TEMPLATES } from '../../supabase/functions/send-nurture-diagnostico-email/nurtureTemplates.ts'
@@ -180,5 +180,39 @@ describe('AuthGate: pestaña de registro y destino tras Google (C-31, APP-N2)', 
     const st = memStore()
     stashOpenForOAuth('?open=upgrade', st, 0)
     expect(initialSearch('?open=dashboard', st, 10)).toBe('?open=dashboard')
+  })
+
+  it('APP-N12: ?open=upgrade&plan= sobrevive a la confirmación del correo (otra pestaña)', () => {
+    const ses = memStore(), local = memStore()
+    stashOpenForSignup('?open=upgrade&signup&plan=monthly', local, 1000)
+    expect(JSON.parse(local.m.get(SIGNUP_OPEN_KEY))).toMatchObject({ open: 'upgrade', plan: 'monthly' })
+    // Una recarga cualquiera (sin volver de Auth) no lo consume.
+    expect(initialSearch('', ses, 2000, { local, hash: '' })).toBe('')
+    expect(local.m.has(SIGNUP_OPEN_KEY)).toBe(true)
+    // La carga que vuelve del enlace de confirmación sí.
+    const back = initialSearch('', ses, 3000, { local, hash: '#access_token=x&type=signup' })
+    expect(back).toBe('?open=upgrade&plan=monthly')
+    expect(pageFromSearch(back)).toBe('advisor')
+    expect(planParam(back)).toBe('monthly')
+    expect(local.m.has(SIGNUP_OPEN_KEY)).toBe(false)
+  })
+
+  it('APP-N12: la marca del registro caduca a las 48 h y se puede borrar', () => {
+    const ses = memStore(), local = memStore()
+    stashOpenForSignup('?open=upgrade&plan=annual', local, 0)
+    expect(initialSearch('?code=1', ses, 49 * 3600 * 1000, { local, hash: '' })).toBe('?code=1')
+    stashOpenForSignup('?open=upgrade', local, 0)
+    clearSignupStash(local)
+    expect(local.m.size).toBe(0)
+    stashOpenForSignup('?signup', local, 0)
+    expect(local.m.size).toBe(0)
+  })
+
+  it('APP-N12: el plan viaja también por Google y solo acepta annual o monthly', () => {
+    const st = memStore()
+    stashOpenForOAuth('?open=upgrade&plan=annual', st, 0)
+    expect(initialSearch('?code=z', st, 10, { local: null, hash: '' })).toBe('?open=upgrade&plan=annual')
+    expect(planParam('?plan=weekly')).toBe(null)
+    expect(planParam('?open=upgrade&plan=annual')).toBe('annual')
   })
 })
