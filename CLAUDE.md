@@ -8,6 +8,8 @@ npm run build    # node build.js -> dist/index.html (redirect) + dist/app/ (la a
 npm test         # vitest run — src/, api/, supabase/functions/ y scripts/ (ver "Testing")
 ```
 
+**Variables locales en `.env.local`** (nunca en `.env`, que se retiró del repo el 20-oct-2026): `npm run dev` necesita `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (nombres en `.env.example`; los valores de producción están en Vercel). Ningún script local usa claves de servidor. `.vercelignore` excluye `.env*` para que el CLI no las suba.
+
 **El build produce dos cosas.** `dist/index.html` es solo un redirect a la landing; la app de verdad está en `dist/app/index.html`. Para verificar algo del `<head>` (fuentes, meta), mirar **`dist/app/index.html`**, no el de la raíz.
 
 ## Deploy
