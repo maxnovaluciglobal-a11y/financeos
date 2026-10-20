@@ -5,7 +5,7 @@
 // la barra — y Cuenta (Ajustes), tema y cerrar sesión al final.
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare } from 'lucide-react'
+import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { menuSections } from '../../components/layout/navConfig.js'
@@ -15,6 +15,7 @@ import { BackupStatusBadge } from '../../components/backup/BackupManager.jsx'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import FeedbackSheet from '../../components/FeedbackSheet.jsx'
+import { STRIPE_PORTAL_URL } from '../legal/legalMeta.js'
 import s from './more.module.css'
 
 const SHOW_FIRMA = true
@@ -65,6 +66,7 @@ export default function More({ setPage }) {
   const { t } = useT()
   const isDark = settings.theme === 'dark'
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const isPro = getLicensePlan() === 'pro'
 
   function toggleTheme() {
     updateSettings({ ...settings, theme: isDark ? 'light' : 'dark' })
@@ -104,6 +106,14 @@ export default function More({ setPage }) {
         <div className={s.group}>
           <h2 className={s.groupTitle}>{t('feedback.section')}</h2>
           <div className={s.list}>
+            {isPro && STRIPE_PORTAL_URL && (
+              <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className={s.row} aria-describedby="menu-manage-sub-hint">
+                <span className={s.rowIc} aria-hidden="true"><CreditCard size={18} strokeWidth={1.7} /></span>
+                <span className={s.rowLabel}>{t('menu.manageSub')}</span>
+                <span id="menu-manage-sub-hint" className="sr-only">{t('menu.manageSubHint')}</span>
+                <ExternalLink size={16} strokeWidth={1.8} aria-hidden="true" className={s.chev} />
+              </a>
+            )}
             <button type="button" className={s.row} onClick={() => setFeedbackOpen(true)} aria-haspopup="dialog">
               <span className={s.rowIc} aria-hidden="true"><MessageSquare size={18} strokeWidth={1.7} /></span>
               <span className={s.rowLabel}>{t('feedback.title')}</span>

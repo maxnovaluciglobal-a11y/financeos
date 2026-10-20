@@ -2784,6 +2784,8 @@ export const en = {
     'menu.plan.pro': "Pro",
     'menu.plan.starter': "Starter",
     'menu.upgrade.title': "Upgrade to Pro",
+    'menu.manageSub': "Manage subscription",
+    'menu.manageSubHint': "Stripe portal: change your card, see invoices or cancel. Opens in a new tab.",
     'nav.backTo': "Back to {page}",
     'refcur.switchAria': "Currency of the amount",
     'refcur.source.manual': "Your rate",

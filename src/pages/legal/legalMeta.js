@@ -38,6 +38,7 @@ export const CANCEL_URLS = {
   de: 'https://moyiq.app/de/kuendigen.html',
 }
 
-// Portal de clientes de Stripe: null hasta que esté activado. Los textos dicen
-// "cuando esté disponible" mientras sea null.
-export const STRIPE_PORTAL_URL = null
+// Portal de clientes de Stripe (link público de inicio de sesión; el mismo que
+// publica la landing en cancelar.html, terms y license). Menú → Ayuda →
+// Gestionar suscripción (LEG-12).
+export const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/6oU9AM8Ht3aggzi8qZfnO00'

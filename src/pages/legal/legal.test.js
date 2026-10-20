@@ -14,7 +14,7 @@ import { PRIVACY_CONTENT } from './privacyContent.jsx'
 import { TERMS_CONTENT } from './termsContent.jsx'
 import { LICENSE_CONTENT } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
-import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_LANGS, pickLang, SUPPORT_EMAIL } from './legalMeta.js'
+import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_LANGS, pickLang, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -197,5 +197,19 @@ describe('pickLang', () => {
   it('routes de to German and unknown languages to Spanish', () => {
     expect(pickLang(PRIVACY_CONTENT, 'de')).toBe(PRIVACY_CONTENT.de)
     expect(pickLang(PRIVACY_CONTENT, 'fr')).toBe(PRIVACY_CONTENT.es)
+  })
+})
+
+describe('LEG-12: portal de Stripe en el Menú', () => {
+  it('el portal es el link público de inicio de sesión de Stripe (el mismo de la landing)', () => {
+    expect(STRIPE_PORTAL_URL).toMatch(/^https:\/\/billing\.stripe\.com\/p\/login\/[A-Za-z0-9]+$/)
+  })
+
+  it('el Menú lo ofrece solo con Pro, en una pestaña nueva y con su explicación', async () => {
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(new URL('../More/index.jsx', import.meta.url), 'utf8')
+    expect(src).toMatch(/isPro && STRIPE_PORTAL_URL/)
+    expect(src).toMatch(/target="_blank" rel="noopener noreferrer"/)
+    expect(src).toContain("t('menu.manageSubHint')")
   })
 })

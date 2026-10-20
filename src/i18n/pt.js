@@ -2784,6 +2784,8 @@ export const pt = {
     'menu.plan.pro': "Pro",
     'menu.plan.starter': "Starter",
     'menu.upgrade.title': "Mudar para Pro",
+    'menu.manageSub': "Gerenciar assinatura",
+    'menu.manageSubHint': "Portal da Stripe: trocar o cartão, ver faturas ou cancelar. Abre em uma nova aba.",
     'nav.backTo': "Voltar para {page}",
     'refcur.switchAria': "Moeda do valor",
     'refcur.source.manual': "Taxa própria",

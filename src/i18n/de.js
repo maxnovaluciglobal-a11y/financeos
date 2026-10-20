@@ -2783,6 +2783,8 @@ export const de = {
     'menu.plan.pro': "Pro",
     'menu.plan.starter': "Starter",
     'menu.upgrade.title': "Zu Pro wechseln",
+    'menu.manageSub': "Abo verwalten",
+    'menu.manageSubHint': "Stripe-Portal: Karte ändern, Rechnungen ansehen oder kündigen. Öffnet sich in einem neuen Tab.",
     'nav.backTo': "Zurück zu {page}",
     'refcur.switchAria': "Währung des Betrags",
     'refcur.source.manual': "Eigener Kurs",
