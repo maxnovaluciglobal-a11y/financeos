@@ -22,7 +22,7 @@ const s = {
   header: { marginBottom: 24 },
   eyebrow: { fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)', marginBottom: 6 },
   h1: { fontSize: 24, fontWeight: 700, color: 'var(--tx)', fontFamily: 'var(--display)', letterSpacing: '-.02em', marginBottom: 4 },
-  sub: { fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)' },
+  sub: { fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)' },
   card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
   cardTitle: { fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 12 },
   steps: { display: 'flex', gap: 8, marginBottom: 28 },
@@ -43,13 +43,13 @@ const s = {
     display: 'flex', alignItems: 'flex-start', gap: 8,
     background: 'var(--accent-bg)', border: '.5px solid var(--accent)',
     borderRadius: 8, padding: '10px 12px', marginTop: 12,
-    fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', lineHeight: 1.5,
+    fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
   hint: {
     display: 'flex', alignItems: 'flex-start', gap: 8,
     background: 'var(--sur2)', border: '.5px solid var(--brd)',
     borderRadius: 8, padding: '10px 12px', marginTop: 8,
-    fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5,
+    fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
   select: { width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' },
   label: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.5px' },
@@ -69,8 +69,8 @@ const s = {
   btnPrimary: { background: 'var(--laton)', color: 'var(--navy)' },
   btnSecondary: { background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)' },
   btnRow: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 },
-  disclaimer: { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' },
-  warn: { background: 'rgba(245,166,35,.1)', border: '.5px solid var(--amb)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)', marginBottom: 16 },
+  disclaimer: { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' },
+  warn: { background: 'rgba(245,166,35,.1)', border: '.5px solid var(--amb)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', marginBottom: 16 },
 }
 
 // keys de traducción
@@ -285,11 +285,11 @@ export default function ImportMovements({ setPage } = {}) {
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('csv-input').click() } }}
             >
               {loading
-                ? <div style={{ color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>{t('imp.upload.reading')}</div>
+                ? <div style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>{t('imp.upload.reading')}</div>
                 : <>
                     <div style={{ fontSize: 28, marginBottom: 10, color: 'var(--th)' }}>↑</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('imp.upload.drop')}</div>
-                    <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('imp.upload.formats', { max: MAX_ROWS })}</div>
+                    <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('imp.upload.formats', { max: MAX_ROWS })}</div>
                   </>
               }
             </div>
@@ -308,7 +308,7 @@ export default function ImportMovements({ setPage } = {}) {
           {/* Panel bancos soportados */}
           <div style={s.card}>
             <div style={s.cardTitle}>{t('imp.banks.title')}</div>
-            <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 14 }}>
+            <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 14 }}>
               {t('imp.banks.sub')}
             </p>
             {/* Un grupo por país con plantilla. El país se marca con CountryBadge
@@ -331,7 +331,7 @@ export default function ImportMovements({ setPage } = {}) {
                 </div>
               </div>
             ))}
-            <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
+            <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
               {t('imp.banks.notListed')}
             </div>
           </div>
@@ -362,7 +362,7 @@ export default function ImportMovements({ setPage } = {}) {
           )}
 
           {history.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 32, color: 'var(--th)', fontSize: 13, fontFamily: 'var(--mono)' }}>
+            <div style={{ textAlign: 'center', padding: 32, color: 'var(--th)', fontSize: 13, fontFamily: 'var(--sans)' }}>
               {t('imp.history.empty')}
             </div>
           )}
@@ -378,18 +378,18 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={{flexShrink:0,lineHeight:0,color:'var(--grn)'}}><CountryBadge code={detectedBank.country} size={22} title={t(`country.${detectedBank.country}`)} /></div>
               <div style={{flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
+                <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
               </div>
               <div style={{fontSize:10,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily:'var(--mono)',flexShrink:0}}>{t('imp.map.auto')}</div>
             </div>
           ) : (
             <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--sur2)',border:'0.5px solid var(--brd)',borderRadius:8,marginBottom:16}}>
               <div style={{fontSize:18}}>📄</div>
-              <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('imp.map.notDetected')}</div>
+              <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{t('imp.map.notDetected')}</div>
             </div>
           )}
           <div style={s.cardTitle}>{t('imp.map.title')}</div>
-          <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 16 }}>
+          <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
             {detectedBank ? t('imp.map.subAuto') : t('imp.map.subManual')}
           </p>
 
@@ -469,7 +469,7 @@ export default function ImportMovements({ setPage } = {}) {
             ))}
           </div>
 
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 8 }}>{t('imp.map.preview')}</div>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 8 }}>{t('imp.map.preview')}</div>
           <div style={{ overflowX: 'auto', marginBottom: 16 }}>
             <table style={s.table}>
               <thead><tr>{parsed.headers.map(h => <th key={h} style={s.th}>{h}</th>)}</tr></thead>
@@ -549,7 +549,7 @@ export default function ImportMovements({ setPage } = {}) {
             </table>
           </div>
 
-          <div style={{ background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, padding: '12px 14px', fontSize: 12, color: 'var(--tx)', fontFamily: 'var(--mono)', marginBottom: 16 }}>
+          <div style={{ background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, padding: '12px 14px', fontSize: 12, color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
             {t('imp.review.note')}
           </div>
 
@@ -571,7 +571,7 @@ export default function ImportMovements({ setPage } = {}) {
             <div style={{ textAlign: 'center', padding: 24 }}>
               <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--pos)' }}><SignalIcon kind="ok" size={28} /></div>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{t('imp.done.demoTitle')}</div>
-              <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('imp.done.demoText')}</p>
+              <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('imp.done.demoText')}</p>
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 24 }}>
@@ -584,7 +584,7 @@ export default function ImportMovements({ setPage } = {}) {
                 <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 14 }}>{fmtMoney(result?.totalExpense, sym)}</div></div>
                 <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.skipped')}</div><div style={{ ...s.summaryVal, color: 'var(--th)', fontSize: 14 }}>{(result?.skippedRows||0)+(result?.duplicateRows||0)}</div></div>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 16 }}>{t('imp.done.visible')}</p>
+              <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>{t('imp.done.visible')}</p>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                 {setPage && (
                   <button style={{ ...s.btn, ...s.btnPrimary }} onClick={() => setPage('dashboard')}>{t('imp.done.goDashboard')}</button>

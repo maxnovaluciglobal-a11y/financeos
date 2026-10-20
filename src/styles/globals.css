@@ -12,6 +12,7 @@
   --laton:       #B8863B;
   --laton-300:   #E3C592;
   --laton-700:   #8A6329;   /* íconos/estados sobre fondo claro — la base falla AA (2.78:1) */
+  --laton-text:  var(--laton-700); /* texto en Latón (placa IQ): 700 en claro, base en oscuro */
   --accent-dark: #CC9A52;   /* CTAs/datos sobre fondo Navy en marketing — no usar sobre Papel */
   --accent-dark-hover: #E3B36B;
   --papel:       #F1EEE6;
@@ -160,6 +161,7 @@
 }
 
 [data-theme="dark"] {
+  --laton-text: var(--laton);
   --bg:        #12161F;
   --sur:       #181D29;
   --sur2:      #1D2331;

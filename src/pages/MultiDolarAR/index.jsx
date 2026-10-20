@@ -13,6 +13,7 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { calcRendimiento, TNA_DEFAULTS } from '../../utils/rendimientosAR.js'
 import { fmtFixed } from '../../utils/index.js'
+import { fmtDay } from '../Dashboard/RefCurrency.jsx'
 
 const fmtARS = (n) => fmtFixed(n, 'es-AR')
 const fmtUSD = (n) => `US$${(Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
@@ -61,7 +62,7 @@ function MultiDolarARBody() {
           <CardHeader title={t('multidolarar.rates.title')} right={
             live && (
               <span style={{ fontSize: 10, fontFamily: 'var(--mono)', color: live.source === 'api' ? 'var(--accent)' : 'var(--th)' }}>
-                {live.source === 'api' ? `● ${t('multidolarar.rates.live')}` : `○ ${t('multidolarar.rates.offline')}`}
+                {live.source === 'api' ? `● ${t('multidolarar.rates.liveAt', { date: fmtDay(live.at ?? live.ts, true) })}` : `○ ${t('multidolarar.rates.offlineAt', { date: fmtDay(live.at ?? live.ts) })}`}
               </span>
             )
           } />

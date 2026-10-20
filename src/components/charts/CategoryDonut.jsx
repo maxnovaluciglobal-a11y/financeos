@@ -105,7 +105,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
               'aria-label': `${catLabel(d.name, lang)} ${d.pct}%, ${t('chart.donut.viewAction')}`,
             } : {})}
             title={clickable(d.name) ? t('chart.donut.viewMovements', { cat: catName(d.name, lang) }) : undefined}
-            style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d.name) ? 'pointer' : 'default', padding:'2px 0' }}
+            style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d.name) ? 'pointer' : 'default', padding:'2px 0', minHeight: clickable(d.name) ? 44 : undefined }}
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>
             <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catLabel(d.name, lang)}{clickable(d.name) ? <span aria-hidden="true"> ›</span> : ''}</div>

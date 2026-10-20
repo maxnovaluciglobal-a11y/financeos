@@ -30,18 +30,30 @@ export function Monogram({ size = 24, tone = 'brand', ticks = true, className, s
   )
 }
 
+// BRD-15: la placa no se lee si "IQ" baja de 10 px (placa < 14 px de alto).
+// Debajo de ese tamaño va la variante compacta: "IQ" en Latón, mismo cuerpo que
+// "MOY" y sin placa. El texto usa --laton-text (Latón 700 en claro, AA).
+export const PLATE_MIN_IQ_PX = 10
+export const wordmarkVariant = (size) => (size * 0.58 < PLATE_MIN_IQ_PX ? 'compact' : 'plate')
+
 export function Wordmark({ size = 15, style }) {
+  const compact = wordmarkVariant(size) === 'compact'
+  const moy = {
+    fontFamily: 'var(--display)', fontWeight: 600, textTransform: 'uppercase',
+    letterSpacing: '.08em', fontSize: size, color: 'var(--tx)',
+  }
   return (
     <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '.3em', lineHeight: 1, ...style }}>
-      <span style={{
-        fontFamily: 'var(--display)', fontWeight: 600, textTransform: 'uppercase',
-        letterSpacing: '.08em', fontSize: size, color: 'var(--tx)',
-      }}>MOY</span>
-      <span style={{
-        fontFamily: 'var(--mono)', fontWeight: 500, fontSize: size * 0.58,
-        color: 'var(--laton)', border: '1.5px solid var(--laton)', borderRadius: 'var(--r-plate)',
-        padding: '.12em .32em', lineHeight: 1,
-      }}>IQ</span>
+      <span style={moy}>MOY</span>
+      {compact ? (
+        <span style={{ ...moy, color: 'var(--laton-text)' }}>IQ</span>
+      ) : (
+        <span style={{
+          fontFamily: 'var(--mono)', fontWeight: 500, fontSize: size * 0.58,
+          color: 'var(--laton-text)', border: '1.5px solid var(--laton)', borderRadius: 'var(--r-plate)',
+          padding: '.12em .32em', lineHeight: 1,
+        }}>IQ</span>
+      )}
     </span>
   )
 }

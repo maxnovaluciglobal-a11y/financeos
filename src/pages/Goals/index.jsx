@@ -4,7 +4,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState, EmptyChoices, EmptyChoice } from '../../components/ui/index.jsx'
-import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap } from 'lucide-react'
+import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap, Pencil } from 'lucide-react'
 import { firstGoalPresets } from './firstGoal.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, prioEmoji, currentMonth, localMonthStr, prioLabel, currencySymbol } from '../../utils/index.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
@@ -62,7 +62,7 @@ export default function Goals({ setPage }) {
     for (const s of suggestions.filter(s => s.selected && !s.alreadyExists)) {
       const now = new Date()
       const targetDate = new Date(now.getFullYear(), now.getMonth() + (s.monthsToGoal || 12), 1)
-      await addGoal({ name:`${s.emoji} ${s.name}`, target:s.target, saved:0, targetDate:localMonthStr(targetDate), priority:s.goalPriority, color:s.color })
+      await addGoal({ name:s.name, target:s.target, saved:0, targetDate:localMonthStr(targetDate), priority:s.goalPriority, color:s.color })
     }
     setShowSuggest(false); setSuggestions([])
   }
@@ -174,7 +174,7 @@ export default function Goals({ setPage }) {
                         style={{marginTop:3,accentColor:'var(--grn)'}}/>
                       <div style={{minWidth:0}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4,flexWrap:'wrap',gap:4}}>
-                          <span style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{s.emoji} {s.name}</span>
+                          <span style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{s.name}</span>
                           {s.alreadyExists && <span style={{fontSize:10,padding:'1px 6px',borderRadius:4,background:'var(--sur2)',color:'var(--th)',fontFamily:'var(--mono)'}}>{t('goals.suggest.exists')}</span>}
                         </div>
                         <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:6,lineHeight:1.4}}>{s.description}</div>
@@ -277,7 +277,7 @@ export default function Goals({ setPage }) {
                     <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
                       <span style={{fontSize:13,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}>{(p*100).toFixed(0)}%</span>
                       <button onClick={()=>{setEditingId(g.id);setEditForm({name:g.name,target:g.target,targetDate:g.targetDate||'',priority:g.priority||'Media'})}}
-                        style={{background:'none',border:'none',color:'var(--th)',fontSize:12,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}} title={t('goals.card.editTitle')} aria-label={t('goals.card.editTitle')}>✏️</button>
+                        style={{background:'none',border:'none',color:'var(--th)',fontSize:12,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}} title={t('goals.card.editTitle')} aria-label={t('goals.card.editTitle')}><Pencil size={14} strokeWidth={1.7} aria-hidden="true" /></button>
                       <button onClick={()=>deleteWithUndo('goals', g, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}}>✕</button>
                     </div>
                   </div>
