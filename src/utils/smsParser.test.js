@@ -89,3 +89,23 @@ describe('toKeypadAmount', () => {
     expect(toKeypadAmount(NaN)).toBe('')
   })
 })
+
+describe('parseTransactionText · ejemplos de portugués (A11Y-17)', () => {
+  it('lee el ejemplo de compra en reales con "em"', () => {
+    const r = parseTransactionText('Compra aprovada R$ 59,90 em DROGASIL 05/10/2026')
+    expect(r.amount).toBe(59.9)
+    expect(r.merchant).toBe('DROGASIL')
+    expect(r.type).toBe('expense')
+    expect(r.confidence).toBe('high')
+  })
+
+  it('lee un Pix recibido como ingreso', () => {
+    const r = parseTransactionText('Você recebeu um Pix de R$ 2.000,00 em 01/10/2026')
+    expect(r.amount).toBe(2000)
+    expect(r.type).toBe('income')
+  })
+
+  it('no toma "em sua conta" como comercio', () => {
+    expect(parseTransactionText('Depósito de R$ 100,00 em sua conta').merchant).toBe('')
+  })
+})

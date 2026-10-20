@@ -6,7 +6,7 @@
 // Siempre es orientativo — el usuario revisa y confirma antes de guardar.
 
 // Palabras que indican un ABONO (ingreso) en vez de un cargo (egreso)
-const INCOME_HINTS = /\b(abono|dep[oó]sito|deposito|transferencia recibida|recibiste|te transfiri|pago recibido|ingreso)\b/i
+const INCOME_HINTS = /\b(abono|dep[oó]sito|deposito|transferencia recibida|recibiste|te transfiri|pago recibido|ingreso|recebeu|recebido)\b/i
 
 // Palabras que indican un CARGO (egreso) — ayuda a confirmar y a cortar el texto del comercio
 const EXPENSE_HINTS = /\b(compra|cargo|pago realizado|retiro|env[ií]o|pagaste|compra por|debito|d[eé]bito)\b/i
@@ -20,11 +20,11 @@ const AMOUNT_CODE_RE = /\b(?:COP|CLP|MXN|ARS|USD|PEN|BRL|UYU|EUR|VES)\s?([0-9][0
 // Fecha: dd-mm-yyyy, dd/mm/yyyy, dd-mm-yy (con o sin hora al final)
 const DATE_RE = /\b(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/
 
-// Comercio: texto después de "en <COMERCIO>" hasta el próximo delimitador común.
+// Comercio: texto después de "en <COMERCIO>" (o "em" en portugués) hasta el próximo delimitador común.
 // Excluye "en tu/mi/la/el/su cuenta..." (frases de transferencias, no comercios).
 // Incluye "/" en la clase para no romper el match cuando sigue una fecha dd/mm/yyyy
 // (la fecha se recorta después, en el post-proceso).
-const MERCHANT_RE = /\ben\s+(?!(?:tu|mi|la|el|su|cuenta)\b)([A-Za-zÀ-ÿ0-9&.\-\s/]{2,50}?)(?:,|\scon\s|\ssaldo|\sSdo\b|\saprob|\starjeta|\scta\b|\s(?:el|del)\s|\s\d|\.|\n|$)/i
+const MERCHANT_RE = /\be[nm]\s+(?!(?:tu|mi|la|el|su|cuenta|sua|seu|conta)\b)([A-Za-zÀ-ÿ0-9&.\-\s/]{2,50}?)(?:,|\scon\s|\ssaldo|\sSdo\b|\saprob|\starjeta|\scta\b|\s(?:el|del)\s|\s\d|\.|\n|$)/i
 
 // Recorta del comercio cualquier fecha/hora que haya quedado pegada al final
 function stripTrailingDateTime(s) {

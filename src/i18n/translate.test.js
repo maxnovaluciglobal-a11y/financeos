@@ -517,3 +517,17 @@ describe('paridad de proTrial. y pro.demo. (es/en/pt/de)', () => {
     for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
   })
 })
+
+describe('A11Y-17: tipografía por idioma', () => {
+  it('el alemán separa el % del número y usa comillas „…“', () => {
+    const bad = Object.entries(de).filter(([, v]) => /[\d}]%/.test(v) || /"/.test(v) || /€\{/.test(v))
+    expect(bad.map(([k]) => k)).toEqual([])
+  })
+
+  it('los ejemplos de mensajes del banco en portugués son de Brasil (R$ con decimales, sin comercios chilenos)', () => {
+    for (const k of ['qa.pastePh', 'mov.form.pastePh', 'income.paste.placeholder']) {
+      expect(pt[k]).toMatch(/R\$ \d{1,3}(\.\d{3})*,\d{2}/)
+      expect(pt[k]).not.toMatch(/AHUMADA|Jumbo/i)
+    }
+  })
+})
