@@ -609,12 +609,12 @@ export default function Advisor() {
       </Card>
 
       {/* Preview PDF + CTA */}
-      <div style={{border:'0.5px solid rgba(26,163,104,.2)',borderRadius:10,overflow:'hidden'}}>
+      <div style={{border:'0.5px solid var(--brd2)',borderRadius:10,overflow:'hidden'}}>
         {/* Preview mini del reporte */}
-        <div style={{background:'#fff',padding:'16px 20px',borderBottom:'0.5px solid rgba(0,0,0,.08)'}}>
+        <div style={{background:'var(--sur)',padding:'16px 20px',borderBottom:'0.5px solid var(--brd)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-            <div style={{fontSize:11,fontWeight:700,color:'#1a1a1a',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
-            <div style={{fontSize:9,color:'#888',fontFamily:'monospace'}}>MOY IQ Pro</div>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--tx)',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
+            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>MOY IQ Pro</div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             {[
@@ -622,8 +622,8 @@ export default function Advisor() {
               {l:t('adv.pdf.expense'),      v:fmtMoney(mExpense, sym), c:'var(--neg)'},
               {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'var(--pos)'},
             ].map((item,i) => (
-              <div key={i} style={{background:'#f8f9fa',borderRadius:6,padding:'8px 10px',minWidth:0,overflow:'hidden'}}>
-                <div style={{fontSize:8,color:'#888',marginBottom:2,textTransform:'uppercase',letterSpacing:.5}}>{item.l}</div>
+              <div key={i} style={{background:'var(--sur2)',borderRadius:6,padding:'8px 10px',minWidth:0,overflow:'hidden'}}>
+                <div style={{fontSize:11,color:'var(--th)',marginBottom:2,textTransform:'uppercase',letterSpacing:.5}}>{item.l}</div>
                 <div style={{fontSize: String(item.v).length>11?11:13,fontWeight:700,color:item.c,fontFamily:'monospace',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{item.v}</div>
               </div>
             ))}

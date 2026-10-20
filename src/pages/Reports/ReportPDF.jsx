@@ -2,43 +2,48 @@
 // PDF mensual de FinanceOS — @react-pdf/renderer (sin recharts, barras con View)
 
 import {
-  Document, Page, Text, View, StyleSheet, Font,
+  Document, Page, Text, View, StyleSheet,
 } from '@react-pdf/renderer'
+import { PDF_FONT as F, PDF_COLOR as P } from '../pdfTheme.js'
 import { fmtMoney, catName } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 
-const ACCENT  = '#356E57'  // --pos / verde-800 (positivo/ingreso), no la marca
-const BRAND   = '#CC9A52'  // --accent-dark (Latón sobre fondo Navy) — header del PDF es oscuro
-const RED     = '#A23E2E'  // --error
-const AMBER   = '#9C5419'  // --warning-800
-const DARK    = '#14213D'  // --navy
-const GRAY    = '#64748b'
-const LGRAY   = '#f1f5f9'
-const WHITE   = '#ffffff'
+// Colores y fuentes de la marca (pdfTheme.js, BRD-8).
+const ACCENT  = P.pos         // positivo/ingreso, no la marca
+const BRAND   = P.latonOnNavy // Latón sobre la cabecera Navy
+const RED     = P.neg
+const AMBER   = P.warn
+const DARK    = P.navy
+const GRAY    = P.muted
+const LGRAY   = P.card
+const WHITE   = P.page
 
 const s = StyleSheet.create({
-  page:    { fontFamily:'Helvetica', backgroundColor: WHITE, paddingHorizontal: 36, paddingVertical: 32, fontSize: 9, color: DARK },
+  page:    { fontFamily: F.body, backgroundColor: WHITE, paddingHorizontal: 36, paddingVertical: 32, fontSize: 9, color: DARK },
   // Header
-  header:  { backgroundColor: DARK, marginHorizontal: -36, marginTop: -32, paddingHorizontal: 36, paddingVertical: 20, marginBottom: 20 },
-  hTitle:  { fontSize: 20, fontFamily: 'Helvetica-Bold', color: BRAND, letterSpacing: 0.5, marginBottom: 3 },
-  hSub:    { fontSize: 9, color: '#94a3b8', fontFamily: 'Helvetica' },
+  header:  { backgroundColor: DARK, marginHorizontal: -36, marginTop: -32, paddingHorizontal: 36, paddingVertical: 20, marginBottom: 20, borderBottomWidth: 3, borderBottomColor: P.laton },
+  wordmark:{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
+  plate:   { backgroundColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 5 },
+  plateTx: { fontSize: 15, fontFamily: F.display, fontWeight: 600, color: DARK },
+  hTitle:  { fontSize: 20, fontFamily: F.display, fontWeight: 600, color: P.page, letterSpacing: 0.2, marginBottom: 3 },
+  hSub:    { fontSize: 9, color: BRAND, fontFamily: F.body },
   hRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  hMeta:   { fontSize: 8, color: '#64748b', textAlign: 'right' },
+  hMeta:   { fontSize: 8, color: P.navySub, textAlign: 'right' },
   // Section
   section: { marginBottom: 16 },
-  secTitle:{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: DARK, marginBottom: 8, paddingBottom: 4, borderBottom: `1px solid ${LGRAY}` },
+  secTitle:{ fontSize: 11, fontFamily: F.display, fontWeight: 600, color: DARK, marginBottom: 8, paddingBottom: 4, borderBottom: `1px solid ${P.line}` },
   // KPI grid
   kpiRow:  { flexDirection: 'row', gap: 8, marginBottom: 4 },
   kpiBox:  { flex: 1, backgroundColor: LGRAY, borderRadius: 4, padding: '8 10' },
   kpiLabel:{ fontSize: 7, color: GRAY, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  kpiVal:  { fontSize: 14, fontFamily: 'Helvetica-Bold' },
+  kpiVal:  { fontSize: 14, fontFamily: F.mono, fontWeight: 600 },
   kpiSub:  { fontSize: 7, color: GRAY, marginTop: 2 },
   // Bars
   barRow:  { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
   barLabel:{ width: 90, fontSize: 8, color: DARK },
   barTrack:{ flex: 1, height: 10, backgroundColor: LGRAY, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 10, borderRadius: 3 },
-  barAmt:  { width: 68, fontSize: 8, textAlign: 'right', fontFamily: 'Helvetica-Bold', color: DARK },
+  barAmt:  { width: 68, fontSize: 8, textAlign: 'right', fontFamily: F.mono, fontWeight: 600, color: DARK },
   // Trend table
   tRow:    { flexDirection: 'row', borderBottom: `0.5px solid ${LGRAY}`, paddingVertical: 4 },
   tHead:   { backgroundColor: LGRAY },
@@ -54,11 +59,11 @@ const s = StyleSheet.create({
   recText: { fontSize: 8, lineHeight: 1.5 },
   // Footer
   footer:  { position: 'absolute', bottom: 20, left: 36, right: 36 },
-  footTxt: { fontSize: 7, color: '#94a3b8', textAlign: 'center', lineHeight: 1.4 },
+  footTxt: { fontSize: 7, color: GRAY, textAlign: 'center', lineHeight: 1.4 },
   divider: { borderTop: `0.5px solid ${LGRAY}`, marginVertical: 10 },
   // Badge
-  badge:   { borderRadius: 10, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
-  badgeTxt:{ fontSize: 7, fontFamily: 'Helvetica-Bold' },
+  badge:   { borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
+  badgeTxt:{ fontSize: 7, fontFamily: F.body, fontWeight: 700 },
 })
 
 // Con los decimales de la moneda. Signo ASCII "-" a propósito: la Helvetica
@@ -70,8 +75,8 @@ function fmt(n, sym = '$') {
 function pct(n) { return `${((Number(n) || 0) * 100).toFixed(1)}%` }
 
 const CAT_COLORS = [
-  '#f5a623','#ff4d6a','#00b8d9','#a78bfa','#34d399',
-  '#fb923c','#60a5fa','#00d4aa','#818cf8','#4ade80',
+  P.navy, P.laton, P.pos, P.warn, P.info,
+  P.neg, '#4A5875', P.laton700, P.posMid, '#5F5236',
 ]
 
 export default function ReportPDF({ data }) {
@@ -111,7 +116,7 @@ export default function ReportPDF({ data }) {
     recs.push({ type: 'info', text: t('rpdf.rec.subs', { month: fmt(totalSubs, sym), year: fmt(totalSubs * 12, sym) }) })
   }
 
-  const recColors = { ok: { bg: '#EAF3EF', txt: '#356E57' }, warn: { bg: '#F7EDE0', txt: '#9C5419' }, danger: { bg: '#F5E6E3', txt: '#A23E2E' }, info: { bg: '#E9EEF2', txt: '#3E5A78' } }
+  const recColors = { ok: { bg: P.posBg, txt: P.pos }, warn: { bg: P.warnBg, txt: P.warn }, danger: { bg: P.negBg, txt: P.neg }, info: { bg: P.infoBg, txt: P.info } }
 
   return (
     <Document title={t('rpdf.docTitle', { month: monthLabel })} author="MOY IQ" creator="MOY IQ v1.5">
@@ -121,7 +126,10 @@ export default function ReportPDF({ data }) {
         <View style={s.header}>
           <View style={s.hRow}>
             <View>
-              <Text style={s.hTitle}>MOY IQ</Text>
+              <View style={s.wordmark}>
+                <Text style={[s.hTitle, { marginBottom: 0 }]}>MOY</Text>
+                <View style={s.plate}><Text style={s.plateTx}>IQ</Text></View>
+              </View>
               <Text style={s.hSub}>{t('rpdf.sub', { month: monthLabel })}</Text>
             </View>
             <View>
@@ -238,7 +246,7 @@ export default function ReportPDF({ data }) {
             {[
               { key: 'needs',   label: t('rpdf.rule.needsDebt'), actual: necesidad + totalDebt, ideal: 0.5, color: ACCENT },
               { key: 'wants',   label: t('rpdf.wants'),          actual: deseos,               ideal: 0.3, color: AMBER },
-              { key: 'savings', label: t('rpdf.rule.savings'),   actual: Math.max(0, balance), ideal: 0.2, color: '#60a5fa' },
+              { key: 'savings', label: t('rpdf.rule.savings'),   actual: Math.max(0, balance), ideal: 0.2, color: P.info },
             ].map(r => {
               const ap = totalIncome > 0 ? r.actual / totalIncome : 0
               const ok = r.key === 'savings' ? ap >= r.ideal : ap <= r.ideal
@@ -248,7 +256,7 @@ export default function ReportPDF({ data }) {
                   <View style={s.ruleTrack}>
                     <View style={[s.barFill, { width: `${Math.min(ap / r.ideal, 1) * 100}%`, backgroundColor: ok ? r.color : RED }]} />
                   </View>
-                  <Text style={[s.rulePct, { color: ok ? '#356E57' : RED }]}>
+                  <Text style={[s.rulePct, { color: ok ? ACCENT : RED }]}>
                     {pct(ap)} / {pct(r.ideal)} {ok ? '✓' : '⚠'}
                   </Text>
                 </View>

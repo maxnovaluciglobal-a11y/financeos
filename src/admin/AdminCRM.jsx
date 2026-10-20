@@ -41,20 +41,20 @@ function Row({ row, onSave, onSaveNext, onOpenDetail }) {
   const overdue = row.proxima_accion_fecha && row.proxima_accion_fecha <= localDateStr()
 
   return (
-    <tr style={{ borderBottom: '1px solid var(--bd, #e5e5e5)' }}>
+    <tr style={{ borderBottom: '1px solid var(--bd, var(--brd))' }}>
       <td
         onClick={() => onOpenDetail(row)}
         style={{ padding: '8px 10px', fontFamily: 'var(--mono)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline dotted' }}
         title="Ver detalle"
       >
         {row.email}
-        {row.nombre && <div style={{ fontFamily: 'var(--sans, sans-serif)', fontSize: 11, color: '#888', textDecoration: 'none' }}>{row.nombre}</div>}
+        {row.nombre && <div style={{ fontFamily: 'var(--sans, sans-serif)', fontSize: 11, color: 'var(--th)', textDecoration: 'none' }}>{row.nombre}</div>}
       </td>
       <td style={{ padding: '8px 10px' }}>{row.producto_origen}</td>
       <td style={{ padding: '8px 10px', fontSize: 12 }}>{fuenteLabel(row)}</td>
       <td style={{ padding: '8px 10px', fontSize: 12, whiteSpace: 'nowrap' }}>
         {PLAN_LABEL[row.plan] || '—'}
-        <div style={{ fontSize: 11, color: '#666' }} title="Cuenta +30 · login 7 días +20 · opt-in +15 · Pro +35">
+        <div style={{ fontSize: 11, color: 'var(--tm)' }} title="Cuenta +30 · login 7 días +20 · opt-in +15 · Pro +35">
           {leadScore(row)} pts · opt-in {row.optin_confirmado ? 'sí' : 'no'}
         </div>
       </td>
@@ -91,16 +91,16 @@ function Row({ row, onSave, onSaveNext, onOpenDetail }) {
           value={fecha}
           onChange={(e) => { setFecha(e.target.value); setNextDirty(true) }}
           aria-label={`Fecha de la próxima acción de ${row.email}`}
-          style={{ width: '100%', fontSize: 12, padding: '4px 6px', marginTop: 4, color: overdue ? '#b00' : undefined }}
+          style={{ width: '100%', fontSize: 12, padding: '4px 6px', marginTop: 4, color: overdue ? 'var(--neg)' : undefined }}
         />
       </td>
-      <td style={{ padding: '8px 10px', fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '8px 10px', fontSize: 11, color: 'var(--th)', whiteSpace: 'nowrap' }}>
         {fmtDate(row.creado_en)}
       </td>
-      <td style={{ padding: '8px 10px', fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '8px 10px', fontSize: 11, color: 'var(--th)', whiteSpace: 'nowrap' }}>
         {fmtDate(row.ultimo_contacto)}
       </td>
-      <td style={{ padding: '8px 10px', fontSize: 11, color: '#666', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '8px 10px', fontSize: 11, color: 'var(--tm)', whiteSpace: 'nowrap' }}>
         {fmtDate(row.ultimo_login)}
       </td>
       <td style={{ padding: '8px 10px' }}>
@@ -127,11 +127,11 @@ function exportRowsToCsv(rows) {
 }
 
 const ESTADO_COLOR = {
-  nuevo: '#94a3b8',
-  contactado: '#60a5fa',
-  nutriendo: '#f59e0b',
-  convertido: '#22c55e',
-  perdido: '#ef4444',
+  nuevo: 'var(--th)',
+  contactado: 'var(--info)',
+  nutriendo: 'var(--warn)',
+  convertido: 'var(--pos)',
+  perdido: 'var(--neg)',
 }
 
 // Barras horizontales apiladas: una por producto, cada segmento es un estado
@@ -152,14 +152,14 @@ function FunnelSummary({ funnel }) {
         const convertidos = estados.convertido || 0
         const tasaConversion = total > 0 ? ((convertidos / total) * 100).toFixed(1) : '0.0'
         return (
-          <div key={producto} style={{ border: '1px solid var(--bd, #e5e5e5)', borderRadius: 6, padding: '10px 14px' }}>
+          <div key={producto} style={{ border: '1px solid var(--bd, var(--brd))', borderRadius: 6, padding: '10px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
               <span style={{ fontWeight: 600, fontSize: 13 }}>{producto}</span>
-              <span style={{ fontSize: 11, color: '#888' }}>
+              <span style={{ fontSize: 11, color: 'var(--th)' }}>
                 {total} contactos · {tasaConversion}% conversión
               </span>
             </div>
-            <div style={{ display: 'flex', height: 18, borderRadius: 3, overflow: 'hidden', background: '#eee' }}>
+            <div style={{ display: 'flex', height: 18, borderRadius: 3, overflow: 'hidden', background: 'var(--brd)' }}>
               {total === 0
                 ? null
                 : ESTADOS.map((s) => {
@@ -176,7 +176,7 @@ function FunnelSummary({ funnel }) {
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
               {ESTADOS.map((s) => (
-                <span key={s} style={{ fontSize: 11, color: '#888', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span key={s} style={{ fontSize: 11, color: 'var(--th)', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 2, background: ESTADO_COLOR[s], display: 'inline-block' }} />
                   {s}: <strong style={{ color: 'inherit' }}>{estados[s] || 0}</strong>
                 </span>
@@ -235,7 +235,7 @@ function Activities({ contactId }) {
   }
 
   return (
-    <div style={{ borderTop: '1px solid var(--bd, #e5e5e5)', paddingTop: 14, marginBottom: 20 }}>
+    <div style={{ borderTop: '1px solid var(--bd, var(--brd))', paddingTop: 14, marginBottom: 20 }}>
       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Historial</div>
       <form onSubmit={add} style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
         <select value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de actividad" style={{ fontSize: 12, padding: '4px 6px' }}>
@@ -244,16 +244,16 @@ function Activities({ contactId }) {
         <textarea value={nota} onChange={(e) => setNota(e.target.value)} maxLength={2000} rows={3} aria-label="Detalle de la actividad" placeholder="Qué pasó…" style={{ fontSize: 12, padding: '4px 6px' }} />
         <button type="submit" disabled={!nota.trim()} style={{ fontSize: 12, padding: '4px 10px', alignSelf: 'flex-start' }}>Agregar</button>
       </form>
-      {error && <div style={{ color: '#c00', fontSize: 12, marginBottom: 6 }}>Error: {error}</div>}
+      {error && <div style={{ color: 'var(--neg)', fontSize: 12, marginBottom: 6 }}>Error: {error}</div>}
       {items === null ? (
-        <div style={{ fontSize: 12, color: '#666' }}>Cargando...</div>
+        <div style={{ fontSize: 12, color: 'var(--tm)' }}>Cargando...</div>
       ) : items.length === 0 ? (
-        <div style={{ fontSize: 12, color: '#666' }}>Sin actividad registrada.</div>
+        <div style={{ fontSize: 12, color: 'var(--tm)' }}>Sin actividad registrada.</div>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map((a) => (
             <li key={a.id} style={{ fontSize: 12 }}>
-              <div style={{ color: '#666' }}>{new Date(a.creado_en).toLocaleString('es-CL')} · {a.tipo}</div>
+              <div style={{ color: 'var(--tm)' }}>{new Date(a.creado_en).toLocaleString('es-CL')} · {a.tipo}</div>
               <div style={{ whiteSpace: 'pre-wrap' }}>{a.nota}</div>
             </li>
           ))}
@@ -289,62 +289,62 @@ function LeadDetail({ row, onClose }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ width: 380, maxWidth: '90vw', height: '100%', background: 'var(--bg, #fff)', padding: 20, overflowY: 'auto', boxShadow: '-2px 0 12px rgba(0,0,0,0.15)' }}
+        style={{ width: 380, maxWidth: '90vw', height: '100%', background: 'var(--bg)', padding: 20, overflowY: 'auto', boxShadow: '-2px 0 12px rgba(0,0,0,0.15)' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ fontSize: 15, fontWeight: 600, wordBreak: 'break-all' }}>{row.email}</h2>
           <button onClick={onClose} style={{ fontSize: 12 }}>Cerrar</button>
         </div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Producto</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Producto</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.producto_origen}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Fuente</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Fuente</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{fuenteLabel(row)}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Cuenta</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Cuenta</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>
           {row.cuenta_creada_en ? `creada el ${fmtDate(row.cuenta_creada_en)} · último login ${fmtDate(row.ultimo_login)}` : 'sin cuenta'}
           {row.lang ? ` · idioma ${row.lang}` : ''}
         </div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Opt-in de marketing</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Opt-in de marketing</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.optin_confirmado ? 'confirmado' : 'no confirmado'}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Próxima acción</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Próxima acción</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.proxima_accion ? `${row.proxima_accion}${row.proxima_accion_fecha ? ` · ${fmtDate(row.proxima_accion_fecha + 'T12:00:00')}` : ''}` : '—'}</div>
 
         {row.nombre && (
           <>
-            <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Nombre</div>
+            <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Nombre</div>
             <div style={{ fontSize: 13, marginBottom: 12 }}>{row.nombre}</div>
           </>
         )}
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Plan</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Plan</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{PLAN_LABEL[row.plan] || 'Sin cuenta'}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Score</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Score</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.score ?? '—'}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Último contacto</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Último contacto</div>
         <div style={{ fontSize: 13, marginBottom: 12 }}>{fmtDate(row.ultimo_contacto)}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Estado</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Estado</div>
         <div style={{ fontSize: 13, marginBottom: 16 }}>{row.estado}</div>
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Notas</div>
+        <div style={{ fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>Notas</div>
         <div style={{ fontSize: 13, marginBottom: 20, whiteSpace: 'pre-wrap' }}>{row.notas || '—'}</div>
 
         <Activities contactId={row.id} />
 
-        <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, borderTop: '1px solid var(--bd, #e5e5e5)', paddingTop: 14 }}>
+        <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, borderTop: '1px solid var(--bd, var(--brd))', paddingTop: 14 }}>
           Secuencia de nurture
         </div>
         {nurture === undefined ? (
-          <div style={{ fontSize: 12, color: '#888' }}>Cargando...</div>
+          <div style={{ fontSize: 12, color: 'var(--th)' }}>Cargando...</div>
         ) : nurture === null ? (
-          <div style={{ fontSize: 12, color: '#888' }}>
+          <div style={{ fontSize: 12, color: 'var(--th)' }}>
             {table ? `Sin registro en ${table}.` : row.fuente === 'stripe' ? 'Llegó directo por Stripe, sin lead previo.' : 'Creó la cuenta sin pasar por un formulario.'}
           </div>
         ) : (
@@ -353,21 +353,21 @@ function LeadDetail({ row, onClose }) {
               const ts = nurture[`email${n}_sent_at`]
               return (
                 <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: ts ? '#22c55e' : '#ddd', display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: ts ? 'var(--pos)' : 'var(--brd2)', display: 'inline-block', flexShrink: 0 }} />
                   <span>Email {n}: {fmt(ts) || 'no enviado todavía'}</span>
                 </div>
               )
             })}
             {!['email1_sent_at', 'email2_sent_at'].some((k) => k in nurture) && (
-              <div style={{ fontSize: 12, color: '#888' }}>Esta puerta no tiene secuencia de correos.</div>
+              <div style={{ fontSize: 12, color: 'var(--th)' }}>Esta puerta no tiene secuencia de correos.</div>
             )}
-            <div style={{ fontSize: 12, marginTop: 6, color: nurture.consent_marketing ? 'inherit' : '#c00' }}>
+            <div style={{ fontSize: 12, marginTop: 6, color: nurture.consent_marketing ? 'inherit' : 'var(--neg)' }}>
               Marketing: {nurture.consent_marketing === true
                 ? (nurture.consent_confirmed_at ? `confirmado el ${fmt(nurture.consent_confirmed_at)}` : 'aceptado, falta confirmar el correo')
                 : nurture.consent_marketing === false ? 'no aceptado — solo correos de servicio' : 'sin dato'}
             </div>
             {nurture.unsubscribed_at && (
-              <div style={{ fontSize: 12, color: '#c00' }}>Se dio de baja el {fmt(nurture.unsubscribed_at)}.</div>
+              <div style={{ fontSize: 12, color: 'var(--neg)' }}>Se dio de baja el {fmt(nurture.unsubscribed_at)}.</div>
             )}
           </div>
         )}
@@ -410,15 +410,15 @@ function Cancellations() {
   return (
     <div style={{ marginTop: 32 }}>
       <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
-        Solicitudes de cancelación {pending > 0 && <span style={{ color: '#c00' }}>· {pending} pendiente{pending > 1 ? 's' : ''}</span>}
+        Solicitudes de cancelación {pending > 0 && <span style={{ color: 'var(--neg)' }}>· {pending} pendiente{pending > 1 ? 's' : ''}</span>}
       </h2>
-      {error && <div style={{ color: '#c00', fontSize: 13, marginBottom: 8 }}>Error: {error}</div>}
+      {error && <div style={{ color: 'var(--neg)', fontSize: 13, marginBottom: 8 }}>Error: {error}</div>}
       {items.length === 0 ? (
-        <div style={{ fontSize: 13, color: '#888' }}>No hay solicitudes.</div>
+        <div style={{ fontSize: 13, color: 'var(--th)' }}>No hay solicitudes.</div>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--bd, #ccc)', textAlign: 'left' }}>
+            <tr style={{ borderBottom: '2px solid var(--bd, var(--brd2))', textAlign: 'left' }}>
               <th style={{ padding: '6px 8px' }}>Fecha</th>
               <th style={{ padding: '6px 8px' }}>Persona</th>
               <th style={{ padding: '6px 8px' }}>Plan</th>
@@ -429,9 +429,9 @@ function Cancellations() {
           </thead>
           <tbody>
             {items.map((c) => (
-              <tr key={c.id} style={{ borderBottom: '1px solid var(--bd, #e5e5e5)' }}>
+              <tr key={c.id} style={{ borderBottom: '1px solid var(--bd, var(--brd))' }}>
                 <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>{fmtDate(c.created_at)}</td>
-                <td style={{ padding: '6px 8px' }}>{c.name}<div style={{ fontFamily: 'var(--mono)', color: '#888' }}>{c.email}</div></td>
+                <td style={{ padding: '6px 8px' }}>{c.name}<div style={{ fontFamily: 'var(--mono)', color: 'var(--th)' }}>{c.email}</div></td>
                 <td style={{ padding: '6px 8px' }}>{c.plan || '—'}</td>
                 <td style={{ padding: '6px 8px' }}>{c.kind}{c.requested_date ? ` · ${fmtDate(c.requested_date)}` : ''}</td>
                 <td style={{ padding: '6px 8px', maxWidth: 260 }}>{c.reason || '—'}</td>
@@ -506,7 +506,7 @@ function CRMPanel({ session, onSignOut }) {
     <div style={{ padding: 24, fontFamily: 'var(--sans, sans-serif)', maxWidth: 1280, margin: '0 auto', overflowX: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1 style={{ fontSize: 18, fontWeight: 600 }}>CRM — MOY IQ + Invest</h1>
-        <div style={{ fontSize: 12, color: '#888' }}>
+        <div style={{ fontSize: 12, color: 'var(--th)' }}>
           {session.user.email} · <button onClick={onSignOut} style={{ fontSize: 12 }}>Salir</button>
         </div>
       </div>
@@ -558,16 +558,16 @@ function CRMPanel({ session, onSignOut }) {
         </button>
       </div>
 
-      {error && <div style={{ color: '#c00', fontSize: 13, marginBottom: 12 }}>Error: {error}</div>}
+      {error && <div style={{ color: 'var(--neg)', fontSize: 13, marginBottom: 12 }}>Error: {error}</div>}
 
       {rows === null ? (
-        <div style={{ fontSize: 13, color: '#888' }}>Cargando...</div>
+        <div style={{ fontSize: 13, color: 'var(--th)' }}>Cargando...</div>
       ) : visibleRows.length === 0 ? (
-        <div style={{ fontSize: 13, color: '#888' }}>{vistaHoy ? 'No hay acciones para hoy.' : 'Sin contactos con estos filtros.'}</div>
+        <div style={{ fontSize: 13, color: 'var(--th)' }}>{vistaHoy ? 'No hay acciones para hoy.' : 'Sin contactos con estos filtros.'}</div>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--bd, #ccc)', textAlign: 'left' }}>
+            <tr style={{ borderBottom: '2px solid var(--bd, var(--brd2))', textAlign: 'left' }}>
               <th style={{ padding: '8px 10px' }}>Email</th>
               <th style={{ padding: '8px 10px' }}>Producto</th>
               <th style={{ padding: '8px 10px' }}>Fuente</th>

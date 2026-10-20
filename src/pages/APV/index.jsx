@@ -296,9 +296,9 @@ export default function APVPage() {
                     <div style={{fontSize:16,fontWeight:700,color:'var(--tx)',fontFamily:'var(--mono)'}}>{apvResult.projection5years>=1000000?'$'+(apvResult.projection5years/1000000).toFixed(1)+'M':money(apvResult.projection5years)}</div>
                     <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginTop:2}}>{t('apv.projection.ifStartIn5')}</div>
                   </div>
-                  <div style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px',borderBottom:'2px solid #e84142'}}>
+                  <div style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px',borderBottom:'2px solid var(--neg)'}}>
                     <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('apv.projection.costOfWaiting')}</div>
-                    <div style={{fontSize:16,fontWeight:700,color:'#e84142',fontFamily:'var(--mono)'}}>-{apvResult.difference>=1000000?'$'+(apvResult.difference/1000000).toFixed(1)+'M':money(apvResult.difference)}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:'var(--neg)',fontFamily:'var(--mono)'}}>-{apvResult.difference>=1000000?'$'+(apvResult.difference/1000000).toFixed(1)+'M':money(apvResult.difference)}</div>
                     <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginTop:2}}>{t('apv.projection.lessAtRetirement')}</div>
                   </div>
                 </div>
@@ -408,7 +408,7 @@ export default function APVPage() {
                   </div>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'12px'}}>
                     <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('apv.gap.ofLegalCap')}</div>
-                    <div style={{fontSize:18,fontWeight:700,fontFamily:'var(--mono)',color:gapResult.dentroDelTope?'var(--grn)':'#e84142'}}>{gapResult.porcentajeDelTope}%</div>
+                    <div style={{fontSize:18,fontWeight:700,fontFamily:'var(--mono)',color:gapResult.dentroDelTope?'var(--grn)':'var(--neg)'}}>{gapResult.porcentajeDelTope}%</div>
                     <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginTop:2}}>{gapResult.dentroDelTope?t('apv.gap.withinCap'):t('apv.gap.exceedsCap')}</div>
                   </div>
                 </div>

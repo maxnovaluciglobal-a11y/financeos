@@ -126,7 +126,7 @@ function DebtPayoffSimulator({ debts, sym }) {
         </div>
         <div style={{padding:'12px 14px',borderRadius:8,background:'var(--sur)',border:'.5px solid var(--brd)'}}>
           <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{t('debts.sim.totalInterest')}</div>
-          <div style={{fontSize:18,fontWeight:700,color:'var(--red,#e53e3e)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(withExtra.totalInterest,sym)}</Money></div>
+          <div style={{fontSize:18,fontWeight:700,color:'var(--red)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(withExtra.totalInterest,sym)}</Money></div>
           {interestSaved > 0 && <div style={{fontSize:10,color:'var(--grn)',fontFamily:'var(--mono)',marginTop:3}}>{t('debts.sim.saved', { v: fmtMoney(interestSaved,sym) })}</div>}
         </div>
         {(Number(extra)||0) > 0 && monthsSaved > 0 && (

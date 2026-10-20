@@ -191,7 +191,7 @@ export default function Budgets() {
                 <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto,sym)}</Money></span>
               </div>
             ) : (
-              <div style={{fontSize:10,color:'#e84142',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'rgba(232,65,66,.06)',borderRadius:6}}>
+              <div style={{fontSize:10,color:'var(--neg)',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'var(--neg-bg)',borderRadius:6}}>
                 <InlineIcon kind="alert" size={13} />{t('budgets.model.noIncome', { month: monthLabel(activeMonth) })}
               </div>
             )}
@@ -261,7 +261,7 @@ export default function Budgets() {
             const r = 60, cx = 80, cy = 80
             const circ = 2*Math.PI*r
             const dash = Math.min(pct,1)*circ
-            const strokeColor = pct >= 1 ? '#e84142' : pct >= 0.8 ? 'var(--amb)' : 'var(--grn)'
+            const strokeColor = pct >= 1 ? 'var(--neg)' : pct >= 0.8 ? 'var(--amb)' : 'var(--grn)'
             return (
               <div>
                 <div style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>

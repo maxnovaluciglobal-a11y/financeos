@@ -71,10 +71,10 @@ export default class ErrorBoundary extends Component {
       <div style={wrap}>
         <div style={card}>
           <div style={{ fontSize: 34, marginBottom: 10 }}>🔧</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', marginBottom: 8 }}>
+          <div style={{ fontSize: 17, fontWeight: 700, color: '#14213D', marginBottom: 8 }}>
             {tr('errorBoundary.title')}
           </div>
-          <p style={{ fontSize: 13, color: '#6b6a63', lineHeight: 1.6, marginBottom: 4 }}>
+          <p style={{ fontSize: 13, color: '#4A4739', lineHeight: 1.6, marginBottom: 4 }}>
             {before}<strong>{tr('errorBoundary.safe')}</strong>{after}
           </p>
           <button style={btnP} onClick={this.handleReload}>{tr('errorBoundary.reload')}</button>

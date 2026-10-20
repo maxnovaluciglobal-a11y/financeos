@@ -164,7 +164,7 @@ export default function CashFlow({ setPage }) {
           </div>
           {setPage && (
             <button onClick={() => setPage('movements')}
-              style={{ background:'var(--accent)', color:'#0f1923', border:'none', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:700, fontFamily:'var(--mono)', cursor:'pointer' }}>
+              style={{ background:'var(--accent)', color:'var(--bg)', border:'none', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:700, fontFamily:'var(--mono)', cursor:'pointer' }}>
               {t('cf.empty.btn')}
             </button>
           )}

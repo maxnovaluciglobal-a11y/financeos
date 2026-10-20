@@ -100,19 +100,19 @@ export default function Income({ setPage }) {
 
           {setPage && (
             <button type="button" onClick={() => setPage('import')}
-              style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent, #00b8d9)', cursor:'pointer', textAlign:'left', display:'block' }}>
+              style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'block' }}>
               <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
             </button>
           )}
           <div style={{ marginBottom:12 }}>
             {!showPaste ? (
               <button type="button" onClick={() => { setShowPaste(true); setPasteMsg(null) }}
-                style={{ background:'var(--sur2,#f4f4f0)', border:'.5px dashed var(--brd2)', borderRadius:6,
+                style={{ background:'var(--sur2)', border:'.5px dashed var(--brd2)', borderRadius:6,
                   padding:'7px 12px', fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
                 {t('income.paste.btn')}
               </button>
             ) : (
-              <div style={{ background:'var(--sur2,#f4f4f0)', border:'.5px solid var(--brd2)', borderRadius:8, padding:10 }}>
+              <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:10 }}>
                 <textarea value={pasteText} onChange={e => setPasteText(e.target.value)} rows={3}
                   placeholder={t('income.paste.placeholder')}
                   style={{ width:'100%', boxSizing:'border-box', padding:'7px 9px', fontSize:12, borderRadius:6, border:'.5px solid var(--brd2)' }} />
@@ -208,7 +208,7 @@ export default function Income({ setPage }) {
                   </div>
                 ) : (
                   <div key={r.id}>
-                    <TxRow dot={CAT_COLORS[r.category]||'#888'} name={`${r.inv?'💼 ':''}${r.source}`}
+                    <TxRow dot={CAT_COLORS[r.category]||'var(--th)'} name={`${r.inv?'💼 ':''}${r.source}`}
                       meta={`${catLabel(r.category, lang)} · ${r.date.slice(5).replace('-','/')}${r.recurrence!=='Único'?' · '+recurrenceLabel(r.recurrence, lang):''}${r.inv?' · '+t('income.row.investment'):''}`}
                       amount={fmtMoney(r.amount,sym)} isIncome
                       onDelete={()=>deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo'))}

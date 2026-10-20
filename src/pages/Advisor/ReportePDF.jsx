@@ -3,29 +3,30 @@
 // Usa @react-pdf/renderer para generar PDF real con texto seleccionable
 // AVISO: Contenido informativo. No constituye asesoría financiera certificada.
 
-import { Document, Page, Text, View, StyleSheet, Font, pdf } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer'
+import { PDF_FONT as F, PDF_COLOR as P } from '../pdfTheme.js'
 import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
 
-// ── COLORES ──────────────────────────────────────────────────────────────────
+// ── COLORES (marca: pdfTheme.js, BRD-8) ────────────────────────────────────────
 const C = {
-  ink:     '#0f0e0c',
-  ink2:    '#3a3828',
-  ink3:    '#7a7868',
-  ink4:    '#b0ae9e',
-  paper:   '#faf9f5',
-  card:    '#f5f4f0',
-  grn:     '#356E57',   // --pos / verde-800
-  grn2:    '#5FA98C',   // --verde
-  grn3:    '#74C2A3',   // --verde-dark
-  grnL:    '#E7F0EA',
-  amb:     '#9C5419',   // --warning-800
-  ambL:    '#F3E4CE',
-  red:     '#A23E2E',   // --error
-  redL:    '#F5E6E3',
-  brd:     '#e8e4d8',
-  white:   '#ffffff',
+  ink:     P.navy,
+  ink2:    P.text,
+  ink3:    P.muted,
+  ink4:    P.faint,
+  paper:   P.page,
+  card:    P.card,
+  grn:     P.pos,
+  grn2:    P.posMid,
+  grn3:    P.posMid,
+  grnL:    P.posBg,
+  amb:     P.warn,
+  ambL:    P.warnBg,
+  red:     P.neg,
+  redL:    P.negBg,
+  brd:     P.line,
+  white:   P.white,
 }
 
 // ── ESTILOS ───────────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ const s = StyleSheet.create({
     backgroundColor: C.paper,
     paddingTop: 48, paddingBottom: 52,
     paddingLeft: 44, paddingRight: 44,
-    fontFamily: 'Helvetica',
+    fontFamily: F.body,
     fontSize: 9,
     color: C.ink2,
     lineHeight: 1.5,
@@ -43,14 +44,17 @@ const s = StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingBottom: 14, borderBottomWidth: 1.5, borderBottomColor: C.grn,
+    paddingBottom: 14, borderBottomWidth: 2, borderBottomColor: P.laton,
     marginBottom: 20,
   },
   headerLeft: {},
-  brandName: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: C.grn, letterSpacing: -0.5, marginBottom: 2 },
+  brandName: { fontSize: 18, fontFamily: F.display, fontWeight: 600, color: P.navy, letterSpacing: -0.2 },
+  wordmark:  { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  plate:     { backgroundColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 4 },
+  plateTx:   { fontSize: 13, fontFamily: F.display, fontWeight: 600, color: P.navy },
   brandSub:  { fontSize: 8, color: C.ink3, letterSpacing: 0.5 },
   headerRight: { alignItems: 'flex-end' },
-  reportTitle: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: C.ink, marginBottom: 3 },
+  reportTitle: { fontSize: 13, fontFamily: F.display, fontWeight: 600, color: C.ink, marginBottom: 3 },
   reportMeta:  { fontSize: 8, color: C.ink3, marginBottom: 1 },
 
   // Score banner
@@ -64,15 +68,15 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 3,
   },
-  scoreNum:   { fontSize: 18, fontFamily: 'Helvetica-Bold', lineHeight: 1.1 },
+  scoreNum:   { fontSize: 18, fontFamily: F.body, fontWeight: 700, lineHeight: 1.1 },
   scoreDen:   { fontSize: 7, color: C.ink4 },
-  scoreLabel: { fontSize: 13, fontFamily: 'Helvetica-Bold', marginBottom: 3 },
+  scoreLabel: { fontSize: 13, fontFamily: F.body, fontWeight: 700, marginBottom: 3 },
   scoreSub:   { fontSize: 8, color: C.ink3 },
 
   // Secciones
   section: { marginBottom: 16 },
   sectionTitle: {
-    fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.grn,
+    fontSize: 10, fontFamily: F.display, fontWeight: 600, color: P.navy,
     textTransform: 'uppercase', letterSpacing: 0.8,
     borderBottomWidth: 0.5, borderBottomColor: C.brd,
     paddingBottom: 5, marginBottom: 8,
@@ -86,7 +90,7 @@ const s = StyleSheet.create({
     borderWidth: 0.5, borderColor: C.brd,
   },
   kpiLabel: { fontSize: 7, color: C.ink3, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  kpiValue: { fontSize: 13, fontFamily: 'Helvetica-Bold', letterSpacing: -0.3 },
+  kpiValue: { fontSize: 13, fontFamily: F.mono, fontWeight: 600, letterSpacing: -0.3 },
   kpiSub:   { fontSize: 7, color: C.ink3, marginTop: 2 },
 
   // Semáforo
@@ -95,9 +99,9 @@ const s = StyleSheet.create({
     padding: '7 10', borderRadius: 6, marginBottom: 4,
   },
   signalDot:   { width: 8, height: 8, borderRadius: 4 },
-  signalLabel: { fontSize: 9, fontFamily: 'Helvetica-Bold', flex: 1 },
+  signalLabel: { fontSize: 9, fontFamily: F.body, fontWeight: 700, flex: 1 },
   signalNote:  { fontSize: 8, color: C.ink3, flex: 2 },
-  signalBadge: { fontSize: 7, fontFamily: 'Helvetica-Bold', padding: '2 7', borderRadius: 10 },
+  signalBadge: { fontSize: 7, fontFamily: F.body, fontWeight: 700, padding: '2 7', borderRadius: 3 },
 
   // Alertas
   alertBox: {
@@ -113,21 +117,21 @@ const s = StyleSheet.create({
   tableHead: { flexDirection: 'row', backgroundColor: C.card, borderBottomWidth: 0.5, borderBottomColor: C.brd },
   tableRow:  { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: C.brd },
   tableRowLast: { flexDirection: 'row' },
-  thCell:    { fontSize: 7, fontFamily: 'Helvetica-Bold', color: C.ink3, padding: '6 8', textTransform: 'uppercase', letterSpacing: 0.3 },
+  thCell:    { fontSize: 7, fontFamily: F.body, fontWeight: 700, color: C.ink3, padding: '6 8', textTransform: 'uppercase', letterSpacing: 0.3 },
   tdCell:    { fontSize: 8.5, color: C.ink2, padding: '6 8' },
 
   // Notas del asesor
   notesBox: {
-    backgroundColor: C.grnL, borderRadius: 8, padding: '12 14',
-    borderWidth: 0.5, borderColor: '#C7DBD0',
+    backgroundColor: P.papel, borderRadius: 8, padding: '12 14',
+    borderLeftWidth: 2.5, borderLeftColor: P.laton,
   },
-  notesLabel: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.grn2, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
-  notesText:  { fontSize: 9, color: C.grn, lineHeight: 1.6 },
+  notesLabel: { fontSize: 8, fontFamily: F.body, fontWeight: 700, color: P.laton700, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
+  notesText:  { fontSize: 9, color: C.ink2, lineHeight: 1.6 },
 
   // Próximos pasos
   stepRow:  { flexDirection: 'row', gap: 8, marginBottom: 6, alignItems: 'flex-start' },
-  stepNum:  { width: 18, height: 18, borderRadius: 9, backgroundColor: C.grn, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  stepNumTx:{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.white },
+  stepNum:  { width: 18, height: 18, borderRadius: 9, backgroundColor: P.navy, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  stepNumTx:{ fontSize: 8, fontFamily: F.body, fontWeight: 700, color: C.white },
   stepText: { fontSize: 9, color: C.ink2, lineHeight: 1.5, flex: 1, paddingTop: 2 },
 
   // Progress bar
@@ -137,7 +141,7 @@ const s = StyleSheet.create({
   // Meta row
   goalRow: { marginBottom: 8 },
   goalHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
-  goalName: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.ink },
+  goalName: { fontSize: 9, fontFamily: F.body, fontWeight: 700, color: C.ink },
   goalAmt:  { fontSize: 8, color: C.ink3 },
   goalSub:  { fontSize: 7.5, color: C.ink4 },
 
@@ -163,7 +167,20 @@ const s = StyleSheet.create({
 })
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-const STATUS_COLORS = { green: C.grn3, yellow: '#9C5419', red: C.red }
+// Wordmark con la placa "IQ" en Latón cuando el reporte es de MOY IQ; el
+// nombre del asesor (marca blanca) va como texto.
+function BrandMark({ name, size }) {
+  const fs = size ? { fontSize: size } : null
+  if (name !== 'MOY IQ') return <Text style={[s.brandName, fs]}>{name}</Text>
+  return (
+    <View style={s.wordmark}>
+      <Text style={[s.brandName, fs]}>MOY</Text>
+      <View style={s.plate}><Text style={[s.plateTx, size ? { fontSize: Math.round(size * 0.75) } : null]}>IQ</Text></View>
+    </View>
+  )
+}
+
+const STATUS_COLORS = { green: C.grn3, yellow: C.amb, red: C.red }
 const STATUS_BG     = { green: C.grnL, yellow: C.ambL,    red: C.redL }
 
 function today() {
@@ -217,7 +234,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Header */}
         <View style={s.header}>
           <View style={s.headerLeft}>
-            <Text style={s.brandName}>{brandName}</Text>
+            <BrandMark name={brandName} />
             <Text style={s.brandSub}>{t('apdf.brandSub')}</Text>
           </View>
           <View style={s.headerRight}>
@@ -250,7 +267,7 @@ export function ReporteFinancieroPDF({ data }) {
             )}
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ fontSize: 7, color: C.ink4, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('apdf.scoreTitle')}</Text>
+            <Text style={{ fontSize: 7, color: C.ink4, fontFamily: F.body, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('apdf.scoreTitle')}</Text>
             <Text style={{ fontSize: 7, color: C.ink4, marginTop: 2 }}>{t('apdf.scoreBasis', { n: signals.length })}</Text>
           </View>
         </View>
@@ -273,12 +290,12 @@ export function ReporteFinancieroPDF({ data }) {
             </View>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('rpdf.savingRate')}</Text>
-              <Text style={[s.kpiValue, { color: savingRate >= 0.2 ? C.grn : savingRate >= 0.1 ? '#9C5419' : C.red }]}>{fmtPct(savingRate)}</Text>
+              <Text style={[s.kpiValue, { color: savingRate >= 0.2 ? C.grn : savingRate >= 0.1 ? C.amb : C.red }]}>{fmtPct(savingRate)}</Text>
               <Text style={s.kpiSub}>{t('apdf.goalPlus')}</Text>
             </View>
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('apdf.totalDebt')}</Text>
-              <Text style={[s.kpiValue, { color: totalDebt > 0 ? '#9C5419' : C.grn }]}>{fmtMoney(totalDebt, sym)}</Text>
+              <Text style={[s.kpiValue, { color: totalDebt > 0 ? C.amb : C.grn }]}>{fmtMoney(totalDebt, sym)}</Text>
               {totalDebt > 0 && <Text style={s.kpiSub}>{t('apdf.minPerMonth', { amount: fmtMoney(totalMinPayments, sym) })}</Text>}
             </View>
             <View style={s.kpiBox}>
@@ -321,8 +338,8 @@ export function ReporteFinancieroPDF({ data }) {
             {alerts.slice(0, 5).map((a, i) => {
               const alertColors = {
                 danger: { bg: C.redL, border: C.red, icon: '⚠' },
-                warn:   { bg: C.ambL, border: '#9C5419', icon: '→' },
-                info:   { bg: '#E9EEF2', border: '#5B7A99', icon: 'ℹ' },
+                warn:   { bg: C.ambL, border: C.amb, icon: '→' },
+                info:   { bg: P.infoBg, border: P.info, icon: 'ℹ' },
               }
               const ac = alertColors[a.type] || alertColors.info
               return (
@@ -350,9 +367,9 @@ export function ReporteFinancieroPDF({ data }) {
 
         {/* Header mínimo */}
         <View style={[s.header, { borderBottomWidth: 0.5, borderBottomColor: C.brd, marginBottom: 16, paddingBottom: 10 }]}>
-          <Text style={[s.brandName, { fontSize: 13 }]}>{brandName}</Text>
+          <BrandMark name={brandName} size={13} />
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[s.reportMeta, { fontFamily: 'Helvetica-Bold', color: C.ink }]}>
+            <Text style={[s.reportMeta, { fontFamily: F.body, fontWeight: 700, color: C.ink }]}>
               {client} · {monthLabel(activeMonth)}
             </Text>
             <Text style={s.reportMeta}>{t('apdf.page2Sub')}</Text>
@@ -376,8 +393,8 @@ export function ReporteFinancieroPDF({ data }) {
                 const isLast = i === debts.length - 1
                 return (
                   <View key={d.id} style={isLast ? s.tableRowLast : s.tableRow}>
-                    <Text style={[s.tdCell, { flex: 3, fontFamily: 'Helvetica-Bold', color: C.ink }]}>{d.creditor}</Text>
-                    <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: '#9C5419', fontFamily: 'Helvetica-Bold' }]}>{fmtMoney(d.balance, sym)}</Text>
+                    <Text style={[s.tdCell, { flex: 3, fontFamily: F.body, fontWeight: 700, color: C.ink }]}>{d.creditor}</Text>
+                    <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: C.amb, fontFamily: F.body, fontWeight: 700 }]}>{fmtMoney(d.balance, sym)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{t('rpdf.perMonth', { amount: fmtMoney(d.minPayment || 0, sym) })}</Text>
                     <Text style={[s.tdCell, { flex: 1, textAlign: 'right', color: d.rate > 15 ? C.red : C.ink2 }]}>{d.rate}%</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: C.grn2 }]}>{fmtPct(pct)}</Text>
@@ -426,7 +443,7 @@ export function ReporteFinancieroPDF({ data }) {
                 const isLast = i === arr.length - 1
                 return (
                   <View key={cat} style={isLast ? s.tableRowLast : s.tableRow}>
-                    <Text style={[s.tdCell, { flex: 3, fontFamily: 'Helvetica-Bold' }]}>{catName(cat, lang)}</Text>
+                    <Text style={[s.tdCell, { flex: 3, fontFamily: F.body, fontWeight: 700 }]}>{catName(cat, lang)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right' }]}>{fmtMoney(amt, sym)}</Text>
                     <Text style={[s.tdCell, { flex: 2, textAlign: 'right', color: C.ink3 }]}>
                       {mExpense > 0 ? fmtPct(amt / mExpense) : '—'}
@@ -479,7 +496,7 @@ export function ReporteFinancieroPDF({ data }) {
               ].map(m => (
                 <View key={m.lb} style={{ flex: 1, backgroundColor: C.card, padding: 8, borderRadius: 4, border: '0.5 solid ' + C.brd }}>
                   <Text style={{ fontSize: 7, color: C.ink3, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{m.lb}</Text>
-                  <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: C.ink }}>{m.v}</Text>
+                  <Text style={{ fontSize: 11, fontFamily: F.body, fontWeight: 700, color: C.ink }}>{m.v}</Text>
                 </View>
               ))}
             </View>

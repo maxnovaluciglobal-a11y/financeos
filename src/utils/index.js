@@ -226,7 +226,7 @@ export const CAT_COLORS = {
   Música: '#B8AC91',         // ceniza-300
   Software: '#4A5875',       // navy-400
   Gimnasio: '#356E57',       // verde-800
-  Seguro: '#9C5419',         // warning-800
+  Seguro: '#8A4A14',         // warning-800
   Cloud: '#E3C592',          // laton-300
   Delivery: '#C97A3D',       // warning
   Suscripción: '#3E5A78',    // info-800

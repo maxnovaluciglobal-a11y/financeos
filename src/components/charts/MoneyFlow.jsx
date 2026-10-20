@@ -11,11 +11,11 @@ import { useT } from '../../i18n/useT.js'
 const fmtV = (v, sym) => fmtMoneyCompact(v, sym)
 
 const COLORS = {
-  income:  { fill: 'var(--pos)', stroke: '#00b896', text: '#004d3e' },
-  gastos:  { fill: 'var(--neg)', stroke: '#e03558', text: '#4a0010' },
-  subs:    { fill: 'var(--amb)', stroke: '#d48a0a', text: '#3d2200' },
-  deudas:  { fill: 'var(--accent2)', stroke: '#0099b8', text: '#002d3d' },
-  libre:   { fill: 'var(--pos)', stroke: '#00b896', text: '#004d3e' },
+  income:  { fill: 'var(--pos)', stroke: 'var(--pos)', text: 'var(--pos)' },
+  gastos:  { fill: 'var(--neg)', stroke: 'var(--neg)', text: 'var(--neg)' },
+  subs:    { fill: 'var(--amb)', stroke: 'var(--amb)', text: 'var(--amb)' },
+  deudas:  { fill: 'var(--accent2)', stroke: 'var(--accent2)', text: 'var(--accent2)' },
+  libre:   { fill: 'var(--pos)', stroke: 'var(--pos)', text: 'var(--pos)' },
 }
 
 function SankeyPath({ x1, y1, h1, x2, y2, h2, color, opacity = 0.22 }) {
@@ -158,7 +158,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
               {/* Porcentaje a la derecha (anclado; con margen al borde del viewBox) */}
               <text x={RIGHT_X + RIGHT_W + 8} y={node.y + node.h/2}
                 dominantBaseline="middle"
-                style={{ fontFamily:'var(--mono, monospace)', fontSize:10, fill:'var(--th, #888)' }}>
+                style={{ fontFamily:'var(--mono, monospace)', fontSize:10, fill:'var(--th)' }}>
                 {totalInc > 0 ? ((node.amount/totalInc)*100).toFixed(0) : 0}%
               </text>
             </g>

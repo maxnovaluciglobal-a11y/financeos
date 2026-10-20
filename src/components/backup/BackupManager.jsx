@@ -115,7 +115,7 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F3E4CE', borderRadius: compact ? 'var(--rs)' : 8,
+        background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
@@ -131,7 +131,7 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F5E6E3', borderRadius: compact ? 'var(--rs)' : 8,
+        background: 'var(--red-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(162,62,46,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--red)',
         fontFamily: 'var(--mono)',
@@ -147,7 +147,7 @@ export function BackupStatusBadge({ compact = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
-        background: '#F3E4CE', borderRadius: compact ? 'var(--rs)' : 8,
+        background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
         fontSize: compact ? 10 : 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
@@ -609,7 +609,7 @@ export default function BackupManager() {
           <div style={{
             padding: '10px 14px', borderRadius: 8, fontSize: 11,
             fontFamily: 'var(--mono)', lineHeight: 1.5,
-            background: status.type === 'ok' ? 'var(--pos-bg)' : status.type === 'error' ? '#F5E6E3' : '#F3E4CE',
+            background: status.type === 'ok' ? 'var(--pos-bg)' : status.type === 'error' ? 'var(--red-bg)' : 'var(--amb-bg)',
             color: status.type === 'ok' ? 'var(--pos)' : status.type === 'error' ? 'var(--red)' : 'var(--amb)',
             border: `0.5px solid ${status.type === 'ok' ? 'rgba(53,110,87,.25)' : status.type === 'error' ? 'rgba(162,62,46,.25)' : 'rgba(156,84,25,.25)'}`,
           }}>

@@ -208,12 +208,12 @@ export default function Coach() {
       {signals.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           {warnings.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--red-bg, #fdf0ee)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
+            <div style={{ padding: '6px 12px', background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
               <InlineIcon kind="warning" size={13} />{t('coach.badge.review', { n: warnings.length })}
             </div>
           )}
           {attentions.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--amb-bg, #faeeda)', border: '.5px solid var(--amb)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)' }}>
+            <div style={{ padding: '6px 12px', background: 'var(--amb-bg)', border: '.5px solid var(--amb)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--mono)' }}>
               <InlineIcon kind="attention" size={13} />{t('coach.badge.attention', { n: attentions.length })}
             </div>
           )}

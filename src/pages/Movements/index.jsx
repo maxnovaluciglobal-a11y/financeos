@@ -121,7 +121,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
 
       {onImport && (
         <button type="button" onClick={onImport}
-          style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent, #00b8d9)', cursor:'pointer', textAlign:'left', display:'block' }}>
+          style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'block' }}>
           <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
         </button>
       )}
@@ -637,7 +637,7 @@ export default function Movements({ setPage }) {
                 padding:'8px 14px',
                 borderBottom: i < listExp.length-1 ? '.5px solid var(--brd)' : 'none' }}>
                 <div style={{ width:6, height:6, borderRadius:'50%', flexShrink:0,
-                  background: CAT_COLORS[e.category]||'#888' }}/>
+                  background: CAT_COLORS[e.category]||'var(--th)' }}/>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:12, color:'var(--tx)', fontWeight:500,
                     overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>

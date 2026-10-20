@@ -292,9 +292,9 @@ export default function Goals({ setPage }) {
                     if (recommended <= 0 || Math.abs(g.target - recommended) / recommended < 0.15) return null
                     return (
                       <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',padding:'6px 10px',marginBottom:8,background:'rgba(245,166,35,.07)',border:'.5px solid rgba(245,166,35,.25)',borderRadius:6}}>
-                        <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--amb,#b45309)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
+                        <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--amb)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
                         <button onClick={() => updateGoal({ ...g, target: recommended, saved: Math.min(g.saved, recommended) })}
-                          style={{background:'none',border:'.5px solid var(--amb,#b45309)',borderRadius:6,padding:'3px 10px',fontSize:10,fontWeight:600,color:'var(--amb,#b45309)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap'}}>
+                          style={{background:'none',border:'.5px solid var(--amb)',borderRadius:6,padding:'3px 10px',fontSize:10,fontWeight:600,color:'var(--amb)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap'}}>
                           {t('goals.emergencyAdjustBtn')}
                         </button>
                       </div>

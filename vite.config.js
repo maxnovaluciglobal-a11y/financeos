@@ -99,7 +99,7 @@ export default defineConfig({
         // cachea igual, recién la primera vez que la página que los usa se visita
         // de verdad. pdf.worker (pdfjs-dist) ya queda afuera por su extensión .mjs,
         // que no matchea los globPatterns por defecto — mismo resultado, sin listarlo acá.
-        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**'],
+        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**', '**/fonts/pdf/**'],
         // Ya no hay regla de runtimeCaching para Google Fonts (2026-09-06,
         // RGPD): las fuentes ahora son estáticas locales en public/fonts/, así
         // que Workbox las toma en el PRECACHE por defecto (junto con el resto

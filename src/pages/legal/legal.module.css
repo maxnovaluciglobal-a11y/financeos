@@ -105,12 +105,12 @@
 
 /* Warning box — amber */
 .warnBox {
-  background: #faeeda;
+  background: var(--amb-bg);
   border: 0.5px solid rgba(133, 79, 11, 0.2);
   border-radius: var(--r);
   padding: 14px 16px;
   font-size: 13px;
-  color: #854f0b;
+  color: var(--amb);
   line-height: 1.6;
   margin-top: 10px;
 }
@@ -185,10 +185,10 @@
   align-items: flex-start;
   gap: 8px;
   padding: 10px 12px;
-  background: #faeeda;
+  background: var(--amb-bg);
   border-radius: var(--r);
   font-size: 12px;
-  color: #854f0b;
+  color: var(--amb);
   line-height: 1.5;
 }
 .backupWarningIcon {

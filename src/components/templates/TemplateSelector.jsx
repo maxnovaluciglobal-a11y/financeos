@@ -111,7 +111,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
         {/* Categorías de gastos */}
         <div>
           <div style={sectionTitle}>{tr('tplsel.expenseCats', { n: template.categoriesExpense.length })}</div>
-          <div>{template.categoriesExpense.map(c => pill(catName(c, lang), '#7a7868'))}</div>
+          <div>{template.categoriesExpense.map(c => pill(catName(c, lang), 'var(--tm)'))}</div>
         </div>
 
         {/* Presupuestos sugeridos */}
@@ -147,8 +147,8 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
               <span style={{
                 marginLeft: 'auto', fontSize: 9, fontFamily: 'var(--mono)',
                 flexShrink: 0, padding: '1px 7px', borderRadius: 'var(--rs)',
-                background: g.priority === 'Alta' ? '#fdf0ee' : '#faeeda',
-                color: g.priority === 'Alta' ? '#8a2020' : '#854f0b',
+                background: g.priority === 'Alta' ? 'var(--red-bg)' : 'var(--amb-bg)',
+                color: g.priority === 'Alta' ? 'var(--red)' : 'var(--amb)',
               }}>{prioLabel(g.priority, lang)}</span>
             </div>
           ))}
@@ -171,9 +171,9 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
 
         {/* Aviso */}
         <div style={{
-          padding: '10px 12px', background: '#faeeda',
+          padding: '10px 12px', background: 'var(--amb-bg)',
           borderRadius: 8, border: '0.5px solid rgba(133,79,11,.2)',
-          fontSize: 11, color: '#854f0b', fontFamily: 'var(--mono)', lineHeight: 1.5,
+          fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5,
         }}>
           <InlineIcon kind="alert" size={13} />{(() => {
             const [a, b = ''] = tr('tplsel.applyNotice').split('{notDeleted}')

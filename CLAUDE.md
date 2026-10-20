@@ -98,7 +98,7 @@ Detalle completo, gotchas de debug y decisiones: memoria `financeos_moy_iq_inves
 
 **Estado (11-sep-2026): mergeado a `main` y en producción**, ahora en `app.moyiq.app`/`demo.moyiq.app` (dominio primario) y `app.financeospro.com`/`demo.financeospro.com`, que hoy redirigen con 308 a los de `moyiq.app` (`vercel.json`; verificado el 19-oct-2026). ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.
 
-Tokens en `src/styles/globals.css`.
+Tokens en `src/styles/tokens.css` (único origen; `globals.css` lo importa, `tokens.js` lo repite para los PDF y `tokens.test.js` falla con un hex fuera de la paleta: ver `docs/tokens-de-diseno.md`).
 
 **Paleta** — Navy (`--navy`, primario/estructura: nav activo, `--grn`, logo), Latón (`--laton`, acento: CTAs, aguja del dial, placa "IQ" — SIEMPRE con texto Navy encima, nunca oscurecer el fill en hover, agregar anillo interior Navy 25% en su lugar), Papel (`--papel`/`--sur`, superficie clara), Verde (`--verde` / `--pos`, único positivo/éxito — reemplaza al viejo `--accent` teal), Ceniza (neutro secundario). Reglas de accesibilidad ya aplicadas: `--laton-700`/`--warning-800`/`--info-800`/`--verde-800` son las variantes de TEXTO (la base falla AA en texto chico); `--accent-dark` es solo para datos/CTAs sobre fondo Navy (marketing/PDF), no se usa sobre Papel.
 

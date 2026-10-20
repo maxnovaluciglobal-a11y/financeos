@@ -419,11 +419,11 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
   let feedback = null
   if (result) {
     if (result.valid === true) {
-      feedback = { text: t('settings.taxId.valid', { label }), color: 'var(--pos, #2e7d32)' }
+      feedback = { text: t('settings.taxId.valid', { label }), color: 'var(--pos)' }
     } else if (result.reason === 'checkDigit') {
-      feedback = { text: t('settings.taxId.invalidCheckDigit'), color: 'var(--neg, #A23E2E)' }
+      feedback = { text: t('settings.taxId.invalidCheckDigit'), color: 'var(--neg)' }
     } else if (result.reason === 'format') {
-      feedback = { text: t('settings.taxId.invalidFormat', { label }), color: 'var(--neg, #A23E2E)' }
+      feedback = { text: t('settings.taxId.invalidFormat', { label }), color: 'var(--neg)' }
     }
   }
 
@@ -504,7 +504,7 @@ function PushSection() {
               {busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')}
             </Btn>
           </div>
-          {msg && <div style={{ ...sub, color: '#A23E2E', marginTop: 8 }}>{msg}</div>}
+          {msg && <div style={{ ...sub, color: 'var(--neg)', marginTop: 8 }}>{msg}</div>}
         </>
       )}
     </div>

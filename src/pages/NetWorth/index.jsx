@@ -43,7 +43,7 @@ export default function NetWorth() {
               <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 6 }}>
                 {t('networth.headline')}
               </div>
-              <div className="num" style={{ fontSize: 36, fontWeight: 700, color: netWorth >= 0 ? 'var(--grn)' : '#e84142' }}>
+              <div className="num" style={{ fontSize: 36, fontWeight: 700, color: netWorth >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
                 {netWorth >= 0 ? '' : '-'}<Money><CountUp value={Math.abs(netWorth)} format={(v) => fmtMoneyRaw(v, sym)} duration={750} /></Money>
               </div>
               <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
@@ -66,11 +66,11 @@ export default function NetWorth() {
 
             <Card>
               <CardHeader title={t('networth.liabilities')} />
-              <Row label={t('networth.pendingDebts')} value={pendingDebt} sym={sym} color="#e84142" />
-              <Row label={t('networth.propsNegative')} value={Math.max(0, -propertiesNet)} sym={sym} color="#e84142" />
+              <Row label={t('networth.pendingDebts')} value={pendingDebt} sym={sym} color="var(--neg)" />
+              <Row label={t('networth.propsNegative')} value={Math.max(0, -propertiesNet)} sym={sym} color="var(--neg)" />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalLiabilities')}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)', color: '#e84142' }}><Money>{fmtMoney(totalPasivos, sym)}</Money></span>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--neg)' }}><Money>{fmtMoney(totalPasivos, sym)}</Money></span>
               </div>
             </Card>
           </div>
