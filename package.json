@@ -12,7 +12,7 @@
     "typecheck": "tsc -p tsconfig.check.json"
   },
   "dependencies": {
-    "@react-pdf/renderer": "^3.4.4",
+    "@react-pdf/renderer": "^4.9.0",
     "@supabase/supabase-js": "^2.116.0",
     "exceljs": "^4.4.0",
     "idb": "^8.0.0",
