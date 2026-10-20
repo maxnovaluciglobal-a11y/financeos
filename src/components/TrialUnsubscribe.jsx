@@ -1,13 +1,16 @@
 // src/components/TrialUnsubscribe.jsx — página de baja de los correos de la
 // prueba de Pro (C-35 / COM-10). Sin sesión ni datos locales: solo el id del
-// enlace. Pide confirmar con un botón (un escáner de enlaces no da de baja a nadie).
+// enlace (se monta FUERA de AppProvider: nada de useT/useApp). Pide confirmar con un botón (un escáner de enlaces no da de baja a nadie).
 import { useState } from 'react'
-import { useT } from '../i18n/useT.js'
+import { useTFor } from '../i18n/useT.js'
+import { detectLanguage } from '../i18n/translate.js'
 import Logo from './Logo.jsx'
 import { unsubscribeTrial } from '../utils/trialUnsubscribe.js'
 
 export default function TrialUnsubscribe({ id }) {
-  const { t } = useT()
+  // Fuera de AppProvider (como DemoGate): idioma del navegador.
+  const [lang] = useState(() => detectLanguage())
+  const { t } = useTFor(lang)
   const [state, setState] = useState('idle') // idle | sending | done | error
   const onConfirm = async () => {
     setState('sending')

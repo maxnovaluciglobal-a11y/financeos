@@ -7,6 +7,7 @@ import LargeTitle from '../layout/LargeTitle.jsx'
 import Money, { MONEY_MASK } from '../Money.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
+import { Pencil } from 'lucide-react'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -210,7 +211,7 @@ export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
       </div>
       {onEdit && (
         <button className={styles.delBtn} onClick={onEdit} title={t('ui.edit')} aria-label={t('ui.editItem', { name: label })} style={{marginRight:2,fontSize:11}}>
-          <span aria-hidden="true">✏️</span>
+          <Pencil size={13} strokeWidth={1.7} aria-hidden="true" />
         </button>
       )}
       {onDelete && (

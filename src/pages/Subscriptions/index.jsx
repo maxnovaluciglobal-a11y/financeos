@@ -11,6 +11,7 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { PageHeader, Card, CardHeader, KPI, Btn, Badge, Alert, Empty, FormGroup, FormRow } from '../../components/ui/index.jsx'
+import { Pencil } from 'lucide-react'
 
 // ── CONSTANTES ──────────────────────────────────────────────────────────────────
 export const SUB_CATEGORIES = [
@@ -370,7 +371,7 @@ export default function Subscriptions() {
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={() => openEdit(sub)} aria-label={`Editar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}>✎</button>
+                          <button onClick={() => openEdit(sub)} aria-label={t('ui.editItem', { name: sub.name })} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}><Pencil size={13} strokeWidth={1.7} aria-hidden="true" /></button>
                           <button onClick={() => remove(sub.id)} aria-label={`Eliminar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}><span aria-hidden="true">✕</span></button>
                         </div>
                       </td>

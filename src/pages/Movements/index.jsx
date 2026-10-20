@@ -16,7 +16,7 @@ import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
 import { FormGroup, KPI, Alert, Empty, EmptyState } from '../../components/ui/index.jsx'
-import { ArrowLeftRight } from 'lucide-react'
+import { ArrowLeftRight, Pencil } from 'lucide-react'
 import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 
@@ -657,7 +657,7 @@ export default function Movements({ setPage }) {
                 {updateExpense && (
                   <button onClick={()=>{setEditingId(e.id);setEditForm({description:e.description||'',amount:e.amount,date:e.date,category:e.category,subcategory:e.subcategory||''})}}
                     style={{background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:0,minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
-                    title={t('mov.edit.editTitle')} aria-label={`${t('mov.edit.editTitle')}: ${e.description || catLabel(e.category, lang)}`}>✏️</button>
+                    title={t('mov.edit.editTitle')} aria-label={`${t('mov.edit.editTitle')}: ${e.description || catLabel(e.category, lang)}`}><Pencil size={14} strokeWidth={1.7} aria-hidden="true" /></button>
                 )}
                 {delExpense && (
                   <button onClick={()=>deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo'))}
