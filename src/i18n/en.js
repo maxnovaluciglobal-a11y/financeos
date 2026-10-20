@@ -1486,7 +1486,7 @@ export const en = {
     'apv.deductionsNote1': 'Reference deductions: AFP 10% + health 7% + unemployment 0.6% + AFP fee {pct}%.',
     'apv.deductionsNote2Pre': 'The fee is a ',
     'apv.deductionsNote2Bold': 'market average',
-    'apv.deductionsNote2Post': ' (ranges from 0.49% to 1.45% depending on the AFP) and, unlike contributions, does not reduce the tax base.',
+    'apv.deductionsNote2Post': " (ranges from 0.46% to 1.45% depending on the AFP) and, unlike contributions, does not reduce the tax base.",
     'apv.step2.title': 'Simulate an APV contribution',
     'apv.form.monthlyContribution': 'Monthly APV contribution ($)',
     'apv.form.currentBalance': 'Current APV balance ($)',

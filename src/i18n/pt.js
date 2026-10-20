@@ -1486,7 +1486,7 @@ export const pt = {
     'apv.deductionsNote1': 'Descontos de referência: AFP 10% + saúde 7% + seguro-desemprego 0,6% + taxa AFP {pct}%.',
     'apv.deductionsNote2Pre': 'A taxa é uma ',
     'apv.deductionsNote2Bold': 'média de mercado',
-    'apv.deductionsNote2Post': ' (varia de 0,49% a 1,45% conforme a AFP) e, ao contrário das contribuições, não reduz a base do imposto.',
+    'apv.deductionsNote2Post': " (varia de 0,46% a 1,45% conforme a AFP) e, ao contrário das contribuições, não reduz a base do imposto.",
     'apv.step2.title': 'Simular aporte de APV',
     'apv.form.monthlyContribution': 'Aporte mensal APV ($)',
     'apv.form.currentBalance': 'Saldo atual do APV ($)',

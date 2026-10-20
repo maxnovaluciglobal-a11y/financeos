@@ -2,7 +2,14 @@
 // Roth vs Traditional decision helper + HSA optimizer — USA.
 // Cifras 2026 confirmadas oficialmente: IRS Notice 2025-67 (retiro),
 // Rev. Proc. 2025-32 (tramos/standard deduction), Rev. Proc. 2025-19 (HSA).
+// Verificadas contra irs.gov el 19-oct-2026 (C-43), todas iguales:
+//   https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500
+//   https://www.irs.gov/pub/irs-drop/rp-25-32.pdf (§4.01 tablas 1 y 3, §4.14; ya incluye la OBBBA)
+//   https://www.irs.gov/pub/irs-drop/rp-25-19.pdf (HSA; catch-up 55+ fijo por §223(b)(3))
 // NO constituye asesoría financiera ni fiscal.
+
+// officialValues.test.js falla después de `proximaRevision` (cifras 2027 del IRS).
+export const REVISION_US = { verificadoEl: '2026-10-19', proximaRevision: '2027-01-15' }
 
 export const LIMITES_2026 = {
   contribucion401k: 24500,

@@ -1486,7 +1486,7 @@ export const es = {
     'apv.deductionsNote1': 'Descuentos orientativos: AFP 10% + Salud 7% + Cesantía 0.6% + comisión AFP {pct}%.',
     'apv.deductionsNote2Pre': 'La comisión es un ',
     'apv.deductionsNote2Bold': 'promedio de mercado',
-    'apv.deductionsNote2Post': ' (va de 0,49% a 1,45% según la AFP) y, a diferencia de las cotizaciones, no rebaja la base del impuesto.',
+    'apv.deductionsNote2Post': " (va de 0,46% a 1,45% según la AFP) y, a diferencia de las cotizaciones, no rebaja la base del impuesto.",
     'apv.step2.title': 'Simular aporte APV',
     'apv.form.monthlyContribution': 'Aporte mensual APV ($)',
     'apv.form.currentBalance': 'Saldo APV actual ($)',

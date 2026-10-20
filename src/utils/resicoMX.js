@@ -2,6 +2,12 @@
 // RESICO — Régimen Simplificado de Confianza (México), personas físicas.
 // Fuente: Art. 113-E LISR, tasas 2026 (idénticas a 2025). NO constituye
 // asesoría fiscal — el ISR real depende de tu situación completa ante el SAT.
+// C-43 (19-oct-2026): tabla, tope de 3,5 M y retención de 1,25 % coinciden con
+// la guía del SAT "ISR simplificado de confianza – Personas físicas" (dic-2024)
+// y la página del SAT sobre RESICO (gob.mx/sat). NO se pudo confirmar contra
+// el texto vigente de la LISR para 2026 (diputados.gob.mx y dof.gob.mx no
+// respondieron): queda para Walter/contador. Hay una iniciativa (08-sep-2026)
+// que tocaría el 113-E para 2027.
 //
 // Trampa 1: la tasa NO es progresiva/marginal como el ISR normal. Se aplica
 // sobre el 100% del ingreso mensual cobrado, según en qué tramo caiga el total.
@@ -23,6 +29,9 @@ export const TRAMOS_RESICO = [
   { hasta: 208333.33, tasa: 0.0200 },
   { hasta: 3500000,   tasa: 0.0250 }, // tope RESICO: ingresos anuales ≤ $3.5M
 ]
+
+// officialValues.test.js falla después de `proximaRevision`.
+export const REVISION_RESICO = { verificadoEl: '2026-10-19', proximaRevision: '2027-01-15', textoLeyConfirmado: false }
 
 export const TOPE_ANUAL_RESICO = 3500000 // MXN — arriba de esto, sales del régimen
 

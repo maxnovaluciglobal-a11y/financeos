@@ -4,6 +4,16 @@
 // al cálculo real de Lohnsteuer (que depende de Steuerklasse, Freibeträge
 // individuales y la tabla oficial del BMF). Asume Steuerklasse I (soltero).
 // Cifras vigentes 2026 — actualizar anualmente contra bmf-steuerrechner.de
+// Verificadas el 19-oct-2026 (C-43), todas iguales:
+//   §32a EStG (Grundfreibetrag, zonas y fórmulas): https://www.gesetze-im-internet.de/estg/__32a.html
+//   §9a EStG (Pauschbetrag 1.230 €): https://www.gesetze-im-internet.de/estg/__9a.html
+//   §3 SolZG (Freigrenze 20.350 €): https://www.gesetze-im-internet.de/solzg_1995/__3.html
+//   BBG 2026 (SVBezGrV 2026, BGBl. I 2025 Nr. 278): https://www.bmas.de/SharedDocs/Downloads/DE/Gesetze/Verordnungsabschluesse/sozialversicherungs-rechengroessenverordnung-2026.pdf
+//   KV/PV y Zusatzbeitrag 2,9 %: https://www.bundesgesundheitsministerium.de/beitraege
+// Para 2027 el gabinete ya aprobó subir las BBG (KV 6.375 €, RV 8.850 €/mes).
+
+// officialValues.test.js falla después de `proximaRevision`.
+export const REVISION_DE = { verificadoEl: '2026-10-19', proximaRevision: '2027-01-15' }
 
 // Tarifas de contribuciones sociales (Sozialversicherung) — parte del empleado.
 // Fuente: valores de referencia 2026, aportes compartidos empleado/empleador al 50%.

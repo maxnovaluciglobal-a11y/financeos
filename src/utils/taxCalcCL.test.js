@@ -1,5 +1,5 @@
 // Fixtures: valores obtenidos corriendo las funciones reales contra FALLBACK
-// (UTM $71.649 / UF $40.854 / comisión AFP 1,17% de indicadores.js, agosto 2026),
+// (UTM $71.649 / UF $40.854 / comisión AFP 1,11% de indicadores.js, Superintendencia de Pensiones, oct-2026),
 // no calculados a mano — mismo criterio que taxIdValidation.test.js para RIF.
 // Las fórmulas en sí ya fueron verificadas contra spensiones.cl/SII en la
 // auditoría 2026-08-16 (ver financeos-app/CLAUDE.md); esto es cobertura de
@@ -22,15 +22,15 @@ describe('getParametrosCL — FALLBACK por defecto', () => {
 })
 
 describe('calcDescuentos — previsional mensual', () => {
-  it('bajo los topes: AFP 10% / salud 7% / cesantía 0,6% / comisión 1,17%', () => {
+  it('bajo los topes: AFP 10% / salud 7% / cesantía 0,6% / comisión 1,11%', () => {
     const d = calcDescuentos(1200000)
-    expect(d).toMatchObject({ afp: 120000, salud: 84000, cesantia: 7200, comision: 14040 })
+    expect(d).toMatchObject({ afp: 120000, salud: 84000, cesantia: 7200, comision: 13320 })
     expect(d.total).toBe(d.totalDeducible + d.comision)
     expect(d.liquido).toBe(1200000 - d.total)
   })
   it('sobre el tope AFP/salud (90 UF) pero bajo el de cesantía (135,2 UF)', () => {
     const d = calcDescuentos(5000000)
-    expect(d).toMatchObject({ afp: 367686, salud: 257380, cesantia: 30000, comision: 43019 })
+    expect(d).toMatchObject({ afp: 367686, salud: 257380, cesantia: 30000, comision: 40813 })
   })
   it('la comisión de la AFP no rebaja la base imponible (totalDeducible la excluye)', () => {
     const d = calcDescuentos(1200000)

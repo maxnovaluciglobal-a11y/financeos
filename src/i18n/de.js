@@ -1485,7 +1485,7 @@ export const de = {
     'apv.deductionsNote1': 'Näherungswerte: AFP 10% + Kranken 7% + Arbeitslosigkeit 0,6% + AFP-Gebühr {pct}%.',
     'apv.deductionsNote2Pre': 'Die Gebühr ist ein ',
     'apv.deductionsNote2Bold': 'Marktdurchschnitt',
-    'apv.deductionsNote2Post': ' (0,49% bis 1,45% je nach AFP) und mindert, anders als die Pflichtbeiträge, nicht die Steuerbemessungsgrundlage.',
+    'apv.deductionsNote2Post': " (0,46% bis 1,45% je nach AFP) und mindert, anders als die Pflichtbeiträge, nicht die Steuerbemessungsgrundlage.",
     'apv.step2.title': 'APV-Beitrag simulieren',
     'apv.form.monthlyContribution': 'Monatlicher APV-Beitrag ($)',
     'apv.form.currentBalance': 'Aktuelles APV-Guthaben ($)',
