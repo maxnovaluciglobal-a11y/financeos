@@ -23,6 +23,8 @@ import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
 import { requestPersistentStorage } from '../utils/storagePersist.js'
 import { toCsv } from '../utils/csvSafe.js'
+import { extraCsvRows } from '../utils/csvExtraRows.js'
+import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
 
@@ -534,6 +536,7 @@ export function AppProvider({ children }) {
         ['type', 'date', 'description', 'category', 'amount', 'method', 'recurrence', 'notes'].map(c => tr(`csv.col.${c}`)),
         ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, lang), r.amount,  '',                           recurrenceLabel(r.recurrence, lang), r.notes || '']),
         ...state.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, lang), -r.amount, methodLabel(r.method, lang), recurrenceLabel(r.recurrence, lang), r.notes || '']),
+        ...extraCsvRows(state, tr),
       ]
       const csv  = toCsv(rows)
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }) // FIX: BOM
@@ -547,10 +550,11 @@ export function AppProvider({ children }) {
     } catch (e) {
       showToast(tr('toast.csvError'), 'error')
     }
-  }, [state.incomes, state.expenses, showToast, tr])
+  }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions, state.recurring, showToast, tr])
 
-  const exportData = useCallback(async () => {
+  const exportData = useCallback(async (opts) => {
     try {
+      const passphrase = typeof opts?.passphrase === 'string' ? opts.passphrase : null
       const data = await exportAllData()
       // Agregar metadata al respaldo
       const backup = {
@@ -570,11 +574,13 @@ export function AppProvider({ children }) {
         },
         ...data,
       }
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+      const blob = passphrase
+        ? new Blob([await encryptBackupFile(backup, passphrase)], { type: 'text/plain' })
+        : new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `moyiq-backup-${localDateStr()}.json`
+      a.download = `moyiq-backup-${localDateStr()}${passphrase ? '.enc.txt' : '.json'}`
       a.click()
       URL.revokeObjectURL(url)
       if (data.incomplete?.length) showToast(tr('toast.backupIncomplete'), 'error')

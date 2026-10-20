@@ -14,6 +14,7 @@ import { cloudPush, cloudPull, cloudStatus } from '../../core/cloudSync.js'
 import { dateLocale } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { translate } from '../../i18n/translate.js'
+import { MIN_PASSPHRASE_LENGTH, isEncryptedBackupText, passphraseOk, decryptBackupFile } from '../../utils/backupFile.js'
 
 // "hace N días" con .one/.many (mismo precedente que projects.totalNet.*)
 const plural = (t, base, n, vars) => t(`${base}.${n === 1 ? 'one' : 'many'}`, { n, ...vars })
@@ -250,6 +251,11 @@ export default function BackupManager() {
   const [pendingData, setPendingData] = useState(null)
   const [cloudSyncing, setCloudSyncing] = useState(false)
   const [cloudInfo, setCloudInfo]     = useState(null)
+  const [encOn, setEncOn]       = useState(false)
+  const [encPass, setEncPass]   = useState('')
+  const [encText, setEncText]   = useState(null)
+  const [encName, setEncName]   = useState('')
+  const [openPass, setOpenPass] = useState('')
   const fileRef = useRef()
 
   useEffect(() => {
@@ -265,11 +271,16 @@ export default function BackupManager() {
 
   // ── EXPORTAR ────────────────────────────────────────────────────────────────
   async function handleExport() {
+    if (encOn && !passphraseOk(encPass)) {
+      setStatus({ type: 'error', msg: t('backup.enc.tooShort', { n: MIN_PASSPHRASE_LENGTH }) })
+      return
+    }
     try {
-      await exportData()
+      await exportData(encOn ? { passphrase: encPass } : undefined)
       // Guardar fecha del último respaldo
       await updateSettings({ ...settings, lastBackupAt: new Date().toISOString() })
-      setStatus({ type: 'ok', msg: t('backup.status.exportOk') })
+      setStatus({ type: 'ok', msg: t(encOn ? 'backup.enc.exportOk' : 'backup.status.exportOk') })
+      if (encOn) { setEncPass(''); setEncOn(false) }
       setTimeout(() => setStatus(null), 5000)
     } catch (e) {
       setStatus({ type: 'error', msg: t('backup.status.exportErr') })
@@ -329,33 +340,20 @@ export default function BackupManager() {
     try {
       // Leer y parsear
       const text = await file.text()
+      if (isEncryptedBackupText(text)) {
+        setEncText(text)
+        setEncName(file.name)
+        setOpenPass('')
+        return
+      }
       let data
       try {
         data = JSON.parse(text)
       } catch {
         setStatus({ type: 'error', msg: t('backup.status.invalidJson') })
-        setImporting(false)
         return
       }
-
-      // Validar
-      const { valid, errors, isDemoBackup } = validateBackupFile(data, t)
-      if (!valid) {
-        setStatus({ type: 'error', msg: errors.join(' ') })
-        setImporting(false)
-        return
-      }
-
-      // Guardar para confirmar
-      setPendingFile(file.name)
-      setPendingData(data)
-
-      // Si hay datos reales, pedir confirmación
-      if (hasRealData) {
-        setConfirmOpen(true)
-      } else {
-        await doImport(data)
-      }
+      await acceptData(data, file.name)
     } catch (e) {
       setStatus({ type: 'error', msg: t('backup.status.readErr') })
     } finally {
@@ -363,14 +361,47 @@ export default function BackupManager() {
     }
   }
 
+  // Valida el contenido y pide confirmación (o restaura de una vez si no hay datos).
+  async function acceptData(data, name) {
+    const { valid, errors } = validateBackupFile(data, t)
+    if (!valid) {
+      setStatus({ type: 'error', msg: errors.join(' ') })
+      return
+    }
+    setPendingFile(name)
+    setPendingData(data)
+    if (hasRealData) setConfirmOpen(true)
+    else await doImport(data, name)
+  }
+
+  // ── RESPALDO CIFRADO: pedir la contraseña y abrirlo ─────────────────────────
+  async function handleOpenEncrypted() {
+    setImporting(true)
+    setStatus(null)
+    try {
+      let data
+      try {
+        data = await decryptBackupFile(encText, openPass)
+      } catch (e) {
+        setStatus({ type: 'error', msg: t(e?.message === 'wrong_key' ? 'backup.enc.wrong' : 'backup.enc.corrupt') })
+        return
+      }
+      const name = encName
+      setEncText(null); setOpenPass('')
+      await acceptData(data, name)
+    } finally {
+      setImporting(false)
+    }
+  }
+
   // ── CONFIRMAR E IMPORTAR ────────────────────────────────────────────────────
-  async function doImport(data) {
+  async function doImport(data, name) {
     setConfirmOpen(false)
     setImporting(true)
     try {
       await importData(new File(
         [JSON.stringify(data)],
-        pendingFile || 'backup.json',
+        name || pendingFile || 'backup.json',
         { type: 'application/json' }
       ))
       // Actualizar fecha de respaldo si el archivo la tenía
@@ -467,6 +498,47 @@ export default function BackupManager() {
           </button>
         </div>
 
+        {/* Proteger el archivo con contraseña (opcional) */}
+        <div style={{ ...srow, flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, ...slbl, cursor: 'pointer' }}>
+            <input type="checkbox" checked={encOn} onChange={e => setEncOn(e.target.checked)} />
+            {t('backup.enc.toggle')}
+          </label>
+          <div style={ssub}>{t('backup.enc.hint')}</div>
+          {encOn && (
+            <input
+              type="password"
+              value={encPass}
+              onChange={e => setEncPass(e.target.value)}
+              autoComplete="new-password"
+              aria-label={t('backup.enc.label', { n: MIN_PASSPHRASE_LENGTH })}
+              placeholder={t('backup.enc.label', { n: MIN_PASSPHRASE_LENGTH })}
+              style={{ padding: '8px 10px', borderRadius: 6, border: '0.5px solid var(--brd2)', background: 'var(--sur)', color: 'var(--tx)', fontSize: 13 }}
+            />
+          )}
+        </div>
+
+        {/* Abrir un respaldo cifrado */}
+        {encText && (
+          <div role="group" aria-label={t('backup.enc.askTitle')} style={{ padding: '14px 16px', background: 'var(--sur2)', border: '0.5px solid var(--brd)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={slbl}>{t('backup.enc.askTitle')}</div>
+            <div style={ssub}>{t('backup.enc.askBody', { file: encName })}</div>
+            <input
+              type="password"
+              value={openPass}
+              onChange={e => setOpenPass(e.target.value)}
+              autoComplete="current-password"
+              aria-label={t('backup.enc.askLabel')}
+              placeholder={t('backup.enc.askLabel')}
+              style={{ padding: '8px 10px', borderRadius: 6, border: '0.5px solid var(--brd2)', background: 'var(--sur)', color: 'var(--tx)', fontSize: 13 }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleOpenEncrypted} disabled={importing || !openPass} style={{ ...btn('primary'), opacity: importing || !openPass ? 0.6 : 1 }}>{t('backup.enc.open')}</button>
+              <button onClick={() => { setEncText(null); setOpenPass('') }} style={btn('default')}>{t('common.cancel')}</button>
+            </div>
+          </div>
+        )}
+
         {/* Restaurar respaldo */}
         <div style={{ ...srow, borderBottom: 'none' }}>
           <div style={{ flex: 1 }}>
@@ -487,7 +559,7 @@ export default function BackupManager() {
             <input
               ref={fileRef}
               type="file"
-              accept=".json,application/json"
+              accept=".json,.txt,application/json,text/plain"
               style={{ display: 'none' }}
               onChange={handleFileSelect}
               disabled={importing}

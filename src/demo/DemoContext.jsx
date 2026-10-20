@@ -3,6 +3,7 @@
 // NUNCA escribe en IndexedDB — los datos se descartan al cerrar la pestaña
 // Se activa cuando la URL contiene ?demo=true
 
+import { encryptBackupFile } from '../utils/backupFile.js'
 import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
 import { buildDemoState, pickDemoPersonaId, demoPersona } from './demoData.js'
 import { detectLanguage } from '../i18n/translate.js'
@@ -229,13 +230,16 @@ export function DemoProvider({ children }) {
     showToast(tr('demo.toast.csv'), 'ok')
   }, [state.incomes, state.expenses, showToast, tr])
 
-  const exportData = useCallback(() => {
+  const exportData = useCallback(async (opts) => {
     const { personaId, ...data } = buildDemoState(state.personaId, state.settings?.language)
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const passphrase = typeof opts?.passphrase === 'string' ? opts.passphrase : null
+    const blob = passphrase
+      ? new Blob([await encryptBackupFile(data, passphrase)], { type: 'text/plain' })
+      : new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'moyiq-demo-backup.json'
+    a.download = passphrase ? 'moyiq-demo-backup.enc.txt' : 'moyiq-demo-backup.json'
     a.click()
     URL.revokeObjectURL(url)
     showToast(tr('demo.toast.json'), 'ok')
