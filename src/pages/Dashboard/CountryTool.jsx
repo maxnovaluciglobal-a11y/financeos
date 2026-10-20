@@ -42,7 +42,7 @@ export default function CountryTool({ country, setPage }) {
     >
       <span style={{ lineHeight: 0, flexShrink: 0, color: 'var(--grn)' }} aria-hidden="true"><CountryBadge code={cc} size={30} /></span>
       <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)' }}>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)' }}>
           {t('countryTool.eyebrow')}
         </span>
         <span className="display" style={{ fontSize: 17, fontWeight: 700, color: 'var(--tx)', lineHeight: 1.15 }}>

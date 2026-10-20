@@ -17,6 +17,7 @@
    (solo detallada). */
 .oKpis     { order: 1; }
 .oSteps    { order: 2; }
+.oSteps:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-3); }
 .oDonut    { order: 3; }
 .oBackup   { order: 4; }
 .oBudget   { order: 5; }

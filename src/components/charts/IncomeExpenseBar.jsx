@@ -62,7 +62,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
       <BarChart data={data} barGap={3} barCategoryGap="30%">
         <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false}/>
         <XAxis dataKey="mes" tick={{ fill:'var(--th)', fontSize:11, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false}/>
-        <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={{ fill:'var(--th)', fontSize:10, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>
+        <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={{ fill:'var(--th)', fontSize:11, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>
         <Tooltip content={<CustomTooltip sym={sym} m={m} t={t}/>} cursor={{ fill:'rgba(255,255,255,.03)' }}/>
         <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', paddingTop:8 }}/>
         <Bar dataKey="ingresos" name={t('chart.income')} fill="var(--accent)" radius={[3,3,0,0]} maxBarSize={32}/>
@@ -70,11 +70,11 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
       </BarChart>
     </ResponsiveContainer>
     </div>
-    <table className="sr-only">
+    <div className="sr-only"><table>
       <caption>{t('chart.bar.summary', { n: months })}</caption>
       <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('chart.income')}</th><th scope="col">{t('chart.expenses')}</th></tr></thead>
       <tbody>{data.map(d => <tr key={d.mes}><th scope="row">{d.mes}</th><td>{m(fmtMoney(d.ingresos, sym))}</td><td>{m(fmtMoney(d.gastos, sym))}</td></tr>)}</tbody>
-    </table>
+    </table></div>
     </>
   )
 }

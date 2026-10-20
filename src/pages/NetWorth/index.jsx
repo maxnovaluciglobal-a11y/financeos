@@ -75,7 +75,7 @@ export default function NetWorth() {
             </Card>
           </div>
 
-          <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
             {t('networth.disclaimer')}{propsValueTotal > 0 ? ' ' + t('networth.propsValueNote') : ''}
           </div>
         </>

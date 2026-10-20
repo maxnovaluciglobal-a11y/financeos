@@ -71,7 +71,19 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: 'icon-192-maskable.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
           { src: 'icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
-        ]
+        ],
+        // MKT-13: capturas para la ficha de instalación (Chrome/Android las
+        // muestran al instalar) y accesos directos del ícono. Las capturas son
+        // del demo (datos ficticios) y viven fuera del precache (globIgnores).
+        screenshots: [
+          { src: 'screenshots/narrow-inicio.png', sizes: '390x844', type: 'image/png', form_factor: 'narrow', label: 'Inicio: cuánto queda del mes, gastos por categoría y próximos pagos' },
+          { src: 'screenshots/narrow-movimientos.png', sizes: '390x844', type: 'image/png', form_factor: 'narrow', label: 'Movimientos: gastos del mes, pagos fijos y disponible' },
+          { src: 'screenshots/wide-inicio.png', sizes: '1280x800', type: 'image/png', form_factor: 'wide', label: 'Inicio en escritorio' },
+        ],
+        shortcuts: [
+          { name: 'Importar movimientos', short_name: 'Importar', url: '/app/?open=import', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Ver el resumen del mes', short_name: 'Inicio', url: '/app/?open=dashboard', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] },
+        ],
       },
       workbox: {
         // FIX pantalla negra (2026-07-11): el SW nuevo toma control INMEDIATO al
@@ -99,7 +111,7 @@ export default defineConfig({
         // cachea igual, recién la primera vez que la página que los usa se visita
         // de verdad. pdf.worker (pdfjs-dist) ya queda afuera por su extensión .mjs,
         // que no matchea los globPatterns por defecto — mismo resultado, sin listarlo acá.
-        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**', '**/fonts/pdf/**'],
+        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**', '**/fonts/pdf/**', '**/screenshots/**'],
         // Ya no hay regla de runtimeCaching para Google Fonts (2026-09-06,
         // RGPD): las fuentes ahora son estáticas locales en public/fonts/, así
         // que Workbox las toma en el PRECACHE por defecto (junto con el resto

@@ -38,8 +38,27 @@ export const DEFAULT_PRO_BENEFITS = [
   'pro.gate.benefit.country',
 ]
 
+// PRD-4 (20-oct-2026): el valor de Pro se ve antes de pagar.
+//  - Demo (todo abierto): una franja "Función Pro" arriba de la herramienta,
+//    para que quede claro qué parte del demo es de Pro.
+//  - Sin Pro: debajo de la tarjeta, una vista previa de la herramienta con
+//    los datos de la persona, desenfocada e inerte (no se lee ni se usa: el
+//    resultado queda bloqueado). preview={false} la apaga.
+function DemoProStrip({ t, days }) {
+  return (
+    <div role="note" style={{
+      display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', padding: '8px 12px',
+      background: 'var(--amb-bg)', border: '.5px solid var(--brd2)', borderRadius: 'var(--r)',
+      fontSize: 13, color: 'var(--tm)', lineHeight: 1.45,
+    }}>
+      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, letterSpacing: '.5px', color: 'var(--amb)', flexShrink: 0 }}>PRO</span>
+      <span>{t('pro.demo.strip', { days })}</span>
+    </div>
+  )
+}
+
 // eslint-disable-next-line no-unused-vars
-export default function ProGate({ children, feature, featureKey, benefits = DEFAULT_PRO_BENEFITS, feminine }) {
+export default function ProGate({ children, feature, featureKey, benefits = DEFAULT_PRO_BENEFITS, feminine, preview = true }) {
   const { isPro } = usePlan()
   const { t, lang } = useT()
   const account = useAccount()
@@ -47,6 +66,8 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
   // APP-N12: ?plan=annual|monthly de la landing (también tras confirmar el correo).
   const [period, setPeriod] = useState(() => (typeof window !== 'undefined' && planParam(initialSearch(window.location.search))) || DEFAULT_BILLING_PERIOD)
 
+  const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
+  if (isPro && isDemo) return <><DemoProStrip t={t} days={config.pricing.trialDays} />{children}</>
   if (isPro) return children
 
   const featureName = featureKey ? t(featureKey) : (feature || t('pro.gate.featureDefault'))
@@ -58,7 +79,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
   const priceVars = proPriceVars(lang)
   const ctaLabel = t(cta.labelKey, { days: trialDays })
 
-  return (
+  const gate = (
     <div style={{
       maxWidth: 520, margin: '48px auto', padding: '32px 24px',
       background: 'var(--sur)', border: '.5px solid var(--brd)',
@@ -113,6 +134,30 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
           {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}
         </p>
       )}
+      {preview && (
+        <p style={{ fontSize: 13, color: 'var(--tm)', marginTop: 16, lineHeight: 1.5 }}>
+          {t('pro.gate.previewNote', { days: trialDays })}
+        </p>
+      )}
     </div>
+  )
+
+  if (!preview) return gate
+  return (
+    <>
+      {gate}
+      <section aria-label={t('pro.gate.previewLabel')} style={{ maxWidth: 960, margin: '0 auto 32px' }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
+          {t('pro.gate.previewLabel')}
+        </div>
+        <div inert="" data-pro-preview="" style={{
+          position: 'relative', maxHeight: 380, overflow: 'hidden', pointerEvents: 'none', userSelect: 'none',
+          filter: 'blur(4px)', borderRadius: 'var(--rl)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 55%, transparent)', maskImage: 'linear-gradient(to bottom, black 55%, transparent)',
+        }}>
+          {children}
+        </div>
+      </section>
+    </>
   )
 }

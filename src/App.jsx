@@ -25,6 +25,8 @@ import { pageFromSearch, initialSearch } from './utils/deepLink.js'
 import { licenseKeyHash } from './utils/syncCrypto.js'
 import { markInternalUser } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
+import { usePlan } from './hooks/usePlan.js'
+import { startChecklist, markPageVisited } from './utils/proChecklist.js'
 import { useState, useEffect } from 'react'
 import { logClientError } from './utils/errorLog.js'
 
@@ -80,6 +82,13 @@ function Inner() {
   // R14: setPage apila en el historial (atrás del navegador/Android/iOS).
   // Las páginas siguen recibiendo setPage(id) como siempre.
   const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
+  // PRD-4: con Pro, abrir una pantalla marca su paso de la checklist de Pro.
+  const { isPro } = usePlan()
+  useEffect(() => {
+    if (!isPro || isDemoMode()) return
+    startChecklist()
+    markPageVisited(page)
+  }, [page, isPro])
   const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
   // undefined = todavía verificando sesión, null = sin sesión, objeto = autenticado.
   const [session, setSession] = useState(undefined)

@@ -66,7 +66,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
           { label:t('chart.debt.overall'), value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.75 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
         ].map((k,i) => (
           <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
-            <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
+            <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
             <div style={{ fontFamily:'var(--display)', fontSize:19, fontWeight:700, letterSpacing:'-0.01em', fontFeatureSettings:"'tnum' 1", color:k.color }}>{k.value}</div>
           </div>
         ))}
@@ -92,9 +92,9 @@ export default function DebtProgressList({ debts, sym = '$' }) {
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <SignalIcon kind={d.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{d.creditor}</span>
-                {d.rate > 0 && <span style={{ fontSize:9, fontFamily:'var(--mono)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: d.rate })}</span>}
+                {d.rate > 0 && <span style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: d.rate })}</span>}
               </div>
-              <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
+              <span style={{ fontSize:11, fontFamily:'var(--mono)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
                 {t(d.status.label)}
               </span>
             </div>
@@ -113,7 +113,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
                   { label:t('chart.debt.initial'), value:fmtV(d.initial, sym), color:'var(--th)' },
                 ].map((c,j) => (
                   <div key={j}>
-                    <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:1 }}>{c.label}</div>
+                    <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:1 }}>{c.label}</div>
                     <div style={{ fontSize:12, fontWeight:700, color:c.color, fontFamily:'var(--mono)' }}>{c.value}</div>
                   </div>
                 ))}
@@ -122,7 +122,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
             </div>
 
             {d.dueDate && (
-              <div style={{ marginTop:6, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
+              <div style={{ marginTop:6, fontSize:11, color:'var(--th)', fontFamily:'var(--mono)' }}>
                 {t('chart.debt.due', { date: fmtDay(d.dueDate) })} {d.minPayment > 0 ? `· ${t('chart.debt.minPayment', { amount: fmtV(d.minPayment, sym) })}` : ''}
               </div>
             )}

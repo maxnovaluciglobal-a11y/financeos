@@ -158,7 +158,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
               {/* Porcentaje a la derecha (anclado; con margen al borde del viewBox) */}
               <text x={RIGHT_X + RIGHT_W + 8} y={node.y + node.h/2}
                 dominantBaseline="middle"
-                style={{ fontFamily:'var(--mono, monospace)', fontSize:10, fill:'var(--th)' }}>
+                style={{ fontFamily:'var(--mono, monospace)', fontSize:11, fill:'var(--th)' }}>
                 {totalInc > 0 ? ((node.amount/totalInc)*100).toFixed(0) : 0}%
               </text>
             </g>
@@ -167,7 +167,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
       </svg>
 
       {/* Mobile fallback — lista simple */}
-      <div style={{ marginTop:4, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.5, display:'flex', flexWrap:'wrap', gap:'4px 16px' }}>
+      <div style={{ marginTop:4, fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.5, display:'flex', flexWrap:'wrap', gap:'4px 16px' }}>
         {items.map(it => (
           <span key={it.key} style={{ display:'flex', alignItems:'center', gap:4 }}>
             <span style={{ width:8, height:8, borderRadius:'50%', background:it.color.fill, display:'inline-block' }}/>
@@ -176,7 +176,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         ))}
       </div>
 
-      <div style={{ marginTop:8, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
+      <div style={{ marginTop:8, fontSize:11, color:'var(--th)', fontFamily:'var(--mono)' }}>
         {t('chart.flow.disclaimer')}
       </div>
     </div>

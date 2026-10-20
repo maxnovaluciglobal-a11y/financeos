@@ -55,22 +55,22 @@ const s = {
   select: { width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' },
   label: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.5px' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 12 },
-  th: { textAlign: 'left', padding: '7px 10px', fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--mono)' },
+  th: { textAlign: 'left', padding: '7px 10px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--mono)' },
   td: { padding: '7px 10px', borderBottom: '.5px solid var(--brd)', fontFamily: 'var(--mono)', verticalAlign: 'top' },
   badge: (status) => ({
-    display: 'inline-block', padding: '2px 7px', borderRadius: 'var(--rs)', fontSize: 10, fontWeight: 600,
+    display: 'inline-block', padding: '2px 7px', borderRadius: 'var(--rs)', fontSize: 11, fontWeight: 600,
     background: status === 'valid' ? 'var(--accent-bg)' : status === 'duplicate' ? 'rgba(245,166,35,.12)' : 'rgba(255,77,106,.12)',
     color: status === 'valid' ? 'var(--accent)' : status === 'duplicate' ? 'var(--amb)' : 'var(--red)',
   }),
   summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, marginBottom: 16 },
   summaryItem: { background: 'var(--sur2)', borderRadius: 8, padding: '10px 12px', border: '.5px solid var(--brd)' },
-  summaryLabel: { fontSize: 9, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 3 },
+  summaryLabel: { fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 3 },
   summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--tx)' },
   btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: '.15s' },
   btnPrimary: { background: 'var(--laton)', color: 'var(--navy)' },
   btnSecondary: { background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)' },
   btnRow: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 },
-  disclaimer: { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' },
+  disclaimer: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' },
   warn: { background: 'rgba(245,166,35,.1)', border: '.5px solid var(--amb)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', marginBottom: 16 },
 }
 
@@ -320,7 +320,7 @@ export default function ImportMovements({ setPage } = {}) {
               banks: BANK_TEMPLATES.filter(b => b.country === code),
             })).map(group => (
               <div key={group.code} style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>
                   <CountryBadge code={group.code} size={14} title={group.label} />{group.label}
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -332,7 +332,7 @@ export default function ImportMovements({ setPage } = {}) {
                 </div>
               </div>
             ))}
-            <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
               {t('imp.banks.notListed')}
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function ImportMovements({ setPage } = {}) {
                 <div style={{fontSize:12,fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
               </div>
-              <div style={{fontSize:10,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily:'var(--mono)',flexShrink:0}}>{t('imp.map.auto')}</div>
+              <div style={{fontSize:11,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily:'var(--mono)',flexShrink:0}}>{t('imp.map.auto')}</div>
             </div>
           ) : (
             <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--sur2)',border:'0.5px solid var(--brd)',borderRadius:8,marginBottom:16}}>
@@ -539,11 +539,11 @@ export default function ImportMovements({ setPage } = {}) {
                       <option value="">{t('imp.review.noCategory')}</option>
                       {(row.type === 'income' ? categoriesIncome : categoriesExpense).map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
                     </select>
-                    {row.categorySuggested && <div style={{ fontSize: 9, color: 'var(--accent)', fontFamily: 'var(--mono)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
+                    {row.categorySuggested && <div style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
                   </td>
                   <td style={s.td}>
                     <span style={s.badge(row.status)}>{row.status === 'valid' ? t('imp.review.stValid') : row.status === 'duplicate' ? t('imp.review.stDup') : t('imp.review.stError')}</span>
-                    {row.errors?.length > 0 && <div style={{ fontSize: 10, color: 'var(--red)', marginTop: 2 }}>{row.errors.map(c => t(`imp.rowErr.${c}`)).join(', ')}</div>}
+                    {row.errors?.length > 0 && <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 2 }}>{row.errors.map(c => t(`imp.rowErr.${c}`)).join(', ')}</div>}
                   </td>
                 </tr>
               ))}</tbody>

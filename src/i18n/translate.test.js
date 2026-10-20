@@ -499,3 +499,21 @@ describe('paridad de deleteAccount., feedback. y syncPass. (es/en/pt/de)', () =>
     for (const d of [es, en, pt, de]) expect(d['deleteAccount.confirmWord']).toBe(d['deleteAccount.confirmWord'].toUpperCase())
   })
 })
+
+// PRD-4 (auditoría 360): vista previa de Pro, franja del demo y checklist de Pro.
+describe('paridad de proTrial. y pro.demo. (es/en/pt/de)', () => {
+  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('proTrial.') || k.startsWith('pro.demo.') || k.startsWith('pro.gate.preview')).sort()
+  it('las 4 lenguas tienen las mismas claves y variables', () => {
+    const base = pick(es)
+    expect(base.length).toBe(13)
+    for (const d of [en, pt, de]) expect(pick(d)).toEqual(base)
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of base) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+  it('sin voseo, exclamaciones ni "por favor"; el alemán no tutea', () => {
+    const VOSEO = /\b(podés|tenés|querés|vos|probá|abrí|revisá|importá)\b/i
+    for (const k of pick(es)) { expect(es[k], k).not.toMatch(VOSEO); expect(es[k], k).not.toMatch(/[¡!]|por favor/i) }
+    for (const d of [en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/!/)
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
+  })
+})

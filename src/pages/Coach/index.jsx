@@ -33,7 +33,7 @@ function SignalCard({ signal }) {
         <span style={{ fontSize: 11, fontWeight: 600, color, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>
           {t(SEV_LABEL[signal.severity])}
         </span>
-        <span style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginLeft: 'auto' }}>
           {signal.category}
         </span>
       </div>
@@ -143,7 +143,7 @@ export default function Coach() {
     <div>
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--grn)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--grn)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>
           {t('coach.kicker')}
         </div>
         <h1 className="display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--tx)', marginBottom: 4 }}>
@@ -151,7 +151,7 @@ export default function Coach() {
         </h1>
         <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 4 }}>
           {t('coach.sub', { month: metrics.activeMonth })}
-          <span style={{display:'block',fontSize:10,color:'var(--th)',marginTop:4,fontFamily:'var(--mono)'}}>
+          <span style={{display:'block',fontSize:11,color:'var(--th)',marginTop:4,fontFamily:'var(--mono)'}}>
             {t('coach.disclaimerShort')}
           </span>
         </p>
@@ -241,7 +241,7 @@ export default function Coach() {
         <>
           {warnings.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
                 <InlineIcon kind="warning" size={12} />{t('coach.section.review')}
               </div>
               {warnings.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -249,7 +249,7 @@ export default function Coach() {
           )}
           {attentions.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--amb)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--amb)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
                 <InlineIcon kind="attention" size={12} />{t('coach.section.attention')}
               </div>
               {attentions.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -257,7 +257,7 @@ export default function Coach() {
           )}
           {infos.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--grn)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--grn)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
                 <InlineIcon kind="info" size={12} />{t('coach.section.info')}
               </div>
               {infos.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -279,7 +279,7 @@ export default function Coach() {
         return (
           <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '14px 16px', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px' }}>{t('coach.check.title')}</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px' }}>{t('coach.check.title')}</div>
               <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: doneCount === items.length ? 'var(--accent)' : 'var(--th)' }}>{doneCount}/{items.length}</span>
             </div>
             {items.map((it, i) => (
@@ -293,7 +293,7 @@ export default function Coach() {
       })()}
 
       {/* Disclaimer completo al pie */}
-      <div style={{ padding: '10px 12px', background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 8 }}>
+      <div style={{ padding: '10px 12px', background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 8 }}>
         {t('coach.disclaimerFull')}
       </div>
     </div>

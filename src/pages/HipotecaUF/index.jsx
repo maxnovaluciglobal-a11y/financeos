@@ -122,7 +122,7 @@ function HipotecaUFBody() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
               {proyeccion.map(p => (
                 <div key={p.anios} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '10px 12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{t(p.anios === 1 ? 'hipoteca.inYear' : 'hipoteca.inYears', { n: p.anios })}</div>
+                  <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{t(p.anios === 1 ? 'hipoteca.inYear' : 'hipoteca.inYears', { n: p.anios })}</div>
                   <div style={{ fontFamily: 'var(--mono)', fontSize: 15, fontWeight: 700, color: 'var(--tx)' }}>{fmtCLP(p.clp)}</div>
                 </div>
               ))}
@@ -142,24 +142,24 @@ function HipotecaUFBody() {
             {impactoPrepago.mesesAhorrados > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 8 }}>
                 <div style={{ background: 'var(--grn-tint)', border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)', borderRadius: 'var(--r)', padding: '12px 14px' }}>
-                  <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{t('hipoteca.shortenBy')}</div>
+                  <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{t('hipoteca.shortenBy')}</div>
                   <div style={{ fontFamily: 'var(--mono)', fontSize: 20, fontWeight: 700, color: 'var(--grn)' }}>
                     {t('hipoteca.yearsMonths', { y: Math.floor(impactoPrepago.mesesAhorrados / 12), m: impactoPrepago.mesesAhorrados % 12 })}
                   </div>
                 </div>
                 <div style={{ background: 'var(--grn-tint)', border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)', borderRadius: 'var(--r)', padding: '12px 14px' }}>
-                  <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{t('hipoteca.netInterestSaved')}</div>
+                  <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{t('hipoteca.netInterestSaved')}</div>
                   <div style={{ fontFamily: 'var(--mono)', fontSize: 20, fontWeight: 700, color: 'var(--grn)' }}>
                     {fmtUF(impactoPrepago.interesesAhorradosNetosUF)}{uf && <span style={{ fontSize: 12, fontWeight: 400 }}> · {fmtCLP(impactoPrepago.interesesAhorradosNetosUF * uf)}</span>}
                   </div>
-                  <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6, lineHeight: 1.5 }}>
                     {t('hipoteca.interestBreakdown', { interest: fmtUF(impactoPrepago.interesesAhorradosUF), fee: fmtUF(impactoPrepago.comisionPrepagoUF) })}
                   </div>
                 </div>
               </div>
             )}
             {impactoPrepago.mesesAhorrados > 0 && (
-              <div style={{ marginTop: 12, fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', lineHeight: 1.6, padding: '8px 10px', background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)' }}>
+              <div style={{ marginTop: 12, fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', lineHeight: 1.6, padding: '8px 10px', background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)' }}>
                 {t('hipoteca.feeNotePre')} <strong>{t('hipoteca.feeNoteBold')}</strong>{t('hipoteca.feeNotePost')}
               </div>
             )}

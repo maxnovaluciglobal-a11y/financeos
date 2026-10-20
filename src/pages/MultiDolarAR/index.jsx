@@ -61,7 +61,7 @@ function MultiDolarARBody() {
         <Card>
           <CardHeader title={t('multidolarar.rates.title')} right={
             live && (
-              <span style={{ fontSize: 10, fontFamily: 'var(--mono)', color: live.source === 'api' ? 'var(--accent)' : 'var(--th)' }}>
+              <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: live.source === 'api' ? 'var(--accent)' : 'var(--th)' }}>
                 {live.source === 'api' ? `● ${t('multidolarar.rates.liveAt', { date: fmtDay(live.at ?? live.ts, true) })}` : `○ ${t('multidolarar.rates.offlineAt', { date: fmtDay(live.at ?? live.ts) })}`}
               </span>
             )
@@ -69,7 +69,7 @@ function MultiDolarARBody() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
             {DOLARES.map(d => (
               <div key={d.key} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '10px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{d.label}</div>
+                <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>{d.label}</div>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 16, fontWeight: 700, color: 'var(--tx)' }}>
                   {live ? fmtARS(live[d.key]) : '—'}
                 </div>

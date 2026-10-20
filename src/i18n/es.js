@@ -2812,4 +2812,18 @@ export const es = {
     'refcur.sheet.invalid': "Escribe un número mayor que 0.",
     'refcur.sheet.save': "Guardar tasa",
     'nav.sec.tools': "Herramientas",
+    // PRD-4: vista previa de Pro, franja del demo y checklist de los primeros días de Pro.
+    'pro.gate.previewLabel': "Vista previa",
+    'pro.gate.previewNote': "Debajo se ve cómo queda esta herramienta con tus datos. El resultado se desbloquea con Pro, también durante la prueba de {days} días.",
+    'pro.demo.strip': "Función Pro. En el demo está abierta para que la pruebes; con tu cuenta se incluye en la prueba de {days} días.",
+    'proTrial.title': "Tres cosas para probar en Pro",
+    'proTrial.sub': "Son los mismos pasos de los correos de la prueba (días 1, 3 y 10). Cada uno se marca al abrir su pantalla.",
+    'proTrial.step.import': "Importar los movimientos de tu banco",
+    'proTrial.step.advisor': "Abrir Modo Asesor y ver el diagnóstico del mes",
+    'proTrial.step.report': "Revisar el reporte mensual y el IQ Score",
+    'proTrial.done': "Hecho",
+    'proTrial.go': "Abrir",
+    'proTrial.hide': "Ocultar esta lista",
+    'proTrial.progress': "{n} de 3",
+    'proTrial.listLabel': "Pasos para probar Pro",
 }

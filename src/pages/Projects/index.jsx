@@ -89,7 +89,7 @@ export default function Projects() {
               <Card key={g.name}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)' }}>{g.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('projects.movCount', { n: g.count })}</div>
+                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('projects.movCount', { n: g.count })}</div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   <Row label={t('projects.incomeRow')} value={`+${fmtMoney(g.ingresos, sym)}`} color="var(--grn)" />
@@ -108,7 +108,7 @@ export default function Projects() {
                   const mort = mortgageOf(g.name)
                   if (editing === g.name) return (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '.5px solid var(--brd)' }}>
-                      <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 5 }}>{t('projects.valueHint')}</div>
+                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 5 }}>{t('projects.valueHint')}</div>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <input type="number" inputMode="decimal" min="0" step="any" value={draft} autoFocus placeholder="0"
                           onChange={e => setDraft(e.target.value)}
@@ -131,7 +131,7 @@ export default function Projects() {
                       </div>
                       {mort > 0 && <Row label={t('projects.linkedMortgage')} value={`-${fmtMoney(mort, sym)}`} color="var(--neg)" />}
                       {val > 0 && mort === 0 && (
-                        <div style={{ fontSize: 10, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
+                        <div style={{ fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
                           <InlineIcon kind="alert" size={13} />{t('projects.noMortgageHint')}
                         </div>
                       )}
@@ -148,7 +148,7 @@ export default function Projects() {
             ))}
           </div>
 
-          <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
             {t('projects.disclaimer')}
           </div>
         </>

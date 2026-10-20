@@ -107,7 +107,7 @@ export default function Settings() {
 
   const srow = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 0', borderBottom:'0.5px solid var(--brd)' }
   const slbl = { fontSize:13, fontWeight:500, color:'var(--tx)' }
-  const ssub = { fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', marginTop:1 }
+  const ssub = { fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:1 }
 
   return (
     <div className="stack">
@@ -252,12 +252,12 @@ export default function Settings() {
               </Btn>
             </div>
             {fx && (
-              <div style={{fontSize:10, color: fx.source === 'fixer' ? 'var(--grn)' : 'var(--th)', fontFamily:'var(--mono)'}}>
+              <div style={{fontSize:11, color: fx.source === 'fixer' ? 'var(--grn)' : 'var(--th)', fontFamily:'var(--mono)'}}>
                 {fx.source === 'fixer' ? `● ${t('settings.exchangeRate.live')}` : `○ ${t('settings.exchangeRate.offline')}`}
               </div>
             )}
             {settings.usdRate > 0 && (
-              <div style={{fontSize:10, color:'var(--accent)', fontFamily:'var(--mono)'}}>
+              <div style={{fontSize:11, color:'var(--accent)', fontFamily:'var(--mono)'}}>
                 → US$1 = {Number(settings.usdRate).toLocaleString(moneyLocale())} {settings.currency} · US$100 = {(settings.usdRate * 100).toLocaleString(moneyLocale())} {settings.currency}
               </div>
             )}
@@ -392,7 +392,7 @@ export default function Settings() {
         {' · '}{t('settings.support.time')}{' · '}
         <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
       </p>
-      <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
+      <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
         {t('settings.footer')}
       </div>
     </div>
@@ -413,7 +413,7 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
   const result = taxId ? validateTaxId(cc, taxId) : null
 
   const srow = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '0.5px solid var(--brd)' }
-  const sub = { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 1 }
+  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 1 }
   const lbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
 
   let feedback = null

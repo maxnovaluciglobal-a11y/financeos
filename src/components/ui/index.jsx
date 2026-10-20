@@ -196,9 +196,12 @@ export function EmptyPickList({ label, items }) {
   )
 }
 
-export function TxRow({ dot, name, meta, amount, isIncome, onDelete, onEdit }) {
+// name y meta pueden ser texto o nodos (ícono + texto); con nodos, `label`
+// es el texto para los aria-label de editar/borrar. Lo usan Ingresos y
+// Movimientos (REC-N5): una mejora de la fila llega a las dos listas.
+export function TxRow({ dot, name, label: labelProp, meta, amount, isIncome, onDelete, onEdit }) {
   const { t } = useT()
-  const label = name || t('ui.transaction')
+  const label = labelProp || (typeof name === 'string' && name) || t('ui.transaction')
   return (
     <div className={styles.txRow}>
       <div className={styles.txDot} style={{ background: dot }} />

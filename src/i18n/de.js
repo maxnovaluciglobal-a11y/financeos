@@ -2811,4 +2811,18 @@ export const de = {
     'refcur.sheet.invalid': "Geben Sie eine Zahl größer als 0 ein.",
     'refcur.sheet.save': "Kurs speichern",
     'nav.sec.tools': "Werkzeuge",
+    // PRD-4: vista previa de Pro, franja del demo y checklist de los primeros días de Pro.
+    'pro.gate.previewLabel': "Vorschau",
+    'pro.gate.previewNote': "Unten sehen Sie, wie dieses Werkzeug mit Ihren Daten aussieht. Das Ergebnis wird mit Pro freigeschaltet, auch während der {days}-tägigen Testphase.",
+    'pro.demo.strip': "Pro-Funktion. In der Demo ist sie zum Ausprobieren geöffnet; mit Ihrem Konto ist sie in der {days}-tägigen Testphase enthalten.",
+    'proTrial.title': "Drei Dinge, die Sie in Pro ausprobieren können",
+    'proTrial.sub': "Es sind dieselben Schritte wie in den E-Mails der Testphase (Tag 1, 3 und 10). Jeder Schritt wird abgehakt, sobald Sie seinen Bildschirm öffnen.",
+    'proTrial.step.import': "Umsätze Ihrer Bank importieren",
+    'proTrial.step.advisor': "Den Beratermodus öffnen und die Monatsdiagnose ansehen",
+    'proTrial.step.report': "Monatsbericht und IQ Score prüfen",
+    'proTrial.done': "Erledigt",
+    'proTrial.go': "Öffnen",
+    'proTrial.hide': "Diese Liste ausblenden",
+    'proTrial.progress': "{n} von 3",
+    'proTrial.listLabel': "Schritte zum Ausprobieren von Pro",
 }

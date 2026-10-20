@@ -360,7 +360,7 @@ export default function AuthGate({ onAuthenticated }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
           <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
         </div>
 

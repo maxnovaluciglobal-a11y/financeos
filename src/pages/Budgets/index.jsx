@@ -161,7 +161,7 @@ export default function Budgets() {
       {ingresoNeto > totalBudget && (
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',background:'var(--accent-bg)',border:'.5px solid var(--accent)',borderRadius:8}}>
           <div>
-            <div style={{fontSize:10,color:'var(--accent)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('budgets.unassigned.label')}</div>
+            <div style={{fontSize:11,color:'var(--accent)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('budgets.unassigned.label')}</div>
             <div style={{fontSize:16,fontWeight:700,color:'var(--accent)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto-totalBudget,sym)}</Money></div>
           </div>
           <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',maxWidth:320,lineHeight:1.5}}>{t('budgets.unassigned.hint')}</div>
@@ -187,11 +187,11 @@ export default function Budgets() {
             <CardHeader title={t('budgets.model.title')} />
             {ingresoNeto > 0 ? (
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
-                <span style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.model.netIncome', { month: monthLabel(activeMonth) })}</span>
+                <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.model.netIncome', { month: monthLabel(activeMonth) })}</span>
                 <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto,sym)}</Money></span>
               </div>
             ) : (
-              <div style={{fontSize:10,color:'var(--neg)',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'var(--neg-bg)',borderRadius:6}}>
+              <div style={{fontSize:11,color:'var(--neg)',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'var(--neg-bg)',borderRadius:6}}>
                 <InlineIcon kind="alert" size={13} />{t('budgets.model.noIncome', { month: monthLabel(activeMonth) })}
               </div>
             )}
@@ -228,17 +228,17 @@ export default function Budgets() {
                         <div>
                           {/* La fila de ahorro usa etiqueta traducida (no está en el mapa) → emoji fijo */}
                           <span style={{fontSize:11,fontFamily:'var(--mono)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{s.highlight ? `💰 ${catName(s.cat, lang)}` : catLabel(s.cat, lang)}</span>
-                          <span style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:6}}>{s.grupo}</span>
+                          <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:6}}>{s.grupo}</span>
                         </div>
                         <div style={{textAlign:'right'}}>
                           <span style={{fontSize:11,fontFamily:'var(--mono)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:600}}>{inc>0?fmtMoney(Math.round(inc*s.pct),sym):'—'}</span>
-                          <span style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:4}}>{(s.pct*100).toFixed(0)}%</span>
+                          <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:4}}>{(s.pct*100).toFixed(0)}%</span>
                         </div>
                       </div>
                     ))}
                   </div>
                   {inc > 0 && <>
-                    <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:8}}>{t('budgets.model.onlyNew')}</div>
+                    <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:8}}>{t('budgets.model.onlyNew')}</div>
                     <Btn variant="primary" onClick={aplicar}>{t('budgets.model.apply')}</Btn>
                   </>}
                 </div>
@@ -278,14 +278,14 @@ export default function Budgets() {
                   <div style={{flex:1,display:'flex',flexDirection:'column',gap:8}}>
                     {[{lb:t('budgets.lb.total'),v:fmtMoney(total,sym),c:'var(--tx)'},{lb:t('budgets.lb.spent'),v:fmtMoney(gastado,sym),c:strokeColor},{lb:t('budgets.lb.available'),v:fmtMoney(disponible,sym),c:'var(--grn)'}].map(item => (
                       <div key={item.lb} style={{background:'var(--sur2)',borderRadius:6,padding:'8px 12px'}}>
-                        <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:2}}>{item.lb}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:2}}>{item.lb}</div>
                         <div style={{fontSize:14,fontWeight:700,color:item.c,fontFamily:'var(--mono)'}}>{item.v}</div>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div style={{marginTop:16,paddingTop:16,borderTop:'0.5px solid var(--brd)'}}>
-                  <div style={{fontFamily:'var(--mono)',fontSize:10,letterSpacing:'1px',textTransform:'uppercase',color:'var(--grn)',marginBottom:10}}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</div>
+                  <div style={{fontFamily:'var(--mono)',fontSize:11,letterSpacing:'1px',textTransform:'uppercase',color:'var(--grn)',marginBottom:10}}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))',gap:10}}>
                     {budgets.map(b => {
                       const spent    = expByCat[b.category] || 0
@@ -300,10 +300,10 @@ export default function Budgets() {
                       const r2=32,cx2=45,cy2=45,circ2=2*Math.PI*r2,dash2=Math.min(p,1)*circ2
                       return (
                         <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'color-mix(in srgb, var(--neg) 45%, transparent)':warn?'color-mix(in srgb, var(--warn) 35%, transparent)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>
-                          <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:10,cursor:'pointer',padding:'1px 4px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                          <div style={{fontSize:10,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
+                          <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'1px 4px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+                          <div style={{fontSize:11,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
                           {carry > 0 && (
-                            <div style={{fontSize:8,fontFamily:'var(--mono)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
+                            <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
                               <InlineIcon kind="subs" size={11} />+<Money>{fmtMoney(carry,sym)}</Money>
                             </div>
                           )}
@@ -316,7 +316,7 @@ export default function Budgets() {
                           <ScoreState level={lvl} label={stateLb} size={13} style={{ fontSize:12, fontFamily:'var(--mono)' }} />
                           <div style={{textAlign:'center'}}>
                             <div style={{fontSize:11,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}><Money>{fmtMoney(spent,sym)}</Money></div>
-                            <div style={{fontSize:8,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}{carry > 0 ? t('budgets.cat.base', { base: fmtMoney(b.limit,sym) }) : ''}</div>
+                            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}{carry > 0 ? t('budgets.cat.base', { base: fmtMoney(b.limit,sym) }) : ''}</div>
                           </div>
                         </div>
                       )

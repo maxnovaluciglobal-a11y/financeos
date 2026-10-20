@@ -173,7 +173,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
                   // a 4.14:1, rompiéndolo también). --amb-bg ya es el tono claro correcto
                   // para este par (mismo que usa .badge_amber en ui.module.css): ~4.74:1
                   // en claro, ~5.32:1 en oscuro sobre el fondo real del sidebar (--sur).
-                  <span style={{ marginLeft:'auto', fontSize:8, fontFamily:'var(--mono)', background:'var(--amb-bg)', color:'var(--amb)', borderRadius:4, padding:'1px 5px', letterSpacing:'.5px', fontWeight:700 }}>PRO</span>
+                  <span style={{ marginLeft:'auto', fontSize:11, fontFamily:'var(--mono)', background:'var(--amb-bg)', color:'var(--amb)', borderRadius:4, padding:'1px 5px', letterSpacing:'.5px', fontWeight:700 }}>PRO</span>
                 )}
               </button>
             ))}

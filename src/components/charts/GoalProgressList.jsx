@@ -62,7 +62,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
           { label:t('chart.goal.completed'), value:`${completedCount}/${rows.length}`, color: completedCount > 0 ? 'var(--accent)' : 'var(--th)' },
         ].map((k,i) => (
           <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
-            <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
+            <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
             <div style={{ fontFamily:'var(--display)', fontSize:19, fontWeight:700, letterSpacing:'-0.01em', fontFeatureSettings:"'tnum' 1", color:k.color }}>{k.value}</div>
           </div>
         ))}
@@ -89,12 +89,12 @@ export default function GoalProgressList({ goals, sym = '$' }) {
                 <SignalIcon kind={g.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{g.name}</span>
                 {g.priority && (
-                  <span style={{ fontSize:9, fontFamily:'var(--mono)', color:PRIORITY_COLOR[g.priority] || 'var(--th)', background:`${PRIORITY_COLOR[g.priority] || 'var(--th)'}18`, padding:'1px 6px', borderRadius: 'var(--rs)' }}>
+                  <span style={{ fontSize:11, fontFamily:'var(--mono)', color:PRIORITY_COLOR[g.priority] || 'var(--th)', background:`${PRIORITY_COLOR[g.priority] || 'var(--th)'}18`, padding:'1px 6px', borderRadius: 'var(--rs)' }}>
                     {prioLabel(g.priority, lang)}
                   </span>
                 )}
               </div>
-              <span style={{ fontSize:10, fontFamily:'var(--mono)', fontWeight:600, color:g.status.color, background:`${g.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
+              <span style={{ fontSize:11, fontFamily:'var(--mono)', fontWeight:600, color:g.status.color, background:`${g.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
                 {t(g.status.label)}
               </span>
             </div>
@@ -113,7 +113,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
                   { label:t('chart.goal.target'), value:fmtV(g.target,    sym), color:'var(--th)' },
                 ].map((c,j) => (
                   <div key={j}>
-                    <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:1 }}>{c.label}</div>
+                    <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:1 }}>{c.label}</div>
                     <div style={{ fontSize:12, fontWeight:700, color:c.color, fontFamily:'var(--mono)' }}>{c.value}</div>
                   </div>
                 ))}
@@ -122,7 +122,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
             </div>
 
             {g.targetDate && (
-              <div style={{ marginTop:6, fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
+              <div style={{ marginTop:6, fontSize:11, color:'var(--th)', fontFamily:'var(--mono)' }}>
                 {t('chart.goal.targetDate', { date: monthYearLabel(g.targetDate.slice(0, 7)) })}
               </div>
             )}

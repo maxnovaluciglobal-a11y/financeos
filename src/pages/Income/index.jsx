@@ -120,7 +120,7 @@ export default function Income({ setPage }) {
                   <Btn variant="primary" size="sm" onClick={detectFromPaste} disabled={!pasteText.trim()}>{t('income.paste.detect')}</Btn>
                   <Btn variant="ghost" size="sm" onClick={() => { setShowPaste(false); setPasteText('') }}>{t('common.cancel')}</Btn>
                 </div>
-                <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', marginTop:6, lineHeight:1.5 }}>
+                <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:6, lineHeight:1.5 }}>
                   {t('income.paste.local')}
                 </div>
               </div>
@@ -179,22 +179,22 @@ export default function Income({ setPage }) {
                   <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.04)',marginBottom:6}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
                       <div style={{gridColumn:'1/-1'}}>
-                        <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.source')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.source')}</div>
                         <input type="text" value={editForm.source||''} onChange={e=>setEditForm(f=>({...f,source:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.amount')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.amount')}</div>
                         <input type="number" inputMode="decimal" min="0" step="any" value={editForm.amount||''} onChange={e=>setEditForm(f=>({...f,amount:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.date')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.date')}</div>
                         <input type="date" value={editForm.date||''} onChange={e=>setEditForm(f=>({...f,date:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.category')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.category')}</div>
                         <select value={editForm.category||''} onChange={e=>setEditForm(f=>({...f,category:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                           {categoriesIncome.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
@@ -207,13 +207,12 @@ export default function Income({ setPage }) {
                     </div>
                   </div>
                 ) : (
-                  <div key={r.id}>
-                    <TxRow dot={CAT_COLORS[r.category]||'var(--th)'} name={`${r.inv?'💼 ':''}${r.source}`}
+                    <TxRow key={r.id} dot={CAT_COLORS[r.category]||'var(--th)'}
+                      name={<>{r.inv && <InlineIcon kind="investment" size={11} />}{r.source}</>} label={r.source}
                       meta={`${catLabel(r.category, lang)} · ${r.date.slice(5).replace('-','/')}${r.recurrence!=='Único'?' · '+recurrenceLabel(r.recurrence, lang):''}${r.inv?' · '+t('income.row.investment'):''}`}
                       amount={fmtMoney(r.amount,sym)} isIncome
                       onDelete={()=>deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo'))}
                       onEdit={()=>{setEditingId(r.id);setEditForm({source:r.source,amount:r.amount,date:r.date,category:r.category,recurrence:r.recurrence,notes:r.notes||''})}} />
-                  </div>
                 ))}
               </div>
           }

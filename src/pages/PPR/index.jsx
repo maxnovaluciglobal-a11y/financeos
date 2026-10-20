@@ -161,7 +161,7 @@ export default function PPRPage() {
             </ul>
           </Card>
 
-          <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
             {t('ppr.footer')}
           </div>
         </>

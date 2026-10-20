@@ -117,7 +117,7 @@ export function BackupStatusBadge({ compact = false }) {
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
-        fontSize: compact ? 10 : 11, color: 'var(--amb)',
+        fontSize: 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
         <SignalIcon kind="alert" size={13} />
@@ -133,7 +133,7 @@ export function BackupStatusBadge({ compact = false }) {
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--red-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(162,62,46,.25)',
-        fontSize: compact ? 10 : 11, color: 'var(--red)',
+        fontSize: 11, color: 'var(--red)',
         fontFamily: 'var(--mono)',
       }}>
         <SignalIcon kind="alert" size={13} />
@@ -149,7 +149,7 @@ export function BackupStatusBadge({ compact = false }) {
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: '0.5px solid rgba(156,84,25,.25)',
-        fontSize: compact ? 10 : 11, color: 'var(--amb)',
+        fontSize: 11, color: 'var(--amb)',
         fontFamily: 'var(--mono)',
       }}>
         <SignalIcon kind="attention" size={13} />
@@ -164,7 +164,7 @@ export function BackupStatusBadge({ compact = false }) {
       padding: compact ? '4px 10px' : '10px 12px',
       background: 'var(--pos-bg)', borderRadius: compact ? 'var(--rs)' : 8,
       border: '0.5px solid rgba(53,110,87,.25)',
-      fontSize: compact ? 10 : 11, color: 'var(--pos)',
+      fontSize: 11, color: 'var(--pos)',
       fontFamily: 'var(--mono)',
     }}>
       <span>✓</span>
@@ -425,7 +425,7 @@ export default function BackupManager() {
     borderBottom: '0.5px solid var(--brd)', gap: 12,
   }
   const slbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
-  const ssub = { fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2, lineHeight: 1.5 }
+  const ssub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2, lineHeight: 1.5 }
   const btn = (variant = 'default') => ({
     padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600,
     cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
@@ -573,7 +573,7 @@ export default function BackupManager() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>☁ {t('backup.cloud.title')}</div>
-                <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
                   {cloudInfo?.connected
                     ? `${t('backup.cloud.connected', { id: cloudInfo.userId })}${cloudInfo.lastSync ? ' · ' + t('backup.cloud.lastSync', { date: formatDate(cloudInfo.lastSync) }) : ''}`
                     : t('backup.cloud.noSession')}
@@ -598,7 +598,7 @@ export default function BackupManager() {
                 </button>
               </div>
             </div>
-            <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5 }}>
               {t('backup.cloud.note')}
             </div>
           </div>

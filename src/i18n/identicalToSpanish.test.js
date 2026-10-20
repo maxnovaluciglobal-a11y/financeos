@@ -10,6 +10,7 @@ import { de } from './de.js'
 
 const ALLOWED = {
   pt: new Set([
+    'proTrial.hide', // "Ocultar esta lista": igual en pt (PRD-4)
     "adv.kpi.budgetsOver",
     "adv.pdf.export",
     "adv.score.client",

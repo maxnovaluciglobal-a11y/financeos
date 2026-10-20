@@ -340,7 +340,7 @@ export default function Subscriptions() {
               <thead>
                 <tr style={{ background: 'var(--sur2)', borderBottom: '.5px solid var(--brd)' }}>
                   {[t('subs.th.service'), t('subs.th.category'), t('subs.th.perMonth'), t('subs.th.perYear'), t('subs.th.freq'), t('subs.th.nextPay'), t('subs.th.status'), ''].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -363,7 +363,7 @@ export default function Subscriptions() {
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <button onClick={() => toggleStatus(sub)} aria-pressed={isActive} style={{
-                          fontSize: 10, fontFamily: 'var(--mono)', padding: '2px 8px', borderRadius: 'var(--rs)', cursor: 'pointer',
+                          fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 8px', borderRadius: 'var(--rs)', cursor: 'pointer',
                           background: isActive ? 'var(--grn-bg)' : 'var(--sur2)',
                           color: isActive ? 'var(--grn)' : 'var(--th)',
                           border: `.5px solid ${isActive ? 'var(--grn)' : 'var(--brd)'}`,
@@ -384,7 +384,7 @@ export default function Subscriptions() {
         )}
       </Card>
 
-      <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 16 }}>
         {t('subs.disclaimer')}
       </div>
     </div>

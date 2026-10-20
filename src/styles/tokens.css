@@ -89,7 +89,7 @@
   --rxl:       12px;   /* tarjetas destacadas / modales */
   --r-plate:   3px;    /* placa "IQ" del wordmark */
   /* Escala tipográfica */
-  --fs-xs:     10px;
+  --fs-xs:     11px;   /* piso de legibilidad (REC-N6): nada de texto bajo 11 px */
   --fs-sm:     12px;
   --fs-md:     14px;
   --fs-lg:     18px;

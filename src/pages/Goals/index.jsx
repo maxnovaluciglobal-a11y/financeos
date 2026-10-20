@@ -162,7 +162,7 @@ export default function Goals({ setPage }) {
           {ingresoNetoGoals > 0 ? (
             <>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
-                <span style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('goals.suggest.basedOn', { month: activeMonth })}</span>
+                <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('goals.suggest.basedOn', { month: activeMonth })}</span>
                 <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNetoGoals,sym)}</Money></span>
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:14}}>
@@ -175,7 +175,7 @@ export default function Goals({ setPage }) {
                       <div style={{minWidth:0}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4,flexWrap:'wrap',gap:4}}>
                           <span style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{s.name}</span>
-                          {s.alreadyExists && <span style={{fontSize:10,padding:'1px 6px',borderRadius:4,background:'var(--sur2)',color:'var(--th)',fontFamily:'var(--mono)'}}>{t('goals.suggest.exists')}</span>}
+                          {s.alreadyExists && <span style={{fontSize:11,padding:'1px 6px',borderRadius:4,background:'var(--sur2)',color:'var(--th)',fontFamily:'var(--mono)'}}>{t('goals.suggest.exists')}</span>}
                         </div>
                         <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:6,lineHeight:1.4}}>{s.description}</div>
                         <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:4}}>
@@ -195,7 +195,7 @@ export default function Goals({ setPage }) {
                   <span style={{marginLeft:8,color:'var(--th)'}}>{t('goals.suggest.pctIncome', { pct: ingresoNetoGoals>0?((totalMonthlyContribution(suggestions)/ingresoNetoGoals)*100).toFixed(0):0 })}</span>
                 </div>
               </div>
-              <div style={{fontSize:9,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12,lineHeight:1.5}}>
+              <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12,lineHeight:1.5}}>
                 <InlineIcon kind="info" size={12} />{t('goals.suggest.disclaimer')}
               </div>
               <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -236,22 +236,22 @@ export default function Goals({ setPage }) {
                 <div style={{display:'flex',flexDirection:'column',gap:10}}>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
                     <div style={{gridColumn:'1/-1'}}>
-                      <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.name')}</div>
+                      <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.name')}</div>
                       <input type="text" value={editForm.name||''} onChange={e=>setEditForm(f=>({...f,name:e.target.value}))}
                         style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                     </div>
                     <div>
-                      <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.target')}</div>
+                      <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.target')}</div>
                       <input type="number" inputMode="decimal" min="0" step="any" value={editForm.target||''} onChange={e=>setEditForm(f=>({...f,target:e.target.value}))}
                         style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                     </div>
                     <div>
-                      <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.date')}</div>
+                      <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.date')}</div>
                       <input type="month" value={(editForm.targetDate||'').slice(0,7)} onChange={e=>setEditForm(f=>({...f,targetDate:e.target.value}))}
                         style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                     </div>
                     <div>
-                      <div style={{fontSize:10,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.priority')}</div>
+                      <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.priority')}</div>
                       <select value={editForm.priority||'Media'} onChange={e=>setEditForm(f=>({...f,priority:e.target.value}))}
                         style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                         {['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioEmoji(p)} {prioLabel(p, lang)}</option>)}
@@ -269,9 +269,9 @@ export default function Goals({ setPage }) {
                     <div style={{flex:1,paddingRight:8}}>
                       <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{g.name}</div>
                       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-                        <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{prioEmoji(g.priority)} {t('goals.card.priority', { p: prioLabel(g.priority, lang) })}</span>
-                        {g.targetDate && <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: g.targetDate.slice(0,7).replace('-','/') })}</span>}
-                        {done && <span style={{fontSize:10,padding:'1px 8px',borderRadius:10,background:'rgba(10,92,62,.12)',color:'var(--grn)',fontFamily:'var(--mono)',fontWeight:600}}>{t('goals.card.done')}</span>}
+                        <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{prioEmoji(g.priority)} {t('goals.card.priority', { p: prioLabel(g.priority, lang) })}</span>
+                        {g.targetDate && <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: g.targetDate.slice(0,7).replace('-','/') })}</span>}
+                        {done && <span style={{fontSize:11,padding:'1px 8px',borderRadius:10,background:'rgba(10,92,62,.12)',color:'var(--grn)',fontFamily:'var(--mono)',fontWeight:600}}>{t('goals.card.done')}</span>}
                       </div>
                     </div>
                     <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
@@ -292,9 +292,9 @@ export default function Goals({ setPage }) {
                     if (recommended <= 0 || Math.abs(g.target - recommended) / recommended < 0.15) return null
                     return (
                       <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',padding:'6px 10px',marginBottom:8,background:'rgba(245,166,35,.07)',border:'.5px solid rgba(245,166,35,.25)',borderRadius:6}}>
-                        <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--amb)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
+                        <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--amb)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
                         <button onClick={() => updateGoal({ ...g, target: recommended, saved: Math.min(g.saved, recommended) })}
-                          style={{background:'none',border:'.5px solid var(--amb)',borderRadius:6,padding:'3px 10px',fontSize:10,fontWeight:600,color:'var(--amb)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap'}}>
+                          style={{background:'none',border:'.5px solid var(--amb)',borderRadius:6,padding:'3px 10px',fontSize:11,fontWeight:600,color:'var(--amb)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap'}}>
                           {t('goals.emergencyAdjustBtn')}
                         </button>
                       </div>
@@ -304,8 +304,8 @@ export default function Goals({ setPage }) {
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'4px 8px'}}>
                     <div style={{display:'flex',flexWrap:'wrap',gap:'2px 6px',alignItems:'baseline',minWidth:0}}>
                       <span style={{fontSize:11,fontFamily:'var(--mono)',color:clr,fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
-                      <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
-                      <span style={{fontSize:10,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
+                      <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
+                      <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
                     </div>
                     {!done && (
                       savingId === g.id

@@ -15,7 +15,7 @@ import { monthPlan, pendingTotals, toLocal } from '../../utils/recurring.js'
 import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
-import { FormGroup, KPI, Alert, Empty, EmptyState } from '../../components/ui/index.jsx'
+import { FormGroup, KPI, Alert, Empty, EmptyState, TxRow } from '../../components/ui/index.jsx'
 import { ArrowLeftRight, Pencil } from 'lucide-react'
 import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -84,7 +84,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
     padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
     boxSizing:'border-box', fontFamily:'var(--mono)' }
-  const lbl = { fontSize:10, color:'var(--th)', fontFamily:'var(--mono)',
+  const lbl = { fontSize:11, color:'var(--th)', fontFamily:'var(--mono)',
     textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3, display:'block' }
 
   const subcatOptions = SUBCATS[f.category] || []
@@ -151,7 +151,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
                 {t('common.cancel')}
               </button>
             </div>
-            <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', marginTop:6, lineHeight:1.5 }}>
+            <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:6, lineHeight:1.5 }}>
               {t('mov.form.pasteLocal')}
             </div>
           </div>
@@ -181,7 +181,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
         {subcatOptions.length > 0 && (
           <div style={{ gridColumn:'1 / -1' }}>
             <label style={lbl}>
-              {t('mov.form.subcat')} <span style={{ color:'var(--accent)', fontSize:9 }}>{t('mov.form.optional')}</span>
+              {t('mov.form.subcat')} <span style={{ color:'var(--accent)', fontSize:11 }}>{t('mov.form.optional')}</span>
             </label>
             <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
               {subcatOptions.map(sc => (
@@ -248,7 +248,7 @@ function FormSub({ onSave, onCancel }) {
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
     padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
     boxSizing:'border-box', fontFamily:'var(--mono)' }
-  const lbl = { fontSize:10, color:'var(--th)', fontFamily:'var(--mono)',
+  const lbl = { fontSize:11, color:'var(--th)', fontFamily:'var(--mono)',
     textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3, display:'block' }
 
   return (
@@ -464,7 +464,7 @@ export default function Movements({ setPage }) {
 
       {/* Header */}
       <div style={{ marginBottom:20 }}>
-        <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--grn)',
+        <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--grn)',
           textTransform:'uppercase', letterSpacing:'1.2px', marginBottom:4 }}>{t('mov.kicker')}</div>
         <h1 className="display" style={{ fontSize:24, fontWeight:700, color:'var(--tx)', marginBottom:2 }}>
           {t('mov.title')}
@@ -526,7 +526,7 @@ export default function Movements({ setPage }) {
                   padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--red)',
                   cursor:'pointer', flex:1, minWidth:140, textAlign:'left' }}>
                 {t('mov.addExpense')}
-                <div style={{ fontSize:10, fontWeight:400, color:'var(--th)', marginTop:3 }}>
+                <div style={{ fontSize:11, fontWeight:400, color:'var(--th)', marginTop:3 }}>
                   {t('mov.addExpenseDesc')}
                 </div>
               </button>
@@ -535,7 +535,7 @@ export default function Movements({ setPage }) {
                   padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--amb)',
                   cursor:'pointer', flex:1, minWidth:140, textAlign:'left' }}>
                 {t('mov.addSub')}
-                <div style={{ fontSize:10, fontWeight:400, color:'var(--th)', marginTop:3 }}>
+                <div style={{ fontSize:11, fontWeight:400, color:'var(--th)', marginTop:3 }}>
                   {t('mov.addSubDesc')}
                 </div>
               </button>
@@ -603,8 +603,10 @@ export default function Movements({ setPage }) {
                 ? <Empty text={t('mov.list.emptyCat', { cat: drillCat })} />
                 : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
                     cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />
-            ) : (showAllExp ? listExp : listExp.slice(0, 10)).map((e,i) => editingId === e.id ? (
-              <div key={e.id} style={{padding:'10px 14px',borderBottom:i<listExp.length-1?'.5px solid var(--brd)':'none',background:'rgba(232,65,66,.03)'}}>
+            ) : (
+              <div style={{ padding:'0 14px' }}>
+                {(showAllExp ? listExp : listExp.slice(0, 10)).map((e,i) => editingId === e.id ? (
+              <div key={e.id} style={{padding:'10px 0',borderBottom:i<listExp.length-1?'.5px solid var(--brd)':'none'}}>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:6,marginBottom:6}}>
                   <input type="text" value={editForm.description||''} placeholder={t('mov.edit.descPh')} aria-label={t('mov.form.desc')}
                     onChange={ev=>setEditForm(f=>({...f,description:ev.target.value}))}
@@ -628,44 +630,23 @@ export default function Movements({ setPage }) {
                   </select>
                 </div>
                 <div style={{display:'flex',gap:6}}>
-                  <button onClick={()=>saveEdit(e)} style={{fontSize:10,padding:'3px 10px',borderRadius:4,border:'none',background:'var(--laton)',color:'var(--navy)',cursor:'pointer',fontFamily:'var(--mono)',fontWeight:600}}>{t('mov.edit.save')}</button>
-                  <button onClick={()=>{setEditingId(null);setEditForm({})}} style={{fontSize:10,padding:'3px 10px',borderRadius:4,border:'.5px solid var(--brd)',background:'none',color:'var(--th)',cursor:'pointer',fontFamily:'var(--mono)'}}>{t('common.cancel')}</button>
+                  <button onClick={()=>saveEdit(e)} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'none',background:'var(--laton)',color:'var(--navy)',cursor:'pointer',fontFamily:'var(--mono)',fontWeight:600}}>{t('mov.edit.save')}</button>
+                  <button onClick={()=>{setEditingId(null);setEditForm({})}} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'.5px solid var(--brd)',background:'none',color:'var(--th)',cursor:'pointer',fontFamily:'var(--mono)'}}>{t('common.cancel')}</button>
                 </div>
               </div>
             ) : (
-              <div key={e.id} style={{ display:'flex', alignItems:'center', gap:8,
-                padding:'8px 14px',
-                borderBottom: i < listExp.length-1 ? '.5px solid var(--brd)' : 'none' }}>
-                <div style={{ width:6, height:6, borderRadius:'50%', flexShrink:0,
-                  background: CAT_COLORS[e.category]||'var(--th)' }}/>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:12, color:'var(--tx)', fontWeight:500,
-                    overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {e.inv && <InlineIcon kind="investment" size={11} />}{e.description || e.category}
-                  </div>
-                  <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)' }}>
-                    {e.subcategory
-                      ? <><span style={{ color:'var(--accent)', opacity:.75 }}>{catLabel(e.category, lang)}</span>{' › '}{expSubcatLabel(e.subcategory, lang)}{' · '}{e.date?.slice(5)}</>
-                      : <>{catLabel(e.category, lang)}{' · '}{e.date?.slice(5)}</>
-                    }
-                  </div>
-                </div>
-                <div style={{ fontSize:12, fontWeight:600, color:'var(--red)',
-                  fontFamily:'var(--mono)', flexShrink:0 }}>
-                  -<Money>{fmtM(e.amount, sym)}</Money>
-                </div>
-                {updateExpense && (
-                  <button onClick={()=>{setEditingId(e.id);setEditForm({description:e.description||'',amount:e.amount,date:e.date,category:e.category,subcategory:e.subcategory||''})}}
-                    style={{background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:0,minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
-                    title={t('mov.edit.editTitle')} aria-label={`${t('mov.edit.editTitle')}: ${e.description || catLabel(e.category, lang)}`}><Pencil size={14} strokeWidth={1.7} aria-hidden="true" /></button>
-                )}
-                {delExpense && (
-                  <button onClick={()=>deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo'))}
-                    style={{background:'none',border:'none',color:'var(--th)',fontSize:10,cursor:'pointer',padding:0,minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
-                    title={t('mov.edit.delTitle')} aria-label={`${t('mov.edit.delTitle')}: ${e.description || catLabel(e.category, lang)}`}>✕</button>
-                )}
-              </div>
+              <TxRow key={e.id} dot={CAT_COLORS[e.category]||'var(--th)'}
+                name={<>{e.inv && <InlineIcon kind="investment" size={11} />}{e.description || catLabel(e.category, lang)}</>}
+                label={e.description || catLabel(e.category, lang)}
+                meta={e.subcategory
+                  ? <><span style={{ color:'var(--accent)' }}>{catLabel(e.category, lang)}</span>{' › '}{expSubcatLabel(e.subcategory, lang)}{' · '}{e.date?.slice(5)}</>
+                  : <>{catLabel(e.category, lang)}{' · '}{e.date?.slice(5)}</>}
+                amount={fmtM(e.amount, sym)}
+                onEdit={updateExpense ? () => { setEditingId(e.id); setEditForm({description:e.description||'',amount:e.amount,date:e.date,category:e.category,subcategory:e.subcategory||''}) } : undefined}
+                onDelete={delExpense ? () => deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo')) : undefined} />
             ))}
+              </div>
+            )}
             {/* Antes decía "+N gastos más" pero la lista ya mostraba todos: ahora
                 muestra 10 y el botón despliega el resto (o los vuelve a ocultar). */}
             {listExp.length > 10 && (
@@ -708,7 +689,7 @@ export default function Movements({ setPage }) {
 
 
       {/* Disclaimer */}
-      <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', marginTop:4 }}>
+      <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:4 }}>
         {t('mov.disclaimer')}
       </div>
     </div>

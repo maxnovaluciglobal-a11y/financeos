@@ -90,7 +90,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
         {/* Label central */}
         <div aria-hidden="true" style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center', pointerEvents:'none' }}>
           <div style={{ fontSize:15, fontWeight:700, color:'var(--tx)', fontFamily:'var(--mono)' }}>{fmtTotal}</div>
-          <div style={{ fontSize:9, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('chart.donut.total')}</div>
+          <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('chart.donut.total')}</div>
         </div>
       </div>
       <div className={css.legend}>

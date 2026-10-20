@@ -138,7 +138,7 @@ export default function CashFlow({ setPage }) {
   const bal90  = startBal + monthlyNetFlow * 3
   const trend  = monthlyNetFlow > 0 ? 'positivo' : monthlyNetFlow < 0 ? 'negativo' : 'neutro'
 
-  const axisStyle = { fill: 'var(--th)', fontSize: 10 }
+  const axisStyle = { fill: 'var(--th)', fontSize: 11 }
   const gridStyle = { stroke: 'var(--chart-grid)', strokeDasharray: '3 3' }
 
   const hasData = monthsWithData.length > 0
@@ -206,7 +206,7 @@ export default function CashFlow({ setPage }) {
             {/* Barras de progreso */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>
                   <span>{t('cf.eom.monthElapsed')}</span>
                   <span>{barPct.toFixed(0)}%</span>
                 </div>
@@ -216,7 +216,7 @@ export default function CashFlow({ setPage }) {
               </div>
               {budgetBarPct !== null && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4 }}>
                     <span>{t('cf.eom.budgetUsed')}</span>
                     <span style={{ color: paceColor }}>{budgetBarPct.toFixed(0)}% · {paceLabel}</span>
                   </div>
@@ -284,7 +284,7 @@ export default function CashFlow({ setPage }) {
                 {projectionData.length > 1 && (
                   <ReferenceArea x1={projectionData[1].mes} x2={projectionData[projectionData.length-1].mes}
                     fill="var(--th)" fillOpacity={0.06} strokeOpacity={0}
-                    label={{ value: t('cf.chart.estimate'), position: 'insideTopRight', fontSize: 9, fill: 'var(--th)', fontFamily: 'var(--mono)' }} />
+                    label={{ value: t('cf.chart.estimate'), position: 'insideTopRight', fontSize: 11, fill: 'var(--th)', fontFamily: 'var(--mono)' }} />
                 )}
                 <ReferenceLine y={0} stroke="var(--red)" strokeDasharray="4 2" strokeWidth={1.5} />
                 {/* Real = sólido con relleno */}
@@ -299,11 +299,11 @@ export default function CashFlow({ setPage }) {
             </ResponsiveContainer>
             {/* recharts no expone los datos a un lector de pantalla — misma
                 información que el gráfico, oculta solo visualmente. */}
-            <table className="sr-only">
+            <div className="sr-only"><table>
               <caption>{t('cf.chart.title')}</caption>
               <thead><tr><th scope="col">{t('common.month')}</th><th scope="col">{t('cf.chart.series')}{projectionData.some(d=>!d.actual) ? ` / ${t('cf.chart.estimate')}` : ''}</th></tr></thead>
               <tbody>{projectionData.map(d => <tr key={d.mes}><th scope="row">{d.mes}{d.actual ? '' : ` (${t('cf.chart.estimate')})`}</th><td>{fmtMoney(d.Balance, sym)}</td></tr>)}</tbody>
-            </table>
+            </table></div>
             </>
           )
         }
@@ -322,11 +322,11 @@ export default function CashFlow({ setPage }) {
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
+                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--grn)' }}>+<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
+                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
                 ))}
@@ -349,11 +349,11 @@ export default function CashFlow({ setPage }) {
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
+                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>-<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
-                        <div style={{ fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
+                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
                 ))}

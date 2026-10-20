@@ -20,6 +20,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import CountryTool from './CountryTool.jsx'
 import HomeKpis from './HomeKpis.jsx'
 import FirstSteps from './FirstSteps.jsx'
+import ProChecklist from './ProChecklist.jsx'
 import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
@@ -542,7 +543,7 @@ export default function Dashboard({ setPage }) {
               </div>
             </HomeKpis>
           </div>
-          <div className={hs.oSteps} data-tour="first-steps"><FirstSteps setPage={setPage} /></div>
+          <div className={hs.oSteps} data-tour="first-steps"><ProChecklist setPage={setPage} /><FirstSteps setPage={setPage} /></div>
           {/* Gasto por categoría (pulido 09-oct, pedido de Walter): vuelve a la
               vista esencial, visible por defecto, después de Ingresos/Gastos y
               Primeros pasos. Es el único gráfico del Inicio esencial.
@@ -637,7 +638,7 @@ export default function Dashboard({ setPage }) {
       {/* Acciones rápidas — solo en vista detallada (reduce ruido inicial) */}
       {setPage && !compact && (
         <div style={{ marginBottom:20 }}>
-          <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:10 }}>{t('dash.quick.title')}</div>
+          <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:10 }}>{t('dash.quick.title')}</div>
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             {[
               { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
@@ -669,7 +670,7 @@ export default function Dashboard({ setPage }) {
         return (
           <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: `.5px solid ${over ? 'color-mix(in srgb, var(--pos) 28%, transparent)' : 'color-mix(in srgb, var(--neg) 28%, transparent)'}`, borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
               <div style={{ fontSize: 13, color: 'var(--tx)' }}>
                 {t('dash.expected.expected')} <strong><Money>{fmtMoney(expected, sym)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{fmtMoney(kpis.totalInc, sym)}</Money></strong>
               </div>
@@ -692,7 +693,7 @@ export default function Dashboard({ setPage }) {
           <Card style={{ border: over ? '.5px solid color-mix(in srgb, var(--neg) 32%, transparent)' : undefined, padding:'14px 16px', marginBottom:16 }}>
             <CardHeader
               title={t('dash.proj.title')}
-              right={<span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'none', letterSpacing:'normal' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</span>}
+              right={<span style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'none', letterSpacing:'normal' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</span>}
             />
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:10 }}>
               {[
@@ -713,12 +714,12 @@ export default function Dashboard({ setPage }) {
               <div style={{ height:'100%', width:'100%', transform:`scaleX(${pctMonth / 100})`, transformOrigin:'left', background: over ? 'var(--red)' : 'var(--accent)', borderRadius:2, transition:'transform .3s' }} />
             </div>
             {avgExp > 0 && avgExpMonths > 0 && (
-              <div style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
+              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
                 {t('dash.proj.basis', { cur: money(kpis.totalExp), med: money(medianDaily), left: daysLeft, avg: money(avgExp) })}
               </div>
             )}
             {(pendingExp > 0 || pendingInc > 0) && (
-              <div style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
+              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
                 {t('dash.proj.pendingBasis', { exp: money(pendingExp), inc: money(pendingInc) })}
               </div>
             )}
@@ -763,14 +764,14 @@ export default function Dashboard({ setPage }) {
           días y botón de un clic es la franja de la primera vista (M5) */}
       {!compact && <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
         <div>
-          <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:3 }}>{t('dash.backup.title')}</div>
+          <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:3 }}>{t('dash.backup.title')}</div>
           <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{t('dash.backup.text')}</div>
         </div>
         {setPage && <button onClick={() => setPage?.('settings')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'5px 12px', fontSize:11, color:'var(--tx)', cursor:'pointer', fontFamily:'var(--mono)', whiteSpace:'nowrap', flexShrink:0 }}>{t('dash.backup.btn')}</button>}
       </div>}
       </div>
 
-      <div style={{ fontSize:10, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.6, marginTop:16 }}>
+      <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.6, marginTop:16 }}>
         {t('dash.disclaimer')}
       </div>
     </div>

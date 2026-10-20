@@ -53,14 +53,14 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
   if (!template) return null
 
   const sectionTitle = {
-    fontSize: 10, fontWeight: 600, color: 'var(--th)',
+    fontSize: 11, fontWeight: 600, color: 'var(--th)',
     textTransform: 'uppercase', letterSpacing: '0.8px',
     marginBottom: 8, fontFamily: 'var(--mono)',
   }
   const pill = (text, color) => (
     <span key={text} style={{
       display: 'inline-block', padding: '2px 8px',
-      borderRadius: 'var(--rs)', fontSize: 10, fontFamily: 'var(--mono)',
+      borderRadius: 'var(--rs)', fontSize: 11, fontFamily: 'var(--mono)',
       background: `${color}18`, color, marginRight: 4, marginBottom: 4,
       border: `0.5px solid ${color}30`,
     }}>{text}</span>
@@ -145,7 +145,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
                 <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{tr(g.note)}</div>
               </div>
               <span style={{
-                marginLeft: 'auto', fontSize: 9, fontFamily: 'var(--mono)',
+                marginLeft: 'auto', fontSize: 11, fontFamily: 'var(--mono)',
                 flexShrink: 0, padding: '1px 7px', borderRadius: 'var(--rs)',
                 background: g.priority === 'Alta' ? 'var(--red-bg)' : 'var(--amb-bg)',
                 color: g.priority === 'Alta' ? 'var(--red)' : 'var(--amb)',
@@ -162,7 +162,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
             padding: '10px 12px', background: 'var(--grn-bg)',
             borderRadius: 8, border: '0.5px solid rgba(26,163,104,.2)',
           }}>
-            <div style={{ fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--grn)', marginBottom: 4 }}>
+            <div style={{ fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--grn)', marginBottom: 4 }}>
               {tr('tplsel.advisorTip')}
             </div>
             <div style={{ fontSize: 11, color: 'var(--grn)', lineHeight: 1.6 }}>{tr(template.advisorTip)}</div>
@@ -392,24 +392,24 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', lineHeight: 1.2 }}>{tr(`tpl.${t.id}.name`)}</div>
                   {isActive && (
-                    <div style={{ fontSize: 9, fontFamily: 'var(--mono)', color: t.color, marginTop: 1 }}>{tr('tplsel.active')}</div>
+                    <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: t.color, marginTop: 1 }}>{tr('tplsel.active')}</div>
                   )}
                 </div>
               </div>
 
               {/* Tagline */}
-              <div style={{ fontSize: 10, color: 'var(--th)', lineHeight: 1.4, fontFamily: 'var(--mono)' }}>
+              <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.4, fontFamily: 'var(--mono)' }}>
                 {tr(`tpl.${t.id}.tagline`)}
               </div>
 
               {/* Stats */}
               <div style={{ display: 'flex', gap: 6 }}>
                 <span style={{
-                  fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px',
+                  fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 6px',
                   borderRadius: 'var(--rs)', background: 'var(--sur2)', color: 'var(--th)',
                 }}>{tr('tplsel.categoriesN', { n: t.categoriesExpense.length })}</span>
                 <span style={{
-                  fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px',
+                  fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 6px',
                   borderRadius: 'var(--rs)', background: 'var(--sur2)', color: 'var(--th)',
                 }}>{tr('tplsel.budgetsN', { n: t.suggestedBudgets.length })}</span>
               </div>
@@ -419,7 +419,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 <button
                   onClick={() => setPreview(t)}
                   style={{
-                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 10,
+                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 11,
                     cursor: 'pointer', border: '0.5px solid var(--brd2)',
                     background: 'var(--sur2)', color: 'var(--tm)',
                     fontFamily: 'var(--sans)',
@@ -429,7 +429,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                   onClick={() => handleApplyClick(t)}
                   disabled={isActive}
                   style={{
-                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 10,
+                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 11,
                     fontWeight: 600, cursor: isActive ? 'default' : 'pointer',
                     border: 'none', fontFamily: 'var(--sans)',
                     background: isActive ? 'var(--sur2)' : t.color,
@@ -449,7 +449,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
       <div style={{
         marginTop: 12, padding: '10px 12px', background: 'var(--sur2)',
         borderRadius: 8, border: '0.5px solid var(--brd)',
-        fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5,
+        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5,
       }}>
         {tr('tplsel.note')}
       </div>

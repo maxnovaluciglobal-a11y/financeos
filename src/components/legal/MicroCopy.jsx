@@ -11,7 +11,7 @@ export function FinancialDisclaimer({ compact = false }) {
   if (compact) {
     return (
       <p style={{
-        fontSize: 10, color: 'var(--th)', fontFamily: 'var(--mono)',
+        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)',
         lineHeight: 1.5, marginTop: 8,
       }}>
         {t('micro.disclaimer.compact')}

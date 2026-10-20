@@ -92,7 +92,7 @@ export default function ResicoMX() {
           </FormRow>
 
           {ingresoEstimado > 0 && (
-            <div style={{ marginTop: 2, marginBottom: 10, fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--th)', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 2, marginBottom: 10, fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', lineHeight: 1.5 }}>
               {!ingresoTouched
                 ? <>✓ {t('resicomx.income.autoNote')}</>
                 : <>{t('resicomx.income.suggestedNote', { v: fmtMXN(ingresoEstimado) })} <button type="button" style={{ color: 'var(--grn)', cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 0, padding: 0, font: 'inherit' }} onClick={() => { setIngresoTouched(false); setIngreso(String(ingresoEstimado)) }}>{t('resicomx.income.useAuto')}</button></>}

@@ -122,7 +122,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
           <Logo size={22} />
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)' }}>{t('licenseGate.version')}</div>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)' }}>{t('licenseGate.version')}</div>
         </div>
 
         {/* Activate */}
@@ -174,7 +174,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '24px 0' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--brd)' }} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--th)', flexShrink: 0 }}>{t('licenseGate.dividerNoLicense')}</span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)', flexShrink: 0 }}>{t('licenseGate.dividerNoLicense')}</span>
           <div style={{ flex: 1, height: '1px', background: 'var(--brd)' }} />
         </div>
 
@@ -204,11 +204,11 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
                 {p.price}{p.suffix && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--th)' }}>{p.suffix}</span>}
               </div>
               {p.badge && (
-                <div style={{ display: 'inline-block', fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 600, color: 'var(--navy)', background: 'var(--laton)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
+                <div style={{ display: 'inline-block', fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600, color: 'var(--navy)', background: 'var(--laton)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
               )}
               <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)', lineHeight: 1.45 }}>{p.desc}</div>
               {buying === p.product && (
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--grn)', marginTop: 6 }}>{t('licenseGate.redirecting')}</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--grn)', marginTop: 6 }}>{t('licenseGate.redirecting')}</div>
               )}
             </button>
           ))}
