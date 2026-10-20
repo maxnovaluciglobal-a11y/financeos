@@ -88,6 +88,39 @@ begin
   assert not has_function_privilege('anon', 'public.crm_set_next_action(uuid,text,date)', 'execute'), 'anon sin execute';
   assert not has_table_privilege('anon', 'public.crm_activities', 'select'), 'anon sin select';
 
+  -- 8b. Seguimiento (20261020040000): crm_followup_check y crm_set_estado.
+  insert into auth.users (id, email, instance_id, aud, role, last_sign_in_at) values
+    (c, 'cata@t.local', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', now() - interval '10 days');
+  select id into cb from public.crm_contacts where email = 'cata@t.local';
+  select * into r from public.crm_followup_check(cb, now() - interval '5 days');
+  assert r.eligible and r.to_email = 'cata@t.local', 'corresponde y devuelve el email: ' || row_to_json(r)::text;
+  select * into r from public.crm_followup_check(cb, now() - interval '20 days');
+  assert not r.eligible and r.reason = 'volvio_a_entrar' and r.to_email is null, 'volvio a entrar, sin email';
+  perform public.crm_add_activity(cb, 'Correo de seguimiento', 'correo');
+  select * into r from public.crm_followup_check(cb, now() - interval '5 days');
+  assert not r.eligible and r.reason = 'ya_contactado' and r.to_email is null, 'ya contactado';
+  delete from public.crm_activities where contact_id = cb;
+  insert into public.starter_leads (email, unsubscribed_at) values ('cata@t.local', now());
+  select * into r from public.crm_followup_check(cb, now() - interval '5 days');
+  assert not r.eligible and r.reason = 'baja' and r.to_email is null, 'baja';
+  perform public.crm_set_estado(cb, 'contactado');
+  select estado into r from public.crm_contacts where id = cb;
+  assert r.estado = 'contactado', 'estado';
+  failed := false;
+  begin perform public.crm_set_estado(cb, 'inventado'); exception when check_violation then failed := true; end;
+  assert failed, 'estado fuera de la lista';
+  perform set_config('request.jwt.claims', '{"email":"otro@t.local","role":"authenticated"}', true);
+  set local role authenticated;
+  failed := false;
+  begin perform * from public.crm_followup_check(cb, now()); exception when insufficient_privilege then failed := true; end;
+  assert failed, 'otra cuenta no consulta el seguimiento';
+  failed := false;
+  begin perform public.crm_set_estado(cb, 'perdido'); exception when insufficient_privilege then failed := true; end;
+  assert failed, 'otra cuenta no cambia estado';
+  reset role;
+  assert not has_function_privilege('anon', 'public.crm_followup_check(uuid,timestamptz)', 'execute'), 'anon sin execute (followup)';
+  assert not has_function_privilege('anon', 'public.crm_set_estado(uuid,text)', 'execute'), 'anon sin execute (estado)';
+
   -- 9. Borrar el contacto borra su historial.
   delete from public.crm_contacts where id = ca;
   select count(*) into n from public.crm_activities where contact_id = ca;
