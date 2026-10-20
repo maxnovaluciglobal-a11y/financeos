@@ -9,6 +9,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { authClient } from '../core/authClient.js'
 import AuthGate from '../components/AuthGate.jsx'
 import { localDateStr } from '../utils/index.js'
+import { toCsv } from '../utils/csvSafe.js'
+import { fuenteLabel, leadScore, todayQueue, ACTIVITY_TYPES } from './crmLogic.js'
 
 const ESTADOS = ['nuevo', 'contactado', 'nutriendo', 'convertido', 'perdido']
 const PRODUCTOS = ['moyiq', 'invest']
@@ -19,18 +21,24 @@ const PRODUCTOS = ['moyiq', 'invest']
 const PLAN_LABEL = { pro: 'Pro', gratis: 'Cuenta gratis' }
 const fmtDate = (ts) => (ts ? new Date(ts).toLocaleDateString('es-CL') : '—')
 
-function Row({ row, onSave, onOpenDetail }) {
+function Row({ row, onSave, onSaveNext, onOpenDetail }) {
   const [estado, setEstado] = useState(row.estado)
   const [notas, setNotas] = useState(row.notas || '')
+  const [accion, setAccion] = useState(row.proxima_accion || '')
+  const [fecha, setFecha] = useState(row.proxima_accion_fecha || '')
   const [dirty, setDirty] = useState(false)
+  const [nextDirty, setNextDirty] = useState(false)
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
     setSaving(true)
-    await onSave(row.id, { estado, notas })
+    if (dirty) await onSave(row.id, { estado, notas })
+    if (nextDirty) await onSaveNext(row.id, accion, fecha || null)
     setSaving(false)
     setDirty(false)
+    setNextDirty(false)
   }
+  const overdue = row.proxima_accion_fecha && row.proxima_accion_fecha <= localDateStr()
 
   return (
     <tr style={{ borderBottom: '1px solid var(--bd, #e5e5e5)' }}>
@@ -43,8 +51,13 @@ function Row({ row, onSave, onOpenDetail }) {
         {row.nombre && <div style={{ fontFamily: 'var(--sans, sans-serif)', fontSize: 11, color: '#888', textDecoration: 'none' }}>{row.nombre}</div>}
       </td>
       <td style={{ padding: '8px 10px' }}>{row.producto_origen}</td>
-      <td style={{ padding: '8px 10px', fontSize: 12 }}>{row.fuente || '—'}</td>
-      <td style={{ padding: '8px 10px', fontSize: 12, whiteSpace: 'nowrap' }}>{PLAN_LABEL[row.plan] || '—'}</td>
+      <td style={{ padding: '8px 10px', fontSize: 12 }}>{fuenteLabel(row)}</td>
+      <td style={{ padding: '8px 10px', fontSize: 12, whiteSpace: 'nowrap' }}>
+        {PLAN_LABEL[row.plan] || '—'}
+        <div style={{ fontSize: 11, color: '#666' }} title="Cuenta +30 · login 7 días +20 · opt-in +15 · Pro +35">
+          {leadScore(row)} pts · opt-in {row.optin_confirmado ? 'sí' : 'no'}
+        </div>
+      </td>
       <td style={{ padding: '8px 10px' }}>
         <select
           value={estado}
@@ -60,7 +73,25 @@ function Row({ row, onSave, onOpenDetail }) {
           value={notas}
           onChange={(e) => { setNotas(e.target.value); setDirty(true) }}
           placeholder="Notas..."
+          aria-label={`Notas de ${row.email}`}
           style={{ width: '100%', fontSize: 12, padding: '4px 6px' }}
+        />
+      </td>
+      <td style={{ padding: '8px 10px', minWidth: 170 }}>
+        <input
+          type="text"
+          value={accion}
+          onChange={(e) => { setAccion(e.target.value); setNextDirty(true) }}
+          placeholder="Próxima acción..."
+          aria-label={`Próxima acción de ${row.email}`}
+          style={{ width: '100%', fontSize: 12, padding: '4px 6px' }}
+        />
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) => { setFecha(e.target.value); setNextDirty(true) }}
+          aria-label={`Fecha de la próxima acción de ${row.email}`}
+          style={{ width: '100%', fontSize: 12, padding: '4px 6px', marginTop: 4, color: overdue ? '#b00' : undefined }}
         />
       </td>
       <td style={{ padding: '8px 10px', fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>
@@ -69,8 +100,11 @@ function Row({ row, onSave, onOpenDetail }) {
       <td style={{ padding: '8px 10px', fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>
         {fmtDate(row.ultimo_contacto)}
       </td>
+      <td style={{ padding: '8px 10px', fontSize: 11, color: '#666', whiteSpace: 'nowrap' }}>
+        {fmtDate(row.ultimo_login)}
+      </td>
       <td style={{ padding: '8px 10px' }}>
-        <button onClick={handleSave} disabled={!dirty || saving} style={{ fontSize: 12, padding: '4px 10px' }}>
+        <button onClick={handleSave} disabled={(!dirty && !nextDirty) || saving} style={{ fontSize: 12, padding: '4px 10px' }}>
           {saving ? '...' : 'Guardar'}
         </button>
       </td>
@@ -79,16 +113,9 @@ function Row({ row, onSave, onOpenDetail }) {
 }
 
 function exportRowsToCsv(rows) {
-  const headers = ['email', 'nombre', 'producto_origen', 'fuente', 'plan', 'score', 'estado', 'notas', 'ultimo_contacto', 'creado_en']
-  const escapeCsv = (v) => {
-    const s = v === null || v === undefined ? '' : String(v)
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-  }
-  const lines = [headers.join(',')]
-  for (const row of rows) {
-    lines.push(headers.map((h) => escapeCsv(row[h])).join(','))
-  }
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const headers = ['email', 'nombre', 'producto_origen', 'fuente', 'plan', 'score', 'estado', 'notas', 'proxima_accion', 'proxima_accion_fecha', 'ultimo_login', 'optin_confirmado', 'lang', 'ultimo_contacto', 'creado_en']
+  const csv = toCsv([headers, ...rows.map((row) => headers.map((h) => row[h]))])
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -173,7 +200,67 @@ function sourceTable(row) {
   if (row.fuente === 'demo') return 'demo_leads'
   if (row.fuente === 'calculadora') return 'tax_calculator_leads'
   if (row.fuente === 'stripe') return null
+  if (!row.fuente) return null
   return 'diagnostico_leads'
+}
+
+// Historial de contactos (crm_activities). Se escribe solo por la RPC acotada
+// crm_add_activity (DAT-19), igual que las tareas programadas.
+function Activities({ contactId }) {
+  const [items, setItems] = useState(null)
+  const [tipo, setTipo] = useState('nota')
+  const [nota, setNota] = useState('')
+  const [error, setError] = useState('')
+
+  const load = useCallback(async () => {
+    const { data, error: err } = await authClient
+      .from('crm_activities')
+      .select('id, tipo, nota, creado_en, creado_por')
+      .eq('contact_id', contactId)
+      .order('creado_en', { ascending: false })
+      .limit(50)
+    if (err) { setError(err.message); setItems([]); return }
+    setItems(data || [])
+  }, [contactId])
+
+  useEffect(() => { load() }, [load])
+
+  async function add(e) {
+    e.preventDefault()
+    if (!nota.trim()) return
+    const { error: err } = await authClient.rpc('crm_add_activity', { p_contact_id: contactId, p_nota: nota.trim(), p_tipo: tipo })
+    if (err) { setError(err.message); return }
+    setNota('')
+    load()
+  }
+
+  return (
+    <div style={{ borderTop: '1px solid var(--bd, #e5e5e5)', paddingTop: 14, marginBottom: 20 }}>
+      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Historial</div>
+      <form onSubmit={add} style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de actividad" style={{ fontSize: 12, padding: '4px 6px' }}>
+          {ACTIVITY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <textarea value={nota} onChange={(e) => setNota(e.target.value)} maxLength={2000} rows={3} aria-label="Detalle de la actividad" placeholder="Qué pasó…" style={{ fontSize: 12, padding: '4px 6px' }} />
+        <button type="submit" disabled={!nota.trim()} style={{ fontSize: 12, padding: '4px 10px', alignSelf: 'flex-start' }}>Agregar</button>
+      </form>
+      {error && <div style={{ color: '#c00', fontSize: 12, marginBottom: 6 }}>Error: {error}</div>}
+      {items === null ? (
+        <div style={{ fontSize: 12, color: '#666' }}>Cargando...</div>
+      ) : items.length === 0 ? (
+        <div style={{ fontSize: 12, color: '#666' }}>Sin actividad registrada.</div>
+      ) : (
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {items.map((a) => (
+            <li key={a.id} style={{ fontSize: 12 }}>
+              <div style={{ color: '#666' }}>{new Date(a.creado_en).toLocaleString('es-CL')} · {a.tipo}</div>
+              <div style={{ whiteSpace: 'pre-wrap' }}>{a.nota}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 function LeadDetail({ row, onClose }) {
@@ -213,7 +300,19 @@ function LeadDetail({ row, onClose }) {
         <div style={{ fontSize: 13, marginBottom: 12 }}>{row.producto_origen}</div>
 
         <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Fuente</div>
-        <div style={{ fontSize: 13, marginBottom: 12 }}>{row.fuente || '—'}</div>
+        <div style={{ fontSize: 13, marginBottom: 12 }}>{fuenteLabel(row)}</div>
+
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Cuenta</div>
+        <div style={{ fontSize: 13, marginBottom: 12 }}>
+          {row.cuenta_creada_en ? `creada el ${fmtDate(row.cuenta_creada_en)} · último login ${fmtDate(row.ultimo_login)}` : 'sin cuenta'}
+          {row.lang ? ` · idioma ${row.lang}` : ''}
+        </div>
+
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Opt-in de marketing</div>
+        <div style={{ fontSize: 13, marginBottom: 12 }}>{row.optin_confirmado ? 'confirmado' : 'no confirmado'}</div>
+
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Próxima acción</div>
+        <div style={{ fontSize: 13, marginBottom: 12 }}>{row.proxima_accion ? `${row.proxima_accion}${row.proxima_accion_fecha ? ` · ${fmtDate(row.proxima_accion_fecha + 'T12:00:00')}` : ''}` : '—'}</div>
 
         {row.nombre && (
           <>
@@ -237,6 +336,8 @@ function LeadDetail({ row, onClose }) {
         <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Notas</div>
         <div style={{ fontSize: 13, marginBottom: 20, whiteSpace: 'pre-wrap' }}>{row.notas || '—'}</div>
 
+        <Activities contactId={row.id} />
+
         <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, borderTop: '1px solid var(--bd, #e5e5e5)', paddingTop: 14 }}>
           Secuencia de nurture
         </div>
@@ -244,7 +345,7 @@ function LeadDetail({ row, onClose }) {
           <div style={{ fontSize: 12, color: '#888' }}>Cargando...</div>
         ) : nurture === null ? (
           <div style={{ fontSize: 12, color: '#888' }}>
-            {table ? `Sin registro en ${table}.` : 'Llegó directo por Stripe, sin lead previo.'}
+            {table ? `Sin registro en ${table}.` : row.fuente === 'stripe' ? 'Llegó directo por Stripe, sin lead previo.' : 'Creó la cuenta sin pasar por un formulario.'}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -358,6 +459,7 @@ function CRMPanel({ session, onSignOut }) {
   // DAT-9 (auditoría 360): las filas internas y de prueba (columna generada
   // is_internal) quedan ocultas por defecto.
   const [mostrarInternos, setMostrarInternos] = useState(false)
+  const [vistaHoy, setVistaHoy] = useState(false)
   const [detailRow, setDetailRow] = useState(null)
 
   const load = useCallback(async () => {
@@ -375,13 +477,21 @@ function CRMPanel({ session, onSignOut }) {
 
   useEffect(() => { load() }, [load])
 
-  const visibleRows = (rows || []).filter((row) => {
+  const filtered = (rows || []).filter((row) => {
     if (!mostrarInternos && row.is_internal) return false
     if (!soloSinContactoReciente) return true
     if (!row.ultimo_contacto) return true
     const dias = (Date.now() - new Date(row.ultimo_contacto).getTime()) / 86400000
     return dias >= 14
   })
+  const pendientesHoy = todayQueue(filtered, localDateStr())
+  const visibleRows = vistaHoy ? pendientesHoy : filtered
+
+  async function handleSaveNext(id, accion, fecha) {
+    const { error: err } = await authClient.rpc('crm_set_next_action', { p_contact_id: id, p_accion: accion, p_fecha: fecha })
+    if (err) { setError(err.message); return }
+    load()
+  }
 
   async function handleSaveRow(id, patch) {
     const { error: err } = await authClient
@@ -393,7 +503,7 @@ function CRMPanel({ session, onSignOut }) {
   }
 
   return (
-    <div style={{ padding: 24, fontFamily: 'var(--sans, sans-serif)', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: 24, fontFamily: 'var(--sans, sans-serif)', maxWidth: 1280, margin: '0 auto', overflowX: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1 style={{ fontSize: 18, fontWeight: 600 }}>CRM — MOY IQ + Invest</h1>
         <div style={{ fontSize: 12, color: '#888' }}>
@@ -412,9 +522,19 @@ function CRMPanel({ session, onSignOut }) {
           <option value="todos">Todos los estados</option>
           {ESTADOS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+          <input
+            type="checkbox"
+            style={{ width: 16, height: 16, flexShrink: 0 }}
+            checked={vistaHoy}
+            onChange={(e) => setVistaHoy(e.target.checked)}
+          />
+          Hoy ({pendientesHoy.length})
+        </label>
         <label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <input
             type="checkbox"
+            style={{ width: 16, height: 16, flexShrink: 0 }}
             checked={soloSinContactoReciente}
             onChange={(e) => setSoloSinContactoReciente(e.target.checked)}
           />
@@ -443,7 +563,7 @@ function CRMPanel({ session, onSignOut }) {
       {rows === null ? (
         <div style={{ fontSize: 13, color: '#888' }}>Cargando...</div>
       ) : visibleRows.length === 0 ? (
-        <div style={{ fontSize: 13, color: '#888' }}>Sin contactos con estos filtros.</div>
+        <div style={{ fontSize: 13, color: '#888' }}>{vistaHoy ? 'No hay acciones para hoy.' : 'Sin contactos con estos filtros.'}</div>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
@@ -454,13 +574,15 @@ function CRMPanel({ session, onSignOut }) {
               <th style={{ padding: '8px 10px' }}>Plan</th>
               <th style={{ padding: '8px 10px' }}>Estado</th>
               <th style={{ padding: '8px 10px' }}>Notas</th>
+              <th style={{ padding: '8px 10px' }}>Próxima acción</th>
               <th style={{ padding: '8px 10px' }}>Creado</th>
               <th style={{ padding: '8px 10px' }}>Últ. contacto</th>
-              <th style={{ padding: '8px 10px' }}></th>
+              <th style={{ padding: '8px 10px' }}>Últ. login</th>
+              <th style={{ padding: '8px 10px' }}><span className="sr-only">Acciones</span></th>
             </tr>
           </thead>
           <tbody>
-            {visibleRows.map((row) => <Row key={row.id} row={row} onSave={handleSaveRow} onOpenDetail={setDetailRow} />)}
+            {visibleRows.map((row) => <Row key={row.id} row={row} onSave={handleSaveRow} onSaveNext={handleSaveNext} onOpenDetail={setDetailRow} />)}
           </tbody>
         </table>
       )}
