@@ -28,6 +28,7 @@
 // repo: index.ts lee Deno.env.get() y no se puede importar desde vitest.
 
 import { type EmailLang, pickLang } from "../_shared/emailLang.ts";
+import { emailButton, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
 
 // invest (quiz de Invest, auditoría 360 COM-7) y newsletter (formularios de
 // newsletter del blog, el Diagnóstico e Invest, C-16) desde el 19-oct-2026.
@@ -165,15 +166,17 @@ export function renderOptinEmail(row: OptinRow, config: OptinConfig, source: Opt
     : invest ? c.introInvest : c.intro;
   const url = confirmUrl(config.landingUrl, lang, row.consent_token ?? "");
   const u = escapeHtml(url);
-  const html = `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#14213D;line-height:1.55">
-<p>${escapeHtml(intro)}</p>
+  const html = emailLayout({
+    lang,
+    tag: invest ? "Invest" : undefined,
+    bodyHtml: `<p>${escapeHtml(intro)}</p>
 <p>${escapeHtml(c.cta)}</p>
-<p><a href="${u}" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${escapeHtml(c.button)}</a></p>
-<p style="font-size:13px;color:#5F5236;word-break:break-all">${u}</p>
-<p style="font-size:13px;color:#5F5236">${escapeHtml(c.ignore)}</p>
-<p style="font-size:13px;color:#5F5236">${escapeHtml(c.unsubscribe)}</p>
-<p style="color:#8B7A55;font-size:11px;margin-top:32px;border-top:1px solid #E4DFD1;padding-top:12px">${escapeHtml(FOOTER)}</p>
-</div>`;
+${emailButton(u, escapeHtml(c.button))}
+<p style="${EMAIL_MUTED_STYLE};word-break:break-all">${u}</p>
+<p style="${EMAIL_MUTED_STYLE}">${escapeHtml(c.ignore)}</p>
+<p style="${EMAIL_MUTED_STYLE}">${escapeHtml(c.unsubscribe)}</p>`,
+    footerHtml: escapeHtml(FOOTER),
+  });
   const text = [intro, "", c.cta, `${c.button}: ${url}`, "", c.ignore, c.unsubscribe, "", FOOTER].join("\n");
   return { subject, html, text };
 }

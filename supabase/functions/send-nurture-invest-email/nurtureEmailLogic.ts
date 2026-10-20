@@ -63,28 +63,20 @@ export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): stri
   return `${(config.unsubscribeBaseUrl ?? "https://moyiq.app").replace(/\/$/, "")}/unsubscribe.html?id=${encodeURIComponent(leadId)}&t=invest`;
 }
 
-// Paleta oscura/dorada de Invest (NO la paleta clara de MOY IQ).
-const BG = "#12161F";
-const CARD = "#181D29";
-const TEXT = "#FAF8F2";
-const MUTED = "#9C9686";
-const GOLD = "#CC9A52";
-
 // Línea legal fija en el pie de los 3 correos (relanzamiento v2, oct-2026).
 export const DISCLAIMER = "Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.";
 
+// Sistema visual único de los correos (BRD-5): el layout de marca de MOY IQ
+// con la etiqueta "Invest" junto al logo, en vez del tema oscuro propio.
 function wrapHtml(bodyHtml: string, unsubUrl: string): string {
-  return `
-    <div style="background:${BG};padding:32px 16px">
-      <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;background:${CARD};color:${TEXT};line-height:1.55;padding:32px;border-radius:12px;border:1px solid #232838">
-        ${bodyHtml}
-        <p style="color:${MUTED};font-size:11px;margin-top:32px;border-top:1px solid #232838;padding-top:12px">
-          ${DISCLAIMER}<br>
+  return emailLayout({
+    lang: "es",
+    tag: "Invest",
+    bodyHtml,
+    footerHtml: `${DISCLAIMER}<br>
           MOY IQ Invest · ${COMPANY_POSTAL_HTML}.
-          <a href="${unsubUrl}" style="color:${MUTED}">Darme de baja de estos correos</a>.
-        </p>
-      </div>
-    </div>`;
+          <a href="${unsubUrl}">Darme de baja de estos correos</a>.`,
+  });
 }
 
 export interface RenderedEmail {
@@ -111,8 +103,6 @@ const PROFILE_COPY: Record<Perfil, { name: string; desc: string }> = {
   },
 };
 
-const BUTTON_STYLE = `display:inline-block;background:${GOLD};color:#12161F;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600`;
-
 export function renderEmail(mode: NurtureMode, lead: InvestLead, config: NurtureEmailConfig): RenderedEmail {
   const unsub = unsubscribeUrl(config, lead.id);
   const profile = PROFILE_COPY[lead.perfil ?? "moderado"];
@@ -121,13 +111,13 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     const subject = `Tu perfil: ${profile.name}`;
     const html = wrapHtml(
       `
-      <h2 style="color:${GOLD};margin-top:0">Tu perfil es ${profile.name}</h2>
+      <h2>Tu perfil es ${profile.name}</h2>
       <p>Hola,</p>
       <p>${profile.desc}</p>
       <p>Es un resultado orientativo, no una recomendación de inversión. Sirve para leer tus propias decisiones con más contexto.</p>
       <p>MOY IQ Invest está abierto como beta pública gratuita. Puedes registrar tus posiciones, ver precios de Yahoo Finance con la hora del último dato y revisar cada indicador con su rango y una lectura simple.</p>
-      <p><a href="https://invest.moyiq.app/app?ref=invest-welcome" style="${BUTTON_STYLE}">Abrir MOY IQ Invest</a></p>
-      <p style="color:${MUTED};font-size:13px">Durante la beta todas las funciones están abiertas para todos, sin tarjeta.</p>
+      ${emailButton("https://invest.moyiq.app/app?ref=invest-welcome", "Abrir MOY IQ Invest")}
+      <p style="${EMAIL_MUTED_STYLE}">Durante la beta todas las funciones están abiertas para todos, sin tarjeta.</p>
       `,
       unsub,
     );
@@ -138,12 +128,12 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     const subject = "Cuánto arriesgar por operación, con tu regla de riesgo";
     const html = wrapHtml(
       `
-      <h2 style="color:${GOLD};margin-top:0">Con tu regla de riesgo</h2>
+      <h2>Con tu regla de riesgo</h2>
       <p>Hola,</p>
       <p>En el <strong>Position Builder</strong> de MOY IQ Invest ingresas el ticker, tu capital y el precio de tu stop loss. Con tu regla de riesgo, por ejemplo no arriesgar más del 2% del capital en una sola operación, calcula cuántas unidades corresponden para que, si el precio llega al stop, la pérdida no supere ese límite.</p>
       <p>Es un cálculo aritmético: no evalúa si la operación conviene ni sugiere comprar o vender. La decisión es tuya.</p>
-      <p><a href="https://invest.moyiq.app/app?ref=invest-d2#position-builder" style="${BUTTON_STYLE}">Abrir el Position Builder</a></p>
-      <p style="color:${MUTED};font-size:13px">MOY IQ Invest está en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.</p>
+      ${emailButton("https://invest.moyiq.app/app?ref=invest-d2#position-builder", "Abrir el Position Builder")}
+      <p style="${EMAIL_MUTED_STYLE}">MOY IQ Invest está en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.</p>
       `,
       unsub,
     );
@@ -154,7 +144,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
   const subject = "Qué incluye la beta pública de MOY IQ Invest";
   const html = wrapHtml(
     `
-    <h2 style="color:${GOLD};margin-top:0">Qué puedes usar durante la beta</h2>
+    <h2>Qué puedes usar durante la beta</h2>
     <p>Hola,</p>
     <p>MOY IQ Invest está en beta pública gratuita: todas las funciones están abiertas para todos, sin tarjeta. Esto es lo que puedes usar hoy:</p>
     <p>
@@ -165,8 +155,8 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     — Comparador de activos<br>
     — Alertas de precio</p>
     <p>La herramienta ordena tu información y explica cada dato. No te dice qué comprar ni vender, y no está conectada a ningún broker.</p>
-    <p><a href="https://invest.moyiq.app/app?ref=invest-d5" style="${BUTTON_STYLE}">Abrir MOY IQ Invest</a></p>
-    <p style="color:${MUTED};font-size:13px">Si no te sirve ahora, puedes darte de baja con el enlace de abajo.</p>
+    ${emailButton("https://invest.moyiq.app/app?ref=invest-d5", "Abrir MOY IQ Invest")}
+    <p style="${EMAIL_MUTED_STYLE}">Si no te sirve ahora, puedes darte de baja con el enlace de abajo.</p>
     `,
     unsub,
   );
@@ -341,3 +331,4 @@ export async function processWelcome(leadId: unknown, config: NurtureEmailConfig
 }
 import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
 import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";
+import { emailButton, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";

@@ -14,6 +14,7 @@
 const MAX_PDF_BYTES = 8 * 1024 * 1024; // 8MB — un reporte de 1-2 páginas nunca se acerca a esto; el límite es contra abuso, no contra uso real.
 
 import { type EmailLang, INTL_LOCALE } from "../_shared/emailLang.ts";
+import { emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
 export { pickLang } from "../_shared/emailLang.ts";
 
 export interface EmailConfig {
@@ -178,6 +179,22 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
+// Render puro del correo (BRD-5: layout de marca compartido). El aviso de
+// privacidad va en el pie.
+export function renderReportEmail(params: SendReportParams): { subject: string; html: string } {
+  const lang: EmailLang = params.lang ?? "es";
+  const T = REPORT_TEXT[lang] ?? REPORT_TEXT.es;
+  const month = formatReportMonth(params.month, lang);
+  const html = emailLayout({
+    lang,
+    bodyHtml: `<h2>${T.title}${params.clientName ? " — " + escapeHtml(params.clientName) : ""}</h2>
+      <p>${T.body(escapeHtml(month))}</p>
+      ${params.senderEmail ? `<p style="${EMAIL_MUTED_STYLE}">${T.sentBy(escapeHtml(params.senderEmail))}</p>` : ""}`,
+    footerHtml: T.notice,
+  });
+  return { subject: T.subject(month), html };
+}
+
 // Igual patrón que sendKeyEmail (webhookLogic.ts): reintenta una vez ante un
 // fallo transitorio de Resend antes de darlo por perdido. Los logs no llevan
 // destinatario ni contenido.
@@ -187,21 +204,12 @@ export async function sendReportEmail(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const lang: EmailLang = params.lang ?? "es";
-  const T = REPORT_TEXT[lang] ?? REPORT_TEXT.es;
-  const month = formatReportMonth(params.month, lang);
-  const html = `
-    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#14213D">${T.title}${params.clientName ? " — " + escapeHtml(params.clientName) : ""}</h2>
-      <p>${T.body(escapeHtml(month))}</p>
-      ${params.senderEmail ? `<p style="color:#555;font-size:13px">${T.sentBy(escapeHtml(params.senderEmail))}</p>` : ""}
-      <p style="color:#888;font-size:12px">${T.notice}</p>
-    </div>`;
+  const { subject, html } = renderReportEmail(params);
 
   const body: Record<string, unknown> = {
     from: config.fromEmail,
     to: params.to,
-    subject: T.subject(month),
+    subject,
     html,
     attachments: [{ filename: params.filename, content: params.pdfBase64 }],
   };

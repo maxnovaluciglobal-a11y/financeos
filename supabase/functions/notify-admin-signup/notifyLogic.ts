@@ -11,6 +11,8 @@
 // Separada de index.ts por el mismo motivo que el resto de funciones de este
 // repo: index.ts lee Deno.env.get() a nivel de módulo, no importable desde
 // Node/vitest.
+import { emailButton, emailLayout, EMAIL_BRAND } from '../_shared/emailLayout.ts';
+
 export type SignupEvent = 'starter_signup' | 'invest_signup';
 
 export interface SignupDetails {
@@ -27,31 +29,16 @@ export interface NotifyConfig {
 interface Copy {
   subject: string;
   eyebrow: string; // "Nuevo Starter" / "Nuevo en Invest"
-  accent: string; // color de marca del producto de origen
-  accentBg: string;
-  accentText: string; // variante de texto AA sobre accentBg
+  tag: string; // etiqueta junto al logo del layout de marca
 }
 
-// Mismas paletas que auth-email-hook/emailHookLogic.ts (navy/papel/latón para
-// MOY IQ, oscuro/dorado para Invest) — un admin que ve los dos tipos de
-// correo mezclados en su bandeja los reconoce por color sin leer el asunto.
+// Layout de marca compartido (BRD-5) para los dos tipos de alta; el origen
+// se distingue por la etiqueta junto al logo ("Invest · Panel admin").
 function copyFor(event: SignupEvent): Copy {
   if (event === 'invest_signup') {
-    return {
-      subject: 'Nuevo registro — Invest',
-      eyebrow: 'Nuevo en Invest',
-      accent: '#CC9A52',
-      accentBg: '#2A2114',
-      accentText: '#E3B36B',
-    };
+    return { subject: 'Nuevo registro — Invest', eyebrow: 'Nuevo en Invest', tag: 'Invest · Panel admin' };
   }
-  return {
-    subject: 'Nuevo Starter — MOY IQ',
-    eyebrow: 'Nuevo Starter',
-    accent: '#8A6329',
-    accentBg: '#F1EEE6',
-    accentText: '#8A6329',
-  };
+  return { subject: 'Nuevo Starter — MOY IQ', eyebrow: 'Nuevo Starter', tag: 'Panel admin' };
 }
 
 function fmtNow(): string {
@@ -60,32 +47,20 @@ function fmtNow(): string {
 
 export function renderNotifyEmail(event: SignupEvent, details: SignupDetails): { subject: string; html: string } {
   const copy = copyFor(event);
-  const html = `
-    <div style="background:#F1EEE6;padding:32px 16px;font-family:-apple-system,'IBM Plex Sans',system-ui,sans-serif">
-      <div style="max-width:440px;margin:0 auto;background:#FAF8F2;border-radius:14px;overflow:hidden">
-        <div style="background:${copy.accentBg};padding:20px 28px">
-          <div style="font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:${copy.accentText}">
-            MOY <span style="border:1px solid ${copy.accentText};border-radius:3px;padding:1px 4px;font-size:10px;margin:0 2px">IQ</span>
-            <span style="opacity:.7;font-weight:500">· Panel admin</span>
-          </div>
-          <div style="margin-top:10px;display:inline-block;background:rgba(255,255,255,.14);color:${copy.accentText};font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:6px">
-            ${copy.eyebrow}
-          </div>
-        </div>
-        <div style="padding:24px 28px 28px">
-          <div style="font-size:11px;color:#9C9686;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Email</div>
-          <div style="font-size:19px;font-weight:600;color:#14213D;word-break:break-all;margin-bottom:${details.fuente ? '16' : '22'}px">${details.email}</div>
+  const label = `font-size:11px;color:${EMAIL_BRAND.muted};text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px`;
+  const html = emailLayout({
+    lang: 'es',
+    tag: copy.tag,
+    bodyHtml: `<p style="margin:0 0 16px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${EMAIL_BRAND.laton700}">${copy.eyebrow}</p>
+          <div style="${label}">Email</div>
+          <div style="font-size:19px;font-weight:600;color:${EMAIL_BRAND.navy};word-break:break-all;margin-bottom:${details.fuente ? '16' : '22'}px">${details.email}</div>
           ${details.fuente ? `
-          <div style="font-size:11px;color:#9C9686;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Fuente</div>
-          <div style="font-size:14px;color:#5F5236;margin-bottom:22px">${details.fuente}</div>
+          <div style="${label}">Fuente</div>
+          <div style="font-size:14px;color:${EMAIL_BRAND.ink};margin-bottom:22px">${details.fuente}</div>
           ` : ''}
-          <a href="https://app.moyiq.app/app/?admin=crm" style="display:inline-block;background:#14213D;color:#FAF8F2;font-size:13px;font-weight:600;text-decoration:none;padding:11px 20px;border-radius:8px">Ver en el panel CRM →</a>
-          <div style="margin-top:22px;padding-top:16px;border-top:1px solid rgba(20,33,61,.08);font-size:11px;color:#9C9686">
-            ${fmtNow()} · MOY IQ, notificación automática
-          </div>
-        </div>
-      </div>
-    </div>`;
+          ${emailButton('https://app.moyiq.app/app/?admin=crm', 'Ver en el panel CRM →')}`,
+    footerHtml: `${fmtNow()} · MOY IQ, notificación automática`,
+  });
   return { subject: copy.subject, html };
 }
 

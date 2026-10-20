@@ -17,6 +17,12 @@ const enc = new TextEncoder();
 import { type EmailLang, INTL_LOCALE, langFromStripeSession, langFromStripeSubscription, pickLang } from "../_shared/emailLang.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { appLink } from "../_shared/appLinks.ts";
+import { emailButton, emailCode, emailHeading, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+
+// Avisos internos al admin: mismo layout de marca, sin pie.
+function adminEmailHtml(bodyHtml: string): string {
+  return emailLayout({ lang: "es", bodyHtml, tag: "Panel admin" });
+}
 export { langFromStripeSession, langFromStripeSubscription };
 
 export const SIGNATURE_TOLERANCE_SECONDS = 300;
@@ -296,8 +302,7 @@ export async function notifyKeyDeliveryFailure(
   config: WebhookConfig,
 ): Promise<void> {
   if (!config.resendApiKey || !config.alertEmail) return;
-  const html = `
-    <div style="font-family:system-ui,sans-serif">
+  const html = adminEmailHtml(`
       <p><strong>Licencia emitida pero el cliente no recibió su clave.</strong></p>
       <ul>
         <li>session: ${details.sessionRef ?? "(sin session)"}</li>
@@ -305,8 +310,7 @@ export async function notifyKeyDeliveryFailure(
         <li>plan: ${details.plan}</li>
         <li>payment_intent: ${details.paymentIntent ?? "(sin payment_intent)"}</li>
       </ul>
-      <p>La clave original no es recuperable (el servidor solo guarda su hash) — resolver reemitiendo una licencia nueva.</p>
-    </div>`;
+      <p>La clave original no es recuperable (el servidor solo guarda su hash) — resolver reemitiendo una licencia nueva.</p>`);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -332,16 +336,14 @@ export async function notifyNewProPurchase(
   config: WebhookConfig,
 ): Promise<void> {
   if (!config.resendApiKey || !config.alertEmail) return;
-  const html = `
-    <div style="font-family:system-ui,sans-serif">
+  const html = adminEmailHtml(`
       <p><strong>Nueva compra Pro en MOY IQ.</strong></p>
       <ul>
         <li>email: ${details.email ?? "(sin email)"}</li>
         <li>plan: ${details.plan}</li>
         <li>intervalo: ${details.interval ?? "(pago único)"}</li>
       </ul>
-      <p style="color:#888;font-size:12px">Panel CRM: <a href="https://app.moyiq.app/app/?admin=crm">app.moyiq.app/app/?admin=crm</a></p>
-    </div>`;
+      <p style="${EMAIL_MUTED_STYLE}">Panel CRM: <a href="https://app.moyiq.app/app/?admin=crm">app.moyiq.app/app/?admin=crm</a></p>`);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -520,6 +522,45 @@ export async function revokeLicense(paymentIntent: string, config: WebhookConfig
   return await res.json();
 }
 
+// Render puro del correo de la clave (BRD-5: layout de marca compartido).
+export function renderKeyEmail(
+  key: string, plan: string, config: WebhookConfig,
+  interval: "month" | "year" | null = null,
+  trial: TrialBilling | null = null,
+  lang: EmailLang = "es",
+  attachedToAccount = false,
+): { subject: string; html: string } {
+  const appUrl = "https://app.moyiq.app/app/";
+  // T10: si el checkout fue una prueba, el email no dice "Compra confirmada"
+  // (no se cobró nada): dice que la prueba empezó, cuándo termina, qué se
+  // cobrará y cómo cancelar antes.
+  const T = MAIL[lang] ?? MAIL.es;
+  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
+  const billingNote = trial
+    ? ""
+    : interval
+      ? `<p>${T.renewalNote(interval, support)}</p>`
+      : "";
+  const heading = trial ? T.trialSubject : T.licenseSubject;
+  const intro = trial
+    ? `<p>${T.trialStarted(TRIAL_DAYS, formatDateFor(trial.endsAt, lang))}</p>
+      <p>${chargeSentence(trial, lang)}${T.renews(trial.interval)}</p>
+      ${cancelSentence(config, lang)}`
+    : `<p>${T.purchase(plan === "pro" ? "Pro" : "Starter")}</p>`;
+  const subject = heading;
+  const html = emailLayout({
+    lang,
+    bodyHtml: `${emailHeading(heading)}
+      ${intro}
+      <p>${T.keyLabel}</p>
+      ${emailCode(key)}
+      <p>${(attachedToAccount ? T.activatedOnAccount : T.activate)(`<a href="${appUrl}">${appUrl}</a>`)}</p>
+      ${billingNote}`,
+    footerHtml: T.privacy,
+  });
+  return { subject, html };
+}
+
 // Devuelve true solo si Resend aceptó el envío. La clave NUNCA se imprime en
 // logs: de ella se deriva la llave AES-GCM del sync (ver utils/syncCrypto.js,
 // deriveKey = SHA-256('fnos-sync:'+clave)), así que un log con la clave permite
@@ -542,35 +583,7 @@ export async function sendKeyEmail(
     console.error(`CRITICO: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas — el cliente pago y NO recibio su clave. session=${sessionRef}`);
     return false;
   }
-  const appUrl = "https://app.moyiq.app/app/";
-  // T10: si el checkout fue una prueba, el email no dice "Compra confirmada"
-  // (no se cobró nada): dice que la prueba empezó, cuándo termina, qué se
-  // cobrará y cómo cancelar antes.
-  const T = MAIL[lang] ?? MAIL.es;
-  const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
-  const billingNote = trial
-    ? ""
-    : interval
-      ? `<p>${T.renewalNote(interval, support)}</p>`
-      : "";
-  const heading = trial ? T.trialSubject : T.licenseSubject;
-  const intro = trial
-    ? `<p>${T.trialStarted(TRIAL_DAYS, formatDateFor(trial.endsAt, lang))}</p>
-      <p>${chargeSentence(trial, lang)}${T.renews(trial.interval)}</p>
-      ${cancelSentence(config, lang)}`
-    : `<p>${T.purchase(plan === "pro" ? "Pro" : "Starter")}</p>`;
-  const subject = heading;
-  const html = `
-    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#14213D">${heading}</h2>
-      ${intro}
-      <p>${T.keyLabel}</p>
-      <p style="font-family:monospace;font-size:20px;font-weight:700;background:#f0f7f3;
-                padding:14px;border-radius:8px;text-align:center;letter-spacing:2px">${key}</p>
-      <p>${(attachedToAccount ? T.activatedOnAccount : T.activate)(`<a href="${appUrl}">${appUrl}</a>`)}</p>
-      ${billingNote}
-      <p style="color:#888;font-size:12px">${T.privacy}</p>
-    </div>`;
+  const { subject, html } = renderKeyEmail(key, plan, config, interval, trial, lang, attachedToAccount);
   const attempt = async () => fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
@@ -921,6 +934,19 @@ export function trialBillingFromSubscription(sub: any): TrialBilling | null {
   };
 }
 
+export function renderTrialEndingEmail(billing: TrialBilling, config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string } {
+  const T = MAIL[lang] ?? MAIL.es;
+  const html = emailLayout({
+    lang,
+    bodyHtml: `${emailHeading(T.trialEndsOn(formatDateFor(billing.endsAt, lang)))}
+      <p>${chargeSentence(billing, lang)}${T.renews(billing.interval)}</p>
+      ${cancelSentence(config, lang)}
+      <p>${T.staySame}</p>`,
+    footerHtml: T.privacy,
+  });
+  return { subject: T.trialEndingSubject, html };
+}
+
 // Aviso previo al cobro (customer.subscription.trial_will_end, Stripe lo manda
 // 3 días antes de trial_end). Cubre la regla de las redes de tarjetas de
 // avisar antes del primer cobro de una prueba gratis: fecha, monto y cómo
@@ -930,20 +956,12 @@ export async function sendTrialEndingEmail(to: string, billing: TrialBilling, co
     console.error("sendTrialEndingEmail: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas");
     return false;
   }
-  const T = MAIL[lang] ?? MAIL.es;
-  const html = `
-    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#14213D">${T.trialEndsOn(formatDateFor(billing.endsAt, lang))}</h2>
-      <p>${chargeSentence(billing, lang)}${T.renews(billing.interval)}</p>
-      ${cancelSentence(config, lang)}
-      <p>${T.staySame}</p>
-      <p style="color:#888;font-size:12px">${T.privacy}</p>
-    </div>`;
+  const { subject, html } = renderTrialEndingEmail(billing, config, lang);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: config.fromEmail, to, subject: T.trialEndingSubject, html }),
+      body: JSON.stringify({ from: config.fromEmail, to, subject, html }),
     });
     if (!res.ok) {
       console.error(`sendTrialEndingEmail: Resend error ${res.status} ${await res.text()}`);
@@ -985,29 +1003,29 @@ async function sendCustomerEmail(to: string, subject: string, html: string, conf
 export function renderPaymentFailedEmail(config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string } {
   const T = MAIL[lang] ?? MAIL.es;
   const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
-  const html = `
-    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#14213D">${T.paymentFailedSubject}</h2>
+  const html = emailLayout({
+    lang,
+    bodyHtml: `${emailHeading(T.paymentFailedSubject)}
       <p>${T.paymentFailedIntro}</p>
       <p>${config.portalUrl ? T.paymentFailedPortal(config.portalUrl, support) : T.paymentFailedNoPortal(support)}</p>
-      <p>${T.paymentFailedAfter}</p>
-      <p style="color:#888;font-size:12px">${T.privacy}</p>
-    </div>`;
+      <p>${T.paymentFailedAfter}</p>`,
+    footerHtml: T.privacy,
+  });
   return { subject: T.paymentFailedSubject, html };
 }
 
 export function renderProEndedEmail(lang: EmailLang = "es"): { subject: string; html: string } {
   const T = MAIL[lang] ?? MAIL.es;
   const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
-  const html = `
-    <div lang="${lang}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="color:#14213D">${T.proEndedSubject}</h2>
+  const html = emailLayout({
+    lang,
+    bodyHtml: `${emailHeading(T.proEndedSubject)}
       <p>${T.proEndedIntro}</p>
       <p>${T.proEndedData}</p>
       <p>${T.proEndedBack}</p>
-      <p><a href="${appLink("upgrade", "pro-ended")}" style="display:inline-block;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${T.proEndedButton}</a></p>
-      <p style="color:#888;font-size:12px">${T.questions(support)}</p>
-    </div>`;
+      ${emailButton(appLink("upgrade", "pro-ended"), T.proEndedButton)}`,
+    footerHtml: T.questions(support),
+  });
   return { subject: T.proEndedSubject, html };
 }
 
@@ -1028,16 +1046,14 @@ export async function notifyUnmappedTrialCheckout(
   config: WebhookConfig,
 ): Promise<void> {
   if (!config.resendApiKey || !config.alertEmail) return;
-  const html = `
-    <div style="font-family:system-ui,sans-serif">
+  const html = adminEmailHtml(`
       <p><strong>Checkout pagado de un Payment Link que no es de MOY IQ: no se emitió licencia.</strong></p>
       <ul>
         <li>session: ${details.sessionRef ?? "(sin session)"}</li>
         <li>email del cliente: ${details.email ?? "(sin email)"}</li>
         <li>payment_link: ${details.paymentLink ?? "(sin payment_link)"}</li>
       </ul>
-      <p>Si es un link de MOY IQ, falta agregarlo a PAYMENT_LINK_PLAN (webhookLogic.ts) y emitir la licencia a mano. Si es un link retirado o de otro producto, revisar en Stripe de qué cuenta vino el evento.</p>
-    </div>`;
+      <p>Si es un link de MOY IQ, falta agregarlo a PAYMENT_LINK_PLAN (webhookLogic.ts) y emitir la licencia a mano. Si es un link retirado o de otro producto, revisar en Stripe de qué cuenta vino el evento.</p>`);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

@@ -95,7 +95,7 @@ describe('renderEmail por idioma', () => {
 
   it('sin "!" ni "¡" en ningún idioma', () => {
     for (const l of LANGS) for (const m of NURTURE_MODES) for (const label of LABELS) {
-      expect(text(renderEmail(m, lead(l, label), CONFIG))).not.toMatch(/[!¡]/)
+      expect(text(renderEmail(m, lead(l, label), CONFIG))).not.toMatch(/¡|!(?!doctype html>)/)
     }
   })
 

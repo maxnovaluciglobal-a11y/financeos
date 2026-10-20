@@ -15,6 +15,7 @@
 import { type EmailLang, pickLang } from "../_shared/emailLang.ts";
 import { appLink } from "../_shared/appLinks.ts";
 import { COMPANY_POSTAL_HTML } from "../_shared/marketingEmail.ts";
+import { emailButton, emailLayout } from "../_shared/emailLayout.ts";
 import { TRIAL_TEMPLATES, type TrialStep } from "./trialTemplates.ts";
 
 export type { TrialStep };
@@ -89,16 +90,14 @@ export function renderTrialEmail(step: TrialStep, row: TrialRow, config: TrialCo
   const href = appLink(STEP_LINK[step], `trial-${step}`);
   const cancel = step === "day10" ? `<p>${config.portalUrl ? T.cancelPortal(config.portalUrl) : T.cancelNoPortal}</p>` : "";
   const appUrl = config.appUrl ?? "https://app.moyiq.app/app/";
-  const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a;line-height:1.55">
-      ${copy.paragraphs.map((p) => `<p>${p}</p>`).join("\n      ")}
-      <p style="margin:24px 0"><a href="${href}" style="background:#B8863B;color:#14213D;text-decoration:none;font-weight:600;padding:10px 18px;border-radius:8px;display:inline-block">${copy.cta}</a></p>
-      ${cancel}
-      <p style="color:#999;font-size:11px;margin-top:32px;border-top:1px solid #eee;padding-top:12px">
-        ${T.why} MOY IQ · ${COMPANY_POSTAL_HTML}.
-        <a href="${footerUnsubscribeUrl(appUrl, row.id)}" style="color:#999">${T.unsubscribe}</a>.
-      </p>
-    </div>`;
+  const html = emailLayout({
+    lang,
+    bodyHtml: `${copy.paragraphs.map((p) => `<p>${p}</p>`).join("\n      ")}
+      ${emailButton(href, copy.cta)}
+      ${cancel}`,
+    footerHtml: `${T.why} MOY IQ · ${COMPANY_POSTAL_HTML}.
+        <a href="${footerUnsubscribeUrl(appUrl, row.id)}">${T.unsubscribe}</a>.`,
+  });
   return {
     subject: copy.subject,
     html,

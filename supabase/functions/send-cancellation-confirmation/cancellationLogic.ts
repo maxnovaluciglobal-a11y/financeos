@@ -23,6 +23,7 @@
 // repo: index.ts lee Deno.env.get() y no se puede importar desde vitest.
 
 import { type EmailLang, pickLang, INTL_LOCALE } from "../_shared/emailLang.ts";
+import { emailLayout, EMAIL_BRAND } from "../_shared/emailLayout.ts";
 
 export interface CancellationRow {
   id: string;
@@ -297,13 +298,13 @@ function table(rows: [string, string][]): string {
   return `<table style="border-collapse:collapse;width:100%;font-size:14px;margin:16px 0">${rows
     .map(
       ([k, v]) =>
-        `<tr><td style="padding:6px 12px 6px 0;color:#5F5236;vertical-align:top;white-space:nowrap">${escapeHtml(k)}</td><td style="padding:6px 0;color:#14213D;vertical-align:top;word-break:break-word">${escapeHtml(v).replace(/\n/g, "<br>")}</td></tr>`,
+        `<tr><td style="padding:6px 12px 6px 0;color:${EMAIL_BRAND.muted};vertical-align:top;white-space:nowrap">${escapeHtml(k)}</td><td style="padding:6px 0;color:${EMAIL_BRAND.navy};vertical-align:top;word-break:break-word">${escapeHtml(v).replace(/\n/g, "<br>")}</td></tr>`,
     )
     .join("")}</table>`;
 }
 
-function wrap(inner: string): string {
-  return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#14213D;line-height:1.55">${inner}<p style="color:#8B7A55;font-size:11px;margin-top:32px;border-top:1px solid #E4DFD1;padding-top:12px">MOY IQ · MAXNOVA &amp; LUCI Global LLC · support@moyiq.app</p></div>`;
+function wrap(inner: string, lang: EmailLang): string {
+  return emailLayout({ lang, bodyHtml: inner, footerHtml: "MOY IQ · MAXNOVA &amp; LUCI Global LLC · support@moyiq.app" });
 }
 
 export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
@@ -314,6 +315,7 @@ export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
   const rows = rowsFor(row, lang);
   const html = wrap(
     `<p>${escapeHtml(c.intro(ts))}</p>${table(rows)}<p>${escapeHtml(c.outro(row.id))}</p>`,
+    lang,
   );
   const text = [c.intro(ts), "", ...rows.map(([k, v]) => `${k}: ${v}`), "", c.outro(row.id), "", "MOY IQ · MAXNOVA & LUCI Global LLC · support@moyiq.app"].join("\n");
   return { subject: c.subject, html, text };
@@ -346,7 +348,7 @@ export function renderInternalEmail(row: CancellationRow): RenderedEmail {
     const subject = `[URGENTE · Desistimiento] ${name} — reembolso hasta el ${dueTxt}`;
     const todo =
       `URGENTE — desistimiento online (§ 355 / § 356a BGB). Pendiente: ubicar el contrato (Stripe / licencia), cancelar la suscripción, revocar la licencia y reembolsar todos los pagos recibidos sin demora y a más tardar el ${dueTxt}, por el mismo medio de pago (Stripe → Refund). Solo se puede retener un importe proporcional (Wertersatz) si el cliente pidió expresamente empezar antes de que venza el plazo (§ 357a Abs. 2 BGB). Confirmarle al cliente, en su idioma, el reembolso. Después marcar la fila como done (status, processed_at).`;
-    const html = wrap(`<p><strong>URGENTE: nuevo desistimiento online.</strong></p>${table(rows)}<p>${escapeHtml(todo)}</p>`);
+    const html = wrap(`<p><strong>URGENTE: nuevo desistimiento online.</strong></p>${table(rows)}<p>${escapeHtml(todo)}</p>`, "es");
     const text = ["URGENTE: nuevo desistimiento online.", "", ...rows.map(([k, v]) => `${k}: ${v}`), "", todo].join("\n");
     return { subject, html, text };
   }
@@ -356,7 +358,7 @@ export function renderInternalEmail(row: CancellationRow): RenderedEmail {
   const subject = `${extra ? "[Extraordinaria] " : ""}Cancelación recibida — ${name}${row.plan ? ` (${es.plan[row.plan] ?? row.plan})` : ""}`;
   const todo =
     "Pendiente: ubicar el contrato (Stripe / licencia / cuenta Starter), cancelar la renovación y confirmarle al cliente, en su idioma, la fecha en que termina el contrato. Después marcar la fila como done (status, processed_at).";
-  const html = wrap(`<p><strong>Nueva cancelación online.</strong></p>${table(rows)}<p>${escapeHtml(todo)}</p>`);
+  const html = wrap(`<p><strong>Nueva cancelación online.</strong></p>${table(rows)}<p>${escapeHtml(todo)}</p>`, "es");
   const text = ["Nueva cancelación online.", "", ...rows.map(([k, v]) => `${k}: ${v}`), "", todo].join("\n");
   return { subject, html, text };
 }

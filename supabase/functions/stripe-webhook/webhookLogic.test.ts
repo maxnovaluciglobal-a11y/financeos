@@ -371,7 +371,7 @@ describe('llamadas HTTP (fetch mockeado)', () => {
       const body = JSON.parse(fetchMock.mock.calls[0][1].body)
       const text = `${body.subject} ${body.html}`
       expect(text).not.toMatch(/escribinos|podés|tenés|activá/i)
-      expect(text).not.toMatch(/[¡!]/)
+      expect(text).not.toMatch(/¡|!(?!doctype html>)/)
       expect(text).not.toMatch(/\p{Extended_Pictographic}/u)
       expect(body.html).toContain('FNOS-X')
     })
@@ -670,7 +670,7 @@ describe('T10 · eventos de suscripción (fetch mockeado)', () => {
       expect(text).toContain('23 de octubre de 2026')
       expect(text).toContain('US$ 4,99 al mes')
       expect(text).toContain('support@moyiq.app')
-      expect(text).not.toMatch(/[¡!]/)
+      expect(text).not.toMatch(/¡|!(?!doctype html>)/)
       expect(text).not.toMatch(/\p{Extended_Pictographic}/u)
       expect(text).not.toMatch(/escribinos|podés|tenés|cancelá|querés/i)
     })
@@ -768,7 +768,7 @@ describe('T10 · email de inicio de prueba (variante de sendKeyEmail)', () => {
     expect(body.html).toContain('US$ 4,99 al mes')
     expect(body.html).toContain('FNOS-X')
     expect(body.html).toContain('support@moyiq.app')
-    expect(text).not.toMatch(/[¡!]/)
+    expect(text).not.toMatch(/¡|!(?!doctype html>)/)
     expect(text).not.toMatch(/escribinos|podés|tenés|activá|cancelá/i)
   })
 
@@ -843,7 +843,7 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
       const a = await capture(() => sendKeyEmail('a@b.com', 'K', 'pro', 's', CONFIG, 'month', billing, lang))
       const b = await capture(() => sendTrialEndingEmail('a@b.com', billing, { ...CONFIG, portalUrl: 'https://billing.example' }, lang))
       const text = `${a.subject} ${a.html} ${b.subject} ${b.html}`
-      expect(text).not.toMatch(/[¡!]/)
+      expect(text).not.toMatch(/¡|!(?!doctype html>)/)
       if (lang === 'de') expect(text).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
     }
   })
@@ -1110,7 +1110,7 @@ describe('C-35 · cobro fallido y "tu Pro terminó"', () => {
     expect(emails[0].reply_to).toBe('support@moyiq.app')
     expect(emails[0].html).toContain('https://billing.stripe.com/p/login/x')
     const text = `${emails[0].subject} ${emails[0].html}`
-    expect(text).not.toMatch(/[¡!]/)
+    expect(text).not.toMatch(/¡|!(?!doctype html>)/)
     expect(text).not.toMatch(/actualizá|escribinos|tenés|podés/i)
   })
 
@@ -1153,7 +1153,7 @@ describe('C-35 · cobro fallido y "tu Pro terminó"', () => {
     for (const lang of ['es', 'en', 'pt', 'de'] as const) {
       for (const m of [renderPaymentFailedEmail(CONFIG, lang), renderProEndedEmail(lang)]) {
         expect(m.subject.length).toBeGreaterThan(10)
-        expect(`${m.subject} ${m.html}`).not.toMatch(/[¡!]/)
+        expect(`${m.subject} ${m.html}`).not.toMatch(/¡|!(?!doctype html>)/)
         expect(m.html).toContain(`lang="${lang}"`)
       }
     }

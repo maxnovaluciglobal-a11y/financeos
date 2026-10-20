@@ -42,6 +42,7 @@ import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
 import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
 import { STARTER_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
 import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";
+import { emailLayout } from "../_shared/emailLayout.ts";
 
 export type NurtureMode = "welcome" | "day2" | "day5";
 export const NURTURE_MODES: NurtureMode[] = ["welcome", "day2", "day5"];
@@ -79,14 +80,12 @@ export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): stri
 }
 
 function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): string {
-  return `
-    <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a;line-height:1.55">
-      ${bodyHtml}
-      <p style="color:#999;font-size:11px;margin-top:32px;border-top:1px solid #eee;padding-top:12px">
-        MOY IQ · ${COMPANY_POSTAL_HTML}.
-        <a href="${unsubUrl}" style="color:#999">${UNSUBSCRIBE_LABEL[lang]}</a>.
-      </p>
-    </div>`;
+  return emailLayout({
+    lang,
+    bodyHtml,
+    footerHtml: `MOY IQ · ${COMPANY_POSTAL_HTML}.
+        <a href="${unsubUrl}">${UNSUBSCRIBE_LABEL[lang]}</a>.`,
+  });
 }
 
 export interface RenderedEmail {

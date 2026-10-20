@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { EMAIL_BRAND, EMAIL_LOGO_URL } from '../_shared/emailLayout.ts'
 import {
   renderEmail,
   unsubscribeUrl,
@@ -38,11 +39,12 @@ describe('renderEmail', () => {
     expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
   })
 
-  it('welcome usa la paleta oscura/dorada de Invest, no la clara de MOY IQ', () => {
+  it('welcome usa el layout de marca compartido con la etiqueta Invest (BRD-5)', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
-    expect(r.html).toContain('#12161F')
-    expect(r.html).toContain('#181D29')
-    expect(r.html).toContain('#CC9A52')
+    expect(r.html).toContain(EMAIL_LOGO_URL)
+    expect(r.html).toContain(`background:${EMAIL_BRAND.laton}`)
+    expect(r.html).toContain(`color:${EMAIL_BRAND.latonDark}">Invest<`)
+    expect(r.html).not.toContain('#12161F')
   })
 
   it('welcome ajusta el copy según el perfil conservador', () => {
@@ -91,7 +93,7 @@ describe('renderEmail', () => {
   })
 
   it('ningún correo usa claims prohibidos por el relanzamiento', () => {
-    const banned = [/tiempo real/i, /\bPro\b/, /trial/i, /prueba gratis/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /óptimo/i, /[¡!]/, /\bpodés\b|\btenés\b|\bquerés\b/]
+    const banned = [/tiempo real/i, /\bPro\b/, /trial/i, /prueba gratis/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /óptimo/i, /¡|!(?!doctype html>)/, /\bpodés\b|\btenés\b|\bquerés\b/]
     for (const mode of MODES) {
       for (const perfil of ['conservador', 'moderado', 'agresivo'] as const) {
         const r = renderEmail(mode, { ...LEAD, perfil }, CONFIG)

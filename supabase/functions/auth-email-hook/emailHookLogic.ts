@@ -23,6 +23,7 @@
 // (signup) llegaría marcado como MOY IQ sin importar de qué app vino.
 import type { EmailLang } from '../_shared/emailLang.ts';
 export { pickLang } from '../_shared/emailLang.ts';
+import { emailButton, emailHeading, emailLayout, EMAIL_MUTED_STYLE } from '../_shared/emailLayout.ts';
 
 export type Brand = 'moyiq' | 'invest';
 
@@ -64,39 +65,23 @@ export function buildActionUrl(
   return `${base}?${params.toString()}`;
 }
 
+// Sistema visual único de los correos (BRD-5): las dos marcas usan el layout
+// compartido (_shared/emailLayout.ts); Invest se distingue por la etiqueta
+// junto al logo y conserva su remitente propio.
 interface BrandTheme {
   fromEmail: string;
-  bg: string;
-  card: string;
-  text: string;
-  text2: string;
-  accent: string;
-  accentText: string; // color de texto ENCIMA del botón de acento
-  wordmarkHtml: string;
+  tag?: string;
   footer: string;
 }
 
 const THEMES: Record<Brand, BrandTheme> = {
   moyiq: {
     fromEmail: 'MOY IQ <hola@moyiq.app>',
-    bg: '#F1EEE6', // --papel
-    card: '#FAF8F2', // --papel-000
-    text: '#14213D', // --navy
-    text2: '#5F5236', // --ink3
-    accent: '#8A6329', // --laton-700 (variante de TEXTO, AA en texto chico)
-    accentText: '#FAF8F2',
-    wordmarkHtml: 'MOY <span style="border:1px solid #8A6329;border-radius:3px;padding:1px 4px;font-size:11px;letter-spacing:0">IQ</span>',
     footer: 'MOY IQ · MAXNOVA &amp; LUCI Global LLC.',
   },
   invest: {
     fromEmail: 'MOY IQ Invest <invest@moyiq.app>', // mismo dominio raíz ya verificado en Resend, sin trabajo de DNS nuevo
-    bg: '#12161F',
-    card: '#181D29',
-    text: '#FAF8F2', // --bright
-    text2: '#9C9686', // --text2
-    accent: '#CC9A52', // --grn (dorado de marca Invest)
-    accentText: '#14213D', // --on-accent
-    wordmarkHtml: 'MOY <span style="border:1px solid #CC9A52;color:#CC9A52;border-radius:3px;padding:1px 4px;font-size:11px;letter-spacing:0">IQ</span> <span style="font-size:12px;color:#9C9686">Invest</span>',
+    tag: 'Invest',
     footer: 'MOY IQ Invest · MAXNOVA &amp; LUCI Global LLC.',
   },
 };
@@ -193,21 +178,15 @@ export interface RenderedEmail {
 export function renderEmail(brand: Brand, actionType: EmailActionType, actionUrl: string, lang: EmailLang = 'es'): RenderedEmail {
   const theme = THEMES[brand];
   const copy = copyFor(brand, actionType, lang);
-  const html = `
-    <div lang="${lang}" style="background:${theme.bg};padding:32px 16px;font-family:system-ui,sans-serif">
-      <div style="max-width:480px;margin:0 auto;background:${theme.card};border-radius:12px;padding:32px 28px">
-        <div style="font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:24px;color:${theme.text}">
-          ${theme.wordmarkHtml}
-        </div>
-        <h1 style="color:${theme.text};font-size:19px;margin:0 0 12px">${copy.heading}</h1>
-        <p style="color:${theme.text2};font-size:14px;line-height:1.6;margin:0 0 24px">${copy.body}</p>
-        <a href="${actionUrl}" style="display:inline-block;background:${theme.accent};color:${theme.accentText};padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">${copy.cta} →</a>
-        ${copy.afterCta ? `<p style="color:${theme.text2};font-size:12px;line-height:1.6;margin:24px 0 0">${copy.afterCta}</p>` : ''}
-        <p style="color:${theme.text2};font-size:11px;margin-top:32px;border-top:1px solid rgba(128,128,128,.2);padding-top:12px">
-          ${theme.footer}
-        </p>
-      </div>
-    </div>`;
+  const html = emailLayout({
+    lang,
+    tag: theme.tag,
+    bodyHtml: `${emailHeading(copy.heading)}
+        <p>${copy.body}</p>
+        ${emailButton(actionUrl, `${copy.cta} →`)}
+        ${copy.afterCta ? `<p style="${EMAIL_MUTED_STYLE}">${copy.afterCta}</p>` : ''}`,
+    footerHtml: theme.footer,
+  });
   return { subject: copy.subject, html, fromEmail: theme.fromEmail };
 }
 
