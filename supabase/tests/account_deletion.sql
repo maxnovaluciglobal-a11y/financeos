@@ -16,7 +16,7 @@ begin
   insert into public.licenses(key_hash,plan,status,email,stripe_subscription_id) values
     (ha,'pro','active','ana-del@t.local','sub_del_a'), (hg,'pro','active','ANA-DEL@t.local','sub_tgift');
   insert into public.user_entitlements(user_id,plan,license_key) values (a,'pro',ha),(b,'pro',hg);
-  insert into public.synced_data(key_hash,blob,updated_at) values (ha,'fnos2:{}',1),(hg,'fnos2:{}',1);
+  insert into public.synced_data(key_hash,blob,updated_at) values (public.fnos_license_id(ha),'fnos2:{}',1),(public.fnos_license_id(hg),'fnos2:{}',1);
   insert into public.consents(user_id,document_type,version) values (a,'terms','1'),(b,'terms','1');
   insert into public.starter_leads(email,newsletter_synced_at) values ('ana-del@t.local',now());
   insert into public.cancellation_requests(name,email,plan,kind,lang) values ('Ana','ana-del@t.local','pro_monthly','ordinary','es');
@@ -25,14 +25,14 @@ begin
   assert r->>'ok' = 'true', r::text;
   assert r->'stripe_subscriptions' = '["sub_del_a"]'::jsonb, 'suscripción a cancelar: ' || r::text;
   assert (r->>'newsletter_followup')::boolean, 'aviso de newsletter';
-  select count(*) into n from public.licenses where key_hash = ha; assert n = 0, 'licencia de A';
-  select count(*) into n from public.synced_data where key_hash = ha; assert n = 0, 'sync de A';
+  select count(*) into n from public.licenses where key_hash in (ha, public.fnos_license_id(ha)); assert n = 0, 'licencia de A';
+  select count(*) into n from public.synced_data where key_hash in (ha, public.fnos_license_id(ha)); assert n = 0, 'sync de A';
   select count(*) into n from public.user_entitlements where user_id = a; assert n = 0, 'entitlement de A';
   select count(*) into n from public.profiles where id = a; assert n = 0, 'perfil de A';
   select count(*) into n from public.starter_leads where lower(email) = 'ana-del@t.local'; assert n = 0, 'lead de A';
   -- La licencia regalo con el mismo email es de B: no se toca.
-  select count(*) into n from public.licenses where key_hash = hg; assert n = 1, 'licencia de B intacta';
-  select count(*) into n from public.synced_data where key_hash = hg; assert n = 1, 'sync de B intacto';
+  select count(*) into n from public.licenses where key_hash in (hg, public.fnos_license_id(hg)); assert n = 1, 'licencia de B intacta';
+  select count(*) into n from public.synced_data where key_hash in (hg, public.fnos_license_id(hg)); assert n = 1, 'sync de B intacto';
   select count(*) into n from public.consents where user_id = b; assert n = 1, 'consentimiento de B';
   -- Constancia de la cancelación (3 años) y registro sin PII.
   select count(*) into n from public.cancellation_requests where email = 'ana-del@t.local'; assert n = 1, 'cancelación conservada';

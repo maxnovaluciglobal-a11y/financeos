@@ -44,13 +44,13 @@ begin
   insert into public.user_entitlements (user_id, plan, license_key) values (w, 'pro', 'FNOS-TST3-TST3-TST3');
   select license_key into k from public.user_entitlements where user_id = w;
   assert k = 'FNOS-TST3-TST3-TST3', 'con blob viejo se conserva: ' || k;
-  assert public.fnos_caller_owns_license(h3) is not null;
+  assert public.fnos_caller_owns_license(public.fnos_license_id(h3)) is not null;
   -- ...hasta que sube el primer blob con frase de paso.
-  update public.synced_data set blob = 'fnos2:{"v":2}' where key_hash = h3;
+  update public.synced_data set blob = 'fnos2:{"v":2}' where key_hash = public.fnos_license_id(h3);
   select license_key into k from public.user_entitlements where user_id = w;
   assert k = h3, 'tras v2 queda el hash: ' || k;
   -- Volver a v1 (rollback) no vuelve a poner la clave en claro.
-  update public.synced_data set blob = 'AAAAbase64viejo' where key_hash = h3;
+  update public.synced_data set blob = 'AAAAbase64viejo' where key_hash = public.fnos_license_id(h3);
   select license_key into k from public.user_entitlements where user_id = w;
   assert k = h3, 'rollback no restaura la clave: ' || k;
 

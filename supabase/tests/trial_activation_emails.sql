@@ -12,11 +12,11 @@ begin
   r := public.mark_license_trial('FNOS-TRL1-TRL1-TRL1', now() + interval '14 days', 'Trial@T.local ', 'pt');
   assert r->>'ok' = 'true', 'marca: ' || r::text;
   v_id := (r->>'id')::uuid;
-  assert (select is_trial and trial_ends_at is not null from public.licenses where key_hash = h), 'licencia marcada como prueba';
+  assert (select is_trial and trial_ends_at is not null from public.licenses where key_hash = public.fnos_license_id(h)), 'licencia marcada como prueba';
   assert (select email = 'trial@t.local' and lang = 'pt' from public.trial_activation_emails where id = v_id), 'fila de la secuencia';
   -- Reintento de Stripe: no duplica.
   r := public.mark_license_trial('FNOS-TRL1-TRL1-TRL1', now() + interval '14 days', 'trial@t.local', 'pt');
-  assert (select count(*) from public.trial_activation_emails where key_hash = h) = 1, 'idempotente';
+  assert (select count(*) from public.trial_activation_emails where key_hash = public.fnos_license_id(h)) = 1, 'idempotente';
   r := public.mark_license_trial('FNOS-NOPE-NOPE-NOPE', now(), 'x@t.local');
   assert r->>'error' = 'license_not_found', 'licencia inexistente';
 
@@ -30,10 +30,10 @@ begin
   assert (select day1_sent_at is not null from public.trial_activation_emails where id = v_id), 'marcado';
 
   -- Licencia revocada (canceló la prueba): ya no recibe nada.
-  update public.licenses set status = 'revoked' where key_hash = h;
+  update public.licenses set status = 'revoked' where key_hash = public.fnos_license_id(h);
   select count(*) into n from public.trial_activation_due(now() + interval '4 days');
   assert n = 0, 'revocada no recibe';
-  update public.licenses set status = 'active' where key_hash = h;
+  update public.licenses set status = 'active' where key_hash = public.fnos_license_id(h);
   -- Vencida: tampoco.
   select count(*) into n from public.trial_activation_due(now() + interval '15 days');
   assert n = 0, 'vencida no recibe';
@@ -54,7 +54,7 @@ begin
   assert not has_function_privilege('anon', 'public.mark_trial_activation_sent(uuid,text)', 'execute'), 'anon sin sent';
 
   -- Borrar la licencia (borrado de cuenta) borra la fila con el email.
-  delete from public.licenses where key_hash = h;
+  delete from public.licenses where key_hash = public.fnos_license_id(h);
   assert not exists (select 1 from public.trial_activation_emails where id = v_id), 'cascade';
   raise notice 'OK: trial_activation_emails';
 end $$;
