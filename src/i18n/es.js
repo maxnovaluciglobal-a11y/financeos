@@ -1380,6 +1380,7 @@ export const es = {
     'authGate.errorWeakPassword': 'La contraseña debe tener al menos 8 caracteres.',
     'authGate.errorEmailNotConfirmed': 'Tu email aún no está confirmado. Revisa tu correo.',
     'authGate.errorNetwork': 'Sin conexión con el servidor. Revisa tu internet e intenta de nuevo.',
+    'authGate.errorCaptcha': "No se pudo verificar que eres una persona. Recarga la página e inténtalo de nuevo.",
     'authGate.errorGeneric': 'Ocurrió un error. Intenta de nuevo.',
     'authGate.checkEmailTitle': 'Confirma tu email',
     'authGate.checkEmailBody': 'Te enviamos un enlace de confirmación a {email}. Ábrelo para activar tu cuenta y entrar a MOY IQ.',

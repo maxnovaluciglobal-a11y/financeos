@@ -8,6 +8,7 @@ import { useT } from '../i18n/useT.js'
 import { useApp } from '../context/AppContext.jsx'
 import { getSession } from '../core/auth.js'
 import { sendFeedback } from '../core/feedback.js'
+import Turnstile from './Turnstile.jsx'
 import { getLicensePlan } from '../utils/licenseValidator.js'
 import { npsTrigger, closeNps } from '../utils/npsPrompt.js'
 import { logClientError } from '../utils/errorLog.js'
@@ -18,6 +19,8 @@ const SHOW_DELAY_MS = 4000
 
 export default function NpsPrompt({ createdAt }) {
   const { t, lang } = useT()
+  // SEG-1: send-feedback verifica Turnstile (sin site key no hay widget ni token).
+  const captcha = useRef(null)
   const { expenses = [], incomes = [], settings, loading } = useApp()
   const [trigger, setTrigger] = useState(null)
   const [score, setScore] = useState(null)
@@ -44,10 +47,12 @@ export default function NpsPrompt({ createdAt }) {
     if (score == null || state === 'sending') return
     setState('sending')
     const session = await getSession()
+    const turnstileToken = await captcha.current?.getToken()
     const r = await sendFeedback({
-      kind: 'nps', accessToken: session?.access_token, nps: score, message: comment.trim(),
+      kind: 'nps', accessToken: session?.access_token, nps: score, message: comment.trim(), turnstileToken,
       meta: { version: config.app?.version || '', lang, country: settings?.country || '', plan: getLicensePlan(), trigger },
     })
+    captcha.current?.reset()
     if (r.ok || r.error === 'already_answered') {
       closeNps('answered', trigger)
       setState('sent')
@@ -89,6 +94,7 @@ export default function NpsPrompt({ createdAt }) {
             id="nps-comment" value={comment} onChange={(e) => setComment(e.target.value)} rows={3} maxLength={2000}
             style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: '1px solid var(--brd)', borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
           />
+          <Turnstile ref={captcha} action="nps" errorText={t('authGate.errorCaptcha')} />
           {state === 'error' && <p role="alert" style={{ fontSize: 13, color: 'var(--red)', margin: '0 0 12px' }}>{t('nps.error')}</p>}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <button type="button" className="fos-btn-secondary" onClick={dismiss}>{t('nps.later')}</button>

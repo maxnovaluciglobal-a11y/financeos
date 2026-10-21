@@ -5,6 +5,7 @@ import { authClient } from '../core/authClient.js'
 import { withLeadLang } from './leadsLang.js'
 import { withStarterConsent, shouldRequestOptin } from './marketingConsent.js'
 import { logRejection } from './errorLog.js'
+import { leadSubmitBody } from '../core/turnstile.js'
 // Valida la clave contra la RPC `validate_license` de Supabase y cachea en localStorage
 // (fnos_license_v2). VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY están en Vercel.
 //
@@ -165,6 +166,17 @@ function requestOptinEmail(source, id) {
   }).catch(logRejection('licenseValidator:165'))
 }
 
+// SEG-1: las altas de leads pasan por la Edge Function lead-submit (verifica Turnstile y
+// llama a la RPC con el service role), no por /rest/v1/rpc. Responde el mismo status y JSON
+// que la RPC. Sin apikey ni Authorization: la función no los pide (docs/turnstile.md).
+export function postLead(rpc, args, turnstileToken, fetchImpl = fetch) {
+  return fetchImpl(`${SUPABASE_URL}/functions/v1/lead-submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(leadSubmitBody(rpc, args, turnstileToken)),
+  })
+}
+
 // Registra el email de quien elige Starter (best-effort: no bloquea la
 // activación si falla). Starter no tiene clave, así que no puede pasar por
 // setLicenseEmail — sin esto, nadie que arranca gratis quedaba registrado.
@@ -173,19 +185,12 @@ function requestOptinEmail(source, id) {
 // la casilla de LicenseGate: viaja como p_consent_marketing y, si está
 // marcada, dispara el correo de doble opt-in — las dos cosas solo con
 // MARKETING_DOI_ENABLED (ver marketingConsent.js).
-export async function registerStarterLead(email, lang, consentMarketing = false) {
+export async function registerStarterLead(email, lang, consentMarketing = false, turnstileToken = '') {
   const clean = String(email || '').trim()
   if (!clean || !SUPABASE_URL || !SUPABASE_ANON) return false
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_starter_lead`, {
-      method: 'POST',
-      headers: {
-        apikey: SUPABASE_ANON,
-        Authorization: `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(withStarterConsent(withLeadLang({ p_email: clean }, lang ?? browserLang()), consentMarketing)),
-    })
+    const res = await postLead('register_starter_lead',
+      withStarterConsent(withLeadLang({ p_email: clean }, lang ?? browserLang()), consentMarketing), turnstileToken)
     if (!res.ok) return false
     const data = await res.json()
     // Mismo patrón que diagnostico.html: si el registro devolvió id, se
@@ -214,24 +219,16 @@ export async function registerStarterLead(email, lang, consentMarketing = false)
 // Registra el lead del gate de demo (email + nombre, ver DemoGate.jsx).
 // Best-effort: si falla, DemoGate deja pasar igual — el gate es para
 // capturar el lead, no para bloquear a nadie por un problema de red.
-export async function registerDemoLead(email, nombre, consentMarketing, lang) {
+export async function registerDemoLead(email, nombre, consentMarketing, lang, turnstileToken = '') {
   const cleanEmail = String(email || '').trim()
   const cleanNombre = String(nombre || '').trim()
   if (!cleanEmail || !cleanNombre || !SUPABASE_URL || !SUPABASE_ANON) return false
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_demo_lead`, {
-      method: 'POST',
-      headers: {
-        apikey: SUPABASE_ANON,
-        Authorization: `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(withLeadLang({
-        p_email: cleanEmail,
-        p_nombre: cleanNombre,
-        p_consent_marketing: !!consentMarketing,
-      }, lang ?? browserLang())),
-    })
+    const res = await postLead('register_demo_lead', withLeadLang({
+      p_email: cleanEmail,
+      p_nombre: cleanNombre,
+      p_consent_marketing: !!consentMarketing,
+    }, lang ?? browserLang()), turnstileToken)
     if (!res.ok) return false
     const data = await res.json()
     if (shouldRequestOptin(data, consentMarketing === true)) requestOptinEmail('demo', data.id)

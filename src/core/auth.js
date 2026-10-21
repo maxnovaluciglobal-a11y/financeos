@@ -3,6 +3,7 @@
 // desde el 12-sep-2026 (antes MOY IQ no tenía ningún concepto de cuenta).
 import { authClient, AUTH_ENABLED } from './authClient.js'
 import { logClientError } from '../utils/errorLog.js'
+import { withCaptcha } from './turnstile.js'
 
 export function isAuthConfigured() {
   return AUTH_ENABLED
@@ -36,11 +37,13 @@ export function onAuthChange(callback, onEvent) {
 // mismo origen/path actual — App.jsx detecta el evento PASSWORD_RECOVERY
 // cuando ese link se abre y muestra la pantalla de "elige una contraseña
 // nueva" en vez del flujo normal de login.
-export async function resetPasswordForEmail(email) {
+// captchaToken (SEG-7): token de Turnstile; vacío mientras no exista VITE_TURNSTILE_SITE_KEY.
+// Con el captcha de Supabase Auth prendido, signUp/signIn/reset/resend sin token fallan.
+export async function resetPasswordForEmail(email, captchaToken) {
   if (!authClient) return { error: 'auth_not_configured' }
-  const { error } = await authClient.auth.resetPasswordForEmail(email, {
+  const { error } = await authClient.auth.resetPasswordForEmail(email, withCaptcha({
     redirectTo: window.location.origin + window.location.pathname,
-  })
+  }, captchaToken))
   if (error) return { error: error.message }
   return {}
 }
@@ -55,7 +58,7 @@ export async function updatePassword(newPassword) {
   return {}
 }
 
-export async function signUpWithPassword(email, password, lang) {
+export async function signUpWithPassword(email, password, lang, captchaToken) {
   if (!authClient) return { error: 'auth_not_configured' }
   // emailRedirectTo: sin esto, el correo de confirmación de signup usa el
   // Site URL único del proyecto (compartido con Invest) en vez del origen
@@ -66,7 +69,7 @@ export async function signUpWithPassword(email, password, lang) {
     password,
     // data.lang → user_metadata.lang: auth-email-hook manda la confirmación
     // (y después los resets) en ese idioma. Ver syncUserLang().
-    options: { emailRedirectTo: window.location.origin + window.location.pathname, ...(lang ? { data: { lang } } : {}) },
+    options: withCaptcha({ emailRedirectTo: window.location.origin + window.location.pathname, ...(lang ? { data: { lang } } : {}) }, captchaToken),
   })
   if (error) return { error: error.message }
   return { data }
@@ -75,20 +78,22 @@ export async function signUpWithPassword(email, password, lang) {
 // Reenvía el correo de confirmación de signup -- botón "reenviar" en la
 // pantalla de checkEmail de AuthGate.jsx. Mismo emailRedirectTo que signUp()
 // para que el hook siga detectando la marca correcta (ver signUpWithPassword).
-export async function resendSignupConfirmation(email) {
+export async function resendSignupConfirmation(email, captchaToken) {
   if (!authClient) return { error: 'auth_not_configured' }
   const { error } = await authClient.auth.resend({
     type: 'signup',
     email,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname },
+    options: withCaptcha({ emailRedirectTo: window.location.origin + window.location.pathname }, captchaToken),
   })
   if (error) return { error: error.message }
   return {}
 }
 
-export async function signInWithPassword(email, password) {
+export async function signInWithPassword(email, password, captchaToken) {
   if (!authClient) return { error: 'auth_not_configured' }
-  const { data, error } = await authClient.auth.signInWithPassword({ email, password })
+  const { data, error } = await authClient.auth.signInWithPassword(
+    captchaToken ? { email, password, options: { captchaToken } } : { email, password }
+  )
   if (error) return { error: error.message }
   return { data }
 }

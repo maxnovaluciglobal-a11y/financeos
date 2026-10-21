@@ -18,11 +18,13 @@ function functionsUrl() {
 }
 
 // kind 'nps': el NPS automático (PRD-5), con el comentario opcional.
-export async function sendFeedback({ accessToken, message, nps = null, includeLog = false, meta = {}, kind = null }, fetchImpl = fetch) {
+// turnstileToken: token del widget (SEG-1); send-feedback lo verifica. Vacío sin site key.
+export async function sendFeedback({ accessToken, message, nps = null, includeLog = false, meta = {}, kind = null, turnstileToken = '' }, fetchImpl = fetch) {
   if (!accessToken) return { ok: false, error: 'session_required' }
   const body = { message, nps, meta }
   if (kind === 'nps') body.kind = 'nps'
   if (includeLog) body.log = technicalLog()
+  if (turnstileToken) body.turnstileToken = turnstileToken
   let res
   try {
     res = await fetchImpl(functionsUrl(), {

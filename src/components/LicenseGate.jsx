@@ -1,8 +1,9 @@
 // src/components/LicenseGate.jsx
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
+import Turnstile from './Turnstile.jsx'
 import Logo from './Logo.jsx'
 import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, annualPerMonth, DEFAULT_BILLING_PERIOD } from '../utils/pricing.js'
 import PeriodToggle from './ui/PeriodToggle.jsx'
@@ -45,6 +46,8 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   // de aplicar la migración el valor no se podría guardar y el texto promete
   // un correo de confirmación que todavía no sale.
   const [marketing, setMarketing] = useState(false)
+  // SEG-1: el alta de Starter pasa por lead-submit con el token de Turnstile (sin site key: sin token).
+  const captcha = useRef(null)
 
   async function handleActivate() {
     const clean = key.trim()
@@ -88,7 +91,12 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
     // clave, así que sin esto nadie que arranca gratis quedaba registrado
     // en ningún lado (ver registerStarterLead). userEmail viene de AuthGate
     // (login ya obligatorio) — no hace falta pedirlo de nuevo acá.
-    if (userEmail) registerStarterLead(userEmail, lang, marketing).catch(logRejection('LicenseGate:90'))
+    if (userEmail) {
+      const email = userEmail
+      ;(captcha.current?.getToken() ?? Promise.resolve(''))
+        .then(token => registerStarterLead(email, lang, marketing, token))
+        .catch(logRejection('LicenseGate:90'))
+    }
     // Recuerda la elección contra la cuenta — sin esto, loguearse desde otro
     // dispositivo volvía a mostrar esta misma pantalla de elegir plan.
     if (userId) setServerEntitlement(userId, 'starter').catch(logRejection('LicenseGate:93'))
@@ -224,6 +232,8 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             </div>
           </div>
         )}
+
+        <Turnstile ref={captcha} action="starter" errorText={t('authGate.errorCaptcha')} />
 
         {MARKETING_DOI_ENABLED && (
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 18, cursor: 'pointer', minHeight: 44 }}>

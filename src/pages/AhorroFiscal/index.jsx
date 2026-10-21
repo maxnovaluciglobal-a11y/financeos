@@ -37,6 +37,10 @@ export default function AhorroFiscal() {
   // Toggle opcional declarado por el config del país (config.toggle). Los países
   // que no lo declaran no renderizan nada y su cálculo no cambia.
   const [toggleOn, setToggleOn] = useState(false)
+  // Campos numéricos extra declarados por el config del país (config.campos, hoy solo CO:
+  // aportes obligatorios y otras deducciones para el límite global del Art. 336 ET).
+  // Vacío = undefined, para que el config use su estimación.
+  const [extras, setExtras] = useState({})
 
   const result = useMemo(
     () => calcAporte(config, {
@@ -44,8 +48,11 @@ export default function AhorroFiscal() {
       aporteAnual: Number(aporte) || 0,
       edad: Number(edad) || 0,
       ...(config?.toggle ? { [config.toggle.key]: toggleOn } : {}),
+      ...Object.fromEntries((config?.campos || [])
+        .filter(c => extras[c.key] !== undefined && extras[c.key] !== '')
+        .map(c => [c.key, Number(extras[c.key]) || 0])),
     }),
-    [config, ingreso, aporte, edad, toggleOn]
+    [config, ingreso, aporte, edad, toggleOn, extras]
   )
 
   if (!config) {
@@ -81,6 +88,22 @@ export default function AhorroFiscal() {
               <input type="number" inputMode="decimal" min="0" value={aporte} placeholder="0" onChange={e => setAporte(e.target.value)} />
             </FormGroup>
           </FormRow>
+          {config.campos?.length > 0 && (
+            <FormRow>
+              {config.campos.map(c => (
+                <FormGroup key={c.key} label={c.label}>
+                  <input type="number" inputMode="decimal" min="0" value={extras[c.key] ?? ''} placeholder="0"
+                    aria-describedby={c.hint ? `af-hint-${c.key}` : undefined}
+                    onChange={e => setExtras(prev => ({ ...prev, [c.key]: e.target.value }))} />
+                  {c.hint && (
+                    <div id={`af-hint-${c.key}`} style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 4, lineHeight: 1.5 }}>
+                      {c.hint}
+                    </div>
+                  )}
+                </FormGroup>
+              ))}
+            </FormRow>
+          )}
           {esUS && (
             <FormRow>
               <FormGroup label={t('ahorroFiscal.usAgeLabel')}>
@@ -145,6 +168,11 @@ export default function AhorroFiscal() {
               <span>{t('ahorroFiscal.deductibleAmountApplied')}</span>
               <span style={{ fontFamily: 'var(--mono)', fontWeight: 600 }}>{fmt(result.deducible)}</span>
             </div>
+            {result.nota && (
+              <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>
+                {result.nota}
+              </div>
+            )}
           </Card>
         )}
 

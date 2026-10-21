@@ -1380,6 +1380,7 @@ export const en = {
     'authGate.errorWeakPassword': 'Password must be at least 8 characters.',
     'authGate.errorEmailNotConfirmed': 'Your email isn\'t confirmed yet. Check your inbox.',
     'authGate.errorNetwork': 'Couldn\'t connect to the server. Check your connection and try again.',
+    'authGate.errorCaptcha': "We couldn't verify that you're a person. Reload the page and try again.",
     'authGate.errorGeneric': 'Something went wrong. Please try again.',
     'authGate.checkEmailTitle': 'Confirm your email',
     'authGate.checkEmailBody': 'We sent a confirmation link to {email}. Open it to activate your account and enter MOY IQ.',

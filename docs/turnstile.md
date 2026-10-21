@@ -12,7 +12,7 @@ hasta que el frontend mande el token y se prenda `TURNSTILE_ENFORCE`.
 | Cuenta | la de la empresa en Cloudflare, donde está la zona `moyiq.app` |
 | Dominios | `moyiq.app`, `app.moyiq.app`, `demo.moyiq.app`, `invest.moyiq.app` |
 | Modo | Managed |
-| **Site key (pública)** | **PENDIENTE**: el widget todavía no existe (ver "Pasos pendientes") |
+| **Site key (pública)** | `0x4AAAAAAFes7XsVjxTdfS7Y` (creada el 21-oct-2026; hostname `moyiq.app` con subdominios) |
 | Secret key | solo en el secreto `TURNSTILE_SECRET_KEY` de Supabase. Nunca en el repo, el chat ni el frontend |
 
 La site key es pública: va en el HTML/JS del frontend (`data-sitekey` del widget o
@@ -79,6 +79,17 @@ La función llama a la RPC con el service role y pasa la IP del visitante en
 `send-optin-confirmation`, `send-nurture-*` y `send-cancellation-confirmation` no piden token:
 solo actúan sobre un id de lead que ya existe (creado por la puerta) y tienen su propio tope
 de envíos. Quedan protegidas cuando se cierra el acceso directo a las RPC (paso 4).
+
+## Dónde va la site key en cada frontend
+
+| Repo | Dónde | Notas |
+|---|---|---|
+| `financeos-app` (app y demo) | `VITE_TURNSTILE_SITE_KEY` en Vercel (Production y Preview) | se hornea en el build: cambiarla exige redeploy. Sin valor = sin widget. Código: `src/core/turnstile.js`, `src/components/Turnstile.jsx` |
+| `financeos-landing` | constante `SITE_KEY` en `turnstile.js` | vacía = sin widget |
+| `invest-web` | constante `SITE_KEY` en `turnstile.js` | vacía = sin widget; el login de `/app` también la usa (Supabase Auth es el mismo proyecto) |
+
+Con la clave vacía todo sigue funcionando: los formularios van a `lead-submit` sin token y el
+login no manda `captchaToken`. CSP: `script-src` y `frame-src` con `https://challenges.cloudflare.com`.
 
 ## Pasos pendientes (en orden)
 

@@ -78,3 +78,35 @@ describe('entitlement de la cuenta', () => {
     expect(del).toHaveBeenCalledWith('user_id', 'uid-1')
   })
 })
+
+// SEG-1: las altas de Starter y demo pasan por lead-submit (no por /rest/v1/rpc).
+describe('leads por lead-submit', () => {
+  function gateway(body = { ok: true, id: null }) {
+    const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => body }))
+    vi.stubGlobal('fetch', f)
+    return f
+  }
+  it('demo: POST a /functions/v1/lead-submit con rpc, args y token, sin apikey', async () => {
+    const f = gateway()
+    expect(await lv.registerDemoLead('a@b.co', 'Ana', true, 'es', 'tok')).toBe(true)
+    const [url, init] = f.mock.calls[0]
+    expect(url).toBe('https://p.supabase.co/functions/v1/lead-submit')
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json' })
+    const body = JSON.parse(init.body)
+    expect(body.rpc).toBe('register_demo_lead')
+    expect(body.args).toMatchObject({ p_email: 'a@b.co', p_nombre: 'Ana', p_consent_marketing: true })
+    expect(body.turnstileToken).toBe('tok')
+  })
+  it('starter sin token (sin site key): mismo endpoint, sin turnstileToken', async () => {
+    const f = gateway()
+    expect(await lv.registerStarterLead('a@b.co', 'es', false)).toBe(true)
+    const body = JSON.parse(f.mock.calls[0][1].body)
+    expect(f.mock.calls[0][0]).toBe('https://p.supabase.co/functions/v1/lead-submit')
+    expect(body.rpc).toBe('register_starter_lead')
+    expect(body).not.toHaveProperty('turnstileToken')
+  })
+  it('un 403 captcha_failed devuelve false sin lanzar', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 403, json: async () => ({ ok: false, error: 'captcha_failed' }) })))
+    expect(await lv.registerDemoLead('a@b.co', 'Ana', false, 'es', '')).toBe(false)
+  })
+})

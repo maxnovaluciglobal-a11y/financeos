@@ -16,13 +16,14 @@
 // MARKETING_DOI_ENABLED, la casilla marcada además dispara el correo de doble
 // opt-in (send-optin-confirmation) y el texto lo dice (demoGate.consentDoi);
 // sin el flag no sale ningún correo y se usa el texto viejo (demoGate.consent).
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { registerDemoLead } from '../utils/licenseValidator.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 import { useTFor } from '../i18n/useT.js'
 import { detectLanguage } from '../i18n/translate.js'
 import { Btn } from '../components/ui/index.jsx'
 import Logo from '../components/Logo.jsx'
+import Turnstile from '../components/Turnstile.jsx'
 
 const LS_KEY = 'fnos_demo_gate_passed'
 
@@ -44,6 +45,8 @@ export default function DemoGate({ onPass }) {
   const [consent, setConsent] = useState(false)
   const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
+  // SEG-1: token de Turnstile para lead-submit (sin site key: '' y todo igual que antes).
+  const captcha = useRef(null)
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -54,11 +57,13 @@ export default function DemoGate({ onPass }) {
     setError('')
     setLoading(true)
     // No bloquea la entrada al demo por el resultado del registro — best-effort.
-    registerDemoLead(cleanEmail, cleanNombre, consent, lang).finally(() => {
-      markPassed()
-      setLoading(false)
-      onPass()
-    })
+    ;(captcha.current?.getToken() ?? Promise.resolve(''))
+      .then(token => registerDemoLead(cleanEmail, cleanNombre, consent, lang, token))
+      .finally(() => {
+        markPassed()
+        setLoading(false)
+        onPass()
+      })
   }
 
   const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }
@@ -148,6 +153,8 @@ export default function DemoGate({ onPass }) {
             {t(MARKETING_DOI_ENABLED ? 'demoGate.consentDoi' : 'demoGate.consent')}
           </span>
         </label>
+
+        <Turnstile ref={captcha} action="demo" errorText={t('authGate.errorCaptcha')} />
 
         {error && (
           <div role="alert" style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>

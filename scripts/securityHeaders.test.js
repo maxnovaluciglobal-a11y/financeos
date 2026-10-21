@@ -39,3 +39,12 @@ describe('cabeceras de seguridad (vercel.json)', () => {
     for (const host of new Set([...src.matchAll(/https:\/\/([a-z0-9.-]+)/g)].map(m => m[1]))) expect(c, host).toContain('https://' + host)
   })
 })
+
+// SEG-1 / SEG-7: Cloudflare Turnstile carga api.js y su iframe desde challenges.cloudflare.com.
+describe('Turnstile en la CSP', () => {
+  it('script-src y frame-src permiten challenges.cloudflare.com, y nada más se abre', () => {
+    expect(dir('script-src')).toContain('https://challenges.cloudflare.com')
+    expect(dir('frame-src')).toEqual(['https://challenges.cloudflare.com'])
+    expect(dir('connect-src')).not.toContain('https://challenges.cloudflare.com')
+  })
+})

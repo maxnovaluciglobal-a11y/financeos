@@ -4,12 +4,14 @@
 // concepto de cuenta; esto no reemplaza esa arquitectura local-first (los
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
+import Turnstile from './Turnstile.jsx'
+import { isCaptchaError } from '../core/turnstile.js'
 import { authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash } from '../utils/deepLink.js'
 
 const LEGAL_URLS = {
@@ -44,6 +46,7 @@ export function LegalNotice({ t, lang }) {
 
 function friendlyError(t, raw) {
   const m = String(raw || '')
+  if (isCaptchaError(m)) return t('authGate.errorCaptcha')
   if (/invalid login credentials/i.test(m)) return t('authGate.errorInvalidCredentials')
   if (/already registered|already exists|user already/i.test(m)) return t('authGate.errorEmailExists')
   if (/password.*(least|short|6)/i.test(m)) return t('authGate.errorWeakPassword')
@@ -65,6 +68,9 @@ export default function AuthGate({ onAuthenticated }) {
   const [forgotMode, setForgotMode] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  // SEG-7: Turnstile en login, registro, recuperar y reenviar. Sin site key no hace nada.
+  const captcha = useRef(null)
+  const captchaWidget = <Turnstile ref={captcha} action="auth" errorText={t('authGate.errorCaptcha')} />
   // C-22: aviso tras borrar la cuenta desde Ajustes (la app recarga y llega acá).
   // La marca se borra al volver a entrar, no al leerla: la app puede montar
   // esta pantalla dos veces (cierre de sesión y recarga).
@@ -81,9 +87,11 @@ export default function AuthGate({ onAuthenticated }) {
     clearDeletedNotice()
     setLoading(true)
     if (tab === 'signup') stashOpenForSignup(window.location.search)
+    const captchaToken = await captcha.current?.getToken()
     const result = tab === 'login'
-      ? await signInWithPassword(cleanEmail, password)
-      : await signUpWithPassword(cleanEmail, password, lang)
+      ? await signInWithPassword(cleanEmail, password, captchaToken)
+      : await signUpWithPassword(cleanEmail, password, lang, captchaToken)
+    captcha.current?.reset()
     setLoading(false)
     if (result.error) {
       setError(friendlyError(t, result.error))
@@ -124,8 +132,11 @@ export default function AuthGate({ onAuthenticated }) {
     if (!cleanEmail) { setError(t('authGate.errorMissingFields')); return }
     setError('')
     setLoading(true)
-    const result = await resetPasswordForEmail(cleanEmail)
+    const captchaToken = await captcha.current?.getToken()
+    const result = await resetPasswordForEmail(cleanEmail, captchaToken)
+    captcha.current?.reset()
     setLoading(false)
+    if (result.error && isCaptchaError(result.error)) { setError(t('authGate.errorCaptcha')); return }
     // Nunca revela si el email existe o no (mismo criterio de seguridad que
     // Supabase aplica server-side) — se muestra "revisa tu correo" incluso
     // si resetPasswordForEmail falló por email inexistente.
@@ -139,7 +150,9 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleResend() {
     setResendState('sending')
-    const result = await resendSignupConfirmation(email.trim())
+    const captchaToken = await captcha.current?.getToken()
+    const result = await resendSignupConfirmation(email.trim(), captchaToken)
+    captcha.current?.reset()
     setResendState(result.error ? 'error' : 'sent')
   }
 
@@ -230,6 +243,7 @@ export default function AuthGate({ onAuthenticated }) {
             autoFocus
             autoComplete="email"
           />
+          {captchaWidget}
           {error && (
             <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
               <InlineIcon kind="alert" size={13} />{error}
@@ -296,6 +310,7 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 16 }}>
             {t('authGate.checkEmailBody', { email })}
           </div>
+          {resendState !== 'sent' && captchaWidget}
           {resendState === 'sent' ? (
             <div style={{ fontSize: 12, color: 'var(--pos)' }}>{t('authGate.resendSent')}</div>
           ) : (
@@ -416,6 +431,8 @@ export default function AuthGate({ onAuthenticated }) {
             {t('authGate.forgotLink')}
           </button>
         )}
+
+        {captchaWidget}
 
         {error && (
           <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>

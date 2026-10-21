@@ -26,4 +26,12 @@ describe('comentarios (C-39 / PRD-5)', () => {
     await sendFeedback({ accessToken: 't', message: '', nps: 9, kind: 'nps', meta: { trigger: 'day14' } }, f)
     expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ kind: 'nps', message: '', nps: 9, meta: { trigger: 'day14' } })
   })
+  it('SEG-1: manda turnstileToken solo si hay token', async () => {
+    const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }))
+    await sendFeedback({ accessToken: 't', message: 'hola', turnstileToken: 'tok' }, f)
+    expect(JSON.parse(f.mock.calls[0][1].body).turnstileToken).toBe('tok')
+    await sendFeedback({ accessToken: 't', message: 'hola', turnstileToken: '' }, f)
+    expect(JSON.parse(f.mock.calls[1][1].body)).not.toHaveProperty('turnstileToken')
+    expect(await sendFeedback({ accessToken: 't', message: 'x' }, async () => ({ ok: false, status: 403, json: async () => ({ ok: false, error: 'captcha_failed' }) }))).toEqual({ ok: false, error: 'captcha_failed' })
+  })
 })

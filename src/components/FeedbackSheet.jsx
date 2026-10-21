@@ -7,6 +7,7 @@ import { useT } from '../i18n/useT.js'
 import { useApp } from '../context/AppContext.jsx'
 import { getSession } from '../core/auth.js'
 import { sendFeedback } from '../core/feedback.js'
+import Turnstile from './Turnstile.jsx'
 import { getLicensePlan } from '../utils/licenseValidator.js'
 import config from '../config.js'
 
@@ -14,6 +15,8 @@ const NPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 export default function FeedbackSheet({ open, onClose }) {
   const { t, lang } = useT()
+  // SEG-1: send-feedback verifica Turnstile (sin site key no hay widget ni token).
+  const captcha = useRef(null)
   const { settings } = useApp()
   const [message, setMessage] = useState('')
   const [nps, setNps] = useState(null)
@@ -32,13 +35,16 @@ export default function FeedbackSheet({ open, onClose }) {
     if (!message.trim() || state === 'sending') return
     setState('sending'); setError('')
     const session = await getSession()
+    const turnstileToken = await captcha.current?.getToken()
     const r = await sendFeedback({
-      accessToken: session?.access_token, message: message.trim(), nps, includeLog,
+      accessToken: session?.access_token, message: message.trim(), nps, includeLog, turnstileToken,
       meta: { version: config.app?.version || '', lang, country: settings.country || '', plan: getLicensePlan() },
     })
+    captcha.current?.reset()
     if (r.ok) { setState('sent'); return }
     setState('error')
-    setError(t(r.error === 'rate_limited' ? 'feedback.errorLimit' : r.error === 'session_required' ? 'feedback.errorSession' : 'feedback.errorGeneric'))
+    setError(t(r.error === 'rate_limited' ? 'feedback.errorLimit' : r.error === 'session_required' ? 'feedback.errorSession'
+      : (r.error === 'captcha_failed' || r.error === 'captcha_unavailable') ? 'authGate.errorCaptcha' : 'feedback.errorGeneric'))
   }
 
   const label = { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--tx)', marginBottom: 6 }
@@ -78,6 +84,7 @@ export default function FeedbackSheet({ open, onClose }) {
             <input type="checkbox" checked={includeLog} onChange={(e) => setIncludeLog(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18 }} />
             <span>{t('feedback.logLabel')}</span>
           </label>
+          <Turnstile ref={captcha} action="feedback" errorText={t('authGate.errorCaptcha')} />
           {error && <p role="alert" style={{ fontSize: 13, color: 'var(--red)', margin: '0 0 12px' }}>{error}</p>}
           <button type="submit" className="fos-btn-primary" disabled={!message.trim() || state === 'sending'} style={{ width: '100%' }}>
             {state === 'sending' ? t('feedback.sending') : t('feedback.send')}
