@@ -552,3 +552,27 @@ describe('paridad de las claves de la ola 1 de diseño visual (UI-Q4, Q5, Q8, M3
     for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
   })
 })
+
+describe('paridad de las claves de la ola 2 de diseño visual (UI-M5…M9, L2; es/en/pt/de)', () => {
+  const prefixes = ['budgets.head.', 'budgets.pace.', 'budgets.state.', 'budgets.col.', 'budgets.meter.', 'budgets.carry', 'budgets.unbudgeted.', 'budgets.deleteAria', 'budgets.ring.', 'budgets.list.', 'budgets.model.col.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(0)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+  it('sin voseo, exclamaciones ni "por favor"; el alemán no tutea', () => {
+    for (const k of pick(es)) {
+      expect(es[k]).not.toMatch(/\b(podés|tenés|querés|vos|tocá|mirá|elegí|gastá|asigná)\b/i)
+      expect(es[k]).not.toMatch(/por favor/i)
+    }
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/[¡!]/)
+    for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+})

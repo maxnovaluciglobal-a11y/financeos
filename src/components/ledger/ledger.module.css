@@ -1,0 +1,34 @@
+/* src/components/ledger/ledger.module.css — sistema "Honest Ledger" en la app (UI-L1).
+   Estructura por líneas, no por cajas: hairlines al 10 % entre filas y al 18 %
+   bajo encabezados y arriba de cada sección. */
+
+/* ── Estado: ícono + palabra ── */
+.stateTag { display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans); font-size: 12px; font-weight: 600; line-height: 1.3; white-space: nowrap; }
+.stateTag svg { flex-shrink: 0; }
+
+/* ── Variación ── */
+.delta { display: inline-flex; align-items: center; gap: 4px; font-family: var(--sans); font-size: 12px; font-weight: 500; line-height: 1.3; }
+.delta svg { flex-shrink: 0; }
+
+/* ── Medidor (role="meter") ── */
+.meter { position: relative; display: block; height: 6px; border-radius: var(--rs); background: var(--sur3); overflow: hidden; }
+.meterFill { position: absolute; inset: 0; transform-origin: left; border-radius: var(--rs); background: var(--navy-400); transition: transform var(--dur-value-update) var(--ease-instrument); }
+:global([data-theme="dark"]) .meterFill { background: var(--info-dark); }
+.meter[data-tone="warn"] .meterFill { background: var(--warn); }
+.meter[data-tone="risk"] .meterFill { background: var(--neg); }
+/* Exceso: tramo rayado al final (la barra ya está llena), lectura sin color. */
+.meterOver {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 22%;
+  background: repeating-linear-gradient(-45deg, transparent 0 3px, color-mix(in srgb, var(--sur) 70%, transparent) 3px 5px);
+}
+@media (prefers-reduced-motion: reduce) { .meterFill { transition: none; } }
+
+/* ── Tabla de hairlines ── */
+.table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 13px; color: var(--tx); }
+.caption { caption-side: top; text-align: left; font-size: 14px; font-weight: 600; color: var(--tx); padding: 0 0 8px; }
+.table thead th { font-size: 12px; font-weight: 600; color: var(--tm); text-align: left; padding: 0 12px 8px 0; border-bottom: 1px solid var(--brd2); white-space: nowrap; }
+.table tbody th, .table tbody td, .table tfoot th, .table tfoot td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--brd); text-align: left; font-weight: 400; vertical-align: baseline; }
+.table th:last-child, .table td:last-child { padding-right: 0; }
+.table tbody tr[data-highlight] th, .table tbody tr[data-highlight] td { font-weight: 600; }
+.table tfoot th, .table tfoot td { font-weight: 600; border-top: 1px solid var(--brd2); border-bottom: 0; }
+.table .numCell { text-align: right; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }

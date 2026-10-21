@@ -82,3 +82,40 @@ export function countBudgetsExceeded({ budgets, expenses, activeMonth, settings 
     b => budgetStatus(spent[b.category] || 0, limits[b.category] || 0).over
   ).length
 }
+
+// ── Presupuestos legibles de un vistazo (UI-M5) ─────────────────────────────
+// Estado por categoría en palabras: A tiempo · Cerca del límite · Excedido ·
+// Sin asignar (gasto en una categoría sin presupuesto). Misma regla de umbral
+// que budgetStatus (80 %, excedido solo si supera).
+export const CATEGORY_STATE_TONE = { ok: 'ok', near: 'warn', over: 'risk', unassigned: 'muted' }
+
+export function categoryState(spent, limit) {
+  if (!(Number(limit) > 0)) return 'unassigned'
+  const { over, warn } = budgetStatus(spent, limit)
+  return over ? 'over' : warn ? 'near' : 'ok'
+}
+
+// Cuánto del mes pasó. Un mes ya cerrado cuenta entero; uno futuro, nada.
+// daysLeft incluye el día de hoy (todavía se puede gastar hoy).
+export function monthElapsed(activeMonth, today = new Date()) {
+  const [y, m] = String(activeMonth).split('-').map(Number)
+  const days = new Date(y, m, 0).getDate()
+  const cy = today.getFullYear(), cm = today.getMonth() + 1
+  if (y < cy || (y === cy && m < cm)) return { day: days, days, ratio: 1, daysLeft: 0, closed: true }
+  if (y > cy || (y === cy && m > cm)) return { day: 0, days, ratio: 0, daysLeft: days, closed: false }
+  const d = today.getDate()
+  return { day: d, days, ratio: d / days, daysLeft: days - d + 1, closed: false }
+}
+
+// Ritmo del presupuesto: cuánto se usó contra cuánto del mes pasó.
+// pace: 'ok' (a buen ritmo, hasta 2 puntos por encima del tiempo), 'fast'
+// (más rápido de lo previsto), 'over' (ya se pasó del total), null sin total.
+export function budgetPace({ spent, total, activeMonth, today = new Date() }) {
+  const e = monthElapsed(activeMonth, today)
+  const s = Number(spent) || 0, tot = Number(total) || 0
+  const used = tot > 0 ? s / tot : 0
+  const left = tot - s
+  const pace = tot <= 0 ? null : cents(s) > cents(tot) ? 'over' : used - e.ratio <= 0.02 ? 'ok' : 'fast'
+  const perDay = e.daysLeft > 0 && left > 0 ? left / e.daysLeft : 0
+  return { ...e, used, left, pace, perDay }
+}

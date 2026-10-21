@@ -12,6 +12,8 @@ const ALLOWED = {
   pt: new Set([
     // Ola 1 de diseño visual (21-oct-2026): cognados correctos en portugués.
     'ui.state.overBudget',
+    // Ola 2 (21-oct-2026): cognados correctos en portugués.
+    'budgets.model.col.group',
     'goals.status.behind',
     'movl.title',
     'movl.summary.one',

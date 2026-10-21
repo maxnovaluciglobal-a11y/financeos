@@ -14,6 +14,17 @@ export function interpolate(str, vars) {
   return String(str).replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : `{${k}}`))
 }
 
+// Como interpolate, pero devuelve las partes en un array para poder intercalar
+// nodos de React (una cifra con <Amount>) sin perder el orden de cada idioma:
+// interpolateParts("Te quedan {left} de {total}", { left: <A/>, total: <B/> })
+// → ["Te quedan ", <A/>, " de ", <B/>]. Una variable que falta queda como texto.
+export function interpolateParts(str, vars = {}) {
+  return String(str).split(/(\{\w+\})/g).filter(p => p !== '').map(p => {
+    const m = /^\{(\w+)\}$/.exec(p)
+    return m && vars[m[1]] != null ? vars[m[1]] : p
+  })
+}
+
 // Usa solo lo que ya está en langCache (cargado con loadLang); si el idioma
 // todavía no terminó de cargar, cae a español.
 export function translate(lang, key, vars) {
