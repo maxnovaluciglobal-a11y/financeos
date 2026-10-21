@@ -294,7 +294,7 @@ export default function Reports({ setPage }) {
               {lb:t('reports.subs.monthly'),v:fmtMoney(subMetrics.monthly,sym)},
               {lb:t('reports.subs.annual'),  v:fmtMoney(subMetrics.annual,sym)},
               {lb:t('reports.subs.count'),     v:`${subMetrics.count}`},
-              ...(subMetrics.monthlyIncome>0?[{lb:t('reports.subs.pctIncome'),v:`${(subMetrics.pct*100).toFixed(1)}%`}]:[]),
+              ...(subMetrics.monthlyIncome>0?[{lb:t('reports.subs.pctIncome'),v:fmtPct(subMetrics.pct)}]:[]),
             ].map(m=>(
               <div key={m.lb} style={{flex:'1 1 110px',background:'var(--sur2)',borderRadius:6,padding:'8px 10px',border:'.5px solid var(--brd)'}}>
                 <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{m.lb}</div>

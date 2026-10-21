@@ -10,7 +10,7 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, expSubcatLabel, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney } from '../../utils/index.js'
+import { catLabel, catEmoji, subLabel, expSubcatLabel, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney, fmtPct } from '../../utils/index.js'
 import { monthPlan, pendingTotals, toLocal } from '../../utils/recurring.js'
 import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
@@ -434,7 +434,7 @@ export default function Movements({ setPage }) {
       if (items.length >= 2) al.push({ type:'dup', msg:t('mov.alert.dup', { n: items.length, cat }) })
     })
     if (totalInc > 0 && totalSubs/totalInc > 0.15)
-      al.push({ type:'income', msg:t('mov.alert.income', { pct: (totalSubs/totalInc*100).toFixed(1) }) })
+      al.push({ type:'income', msg:t('mov.alert.income', { pct: fmtPct(totalSubs/totalInc) }) })
     const todayD = new Date(), in7 = new Date(); in7.setDate(todayD.getDate()+7)
     activeSubs.filter(s=>s.nextPaymentDate).forEach(s => {
       const d = toLocal(s.nextPaymentDate)

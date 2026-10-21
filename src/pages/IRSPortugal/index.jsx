@@ -12,7 +12,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRSEmpregado, calcIRSRecibosVerdes, ESCALOES_IRS_2026, MINIMO_EXISTENCIA } from '../../utils/irsPT.js'
-import { fmtFixed } from '../../utils/index.js'
+import { fmtFixed, fmtPct } from '../../utils/index.js'
 
 const fmtEUR = (n) => fmtFixed(n, 'pt-PT', '€')
 
@@ -58,7 +58,7 @@ export default function IRSPortugal() {
             return (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0', color: 'var(--tx)' }}>
                 <span>{fmtEUR(desde)} — {e.hasta === Infinity ? t('irsPT.andAbove') : fmtEUR(e.hasta)}</span>
-                <span style={{ fontFamily: 'var(--mono)' }}>{(e.tasa * 100).toFixed(1)}%</span>
+                <span className="num">{fmtPct(e.tasa, { locale: 'pt-PT' })}</span>
               </div>
             )
           })}

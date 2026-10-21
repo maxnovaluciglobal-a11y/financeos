@@ -175,14 +175,26 @@ export function fmtMoneyCompact(n, symbol = '$') {
   return symbolAfter(symbol) ? `${num}\u00a0${symbol}` : symbol + num
 }
 
-// Eje compacto de gráficos: 950 → "950", 12 000 → "12K", 1 500 000 → "1.5M".
-// Enteros a propósito: un eje con centavos no se lee.
-export function fmtAxis(v) {
+// Signo menos tipográfico (U+2212) y espacio fino sin corte (U+202F) antes de
+// "%" y de las unidades K/M: la misma regla que Invest ("Narrow-Space Percent",
+// invest-web/DESIGN.md). Nunca el guion ASCII para un negativo (UI-Q3).
+export const MINUS = '−'
+export const NNBSP = ' '
+
+// Eje compacto de gráficos en el locale del dinero: 950 → "950",
+// 12 000 → "12 K", 1 500 000 → "1,5 M" (es/pt/de) o "1.5 M" (en) (UI-Q2).
+// Enteros salvo en millones: un eje con centavos no se lee.
+// (recharts llama tickFormatter(valor, índice): un segundo argumento que no es
+// un string se ignora.)
+export function fmtAxis(v, locale) {
+  if (typeof locale !== 'string') locale = _moneyLocale
   const n = Number(v) || 0
   const a = Math.abs(n)
-  if (a >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
-  if (a >= 1000) return (n / 1000).toFixed(0) + 'K'
-  return String(Math.round(n))
+  const sign = n < 0 ? MINUS : ''
+  const num = (x, frac) => x.toLocaleString(locale, { minimumFractionDigits: frac, maximumFractionDigits: frac })
+  if (a >= 1_000_000) return sign + num(a / 1_000_000, 1) + NNBSP + 'M'
+  if (a >= 1000) return sign + num(Math.round(a / 1000), 0) + NNBSP + 'K'
+  return sign + num(Math.round(a), 0)
 }
 
 // Número SIN símbolo, con el mismo locale que el dinero. Usar SIEMPRE en vez de
@@ -191,7 +203,39 @@ export function fmtAxis(v) {
 export const fmtNum = (n, maxFrac = 0) =>
   (Number(n) || 0).toLocaleString(_moneyLocale, { maximumFractionDigits: maxFrac })
 
-export const fmtPct = (n) => (Math.round((n || 0) * 1000) / 10).toFixed(1) + '%'
+// Porcentaje a partir de una FRACCIÓN (0.54 → "54,0 %"), con Intl en el locale
+// del dinero (la coma decimal coincide con la del monto de al lado), U+202F
+// antes de "%" y U+2212 para negativos (UI-Q2). `signed` agrega "+" a los
+// positivos (deltas). "54.0%" con punto se leía como cincuenta y cuatro mil en
+// es/pt/de.
+export function fmtPct(n, { decimals = 1, signed = false, locale = _moneyLocale } = {}) {
+  const v = Number(n) || 0
+  let body
+  try {
+    body = new Intl.NumberFormat(locale, { style: 'percent', minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+      .formatToParts(Math.abs(v))
+      .filter((p) => p.type !== 'percentSign' && p.type !== 'literal')
+      .map((p) => p.value).join('')
+  } catch {
+    body = (Math.abs(v) * 100).toFixed(decimals)
+  }
+  // "−0,0 %" no existe: un valor que redondea a cero no lleva signo.
+  const sign = !/[1-9]/.test(body) ? '' : v < 0 ? MINUS : signed ? '+' : ''
+  return sign + body + NNBSP + '%'
+}
+
+// Fecha corta de fila en el idioma de la interfaz: "15 oct" / "Oct 15" /
+// "15. Okt." (UI-Q7). Antes era "10-15" (el ISO recortado).
+export function fmtDayMonth(iso, locale = _dateLocale) {
+  if (!iso) return ''
+  const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number)
+  if (!y || !m || !d) return String(iso)
+  try {
+    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(y, m - 1, d))
+  } catch {
+    return `${d}/${m}`
+  }
+}
 
 export const fmtDate = (iso) => {
   if (!iso) return ''

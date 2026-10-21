@@ -9,6 +9,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import arConfig from '../../config/inflacion/ar.js'
+import { fmtPct } from '../../utils/index.js'
 
 const CONFIGS = { AR: arConfig }
 
@@ -96,8 +97,8 @@ export default function Inflacion() {
               </div>
             </div>
             <div style={{ borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Row label={t('inflacion.result.cumulativeInflation')} value={`${result.inflacionAcumPct.toFixed(1)}%`} color="var(--red)" />
-              <Row label={t('inflacion.result.purchasingPowerLost')} value={`−${result.poderPerdidoPct.toFixed(1)}%`} color="var(--red)" />
+              <Row label={t('inflacion.result.cumulativeInflation')} value={fmtPct(result.inflacionAcumPct / 100)} color="var(--red)" />
+              <Row label={t('inflacion.result.purchasingPowerLost')} value={fmtPct(-result.poderPerdidoPct / 100)} color="var(--red)" />
               <Row label={t('inflacion.result.cashBuysLikePre')} value={`${fmt(result.poderHoy)} de ${fmtMes(desde)}`} color="var(--th)" />
             </div>
           </Card>

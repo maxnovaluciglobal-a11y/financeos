@@ -109,11 +109,12 @@ describe('currencySymbol', () => {
 })
 
 describe('fmtAxis (ejes compactos de gráficos, enteros)', () => {
-  it('K y M sin centavos', () => {
+  it('K y M sin centavos, localizado, U+202F antes de la unidad y U+2212 (UI-Q2)', () => {
     expect(fmtAxis(950.5)).toBe('951')
-    expect(fmtAxis(12_000)).toBe('12K')
-    expect(fmtAxis(1_500_000)).toBe('1.5M')
-    expect(fmtAxis(-2500)).toBe('-3K')
+    expect(fmtAxis(12_000)).toBe('12\u202fK')
+    expect(fmtAxis(1_500_000)).toBe('1,5\u202fM')
+    expect(fmtAxis(-2500)).toBe('\u22123\u202fK')
+    expect(fmtAxis(1_500_000, 'en-US')).toBe('1.5\u202fM')
   })
 })
 

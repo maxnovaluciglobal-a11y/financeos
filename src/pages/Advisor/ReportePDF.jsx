@@ -90,7 +90,7 @@ const s = StyleSheet.create({
     borderWidth: 0.5, borderColor: C.brd,
   },
   kpiLabel: { fontSize: 7, color: C.ink3, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  kpiValue: { fontSize: 13, fontFamily: F.mono, fontWeight: 600, letterSpacing: -0.3 },
+  kpiValue: { fontSize: 13, fontFamily: F.num, fontWeight: 600, letterSpacing: -0.3 },
   kpiSub:   { fontSize: 7, color: C.ink3, marginTop: 2 },
 
   // Semáforo

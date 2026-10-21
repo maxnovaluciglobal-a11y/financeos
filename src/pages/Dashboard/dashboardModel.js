@@ -3,7 +3,7 @@
 // los KPIs vs. el mes anterior), ¿en qué me estoy pasando? (presupuesto por
 // categoría) y ¿qué viene? (próximos pagos). Testeado en dashboardModel.test.js.
 
-import { localDateStr } from '../../utils/index.js'
+import { localDateStr, fmtPct } from '../../utils/index.js'
 import { budgetStatus } from '../../utils/budgets.js'
 import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
 
@@ -35,13 +35,10 @@ export function monthName(month, lang = 'es') {
   catch { return '' }
 }
 
-// "−6 %" / "+12 %" con el formato de porcentaje del idioma y signo menos real.
-export function fmtSignedPct(pct, lang = 'es') {
-  const n = Math.round(Math.abs(Number(pct) || 0))
-  let s
-  try { s = new Intl.NumberFormat(lang, { style: 'percent', maximumFractionDigits: 0 }).format(n / 100) }
-  catch { s = `${n}%` }
-  return `${pct < 0 ? '−' : '+'}${s}`
+// Delta en puntos enteros con el formato único de porcentaje (UI-Q2):
+// "+24 %", "−6 %" (U+2212 y U+202F). `locale` opcional (por defecto, el del dinero).
+export function fmtSignedPct(pct, locale) {
+  return fmtPct((Number(pct) || 0) / 100, { decimals: 0, signed: true, ...(locale ? { locale } : {}) })
 }
 
 // ── Presupuesto por categoría ────────────────────────────────────────────────

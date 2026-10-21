@@ -703,7 +703,7 @@ export default function Advisor() {
               { label: t('adv.subs.monthly'), value: fmtMoney(subMonthly, sym) },
               { label: t('adv.subs.annual'),   value: fmtMoney(subAnnual, sym) },
               { label: t('adv.subs.active'),       value: `${activeSubs.length}` },
-              { label: t('adv.subs.pctIncome'), value: mIncome > 0 ? `${(subPct*100).toFixed(1)}%` : '—' },
+              { label: t('adv.subs.pctIncome'), value: mIncome > 0 ? fmtPct(subPct) : '—' },
             ].map(m => (
               <div key={m.label} style={{ background: 'var(--sur2)', borderRadius: 6, padding: '8px 10px', border: '.5px solid var(--brd)' }}>
                 <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.5px' }}>{m.label}</div>

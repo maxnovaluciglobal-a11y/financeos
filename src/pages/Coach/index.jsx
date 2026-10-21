@@ -11,6 +11,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
+import { fmtPct } from '../../utils/index.js'
 
 // ── ICONO POR SEVERIDAD ────────────────────────────────────────────────────
 // Íconos por severidad (T17): antes glifos ◈ ⚠ ⊗; ahora el mismo vocabulario de
@@ -128,7 +129,7 @@ export default function Coach() {
   const attentions  = signals.filter(s => s.severity === 'attention')
   const infos       = signals.filter(s => s.severity === 'info')
 
-  const fmtP = n => ((n || 0) * 100).toFixed(1) + '%'
+  const fmtP = n => fmtPct(n)
 
   // Score orientativo 0-100 — misma escala de 3 estados que el IQ Score (D3):
   // Bien ≥70 · Atención 40–69 · Riesgo <40 (antes tenía sus propios cortes 80/60).

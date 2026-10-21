@@ -6,7 +6,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { dbGetAll } from '../core/db/index.js'
-import { currentMonth } from '../utils/index.js'
+import { currentMonth, fmtPct } from '../utils/index.js'
 import { useT } from '../i18n/useT.js'
 
 // ── CÁLCULOS DE FRECUENCIA ──────────────────────────────────────────────────
@@ -73,7 +73,7 @@ export function generateAlerts(activeSubs, monthlyIncome, t = (k) => k) {
     const monthly = activeSubs.reduce((s, sub) => s + toMonthly(sub.amount, sub.frequency), 0)
     const pct     = monthly / monthlyIncome
     if (pct > 0.07) {
-      alerts.push({ type: 'income', msg: t('subs.alert.income', { pct: (pct * 100).toFixed(1) }) })
+      alerts.push({ type: 'income', msg: t('subs.alert.income', { pct: fmtPct(pct) }) })
     }
   }
 

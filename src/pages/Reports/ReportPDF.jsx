@@ -5,7 +5,7 @@ import {
   Document, Page, Text, View, StyleSheet,
 } from '@react-pdf/renderer'
 import { PDF_FONT as F, PDF_COLOR as P } from '../pdfTheme.js'
-import { fmtMoney, catName } from '../../utils/index.js'
+import { fmtSignedMoney, fmtPct, catName } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 
 // Colores y fuentes de la marca (pdfTheme.js, BRD-8).
@@ -36,14 +36,14 @@ const s = StyleSheet.create({
   kpiRow:  { flexDirection: 'row', gap: 8, marginBottom: 4 },
   kpiBox:  { flex: 1, backgroundColor: LGRAY, borderRadius: 4, padding: '8 10' },
   kpiLabel:{ fontSize: 7, color: GRAY, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  kpiVal:  { fontSize: 14, fontFamily: F.mono, fontWeight: 600 },
+  kpiVal:  { fontSize: 14, fontFamily: F.num, fontWeight: 600 },
   kpiSub:  { fontSize: 7, color: GRAY, marginTop: 2 },
   // Bars
   barRow:  { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
   barLabel:{ width: 90, fontSize: 8, color: DARK },
   barTrack:{ flex: 1, height: 10, backgroundColor: LGRAY, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 10, borderRadius: 3 },
-  barAmt:  { width: 68, fontSize: 8, textAlign: 'right', fontFamily: F.mono, fontWeight: 600, color: DARK },
+  barAmt:  { width: 68, fontSize: 8, textAlign: 'right', fontFamily: F.num, fontWeight: 600, color: DARK },
   // Trend table
   tRow:    { flexDirection: 'row', borderBottom: `0.5px solid ${LGRAY}`, paddingVertical: 4 },
   tHead:   { backgroundColor: LGRAY },
@@ -66,13 +66,10 @@ const s = StyleSheet.create({
   badgeTxt:{ fontSize: 7, fontFamily: F.body, fontWeight: 700 },
 })
 
-// Con los decimales de la moneda. Signo ASCII "-" a propósito: la Helvetica
-// integrada de react-pdf (WinAnsi) no tiene el "−" tipográfico.
-function fmt(n, sym = '$') {
-  const v = Number(n) || 0
-  return (v < 0 && fmtMoney(v, sym) !== fmtMoney(0, sym) ? '-' : '') + fmtMoney(v, sym)
-}
-function pct(n) { return `${((Number(n) || 0) * 100).toFixed(1)}%` }
+// Con los decimales de la moneda y el signo menos U+2212 (UI-Q3): el PDF usa
+// IBM Plex Sans (pdfTheme.js), que sí tiene "−" y el espacio fino de "%".
+const fmt = (n, sym = '$') => fmtSignedMoney(n, sym)
+const pct = (n) => fmtPct(n)
 
 const CAT_COLORS = [
   P.navy, P.laton, P.pos, P.warn, P.info,

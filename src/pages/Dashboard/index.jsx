@@ -30,7 +30,7 @@ import { RateSheet } from './RefCurrency.jsx'
 import { refEligible, resolveRefRate, rateToolFor } from '../../utils/refRate.js'
 import { prevMonthOf, homeMonthTotals } from './dashboardModel.js'
 import hs from './Home.module.css'
-import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, currencySymbol } from '../../utils/index.js'
+import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, currencySymbol } from '../../utils/index.js'
 import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
@@ -41,7 +41,7 @@ import { monthPlan, pendingTotals } from '../../utils/recurring.js'
 import { localDateStr } from '../../utils/index.js'
 import { ChevronDown } from 'lucide-react'
 
-const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
+const pct  = (n) => fmtPct(n)
 
 export default function Dashboard({ setPage }) {
   const ctx      = useApp() || {}

@@ -18,7 +18,7 @@ export default function DeltaLine({ delta, prevMonth, valueText, style, untilDay
   const flat = delta.dir === 'flat'
   const Ic = flat ? Equal : delta.dir === 'up' ? ArrowUp : ArrowDown
   const color = flat || delta.good === null ? 'var(--th)' : delta.good ? 'var(--pos)' : 'var(--neg)'
-  const pct = valueText ?? fmtSignedPct(delta.pct, lang)
+  const pct = valueText ?? fmtSignedPct(delta.pct)
   const text = untilDay != null
     ? (flat ? t('home.delta.flatDay', { month, d: untilDay }) : t('home.delta.vsDay', { pct, month, d: untilDay }))
     : (flat ? t('home.delta.flat', { month }) : t('home.delta.vs', { pct, month }))

@@ -34,8 +34,9 @@ describe('mes anterior, nombre y porcentaje', () => {
     expect(monthName('2026-09', 'de')).toBe('September')
   })
   it('fmtSignedPct usa el signo menos real', () => {
-    expect(fmtSignedPct(-6.2, 'en')).toBe('−6%')
-    expect(fmtSignedPct(12.4, 'en')).toBe('+12%')
+    expect(fmtSignedPct(-6.2, 'en')).toBe('\u22126\u202f%')
+    expect(fmtSignedPct(12.4, 'en')).toBe('+12\u202f%')
+    expect(fmtSignedPct(0.2, 'es')).toBe('0\u202f%')
   })
 })
 

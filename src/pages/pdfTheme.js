@@ -29,7 +29,9 @@ Font.register({ family: 'Instrument', fonts: [{ src: `${base}InstrumentSans-Semi
 // Sin guiones de corte: react-pdf parte palabras en español de forma rara.
 Font.registerHyphenationCallback((word) => [word])
 
-export const PDF_FONT = { body: 'Plex', mono: 'PlexMono', display: 'Instrument' }
+// num: cifras de dinero y porcentajes en Plex Sans (tabular por defecto, UI-M1);
+// mono queda para la placa "IQ" e identificadores.
+export const PDF_FONT = { body: 'Plex', num: 'Plex', mono: 'PlexMono', display: 'Instrument' }
 
 export const PDF_COLOR = {
   navy: BRAND.navy,

@@ -278,7 +278,7 @@ export default function CashFlow({ setPage }) {
                 <CartesianGrid {...gridStyle} />
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false} />
                 <YAxis tick={axisStyle} axisLine={false} tickLine={false}
-                  tickFormatter={fmtAxis} />
+                  tickFormatter={(v) => fmtAxis(v)} />
                 <Tooltip content={<ChartTooltip sym={sym} />} />
                 {/* Zona estimada: todo lo que va del 2º mes en adelante es proyección */}
                 {projectionData.length > 1 && (

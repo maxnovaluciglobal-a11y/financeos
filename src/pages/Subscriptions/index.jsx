@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, currencyDecimals } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, fmtPct, currencyDecimals } from '../../utils/index.js'
 import { toLocal } from '../../utils/recurring.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
@@ -75,7 +75,7 @@ export function generateAlerts(subs, monthlyIncome, t = null, lang = null) {
     if (pct > 15) {
       alerts.push({
         type: 'income',
-        msg: tr('subs.alert.income', { pct: pct.toFixed(1) }, `Tus suscripciones representan el ${pct.toFixed(1)}% de tus ingresos mensuales.`),
+        msg: tr('subs.alert.income', { pct: fmtPct(pct / 100) }, `Tus suscripciones representan el ${fmtPct(pct / 100)} de tus ingresos mensuales.`),
       })
     }
   }
