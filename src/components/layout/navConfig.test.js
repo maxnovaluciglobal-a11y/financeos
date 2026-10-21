@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { activeTabFor, TAB_IDS, NAV, ALL_ITEMS } from './navConfig.js'
 
-describe('activeTabFor (R04): cada página enciende una de las 3 pestañas', () => {
+describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas', () => {
   it('Inicio', () => {
     expect(activeTabFor('dashboard')).toBe('dashboard')
     expect(activeTabFor(undefined)).toBe('dashboard')
@@ -13,8 +13,14 @@ describe('activeTabFor (R04): cada página enciende una de las 3 pestañas', () 
     }
   })
 
-  it('el resto (Menú, Ajustes, metas, legales, herramientas de país) enciende Menú', () => {
-    for (const id of ['more', 'settings', 'goals', 'budgets', 'debts', 'coach', 'privacy', 'terms', 'apv', 'steuer']) {
+  it('Presupuestos y Metas son pestañas propias (L2)', () => {
+    expect(activeTabFor('budgets')).toBe('budgets')
+    expect(activeTabFor('goals')).toBe('goals')
+    expect(TAB_IDS).toEqual(['dashboard', 'movements', 'budgets', 'goals', 'more'])
+  })
+
+  it('el resto (Menú, Ajustes, deudas, legales, herramientas de país) enciende Menú', () => {
+    for (const id of ['more', 'settings', 'debts', 'coach', 'privacy', 'terms', 'apv', 'steuer']) {
       expect(activeTabFor(id), id).toBe('more')
     }
   })
@@ -30,14 +36,18 @@ describe('activeTabFor (R04): cada página enciende una de las 3 pestañas', () 
 
 import { menuSections } from './navConfig.js'
 
-describe('menuSections (R11): el Menú no pierde ningún ítem del NAV', () => {
-  it('todos los ítems sin país aparecen, Planificación primero y Cuenta al final', () => {
+describe('menuSections (R11, L2): ningún ítem del NAV queda inalcanzable', () => {
+  it('cada ítem sin país es pestaña o está en el Menú, sin repetir las pestañas; Cuenta al final', () => {
     const secs = menuSections('CL')
     expect(secs[0].sec).toBe('nav.sec.planning')
-    expect(secs[0].items[0].id).toBe('budgets')
+    expect(secs[0].items[0].id).toBe('debts')
     expect(secs[secs.length - 1].sec).toBe('nav.sec.account')
     const ids = secs.flatMap(g => g.items.map(i => i.id))
-    for (const it_ of ALL_ITEMS.filter(i => !i.countries)) expect(ids).toContain(it_.id)
+    for (const it_ of ALL_ITEMS.filter(i => !i.countries)) {
+      expect(TAB_IDS.includes(it_.id) || ids.includes(it_.id), it_.id).toBe(true)
+    }
+    for (const tab of TAB_IDS) expect(ids, tab).not.toContain(tab)
+    expect(secs.some(g => g.sec === 'nav.sec.main')).toBe(false)
   })
 
   it('las herramientas de país dependen del país', () => {

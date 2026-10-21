@@ -66,7 +66,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
     else showToast?.(t('settings.push.genericError'), 'error')
   }
 
-  // R14: raíces (Inicio · Movimientos · Menú) con barra; el resto se abre
+  // R14/L2: raíces (Inicio · Movimientos · Presupuestos · Metas · Menú) con barra; el resto se abre
   // "empujado": "‹" arriba, sin barra y sin "+" (salvo páginas de registrar).
   const chrome = chromeFor(page)
   const back = onBack || (() => setPage(chrome.parent))
@@ -270,9 +270,9 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
           </div>
         </main>
 
-        {/* TABBAR móvil — barra anclada de 3 pestañas (Inicio · Movimientos ·
-            Menú) + el "+" propio encima, abajo a la derecha. Los dos se ocultan
-            con el teclado abierto. */}
+        {/* TABBAR móvil — barra anclada de 5 destinos (Inicio · Movimientos ·
+            Presupuestos · Metas · Menú, L2) + el "+" propio encima, abajo a la
+            derecha. Los dos se ocultan con el teclado abierto. */}
         <div className={keyboardOpen ? s.tabbarHidden : undefined}>
           {chrome.tabBar && <TabBar page={page} onNavigate={navigate} t={t} />}
           {chrome.fab && <AddFab onAdd={() => setQuickAdd(page === 'income' ? 'income' : 'expense')} t={t} />}

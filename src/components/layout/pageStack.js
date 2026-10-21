@@ -1,7 +1,8 @@
 // src/components/layout/pageStack.js — navegación "empujada" en móvil (R14).
 // Lógica pura (sin DOM ni React) para que sea testeable en environment: node.
 //
-// Modelo: las 3 raíces del TabBar (Inicio · Movimientos · Menú) son pestañas;
+// Modelo: las 5 raíces del TabBar (Inicio · Movimientos · Presupuestos · Metas
+// · Menú, L2) son pestañas;
 // todo lo demás es una pantalla "empujada" encima de su raíz, con "‹ Atrás"
 // en la barra superior y SIN la barra inferior. Las rutas no cambian: siguen
 // siendo los mismos ids de página de siempre (navConfig.js, App.jsx). El

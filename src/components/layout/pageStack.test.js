@@ -12,7 +12,7 @@ const ALL_PAGES = [
 
 describe('chromeFor (R14): qué páginas llevan barra, "‹" y "+"', () => {
   it('solo Inicio, Movimientos y Menú muestran la barra, sin "‹"', () => {
-    for (const p of ['dashboard', 'movements', 'more']) {
+    for (const p of ['dashboard', 'movements', 'budgets', 'goals', 'more']) {
       const c = chromeFor(p)
       expect(c.tabBar, p).toBe(true)
       expect(c.back, p).toBe(false)
@@ -37,13 +37,13 @@ describe('chromeFor (R14): qué páginas llevan barra, "‹" y "+"', () => {
 
   it('el "+" solo queda en las secundarias de registrar movimientos (Ingresos)', () => {
     expect(chromeFor('income').fab).toBe(true)
-    for (const p of ['goals', 'budgets', 'settings', 'recurring', 'import', 'subscriptions', 'privacy', 'multimoneda']) {
+    for (const p of ['debts', 'reports', 'settings', 'recurring', 'import', 'subscriptions', 'privacy', 'multimoneda']) {
       expect(chromeFor(p).fab, p).toBe(false)
     }
   })
 
   it('la raíz de origen por defecto sigue activeTabFor (R04)', () => {
-    expect(chromeFor('goals').parent).toBe('more')
+    expect(chromeFor('debts').parent).toBe('more')
     expect(chromeFor('settings').parent).toBe('more')
     expect(chromeFor('income').parent).toBe('movements')
     expect(chromeFor('recurring').parent).toBe('movements')
@@ -56,12 +56,13 @@ describe('navAction: qué se apila en el historial', () => {
     expect(navAction('more', 'movements')).toBe('replace')
   })
   it('abrir una pantalla apila', () => {
-    expect(navAction('more', 'goals')).toBe('push')
-    expect(navAction('dashboard', 'budgets')).toBe('push')
-    expect(navAction('goals', 'settings')).toBe('push')
+    expect(navAction('more', 'debts')).toBe('push')
+    expect(navAction('dashboard', 'reports')).toBe('push')
+    expect(navAction('debts', 'settings')).toBe('push')
+    expect(navAction('budgets', 'goals')).toBe('replace')
   })
   it('ir a una raíz desde una pantalla empujada también apila (sidebar, enlaces internos)', () => {
-    expect(navAction('goals', 'dashboard')).toBe('push')
+    expect(navAction('debts', 'dashboard')).toBe('push')
   })
   it('misma página o destino vacío: nada', () => {
     expect(navAction('goals', 'goals')).toBe('none')
@@ -75,31 +76,33 @@ describe('bootEntries: abrir directo (enlace o página restaurada)', () => {
     expect(bootEntries(undefined)[0].fosPage).toBe('dashboard')
   })
   it('una secundaria siembra su raíz debajo, así atrás no sale de la app', () => {
-    expect(bootEntries('goals')).toEqual([
+    expect(bootEntries('debts')).toEqual([
       { fosPage: 'more', fosDepth: 0 },
-      { fosPage: 'goals', fosDepth: 1, fosFrom: 'more' },
+      { fosPage: 'debts', fosDepth: 1, fosFrom: 'more' },
     ])
   })
 })
 
 describe('backAction / backTarget', () => {
   it('con una entrada propia debajo usa history.back()', () => {
-    expect(backAction({ fosPage: 'goals', fosDepth: 1 }, 'goals')).toEqual({ type: 'history' })
+    expect(backAction({ fosPage: 'debts', fosDepth: 1 }, 'debts')).toEqual({ type: 'history' })
   })
   it('sin historial (estado perdido) reemplaza por la raíz', () => {
-    expect(backAction(null, 'goals')).toEqual({ type: 'replace', page: 'more' })
-    expect(backAction({ fosPage: 'goals', fosDepth: 0 }, 'goals')).toEqual({ type: 'replace', page: 'more' })
-    expect(backAction({ fosPage: 'budgets', fosDepth: 3 }, 'goals')).toEqual({ type: 'replace', page: 'more' })
+    expect(backAction(null, 'debts')).toEqual({ type: 'replace', page: 'more' })
+    expect(backAction({ fosPage: 'debts', fosDepth: 0 }, 'debts')).toEqual({ type: 'replace', page: 'more' })
+    expect(backAction({ fosPage: 'reports', fosDepth: 3 }, 'debts')).toEqual({ type: 'replace', page: 'more' })
   })
   it('"‹" dice de dónde viniste (Inicio → Presupuestos vuelve a Inicio)', () => {
-    expect(backTarget({ fosPage: 'budgets', fosDepth: 1, fosFrom: 'dashboard' }, 'budgets')).toBe('dashboard')
-    expect(backTarget({ fosPage: 'goals', fosDepth: 1 }, 'goals')).toBe('more')
+    expect(backTarget({ fosPage: 'reports', fosDepth: 1, fosFrom: 'dashboard' }, 'reports')).toBe('dashboard')
+    expect(backTarget({ fosPage: 'debts', fosDepth: 1 }, 'debts')).toBe('more')
     expect(backTarget(null, 'income')).toBe('movements')
     expect(backTarget({ fosPage: 'more', fosDepth: 0 }, 'more')).toBe(null)
   })
   it('isRootPage / isStackState', () => {
     expect(isRootPage('more')).toBe(true)
-    expect(isRootPage('goals')).toBe(false)
+    expect(isRootPage('goals')).toBe(true)
+    expect(isRootPage('budgets')).toBe(true)
+    expect(isRootPage('debts')).toBe(false)
     expect(isStackState({ fosPage: 'goals' })).toBe(true)
     expect(isStackState({ usr: 1 })).toBe(false)
     expect(isStackState(null)).toBe(false)

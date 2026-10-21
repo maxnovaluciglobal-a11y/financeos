@@ -64,17 +64,22 @@ export function pageLabel(id) {
   return ALL_ITEMS.find(it => it.id === id)?.lb || id
 }
 
-// ── Pestañas del TabBar móvil (R01/R04) ────────────────────────────────────
-// Tres raíces: Inicio · Movimientos · Menú (decisión de Walter D2, 08-oct-2026).
-// La navegación sigue plana (setPage), así que cada página se mapea a la
-// pestaña que la contiene: todo lo de la sección "Movimientos" del NAV enciende
-// Movimientos, el Inicio enciende Inicio y el resto (incluidas las páginas
-// legales y Ajustes, que se abren desde el Menú) enciende Menú. La barra nunca
-// queda sin pestaña activa.
+// ── Pestañas del TabBar móvil (R01/R04, L2) ────────────────────────────────
+// Cinco raíces: Inicio · Movimientos · Presupuestos · Metas · Menú (L2,
+// aprobado por Walter el 21-oct-2026; reemplaza las 3 pestañas de la decisión
+// D2 del 08-oct). Mismo modelo que Invest: las dos funciones núcleo a un toque.
+// La navegación sigue plana (setPage) y los ids de página no cambiaron, así
+// que los enlaces profundos (?open=…) y las rutas existentes siguen igual. Cada
+// página se mapea a la pestaña que la contiene: lo de la sección "Movimientos"
+// del NAV enciende Movimientos; Presupuestos y Metas, la suya; el resto
+// (incluidas las legales y Ajustes, que se abren desde el Menú) enciende Menú.
+// La barra nunca queda sin pestaña activa.
 export const TAB_HOME = 'dashboard'
 export const TAB_MOVEMENTS = 'movements'
+export const TAB_BUDGETS = 'budgets'
+export const TAB_GOALS = 'goals'
 export const TAB_MENU = 'more'
-export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_MENU]
+export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_BUDGETS, TAB_GOALS, TAB_MENU]
 
 const MOVEMENT_PAGES = new Set(
   (NAV.find(g => g.sec === 'nav.sec.movements')?.items || []).map(it => it.id)
@@ -83,13 +88,16 @@ const MOVEMENT_PAGES = new Set(
 export function activeTabFor(page) {
   if (!page || page === TAB_HOME) return TAB_HOME
   if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS
+  if (page === TAB_BUDGETS) return TAB_BUDGETS
+  if (page === TAB_GOALS) return TAB_GOALS
   return TAB_MENU
 }
 
-// ── Orden de secciones en la página Menú (R11) ─────────────────────────────
-// Presupuestos salió de la barra inferior, así que Planificación va primero.
-// "Principal" (Inicio) ya es una pestaña: va casi al final, antes de Cuenta,
-// para no perder ningún ítem del NAV. Ajustes (Cuenta) siempre al final.
+// ── Orden de secciones en la página Menú (R11, L2) ─────────────────────────
+// El Menú lista lo que NO es pestaña (Inicio, Movimientos/Gastos, Presupuestos
+// y Metas ya están en la barra: repetirlos solo agrega ruido). Planificación
+// (Deudas, Propiedades) primero; Ajustes (Cuenta) siempre al final. Ningún
+// ítem del NAV queda inalcanzable: o es pestaña o está en el Menú.
 export const MENU_SECTION_ORDER = [
   'nav.sec.planning', 'nav.sec.movements', 'nav.sec.analysis', 'nav.sec.country', 'nav.sec.pro', 'nav.sec.main', 'nav.sec.account',
 ]
@@ -105,7 +113,7 @@ export function menuSections(country) {
   const rank = (sec) => { const i = MENU_SECTION_ORDER.indexOf(sec); return i === -1 ? MENU_SECTION_ORDER.length - 1.5 : i }
   const secs = [...NAV]
     .sort((a, b) => rank(a.sec) - rank(b.sec))
-    .map(g => ({ sec: g.sec, items: g.items.filter(it => (!it.countries || it.countries.includes(cc)) && it.id !== tool) }))
+    .map(g => ({ sec: g.sec, items: g.items.filter(it => (!it.countries || it.countries.includes(cc)) && it.id !== tool && !TAB_IDS.includes(it.id)) }))
     .filter(g => g.items.length > 0)
   if (!tool) return secs
   const base = ALL_ITEMS.find(it => it.id === tool)
