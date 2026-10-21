@@ -150,7 +150,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
           {t('pro.gate.previewLabel')}
         </div>
-        <div inert="" data-pro-preview="" style={{
+        <div inert data-pro-preview="" style={{
           position: 'relative', maxHeight: 380, overflow: 'hidden', pointerEvents: 'none', userSelect: 'none',
           filter: 'blur(4px)', borderRadius: 'var(--rl)',
           WebkitMaskImage: 'linear-gradient(to bottom, black 55%, transparent)', maskImage: 'linear-gradient(to bottom, black 55%, transparent)',

@@ -264,7 +264,7 @@ export default function CashFlow({ setPage }) {
           : (
             <>
             <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={projectionData}>
+              <AreaChart accessibilityLayer={false} data={projectionData}>
                 <defs>
                   <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%"  stopColor="var(--grn)" stopOpacity={0.2} />

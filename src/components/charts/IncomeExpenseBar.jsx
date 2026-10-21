@@ -59,7 +59,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
     <>
     <div aria-hidden="true">
     <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} barGap={3} barCategoryGap="30%">
+      <BarChart accessibilityLayer={false} data={data} barGap={3} barCategoryGap="30%">
         <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false}/>
         <XAxis dataKey="mes" tick={{ fill:'var(--th)', fontSize:11, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false}/>
         <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={{ fill:'var(--th)', fontSize:11, fontFamily:'var(--mono)' }} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>

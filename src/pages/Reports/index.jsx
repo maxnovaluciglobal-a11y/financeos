@@ -220,7 +220,7 @@ export default function Reports({ setPage }) {
           {trendData.every(d=>d.Ingresos===0&&d.Gastos===0) ? <Empty text={t('reports.trend.empty')} /> : (
             <>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={trendData} barGap={4} barCategoryGap="30%">
+                <BarChart accessibilityLayer={false} data={trendData} barGap={4} barCategoryGap="30%">
                   <CartesianGrid {...gridStyle}/>
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
                   <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
@@ -246,7 +246,7 @@ export default function Reports({ setPage }) {
         {trendData.every(d=>d.Ahorro===0) ? <Empty text={t('reports.savings.empty')} /> : (
           <>
             <ResponsiveContainer width="100%" height={160}>
-              <AreaChart data={trendData}>
+              <AreaChart accessibilityLayer={false} data={trendData}>
                 <defs>
                   <linearGradient id="ahorroGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%"  stopColor="var(--grn)" stopOpacity={0.2}/>

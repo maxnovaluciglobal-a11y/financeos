@@ -77,7 +77,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
       <div className={css.pie} role="img" aria-label={summary}>
         <div aria-hidden="true" style={{ width: '100%', height: '100%' }}>
         <ResponsiveContainer width="100%" aspect={1}>
-          <PieChart>
+          <PieChart accessibilityLayer={false}>
             <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="66%" outerRadius="98%" strokeWidth={0} paddingAngle={2} rootTabIndex={-1}
               isAnimationActive={!reducedMotion()} animationBegin={120} animationDuration={900} animationEasing="ease-out"
               onClick={(d) => { if (d && clickable(d.name)) onCategoryClick(d.name) }}>
