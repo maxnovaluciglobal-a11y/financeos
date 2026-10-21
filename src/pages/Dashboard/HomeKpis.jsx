@@ -8,6 +8,7 @@
 import { ChevronRight } from 'lucide-react'
 import CountUp from '../../components/CountUp.jsx'
 import Money from '../../components/Money.jsx'
+import Amount from '../../components/Amount.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -62,9 +63,9 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               {hasData ? (
                 <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor, '--chars': heroText.length }}>
                   {/* key: al cambiar de moneda la cifra arranca de cero otra vez (no anima de Bs a US$) */}
-                  <span key={showRef ? 'ref' : 'local'} style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money>{showRef
-                    ? <CountUp value={toRef(Math.abs(free), refc.rate.rate)} format={(v) => fmtRef(v, lang)} />
-                    : <CountUp value={Math.abs(free)} format={(v) => fmtMoney(v, sym)} />}</Money></span>
+                  {showRef
+                    ? <span key="ref" style={{ whiteSpace: 'nowrap' }}>{free < 0 ? '−' : free > 0 ? '+' : ''}<Money><CountUp value={toRef(Math.abs(free), refc.rate.rate)} format={(v) => fmtRef(v, lang)} /></Money></span>
+                    : <Amount key="local" value={free} sym={sym} plus hero animate />}
                 </div>
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>

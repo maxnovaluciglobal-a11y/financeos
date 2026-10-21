@@ -151,6 +151,25 @@ export const fmtMoney = (n, symbol = '$') => {
 export const fmtSignedMoney = (n, symbol = '$') =>
   (Number(n) < 0 && fmtAmount(Math.abs(n)) !== fmtAmount(0) ? '\u2212' : '') + fmtMoney(n, symbol)
 
+// Partes de un monto para dibujarlo con jerarquía (<Amount>, UI-M2): el signo,
+// el símbolo (antes o después de la cifra), la parte entera y los centavos con
+// su separador. Misma fuente que fmtMoney/fmtSignedMoney: concatenadas dan el
+// mismo texto. `plus` antepone "+" a los positivos (ingresos, "Te queda").
+export function fmtMoneyParts(n, symbol = '$', { signed = true, plus = false } = {}) {
+  const v = Number(n) || 0
+  const num = fmtAmount(Math.abs(v))
+  const isZero = num === fmtAmount(0)
+  const sign = signed && v < 0 && !isZero ? MINUS : plus && v > 0 && !isZero ? '+' : ''
+  let int = num, frac = ''
+  if (_moneyDecimals > 0) {
+    const dec = (1.1).toLocaleString(_moneyLocale).charAt(1)
+    const i = num.lastIndexOf(dec)
+    if (i > 0) { int = num.slice(0, i); frac = num.slice(i) }
+  }
+  const after = symbolAfter(symbol)
+  return { sign, pre: after ? '' : symbol, int, frac, post: after ? '\u00a0' + symbol : '' }
+}
+
 // Monto formateado para una moneda/idioma cualquiera, sin tocar el estado
 // global (ej. la vista previa del onboarding antes de guardar la moneda).
 export function fmtMoneyFor(n, currency, language) {

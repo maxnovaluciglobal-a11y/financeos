@@ -5,6 +5,7 @@ import { useId, Children, cloneElement, isValidElement } from 'react'
 import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
 import Money, { MONEY_MASK } from '../Money.jsx'
+import Amount from '../Amount.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Pencil } from 'lucide-react'
@@ -204,7 +205,9 @@ export function EmptyPickList({ label, items }) {
 // name y meta pueden ser texto o nodos (ícono + texto); con nodos, `label`
 // es el texto para los aria-label de editar/borrar. Lo usan Ingresos y
 // Movimientos (REC-N5): una mejora de la fila llega a las dos listas.
-export function TxRow({ dot, name, label: labelProp, meta, amount, isIncome, onDelete, onEdit }) {
+// `value` + `sym`: el monto pasa por <Amount> (U+2212, ocultar montos, UI-M2);
+// `amount` (texto ya formateado) queda por compatibilidad.
+export function TxRow({ dot, name, label: labelProp, meta, amount, value, sym, isIncome, onDelete, onEdit }) {
   const { t } = useT()
   const label = labelProp || (typeof name === 'string' && name) || t('ui.transaction')
   return (
@@ -215,7 +218,9 @@ export function TxRow({ dot, name, label: labelProp, meta, amount, isIncome, onD
         {meta && <div className={styles.txMeta}>{meta}</div>}
       </div>
       <div className={[styles.txAmt, isIncome ? styles.txInc : styles.txExp].join(' ')}>
-        {isIncome ? '+' : MINUS}<Money>{amount}</Money>
+        {value != null
+          ? <Amount value={isIncome ? Math.abs(value) : -Math.abs(value)} sym={sym} plus={isIncome} />
+          : <>{isIncome ? '+' : MINUS}<Money>{amount}</Money></>}
       </div>
       {onEdit && (
         <button className={styles.delBtn} onClick={onEdit} title={t('ui.edit')} aria-label={t('ui.editItem', { name: label })} style={{marginRight:2,fontSize:11}}>

@@ -140,6 +140,12 @@ button { cursor: pointer; font-family: var(--sans); }
        font-variant-numeric: tabular-nums lining-nums;
        letter-spacing: -0.02em; }
 
+/* <Amount> (UI-M2): en la cifra protagonista, símbolo y centavos al 65 % y en
+   --tm; la parte entera manda. En montos de fila no se atenúan. */
+.amount { white-space: nowrap; }
+.amount-hero .amount-sym, .amount-hero .amount-frac { font-size: .65em; color: var(--tm); font-weight: 500; }
+.amount-hero .amount-sym { margin-right: .04em; }
+
 /* Monto oculto (T13, components/Money.jsx): el "•••" hereda tamaño y color de la
    cifra a la que reemplaza; un poco de aire entre puntos para que se lea como
    máscara deliberada y no como texto truncado. */

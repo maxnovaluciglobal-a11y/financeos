@@ -4,7 +4,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth, currencySymbol, fmtPct } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth, currencySymbol, fmtPct, fmtDayMonth } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
@@ -210,8 +210,8 @@ export default function Income({ setPage }) {
                 ) : (
                     <TxRow key={r.id} dot={CAT_COLORS[r.category]||'var(--th)'}
                       name={<>{r.inv && <InlineIcon kind="investment" size={11} />}{r.source}</>} label={r.source}
-                      meta={`${catLabel(r.category, lang)} · ${r.date.slice(5).replace('-','/')}${r.recurrence!=='Único'?' · '+recurrenceLabel(r.recurrence, lang):''}${r.inv?' · '+t('income.row.investment'):''}`}
-                      amount={fmtMoney(r.amount,sym)} isIncome
+                      meta={`${catLabel(r.category, lang)} · ${fmtDayMonth(r.date)}${r.recurrence!=='Único'?' · '+recurrenceLabel(r.recurrence, lang):''}${r.inv?' · '+t('income.row.investment'):''}`}
+                      value={r.amount} sym={sym} isIncome
                       onDelete={()=>deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo'))}
                       onEdit={()=>{setEditingId(r.id);setEditForm({source:r.source,amount:r.amount,date:r.date,category:r.category,recurrence:r.recurrence,notes:r.notes||''})}} />
                 ))}
