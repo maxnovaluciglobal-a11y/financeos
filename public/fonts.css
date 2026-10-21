@@ -2,7 +2,13 @@
    Display/wordmark: Instrument Sans 500/600/700 + italic 400.
    UI/body: IBM Plex Sans 400/500/600/700 + italic 400.
    Datos/mono: IBM Plex Mono 400/500/600.
-   Subsets latin + latin-ext (cubren es/en/pt/de). */
+   Subsets latin + latin-ext (cubren es/en/pt/de).
+   IBM Plex Sans (ibm-plex-sans-var-*.woff2, L4 21-oct-2026): los mismos archivos
+   que la landing, subset propio del variable completo de IBM (OFL, v3.201) con
+   pyftsubset --layout-features='*', eje wght, latin + latin-ext, con hinting como
+   el anterior. Trae U+202F (espacio fino antes de "%", fmtPct) y conserva zero,
+   ss01-ss05, onum, sups/subs, que el subset de Google eliminaba. Peso: 47,5 +
+   30,0 KB contra 45,7 + 31,0 KB del subset anterior (+1,0 %). */
 
 /* ── Instrument Sans (display/wordmark) ── */
 
@@ -147,7 +153,7 @@
   font-weight: 400;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxQKYbABA.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin-ext.woff2) format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -158,7 +164,7 @@
   font-weight: 400;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYY.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -169,7 +175,7 @@
   font-weight: 500;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxQKYbABA.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin-ext.woff2) format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -180,7 +186,7 @@
   font-weight: 500;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYY.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -191,7 +197,7 @@
   font-weight: 600;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxQKYbABA.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin-ext.woff2) format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -202,7 +208,7 @@
   font-weight: 600;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYY.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -213,7 +219,7 @@
   font-weight: 700;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxQKYbABA.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin-ext.woff2) format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -224,7 +230,7 @@
   font-weight: 700;
   font-stretch: 100%;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYY.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -301,6 +307,6 @@
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url(/app/fonts/zYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYY.woff2) format('woff2');
+  src: url(/app/fonts/ibm-plex-sans-var-latin.woff2) format('woff2');
   unicode-range: U+2022;
 }
