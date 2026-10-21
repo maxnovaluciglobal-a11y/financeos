@@ -108,7 +108,7 @@
   font-family: var(--sans); font-size: 15px; font-weight: 600; cursor: pointer;
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-/* En oscuro, texto --bg (#12161F) sobre --error-dark #E0826E: 6,5:1. */
+/* En oscuro, texto --bg (#0E1628) sobre --error-dark #E59580: 7,7:1. */
 :global([data-theme="dark"]) .dangerBtn { color: var(--bg); }
 .dangerBtn:hover:not(:disabled) { box-shadow: inset 0 0 0 2px rgba(20,33,61,.25); }
 .dangerBtn:active:not(:disabled) { transform: scale(.98); }

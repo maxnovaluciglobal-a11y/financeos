@@ -26,7 +26,7 @@ export const TOKENS_LIGHT = {
   '--warning-800': '#8A4A14',
   '--warning-dark': '#E0975A',
   '--error': '#A23E2E',
-  '--error-dark': '#E0826E',
+  '--error-dark': '#E59580',
   '--info': '#5B7A99',
   '--info-800': '#3E5A78',
   '--info-dark': '#89A6C2',
@@ -36,12 +36,12 @@ export const TOKENS_LIGHT = {
 }
 
 export const TOKENS_DARK = {
-  '--bg': '#12161F',
-  '--sur': '#181D29',
-  '--sur2': '#1D2331',
-  '--sur3': '#242B3B',
+  '--bg': '#0E1628',
+  '--sur': '#14213D',
+  '--sur2': '#1A2A4A',
+  '--sur3': '#213357',
   '--tm': '#C7C2B2',
-  '--th': '#9C9784',
+  '--th': '#B5B09C',
   '--cat-5': '#8FB3D6',
 }
 
