@@ -5,10 +5,13 @@
 // Frontend: src/core/deleteAccount.js → POST con Authorization: Bearer <sesión>
 // y body { confirm: "DELETE" }. Errores: 400 confirmation_required ·
 // 401 session_required · 503 data_delete_failed | auth_delete_failed.
-import { bearerToken, isConfirmed, getAuthUser, deleteAccount, followupMessage, type DeleteConfig } from "./deleteAccountLogic.ts";
+// SEG-5: con el secreto STRIPE_RESTRICTED_KEY cancela en Stripe las
+// suscripciones activas (./stripeCancel.ts). Si Stripe falla, el borrado igual
+// responde 200; el fallo va a edge_function_errors y al aviso a soporte.
+import { bearerToken, isConfirmed, getAuthUser, deleteAccount, cancelStripeAfterDelete, followupMessage, type DeleteConfig } from "./deleteAccountLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { sendAlertEmail } from "../_shared/alertEmail.ts";
-import { withErrorReporting } from "../_shared/errorReport.ts";
+import { withErrorReporting, reportEdgeError } from "../_shared/errorReport.ts";
 
 const config: DeleteConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -35,11 +38,16 @@ Deno.serve(withErrorReporting("delete-account", async (req) => {
   const user = token ? await getAuthUser(token, config) : null;
   if (!user) return json({ ok: false, error: "session_required" }, 401, origin);
 
-  const result = await deleteAccount(user, config);
-  if (!result.ok) {
-    console.error(`delete-account: ${result.error}`);
-    return json({ ok: false, error: result.error }, result.status, origin);
+  const deleted = await deleteAccount(user, config);
+  if (!deleted.ok) {
+    console.error(`delete-account: ${deleted.error}`);
+    return json({ ok: false, error: deleted.error }, deleted.status, origin);
   }
+
+  const result = await cancelStripeAfterDelete(deleted, Deno.env.get("STRIPE_RESTRICTED_KEY"), async (o) => {
+    console.error(`delete-account: no se pudo cancelar ${o.id} en Stripe (${o.error})`);
+    await reportEdgeError("delete-account", 502, `stripe_cancel_failed ${o.id}: ${o.error}`, config);
+  });
 
   const msg = followupMessage(result, user.email);
   if (msg) {

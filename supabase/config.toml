@@ -29,6 +29,10 @@ verify_jwt = false
 verify_jwt = false
 
 # Trigger SQL (pg_net) o cliente anon; autentica con el header x-internal-secret.
+[functions.lead-submit]
+verify_jwt = false
+# SEG-1: puerta con Turnstile de los formularios públicos (sin sesión).
+
 [functions.lead-unsubscribe]
 verify_jwt = false
 

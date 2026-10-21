@@ -16,6 +16,7 @@ const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'auth-email-hook': false,
   'cron-health-alert': false,
   'delete-account': false,
+  'lead-submit': false,
   'lead-unsubscribe': false,
   'newsletter-sync': false,
   'notify-admin-signup': false,
