@@ -2839,4 +2839,6 @@ export const de = {
     'proTrial.hide': "Diese Liste ausblenden",
     'proTrial.progress': "{n} von 3",
     'proTrial.listLabel': "Schritte zum Ausprobieren von Pro",
+    'ui.state.overdrawn': "Im Minus",
+    'ui.state.overBudget': "Überschritten",
 }

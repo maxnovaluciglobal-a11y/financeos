@@ -5,7 +5,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis, fmtSignedMoney } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -167,11 +167,11 @@ export default function Reports({ setPage }) {
         )}
       </div>
       <div className="kpi-row">
-        <KPI label={t('reports.kpi.balance')}  value={fmtMoney(balance,sym)} color={balance>=0?'green':'red'} sub={(totalDebt+totalSubs>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />
-        <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={savingRate>=0.25?'green':savingRate>=0.1?'amber':'red'} sub={t('reports.kpi.goal', { pct: settings.savingGoalPct||25 })} />
+        <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+totalSubs>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />
+        <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={savingRate>=0.25?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: settings.savingGoalPct||25 })} />
         <KPI label={t('reports.kpi.income')}      value={fmtMoney(totalIncome,sym)} />
         <KPI label={t('reports.kpi.subs')} value={fmtMoney(totalSubs,sym)} color="amber" sub={t('reports.kpi.subsSub')} />
-        <KPI label={t('reports.kpi.expenses')}        value={fmtMoney(totalExpense,sym)} color="red" />
+        <KPI label={t('reports.kpi.expenses')}        value={fmtMoney(totalExpense,sym)} />
       </div>
       <div className="grid2">
         <Card>
@@ -227,7 +227,7 @@ export default function Reports({ setPage }) {
                   <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
                   <Legend wrapperStyle={{fontSize:11,fontFamily:'var(--mono)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
-                  <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--red)" radius={[3,3,0,0]} opacity={0.75}/>
+                  <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--cat-1)" radius={[3,3,0,0]} opacity={0.75}/>
                 </BarChart>
               </ResponsiveContainer>
               {/* recharts no expone los datos del gráfico a un lector de pantalla —

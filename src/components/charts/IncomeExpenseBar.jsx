@@ -19,7 +19,7 @@ function CustomTooltip({ active, payload, label, sym, m, t }) {
     <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'10px 14px', fontSize:12, fontFamily:'var(--mono)' }}>
       <div style={{ fontWeight:600, color:'var(--tx)', marginBottom:6 }}>{label}</div>
       <div style={{ color:'var(--accent)', marginBottom:2 }}>{t('chart.tooltip.income', { amount: f(inc) })}</div>
-      <div style={{ color:'var(--red)', marginBottom:4 }}>{t('chart.tooltip.expenses', { amount: f(exp) })}</div>
+      <div style={{ color:'var(--tx)', marginBottom:4 }}>{t('chart.tooltip.expenses', { amount: f(exp) })}</div>
       <div style={{ color:'var(--th)', borderTop:'.5px solid var(--brd)', paddingTop:4 }}>{t('chart.tooltip.net', { amount: f(inc - exp) })}</div>
     </div>
   )
@@ -66,7 +66,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
         <Tooltip content={<CustomTooltip sym={sym} m={m} t={t}/>} cursor={{ fill:'rgba(255,255,255,.03)' }}/>
         <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', paddingTop:8 }}/>
         <Bar dataKey="ingresos" name={t('chart.income')} fill="var(--accent)" radius={[3,3,0,0]} maxBarSize={32}/>
-        <Bar dataKey="gastos"   name={t('chart.expenses')} fill="var(--red)"    radius={[3,3,0,0]} maxBarSize={32}/>
+        <Bar dataKey="gastos"   name={t('chart.expenses')} fill="var(--cat-1)"    radius={[3,3,0,0]} maxBarSize={32}/>
       </BarChart>
     </ResponsiveContainer>
     </div>

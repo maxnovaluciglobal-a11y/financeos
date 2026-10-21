@@ -53,12 +53,16 @@ export function kpiFit(value) {
   return n <= 11 ? { '--kpi-chars': n } : { '--kpi-chars': n, whiteSpace: 'nowrap' }
 }
 
-export function KPI({ label, value, sub, color = 'default' }) {
+// `alert`: palabra de estado (ej. "Sobregiro", "Excedido") que se dibuja con
+// ícono en rojo. El rojo es solo para eso (UI-Q4): un gasto no es un error, así
+// que una cifra de gasto va en tinta neutra y sin `alert`.
+export function KPI({ label, value, sub, color = 'default', alert }) {
   return (
     <div className={styles.kpi}>
       <div className={styles.kpiLbl}>{label}</div>
       {/* value enmascarado (T13) → <Money> agrega el texto sr-only "Monto oculto" */}
       <div className={[styles.kpiVal, styles[`kpi_${color}`]].join(' ')} style={kpiFit(value)}>{value === MONEY_MASK ? <Money /> : value}</div>
+      {alert && <div className={styles.kpiAlert}><SignalIcon kind="alert" size={13} />{alert}</div>}
       {sub && <div className={styles.kpiSub}>{sub}</div>}
     </div>
   )

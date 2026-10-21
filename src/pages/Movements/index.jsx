@@ -474,10 +474,11 @@ export default function Movements({ setPage }) {
       <div className="kpi-row" style={{ marginBottom:20 }} data-tour="mov-kpis">
         <KPI label={t('mov.kpi.income')} value={fmtM(totalInc, sym)} color="green"
           sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : undefined} />
-        <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)} color="red"
+        <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)}
           sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtM(invExp, sym) }) : undefined} />
         <KPI label={t('rec.mov.pendingKpi')} value={fmtM(pendingFixed, sym)} color="amber" sub={t('rec.mov.pendingSub')} />
         <KPI label={t('mov.kpi.available')} value={fmtM(balance, sym)} color={balance >= 0 ? 'green' : 'red'}
+          alert={balance < 0 ? t('ui.state.overdrawn') : undefined}
           sub={(invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
       </div>
 
@@ -492,7 +493,7 @@ export default function Movements({ setPage }) {
               <div style={{ fontSize:13, color:'var(--tx)', fontFamily:'var(--mono)' }}>
                 <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
                 {' → '}
-                <strong style={{ color:'var(--red)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
+                <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
                 {t('mov.banner.inServices', { n: activeSubs.length })}
               </div>
             </div>
@@ -518,8 +519,8 @@ export default function Movements({ setPage }) {
             </div>
             <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
               <button onClick={() => { setShowAdd(false); setShowGasto(true) }}
-                style={{ background:'var(--sur)', border:'.5px solid var(--red)', borderRadius:8,
-                  padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--red)',
+                style={{ background:'var(--sur)', border:'.5px solid var(--brd2)', borderRadius:8,
+                  padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--tx)',
                   cursor:'pointer', flex:1, minWidth:140, textAlign:'left' }}>
                 {t('mov.addExpense')}
                 <div style={{ fontSize:11, fontWeight:400, color:'var(--th)', marginTop:3 }}>
@@ -577,11 +578,11 @@ export default function Movements({ setPage }) {
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div style={{ fontSize:11, fontWeight:600, color:'var(--red)',
+            <div style={{ fontSize:11, fontWeight:600, color:'var(--tx)',
               fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>
               {t('mov.list.expenses', { n: listExp.length })}
             </div>
-            <div style={{ fontSize:11, fontWeight:700, color:'var(--red)',
+            <div style={{ fontSize:11, fontWeight:700, color:'var(--tx)',
               fontFamily:'var(--mono)' }}><Money>{fmtM(totalExp, sym)}</Money></div>
           </div>
           {drillCat && (

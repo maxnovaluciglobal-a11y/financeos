@@ -2840,4 +2840,6 @@ export const pt = {
     'proTrial.hide': "Ocultar esta lista",
     'proTrial.progress': "{n} de 3",
     'proTrial.listLabel': "Passos para testar o Pro",
+    'ui.state.overdrawn': "Saldo negativo",
+    'ui.state.overBudget': "Excedido",
 }

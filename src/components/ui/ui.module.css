@@ -53,6 +53,7 @@
 .kpi_red   { color: var(--red); }
 .kpi_amber { color: var(--amb); }
 .kpiSub { font-size: 11px; color: var(--th); font-family: var(--mono); margin-top: 2px; }
+.kpiAlert { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--red); font-family: var(--sans); margin-top: 2px; }
 
 /* BADGE — radios chicos y técnicos a propósito, nunca pill (ver globals.css). */
 .badge {
@@ -99,7 +100,7 @@
 .txMeta { font-size: 11px; color: var(--th); font-family: var(--mono); }
 .txAmt  { font-size: 12px; font-family: var(--mono); font-weight: 500; flex-shrink: 0; }
 .txInc  { color: var(--pos); }
-.txExp  { color: var(--red); }
+.txExp  { color: var(--tx); }   /* gastar no es un error: tinta neutra (UI-Q4) */
 .delBtn { background: transparent; border: none; color: var(--th); font-size: 11px; padding: 2px 5px; border-radius: 4px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease, color .15s ease, transform .16s var(--ease-out, ease-out); }
 .delBtn:hover { background: var(--red-bg); color: var(--red); }
 .delBtn:active { transform: scale(0.9); }

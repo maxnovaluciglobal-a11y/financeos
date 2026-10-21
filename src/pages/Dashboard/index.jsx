@@ -305,7 +305,7 @@ export default function Dashboard({ setPage }) {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:20 }}>
             {[
               { label:t('dash.kpi.income'),    val:money(kpis.totalInc),  color:'var(--accent)' },
-              { label:t('dash.kpi.expenses'),      val:money(kpis.totalExp),  color:'var(--red)' },
+              { label:t('dash.kpi.expenses'),      val:money(kpis.totalExp),  color:'var(--tx)' },
               { label:t('dash.kpi.balance'),     val:money(Math.abs(balance)), color: ok ? 'var(--accent)' : 'var(--red)', prefix: ok ? '+' : '−' },
               { label:t('dash.close.savings'),      val:pct(kpis.savingRate),            color: kpis.savingRate >= 0.2 ? 'var(--accent)' : 'var(--amb)' },
             ].map(k => (
@@ -599,7 +599,7 @@ export default function Dashboard({ setPage }) {
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             {[
               { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
-              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--red)', icon:'plus' },
+              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--tx)', icon:'plus' },
               { label:t('dash.quick.import'),page:'import',     color:'var(--accent2)', icon:'upload' },
               { label:t('dash.quick.budget'), page:'budgets',    color:'var(--amb)', icon:'budget' },
               { label:t('dash.quick.goal'),        page:'goals',      color:'var(--accent)', icon:'goal' },
@@ -654,7 +654,7 @@ export default function Dashboard({ setPage }) {
             />
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:10 }}>
               {[
-                { label:t('dash.proj.exp'),   value:money(projExp),            color:'var(--red)',                                  rawVal: projExp },
+                { label:t('dash.proj.exp'),   value:money(projExp),            color:'var(--tx)',                                  rawVal: projExp },
                 { label:t('dash.proj.bal'), value:money(Math.abs(projBal)),  color: over ? 'var(--red)' : 'var(--accent)', prefix: over ? '−' : '+', rawVal: projBal },
                 { label:t('dash.proj.daily'),       value:t('dash.proj.perDay', { v: money(dailyExp) }),       color:'var(--th)',                                   rawVal: null },
               ].map(k => (
