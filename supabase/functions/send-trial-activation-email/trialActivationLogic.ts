@@ -17,6 +17,10 @@ import { appLink } from "../_shared/appLinks.ts";
 import { COMPANY_POSTAL_HTML } from "../_shared/marketingEmail.ts";
 import { emailButton, emailLayout } from "../_shared/emailLayout.ts";
 import { TRIAL_TEMPLATES, type TrialStep } from "./trialTemplates.ts";
+import {
+  PRO_LIST_PRICE_CENTS, renderKeyEmail, renderPaymentFailedEmail, renderProEndedEmail, renderTrialEndingEmail,
+  type TrialBilling, type WebhookConfig,
+} from "../stripe-webhook/webhookLogic.ts";
 
 export type { TrialStep };
 export const TRIAL_STEPS: TrialStep[] = ["day1", "day3", "day10"];
@@ -42,6 +46,9 @@ export interface TrialConfig {
   cronSecret?: string;
   portalUrl?: string;
   appUrl?: string; // https://app.moyiq.app/app/
+  // Remitente de los correos de cobro (los manda stripe-webhook con FROM_EMAIL);
+  // solo lo usan las vistas previas de BILLING_PREVIEW_STEPS.
+  billingFromEmail?: string;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -155,12 +162,51 @@ export async function runTrialCron(config: TrialConfig, { dryRun = false, now = 
   return result;
 }
 
+// Correos del ciclo de pago que manda stripe-webhook (C-35): se pueden ver
+// desde acá con el mismo modo preview, sin un evento real de Stripe.
+//   license_trial  → clave de acceso al empezar la prueba
+//   trial_ending   → aviso previo al primer cobro (trial_will_end)
+//   payment_failed → cobro fallido con el portal
+//   pro_ended      → "tu Pro terminó, tus datos siguen"
+export const BILLING_PREVIEW_STEPS = ["license_trial", "trial_ending", "payment_failed", "pro_ended"] as const;
+export type BillingPreviewStep = typeof BILLING_PREVIEW_STEPS[number];
+export const PREVIEW_SUBJECT_PREFIX = "[Vista previa] ";
+// Clave de ejemplo con el formato real; no es una licencia.
+export const PREVIEW_SAMPLE_KEY = "FNOS-XXXX-XXXX-XXXX";
+
+export function renderBillingPreview(step: BillingPreviewStep, lang: EmailLang, config: TrialConfig, now: number = Date.now()): RenderedEmail {
+  const wcfg: WebhookConfig = {
+    supabaseUrl: config.supabaseUrl,
+    serviceRole: config.serviceRole,
+    resendApiKey: config.resendApiKey,
+    fromEmail: config.billingFromEmail ?? "MOY IQ <licencias@moyiq.app>",
+    portalUrl: config.portalUrl,
+  };
+  const billing: TrialBilling = {
+    endsAt: new Date(now + (step === "trial_ending" ? 3 : 14) * DAY_MS).toISOString(),
+    amountCents: PRO_LIST_PRICE_CENTS.month,
+    currency: "usd",
+    interval: "month",
+  };
+  const r =
+    step === "license_trial" ? renderKeyEmail(PREVIEW_SAMPLE_KEY, "pro", wcfg, "month", billing, lang, false)
+    : step === "trial_ending" ? renderTrialEndingEmail(billing, wcfg, lang)
+    : step === "payment_failed" ? renderPaymentFailedEmail(wcfg, lang)
+    : renderProEndedEmail(lang);
+  return { subject: r.subject, html: r.html, headers: {} };
+}
+
 // Vista previa de un paso para revisar el copy: solo a la cuenta de empresa,
 // con una fila de mentira (el enlace de baja no da de baja a nadie real).
 export async function sendPreview(
   to: unknown, step: unknown, lang: unknown, config: TrialConfig, fetchImpl: typeof fetch = fetch,
 ): Promise<{ ok: boolean; error?: string }> {
   if (typeof to !== "string" || !PREVIEW_ALLOWED.includes(to.trim().toLowerCase())) return { ok: false, error: "recipient_not_allowed" };
+  if (typeof step === "string" && (BILLING_PREVIEW_STEPS as readonly string[]).includes(step)) {
+    const rendered = renderBillingPreview(step as BillingPreviewStep, pickLang(typeof lang === "string" ? lang : "es"), config);
+    rendered.subject = PREVIEW_SUBJECT_PREFIX + rendered.subject;
+    return sendViaResend(to.trim().toLowerCase(), rendered, { ...config, fromEmail: config.billingFromEmail ?? "MOY IQ <licencias@moyiq.app>" }, fetchImpl);
+  }
   if (typeof step !== "string" || !(TRIAL_STEPS as string[]).includes(step)) return { ok: false, error: "invalid_step" };
   const now = Date.now();
   const row: TrialRow = {

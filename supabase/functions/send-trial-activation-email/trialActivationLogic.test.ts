@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { dueStep, renderTrialEmail, runTrialCron, sendPreview, footerUnsubscribeUrl, type TrialRow } from './trialActivationLogic.ts';
+import { dueStep, renderTrialEmail, runTrialCron, sendPreview, footerUnsubscribeUrl, renderBillingPreview, BILLING_PREVIEW_STEPS, PREVIEW_SAMPLE_KEY, type TrialRow } from './trialActivationLogic.ts';
 import { TRIAL_TEMPLATES } from './trialTemplates.ts';
 
 const DAY = 86400000;
@@ -85,5 +85,32 @@ describe('secuencia de activación de la prueba (C-35 / COM-10)', () => {
     const body = JSON.parse((f.mock.calls[0] as any)[1].body);
     expect(body.to).toBe('maxnovaluciglobal@gmail.com');
     expect(body.subject).toBe(TRIAL_TEMPLATES.pt.day3.subject);
+  });
+
+  it('vista previa de los correos de cobro (C-35): solo a la empresa, desde licencias@, con prefijo y clave de ejemplo', async () => {
+    const f = vi.fn(async () => new Response('{}', { status: 200 }));
+    const cfg = { ...config, billingFromEmail: 'MOY IQ <licencias@moyiq.app>' };
+    expect(await sendPreview('otra@gmail.com', 'pro_ended', 'es', cfg, f as any)).toEqual({ ok: false, error: 'recipient_not_allowed' });
+    expect(f).not.toHaveBeenCalled();
+    for (const step of BILLING_PREVIEW_STEPS) {
+      f.mockClear();
+      expect(await sendPreview('MaxNovaLuciGlobal@gmail.com', step, 'es', cfg, f as any)).toEqual({ ok: true });
+      const body = JSON.parse((f.mock.calls[0] as any)[1].body);
+      expect(body.to).toBe('maxnovaluciglobal@gmail.com');
+      expect(body.from).toBe('MOY IQ <licencias@moyiq.app>');
+      expect(body.subject.startsWith('[Vista previa] ')).toBe(true);
+    }
+  });
+
+  it('cada correo de cobro se arma en los 4 idiomas con su asunto propio', () => {
+    for (const step of BILLING_PREVIEW_STEPS) {
+      const subjects = new Set(['es', 'en', 'pt', 'de'].map((l) => renderBillingPreview(step, l as any, config).subject));
+      expect(subjects.size).toBe(4);
+    }
+    const es = renderBillingPreview('license_trial', 'es', config);
+    expect(es.html).toContain(PREVIEW_SAMPLE_KEY);
+    expect(es.html).toContain('billing.example/p');
+    expect(renderBillingPreview('pro_ended', 'es', config).subject).toContain('Tus datos siguen');
+    expect(renderBillingPreview('trial_ending', 'es', config).html).toContain('4,99');
   });
 });
