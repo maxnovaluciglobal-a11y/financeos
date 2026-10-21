@@ -32,7 +32,7 @@
   --warning-800: #8A4A14;   /* siempre esta variante en texto (5,3:1 sobre el aviso, A11Y-2) */
   --warning-dark:#E0975A;
   --error:       #A23E2E;
-  --error-dark:  #C96856;
+  --error-dark:  #E0826E;   /* 6,09:1 sobre --sur, 5,68 sobre --sur2 (UI-Q1; #C96856 fallaba AA) */
   --info:        #5B7A99;
   --info-800:    #3E5A78;   /* siempre esta variante en texto */
   --info-dark:   #89A6C2;
@@ -142,7 +142,7 @@
   --grn-tint:  rgba(241,238,230,0.06);
 
   --red:       var(--error-dark);
-  --red-bg:    rgba(201,104,86,0.16);
+  --red-bg:    rgba(224,130,110,0.16);
   --amb:       var(--warning-dark);
   --amb-bg:    rgba(224,151,90,0.16);
   --blu:       var(--info-dark);

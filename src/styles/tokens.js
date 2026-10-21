@@ -26,7 +26,7 @@ export const TOKENS_LIGHT = {
   '--warning-800': '#8A4A14',
   '--warning-dark': '#E0975A',
   '--error': '#A23E2E',
-  '--error-dark': '#C96856',
+  '--error-dark': '#E0826E',
   '--info': '#5B7A99',
   '--info-800': '#3E5A78',
   '--info-dark': '#89A6C2',
