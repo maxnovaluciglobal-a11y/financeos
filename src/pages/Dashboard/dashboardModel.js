@@ -4,6 +4,7 @@
 // categoría) y ¿qué viene? (próximos pagos). Testeado en dashboardModel.test.js.
 
 import { localDateStr } from '../../utils/index.js'
+import { budgetStatus } from '../../utils/budgets.js'
 import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
 
 // ── Variación vs. mes anterior ───────────────────────────────────────────────
@@ -48,12 +49,39 @@ export function fmtSignedPct(pct, lang = 'es') {
 // Presupuestos (Budgets/index.jsx), para que Inicio y Presupuestos coincidan.
 export const BUDGET_NEAR = 0.8
 
+// FIN-13: delega en budgetStatus (comparación en centavos). Con la división
+// en coma flotante, 50,10 + 50,20 contra un límite de 100,30 daba "over" en
+// Inicio y "atención" en Presupuestos.
 export function budgetState(spent, limit) {
-  const l = Number(limit) || 0
-  const s = Number(spent) || 0
-  if (l <= 0) return s > 0 ? 'over' : 'ok'
-  const r = s / l
-  return r > 1 ? 'over' : r >= BUDGET_NEAR ? 'near' : 'ok'
+  const st = budgetStatus(spent, limit)
+  return st.over ? 'over' : st.warn ? 'near' : 'ok'
+}
+
+// FIN-14: totales del mes activo y del anterior. Con el mes en curso, la
+// comparación usa el mes anterior HASTA EL MISMO DÍA (prevToDate); con un mes
+// cerrado, el mes anterior completo. `now` se inyecta para poder probarlo.
+export function homeMonthTotals({ incomes = [], expenses = [], activeMonth, now = new Date() }) {
+  const [y, mo] = String(activeMonth).split('-').map(Number)
+  const prevMo = prevMonthOf(activeMonth)
+  const totals = (month, untilDay = null) => {
+    const keep = (r) => typeof r?.date === 'string' && r.date.startsWith(month) && (untilDay == null || Number(r.date.slice(8, 10)) <= untilDay)
+    const inc = incomes.filter(keep)
+    const exp = expenses.filter(keep)
+    const totalInc = inc.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
+    const totalExp = exp.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
+    const balance = totalInc - totalExp
+    // "Te queda" = solo lo REAL (decisión de Walter, 08-oct-2026); lo previsto
+    // que falta va aparte en "Previsto pendiente".
+    return { totalInc, totalExp, balance, freeFlow: balance,
+             savingRate: totalInc > 0 ? balance / totalInc : 0,
+             incCount: inc.length, expCount: exp.length }
+  }
+  const cur = totals(activeMonth)
+  const prev = totals(prevMo)
+  const isCurrent = now.getFullYear() === y && now.getMonth() + 1 === mo
+  const prevCutDay = isCurrent ? now.getDate() : null
+  const prevToDate = prevCutDay == null ? prev : totals(prevMo, prevCutDay)
+  return { cur, prev, prevToDate, prevCutDay }
 }
 
 // Filas ordenadas por riesgo (proporción gastada, de mayor a menor). `limits`

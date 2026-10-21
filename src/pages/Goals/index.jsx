@@ -4,6 +4,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState, EmptyChoices, EmptyChoice } from '../../components/ui/index.jsx'
+import { monthsAheadFirstDay } from '../../utils/monthMath.js'
 import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap, Pencil, X } from 'lucide-react'
 import { firstGoalPresets } from './firstGoal.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, prioEmoji, currentMonth, localMonthStr, prioLabel, currencySymbol } from '../../utils/index.js'
@@ -60,8 +61,7 @@ export default function Goals({ setPage }) {
 
   async function createSuggestedGoals() {
     for (const s of suggestions.filter(s => s.selected && !s.alreadyExists)) {
-      const now = new Date()
-      const targetDate = new Date(now.getFullYear(), now.getMonth() + (s.monthsToGoal || 12), 1)
+      const targetDate = monthsAheadFirstDay(new Date(), s.monthsToGoal || 12)
       await addGoal({ name:s.name, target:s.target, saved:0, targetDate:localMonthStr(targetDate), priority:s.goalPriority, color:s.color })
     }
     setShowSuggest(false); setSuggestions([])

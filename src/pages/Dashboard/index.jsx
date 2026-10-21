@@ -28,7 +28,7 @@ import NetWorthCard from './NetWorthCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
 import { RateSheet } from './RefCurrency.jsx'
 import { refEligible, resolveRefRate, rateToolFor } from '../../utils/refRate.js'
-import { monthDelta, prevMonthOf } from './dashboardModel.js'
+import { prevMonthOf, homeMonthTotals } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, currencySymbol } from '../../utils/index.js'
 import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
@@ -85,50 +85,8 @@ export default function Dashboard({ setPage }) {
   const toUSD       = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
 
   const kpis = useMemo(() => {
-    const [y, mo] = activeMonth.split('-').map(Number)
-    const prevMo  = mo === 1 ? `${y - 1}-12` : `${y}-${String(mo - 1).padStart(2, '0')}`
-
-    function monthTotals(month, untilDay = null) {
-      const inDay = (r) => untilDay == null || Number(r.date.slice(8, 10)) <= untilDay
-      const inc = incomes.filter(r  => r?.date?.startsWith(month) && inDay(r))
-      const exp = expenses.filter(r => r?.date?.startsWith(month) && inDay(r))
-      const totalInc = inc.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-      const totalExp = exp.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-      const balance  = totalInc - totalExp                        // Balance neto = ingresos − gastos
-      // "Te queda" = solo lo REAL (decisión de Walter, 08-oct-2026). Antes se
-      // restaban siempre las suscripciones activas y las cuotas: si el gasto
-      // también estaba registrado, se contaba dos veces. Lo previsto que falta
-      // (suscripciones, cuotas, fijos) va aparte en "Previsto pendiente".
-      const freeFlow = balance
-      return { totalInc, totalExp, balance, freeFlow,
-               savingRate: totalInc > 0 ? balance / totalInc : 0,  // sin floor: coincide con Coach/Advisor
-               incCount: inc.length, expCount: exp.length }
-    }
-
-    const cur  = monthTotals(activeMonth)
-    const prev = monthTotals(prevMo)
-    // FIN-14: con el mes en curso, las variaciones del Inicio comparan contra
-    // el mes anterior HASTA EL MISMO DÍA, no contra el mes completo.
-    const now = new Date()
-    const isCurrent = now.getFullYear() === y && now.getMonth() + 1 === mo
-    const prevCutDay = isCurrent ? now.getDate() : null
-    const prevToDate = prevCutDay == null ? prev : monthTotals(prevMo, prevCutDay)
-
-    function delta(cur, prev) {
-      if (prev === 0) return null
-      return ((cur - prev) / prev * 100).toFixed(1)
-    }
-
-    return {
-      ...cur,
-      cur, prev, prevToDate, prevCutDay,
-      delta: {
-        inc:  delta(cur.totalInc,    prev.totalInc),
-        exp:  delta(cur.totalExp,    prev.totalExp),
-        bal:  delta(cur.balance,     prev.balance),
-        save: delta(cur.savingRate,  prev.savingRate),
-      }
-    }
+    const { cur, prev, prevToDate, prevCutDay } = homeMonthTotals({ incomes, expenses, activeMonth })
+    return { ...cur, cur, prev, prevToDate, prevCutDay }
   }, [incomes, expenses, activeMonth])
 
   // ── Movimientos fijos del mes activo ─────────────────────────────────────

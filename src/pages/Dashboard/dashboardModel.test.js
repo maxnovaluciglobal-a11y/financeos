@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   monthDelta, prevMonthOf, monthName, fmtSignedPct,
   budgetState, budgetRows, nextOccurrence, upcomingPayments,
-  weekToMonth, prevMonthScore, upsertMonthly, lastValueBefore,
+  weekToMonth, prevMonthScore, upsertMonthly, lastValueBefore, homeMonthTotals,
 } from './dashboardModel.js'
 
 describe('monthDelta', () => {
@@ -146,5 +146,68 @@ describe('upcomingFromRules — próximos pagos desde los fijos', () => {
     expect(items.map(i => `${i.name}@${i.date}`)).toEqual(['tarjeta@2026-10-20', 'arriendo@2026-11-01'])
     expect(items[0].kind).toBe('debt')
     expect(total).toBe(2)
+  })
+})
+
+// FIN-13 en Inicio: la fila de presupuesto usa la misma regla en centavos que
+// la página Presupuestos (antes, división en coma flotante).
+describe('budgetState en centavos (FIN-13)', () => {
+  it('50,10 + 50,20 contra 100,30 está "near", no "over"', () => {
+    expect((50.1 + 50.2) / 100.3 > 1).toBe(true) // la trampa de la coma flotante
+    expect(budgetState(50.1 + 50.2, 100.3)).toBe('near')
+    expect(budgetState(100.31, 100.3)).toBe('over')
+  })
+  it('sin límite: gasto > 0 es over, 0 es ok', () => {
+    expect(budgetState(5, 0)).toBe('over')
+    expect(budgetState(0, 0)).toBe('ok')
+  })
+})
+
+// FIN-14: variaciones del Inicio contra el mes anterior hasta el mismo día.
+describe('homeMonthTotals (FIN-14)', () => {
+  const incomes = [
+    { date: '2026-09-05', amount: 1000 },
+    { date: '2026-09-25', amount: 3000 },
+    { date: '2026-10-04', amount: 1200 },
+  ]
+  const expenses = [
+    { date: '2026-09-08', amount: 200 },
+    { date: '2026-09-28', amount: 800 },
+    { date: '2026-10-09', amount: 300 },
+  ]
+  it('mes en curso (día 10): el anterior se corta al día 10', () => {
+    const r = homeMonthTotals({ incomes, expenses, activeMonth: '2026-10', now: new Date(2026, 9, 10) })
+    expect(r.prevCutDay).toBe(10)
+    expect(r.cur.totalInc).toBe(1200)
+    expect(r.prevToDate.totalInc).toBe(1000)   // sin el ingreso del 25-sep
+    expect(r.prevToDate.totalExp).toBe(200)    // sin el gasto del 28-sep
+    expect(r.prev.totalInc).toBe(4000)         // el mes completo sigue disponible
+    // la variación de ingresos es +20 %, no -70 % contra el mes completo
+    expect(monthDelta(r.cur.totalInc, r.prevToDate.totalInc).pct).toBeCloseTo(20)
+  })
+  it('mes cerrado: compara contra el mes anterior completo', () => {
+    const r = homeMonthTotals({ incomes, expenses, activeMonth: '2026-10', now: new Date(2026, 10, 3) })
+    expect(r.prevCutDay).toBeNull()
+    expect(r.prevToDate).toBe(r.prev)
+    expect(r.prevToDate.totalInc).toBe(4000)
+  })
+  it('enero compara contra diciembre del año anterior', () => {
+    const r = homeMonthTotals({
+      incomes: [{ date: '2025-12-02', amount: 50 }, { date: '2025-12-20', amount: 70 }, { date: '2026-01-03', amount: 10 }],
+      expenses: [], activeMonth: '2026-01', now: new Date(2026, 0, 15),
+    })
+    expect(r.prevToDate.totalInc).toBe(50)
+    expect(r.prev.totalInc).toBe(120)
+  })
+  it('día 31 contra un mes de 30 días: entra el mes anterior completo', () => {
+    const r = homeMonthTotals({
+      incomes: [{ date: '2026-09-30', amount: 90 }], expenses: [],
+      activeMonth: '2026-10', now: new Date(2026, 9, 31),
+    })
+    expect(r.prevToDate.totalInc).toBe(90)
+  })
+  it('registros sin fecha válida no rompen ni suman', () => {
+    const r = homeMonthTotals({ incomes: [null, { amount: 5 }, { date: 20261001, amount: 5 }], expenses: [], activeMonth: '2026-10', now: new Date(2026, 9, 2) })
+    expect(r.cur.totalInc).toBe(0)
   })
 })

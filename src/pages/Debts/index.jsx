@@ -14,6 +14,7 @@ import { monthPlan } from '../../utils/recurring.js'
 import { debtRuleId } from '../../utils/recurringSources.js'
 import { logRejection } from '../../utils/errorLog.js'
 import { Building2 } from 'lucide-react'
+import { monthsAheadFirstDay } from '../../utils/monthMath.js'
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
@@ -368,7 +369,7 @@ export default function Debts() {
         // Meses calendario reales, no monthsLeft*30 días — ese redondeo se
         // acumulaba hasta ~9 meses de error en deudas largas (600 meses).
         const finDate   = monthsLeft > 0
-          ? (() => { const now = new Date(); const dt = new Date(now.getFullYear(), now.getMonth() + monthsLeft, 1); return dt.toLocaleDateString(dateLocale(),{month:'short',year:'numeric'}) })()
+          ? monthsAheadFirstDay(new Date(), monthsLeft).toLocaleDateString(dateLocale(),{month:'short',year:'numeric'})
           : null
         return (
           <Card key={d.id}>
