@@ -257,9 +257,13 @@ export function SectionTitle({ children }) {
   return <div className={styles.sectionTitle}>{children}</div>
 }
 
-export function PageHeader({ title, sub }) {
+// Encabezado único de página (UI-M8, "pagehead" de Invest): un título grande
+// (LargeTitle, con su barra compacta al hacer scroll en móvil) y UN subtítulo.
+// La barra superior ya no repite el nombre de la página.
+export function PageHead({ title, sub }) {
   return <LargeTitle title={title} sub={sub} />
 }
+export const PageHeader = PageHead
 
 export function SegmentedControl({ value, onChange, options }) {
   return (

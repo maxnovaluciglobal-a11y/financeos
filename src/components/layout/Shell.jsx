@@ -240,7 +240,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
               </button>
             )}
           </div>
-          <span className={s.crumb + (chrome.back ? ' ' + s.crumbPushed : '')}>{t(pageLabel(page))}</span>
+          {/* Sin miga: el título vive una sola vez, en el PageHead de cada página (UI-M8). */}
           <span className={s.topRight}>
             {tour.available && (
               <PageTourButton className={s.amountsBtn} onClick={tour.replay} label={t('tour.replay')} />

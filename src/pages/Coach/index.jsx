@@ -12,6 +12,8 @@ import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { fmtPct } from '../../utils/index.js'
+import { PageHeader } from '../../components/ui/index.jsx'
+import { monthLabel } from '../shared/constants.js'
 
 // ── ICONO POR SEVERIDAD ────────────────────────────────────────────────────
 // Íconos por severidad (T17): antes glifos ◈ ⚠ ⊗; ahora el mismo vocabulario de
@@ -143,17 +145,10 @@ export default function Coach() {
     <div>
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--grn)', marginBottom: 6 }}>
-          {t('coach.kicker')}
-        </div>
-        <h1 className="display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--tx)', marginBottom: 4 }}>
-          {t('coach.title')}
-        </h1>
-        <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 4 }}>
-          {t('coach.sub', { month: metrics.activeMonth })}
-          <span style={{display:'block',fontSize:11,color:'var(--th)',marginTop:4,fontFamily: 'var(--sans)'}}>
-            {t('coach.disclaimerShort')}
-          </span>
+        {/* Encabezado único (UI-M8): sin antetítulo, un solo subtítulo. */}
+        <PageHeader title={t('coach.title')} sub={t('coach.sub', { month: monthLabel(metrics.activeMonth) })} />
+        <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', margin: '-8px 0 6px' }}>
+          {t('coach.disclaimerShort')}
         </p>
         <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', background: 'var(--sur2)', padding: '5px 9px', borderRadius: 6, display: 'inline-block' }}>
           {t('coach.localBadge')}

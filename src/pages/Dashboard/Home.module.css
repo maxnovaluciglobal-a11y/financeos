@@ -237,12 +237,6 @@
 }
 
 /* ── Cabecera del Inicio y vista detallada (R05) ───────────────────────── */
-.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.monthPill {
-  display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px;
-  border-radius: var(--r); background: var(--sur2); border: 0.5px solid var(--brd);
-  font-size: 13px; font-weight: 600; color: var(--tx); text-transform: capitalize;
-}
 .viewToggle {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   width: 100%; min-height: 48px; margin: 0 0 16px; padding: 0 16px;

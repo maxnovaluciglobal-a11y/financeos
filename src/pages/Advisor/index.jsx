@@ -9,7 +9,7 @@ import { Lock } from 'lucide-react'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { Card, CardHeader, Alert } from '../../components/ui/index.jsx'
+import { Card, CardHeader, Alert, PageHeader } from '../../components/ui/index.jsx'
 import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
@@ -412,20 +412,16 @@ export default function Advisor() {
     <div className="stack">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-            <h1 className="display" style={{ fontSize: 24, fontWeight: 700 }}>{t('adv.title')}</h1>
-            <div style={{
-              fontSize: 11, fontFamily: 'var(--num)', fontWeight: 600,
-              background: 'var(--grn-bg)', color: 'var(--grn)',
-              padding: '2px 8px', borderRadius: 'var(--rs)', letterSpacing: '0.5px',
-            }}>
-              {t('adv.badge')}
-            </div>
-          </div>
-          <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
-            {t('adv.sub', { month: monthLabel(activeMonth) })}
-          </p>
+        {/* Encabezado único (UI-M8); la etiqueta "Vista profesional" va en tipo
+            oración y en Plex Sans (UI-Q6), no en mayúsculas. */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <PageHeader title={t('adv.title')} sub={t('adv.sub', { month: monthLabel(activeMonth) })} />
+          <span style={{
+            display: 'inline-block', marginTop: -10, fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600,
+            background: 'var(--grn-bg)', color: 'var(--grn)', padding: '2px 8px', borderRadius: 'var(--rs)',
+          }}>
+            {t('adv.badge')}
+          </span>
         </div>
         <select
           aria-label={t('common.month')}

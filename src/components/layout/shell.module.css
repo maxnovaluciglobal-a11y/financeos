@@ -61,10 +61,6 @@
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: max(10px, env(safe-area-inset-top)) 18px 0; flex-shrink: 0;
 }
-/* min-width:0 + ellipsis: sin esto, un nombre de página largo (ej. "Impuestos
-   Alemania") no se achica — por defecto un flex item no encoge bajo el ancho de
-   su propio texto, así que terminaba pegado sin espacio contra topRight. */
-.crumb    { font-size: 12px; color: var(--th); font-family: var(--sans); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topRight { font-size: 12px; color: var(--th); font-family: var(--sans); flex-shrink: 0; white-space: nowrap; }
 .content  { flex: 1; overflow-y: auto; padding: 14px 18px 24px; }
 /* El área de contenido es la que se desplaza (la ventana no): con tabIndex 0
@@ -286,9 +282,6 @@
   .backBtn:active { background: var(--sur2); transform: scale(.97); }
   .backBtn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .backLbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* El título ya está grande en la página (LargeTitle) y en la barra compacta
-     al hacer scroll: en la pantalla empujada la miga sobra. */
-  .crumbPushed { display: none; }
 }
 :global([data-theme="dark"]) .backBtn { color: var(--laton-300); }
 :global([data-theme="dark"]) .backBtn:focus-visible { outline-color: var(--laton-300); }

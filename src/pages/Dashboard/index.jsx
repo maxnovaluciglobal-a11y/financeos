@@ -34,7 +34,7 @@ import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, c
 import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
-import { Card, CardHeader } from '../../components/ui/index.jsx'
+import { Card, CardHeader, PageHeader } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { monthPlan, pendingTotals } from '../../utils/recurring.js'
@@ -466,12 +466,8 @@ export default function Dashboard({ setPage }) {
         prev={autoStart && prevHasData ? { month: prevMonthKey, balance: kpis.prev.balance } : null}
         onGoToList={setPage ? () => { closeSheet(); setPage('recurring') } : undefined} />
 
-      {/* Cabecera (R05): sin eyebrow ni h1 de "Dashboard" — el título "Inicio"
-          ya está en la barra superior; acá solo el mes que se está mirando. */}
-      <div className={hs.head}>
-        <h1 className="sr-only">{t('home.title')}</h1>
-        <span className={hs.monthPill}>{monthLabel(activeMonth)}</span>
-      </div>
+      {/* Encabezado único (UI-M8): "Inicio" y el mes que se está mirando. */}
+      <PageHeader title={t('home.title')} sub={monthLabel(activeMonth)} />
 
       {/* Inicio M5 — responde en orden ¿cuánto me queda?, ¿en qué me estoy
           pasando? y ¿qué viene? Escritorio a dos columnas, móvil en una sola

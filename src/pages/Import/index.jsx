@@ -13,6 +13,7 @@ import CountryBadge from '../../components/CountryBadge.jsx'
 import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplates.js'
 import { canonicalCategory } from '../../utils/categoryAliases.js'
 import { logClientError } from '../../utils/errorLog.js'
+import { PageHeader } from '../../components/ui/index.jsx'
 import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
   createImportBatch, buildTransactions, MAX_ROWS,
@@ -20,10 +21,6 @@ import {
 
 const s = {
   page: {},
-  header: { marginBottom: 24 },
-  eyebrow: { fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--grn)', marginBottom: 6 },
-  h1: { fontSize: 24, fontWeight: 700, color: 'var(--tx)', fontFamily: 'var(--display)', letterSpacing: '-.02em', marginBottom: 4 },
-  sub: { fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)' },
   card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
   cardTitle: { fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 12 },
   steps: { display: 'flex', gap: 8, marginBottom: 28 },
@@ -255,11 +252,8 @@ export default function ImportMovements({ setPage } = {}) {
 
   return (
     <div style={s.page}>
-      <div style={s.header}>
-        <div style={s.eyebrow}>{t('imp.eyebrow')}</div>
-        <h1 style={s.h1}>{t('imp.title')}</h1>
-        <p style={s.sub}>{t('imp.sub')}</p>
-      </div>
+      {/* Encabezado único (UI-M8): sin antetítulo. */}
+      <PageHeader title={t('imp.title')} sub={t('imp.sub')} />
 
       <div style={s.steps}>
         {STEPS.map((name, i) => (
