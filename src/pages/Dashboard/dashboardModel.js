@@ -28,10 +28,12 @@ export function prevMonthOf(month) {
 }
 
 // Nombre del mes ("septiembre", "September") en el idioma de la interfaz.
-export function monthName(month, lang = 'es') {
+// width 'short' → "sept", "Sep", "Sept" (sin el punto final de algunos idiomas):
+// la variación de los KPIs dice "vs. sept al día 21" en una columna angosta (UI-M7).
+export function monthName(month, lang = 'es', width = 'long') {
   const [y, m] = String(month).split('-').map(Number)
   if (!y || !m) return ''
-  try { return new Date(y, m - 1, 1).toLocaleDateString(lang, { month: 'long' }) }
+  try { return new Date(y, m - 1, 1).toLocaleDateString(lang, { month: width }).replace(/\.$/, '') }
   catch { return '' }
 }
 

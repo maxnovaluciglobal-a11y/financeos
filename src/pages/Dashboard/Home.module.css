@@ -36,13 +36,24 @@
   .pairB   { order: 6; }
 }
 
-/* ── Tarjeta base del Inicio ──────────────────────────────────────────────── */
-.card {
+/* ── Secciones del Inicio (UI-M7) ─────────────────────────────────────────
+   Una sola tarjeta: el héroe "Te queda" (.hero). El resto son secciones
+   separadas por una línea fina arriba, sin caja ni sombra (regla "Flat
+   Ledger" de Invest): menos ruido compitiendo con la cifra protagonista. */
+.hero {
   background: var(--sur);
   border: 0.5px solid var(--brd);
   border-radius: var(--rl);
   box-shadow: var(--sh-1);
   padding: 16px 18px;
+  min-width: 0;
+}
+.card {
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--brd2);
+  border-radius: 0;
+  padding: 14px 0 0;
   min-width: 0;
 }
 .cardHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
@@ -81,17 +92,19 @@
   .kpisTall { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
   .kpisTall .kpiLeft { grid-row: span 2; }
 }
-.kpi { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; min-width: 0; container-type: inline-size; }
+.kpi { display: flex; flex-direction: column; gap: 6px; padding: 12px 0 0; min-width: 0; container-type: inline-size; }
+.hero.kpi { padding: 14px 16px; }
 .kpiLabel { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
 .kpiTap { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
-.kpiTap:hover { border-color: var(--brd2); }
+.kpiTap { background: none; border: 0; border-top: 1px solid var(--brd2); }
+.kpiTap:hover { border-top-color: var(--navy-400); }
 .kpiTap:active { transform: scale(.99); }
 .kpiChevron { color: var(--th); flex-shrink: 0; margin: -2px -4px -2px 0; }
 /* --chars = largo del monto formateado: la cifra se achica para entrar en una
    línea (Bs. con millones), nunca se parte en dos. 1.65 ≈ 1 / ancho medio de
    un dígito en em; 32px = padding de la tarjeta. cqi = ancho de esta tarjeta. */
-.kpiValue { font-size: clamp(13px, calc((100cqi - 32px) * 1.65 / var(--chars, 8)), 24px); line-height: 1.1; color: var(--tx); white-space: nowrap; }
+.kpiValue { font-size: clamp(13px, calc(100cqi * 1.65 / var(--chars, 8)), 24px); line-height: 1.1; color: var(--tx); white-space: nowrap; }
 .kpiSub { font-size: 12px; color: var(--th); line-height: 1.4; }
 .kpiDual { font-family: var(--num); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
 
@@ -113,7 +126,7 @@
 .ring { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 .ringLegend { font-family: var(--sans); font-size: 11px; line-height: 1.3; color: var(--th); text-align: center; max-width: 120px; }
 
-.secondary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }
+.secondary { display: grid; gap: 4px 24px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }
 .secondary .kpiValue { font-size: 18px; }
 /* Vista compacta en móvil: solo los tres KPIs principales (antes .fos-kpi-secondary) */
 @media (max-width: 700px) { .secondaryCompact { display: none; } }
@@ -187,11 +200,11 @@
 /* ── Primeros pasos (R06) — una fila que abre una hoja ─────────────────── */
 .steps {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
-  width: 100%; min-height: 56px; padding: 12px 12px 12px 16px; text-align: left;
+  width: 100%; min-height: 56px; padding: 12px 0; text-align: left;
   font: inherit; color: var(--tx); cursor: pointer;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.steps:hover { border-color: var(--brd2); }
+.steps:hover { border-top-color: var(--navy-400); }
 .steps:active { transform: scale(.99); }
 .stepsBar { display: inline-grid; grid-template-columns: repeat(3, 10px); gap: 3px; }
 .stepsSeg, .stepsSegOn { height: 6px; border-radius: 1px; background: var(--sur3); }
@@ -244,11 +257,11 @@
 /* ── IQ Score compacto (vista esencial) ─────────────────────────────────── */
 .scoreRow {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
-  width: 100%; min-height: 64px; padding: 12px 12px 12px 16px; text-align: left;
+  width: 100%; min-height: 64px; padding: 12px 0; text-align: left;
   font: inherit; color: var(--tx); cursor: pointer;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.scoreRow:hover { border-color: var(--brd2); }
+.scoreRow:hover { border-top-color: var(--navy-400); }
 .scoreRow:active { transform: scale(.99); }
 .scoreRowNum { font-size: 28px; line-height: 1; font-weight: 600; }
 .scoreRowMeta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }

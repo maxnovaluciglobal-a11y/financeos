@@ -200,7 +200,7 @@ button { cursor: pointer; font-family: var(--sans); }
 @media (max-width: 600px) {
   .kpi-row {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    gap: 4px 16px !important;
   }
 }
 

@@ -37,11 +37,12 @@
 
 /* KPI */
 .kpi {
-  background: var(--sur); border-radius: var(--rl);
-  padding: 14px 16px; border: 0.5px solid var(--brd);
-  box-shadow: var(--sh-1);
+  /* Sin tarjeta (UI-M7, regla "Flat Ledger" de Invest): una fila de KPIs
+     separada por una línea fina arriba; la tarjeta queda solo para el héroe. */
+  background: none; border: 0; border-top: 1px solid var(--brd2); border-radius: 0;
+  padding: 12px 0 2px; box-shadow: none;
   /* Todos los <KPI> viven en una celda de .kpi-row (grid con ancho definido),
-     así que la tarjeta puede ser contenedor: la cifra se mide con su ancho. */
+     así que la celda puede ser contenedor: la cifra se mide con su ancho. */
   container-type: inline-size;
 }
 /* Etiquetas en Plex Sans 12/600, tipo oración (UI-Q6): nada de mayúsculas mono. */

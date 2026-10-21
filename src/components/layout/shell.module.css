@@ -78,7 +78,7 @@
 :global(.grid2) { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 :global(.grid3) { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 :global(.grid4) { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-:global(.kpi-row) { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 8px; margin-bottom: 12px; }
+:global(.kpi-row) { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 4px 24px; margin-bottom: 12px; }
 /* Los hijos de grid necesitan min-width:0 para poder encoger y no desbordar (fix móvil) */
 :global(.grid2) > *, :global(.grid3) > *, :global(.grid4) > *, :global(.kpi-row) > * { min-width: 0; }
 :global(.stack)  { display: flex; flex-direction: column; gap: 10px; min-width: 0; }

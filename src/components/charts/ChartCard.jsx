@@ -3,18 +3,17 @@ import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 export default function ChartCard({ title, subtitle, children, minHeight = 220 }) {
   return (
-    <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'18px 20px', marginBottom:16, boxShadow:'var(--sh-1)' }}>
+    // Una lectura no va en una caja (UI-M7, "Flat Ledger"): sección con una
+    // línea fina arriba, título y subtítulo.
+    <section style={{ borderTop:'1px solid var(--brd2)', padding:'14px 0 0', marginBottom:20, minWidth:0 }}>
       {title && (
-        <div style={{ marginBottom:14 }}>
-          <div className="display" style={{ fontSize:15, fontWeight:600, color:'var(--tx)', display:'flex', alignItems:'center', gap:8 }}>
-            <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--accent)', display:'inline-block', flexShrink:0 }}/>
-            {title}
-          </div>
-          {subtitle && <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:3, marginLeft:14 }}>{subtitle}</div>}
+        <div style={{ marginBottom:12 }}>
+          <h2 className="display" style={{ margin:0, fontSize:16, fontWeight:600, color:'var(--tx)' }}>{title}</h2>
+          {subtitle && <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:3 }}>{subtitle}</div>}
         </div>
       )}
       <div style={{ minHeight }}>{children}</div>
-    </div>
+    </section>
   )
 }
 

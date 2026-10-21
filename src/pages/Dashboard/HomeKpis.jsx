@@ -52,7 +52,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
     <section aria-label={t('home.kpis.aria')}>
       <div className={`${s.kpis} ${refc ? s.kpisTall : ''}`}>
         {/* "Te queda" primero también en el DOM (lectores de pantalla). */}
-        <div data-tour="kpi-free" className={`${s.card} ${s.kpi} ${s.kpiLeft} rise`} style={{
+        <div data-tour="kpi-free" className={`${s.hero} ${s.kpi} ${s.kpiLeft} rise`} style={{
           animationDelay: '0ms',
           background: hasData ? `color-mix(in srgb, ${freeColor} 7%, var(--sur))` : undefined,
           borderColor: hasData ? `color-mix(in srgb, ${freeColor} 30%, transparent)` : undefined,
@@ -115,7 +115,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
           const Tag = onOpen ? 'button' : 'div'
           return (
             <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
-              className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''} rise`}
+              className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''}`}
               style={{ animationDelay: `${40 + i * 40}ms` }}
               onClick={onOpen ? () => onOpen(k.page) : undefined}>
               <div className={s.kpiLabel}>
