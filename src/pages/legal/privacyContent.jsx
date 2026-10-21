@@ -11,7 +11,7 @@
 
 // vitest.config.js no carga el plugin de React: el JSX se transforma con el runtime
 // clásico (React.createElement), así que React tiene que estar en scope.
-import React from 'react' // eslint-disable-line no-unused-vars
+import React from 'react'
 import s from './legal.module.css'
 import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'

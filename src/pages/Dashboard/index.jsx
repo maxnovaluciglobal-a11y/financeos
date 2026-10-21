@@ -42,20 +42,19 @@ import { localDateStr } from '../../utils/index.js'
 import { ChevronDown } from 'lucide-react'
 
 const pct  = (n) => ((Number(n) || 0) * 100).toFixed(1) + '%'
-const pct0 = (n) => ((Number(n) || 0) * 100).toFixed(0) + '%'
 
 export default function Dashboard({ setPage }) {
   const ctx      = useApp() || {}
   const { t, lang } = useT()
   // Panorama PERSONAL: excluye movimientos marcados como inversión (r.inv) de todos
   // los cálculos del dashboard (ingresos, gastos, balance, tasa de ahorro, score, señales).
-  const incomes  = Array.isArray(ctx.incomes)       ? ctx.incomes.filter(r => !r?.inv)  : []
-  const expenses = Array.isArray(ctx.expenses)      ? ctx.expenses.filter(r => !r?.inv) : []
-  const budgets  = Array.isArray(ctx.budgets)       ? ctx.budgets       : []
-  const goals    = Array.isArray(ctx.goals)         ? ctx.goals         : []
-  const settings = (ctx.settings && typeof ctx.settings === 'object') ? ctx.settings : {}
-  const subs     = Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []
-  const debts    = Array.isArray(ctx.debts) ? ctx.debts : []
+  const incomes  = useMemo(() => (Array.isArray(ctx.incomes)  ? ctx.incomes.filter(r => !r?.inv)  : []), [ctx.incomes])
+  const expenses = useMemo(() => (Array.isArray(ctx.expenses) ? ctx.expenses.filter(r => !r?.inv) : []), [ctx.expenses])
+  const budgets  = useMemo(() => (Array.isArray(ctx.budgets) ? ctx.budgets : []), [ctx.budgets])
+  const goals    = useMemo(() => (Array.isArray(ctx.goals) ? ctx.goals : []), [ctx.goals])
+  const settings = useMemo(() => ((ctx.settings && typeof ctx.settings === 'object') ? ctx.settings : {}), [ctx.settings])
+  const subs     = useMemo(() => (Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []), [ctx.subscriptions])
+  const debts    = useMemo(() => (Array.isArray(ctx.debts) ? ctx.debts : []), [ctx.debts])
 
   const sym         = currencySymbol(settings.currency, settings.language)
   const activeMonth = settings.activeMonth || currentMonth()
@@ -80,8 +79,8 @@ export default function Dashboard({ setPage }) {
   const usdRate     = effectiveUsdRate || 1
   // Ocultar montos (T13): toda cifra de dinero de esta pantalla pasa por money()
   // (strings: frases i18n, KPIs) o por <Money> (cifras sueltas en JSX).
-  const { hidden: amountsHidden, m } = useMoney()
-  const money       = (n) => m(fmtSignedMoney(n, sym))
+  const { m } = useMoney()
+  const money       = useCallback((n) => m(fmtSignedMoney(n, sym)), [m, sym])
   const toUSD       = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
 
   const kpis = useMemo(() => {
@@ -91,7 +90,7 @@ export default function Dashboard({ setPage }) {
 
   // ── Movimientos fijos del mes activo ─────────────────────────────────────
   const todayStr = localDateStr()
-  const rules = Array.isArray(ctx.recurring) ? ctx.recurring : []
+  const rules = useMemo(() => (Array.isArray(ctx.recurring) ? ctx.recurring : []), [ctx.recurring])
   const plan = useMemo(() => monthPlan(rules, activeMonth, { incomes: ctx.incomes || [], expenses: ctx.expenses || [], today: todayStr }),
     [rules, activeMonth, ctx.incomes, ctx.expenses, todayStr])
   const pendingSum = useMemo(() => pendingTotals(plan), [plan])
@@ -201,14 +200,14 @@ export default function Dashboard({ setPage }) {
     }
 
     return cards.slice(0, 4)
-  }, [subMonthly, monthExpenses, budgets, goals, sym, settings.language, amountsHidden])
+  }, [subMonthly, monthExpenses, budgets, goals, money, t, lang])
 
   // ── Coach signals para Dashboard ──────────────────────────────────────────
   const topSignals = useMemo(() => {
     if (kpis.incCount === 0 && kpis.expCount === 0) return []
     const metrics = calcCoachMetrics({ incomes, expenses, budgets, debts, goals, subs, settings })
     return evaluateCoach(metrics, t).slice(0, 2)
-  }, [incomes, expenses, budgets, debts, goals, subs, settings, kpis.incCount, kpis.expCount])
+  }, [incomes, expenses, budgets, debts, goals, subs, settings, kpis.incCount, kpis.expCount, t])
 
   // ── IQ Score — 5 factores del brand book MOY IQ (ver utils/financialScore.js) ──
   const healthScore = useMemo(() => {
@@ -221,7 +220,7 @@ export default function Dashboard({ setPage }) {
       lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
       pending: pendingSum,
     }, t)
-  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, settings.language, pendingSum])
+  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, pendingSum, t])
 
   // ── Vista compacta (progressive disclosure) ───────────────────────────────
   // Vista esencial por defecto (calma): la primera pantalla muestra lo esencial y
@@ -430,7 +429,7 @@ export default function Dashboard({ setPage }) {
     return { spentRatio, elapsedRatio, color, level, daysLeft,
              centerValue: money(safePerDay),
              refIsIncome: kpis.totalInc > 0 }
-  }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, sym, amountsHidden])
+  }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, money])
 
   // KPIs secundarios (debajo de Ingresos/Gastos/Te queda). El balance neto
   // salió de acá: desde los fijos, "Te queda" ES ingresos − gastos y se repetía.
@@ -643,7 +642,7 @@ export default function Dashboard({ setPage }) {
       {/* Proyección fin de mes */}
       {!compact && (kpis.totalInc > 0 || kpis.totalExp > 0) && (() => {
         // Cálculo compartido con la página Proyección — mismos números en ambas vistas
-        const { today, daysInMonth, daysLeft, dailyExp, medianDaily, projInc, projExp, projBal, avgExp, avgExpMonths, pendingExp, pendingInc } =
+        const { today, daysInMonth, daysLeft, dailyExp, medianDaily, projExp, projBal, avgExp, avgExpMonths, pendingExp, pendingInc } =
           projectEndOfMonth({ incomes, expenses, activeMonth, pending: pendingSum })
         const pctMonth = (today / daysInMonth * 100).toFixed(0)
         const over     = projBal < 0

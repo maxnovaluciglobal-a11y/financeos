@@ -28,7 +28,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
   const { m } = useMoney()  // ocultar montos (T13)
   const { t, lang } = useT()
   const fmtV = (v, s) => m(fmtRaw(v, s))
-  const safeGoals = Array.isArray(goals) ? goals : []
+  const safeGoals = useMemo(() => (Array.isArray(goals) ? goals : []), [goals])
 
   const rows = useMemo(() => safeGoals.map(g => {
     const target    = Number(g.target) || 0

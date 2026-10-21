@@ -14,7 +14,7 @@ import Money, { useMoney } from '../../components/Money.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 
 export default function Budgets() {
-  const { budgets, addBudget, delBudget, expenses, incomes, settings, updateSettings, deleteWithUndo, showToast } = useApp()
+  const { budgets, addBudget, expenses, incomes, settings, updateSettings, deleteWithUndo, showToast } = useApp()
   const { t, lang } = useT()
   const [f, setF]     = useState({ category: 'Vivienda', limit: '' })
   const [err, setErr] = useState('')

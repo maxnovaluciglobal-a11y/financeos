@@ -205,7 +205,7 @@ export default function Recurring({ setPage }) {
   const ctx = useApp()
   const { t } = useT()
   const { settings, incomes, expenses, subscriptions } = ctx
-  const rules = Array.isArray(ctx.recurring) ? ctx.recurring : []
+  const rules = useMemo(() => (Array.isArray(ctx.recurring) ? ctx.recurring : []), [ctx.recurring])
   const sym = currencySymbol(settings.currency, settings.language)
   const activeMonth = settings.activeMonth || currentMonth()
   const today = localDateStr()

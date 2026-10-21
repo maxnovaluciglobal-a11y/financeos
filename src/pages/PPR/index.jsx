@@ -18,7 +18,6 @@
 
 import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
-import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, KPI } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
@@ -35,7 +34,6 @@ function deductionCap(age) {
 }
 
 export default function PPRPage() {
-  const { settings } = useApp()
   const { t } = useT()
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
 

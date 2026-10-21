@@ -33,7 +33,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
   const { m } = useMoney()  // ocultar montos (T13)
   const { t } = useT()
   const fmtV = (v, s) => m(fmtRaw(v, s))
-  const safeDebts = Array.isArray(debts) ? debts : []
+  const safeDebts = useMemo(() => (Array.isArray(debts) ? debts : []), [debts])
 
   const rows = useMemo(() => safeDebts.map(d => {
     const initial = Number(d.initial) || Number(d.balance) || 0

@@ -16,6 +16,9 @@ import { currentMonth } from '../../utils/index.js'
 
 const money = n => '$' + (Number(n) || 0).toLocaleString()
 
+// Categorías de renta del trabajo (no arriendo, inversión, etc.) para estimar el sueldo bruto
+const CATEGORIAS_TRABAJO = ['Salario', 'Sueldo', 'Freelance', 'Honorarios', 'Bono', 'Comisión']
+
 export default function APVPage() {
   const { settings, incomes } = useApp()
   const { t } = useT()
@@ -34,11 +37,11 @@ export default function APVPage() {
   }, [])
   // Parámetros vigentes (topes imponibles, comisión AFP, UTM/UTA y año tributario).
   // Se recalcula cuando llegan los indicadores, porque setIndicadores() muta el módulo.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- indInfo is the recompute trigger on purpose: getParametrosCL() reads module state that setIndicadores() mutates when the indicators load
   const params = useMemo(() => getParametrosCL(), [indInfo])
 
   // Estima el sueldo bruto desde el ingreso líquido del mes (previsional + impuesto único de 2ª cat.)
-  // Solo categorías de renta del trabajo (no arriendo, inversión, etc.)
-  const CATEGORIAS_TRABAJO = ['Salario', 'Sueldo', 'Freelance', 'Honorarios', 'Bono', 'Comisión']
+  // Solo categorías de renta del trabajo (ver CATEGORIAS_TRABAJO arriba)
   const sueldoBrutoCalculado = useMemo(() => {
     const work = (incomes || []).filter(r =>
       CATEGORIAS_TRABAJO.some(c => (r.category || '').toLowerCase().includes(c.toLowerCase()))
@@ -55,6 +58,7 @@ export default function APVPage() {
       for (const m of meses) { neto = netoDelMes(m); if (neto > 0) break }
     }
     return neto > 0 ? calcBrutoDesdeLiquido(neto) : 0
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- indInfo is the recompute trigger on purpose: calcBrutoDesdeLiquido() uses the UF/UTM values that setIndicadores() mutates in module state when the indicators load
   }, [incomes, activeMonth, indInfo])
   const [apvF, setApvF] = useState({
     monthlyContribution: isDemo ? '150000' : '',

@@ -143,7 +143,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey, defaultType])
 
-  useEffect(() => { if (autoFocus) amountRef.current?.focus() }, [autoFocus])
+  useEffect(() => { if (autoFocus) amountRef.current?.focus() }, [autoFocus, amountRef])
 
   // Movimientos personales del tipo activo (los marcados como inversión no cuentan)
   const ownOfType = useMemo(() => {

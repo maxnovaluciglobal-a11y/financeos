@@ -13,8 +13,8 @@ import { projectEndOfMonth } from '../../utils/projection.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 
-export default function Goals({ setPage }) {
-  const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo } = useApp()
+export default function Goals() {
+  const { goals, addGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo } = useApp()
   const { t, lang } = useT()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // "disponible para ahorrar" personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
@@ -32,7 +32,6 @@ export default function Goals({ setPage }) {
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
-  const isChile          = (settings.country || 'CL') === 'CL'
   const activeMonth      = settings.activeMonth || currentMonth()
 
   const ingresoNetoGoals = useMemo(() => {
@@ -310,6 +309,7 @@ export default function Goals({ setPage }) {
                     {!done && (
                       savingId === g.id
                         ? <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                            {/* eslint-disable-next-line jsx-a11y/no-autofocus -- the user just tapped add-savings on this goal; focus moves into the amount input that appeared */}
                             <input type="number" inputMode="decimal" min="0" step="any" value={addAmt} placeholder={t('goals.card.amountPh')} autoFocus
                               style={{width:90,padding:'4px 7px',fontSize:11,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)'}}
                               onChange={e=>setAddAmt(e.target.value)}

@@ -36,10 +36,10 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
   const { m } = useMoney()
   const { t } = useT()
   const amt = (v) => m(fmtV(v, sym))
-  const safeInc  = Array.isArray(incomes)      ? incomes      : []
-  const safeExp  = Array.isArray(expenses)      ? expenses     : []
-  const safeSubs = Array.isArray(subscriptions) ? subscriptions: []
-  const safeDebt = Array.isArray(debts)         ? debts        : []
+  const safeInc = useMemo(() => (Array.isArray(incomes) ? incomes : []), [incomes])
+  const safeExp = useMemo(() => (Array.isArray(expenses) ? expenses : []), [expenses])
+  const safeSubs = useMemo(() => (Array.isArray(subscriptions) ? subscriptions : []), [subscriptions])
+  const safeDebt = useMemo(() => (Array.isArray(debts) ? debts : []), [debts])
 
   const data = useMemo(() => {
     const totalInc = safeInc.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
@@ -65,7 +65,6 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
     ].filter(Boolean)
 
     return { totalInc, items }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [safeInc, safeExp, safeSubs, safeDebt, t])
 
   if (!data) return <ChartEmpty msg={t('chart.flow.empty')} />

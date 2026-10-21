@@ -1,6 +1,6 @@
 // src/pages/legal/companyBlock.jsx
 // Bloque de identificación de la empresa para Términos y Privacidad (es/en/pt/de).
-import React from 'react' // eslint-disable-line no-unused-vars
+import React from 'react'
 import s from './legal.module.css'
 import { COMPANY, SUPPORT_EMAIL } from './legalMeta.js'
 

@@ -2,7 +2,7 @@
 // Módulo de suscripciones y gastos recurrentes — FinanceOS v1.4
 // Sin backend · Sin scraping · 100% local
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, currencyDecimals } from '../../utils/index.js'
@@ -133,7 +133,7 @@ const EMPTY_FORM = {
 // ── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────────
 export default function Subscriptions() {
   const { t, lang } = useT()
-  const { settings, incomes, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteSubscription, deleteWithUndo, showToast } = useApp()
+  const { settings, incomes, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteWithUndo } = useApp()
   const currency = settings.currency || 'CLP'
   // Con los decimales de la moneda de cada suscripción (una de US$ en una cuenta en COP lleva centavos).
   const fmt = (n, cur = currency) => fmtAmount(n, currencyDecimals(cur))
@@ -147,7 +147,7 @@ export default function Subscriptions() {
   const [form,     setForm]     = useState(EMPTY_FORM)
   const [filter,   setFilter]   = useState('all')
 
-  const subs = ctxSubs || []
+  const subs = useMemo(() => ctxSubs || [], [ctxSubs])
 
   const monthlyIncome = useMemo(() => {
     if (!Array.isArray(incomes)) return 0
@@ -167,7 +167,7 @@ export default function Subscriptions() {
   const nextSub = activeSubs
     .filter(s => s.nextPaymentDate)
     .sort((a, b) => String(a.nextPaymentDate).localeCompare(String(b.nextPaymentDate)))[0]
-  const alerts = useMemo(() => generateAlerts(subs, monthlyIncome, t, lang), [subs, monthlyIncome, settings.language])
+  const alerts = useMemo(() => generateAlerts(subs, monthlyIncome, t, lang), [subs, monthlyIncome, t, lang])
 
   // Datos para gráficos
   // El "top" muestra el NOMBRE del servicio; el emoji viene de su categoría.
@@ -184,7 +184,7 @@ export default function Subscriptions() {
       category: subLabel(s.category, lang) || t('chart.uncategorized'),
       amount: toMonthly(s.amount, s.frequency),
     })),
-    [activeSubs, lang]
+    [activeSubs, lang, t]
   )
 
   // CRUD

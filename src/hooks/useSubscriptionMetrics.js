@@ -90,7 +90,7 @@ export default function useSubscriptionMetrics() {
   const [loading, setLoading] = useState(!isDemo)
 
   // Modo demo: usar contexto. Modo real: IndexedDB
-  const subs = isDemo ? (ctxSubs || []) : dbSubs
+  const subs = useMemo(() => (isDemo ? (ctxSubs || []) : dbSubs), [isDemo, ctxSubs, dbSubs])
 
   useEffect(() => {
     if (isDemo) return

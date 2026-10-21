@@ -21,7 +21,8 @@ export default function TabBar({ page, onNavigate, t }) {
   const active = activeTabFor(page)
   return (
     <nav className={s.tabbar} aria-label={t('nav.tabsLabel')} data-tabbar>
-      {TABS.map(({ id, Ic, lb }) => {
+      {TABS.map((tab) => {
+        const { id, Ic, lb } = tab
         const on = active === id
         return (
           <button

@@ -186,8 +186,11 @@ export function IconAsesor({ size = 24, className }) {
 // Ítems del nav sin equivalente en el brand book (T17): lucide con trazo 1.7 (el
 // mismo del TabBar) y el color de marca de los íconos de arriba, en vez de los
 // glifos unicode sueltos que se usaban antes (↻ ⊟ ⊡ ↗ ⇄).
-const navLucide = (Ic) => function NavLucideIcon({ size = 24, className }) {
-  return <Ic size={size} strokeWidth={1.7} color="var(--grn)" className={className} aria-hidden="true" />
+const navLucide = (icon) => {
+  const Ic = icon
+  return function NavLucideIcon({ size = 24, className }) {
+    return <Ic size={size} strokeWidth={1.7} color="var(--grn)" className={className} aria-hidden="true" />
+  }
 }
 
 export const NAV_ICONS = {

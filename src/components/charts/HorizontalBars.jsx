@@ -14,7 +14,7 @@ const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100
 export default function HorizontalBars({ records, sym = '$', maxItems = 6, valueKey = 'amount', labelKey = 'category' }) {
   const { m } = useMoney()
   const { t, lang } = useT()
-  const safeRecords = Array.isArray(records) ? records : []
+  const safeRecords = useMemo(() => (Array.isArray(records) ? records : []), [records])
 
   const data = useMemo(() => {
     const map = {}

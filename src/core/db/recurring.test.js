@@ -165,7 +165,7 @@ describe('respaldo y sync incluyen los fijos', () => {
   it('un respaldo viejo (sin recurring) no borra las reglas locales', async () => {
     const before = await db.dbGetAll('recurring')
     await db.dbAdd('recurring', { id: 'manual-1', source: 'manual', kind: 'income', description: 'Sueldo' })
-    const { recurring, ...old } = await db.exportAllData()
+    const { recurring: _recurring, ...old } = await db.exportAllData()
     await db.importAllData(old)
     expect(await db.dbGetAll('recurring')).toHaveLength(before.length + 1)
   })

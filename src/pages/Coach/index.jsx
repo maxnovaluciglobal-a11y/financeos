@@ -122,13 +122,12 @@ export default function Coach() {
     [incomes, expenses, budgets, debts, goals, subs, settings]
   )
 
-  const signals = useMemo(() => evaluateCoach(metrics, t), [metrics, settings.language])
+  const signals = useMemo(() => evaluateCoach(metrics, t), [metrics, t])
 
   const warnings    = signals.filter(s => s.severity === 'warning')
   const attentions  = signals.filter(s => s.severity === 'attention')
   const infos       = signals.filter(s => s.severity === 'info')
 
-  const sym = metrics.sym
   const fmtP = n => ((n || 0) * 100).toFixed(1) + '%'
 
   // Score orientativo 0-100 — misma escala de 3 estados que el IQ Score (D3):
@@ -311,6 +310,6 @@ export function useCoachSignals() {
     calcCoachMetrics({ incomes, expenses, budgets, debts, goals, subs, settings }),
     [incomes, expenses, budgets, debts, goals, subs, settings]
   )
-  const signals = useMemo(() => evaluateCoach(metrics, t), [metrics, settings.language])
+  const signals = useMemo(() => evaluateCoach(metrics, t), [metrics, t])
   return { signals, metrics }
 }

@@ -26,6 +26,7 @@ function Modal({ isOpen, onClose, children, maxWidth = 540, label }) {
   useDialogA11y(isOpen, onClose, boxRef)
   if (!isOpen) return null
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop click-to-close is a mouse shortcut; Escape already closes the dialog via useDialogA11y
     <div
       role="dialog" aria-modal="true" aria-label={label}
       style={{
@@ -34,6 +35,7 @@ function Modal({ isOpen, onClose, children, maxWidth = 540, label }) {
         alignItems: 'center', justifyContent: 'center', padding: 20,
         overflowY: 'auto',
       }} onClick={onClose}>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- only stops clicks inside the dialog from reaching the backdrop; not a control */}
       <div ref={boxRef} tabIndex={-1} style={{
         background: 'var(--sur)', borderRadius: 12,
         maxWidth, width: '100%',

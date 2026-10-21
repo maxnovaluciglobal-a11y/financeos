@@ -198,6 +198,7 @@ function Inner() {
       window.location.reload()
     })()
     return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per signed-in user id on purpose: session.user changes identity on every token refresh and setOwnerStatus is recreated each render, so depending on them would re-run the account-switch check (server call, possible reload) repeatedly
   }, [session?.user?.id])
 
   useEffect(() => {

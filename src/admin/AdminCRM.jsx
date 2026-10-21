@@ -283,10 +283,12 @@ function LeadDetail({ row, onClose }) {
   const fmt = (ts) => (ts ? new Date(ts).toLocaleString('es-CL') : null)
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- backdrop click-to-close is a mouse shortcut; keyboard users close the drawer with its Cerrar button
     <div
       onClick={onClose}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'flex-end', zIndex: 50 }}
     >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- only stops clicks inside the panel from reaching the backdrop; not a control */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{ width: 380, maxWidth: '90vw', height: '100%', background: 'var(--bg)', padding: 20, overflowY: 'auto', boxShadow: '-2px 0 12px rgba(0,0,0,0.15)' }}

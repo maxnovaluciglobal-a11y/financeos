@@ -409,7 +409,7 @@ export function ReporteFinancieroPDF({ data }) {
         {goals.length > 0 && (
           <View style={s.section}>
             <Text style={s.sectionTitle}>{t('apdf.goals')}</Text>
-            {goals.map((g, i) => {
+            {goals.map((g) => {
               const pct = g.target > 0 ? Math.min(g.saved / g.target, 1) : 0
               return (
                 <View key={g.id} style={s.goalRow}>

@@ -120,7 +120,7 @@ export default function Reports({ setPage }) {
     if (mIncomes.length === 0 && mExpenses.length === 0) return []
     const metrics = calcCoachMetrics({ incomes, expenses, budgets, debts: allDebts, goals: [], subs: allSubs, settings })
     return evaluateCoach(metrics, t)
-  }, [incomes, expenses, budgets, allDebts, allSubs, settings, mIncomes.length, mExpenses.length])
+  }, [incomes, expenses, budgets, allDebts, allSubs, settings, mIncomes.length, mExpenses.length, t])
 
 
   const axisStyle = {fill:'var(--th)',fontSize:11}

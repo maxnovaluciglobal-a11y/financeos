@@ -376,21 +376,18 @@ export default function Advisor() {
   const totalMinPayments = personalDebts(debts).reduce((s, d) => s + (d.minPayment || 0), 0)
 
   // Presupuestos excedidos
-  const expByCat = useMemo(() => {
-    const m = {}
-    monthExpenses.forEach(e => { m[e.category] = (m[e.category] || 0) + e.amount })
-    return m
-  }, [monthExpenses])
-
   const overBudgetCount = countBudgetsExceeded({ budgets, expenses: _expAll, activeMonth, settings })
 
   // Metas
   const goalsProgress = goals.map(g => ({ ...g, pct: g.target > 0 ? g.saved / g.target : 0 }))
   const avgGoalPct = goalsProgress.length > 0 ? goalsProgress.reduce((s, g) => s + g.pct, 0) / goalsProgress.length : 0
 
-  const metrics = { savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym }
-  const signals = useMemo(() => calcTrafficLight(metrics, t), [savingRate, mIncome, mBalance, totalDebt, debtRatio, overBudgetCount, goals.length, settings.language])
-  const alerts  = useMemo(() => calcAlerts(metrics, t),       [savingRate, mIncome, mBalance, debts, monthExpenses, goals, overBudgetCount, settings.language])
+  const metrics = useMemo(
+    () => ({ savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym }),
+    [savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym],
+  )
+  const signals = useMemo(() => calcTrafficLight(metrics, t), [metrics, t])
+  const alerts  = useMemo(() => calcAlerts(metrics, t),       [metrics, t])
 
   // Score general (0-100) basado en semáforos
   const scoreMap = { green: 100, yellow: 50, red: 0 }

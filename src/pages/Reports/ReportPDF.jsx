@@ -81,7 +81,7 @@ const CAT_COLORS = [
 
 export default function ReportPDF({ data }) {
   const {
-    sym, month, monthLabel,
+    sym, monthLabel,
     totalIncome, totalExpense, totalSubs, totalDebt, balance, savingRate,
     savingGoalPct, necesidad, deseos, expByCat, trendData,
     overBudget, currency, generatedAt, netWorth, lang = 'es',

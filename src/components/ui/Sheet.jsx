@@ -33,6 +33,7 @@ export default function Sheet({ open, onClose, children, ariaLabel, maxWidth = 4
   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 520
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop click-to-close is a mouse shortcut; Escape already closes the sheet via useDialogA11y
     <div
       role="dialog" aria-modal="true" aria-label={ariaLabel}
       onClick={onClose}
@@ -42,6 +43,7 @@ export default function Sheet({ open, onClose, children, ariaLabel, maxWidth = 4
         overscrollBehavior: 'contain',
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- only stops clicks inside the sheet from reaching the backdrop; not a control */}
       <div
         ref={sheetRef}
         tabIndex={-1}

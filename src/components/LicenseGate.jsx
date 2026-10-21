@@ -148,6 +148,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             value={key}
             onChange={e => { setKey(e.target.value.toUpperCase()); setError('') }}
             onKeyDown={e => e.key === 'Enter' && handleActivate()}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- the license gate's only task is entering the key; focus goes to that field on open
             autoFocus
             spellCheck={false}
           />
@@ -207,6 +208,8 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
               }}
               onMouseOver={e => { if (!buying) e.currentTarget.style.transform = 'translateY(-1px)' }}
               onMouseOut={e => { e.currentTarget.style.transform = 'none' }}
+              onFocus={e => { if (!buying) e.currentTarget.style.transform = 'translateY(-1px)' }}
+              onBlur={e => { e.currentTarget.style.transform = 'none' }}
             >
               <div style={{ fontFamily: 'var(--display)', fontSize: 13, fontWeight: 600, color: p.highlight ? 'var(--grn)' : 'var(--tx)', marginBottom: 3 }}>{p.name}</div>
               <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>

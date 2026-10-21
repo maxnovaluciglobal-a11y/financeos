@@ -49,6 +49,7 @@ export default function ResetPassword({ onDone }) {
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           placeholder={t('authGate.passwordPlaceholderSignup')}
           autoComplete="new-password"
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- the user arrived from the reset link to set a new password; focus moves into that field
           autoFocus
           style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box' }}
         />

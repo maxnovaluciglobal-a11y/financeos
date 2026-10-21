@@ -172,6 +172,7 @@ export default function CountrySelect({ value, onChange, options, labelId, id })
         {options.map((o, i) => {
           const selected = o.code === value
           return (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- listbox option in the aria-activedescendant pattern: keyboard selection (arrows, Enter, Space) is handled by the combobox button's onKeyDown
             <li
               key={o.code}
               id={optId(i)}

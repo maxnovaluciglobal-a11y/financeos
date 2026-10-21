@@ -34,7 +34,7 @@ const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-m
 export default function CategoryDonut({ records, sym = '$', maxCategories = 6, onCategoryClick }) {
   const { t, lang } = useT()
   const { m } = useMoney()
-  const safeRecords = Array.isArray(records) ? records : []
+  const safeRecords = useMemo(() => (Array.isArray(records) ? records : []), [records])
   const clickable = (name) => typeof onCategoryClick === 'function' && name !== 'Otros'
 
   const { data, total } = useMemo(() => {

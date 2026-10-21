@@ -30,7 +30,6 @@ const SHOW_FIRMA = true
 export default function Shell({ page, setPage, onBack, backTo, children }) {
   const { settings, updateSettings, incomes, expenses, showToast } = useApp()
   const { t } = useT()
-  const isChile = (settings.country || 'CL') === 'CL'
   const isDark = settings.theme === 'dark'
 
   const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income'
@@ -264,6 +263,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
           <span className="sr-only" role="status" aria-live="polite">{amountsAnnounce}</span>
         </header>
 
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- main is the app's own scroll container (data-scroll-root); it receives focus on page change and must be focusable so keyboard users can scroll it (axe scrollable-region-focusable) */}
         <main className={s.content} data-scroll-root ref={contentRef} tabIndex={0} aria-label={t(pageLabel(page))}>
           <div className={s.contentInner}>
             {children}

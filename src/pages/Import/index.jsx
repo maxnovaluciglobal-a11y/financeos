@@ -2,7 +2,7 @@
 // Importar movimientos — CSV/XLSX/XLS · FinanceOS
 // 100% local · sin dependencias externas · sin envío de datos
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { markLocalChange } from '../../core/sync.js'
@@ -156,11 +156,11 @@ export default function ImportMovements({ setPage } = {}) {
     }
   }
 
-  const onDrop = useCallback((e) => {
+  function onDrop(e) {
     e.preventDefault(); setDrag(false)
     const f = e.dataTransfer.files[0]
     if (f) handleFile(f)
-  }, [])
+  }
 
   async function handlePreview() {
     // Región del usuario para desempatar fechas ambiguas (US → MM/DD).
@@ -518,6 +518,7 @@ export default function ImportMovements({ setPage } = {}) {
           <div style={{ ...s.card, maxHeight: 420, overflowY: 'auto' }}>
             <table style={s.table}>
               <thead><tr>
+                {/* eslint-disable-next-line jsx-a11y/control-has-associated-label -- header of the include-checkbox column; each row checkbox carries its own aria-label (imp.review.includeRow) and there is no existing i18n key for this header */}
                 <th style={{ ...s.th, width: 32 }}></th>
                 <th style={s.th}>{t('imp.review.thDate')}</th><th style={s.th}>{t('imp.review.thDesc')}</th>
                 <th style={s.th}>{t('imp.review.thAmount')}</th><th style={s.th}>{t('imp.review.thType')}</th>

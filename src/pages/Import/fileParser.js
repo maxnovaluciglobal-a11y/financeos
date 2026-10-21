@@ -34,7 +34,7 @@ export async function parseFile(file) {
 // coordenada Y y detectamos transacciones (una fecha + un monto por línea).
 // Es heurístico y variable por banco → por eso el usuario SIEMPRE revisa antes
 // de importar. Devuelve la misma forma {headers, rows} que el resto del pipeline.
-const PDF_DATE_RE = /(\d{4}-\d{2}-\d{2}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})/
+const PDF_DATE_RE = /(\d{4}-\d{2}-\d{2}|\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})/
 // Monto: separador de miles y/o decimal, con al menos 3 dígitos o un decimal.
 const PDF_AMOUNT_RE = /-?\$?\s?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?-?|-?\$?\s?\d+[.,]\d{2}-?/g
 
@@ -271,7 +271,7 @@ export function detectColumns(headers) {
 // Antes se asumía siempre DD/MM: un CSV de un banco de EEUU ("03/15/2026")
 // quedaba con mes 15. El orden se decide UNA vez por archivo, mirando todas
 // las filas (detectDateOrder) y se aplica igual a todas (normalizeDate).
-const NUM_DATE_RE = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})(?!\d)/
+const NUM_DATE_RE = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2}|\d{4})(?!\d)/
 
 // 'DMY' | 'MDY'. Evidencia del archivo primero (un campo > 12 no puede ser
 // mes); si todo es ambiguo, el formato que declara la plantilla del banco
@@ -288,8 +288,8 @@ export function detectDateOrder(values, { templateFormat, locale } = {}) {
   if (firstOver12 && !secondOver12) return 'DMY'
   if (secondOver12 && !firstOver12) return 'MDY'
   const tf = String(templateFormat || '').toUpperCase()
-  if (/^MM[\/.\-]DD/.test(tf)) return 'MDY'
-  if (/^DD[\/.\-]MM/.test(tf)) return 'DMY'
+  if (/^MM[/.-]DD/.test(tf)) return 'MDY'
+  if (/^DD[/.-]MM/.test(tf)) return 'DMY'
   const region = String(locale || '').split(/[-_]/)[1]?.toUpperCase()
   return region === 'US' ? 'MDY' : 'DMY'
 }
@@ -311,8 +311,8 @@ export function normalizeAmount(str) {
   if (!str && str !== 0) return null
   const s = String(str).trim()
   if (!s) return null
-  let clean = s.replace(/[^\d,.\-]/g, '')
-  const commaDecimal = /^\-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(clean) || /^\-?\d+(,\d{1,2})$/.test(clean)
+  let clean = s.replace(/[^\d,.-]/g, '')
+  const commaDecimal = /^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(clean) || /^-?\d+(,\d{1,2})$/.test(clean)
   if (commaDecimal) clean = clean.replace(/\./g, '').replace(',', '.')
   else clean = clean.replace(/,/g, '')
   const n = parseFloat(clean)

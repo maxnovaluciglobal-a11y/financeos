@@ -166,7 +166,7 @@ function DebtPayoffSimulator({ debts, sym }) {
 }
 
 export default function Debts() {
-  const { debts, addDebt, delDebt, updateDebt, addExpense, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences } = useApp()
+  const { debts, addDebt, updateDebt, addExpense, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences } = useApp()
   const { t } = useT()
   const [show, setShow]             = useState(false)
   const [f, setF]                   = useState({ creditor:'', debtType:'Tarjeta', initial:'', balance:'', minPayment:'', dueDate:'', rate:'', totalInstallments:'', paidInstallments:'', project:'', ufDebt:false })
@@ -213,6 +213,7 @@ export default function Debts() {
         })
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- revalue only when the UF arrives or a debt is added/removed; depending on debts (new array after each updateDebt) and updateDebt would re-run this write loop after its own updates
   }, [ufValue, debts.length])
 
   const totalBalance = useMemo(() => debts.reduce((s,d) => s+d.balance, 0), [debts])
@@ -331,6 +332,7 @@ export default function Debts() {
               <FormRow>
                 <FormGroup label={t('debts.projectLabel')}>
                   <input type="text" list="fnos-debt-projects" value={f.project} placeholder={t('debts.projectPlaceholder')} onChange={e => setF(p=>({...p,project:e.target.value}))} />
+                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label -- datalist suggestion: per HTML an option without text is labelled by its value, which is the project name itself */}
                   <datalist id="fnos-debt-projects">{knownProjects.map(n => <option key={n} value={n} />)}</datalist>
                 </FormGroup>
               </FormRow>

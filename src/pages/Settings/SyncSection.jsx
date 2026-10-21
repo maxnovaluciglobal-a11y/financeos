@@ -45,6 +45,7 @@ function PassphraseForm({ id, isNew, busy, error, onSubmit, submitLabel, onCance
     <form onSubmit={submit} style={{ marginTop: 8 }}>
       <label htmlFor={`${id}-pass`} style={lbl}>{t(isNew ? 'syncPass.newLabel' : 'syncPass.label')}</label>
       <input id={`${id}-pass`} type="password" value={pass} onChange={(e) => setPass(e.target.value)} style={input}
+        // eslint-disable-next-line jsx-a11y/no-autofocus -- the user just opened the sync passphrase form; focus moves into its field
         autoComplete={isNew ? 'new-password' : 'current-password'} aria-describedby={`${id}-hint`} autoFocus />
       {isNew && (
         <>

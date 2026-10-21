@@ -240,6 +240,7 @@ export default function AuthGate({ onAuthenticated }) {
             onChange={e => setEmail(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleForgotSubmit()}
             spellCheck={false}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- the user just opened the forgot-password form; focus moves into its only field
             autoFocus
             autoComplete="email"
           />
@@ -390,6 +391,7 @@ export default function AuthGate({ onAuthenticated }) {
           onChange={e => setEmail(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           spellCheck={false}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- the sign-in screen exists only to enter the email; focus goes straight to its first field
           autoFocus
           autoComplete="email"
         />

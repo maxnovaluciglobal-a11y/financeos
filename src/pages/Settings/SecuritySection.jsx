@@ -234,11 +234,13 @@ function NewPinSteps({ t, newLabel, busy, onCancel, onDone, submitLabel }) {
 
   return step === 'new' ? (
     <StepBox>
+      {/* eslint-disable-next-line jsx-a11y/no-autofocus -- the user just opened PIN setup; focus moves into the new-PIN field */}
       <PinField key="new" label={newLabel} value={pin1} onChange={setPin1} onEnter={next} error={error} autoFocus />
       <StepActions t={t} onCancel={onCancel} onSubmit={next} submitLabel={t('lock.setup.next')} disabled={pin1.length < 4} busy={busy} />
     </StepBox>
   ) : (
     <StepBox>
+      {/* eslint-disable-next-line jsx-a11y/no-autofocus -- the confirm-PIN step just replaced the previous one; focus moves into its PIN field */}
       <PinField key="confirm" label={t('lock.setup.confirm')} value={pin2} onChange={setPin2} onEnter={confirm} autoFocus />
       <StepActions t={t} onCancel={onCancel} onSubmit={confirm} submitLabel={submitLabel} disabled={pin2.length < 4} busy={busy} />
     </StepBox>
@@ -314,6 +316,7 @@ function CurrentPinStep({ t, pinRecord, busy, onCancel, onOk, submitLabel, dange
 
   return (
     <StepBox>
+      {/* eslint-disable-next-line jsx-a11y/no-autofocus -- the user just started this PIN step; focus moves into the PIN field */}
       <PinField label={t('lock.setup.current')} value={value} onChange={setValue} onEnter={submit} error={error} autoFocus />
       <StepActions t={t} onCancel={onCancel} onSubmit={submit} submitLabel={submitLabel}
         disabled={value.length < 4} busy={busy || checking} danger={danger} />

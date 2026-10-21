@@ -27,5 +27,5 @@ export function useDialogA11y(open, onClose, containerRef, focusRef) {
       document.removeEventListener('keydown', onKey)
       if (trigger && typeof trigger.focus === 'function') trigger.focus()
     }
-  }, [open, onClose])
+  }, [open, onClose, containerRef, focusRef])
 }

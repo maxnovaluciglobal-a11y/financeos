@@ -217,6 +217,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
           <input style={inp} list="fnos-projects-exp" value={f.project} placeholder={t('mov.form.projectPh')}
             onChange={e => set('project', e.target.value)}/>
         </FormGroup>
+        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label -- datalist suggestion: per HTML an option without text is labelled by its value, which is the project name itself */}
         <datalist id="fnos-projects-exp">{projects.map(p => <option key={p} value={p} />)}</datalist>
       </div>
       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
@@ -248,8 +249,6 @@ function FormSub({ onSave, onCancel }) {
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
     padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
     boxSizing:'border-box', fontFamily:'var(--mono)' }
-  const lbl = { fontSize:11, color:'var(--th)', fontFamily:'var(--mono)',
-    textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3, display:'block' }
 
   return (
     <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
@@ -297,17 +296,14 @@ function FormSub({ onSave, onCancel }) {
 export default function Movements({ setPage }) {
   const ctx           = useApp() || {}
   const { t, lang }   = useT()
-  const incomes       = Array.isArray(ctx.incomes)       ? ctx.incomes       : []
-  const expenses      = Array.isArray(ctx.expenses)      ? ctx.expenses      : []
-  const subscriptions = Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []
-  const debts         = Array.isArray(ctx.debts)         ? ctx.debts         : []
-  const settings      = ctx.settings || {}
+  const incomes       = useMemo(() => (Array.isArray(ctx.incomes) ? ctx.incomes : []), [ctx.incomes])
+  const expenses      = useMemo(() => (Array.isArray(ctx.expenses) ? ctx.expenses : []), [ctx.expenses])
+  const subscriptions = useMemo(() => (Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []), [ctx.subscriptions])
+  const settings      = useMemo(() => ctx.settings || {}, [ctx.settings])
   const addExpense      = ctx.addExpense
   const delExpense      = ctx.delExpense
   const updateExpense   = ctx.updateExpense
   const addSubscription    = ctx.addSubscription
-  const deleteSubscription = ctx.deleteSubscription
-  const updateSubscription = ctx.updateSubscription
   const deleteWithUndo     = ctx.deleteWithUndo
 
   const sym         = currencySymbol(settings.currency, settings.language)
@@ -397,7 +393,7 @@ export default function Movements({ setPage }) {
   // reglas (unificación 08-oct-2026). Lo previsto NO se suma a lo real: antes
   // el "Disponible" restaba siempre suscripciones y cuotas, y un gasto que
   // además estaba registrado se contaba dos veces.
-  const rules = Array.isArray(ctx.recurring) ? ctx.recurring : []
+  const rules = useMemo(() => (Array.isArray(ctx.recurring) ? ctx.recurring : []), [ctx.recurring])
   const todayStr2 = localDateStr()
   const plan = useMemo(() => monthPlan(rules, activeMonth, { incomes, expenses, today: todayStr2 }), [rules, activeMonth, incomes, expenses, todayStr2])
   const fixedExp = useMemo(() => plan.filter(o => o.kind === 'expense'), [plan])
@@ -446,7 +442,7 @@ export default function Movements({ setPage }) {
         al.push({ type:'upcoming', msg:t('mov.alert.upcoming', { name: s.name, date: d.toLocaleDateString(dateLocale()) }) })
     })
     return al
-  }, [activeSubs, totalSubs, totalInc])
+  }, [activeSubs, totalSubs, totalInc, t])
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   async function handleSaveGasto(item) {

@@ -230,7 +230,7 @@ export function AppProvider({ children }) {
       }
     }
     hydrate()
-  }, [rehydrate])
+  }, [rehydrate, runRecurringMaintenance, showToast, tr])
 
   // Volver a la app otro día (o en otro mes) con la pestaña abierta.
   useEffect(() => {
@@ -245,6 +245,7 @@ export function AppProvider({ children }) {
     const q = quietRef.current
     if (q && ['incomes', 'expenses', 'budgets', 'debts', 'goals', 'subscriptions', 'recurring'].every(k => state[k] === q[k])) return
     markLocalChange()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the synced collections should mark a local change; depending on the whole state would also fire on settings/toast/UI changes and schedule needless sync pushes
   }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions, state.recurring])
   // ── Formato de dinero según la moneda (y el idioma) del usuario ──────────────
   // En el render y no en un efecto: el provider se renderiza antes que sus
@@ -487,7 +488,7 @@ export function AppProvider({ children }) {
       // el borrado deje realmente todo en cero.
       const current = (await getSettings()) || {}
       if (current.propertyValues && Object.keys(current.propertyValues).length) {
-        const { propertyValues, ...rest } = current
+        const { propertyValues: _propertyValues, ...rest } = current
         await saveSettings(rest)
         dispatch({ type: 'SAVE_SETTINGS', settings: rest })
       }
@@ -550,7 +551,7 @@ export function AppProvider({ children }) {
     } catch (e) {
       showToast(tr('toast.csvError'), 'error')
     }
-  }, [state.incomes, state.expenses, state.budgets, state.debts, state.goals, state.subscriptions, state.recurring, showToast, tr])
+  }, [state, showToast, tr])
 
   const exportData = useCallback(async (opts) => {
     try {

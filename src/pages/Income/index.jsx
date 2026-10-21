@@ -14,7 +14,7 @@ import rs from '../../components/recurring/recurring.module.css'
 import { logClientError } from '../../utils/errorLog.js'
 
 export default function Income({ setPage }) {
-  const { incomes, expenses, addIncome, delIncome, updateIncome, settings, deleteWithUndo, addWithRule } = useApp()
+  const { incomes, expenses, addIncome, updateIncome, settings, deleteWithUndo, addWithRule } = useApp()
   const { t, lang } = useT()
   // Nombres de propiedades/proyectos ya usados (para autocompletar)
   const projectOptions = useMemo(() => [...new Set([...(incomes||[]), ...(expenses||[])].map(r => r?.project).filter(Boolean))], [incomes, expenses])
@@ -160,6 +160,7 @@ export default function Income({ setPage }) {
           </label>
           <FormGroup label={t('income.form.project')}>
             <input type="text" list="fnos-projects" value={f.project || ''} placeholder={t('income.form.projectPh')} onChange={e => setF(p => ({ ...p, project: e.target.value }))} />
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label -- datalist suggestion: per HTML an option without text is labelled by its value, which is the project name itself */}
             <datalist id="fnos-projects">{projectOptions.map(p => <option key={p} value={p} />)}</datalist>
           </FormGroup>
           <div style={{ display: 'flex', gap: 8 }}>

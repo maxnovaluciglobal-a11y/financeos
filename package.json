@@ -8,7 +8,7 @@
     "build": "node build.js",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc -p tsconfig.check.json"
   },
   "dependencies": {

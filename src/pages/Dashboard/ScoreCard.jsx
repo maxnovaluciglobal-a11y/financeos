@@ -65,6 +65,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
       try { localStorage.setItem(SCORE_KEY, JSON.stringify(next)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
       return next
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the score value on purpose: healthScore is a new object on every Dashboard render, so depending on it would re-run this history write each render
   }, [healthScore?.score])
 
   if (!healthScore) return null

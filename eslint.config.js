@@ -1,5 +1,8 @@
-// ING-9: lint en modo aviso (no rompe el CI). Sube a error regla por regla a
-// medida que se limpia el código. `no-empty` ya es error: un `catch` no puede
+// ING-9: las reglas siguen en 'warn', pero `npm run lint` corre con
+// `--max-warnings 0` (21-oct-2026, 124 → 0 avisos), así que en el CI un aviso
+// nuevo rompe el build igual que un error. Si una regla no se puede cumplir sin
+// cambiar el comportamiento: `// eslint-disable-next-line <regla> -- <motivo>`,
+// siempre con la regla y el motivo. `no-empty` ya es error: un `catch` no puede
 // quedar vacío (ING-5); se registra con logClientError o se explica en un
 // comentario por qué es seguro ignorar el fallo.
 import js from '@eslint/js'
