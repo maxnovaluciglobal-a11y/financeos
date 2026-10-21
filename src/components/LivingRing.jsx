@@ -3,7 +3,9 @@
 // Modo "pulse": responde "¿voy bien PARA ESTA ALTURA del mes?" de un vistazo.
 // La distancia entre el arco de gasto y el tick de "dónde deberías estar hoy"
 // ES la respuesta, sin leer un número. Centro = gasto seguro por día.
-// El anillo de texto exterior ("DATOS 100% LOCALES") es la constante de marca.
+// El texto curvo de marca ("DATOS 100% LOCALES") se dibujaba a ~3-7 px: se
+// sacó del SVG (UI-Q8); quien lo use pone la leyenda afuera, a 11 px o más.
+// Los textos del centro se escalan para no quedar nunca bajo 11 px reales.
 //
 // Puro SVG, sin dependencias. Respeta prefers-reduced-motion.
 
@@ -29,6 +31,8 @@ export default function LivingRing({
   const { t } = useT()
   if (centerLabel === undefined) centerLabel = t('ring.center.safePerDay')
   const { m } = useMoney() // centerValue es un monto: se enmascara (T13)
+  // Unidades del viewBox (200) para que un texto mida `px` píxeles reales.
+  const fs = (px) => (px * 200) / size
   const cx = 100, cy = 100
   const rArc = 62, wArc = 13
   const rDay = 78
@@ -48,10 +52,6 @@ export default function LivingRing({
     <svg viewBox="0 0 200 200" width={size} height={size} role="img"
       aria-label={ariaLabel || t('ring.aria', { spent: Math.round(spentRatio * 100), elapsed: Math.round(elapsedRatio * 100) })}
       style={{ display: 'block' }}>
-      <defs>
-        <path id="lr-textpath" d="M 100,100 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0" />
-      </defs>
-
       {/* pista de días (fina) */}
       <circle cx={cx} cy={cy} r={rDay} fill="none" stroke="var(--brd2)" strokeWidth="2" />
       <circle cx={cx} cy={cy} r={rDay} fill="none" stroke="var(--th)" strokeWidth="2"
@@ -75,25 +75,17 @@ export default function LivingRing({
         <animate attributeName="opacity" values="0.55;1;0.55" dur="2.4s" repeatCount="indefinite" />
       </circle>
 
-      {/* texto de marca circular */}
-      <g style={{ transformOrigin: '100px 100px', animation: 'lr-spin 48s linear infinite' }}>
-        <text fontFamily="var(--mono)" fontSize="7.4" letterSpacing="3" fill="var(--brand, var(--grn))" opacity="0.8">
-          <textPath href="#lr-textpath" startOffset="0">{t('ring.brand')}</textPath>
-        </text>
-      </g>
-
       {/* centro */}
-      <text x="100" y="94" textAnchor="middle" fontFamily="var(--mono)" fontSize="8"
-        letterSpacing="1" fill="var(--th)">{centerLabel}</text>
+      {centerLabel && <text x="100" y="94" textAnchor="middle" fontFamily="var(--sans)" fontSize={fs(11)}
+        fontWeight="600" fill="var(--th)">{centerLabel}</text>}
       <text x="100" y="116" textAnchor="middle" fontFamily="var(--num)" fontSize="22"
-        fontWeight="700" fill="var(--tx)">{centerValue ? m(centerValue) : ''}</text>
+        fontWeight="600" fill="var(--tx)">{centerValue ? m(centerValue) : ''}</text>
       {footLabel && (
-        <text x="100" y="132" textAnchor="middle" fontFamily="var(--mono)" fontSize="8"
+        <text x="100" y="136" textAnchor="middle" fontFamily="var(--sans)" fontSize={fs(11)}
           fill="var(--th)">{footLabel}</text>
       )}
 
       <style>{`
-        @keyframes lr-spin { to { transform: rotate(360deg); } }
         @media (prefers-reduced-motion: reduce) {
           svg g { animation: none !important; }
           svg circle animate, svg text animate { display: none; }

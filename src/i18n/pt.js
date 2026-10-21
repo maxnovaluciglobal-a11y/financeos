@@ -2845,4 +2845,5 @@ export const pt = {
     'goals.status.onTrack': "No prazo",
     'goals.status.behind': "Atrasada",
     'goals.status.done': "Concluída",
+    'ring.legend': "Dados 100 % locais",
 }

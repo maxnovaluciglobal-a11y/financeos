@@ -2844,4 +2844,5 @@ export const de = {
     'goals.status.onTrack': "Im Plan",
     'goals.status.behind': "Im Rückstand",
     'goals.status.done': "Erreicht",
+    'ring.legend': "100 % lokale Daten",
 }

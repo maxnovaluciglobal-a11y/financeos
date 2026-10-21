@@ -111,6 +111,7 @@
   .leftLong .ring { flex-direction: column; align-self: center; gap: 4px; }
 }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+.ringLegend { font-family: var(--sans); font-size: 11px; line-height: 1.3; color: var(--th); text-align: center; max-width: 120px; }
 
 .secondary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }
 .secondary .kpiValue { font-size: 18px; }

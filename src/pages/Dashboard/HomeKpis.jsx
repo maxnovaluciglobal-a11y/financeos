@@ -96,6 +96,8 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                 />
                 {/* El ritmo con ícono + palabra, no solo el color del anillo (T15) */}
                 <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize: 12 }} />
+                {/* Antes era texto curvo de ~4 px alrededor del anillo (UI-Q8). */}
+                <span className={s.ringLegend}>{t('ring.legend')}</span>
               </div>
             )}
           </div>
