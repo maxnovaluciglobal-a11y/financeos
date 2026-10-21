@@ -14,6 +14,7 @@ const ALLOWED = {
     'ui.state.overBudget',
     // Ola 2 (21-oct-2026): cognados correctos en portugués.
     'budgets.model.col.group',
+    'chart.expensesPrev',
     'goals.status.behind',
     'movl.title',
     'movl.summary.one',

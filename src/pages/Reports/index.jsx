@@ -21,9 +21,11 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import { usePlan } from '../../hooks/usePlan.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
-  AreaChart, Area, ReferenceLine, ResponsiveContainer, Legend,
+  ComposedChart, LineChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
+  Area, ReferenceLine, ResponsiveContainer, Legend,
 } from 'recharts'
+import ChartTooltip, { AXIS_TICK, GRID, PREV_LINE } from '../../components/charts/ChartTooltip.jsx'
+import { totalForMonth, cumulativeByDay, prevMonthKey } from '../../utils/chartSeries.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
@@ -110,7 +112,11 @@ export default function Reports({ setPage }) {
       const lbl=monthShortName(d.getMonth())
       const inc=incomes.filter(r=>r.date?.startsWith(key)).reduce((s,r)=>s+r.amount,0)
       const exp=expenses.filter(r=>r.date?.startsWith(key)).reduce((s,r)=>s+r.amount,0)
-      months.push({mes:lbl, Ingresos:inc, Gastos:exp, Ahorro:Math.max(0,inc-exp)})
+      // Período anterior (UI-M6): el mismo mes de la ventana de 6 meses previa.
+      const pd=new Date(base.getFullYear(), base.getMonth()-i-6, 1)
+      const pkey=`${pd.getFullYear()}-${String(pd.getMonth()+1).padStart(2,'0')}`
+      const pinc=totalForMonth(incomes, pkey), pexp=totalForMonth(expenses, pkey)
+      months.push({mes:lbl, Ingresos:inc, Gastos:exp, Ahorro:Math.max(0,inc-exp), GastosPrev:pexp, AhorroPrev:Math.max(0,pinc-pexp)})
     }
     return months
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,9 +129,15 @@ export default function Reports({ setPage }) {
   }, [incomes, expenses, budgets, allDebts, allSubs, settings, mIncomes.length, mExpenses.length, t])
 
 
-  const axisStyle = {fill:'var(--th)',fontSize:11}
-  const gridStyle = {stroke:'rgba(0,0,0,0.05)',strokeDasharray:'3 3'}
-  const ttStyle   = {background:'var(--sur)',border:'0.5px solid var(--brd2)',borderRadius:8,padding:'8px 12px',fontSize:11,fontFamily: 'var(--sans)'}
+  const axisStyle = AXIS_TICK
+  const gridStyle = GRID
+  const money = (v) => fmtMoney(v, sym)
+  const hasPrevExp = trendData.some(d => d.GastosPrev > 0)
+  const hasPrevSav = trendData.some(d => d.AhorroPrev > 0)
+  // Gasto acumulado del mes contra el mes anterior (UI-M6, Tremor "from X").
+  const cumData = cumulativeByDay(expenses, activeMonth)
+  const cumHasData = cumData.some(d => (d.current || 0) > 0 || d.currentPrev > 0)
+  const prevMonthName = monthLabel(prevMonthKey(activeMonth))
 
   return (
     <div className="stack">
@@ -220,15 +232,16 @@ export default function Reports({ setPage }) {
           {trendData.every(d=>d.Ingresos===0&&d.Gastos===0) ? <Empty text={t('reports.trend.empty')} /> : (
             <>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart accessibilityLayer={false} data={trendData} barGap={4} barCategoryGap="30%">
+                <ComposedChart accessibilityLayer={false} data={trendData} barGap={4} barCategoryGap="30%">
                   <CartesianGrid {...gridStyle}/>
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
                   <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
-                  <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
-                  <Legend wrapperStyle={{fontSize:11,fontFamily: 'var(--sans)',paddingTop:8}}/>
-                  <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
-                  <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--cat-1)" radius={[3,3,0,0]} opacity={0.75}/>
-                </BarChart>
+                  <RTooltip cursor={{ fill: 'var(--grn-tint)' }} content={<ChartTooltip format={money}/>}/>
+                  <Legend iconType="square" iconSize={8} wrapperStyle={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--chart-axis)',paddingTop:8}}/>
+                  <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--chart-income)" radius={[2,2,0,0]}/>
+                  <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--chart-expense)" radius={[2,2,0,0]}/>
+                  {hasPrevExp && <Line dataKey="GastosPrev" name={t('chart.expensesPrev')} type="monotone" legendType="plainline" {...PREV_LINE}/>}
+                </ComposedChart>
               </ResponsiveContainer>
               {/* recharts no expone los datos del gráfico a un lector de pantalla —
                   esta tabla tiene la misma información, oculta solo visualmente. */}
@@ -241,25 +254,50 @@ export default function Reports({ setPage }) {
           )}
         </Card>
       </div>
+      {cumHasData && (
+        <Card>
+          <CardHeader title={t('reports.cum.title')} />
+          <div style={{fontSize:12,color:'var(--th)',fontFamily:'var(--sans)',marginTop:-6,marginBottom:10}}>{t('reports.cum.sub', { prev: prevMonthName })}</div>
+          <div aria-hidden="true">
+          <ResponsiveContainer width="100%" height={180}>
+            <LineChart accessibilityLayer={false} data={cumData}>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="day" tick={axisStyle} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={18}/>
+              <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))} width={48}/>
+              <RTooltip content={<ChartTooltip format={money} labelFormat={(d) => t('reports.cum.day', { d })}/>}/>
+              <Legend iconType="plainline" iconSize={14} wrapperStyle={{fontSize:11,fontFamily:'var(--sans)',color:'var(--chart-axis)',paddingTop:8}}/>
+              <Line dataKey="current" name={monthLabel(activeMonth)} type="monotone" stroke="var(--chart-expense)" strokeWidth={2} dot={false} connectNulls={false}/>
+              <Line dataKey="currentPrev" name={prevMonthName} type="monotone" {...PREV_LINE}/>
+            </LineChart>
+          </ResponsiveContainer>
+          </div>
+          <div className="sr-only"><table>
+            <caption>{t('reports.cum.title')}</caption>
+            <thead><tr><th scope="col">{t('reports.cum.dayCol')}</th><th scope="col">{monthLabel(activeMonth)}</th><th scope="col">{prevMonthName}</th></tr></thead>
+            <tbody>{cumData.filter(d => d.day % 5 === 0 || d.day === 1 || d.day === cumData.length).map(d => <tr key={d.day}><th scope="row">{d.day}</th><td>{d.current == null ? '—' : <Money>{fmtMoneyRaw(d.current,sym)}</Money>}</td><td><Money>{fmtMoneyRaw(d.currentPrev,sym)}</Money></td></tr>)}</tbody>
+          </table></div>
+        </Card>
+      )}
       <Card>
         <CardHeader title={t('reports.savings.title')} />
         {trendData.every(d=>d.Ahorro===0) ? <Empty text={t('reports.savings.empty')} /> : (
           <>
             <ResponsiveContainer width="100%" height={160}>
-              <AreaChart accessibilityLayer={false} data={trendData}>
+              <ComposedChart accessibilityLayer={false} data={trendData}>
                 <defs>
                   <linearGradient id="ahorroGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--grn)" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="var(--grn)" stopOpacity={0}/>
+                    <stop offset="5%"  stopColor="var(--chart-net)" stopOpacity={0.16}/>
+                    <stop offset="95%" stopColor="var(--chart-net)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid {...gridStyle}/>
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
                 <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
-                <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
+                <RTooltip content={<ChartTooltip format={money}/>}/>
                 <ReferenceLine y={0} stroke="var(--brd2)"/>
-                <Area type="monotone" dataKey="Ahorro" name={t('reports.savings.series')} stroke="var(--grn)" strokeWidth={2} fill="url(#ahorroGrad)"/>
-              </AreaChart>
+                <Area type="monotone" dataKey="Ahorro" name={t('reports.savings.series')} stroke="var(--chart-net)" strokeWidth={2} fill="url(#ahorroGrad)"/>
+                {hasPrevSav && <Line dataKey="AhorroPrev" name={t('chart.savingsPrev')} type="monotone" {...PREV_LINE}/>}
+              </ComposedChart>
             </ResponsiveContainer>
             <div className="sr-only"><table>
               <caption>{t('reports.savings.title')}</caption>

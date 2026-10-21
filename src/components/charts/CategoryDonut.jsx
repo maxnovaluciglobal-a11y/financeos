@@ -2,6 +2,7 @@
 import { useMemo } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
+import ChartTooltip from './ChartTooltip.jsx'
 import { fmtMoney, fmtMoneyCompact, catName, fmtPct } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { useMoney } from '../Money.jsx'
@@ -13,19 +14,6 @@ const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100
 
 // Paleta categórica por identidad, theme-aware (definida en globals.css).
 const COLORS = ['var(--cat-1)','var(--cat-2)','var(--cat-3)','var(--cat-4)','var(--cat-5)','var(--cat-6)','var(--cat-7)','var(--cat-8)']
-
-function CustomTooltip({ active, payload, sym, lang, m }) {
-  if (!active || !payload?.length) return null
-  const d = payload[0]
-  if (!d) return null
-  return (
-    <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'8px 12px', fontSize:12, fontFamily: 'var(--sans)' }}>
-      <div style={{ color: d.payload?.fill || 'var(--accent)', fontWeight:600, marginBottom:2 }}>{catName(d.name, lang)}</div>
-      <div style={{ color:'var(--tx)' }}>{m(fmtMoney(d.value, sym))}</div>
-      <div style={{ color:'var(--th)' }}>{d.payload?.pct || 0}%</div>
-    </div>
-  )
-}
 
 // Barrido de entrada del anillo (--dur-instrument-settle, 900ms); con
 // movimiento reducido aparece directo.
@@ -83,7 +71,12 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
               onClick={(d) => { if (d && clickable(d.name)) onCategoryClick(d.name) }}>
               {data.map((d, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} style={{ outline:'none', cursor: clickable(d.name) ? 'pointer' : 'default' }}/>)}
             </Pie>
-            <Tooltip content={<CustomTooltip sym={sym} lang={lang} m={m}/>}/>
+            <Tooltip content={({ active, payload }) => (
+              <ChartTooltip active={active} payload={payload?.map(p => ({ ...p, name: t('chart.donut.amount') }))}
+                title={payload?.[0] ? catName(payload[0].name, lang) : ''}
+                format={(v) => m(fmtMoney(v, sym))}
+                footer={payload?.[0] ? [{ label: t('chart.donut.share'), value: payload[0].payload?.pct }] : null} />
+            )}/>
           </PieChart>
         </ResponsiveContainer>
         </div>

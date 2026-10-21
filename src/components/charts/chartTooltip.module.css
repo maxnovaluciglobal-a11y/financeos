@@ -1,0 +1,10 @@
+/* Tooltip único de los gráficos (UI-M6). Capa flotante: la única que lleva sombra. */
+.tip { min-width: 168px; max-width: 280px; padding: 8px 10px; background: var(--sur); border: 1px solid var(--brd2); border-radius: var(--r); box-shadow: var(--sh-3); font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--tx); }
+.head { margin-bottom: 6px; font-weight: 600; color: var(--tx); text-transform: capitalize; }
+.row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 1px 0; }
+.dot { width: 10px; height: 10px; border-radius: 2px; }
+.dash { width: 12px; height: 0; border-top: 2px dotted; }
+.blank { width: 10px; }
+.name { color: var(--tm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.val { text-align: right; font-weight: 600; color: var(--tx); white-space: nowrap; }
+.foot { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--brd); }

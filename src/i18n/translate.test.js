@@ -554,7 +554,7 @@ describe('paridad de las claves de la ola 1 de diseño visual (UI-Q4, Q5, Q8, M3
 })
 
 describe('paridad de las claves de la ola 2 de diseño visual (UI-M5…M9, L2; es/en/pt/de)', () => {
-  const prefixes = ['budgets.head.', 'budgets.pace.', 'budgets.state.', 'budgets.col.', 'budgets.meter.', 'budgets.carry', 'budgets.unbudgeted.', 'budgets.deleteAria', 'budgets.ring.', 'budgets.list.', 'budgets.model.col.']
+  const prefixes = ['budgets.head.', 'budgets.pace.', 'budgets.state.', 'budgets.col.', 'budgets.meter.', 'budgets.carry', 'budgets.unbudgeted.', 'budgets.deleteAria', 'budgets.ring.', 'budgets.list.', 'budgets.model.col.', 'chart.expensesPrev', 'chart.savingsPrev', 'chart.donut.amount', 'chart.donut.share', 'reports.cum.']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)

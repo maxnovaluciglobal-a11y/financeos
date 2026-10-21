@@ -12,27 +12,13 @@ import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { recurringMonthlyTotals, monthPlan, pendingTotals } from '../../utils/recurring.js'
 import { freqText } from '../../components/recurring/labels.js'
-import Money from '../../components/Money.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, ReferenceArea, Legend,
 } from 'recharts'
-
-const ChartTooltip = ({ active, payload, label, sym }) => {
-  if (!active || !payload?.length) return null
-  return (
-    <div style={{ background: 'var(--sur)', border: '0.5px solid var(--brd2)', borderRadius: 8, padding: '8px 12px', fontSize: 11, fontFamily: 'var(--sans)', boxShadow: '0 4px 12px rgba(0,0,0,.1)' }}>
-      <div style={{ color: 'var(--tm)', marginBottom: 4, fontWeight: 500 }}>{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color, display: 'flex', gap: 12, justifyContent: 'space-between' }}>
-          <span>{p.name}</span>
-          <span style={{ fontWeight: 600 }}>{fmtMoney(p.value, sym)}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
+import ChartTooltip, { AXIS_TICK } from '../../components/charts/ChartTooltip.jsx'
 
 export default function CashFlow({ setPage }) {
   const { t, lang } = useT()
@@ -40,6 +26,7 @@ export default function CashFlow({ setPage }) {
   const incomes = (_incAll || []).filter(r => !r?.inv)   // proyección personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
+  const { m: mm } = useMoney()
 
   // ── Movimientos fijos (reglas) ────────────────────────────────────────────
   // BUG FIX (08-oct-2026): antes se sumaban TODOS los registros históricos
@@ -138,7 +125,7 @@ export default function CashFlow({ setPage }) {
   const bal90  = startBal + monthlyNetFlow * 3
   const trend  = monthlyNetFlow > 0 ? 'positivo' : monthlyNetFlow < 0 ? 'negativo' : 'neutro'
 
-  const axisStyle = { fill: 'var(--th)', fontSize: 11 }
+  const axisStyle = AXIS_TICK
   const gridStyle = { stroke: 'var(--chart-grid)', strokeDasharray: '3 3' }
 
   const hasData = monthsWithData.length > 0
@@ -267,8 +254,8 @@ export default function CashFlow({ setPage }) {
               <AreaChart accessibilityLayer={false} data={projectionData}>
                 <defs>
                   <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--grn)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--grn)" stopOpacity={0} />
+                    <stop offset="5%"  stopColor="var(--chart-net)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--chart-net)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="balGradNeg" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%"  stopColor="var(--red)" stopOpacity={0.2} />
@@ -278,8 +265,8 @@ export default function CashFlow({ setPage }) {
                 <CartesianGrid {...gridStyle} />
                 <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false} />
                 <YAxis tick={axisStyle} axisLine={false} tickLine={false}
-                  tickFormatter={(v) => fmtAxis(v)} />
-                <Tooltip content={<ChartTooltip sym={sym} />} />
+                  tickFormatter={(v) => mm(fmtAxis(v))} />
+                <Tooltip content={<ChartTooltip format={(v) => mm(fmtMoney(v, sym))} />} />
                 {/* Zona estimada: todo lo que va del 2º mes en adelante es proyección */}
                 {projectionData.length > 1 && (
                   <ReferenceArea x1={projectionData[1].mes} x2={projectionData[projectionData.length-1].mes}
@@ -289,11 +276,11 @@ export default function CashFlow({ setPage }) {
                 <ReferenceLine y={0} stroke="var(--red)" strokeDasharray="4 2" strokeWidth={1.5} />
                 {/* Real = sólido con relleno */}
                 <Area type="monotone" dataKey="BalanceReal" name={t('cf.chart.series')} connectNulls={false}
-                  stroke={monthlyNetFlow >= 0 ? 'var(--grn)' : 'var(--red)'} strokeWidth={2.5}
+                  stroke={monthlyNetFlow >= 0 ? 'var(--chart-net)' : 'var(--neg)'} strokeWidth={2.5}
                   fill={monthlyNetFlow >= 0 ? 'url(#balGrad)' : 'url(#balGradNeg)'} />
                 {/* Estimado = punteado, sin relleno (comunica incertidumbre, no inventa bandas) */}
                 <Area type="monotone" dataKey="BalanceEst" name={t('cf.chart.estimate')} connectNulls={false}
-                  stroke={monthlyNetFlow >= 0 ? 'var(--grn)' : 'var(--red)'} strokeWidth={2}
+                  stroke={monthlyNetFlow >= 0 ? 'var(--chart-net)' : 'var(--neg)'} strokeWidth={2}
                   strokeDasharray="5 4" strokeOpacity={0.75} fill="none" />
               </AreaChart>
             </ResponsiveContainer>

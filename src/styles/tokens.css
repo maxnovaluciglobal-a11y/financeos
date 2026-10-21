@@ -72,6 +72,14 @@
 
   /* ── Charts: grid visible + paleta categórica derivada de la familia de marca ── */
   --chart-grid: rgba(20,33,61,0.12);
+  /* Series de los gráficos por rol (UI-M6): un gráfico nunca nombra un color
+     de marca directo, nombra el papel del dato. --chart-prev = período anterior
+     (línea punteada gris); --chart-axis = ejes y leyendas. */
+  --chart-income:  var(--verde-800);
+  --chart-expense: var(--navy-400);
+  --chart-net:     var(--navy);
+  --chart-prev:    var(--ceniza);
+  --chart-axis:    var(--th);
   --cat-1:var(--navy-400);   --cat-2:var(--laton-700);  --cat-3:var(--verde-800); --cat-4:var(--warning-800);
   --cat-5:var(--info-800);   --cat-6:var(--error);      --cat-7:var(--ceniza-700); --cat-8:var(--accent-dark);
 
@@ -158,6 +166,11 @@
 
   /* Charts en dark (grid + categóricas más luminosas) */
   --chart-grid: rgba(228,223,209,0.14);
+  --chart-income:  var(--verde-dark);
+  --chart-expense: var(--info-dark);
+  --chart-net:     var(--papel-000);
+  --chart-prev:    var(--ceniza-300);
+  --chart-axis:    var(--th);
   --cat-1:var(--info-dark);  --cat-2:var(--laton-300);   --cat-3:var(--verde-dark); --cat-4:var(--warning-dark);
   --cat-5:#8FB3D6;           --cat-6:var(--error-dark);  --cat-7:var(--ceniza-300); --cat-8:var(--accent-dark-hover);
 

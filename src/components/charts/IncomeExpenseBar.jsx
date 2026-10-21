@@ -1,6 +1,8 @@
 // src/components/charts/IncomeExpenseBar.jsx
 import { useMemo } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import ChartTooltip, { AXIS_TICK, GRID, PREV_LINE } from './ChartTooltip.jsx'
+import { monthKeys, totalForMonth } from '../../utils/chartSeries.js'
 import { ChartEmpty } from './ChartCard.jsx'
 import { fmtMoney, fmtAxis, monthShortName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
@@ -10,46 +12,33 @@ import { useMoney, MONEY_MASK } from '../Money.jsx'
 // US$42.50 no diga $43.00.
 const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100
 
-function CustomTooltip({ active, payload, label, sym, m, t }) {
-  if (!active || !payload?.length) return null
-  const inc = payload.find(p => p.dataKey === 'ingresos')?.value || 0
-  const exp = payload.find(p => p.dataKey === 'gastos')?.value || 0
-  const f = v => m(fmtMoney(v, sym))
-  return (
-    <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'10px 14px', fontSize:12, fontFamily: 'var(--sans)' }}>
-      <div style={{ fontWeight:600, color:'var(--tx)', marginBottom:6 }}>{label}</div>
-      <div style={{ color:'var(--accent)', marginBottom:2 }}>{t('chart.tooltip.income', { amount: f(inc) })}</div>
-      <div style={{ color:'var(--tx)', marginBottom:4 }}>{t('chart.tooltip.expenses', { amount: f(exp) })}</div>
-      <div style={{ color:'var(--th)', borderTop:'.5px solid var(--brd)', paddingTop:4 }}>{t('chart.tooltip.net', { amount: f(inc - exp) })}</div>
-    </div>
-  )
-}
-
 export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months = 6 }) {
   const { hidden, m } = useMoney()
   const { t, lang } = useT()
   const safeInc = Array.isArray(incomes)  ? incomes  : []
   const safeExp = Array.isArray(expenses) ? expenses : []
 
+  // Período anterior (UI-M6): los gastos de los `months` meses previos a la
+  // ventana, alineados por posición; línea gris punteada.
   const data = useMemo(() => {
     const now = new Date()
-    const result = []
-    for (let i = months - 1; i >= 0; i--) {
-      const d  = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const inc = safeInc.filter(r => r?.date?.startsWith(key)).reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-      const exp = safeExp.filter(r => r?.date?.startsWith(key)).reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-      result.push({ mes: monthShortName(d.getMonth()), ingresos: round2(inc), gastos: round2(exp) })
-    }
-    return result
+    const cur = monthKeys(months, 0, now)
+    const prev = monthKeys(months, months, now)
+    return cur.map((key, i) => ({
+      mes: monthShortName(Number(key.slice(5, 7)) - 1),
+      ingresos: round2(totalForMonth(safeInc, key)),
+      gastos: round2(totalForMonth(safeExp, key)),
+      gastosPrev: round2(totalForMonth(safeExp, prev[i])),
+    }))
     // lang: el nombre del mes cambia con el idioma
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [safeInc, safeExp, months, lang])
+  const hasPrev = data.some(d => d.gastosPrev > 0)
 
   const hasData = data.some(d => d.ingresos > 0 || d.gastos > 0)
   if (!hasData) return <ChartEmpty msg={t('chart.empty.incomeExpense')} />
 
-  const maxVal = Math.max(...data.flatMap(d => [d.ingresos, d.gastos]), 1)
+  const maxVal = Math.max(...data.flatMap(d => [d.ingresos, d.gastos, hasPrev ? d.gastosPrev : 0]), 1)
   // Ocultar montos (T13): el eje Y también es una cifra legible.
   const tickFmt = v => hidden ? MONEY_MASK : fmtAxis(v)
 
@@ -59,15 +48,17 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
     <>
     <div aria-hidden="true">
     <ResponsiveContainer width="100%" height={220}>
-      <BarChart accessibilityLayer={false} data={data} barGap={3} barCategoryGap="30%">
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false}/>
-        <XAxis dataKey="mes" tick={{ fill:'var(--th)', fontSize:11, fontFamily: 'var(--sans)' }} axisLine={false} tickLine={false}/>
-        <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={{ fill:'var(--th)', fontSize:11, fontFamily: 'var(--sans)' }} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>
-        <Tooltip content={<CustomTooltip sym={sym} m={m} t={t}/>} cursor={{ fill:'rgba(255,255,255,.03)' }}/>
-        <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', paddingTop:8 }}/>
-        <Bar dataKey="ingresos" name={t('chart.income')} fill="var(--accent)" radius={[3,3,0,0]} maxBarSize={32}/>
-        <Bar dataKey="gastos"   name={t('chart.expenses')} fill="var(--cat-1)"    radius={[3,3,0,0]} maxBarSize={32}/>
-      </BarChart>
+      <ComposedChart accessibilityLayer={false} data={data} barGap={3} barCategoryGap="30%">
+        <CartesianGrid {...GRID}/>
+        <XAxis dataKey="mes" tick={AXIS_TICK} axisLine={false} tickLine={false}/>
+        <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={AXIS_TICK} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>
+        <Tooltip cursor={{ fill: 'var(--grn-tint)' }} content={<ChartTooltip format={(v) => m(fmtMoney(v, sym))}
+          footer={(p) => { const inc = p.find(x => x.dataKey === 'ingresos')?.value || 0; const exp = p.find(x => x.dataKey === 'gastos')?.value || 0; return [{ label: t('chart.net'), value: m(fmtMoney(inc - exp, sym)) }] }} />}/>
+        <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--chart-axis)', paddingTop:8 }}/>
+        <Bar dataKey="ingresos" name={t('chart.income')} fill="var(--chart-income)" radius={[2,2,0,0]} maxBarSize={32}/>
+        <Bar dataKey="gastos"   name={t('chart.expenses')} fill="var(--chart-expense)" radius={[2,2,0,0]} maxBarSize={32}/>
+        {hasPrev && <Line dataKey="gastosPrev" name={t('chart.expensesPrev')} type="monotone" legendType="plainline" {...PREV_LINE}/>}
+      </ComposedChart>
     </ResponsiveContainer>
     </div>
     <div className="sr-only"><table>
