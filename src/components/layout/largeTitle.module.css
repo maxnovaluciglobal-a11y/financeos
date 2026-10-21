@@ -20,6 +20,10 @@
   opacity: 0;
   transition: transform .2s ease, opacity .2s ease, border-color .2s ease;
   pointer-events: none;
+  /* Dentro de una fila flex (Presupuestos, Reportes: título + selector de mes)
+     la barra ocupaba ancho y corría el h1 hasta 90 px a la derecha. Con una
+     línea propia, el título arranca en el mismo margen que el resto (UI-Q11). */
+  flex: 0 0 100%;
 }
 .compactBarVisible {
   transform: translateY(0);
