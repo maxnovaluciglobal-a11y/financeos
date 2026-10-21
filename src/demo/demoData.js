@@ -4,6 +4,8 @@
 //   es / pt → Sofía García (Colombia, COP) — este archivo
 //   en      → Maya Robinson (EE. UU., USD) — personas/us.js
 //   de      → Aylin Demir (Alemania, EUR) — personas/de.js
+//   es-VE   → Gabriela Rondón (Venezuela, VES con tasa BCV) — personas/ve.js
+//   ?demo=true&persona=<id> elige la persona a mano (enlaces de la landing).
 // Perfil Sofía: Diseñadora freelance, 28 años, Colombia
 // 6 meses de datos. Mes actual con flujo negativo (realista para freelancer).
 // IMPORTANTE: estos datos nunca se escriben en IndexedDB
@@ -11,6 +13,7 @@
 import { detectLanguage } from '../i18n/translate.js'
 import { US_PERSONA } from './personas/us.js'
 import { DE_PERSONA } from './personas/de.js'
+import { VE_PERSONA } from './personas/ve.js'
 
 import { d, M0, M1, M2, M3, M4, M5, day, nextMonthDate, nextYearDate } from './demoDates.js'
 import { demoRecurringRules } from './demoRecurring.js'
@@ -194,13 +197,24 @@ export const SOFIA_PERSONA = {
   subscriptions: DEMO_SUBSCRIPTIONS,
 }
 
-export const DEMO_PERSONAS = { sofia: SOFIA_PERSONA, us: US_PERSONA, de: DE_PERSONA }
+export const DEMO_PERSONAS = { sofia: SOFIA_PERSONA, us: US_PERSONA, de: DE_PERSONA, ve: VE_PERSONA }
 
-// Persona según el idioma con que llega la persona al demo. Portugués sigue con
-// Sofía: no hay persona brasileña/portuguesa todavía.
-export function pickDemoPersonaId(language) {
+// Persona con que arranca el demo.
+// 1. `?persona=<id>` en la URL (us, de, ve, sofia) manda: así la landing
+//    enlaza la persona del país (p. ej. el hero de Venezuela →
+//    https://demo.moyiq.app/app/?demo=true&persona=ve).
+// 2. Si no, el idioma: en → EE. UU., de → Alemania. En español, un navegador
+//    con región Venezuela (es-VE) va a Gabriela; el resto, a Sofía. Portugués
+//    sigue con Sofía: no hay persona brasileña/portuguesa todavía.
+export function pickDemoPersonaId(language, { search = '', locales = [] } = {}) {
+  let forced = null
+  try { forced = new URLSearchParams(search || '').get('persona') } catch { forced = null }
+  forced = String(forced || '').trim().toLowerCase()
+  if (Object.hasOwn(DEMO_PERSONAS, forced)) return forced
   if (language === 'en') return 'us'
   if (language === 'de') return 'de'
+  const list = Array.isArray(locales) ? locales : [locales]
+  if (language === 'es' && list.some(l => /^es[-_]ve$/i.test(String(l || '')))) return 've'
   return 'sofia'
 }
 
@@ -217,7 +231,7 @@ export function buildDemoState(personaId, language = detectLanguage(), scenario 
     goals:         p.goals,
     subscriptions: p.subscriptions,
     recurring:     demoRecurringRules(p),
-    settings:      { ...DEMO_SETTINGS, currency: p.currency, country: p.country, language },
+    settings:      { ...DEMO_SETTINGS, currency: p.currency, country: p.country, language, ...(p.settings ? p.settings() : {}) },
   }
 }
 

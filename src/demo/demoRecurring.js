@@ -7,6 +7,7 @@
 // del día 1, Netflix…) aparece confirmado por coincidencia; lo que falta
 // (cuotas, gimnasio, el segundo sueldo) queda previsto.
 import { M0 } from './demoDates.js'
+import { bs } from './personas/ve.js'
 import { reconcileRules } from '../utils/recurringSources.js'
 import { localDateStr } from '../utils/index.js'
 
@@ -48,6 +49,18 @@ const MANUAL = {
     manual('de-handy', 'expense', 'Handyvertrag', 'Servicios', 17.99, 5),
     manual('de-rfb', 'expense', 'Rundfunkbeitrag', 'Servicios', 18.36, 15),
     manual('de-dt', 'expense', 'Deutschlandticket', 'Transporte', 63.00, 1),
+  ],
+  // Montos en Bs a la tasa BCV de este mes (los del mes que viene los ajusta
+  // el modo "promedio"/"último" si ella lo elige).
+  ve: [
+    manual('ve-quincena', 'income', 'Quincena — Distribuidora El Ávila', 'Salario', bs(80, M0), 15,
+      { autoConfirm: true, schedule: { freq: 'semimonthly', anchorDate: `${M0}-15` } }),
+    manual('ve-cesta', 'income', 'Bono de alimentación (cestaticket)', 'Bono', bs(40, M0), 5),
+    manual('ve-alquiler', 'expense', 'Alquiler anexo — El Paraíso', 'Vivienda', bs(200, M0), 1, { method: 'Efectivo' }),
+    manual('ve-cantv', 'expense', 'CANTV — internet ABA y teléfono', 'Servicios', bs(9, M0), 8, { method: 'Transferencia' }),
+    manual('ve-digitel', 'expense', 'Plan Digitel', 'Servicios', bs(8, M0), 10, { method: 'Transferencia' }),
+    manual('ve-luz', 'expense', 'Corpoelec — luz', 'Servicios', bs(4.20, M0), 12, { method: 'Transferencia', amountMode: 'average' }),
+    manual('ve-mama', 'expense', 'Ayuda a mamá en Barquisimeto', 'Otros', bs(20, M0), 25, { method: 'Transferencia' }),
   ],
 }
 

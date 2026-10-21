@@ -167,7 +167,7 @@ export default function Multimoneda() {
               <span>{t('multimoneda.result.exposicion')}</span>
               <span>{Math.round(result.exposicionBsPct)}%</span>
             </div>
-            <ProgressBar value={result.exposicionBsPct} max={100} color={result.alerta ? 'red' : 'green'} height={6} />
+            <ProgressBar value={result.exposicionBsPct} max={100} color={result.alerta ? 'red' : 'green'} height={6} label={t('multimoneda.result.exposicion')} />
             {result.alerta ? (
               <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 10, lineHeight: 1.5 }}>
                 {t('multimoneda.result.alertaText', { pct: Math.round(result.exposicionBsPct), umbral: config.umbralExposicion })}

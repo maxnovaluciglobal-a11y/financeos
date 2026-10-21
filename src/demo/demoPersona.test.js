@@ -21,17 +21,30 @@ describe('selección de persona del demo por idioma', () => {
     expect(pickDemoPersonaId('pt')).toBe('sofia')
     expect(pickDemoPersonaId(undefined)).toBe('sofia')
   })
+  it('EST-5: es-VE → Venezuela; ?persona=<id> manda sobre el idioma; un id desconocido se ignora', () => {
+    expect(pickDemoPersonaId('es', { locales: ['es-VE', 'es'] })).toBe('ve')
+    expect(pickDemoPersonaId('es', { locales: ['es_ve'] })).toBe('ve')
+    expect(pickDemoPersonaId('es', { locales: ['es-CO'] })).toBe('sofia')
+    expect(pickDemoPersonaId('en', { locales: ['en-US', 'es-VE'] })).toBe('us')
+    expect(pickDemoPersonaId('es', { search: '?demo=true&persona=ve' })).toBe('ve')
+    expect(pickDemoPersonaId('en', { search: '?demo=true&persona=VE' })).toBe('ve')
+    expect(pickDemoPersonaId('es', { search: '?demo=true&persona=us' })).toBe('us')
+    expect(pickDemoPersonaId('de', { search: '?demo=true&persona=toString' })).toBe('de')
+    expect(pickDemoPersonaId('es', { search: '?demo=true&persona=xx', locales: ['es-VE'] })).toBe('ve')
+  })
   it('buildDemoState aplica moneda y país de la persona y conserva el idioma', () => {
     const us = buildDemoState('us', 'en')
     expect(us.settings).toMatchObject({ currency: 'USD', country: 'US', language: 'en', isDemo: true })
     expect(buildDemoState('de', 'de').settings).toMatchObject({ currency: 'EUR', country: 'DE', language: 'de' })
     expect(buildDemoState('sofia', 'es').settings).toMatchObject({ currency: 'COP', country: 'CO', language: 'es' })
     expect(buildDemoState('nope', 'es').personaId).toBe('sofia')
+    expect(buildDemoState('ve', 'es').settings).toMatchObject({ currency: 'VES', country: 'VE', language: 'es', usdRateSource: 'bcv' })
   })
   it('el banner tiene nombre y país para cada persona', () => {
     expect(demoPersona('us')).toMatchObject({ name: 'Maya Robinson', country: 'US' })
     expect(demoPersona('de')).toMatchObject({ name: 'Aylin Demir', country: 'DE' })
     expect(demoPersona('sofia')).toMatchObject({ name: 'Sofía García', country: 'CO' })
+    expect(demoPersona('ve')).toMatchObject({ name: 'Gabriela Rondón', country: 'VE' })
   })
 })
 
@@ -90,5 +103,31 @@ describe('persona de EE. UU.', () => {
     expect(p.expenses.some(r => /rent/i.test(r.description))).toBe(true)
     expect(p.debts.map(d => d.type)).toEqual(expect.arrayContaining(['Auto', 'Tarjeta']))
     expect(p.subscriptions.every(s => s.currency === 'USD')).toBe(true)
+  })
+})
+
+describe('persona de Venezuela (EST-5)', () => {
+  const p = DEMO_PERSONAS.ve
+  const st = buildDemoState('ve', 'es', 'exitoso')
+  const texts = [...p.incomesGood, ...p.incomesHard].map(r => `${r.source} ${r.notes}`)
+    .concat(p.expenses.map(r => `${r.description} ${r.notes}`), p.debts.map(x => `${x.creditor} ${x.notes}`), p.goals.map(g => `${g.name} ${g.notes}`))
+  it('VES con la tasa BCV guardada: el Inicio muestra el equivalente en US$', () => {
+    expect(st.settings.usdRate).toBeGreaterThan(0)
+    expect(st.settings.usdRateAt).toBeGreaterThan(0)
+    expect(p.subscriptions.every(s => s.currency === 'VES')).toBe(true)
+  })
+  it('ingresos en Bs y en US$, con BCV y paralelo a la vista', () => {
+    const m0 = p.incomesGood.filter(r => r.date.startsWith(M0))
+    expect(m0.filter(r => r.category === 'Salario').length).toBe(2)
+    expect(m0.some(r => /US\$/.test(r.notes) && /BCV/.test(r.notes) && /paralelo/.test(r.notes))).toBe(true)
+    expect(texts.some(t => /remesa/i.test(t))).toBe(true)
+  })
+  it('gastos típicos: Cashea, Pago Móvil, CANTV, Movilnet y Digitel, mercado y transporte', () => {
+    for (const re of [/Cashea/, /Pago Móvil/, /CANTV/, /Movilnet/, /Digitel/, /Mercado/, /Pasajes/]) {
+      expect(texts.some(t => re.test(t)), String(re)).toBe(true)
+    }
+  })
+  it('tono neutro: sin voseo', () => {
+    for (const t of texts) expect(t).not.toMatch(/\b(vos|tenés|podés|querés|sabés|sos|hacé|mirá|fijate)\b/i)
   })
 })

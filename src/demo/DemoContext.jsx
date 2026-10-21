@@ -91,13 +91,17 @@ function baseReducer(state, action) {
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 export function DemoProvider({ children }) {
-  // Persona según el idioma del navegador (en → EE. UU./USD, de → Alemania/EUR,
-  // es/pt → Sofía/COP). Arranca en el mes positivo (aspiracional); el toggle
+  // Persona: ?persona=<id> en la URL o, si no, el idioma y la región del
+  // navegador (en → EE. UU./USD, de → Alemania/EUR, es-VE → Venezuela/VES,
+  // resto de es/pt → Sofía/COP; ver pickDemoPersonaId). Arranca en el mes positivo (aspiracional); el toggle
   // lleva a 'mes difícil'.
   const [state, dispatch] = useReducer(reducer, null, () => {
     const language = detectLanguage()
     return {
-      ...buildDemoState(pickDemoPersonaId(language), language, 'exitoso'),
+      ...buildDemoState(pickDemoPersonaId(language, {
+        search: typeof window !== 'undefined' ? window.location.search : '',
+        locales: typeof navigator !== 'undefined' ? (navigator.languages?.length ? navigator.languages : [navigator.language]) : [],
+      }), language, 'exitoso'),
       loading: false,
       toast: null,
     }
@@ -231,7 +235,7 @@ export function DemoProvider({ children }) {
   }, [state.incomes, state.expenses, showToast, tr])
 
   const exportData = useCallback(async (opts) => {
-    const { personaId, ...data } = buildDemoState(state.personaId, state.settings?.language)
+    const { personaId: _personaId, ...data } = buildDemoState(state.personaId, state.settings?.language)
     const passphrase = typeof opts?.passphrase === 'string' ? opts.passphrase : null
     const blob = passphrase
       ? new Blob([await encryptBackupFile(data, passphrase)], { type: 'text/plain' })

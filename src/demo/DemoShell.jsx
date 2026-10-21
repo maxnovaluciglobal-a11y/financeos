@@ -133,7 +133,7 @@ function DemoInner() {
     setPage('dashboard')
     setTourOpen(false)
     setTimeout(() => setTourOpen(true), 0)
-  }, [])
+  }, [setPage])
   const docTitle = t('demo.docTitle')
 
   // SEO (auditoría 2026-08-27): demo.moyiq.app comparte el mismo build
