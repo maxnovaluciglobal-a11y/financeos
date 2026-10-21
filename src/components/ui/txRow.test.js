@@ -32,11 +32,20 @@ describe('TxRow (REC-N5)', () => {
     expect(html).not.toContain('[object Object]')
   })
 
-  it('Movimientos e Ingresos usan TxRow para las filas, sin emoji en el nombre', () => {
-    const mov = readFileSync(join(SRC, 'pages/Movements/index.jsx'), 'utf8')
+  it('Ingresos usa TxRow; Movimientos usa la lista agrupada con filas-botón (UI-M3)', () => {
+    const list = readFileSync(join(SRC, 'pages/Movements/MovementsList.jsx'), 'utf8')
     const inc = readFileSync(join(SRC, 'pages/Income/index.jsx'), 'utf8')
-    expect(mov).toMatch(/<TxRow key=\{e\.id\}/)
     expect(inc).toMatch(/<TxRow key=\{r\.id\}/)
     expect(inc).not.toContain('💼')
+    // fila = botón que abre el detalle; sin lápiz ni ✕ a la vista
+    expect(list).toMatch(/<button type="button" className=\{s\.row\} aria-haspopup="dialog"/)
+    expect(list).not.toContain('✕')
+    expect(list).not.toContain('Pencil')
+  })
+
+  it('con value + sym el monto usa <Amount> (U+2212) y la categoría su ícono', () => {
+    const html = renderToStaticMarkup(h(TxRow, { category: 'Vivienda', name: 'Arriendo', value: 900000, sym: '$' }))
+    expect(html).toContain('\u2212')
+    expect(html).toContain('cat-icon')
   })
 })

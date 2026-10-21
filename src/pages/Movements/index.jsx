@@ -10,13 +10,17 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catEmoji, subLabel, expSubcatLabel, dateLocale, CAT_COLORS, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney, fmtPct } from '../../utils/index.js'
+import { catLabel, catName, subLabel, expSubcatLabel, dateLocale, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney, fmtPct, monthYearLabel } from '../../utils/index.js'
 import { monthPlan, pendingTotals, toLocal } from '../../utils/recurring.js'
 import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
-import { FormGroup, KPI, Alert, Empty, EmptyState, TxRow } from '../../components/ui/index.jsx'
-import { ArrowLeftRight, Pencil } from 'lucide-react'
+import { FormGroup, KPI, Alert, Empty, EmptyState, PageHeader } from '../../components/ui/index.jsx'
+import { ArrowLeftRight, ChevronDown } from 'lucide-react'
+import Amount from '../../components/Amount.jsx'
+import MovementsList from './MovementsList.jsx'
+import MovementSheet from './MovementSheet.jsx'
+import ms from './movements.module.css'
 import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 
@@ -316,8 +320,8 @@ export default function Movements({ setPage }) {
   const [showAdd,   setShowAdd]   = useState(false)
   const [showGasto, setShowGasto] = useState(false)
   const [showSub,   setShowSub]   = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [editForm,  setEditForm]  = useState({})
+  const [openExp,   setOpenExp]   = useState(null)     // detalle en hoja (UI-M3)
+  const [showSummary, setShowSummary] = useState(false) // resumen plegado: la lista primero
 
   // Filtro de categoría por drilldown desde el Dashboard (donut clicable)
   // NB: no se borra en el initializer (StrictMode monta 2× en dev y perdería el valor)
@@ -328,31 +332,11 @@ export default function Movements({ setPage }) {
     try { sessionStorage.removeItem('fos_drill_category') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   }, [])
 
-  async function saveEdit(e) {
-    if (!editForm.description?.trim() || !editForm.amount || Number(editForm.amount) <= 0) return
-    if (updateExpense) {
-      await updateExpense({ ...e,
-        description: editForm.description.trim(),
-        amount:      Number(editForm.amount),
-        date:        editForm.date || e.date,
-        category:    editForm.category || e.category,
-        subcategory: editForm.subcategory ?? e.subcategory ?? '',
-      })
-    }
-    setEditingId(null); setEditForm({})
-  }
-
   // ── Cálculos ─────────────────────────────────────────────────────────────────
   const monthExp   = useMemo(() =>
     expenses.filter(e => e?.date?.startsWith(activeMonth))
       .sort((a,b) => new Date(b.date) - new Date(a.date))
   , [expenses, activeMonth])
-
-  // Lista visible — aplica filtro de categoría del drilldown si está activo
-  const listExp = useMemo(
-    () => drillCat ? monthExp.filter(e => (e.category || '') === drillCat) : monthExp,
-    [monthExp, drillCat]
-  )
 
   const activeSubs = useMemo(() =>
     subscriptions.filter(s => s?.status === 'active')
@@ -399,7 +383,6 @@ export default function Movements({ setPage }) {
   const fixedExp = useMemo(() => plan.filter(o => o.kind === 'expense'), [plan])
   const pendingFixed = pendingTotals(plan).expense
   const { confirm, skip, unskip, live } = useOccurrenceActions()
-  const [showAllExp, setShowAllExp] = useState(false)
 
   // Disponible PERSONAL = ingresos personales − gastos personales (solo lo real,
   // igual que "Te queda" del Inicio; excluye inversión 💼).
@@ -419,11 +402,11 @@ export default function Movements({ setPage }) {
 
   const topBarRecords = useMemo(() => {
     const items = [
-      // La barra muestra la descripción del gasto; el emoji viene de SU categoría.
-      ...monthExp.map(e => ({ category: [catEmoji(e.category), e.description || e.category].filter(Boolean).join(' '), amount: Number(e.amount)||0 })),
+      // La barra muestra la descripción del gasto (sin emoji: un solo sistema de ícono, UI-M4).
+      ...monthExp.map(e => ({ category: e.description || catName(e.category, lang), amount: Number(e.amount)||0 })),
     ]
     return items.sort((a,b) => b.amount-a.amount).slice(0,8)
-  }, [monthExp])
+  }, [monthExp, lang])
 
   // Alertas de suscripciones
   const alerts = useMemo(() => {
@@ -458,58 +441,75 @@ export default function Movements({ setPage }) {
   return (
     <div>
 
-      {/* Header */}
-      <div style={{ marginBottom:20 }}>
-        <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--grn)',
-          marginBottom:4 }}>{t('mov.kicker')}</div>
-        <h1 className="display" style={{ fontSize:24, fontWeight:700, color:'var(--tx)', marginBottom:2 }}>
-          {t('mov.title')}
-        </h1>
-        <p style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>
-          {t('mov.sub', { month: activeMonth })}
-        </p>
-      </div>
+      {/* Encabezado único (UI-M3/M8): sin eyebrow mono ni subtítulo "// ". */}
+      <PageHeader title={t('mov.title')} sub={t('mov.sub', { month: monthYearLabel(activeMonth) })} />
 
-      {/* KPIs */}
-      <div className="kpi-row" style={{ marginBottom:20 }} data-tour="mov-kpis">
-        <KPI label={t('mov.kpi.income')} value={fmtM(totalInc, sym)} color="green"
-          sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : undefined} />
-        <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)}
-          sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtM(invExp, sym) }) : undefined} />
-        <KPI label={t('rec.mov.pendingKpi')} value={fmtM(pendingFixed, sym)} color="amber" sub={t('rec.mov.pendingSub')} />
-        <KPI label={t('mov.kpi.available')} value={fmtM(balance, sym)} color={balance >= 0 ? 'green' : 'red'}
-          alert={balance < 0 ? t('ui.state.overdrawn') : undefined}
-          sub={(invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
-      </div>
-
-      {/* Banner impacto anual suscripciones */}
-      {activeSubs.length > 0 && (
-        <div style={{ marginBottom:16 }}>
-          <Alert type={totalSubs > totalInc * 0.15 ? 'danger' : 'warn'}>
-            <div>
-              <div style={{ fontSize:12, fontWeight:600, fontFamily: 'var(--num)', marginBottom:3 }}>
-                {t('mov.banner.title')}
-              </div>
-              <div style={{ fontSize:13, color:'var(--tx)', fontFamily: 'var(--sans)' }}>
-                <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
-                {' → '}
-                <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
-                {t('mov.banner.inServices', { n: activeSubs.length })}
-              </div>
-            </div>
-          </Alert>
+      {/* Resumen en una línea, plegable: la lista va primero (UI-M3). */}
+      <button type="button" className={ms.summary} aria-expanded={showSummary} aria-controls="mov-summary"
+        onClick={() => setShowSummary(v => !v)} data-tour="mov-kpis">
+        <span className={ms.summaryMain}>
+          <span className={ms.summaryCount}>{t(monthExp.length === 1 ? 'movl.summary.one' : 'movl.summary.many', { n: monthExp.length })}</span>
+          <span aria-hidden="true">·</span>
+          <Amount className={ms.summaryTotal} value={totalExp} sym={sym} signed={false} />
+        </span>
+        <span className={ms.summaryToggle}>{showSummary ? t('movl.summary.hide') : t('movl.summary.show')}<ChevronDown size={16} strokeWidth={1.7} aria-hidden="true" /></span>
+      </button>
+      <div id="mov-summary" className={ms.summaryBody} hidden={!showSummary}>
+        {/* KPIs */}
+        <div className="kpi-row" style={{ marginBottom:20 }}>
+          <KPI label={t('mov.kpi.income')} value={fmtM(totalInc, sym)} color="green"
+            sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : undefined} />
+          <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)}
+            sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtM(invExp, sym) }) : undefined} />
+          <KPI label={t('rec.mov.pendingKpi')} value={fmtM(pendingFixed, sym)} color="amber" sub={t('rec.mov.pendingSub')} />
+          <KPI label={t('mov.kpi.available')} value={fmtM(balance, sym)} color={balance >= 0 ? 'green' : 'red'}
+            alert={balance < 0 ? t('ui.state.overdrawn') : undefined}
+            sub={(invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
         </div>
-      )}
 
-      {/* Botón agregar */}
-      <div style={{ marginBottom:16 }} data-tour="mov-add">
-        {!showAdd && !showGasto && !showSub && (
-          <button onClick={() => setShowAdd(true)} style={{
-            background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:8,
-            padding:'8px 20px', minHeight:44, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-            {t('mov.addBtn')}
-          </button>
+        {/* Banner impacto anual suscripciones */}
+        {activeSubs.length > 0 && (
+          <div style={{ marginBottom:16 }}>
+            <Alert type={totalSubs > totalInc * 0.15 ? 'danger' : 'warn'}>
+              <div>
+                <div style={{ fontSize:12, fontWeight:600, fontFamily: 'var(--sans)', marginBottom:3 }}>
+                  {t('mov.banner.title')}
+                </div>
+                <div style={{ fontSize:13, color:'var(--tx)', fontFamily: 'var(--sans)' }}>
+                  <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
+                  {' → '}
+                  <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
+                  {t('mov.banner.inServices', { n: activeSubs.length })}
+                </div>
+              </div>
+            </Alert>
+          </div>
         )}
+
+        {/* Gráficos unificados */}
+        {(monthExp.length > 0 || activeSubs.length > 0) && (
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
+            <ChartCard title={t('mov.chart.top')} minHeight={180}>
+              <HorizontalBars records={topBarRecords} sym={sym} maxItems={8}/>
+            </ChartCard>
+            <ChartCard title={t('mov.chart.byCat')} minHeight={180}>
+              <CategoryDonut records={chartRecords} sym={sym}/>
+            </ChartCard>
+          </div>
+        )}
+
+        {/* Alertas */}
+        {alerts.length > 0 && (
+          <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
+            {alerts.map((a,i) => (
+              <Alert key={i} type={a.type==='upcoming' ? 'warn' : 'info'}>{a.msg}</Alert>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Formularios de alta (gasto / suscripción); el botón vive en la barra de la lista */}
+      <div style={{ marginTop: (showAdd || showGasto || showSub) ? 12 : 0 }}>
 
         {showAdd && !showGasto && !showSub && (
           <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
@@ -549,141 +549,51 @@ export default function Movements({ setPage }) {
         {showSub   && <FormSub              onSave={handleSaveSub}   onCancel={() => setShowSub(false)}/>}
       </div>
 
-      {/* Gráficos unificados */}
-      {(monthExp.length > 0 || activeSubs.length > 0) && (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
-          <ChartCard title={t('mov.chart.top')} minHeight={180}>
-            <HorizontalBars records={topBarRecords} sym={sym} maxItems={8}/>
-          </ChartCard>
-          <ChartCard title={t('mov.chart.byCat')} minHeight={180}>
-            <CategoryDonut records={chartRecords} sym={sym}/>
-          </ChartCard>
-        </div>
+      <MovementsList expenses={monthExp} sym={sym} category={drillCat} onCategory={setDrillCat}
+        onOpen={setOpenExp}
+        toolbarEnd={!showAdd && !showGasto && !showSub && (
+          <button type="button" data-tour="mov-add" onClick={() => setShowAdd(true)} style={{
+            background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:'var(--r)',
+            padding:'8px 18px', minHeight:44, fontSize:14, fontWeight:600, fontFamily:'var(--sans)', cursor:'pointer', flexShrink:0 }}>
+            {t('mov.addBtn')}
+          </button>
+        )}
+        empty={<EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
+          cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />} />
+
+      {openExp && (
+        <MovementSheet expense={openExp} sym={sym} categories={categoriesExpense} subcats={SUBCATS}
+          onClose={() => setOpenExp(null)}
+          onSave={updateExpense ? (e) => updateExpense(e) : undefined}
+          onDelete={delExpense ? (e) => deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo')) : undefined} />
       )}
 
-      {/* Alertas */}
-      {alerts.length > 0 && (
-        <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
-          {alerts.map((a,i) => (
-            <Alert key={i} type={a.type==='upcoming' ? 'warn' : 'info'}>{a.msg}</Alert>
-          ))}
-        </div>
-      )}
-
-      {/* Dos secciones compactas separadas */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
-
-        {/* Gastos únicos */}
-        <div data-tour="mov-list" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
-          borderRadius:'var(--r)', overflow:'hidden' }}>
-          <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
-            display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div style={{ fontSize: 12, fontWeight:600, color:'var(--tx)',
-              fontFamily: 'var(--sans)'}}>
-              {t('mov.list.expenses', { n: listExp.length })}
-            </div>
-            <div style={{ fontSize:11, fontWeight:700, color:'var(--tx)',
-              fontFamily: 'var(--num)' }}><Money>{fmtM(totalExp, sym)}</Money></div>
+      <div style={{ marginTop:24 }}>
+      {/* Fijos del mes — suscripciones, cuotas y fijos manuales (reglas) */}
+      <div data-tour="mov-fixed" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+        borderRadius:'var(--r)', overflow:'hidden' }}>
+        <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
+          display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+          <div style={{ fontSize: 12, fontWeight:600, color:'var(--amb)',
+            fontFamily: 'var(--sans)'}}>
+            {t('rec.mov.title', { n: fixedExp.length })}
           </div>
-          {drillCat && (
-            <div style={{ padding:'8px 14px', borderBottom:'.5px solid var(--brd)', display:'flex', alignItems:'center', gap:8, background:'var(--accent-bg)' }}>
-              <span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--tx)' }}>{t('mov.list.filtering')} <strong>{drillCat}</strong></span>
-              <button onClick={() => setDrillCat(null)} aria-label={t('mov.list.removeFilter')}
-                style={{ marginLeft:'auto', background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 10px', fontSize:11, fontFamily: 'var(--sans)', color:'var(--tm)', cursor:'pointer' }}>
-                {t('mov.list.clearFilter')}
-              </button>
-            </div>
+          {setPage && (
+            <button type="button" className="fos-link" style={{ fontSize:12 }} onClick={() => setPage('recurring')}>{t('rec.sheet.goList')} →</button>
           )}
-          <div style={{ maxHeight:460, overflowY:'auto' }}>
-            {listExp.length === 0 ? (
-              drillCat
-                ? <Empty text={t('mov.list.emptyCat', { cat: drillCat })} />
-                : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
-                    cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />
-            ) : (
-              <div style={{ padding:'0 14px' }}>
-                {(showAllExp ? listExp : listExp.slice(0, 10)).map((e,i) => editingId === e.id ? (
-              <div key={e.id} style={{padding:'10px 0',borderBottom:i<listExp.length-1?'.5px solid var(--brd)':'none'}}>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:6,marginBottom:6}}>
-                  <input type="text" value={editForm.description||''} placeholder={t('mov.edit.descPh')} aria-label={t('mov.form.desc')}
-                    onChange={ev=>setEditForm(f=>({...f,description:ev.target.value}))}
-                    style={{gridColumn:'1/-1',padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
-                  <input type="number" inputMode="decimal" min="0" step="any" value={editForm.amount||''} placeholder={t('mov.edit.amountPh')} aria-label={t('mov.form.amount', { sym })}
-                    onChange={ev=>setEditForm(f=>({...f,amount:ev.target.value}))}
-                    style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
-                  <input type="date" value={editForm.date||''} aria-label={t('mov.form.date')}
-                    onChange={ev=>setEditForm(f=>({...f,date:ev.target.value}))}
-                    style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
-                  <select value={editForm.category||e.category} aria-label={t('mov.form.category')}
-                    onChange={ev=>setEditForm(f=>({...f,category:ev.target.value,subcategory:''}))}
-                    style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
-                    {categoriesExpense.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
-                  </select>
-                  <select value={editForm.subcategory??e.subcategory??''} aria-label={t('mov.form.subcat')}
-                    onChange={ev=>setEditForm(f=>({...f,subcategory:ev.target.value}))}
-                    style={{padding:'5px 8px',fontSize:11,borderRadius:5,border:'.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
-                    <option value="">{t('mov.edit.subcatNone')}</option>
-                    {(SUBCATS[editForm.category||e.category]||[]).map(sc=><option key={sc} value={sc}>{expSubcatLabel(sc, lang)}</option>)}
-                  </select>
-                </div>
-                <div style={{display:'flex',gap:6}}>
-                  <button onClick={()=>saveEdit(e)} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'none',background:'var(--laton)',color:'var(--navy)',cursor:'pointer',fontFamily: 'var(--num)',fontWeight:600}}>{t('mov.edit.save')}</button>
-                  <button onClick={()=>{setEditingId(null);setEditForm({})}} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'.5px solid var(--brd)',background:'none',color:'var(--th)',cursor:'pointer',fontFamily: 'var(--sans)'}}>{t('common.cancel')}</button>
-                </div>
-              </div>
-            ) : (
-              <TxRow key={e.id} dot={CAT_COLORS[e.category]||'var(--th)'}
-                name={<>{e.inv && <InlineIcon kind="investment" size={11} />}{e.description || catLabel(e.category, lang)}</>}
-                label={e.description || catLabel(e.category, lang)}
-                meta={e.subcategory
-                  ? <><span style={{ color:'var(--accent)' }}>{catLabel(e.category, lang)}</span>{' › '}{expSubcatLabel(e.subcategory, lang)}{' · '}{e.date?.slice(5)}</>
-                  : <>{catLabel(e.category, lang)}{' · '}{e.date?.slice(5)}</>}
-                amount={fmtM(e.amount, sym)}
-                onEdit={updateExpense ? () => { setEditingId(e.id); setEditForm({description:e.description||'',amount:e.amount,date:e.date,category:e.category,subcategory:e.subcategory||''}) } : undefined}
-                onDelete={delExpense ? () => deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo')) : undefined} />
-            ))}
-              </div>
-            )}
-            {/* Antes decía "+N gastos más" pero la lista ya mostraba todos: ahora
-                muestra 10 y el botón despliega el resto (o los vuelve a ocultar). */}
-            {listExp.length > 10 && (
-              <div style={{ borderTop:'.5px solid var(--brd)', textAlign:'center' }}>
-                <button type="button" className="fos-link" aria-expanded={showAllExp} onClick={() => setShowAllExp(v => !v)}
-                  style={{ fontSize:12, minHeight:44 }}>
-                  {showAllExp ? t('mov.list.showLess') : t('mov.list.showMore', { n: listExp.length - 10 })}
-                </button>
-              </div>
-            )}
-          </div>
         </div>
-
-        {/* Fijos del mes — suscripciones, cuotas y fijos manuales (reglas) */}
-        <div data-tour="mov-fixed" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
-          borderRadius:'var(--r)', overflow:'hidden' }}>
-          <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
-            display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-            <div style={{ fontSize: 12, fontWeight:600, color:'var(--amb)',
-              fontFamily: 'var(--sans)'}}>
-              {t('rec.mov.title', { n: fixedExp.length })}
-            </div>
-            {setPage && (
-              <button type="button" className="fos-link" style={{ fontSize:12 }} onClick={() => setPage('recurring')}>{t('rec.sheet.goList')} →</button>
-            )}
-          </div>
-          <div style={{ maxHeight:460, overflowY:'auto', padding:'0 14px' }}>
-            {fixedExp.length === 0 ? (
-              <Empty text={t('rec.mov.empty')} />
-            ) : (
-              <ul className={rs.rows}>
-                {fixedExp.map(o => <OccurrenceRow key={o.key} occ={o} sym={sym} onConfirm={confirm} onSkip={skip} onUnskip={unskip} />)}
-              </ul>
-            )}
-          </div>
-          <div role="status" aria-live="polite" className="sr-only">{live}</div>
+        <div style={{ maxHeight:460, overflowY:'auto', padding:'0 14px' }}>
+          {fixedExp.length === 0 ? (
+            <Empty text={t('rec.mov.empty')} />
+          ) : (
+            <ul className={rs.rows}>
+              {fixedExp.map(o => <OccurrenceRow key={o.key} occ={o} sym={sym} onConfirm={confirm} onSkip={skip} onUnskip={unskip} />)}
+            </ul>
+          )}
         </div>
+        <div role="status" aria-live="polite" className="sr-only">{live}</div>
       </div>
-
-
+      </div>
 
       {/* Disclaimer */}
       <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:4 }}>
