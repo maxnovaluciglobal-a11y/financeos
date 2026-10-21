@@ -12,7 +12,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRSEmpregado, calcIRSRecibosVerdes, ESCALOES_IRS_2026, MINIMO_EXISTENCIA } from '../../utils/irsPT.js'
-import { fmtFixed, fmtPct } from '../../utils/index.js'
+import { fmtFixed, fmtPct, fmtPctPoints } from '../../utils/index.js'
 
 const fmtEUR = (n) => fmtFixed(n, 'pt-PT', '€')
 
@@ -94,7 +94,7 @@ function EmpregadoCard({ t }) {
               {fmtEUR(result.liquidoMensal)}
             </div>
             <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-              {t('irsPT.netMonthlyLabel', { rate: (result.taxaEfetiva * 100).toFixed(1) })}
+              {t('irsPT.netMonthlyLabel', { rate: fmtPctPoints(result.taxaEfetiva * 100, 1) })}
             </div>
           </div>
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -157,7 +157,7 @@ function RecibosVerdesCard({ t }) {
               {fmtEUR(result.irsAnual)}
             </div>
             <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-              {t('irsPT.annualIRSEstimated', { rate: (result.taxaEfetiva * 100).toFixed(1) })}
+              {t('irsPT.annualIRSEstimated', { rate: fmtPctPoints(result.taxaEfetiva * 100, 1) })}
             </div>
           </div>
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>

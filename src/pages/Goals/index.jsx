@@ -7,7 +7,7 @@ import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, Empt
 import { monthsAheadFirstDay } from '../../utils/monthMath.js'
 import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap, Pencil, X } from 'lucide-react'
 import { firstGoalPresets } from './firstGoal.js'
-import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, prioLabel, currencySymbol, monthYearLabel } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, prioLabel, currencySymbol, monthYearLabel, fmtPctPoints } from '../../utils/index.js'
 import { goalStatuses } from './goalStatus.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
@@ -195,7 +195,7 @@ export default function Goals() {
               <div style={{padding:'10px 14px',background:'var(--sur2)',borderRadius:6,marginBottom:14}}>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>
                   {t('goals.suggest.totalLine')} <span style={{color:'var(--grn)',fontWeight:700}}><Money>{fmtMoney(totalMonthlyContribution(suggestions),sym)}</Money>{t('goals.suggest.perMonthSuffix')}</span>
-                  <span style={{marginLeft:8,color:'var(--th)'}}>{t('goals.suggest.pctIncome', { pct: ingresoNetoGoals>0?((totalMonthlyContribution(suggestions)/ingresoNetoGoals)*100).toFixed(0):0 })}</span>
+                  <span style={{marginLeft:8,color:'var(--th)'}}>{t('goals.suggest.pctIncome', { pct: fmtPctPoints(ingresoNetoGoals>0?((totalMonthlyContribution(suggestions)/ingresoNetoGoals)*100).toFixed(0):0) })}</span>
                 </div>
               </div>
               <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>

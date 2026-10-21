@@ -12,7 +12,7 @@ import { calcBeneficioAPV, calcDescuentos, calcImpuestoAnual, calcGapTramo, calc
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
-import { currentMonth } from '../../utils/index.js'
+import { currentMonth, fmtPctPoints } from '../../utils/index.js'
 
 const money = n => '$' + (Number(n) || 0).toLocaleString()
 
@@ -175,10 +175,10 @@ export default function APVPage() {
                     <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',background:'var(--bg)',padding:'4px 8px',borderRadius:4}}>{t('apv.chip.health', {v: money(desc.salud)})}</div>
                     <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',background:'var(--bg)',padding:'4px 8px',borderRadius:4}}>{t('apv.chip.unemployment', {v: money(desc.cesantia)})}</div>
                     <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',background:'var(--bg)',padding:'4px 8px',borderRadius:4}}>{t('apv.chip.afpFee', {v: money(desc.comision)})}</div>
-                    <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',background:'var(--bg)',padding:'4px 8px',borderRadius:4}}>{t('apv.chip.bracket', {tramo: imp.tramo, pct: (imp.tasaMarginal*100).toFixed(0)})}</div>
+                    <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',background:'var(--bg)',padding:'4px 8px',borderRadius:4}}>{t('apv.chip.bracket', {tramo: imp.tramo, pct: fmtPctPoints(imp.tasaMarginal*100, 0)})}</div>
                   </div>
                   <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:6,lineHeight:1.5}}>
-                    {t('apv.deductionsNote1', {pct: params.comisionAfpPct})}{' '}
+                    {t('apv.deductionsNote1', {pct: fmtPctPoints(params.comisionAfpPct)})}{' '}
                     {t('apv.deductionsNote2Pre')}<strong>{t('apv.deductionsNote2Bold')}</strong>{t('apv.deductionsNote2Post')}
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export default function APVPage() {
                         <div style={{padding:'6px 12px',background:'var(--bg)',borderRadius:6}}>
                           <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('apv.majorBenefitLabel')}</span>
                           <span style={{fontSize:11,fontFamily: 'var(--num)',color:'var(--grn)',fontWeight:700}}>{taxResult.mayorBeneficio === 'A' ? t('apv.regimeA') : t('apv.regimeB')}</span>
-                          <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('apv.bracketMarginal', {n: taxResult.tramoActual, pct: (taxResult.tasaMarginal*100).toFixed(0)})}</span>
+                          <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('apv.bracketMarginal', {n: taxResult.tramoActual, pct: fmtPctPoints(taxResult.tasaMarginal*100, 0)})}</span>
                         </div>
                       </div>
                     </div>
@@ -280,7 +280,7 @@ export default function APVPage() {
                     {t('apv.tax.footnote1', {at: params.anioTributario, ac: params.anioComercial})}
                     {t('apv.tax.footnoteUTMref', {v: money(taxResult.UTMref)})}
                     {taxResult.utaEsAproximada && <>{t('apv.tax.footnoteApproxPre')}<strong>{t('apv.tax.footnoteApproxBold')}</strong>{t('apv.tax.footnoteApproxPost')}</>}
-                    {t('apv.tax.footnote2', {pct: params.comisionAfpPct})}
+                    {t('apv.tax.footnote2', {pct: fmtPctPoints(params.comisionAfpPct)})}
                   </div>
                 </div>
               )}
@@ -288,7 +288,7 @@ export default function APVPage() {
               {/* Bloque 2: Proyección al jubilar */}
               <div style={{background:'var(--sur2)',borderRadius:10,padding:'16px',border:'0.5px solid var(--brd)'}}>
                 <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:4,fontFamily: 'var(--sans)'}}>{`② ${t('apv.projection.title')}`}</div>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:14,lineHeight:1.4}}>{t('apv.projection.subtitle', { v: money(apvF.monthlyContribution), r: apvF.expectedReturn })}</div>
+                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:14,lineHeight:1.4}}>{t('apv.projection.subtitle', { v: money(apvF.monthlyContribution), r: fmtPctPoints(apvF.expectedReturn) })}</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px',borderBottom:'2px solid var(--grn)'}}>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('apv.projection.startingToday')}</div>
@@ -331,7 +331,7 @@ export default function APVPage() {
                   </div>
                 )}
                 <div style={{marginTop:10,fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.5}}>
-                  {t('apv.projection.footnote', {r: apvF.expectedReturn})}
+                  {t('apv.projection.footnote', {r: fmtPctPoints(apvF.expectedReturn)})}
                 </div>
               </div>
             </div>
@@ -377,7 +377,7 @@ export default function APVPage() {
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px'}}>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('apv.table.bracketLabel')}</div>
                     <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',fontFamily: 'var(--num)'}}>{t('apv.bracketN', {n: taxResult.tramoActual})}</div>
-                    <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('apv.marginalRatePct', {pct: (taxResult.tasaMarginal*100).toFixed(0)})}</div>
+                    <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('apv.marginalRatePct', {pct: fmtPctPoints(taxResult.tasaMarginal*100, 0)})}</div>
                   </div>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px'}}>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('apv.table.majorBenefit')}</div>
@@ -388,7 +388,7 @@ export default function APVPage() {
                 </div>
                 <div style={{padding:'8px 12px',background:'rgba(0,0,0,.03)',borderRadius:6,fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.6}}>
                   {t('apv.taxEstimate.footnote1', {at: params.anioTributario, ac: params.anioComercial})}
-                  {t('apv.taxEstimate.footnote2', {v: money(taxResult.UTMref), pct: params.comisionAfpPct})}
+                  {t('apv.taxEstimate.footnote2', {v: money(taxResult.UTMref), pct: fmtPctPoints(params.comisionAfpPct)})}
                   {t('apv.taxEstimate.footnote3')}
                   {t('apv.taxEstimate.footnote4')}
                 </div>
@@ -407,7 +407,7 @@ export default function APVPage() {
                   </div>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'12px'}}>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('apv.gap.rateReduction')}</div>
-                    <div style={{fontSize:18,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}>{t('apv.gap.rateFromTo', {pct1: (gapResult.tasaActual*100).toFixed(0), pct2: (gapResult.tasaObjetivo*100).toFixed(0)})}</div>
+                    <div style={{fontSize:18,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}>{t('apv.gap.rateFromTo', {pct1: fmtPctPoints(gapResult.tasaActual*100, 0), pct2: fmtPctPoints(gapResult.tasaObjetivo*100, 0)})}</div>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:2}}>{t('apv.gap.lessPoints', {n: ((gapResult.tasaActual-gapResult.tasaObjetivo)*100).toFixed(1)})}</div>
                   </div>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'12px'}}>

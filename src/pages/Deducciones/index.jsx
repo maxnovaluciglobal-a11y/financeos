@@ -9,7 +9,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getDeduccionesConfig, autofillGastos, calcDeducciones } from '../../utils/deduccionesEngine.js'
-import { currentMonth } from '../../utils/index.js'
+import { currentMonth, fmtPctPoints } from '../../utils/index.js'
 
 export default function Deducciones() {
   const { settings, expenses, incomes } = useApp()
@@ -153,7 +153,7 @@ export default function Deducciones() {
               <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>{t('deducciones.breakdown')}</div>
               {result.desglose.map((d, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', color: 'var(--tx)' }}>
-                  <span>{d.label}{d.rate ? <span style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 11 }}> · {t('deducciones.deductiblePct', { pct: Math.round(d.rate * 100) })}</span> : null}</span>
+                  <span>{d.label}{d.rate ? <span style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 11 }}> · {t('deducciones.deductiblePct', { pct: fmtPctPoints(Math.round(d.rate * 100)) })}</span> : null}</span>
                   <span style={{ fontFamily: 'var(--sans)' }}>
                     {fmt(d.monto)}{d.aporta != null ? <span style={{ color: 'var(--accent)' }}> → {fmt(d.aporta)}</span> : null}
                   </span>

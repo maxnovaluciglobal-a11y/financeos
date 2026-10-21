@@ -5,7 +5,7 @@ import {
   Document, Page, Text, View, StyleSheet,
 } from '@react-pdf/renderer'
 import { PDF_FONT as F, PDF_COLOR as P } from '../pdfTheme.js'
-import { fmtSignedMoney, fmtPct, catName } from '../../utils/index.js'
+import { fmtSignedMoney, fmtPct, catName, fmtPctPoints } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 
 // Colores y fuentes de la marca (pdfTheme.js, BRD-8).
@@ -35,7 +35,7 @@ const s = StyleSheet.create({
   // KPI grid
   kpiRow:  { flexDirection: 'row', gap: 8, marginBottom: 4 },
   kpiBox:  { flex: 1, backgroundColor: LGRAY, borderRadius: 4, padding: '8 10' },
-  kpiLabel:{ fontSize: 7, color: GRAY, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
+  kpiLabel:{ fontSize: 7, color: GRAY, marginBottom: 3 },
   kpiVal:  { fontSize: 14, fontFamily: F.num, fontWeight: 600 },
   kpiSub:  { fontSize: 7, color: GRAY, marginTop: 2 },
   // Bars
@@ -96,9 +96,9 @@ export default function ReportPDF({ data }) {
 
   const recs = []
   if (savingRate >= 0.25) {
-    recs.push({ type: 'ok', text: t('rpdf.rec.savingOk', { rate: pct(savingRate), goal: savingGoalPct }) })
+    recs.push({ type: 'ok', text: t('rpdf.rec.savingOk', { rate: pct(savingRate), goal: fmtPctPoints(savingGoalPct) }) })
   } else {
-    recs.push({ type: 'warn', text: t('rpdf.rec.savingLow', { rate: pct(savingRate), goal: savingGoalPct }) })
+    recs.push({ type: 'warn', text: t('rpdf.rec.savingLow', { rate: pct(savingRate), goal: fmtPctPoints(savingGoalPct) }) })
   }
   if (overBudget.length > 0) {
     recs.push({ type: 'danger', text: t('rpdf.rec.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') }) })
@@ -156,7 +156,7 @@ export default function ReportPDF({ data }) {
             <View style={s.kpiBox}>
               <Text style={s.kpiLabel}>{t('rpdf.savingRate')}</Text>
               <Text style={[s.kpiVal, { color: savingRate >= 0.2 ? ACCENT : savingRate >= 0.1 ? AMBER : RED }]}>{pct(savingRate)}</Text>
-              <Text style={s.kpiSub}>{t('rpdf.goal', { pct: savingGoalPct })}</Text>
+              <Text style={s.kpiSub}>{t('rpdf.goal', { pct: fmtPctPoints(savingGoalPct) })}</Text>
             </View>
           </View>
           <View style={s.kpiRow}>

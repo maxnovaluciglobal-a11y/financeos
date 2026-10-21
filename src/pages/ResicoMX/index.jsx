@@ -11,7 +11,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcResico, TRAMOS_RESICO, TOPE_ANUAL_RESICO, RETENCION_PERSONA_MORAL } from '../../utils/resicoMX.js'
-import { fmtFixed, currentMonth } from '../../utils/index.js'
+import { fmtFixed, currentMonth, fmtPctPoints } from '../../utils/index.js'
 
 const fmtMXN = (n) => fmtFixed(n, 'es-MX')
 
@@ -105,7 +105,7 @@ export default function ResicoMX() {
             <span style={{ fontSize: 12, color: 'var(--tx)', lineHeight: 1.5 }}>
               {t('resicomx.personaMoral.label')}
               <span style={{ display: 'block', fontSize: 11, color: 'var(--th)', marginTop: 2 }}>
-                {t('resicomx.personaMoral.hint', { pct: (RETENCION_PERSONA_MORAL * 100).toFixed(2) })}
+                {t('resicomx.personaMoral.hint', { pct: fmtPctPoints(RETENCION_PERSONA_MORAL * 100, 2) })}
               </span>
             </span>
           </label>
@@ -122,7 +122,7 @@ export default function ResicoMX() {
                 {fmtMXN(haySaldoAFavor ? result.saldoAFavor : result.aPagar)}
               </div>
               <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-                {t('resicomx.result.tasaSub', { pct: (result.tasa * 100).toFixed(2), neto: fmtMXN(result.neto) })}
+                {t('resicomx.result.tasaSub', { pct: fmtPctPoints(result.tasa * 100, 2), neto: fmtMXN(result.neto) })}
               </div>
             </div>
 
@@ -134,7 +134,7 @@ export default function ResicoMX() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 12, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ color: 'var(--th)' }}>
-                  {t('resicomx.result.retencionLabel', { pct: (RETENCION_PERSONA_MORAL * 100).toFixed(2) })}
+                  {t('resicomx.result.retencionLabel', { pct: fmtPctPoints(RETENCION_PERSONA_MORAL * 100, 2) })}
                 </span>
                 <span style={{ fontFamily: 'var(--num)', color: result.retencion > 0 ? 'var(--tx)' : 'var(--th)', fontWeight: 600 }}>
                   {result.retencion > 0 ? `− ${fmtMXN(result.retencion)}` : '—'}
@@ -153,14 +153,14 @@ export default function ResicoMX() {
             {result.conRetencion && (
               <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.6, marginBottom: 14 }}>
                 {haySaldoAFavor
-                  ? t('resicomx.result.saldoFavorNote', { tasa: (result.tasa * 100).toFixed(2), ret: (RETENCION_PERSONA_MORAL * 100).toFixed(2) })
+                  ? t('resicomx.result.saldoFavorNote', { tasa: fmtPctPoints(result.tasa * 100, 2), ret: fmtPctPoints(RETENCION_PERSONA_MORAL * 100, 2) })
                   : t('resicomx.result.aPagarNote', { v: fmtMXN(result.retencion) })}
               </div>
             )}
 
             {result.siguienteTasa && result.margenEnTramo < result.ingreso * 0.15 && (
               <div style={{ background: 'var(--warn-bg)', border: '.5px solid var(--warn)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
-                <InlineIcon kind="alert" size={13} />{t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: (result.siguienteTasa * 100).toFixed(2) })}
+                <InlineIcon kind="alert" size={13} />{t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: fmtPctPoints(result.siguienteTasa * 100, 2) })}
               </div>
             )}
 
@@ -174,7 +174,7 @@ export default function ResicoMX() {
 
             {!result.superaTope && !result.topeEsProyeccion && (
               <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 14, lineHeight: 1.6 }}>
-                {t('resicomx.result.acumuladoNote', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO), pct: Math.round((result.baseTope / TOPE_ANUAL_RESICO) * 100) })}
+                {t('resicomx.result.acumuladoNote', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO), pct: fmtPctPoints(Math.round((result.baseTope / TOPE_ANUAL_RESICO) * 100)) })}
               </div>
             )}
 

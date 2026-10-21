@@ -9,7 +9,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getAporteConfig, calcAporte } from '../../utils/aporteEngine.js'
-import { fmtFixed, currentMonth } from '../../utils/index.js'
+import { fmtFixed, currentMonth, fmtPctPoints } from '../../utils/index.js'
 import {
   compararRothTraditional, calcHSA, tasaMarginalDesdeBruto,
   limite401k, limiteIRA, limiteHSA, LIMITES_2026,
@@ -138,7 +138,7 @@ export default function AhorroFiscal() {
                 {fmt(result.ahorro)}
               </div>
               <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-                {t('ahorroFiscal.summarySub', { resumen: result.resumen, pct: Math.round(result.marginal * 100) })}
+                {t('ahorroFiscal.summarySub', { resumen: result.resumen, pct: fmtPctPoints(Math.round(result.marginal * 100)) })}
               </div>
             </div>
 

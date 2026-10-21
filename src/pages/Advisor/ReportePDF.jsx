@@ -77,7 +77,6 @@ const s = StyleSheet.create({
   section: { marginBottom: 16 },
   sectionTitle: {
     fontSize: 10, fontFamily: F.display, fontWeight: 600, color: P.navy,
-    textTransform: 'uppercase', letterSpacing: 0.8,
     borderBottomWidth: 0.5, borderBottomColor: C.brd,
     paddingBottom: 5, marginBottom: 8,
   },
@@ -89,7 +88,7 @@ const s = StyleSheet.create({
     borderRadius: 6, padding: '8 10',
     borderWidth: 0.5, borderColor: C.brd,
   },
-  kpiLabel: { fontSize: 7, color: C.ink3, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
+  kpiLabel: { fontSize: 7, color: C.ink3, marginBottom: 3 },
   kpiValue: { fontSize: 13, fontFamily: F.num, fontWeight: 600, letterSpacing: -0.3 },
   kpiSub:   { fontSize: 7, color: C.ink3, marginTop: 2 },
 
@@ -117,7 +116,7 @@ const s = StyleSheet.create({
   tableHead: { flexDirection: 'row', backgroundColor: C.card, borderBottomWidth: 0.5, borderBottomColor: C.brd },
   tableRow:  { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: C.brd },
   tableRowLast: { flexDirection: 'row' },
-  thCell:    { fontSize: 7, fontFamily: F.body, fontWeight: 700, color: C.ink3, padding: '6 8', textTransform: 'uppercase', letterSpacing: 0.3 },
+  thCell:    { fontSize: 7, fontFamily: F.body, fontWeight: 700, color: C.ink3, padding: '6 8' },
   tdCell:    { fontSize: 8.5, color: C.ink2, padding: '6 8' },
 
   // Notas del asesor
@@ -125,7 +124,7 @@ const s = StyleSheet.create({
     backgroundColor: P.papel, borderRadius: 8, padding: '12 14',
     borderLeftWidth: 2.5, borderLeftColor: P.laton,
   },
-  notesLabel: { fontSize: 8, fontFamily: F.body, fontWeight: 700, color: P.laton700, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
+  notesLabel: { fontSize: 8, fontFamily: F.body, fontWeight: 700, color: P.laton700, marginBottom: 5 },
   notesText:  { fontSize: 9, color: C.ink2, lineHeight: 1.6 },
 
   // Próximos pasos
@@ -267,7 +266,7 @@ export function ReporteFinancieroPDF({ data }) {
             )}
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ fontSize: 7, color: C.ink4, fontFamily: F.body, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('apdf.scoreTitle')}</Text>
+            <Text style={{ fontSize: 7, color: C.ink4, fontFamily: F.body, fontWeight: 700 }}>{t('apdf.scoreTitle')}</Text>
             <Text style={{ fontSize: 7, color: C.ink4, marginTop: 2 }}>{t('apdf.scoreBasis', { n: signals.length })}</Text>
           </View>
         </View>
@@ -495,7 +494,7 @@ export function ReporteFinancieroPDF({ data }) {
                 ...(mIncome > 0 ? [{ lb: t('apdf.subsPctIncome'), v: fmtPct((subMonthly || 0) / mIncome) }] : []),
               ].map(m => (
                 <View key={m.lb} style={{ flex: 1, backgroundColor: C.card, padding: 8, borderRadius: 4, border: '0.5 solid ' + C.brd }}>
-                  <Text style={{ fontSize: 7, color: C.ink3, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{m.lb}</Text>
+                  <Text style={{ fontSize: 7, color: C.ink3, marginBottom: 2 }}>{m.lb}</Text>
                   <Text style={{ fontSize: 11, fontFamily: F.body, fontWeight: 700, color: C.ink }}>{m.v}</Text>
                 </View>
               ))}

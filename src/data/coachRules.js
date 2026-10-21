@@ -5,7 +5,7 @@
 // necesita otro idioma que español.
 import { es } from '../i18n/es.js'
 import { effectiveBudgetLimits, budgetStatus, BUDGET_WARN_PCT } from '../utils/budgets.js'
-import { currentMonth, fmtSignedMoney, fmtPct, currencySymbol } from '../utils/index.js'
+import { currentMonth, fmtSignedMoney, fmtPct, currencySymbol, fmtDecimal } from '../utils/index.js'
 import { personalDebtRatio } from '../utils/personal.js'
 import { findEmergencyGoal } from '../utils/emergencyGoal.js'
 import { maskMoney } from '../utils/money.js'
@@ -193,7 +193,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.emergencyFundMonths >= COACH_CONFIG.thresholds.emergencyFundMonthsGood ? {
       severity: 'info',
       title: tr('cr.emGood.title'),
-      msg: tr('cr.emGood.msg', { n: m.emergencyFundMonths.toFixed(1) }),
+      msg: tr('cr.emGood.msg', { n: fmtDecimal(m.emergencyFundMonths) }),
       action: null,
     } : null,
   },
@@ -203,7 +203,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.emergencyFundMonths > 0 && m.emergencyFundMonths < COACH_CONFIG.thresholds.emergencyFundMonthsGood ? {
       severity: 'attention',
       title: tr('cr.emWarn.title'),
-      msg: tr('cr.emWarn.msg', { n: m.emergencyFundMonths.toFixed(1) }),
+      msg: tr('cr.emWarn.msg', { n: fmtDecimal(m.emergencyFundMonths) }),
       action: tr('cr.emWarn.action'),
     } : null,
   },

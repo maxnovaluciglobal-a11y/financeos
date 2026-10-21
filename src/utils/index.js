@@ -243,6 +243,24 @@ export function fmtPct(n, { decimals = 1, signed = false, locale = _moneyLocale 
   return sign + body + NNBSP + '%'
 }
 
+// Porcentaje que ya viene en puntos (0–100: tasas fiscales, "25" de meta de
+// ahorro, comisión AFP 1,16) con el mismo formato que fmtPct: separador
+// decimal del idioma y U+202F antes de "%" (UI-Q6). Sin `decimals`, los
+// decimales justos: 25 → "25 %", 0,6 → "0,6 %", 1,16 → "1,16 %".
+export function fmtPctPoints(n, decimals) {
+  const v = Number(n) || 0
+  const d = decimals ?? (Number.isInteger(v) ? 0 : Number.isInteger(Math.round(v * 1000) / 100) ? 1 : 2)
+  return fmtPct(v / 100, { decimals: d })
+}
+
+// Número con decimales en el idioma del dinero ("0,4" / "0.4"), para cifras que
+// no son dinero ni porcentaje (meses de colchón).
+export function fmtDecimal(n, decimals = 1, locale = _moneyLocale) {
+  const v = Number(n) || 0
+  try { return new Intl.NumberFormat(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(v).replace('-', MINUS) }
+  catch { return v.toFixed(decimals) }
+}
+
 // Fecha corta de fila en el idioma de la interfaz: "15 oct" / "Oct 15" /
 // "15. Okt." (UI-Q7). Antes era "10-15" (el ISO recortado).
 export function fmtDayMonth(iso, locale = _dateLocale) {

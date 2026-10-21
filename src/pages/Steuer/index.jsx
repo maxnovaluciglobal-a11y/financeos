@@ -16,7 +16,7 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import { calcDescuentosDE, calcZvE, BUNDESLAENDER, ARBEITNEHMER_PAUSCHBETRAG } from '../../utils/taxCalcDE.js'
 import { tasaMarginalDE } from '../../config/deducciones/de.js'
 import { getDeduccionesConfig, autofillGastos } from '../../utils/deduccionesEngine.js'
-import { currentMonth } from '../../utils/index.js'
+import { currentMonth, fmtPctPoints } from '../../utils/index.js'
 
 const fmtEUR = (n) => `€${(Number(n) || 0).toLocaleString('de-DE', { maximumFractionDigits: 0 })}`
 
@@ -103,7 +103,7 @@ function LohnabzuegeCard() {
               {fmtEUR(result.netto)}
             </div>
             <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-              {t('steuer.lohn.nettoSub', { pct: Math.round(result.tasaEfectiva * 100) })}
+              {t('steuer.lohn.nettoSub', { pct: fmtPctPoints(Math.round(result.tasaEfectiva * 100)) })}
             </div>
           </div>
 
@@ -230,7 +230,7 @@ function WerbungskostenCard({ expenses, settings }) {
           </div>
           <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
             {result.superaPauschale
-              ? t('steuer.werb.resumenSupera', { gastos: result.totalGastos.toLocaleString('de-DE'), pausch: result.pausch.toLocaleString('de-DE'), pct: Math.round(result.tasa * 100) })
+              ? t('steuer.werb.resumenSupera', { gastos: result.totalGastos.toLocaleString('de-DE'), pausch: result.pausch.toLocaleString('de-DE'), pct: fmtPctPoints(Math.round(result.tasa * 100)) })
               : t('steuer.werb.resumenBaja', { pausch: result.pausch.toLocaleString('de-DE') })}
           </div>
         </div>

@@ -12,7 +12,7 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../c
 import ProGate from '../../components/ui/ProGate.jsx'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { calcRendimiento, TNA_DEFAULTS } from '../../utils/rendimientosAR.js'
-import { fmtFixed } from '../../utils/index.js'
+import { fmtFixed, fmtPctPoints } from '../../utils/index.js'
 import { fmtDay } from '../Dashboard/RefCurrency.jsx'
 
 const fmtARS = (n) => fmtFixed(n, 'es-AR')
@@ -133,7 +133,7 @@ function RendimientosCard({ blue }) {
               {t('multidolarar.rendimientos.interesNote', { interes: fmtARS(inst.interes), usd: blue ? fmtUSD(inst.final / blue) : '—' })}
             </div>
             <div style={{ fontSize: 11, color: 'var(--th)', marginTop: 6, paddingTop: 6, borderTop: '.5px solid var(--brd)' }}>
-              {t('multidolarar.rendimientos.teaNote', { pct: (inst.tea * 100).toFixed(1) })}
+              {t('multidolarar.rendimientos.teaNote', { pct: fmtPctPoints(inst.tea * 100, 1) })}
             </div>
           </div>
         ))}

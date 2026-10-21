@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
-import { fmtMoneyCompact, dateLocale } from '../../utils/index.js'
+import { fmtMoneyCompact, dateLocale, fmtPctPoints } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 
 const fmtRaw = (v, sym) => fmtMoneyCompact(v, sym)
@@ -92,7 +92,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <SignalIcon kind={d.status.icon} size={14} />
                 <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{d.creditor}</span>
-                {d.rate > 0 && <span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: d.rate })}</span>}
+                {d.rate > 0 && <span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: fmtPctPoints(d.rate) })}</span>}
               </div>
               <span style={{ fontSize:11, fontFamily:'var(--sans)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
                 {t(d.status.label)}

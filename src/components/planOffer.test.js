@@ -5,6 +5,7 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { fmtPctPoints } from '../utils/index.js'
 
 vi.mock('../i18n/useT.js', async () => {
   const { translate } = await import('../i18n/translate.js')
@@ -52,7 +53,7 @@ describe.each(LANGS)('LicenseGate · %s', (lang) => {
     const out = text(html)
     expect(out).toContain(`US$ ${PERIOD_PRICE[lang]}`)
     expect(out).not.toContain(`US$ ${MONTHLY_PRICE[lang]}`)
-    const annualLabel = `${t(lang, 'billing.period.annual')} ${t(lang, 'billing.period.save', { pct: 33 })}`
+    const annualLabel = `${t(lang, 'billing.period.annual')} ${t(lang, 'billing.period.save', { pct: fmtPctPoints(33) })}`
     expect(html).toMatch(new RegExp(`aria-pressed="true"[^>]*>${annualLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<`))
     expect(html).toMatch(new RegExp(`aria-pressed="false"[^>]*>${t(lang, 'billing.period.monthly')}<`))
     expect(html).toContain(`aria-label="${t(lang, 'billing.period.label')}"`)

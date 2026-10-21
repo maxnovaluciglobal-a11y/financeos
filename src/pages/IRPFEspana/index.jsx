@@ -13,7 +13,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedControl } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRPFEmpleado, calcIRPFAutonomo, TRAMOS_IRPF_2026 } from '../../utils/irpfES.js'
-import { fmtFixed } from '../../utils/index.js'
+import { fmtFixed, fmtPctPoints } from '../../utils/index.js'
 
 const fmtEUR = (n) => fmtFixed(n, 'es-ES', '€')
 
@@ -97,7 +97,7 @@ function EmpleadoCard() {
               {fmtEUR(result.retencionMensual)}
             </div>
             <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-              {t('irpfes.empleado.retencionSub', { pct: (result.tipoEfectivo * 100).toFixed(1) })}
+              {t('irpfes.empleado.retencionSub', { pct: fmtPctPoints(result.tipoEfectivo * 100, 1) })}
             </div>
           </div>
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -154,7 +154,7 @@ function AutonomoCard() {
           {fmtEUR(result.pagoFraccionado)}
         </div>
         <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-          {t('irpfes.autonomo.pagarSub', { pct: (result.tasa * 100).toFixed(0) })}
+          {t('irpfes.autonomo.pagarSub', { pct: fmtPctPoints(result.tasa * 100, 0) })}
         </div>
       </div>
       <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>

@@ -11,7 +11,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
-import { fmtPct } from '../../utils/index.js'
+import { fmtPct, fmtDecimal } from '../../utils/index.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { monthLabel } from '../shared/constants.js'
 
@@ -191,7 +191,7 @@ export default function Coach() {
           {metrics.monthlyExpense > 0 && (
             <KpiBar
               label={t('coach.kpi.emergency')}
-              value={t('coach.kpi.months', { n: metrics.emergencyFundMonths.toFixed(1) })}
+              value={t('coach.kpi.months', { n: fmtDecimal(metrics.emergencyFundMonths) })}
               pct={metrics.emergencyFundMonths / 3}
               level={lvl3(metrics.emergencyFundMonths >= 3, metrics.emergencyFundMonths >= 1)}
             />

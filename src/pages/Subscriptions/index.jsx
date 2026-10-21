@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, fmtPct, currencyDecimals } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, fmtPct, currencyDecimals, fmtPctPoints } from '../../utils/index.js'
 import { toLocal } from '../../utils/recurring.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
@@ -100,7 +100,7 @@ export function generateAlerts(subs, monthlyIncome, t = null, lang = null) {
       const pct = ((curAmt - prevAmt) / prevAmt) * 100
       alerts.push({
         type: 'priceIncrease',
-        msg: tr('subs.alert.priceIncrease', { name: s.name, pct: pct.toFixed(0) }, `"${s.name}" subió ${pct.toFixed(0)}% desde el último registro.`),
+        msg: tr('subs.alert.priceIncrease', { name: s.name, pct: fmtPctPoints(pct, 0) }, `"${s.name}" subió ${pct.toFixed(0)}% desde el último registro.`),
       })
     }
   })

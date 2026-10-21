@@ -30,7 +30,7 @@ import { RateSheet } from './RefCurrency.jsx'
 import { refEligible, resolveRefRate, rateToolFor } from '../../utils/refRate.js'
 import { prevMonthOf, homeMonthTotals } from './dashboardModel.js'
 import hs from './Home.module.css'
-import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, currencySymbol } from '../../utils/index.js'
+import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, currencySymbol, fmtPctPoints } from '../../utils/index.js'
 import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
@@ -149,7 +149,7 @@ export default function Dashboard({ setPage }) {
           color: 'var(--accent2)',
           bg: 'color-mix(in srgb, var(--accent2) 9%, transparent)',
           border: 'color-mix(in srgb, var(--accent2) 22%, transparent)',
-          text: t('dash.insight.topCat.text', { cat: catName(topCat[0], lang), pct: catPct }),
+          text: t('dash.insight.topCat.text', { cat: catName(topCat[0], lang), pct: fmtPctPoints(catPct) }),
           sub: t('dash.insight.topCat.sub'),
           page: 'movements',
         })
@@ -171,7 +171,7 @@ export default function Dashboard({ setPage }) {
           color,
           bg: pctN > 90 ? 'color-mix(in srgb, var(--neg) 8%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 9%, transparent)' : 'color-mix(in srgb, var(--pos) 8%, transparent)',
           border: pctN > 90 ? 'color-mix(in srgb, var(--neg) 24%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 24%, transparent)' : 'color-mix(in srgb, var(--pos) 22%, transparent)',
-          text: t('dash.insight.budget.text', { pct: budgetPct }),
+          text: t('dash.insight.budget.text', { pct: fmtPctPoints(budgetPct) }),
           sub: pctN > 90 ? t('dash.insight.budget.danger') : pctN > 80 ? t('dash.insight.budget.warn') : t('dash.insight.budget.ok'),
           page: 'budgets',
         })
@@ -192,7 +192,7 @@ export default function Dashboard({ setPage }) {
           color: 'var(--accent)',
           bg: 'color-mix(in srgb, var(--pos) 8%, transparent)',
           border: 'color-mix(in srgb, var(--pos) 22%, transparent)',
-          text: t('dash.insight.goal.text', { name: top.name, pct: goalPct }),
+          text: t('dash.insight.goal.text', { name: top.name, pct: fmtPctPoints(goalPct) }),
           sub: t('dash.insight.goal.sub', { v: money(Number(top.target) - Number(top.saved)) }),
           page: 'goals',
         })
@@ -677,7 +677,7 @@ export default function Dashboard({ setPage }) {
               </div>
             )}
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)' }}>
-              <span>{t('dash.proj.elapsed', { pct: pctMonth })}</span>
+              <span>{t('dash.proj.elapsed', { pct: fmtPctPoints(pctMonth) })}</span>
               {setPage && <button type="button" onClick={() => setPage('cashflow')} style={{ color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0, font:'inherit' }}>{t('dash.proj.viewFull')}</button>}
             </div>
             {over && <InlineCTA label={t('dash.proj.reviewExpenses')} page="movements" tone="red" />}

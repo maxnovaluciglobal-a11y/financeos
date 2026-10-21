@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import TEMPLATES from '../../data/templates.js'
-import { catName, prioLabel } from '../../utils/index.js'
+import { catName, prioLabel, fmtPctPoints } from '../../utils/index.js'
 import { User, Users, Laptop, Store, CreditCard, PiggyBank, GraduationCap, Target, Check } from 'lucide-react'
 import { logClientError } from '../../utils/errorLog.js'
 
@@ -130,7 +130,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
               <div style={{
                 fontSize: 11, fontFamily: 'var(--num)', fontWeight: 600,
                 color: 'var(--tx)', flexShrink: 0,
-              }}>{tr('tplsel.pctOfIncome', { pct: b.pct })}</div>
+              }}>{tr('tplsel.pctOfIncome', { pct: fmtPctPoints(b.pct) })}</div>
             </div>
           ))}
         </div>

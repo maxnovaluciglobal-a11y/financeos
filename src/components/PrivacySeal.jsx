@@ -3,6 +3,9 @@
 // Los datos viven en el dispositivo; la sincronización opcional viaja cifrada
 // y el servidor nunca puede leerla en claro. Puro SVG, sin dependencias.
 // Se estampa una vez al montar (respeta reduced-motion).
+// Desde la ola 2 (21-oct-2026) sin texto curvo: el lema iba en un textPath de
+// ~6 px reales, ilegible y bajo el piso de 11 px (REC-N6). Ahora el sello es solo
+// el dibujo y el lema va debajo como texto normal de 12 px.
 
 import { useT } from '../i18n/useT.js'
 
@@ -12,19 +15,13 @@ export default function PrivacySeal({ size = 72, label, title }) {
   if (title === undefined) title = t('seal.title')
   const c = 50
   return (
-    <svg viewBox="0 0 100 100" width={size} height={size} role="img" aria-label={title}
+    <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }} title={title}>
+    <svg viewBox="0 0 100 100" width={size} height={size} aria-hidden="true"
       className="fos-seal" style={{ display: 'block', overflow: 'visible' }}>
-      <defs>
-        <path id="seal-text" d={`M ${c},${c} m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0`} />
-      </defs>
       <g style={{ transformOrigin: '50px 50px' }} className="fos-seal-stamp">
         {/* anillos */}
         <circle cx={c} cy={c} r="47" fill="none" stroke="var(--brand, var(--grn))" strokeWidth="1.6" opacity="0.9" />
         <circle cx={c} cy={c} r="39.5" fill="none" stroke="var(--brand, var(--grn))" strokeWidth="0.8" opacity="0.55" />
-        {/* texto circular de marca */}
-        <text fontFamily="var(--mono)" fontSize="6.1" letterSpacing="1.7" fill="var(--brand, var(--grn))" opacity="0.85">
-          <textPath href="#seal-text" startOffset="0">{label}</textPath>
-        </text>
         {/* candado central */}
         <g stroke="var(--brand, var(--grn))" fill="none" strokeWidth="2.4" strokeLinecap="round" opacity="0.9">
           <path d="M 42 47 v-5 a 8 8 0 0 1 16 0 v5" />
@@ -39,5 +36,7 @@ export default function PrivacySeal({ size = 72, label, title }) {
         @media (prefers-reduced-motion: reduce) { .fos-seal-stamp { animation: none; } }
       `}</style>
     </svg>
+      <figcaption style={{ fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 500, lineHeight: 1.3, color: 'var(--tm)', textAlign: 'center' }}>{label}</figcaption>
+    </figure>
   )
 }

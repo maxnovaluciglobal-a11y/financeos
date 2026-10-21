@@ -18,6 +18,7 @@ import { loadTasaVE, defaultFuenteVE, DEFAULT_FUENTE_VE } from '../../utils/tasa
 import Money, { useMoney } from '../../components/Money.jsx'
 import { fmtRef, fmtDay } from '../Dashboard/RefCurrency.jsx'
 import { SOURCE_LABEL } from '../../utils/refRate.js'
+import { fmtPctPoints } from '../../utils/index.js'
 
 const CONFIGS = { VE: veConfig }
 
@@ -170,7 +171,7 @@ export default function Multimoneda() {
             <ProgressBar value={result.exposicionBsPct} max={100} color={result.alerta ? 'red' : 'green'} height={6} label={t('multimoneda.result.exposicion')} />
             {result.alerta ? (
               <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 10, lineHeight: 1.5 }}>
-                {t('multimoneda.result.alertaText', { pct: Math.round(result.exposicionBsPct), umbral: config.umbralExposicion })}
+                {t('multimoneda.result.alertaText', { pct: fmtPctPoints(Math.round(result.exposicionBsPct)), umbral: fmtPctPoints(config.umbralExposicion) })}
               </div>
             ) : (
               <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>

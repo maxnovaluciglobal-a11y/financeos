@@ -4,11 +4,12 @@
 // aria-pressed, como los demás chips de la app. Auditoría 360, C-03 / COM-3.
 import { useT } from '../../i18n/useT.js'
 import { annualSavingPct } from '../../utils/pricing.js'
+import { fmtPctPoints } from '../../utils/index.js'
 
 export default function PeriodToggle({ value, onChange }) {
   const { t } = useT()
   const options = [
-    { value: 'annual', label: `${t('billing.period.annual')} ${t('billing.period.save', { pct: annualSavingPct() })}` },
+    { value: 'annual', label: `${t('billing.period.annual')} ${t('billing.period.save', { pct: fmtPctPoints(annualSavingPct()) })}` },
     { value: 'monthly', label: t('billing.period.monthly') },
   ]
   return (

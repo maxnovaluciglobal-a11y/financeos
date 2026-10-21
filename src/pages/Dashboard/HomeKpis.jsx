@@ -12,7 +12,7 @@ import Amount from '../../components/Amount.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import { useT } from '../../i18n/useT.js'
-import { fmtMoney, fmtSignedMoney } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtPctPoints } from '../../utils/index.js'
 import { monthDelta, prevMonthOf } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
 import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
@@ -93,7 +93,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                   color={pulse.color}
                   centerValue="" centerLabel="" footLabel=""
                   size={88}
-                  ariaLabel={t('pulse.aria', { spent: Math.round(pulse.spentRatio * 100), elapsed: Math.round(pulse.elapsedRatio * 100) })}
+                  ariaLabel={t('pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })}
                 />
                 {/* El ritmo con ícono + palabra, no solo el color del anillo (T15) */}
                 <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize: 12 }} />

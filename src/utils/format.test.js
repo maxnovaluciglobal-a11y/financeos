@@ -54,3 +54,17 @@ describe('fmtDayMonth (UI-Q7)', () => {
     expect(fmtDayMonth('xx')).toBe('xx')
   })
 })
+
+import { fmtPctPoints, fmtDecimal } from './index.js'
+describe('fmtPctPoints y fmtDecimal (UI-Q6, ola 2)', () => {
+  it('porcentaje en puntos con el formato de fmtPct', () => {
+    expect(fmtPctPoints(25, undefined)).toMatch(/^25\u202f%$/)
+    expect(fmtPctPoints(1.16)).toMatch(/^1[,.]16\u202f%$/)
+    expect(fmtPctPoints(0.6)).toMatch(/^0[,.]6\u202f%$/)
+    expect(fmtPctPoints(12.345, 1)).toMatch(/^12[,.]3\u202f%$/)
+  })
+  it('decimal en el idioma del dinero, con signo menos tipográfico', () => {
+    expect(fmtDecimal(0.4)).toMatch(/^0[,.]4$/)
+    expect(fmtDecimal(-1.25, 2)).toMatch(/^−1[,.]25$/)
+  })
+})

@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
-import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName, catName, currencySymbol, localDateStr } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtAxis, fmtPct, currentMonth, monthShortName, catName, currencySymbol, localDateStr, fmtPctPoints } from '../../utils/index.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { recurringMonthlyTotals, monthPlan, pendingTotals } from '../../utils/recurring.js'
 import { freqText } from '../../components/recurring/labels.js'
@@ -220,12 +220,12 @@ export default function CashFlow({ setPage }) {
             {/* Alerta de ritmo */}
             {pace !== null && pace > 0.08 && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: '.5px solid rgba(255,77,106,.25)', borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--sans)' }}>
-                <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: (pace * 100).toFixed(0), proj: fmtSignedMoney(projExp, sym), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: fmtSignedMoney(projExp - totalBudget, sym) }) : '' })}
+                <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: fmtPctPoints(pace * 100, 0), proj: fmtSignedMoney(projExp, sym), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: fmtSignedMoney(projExp - totalBudget, sym) }) : '' })}
               </div>
             )}
             {pace !== null && pace <= 0 && curExp > 0 && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)' }}>
-                {t('cf.alert.under', { pct: Math.abs((pace * 100).toFixed(0)) })}
+                {t('cf.alert.under', { pct: fmtPctPoints(Math.abs((pace * 100).toFixed(0))) })}
               </div>
             )}
           </Card>

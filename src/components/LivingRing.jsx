@@ -11,6 +11,7 @@
 
 import { useMoney } from './Money.jsx'
 import { useT } from '../i18n/useT.js'
+import { fmtPctPoints } from '../utils/index.js'
 
 const TAU = Math.PI * 2
 const polar = (cx, cy, r, frac) => {
@@ -50,7 +51,7 @@ export default function LivingRing({
 
   return (
     <svg viewBox="0 0 200 200" width={size} height={size} role="img"
-      aria-label={ariaLabel || t('ring.aria', { spent: Math.round(spentRatio * 100), elapsed: Math.round(elapsedRatio * 100) })}
+      aria-label={ariaLabel || t('ring.aria', { spent: fmtPctPoints(Math.round(spentRatio * 100)), elapsed: fmtPctPoints(Math.round(elapsedRatio * 100)) })}
       style={{ display: 'block' }}>
       {/* pista de días (fina) */}
       <circle cx={cx} cy={cy} r={rDay} fill="none" stroke="var(--brd2)" strokeWidth="2" />

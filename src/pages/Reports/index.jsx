@@ -5,7 +5,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis, fmtSignedMoney } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis, fmtSignedMoney, fmtPctPoints } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -313,8 +313,8 @@ export default function Reports({ setPage }) {
           {totalIncome===0
             ? <Alert type="info">{t('reports.reco.empty')}</Alert>
             : savingRate>=0.25
-              ? <Alert type="ok">{t('reports.reco.aboveGoal', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25 })}</Alert>
-              : <Alert type="warn">{balance<0 ? t('reports.reco.belowGoal.reduce', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25, v: fmtMoney(-balance+totalIncome*(settings.savingGoalPct/100||0.25),sym) }) : t('reports.reco.belowGoal.save', { rate: fmtPct(savingRate), goal: settings.savingGoalPct||25, v: fmtMoney(neededToSave,sym) })}</Alert>
+              ? <Alert type="ok">{t('reports.reco.aboveGoal', { rate: fmtPct(savingRate), goal: fmtPctPoints(settings.savingGoalPct||25) })}</Alert>
+              : <Alert type="warn">{balance<0 ? t('reports.reco.belowGoal.reduce', { rate: fmtPct(savingRate), goal: fmtPctPoints(settings.savingGoalPct||25), v: fmtMoney(-balance+totalIncome*(settings.savingGoalPct/100||0.25),sym) }) : t('reports.reco.belowGoal.save', { rate: fmtPct(savingRate), goal: fmtPctPoints(settings.savingGoalPct||25), v: fmtMoney(neededToSave,sym) })}</Alert>
           }
           {overBudget.length>0
             ? <Alert type="danger">{t('reports.reco.overBudget', { cats: overBudget.map(b=>catName(b.category, lang)).join(', ') })}</Alert>

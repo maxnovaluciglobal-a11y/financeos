@@ -10,7 +10,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol } from '../../utils/index.js'
+import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -542,7 +542,7 @@ export default function Advisor() {
                         <div>
                           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{d.creditor}</div>
                           <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
-                            {t('adv.debts.rateLine', { rate: d.rate, v: fmtMoney(d.minPayment || 0, sym) })}
+                            {t('adv.debts.rateLine', { rate: fmtPctPoints(d.rate), v: fmtMoney(d.minPayment || 0, sym) })}
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
