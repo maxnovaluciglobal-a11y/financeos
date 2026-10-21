@@ -107,8 +107,8 @@ export default function Budgets() {
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             background: rolloverOn ? 'var(--accent-bg)' : 'var(--sur2)',
             border: `.5px solid ${rolloverOn ? 'var(--accent)' : 'var(--brd2)'}`,
-            borderRadius: 'var(--rs)', padding: '5px 12px', cursor: 'pointer',
-            fontSize: 11, fontFamily: 'var(--mono)',
+            borderRadius: 'var(--rs)', padding: '5px 12px', cursor: 'pointer', minHeight: 44,
+            fontSize: 12, fontFamily: 'var(--sans)',
             color: rolloverOn ? 'var(--accent)' : 'var(--th)',
           }}
         >

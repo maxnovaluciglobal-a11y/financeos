@@ -11,7 +11,7 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { PageHeader, Card, CardHeader, KPI, Btn, Badge, Alert, Empty, FormGroup, FormRow } from '../../components/ui/index.jsx'
-import { Pencil } from 'lucide-react'
+import { Pencil, X } from 'lucide-react'
 
 // ── CONSTANTES ──────────────────────────────────────────────────────────────────
 export const SUB_CATEGORIES = [
@@ -339,8 +339,8 @@ export default function Subscriptions() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'var(--sur2)', borderBottom: '.5px solid var(--brd)' }}>
-                  {[t('subs.th.service'), t('subs.th.category'), t('subs.th.perMonth'), t('subs.th.perYear'), t('subs.th.freq'), t('subs.th.nextPay'), t('subs.th.status'), ''].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', whiteSpace: 'nowrap' }}>{h}</th>
+                  {[t('subs.th.service'), t('subs.th.category'), t('subs.th.perMonth'), t('subs.th.perYear'), t('subs.th.freq'), t('subs.th.nextPay'), t('subs.th.status'), null].map(h => (
+                    <th key={h || 'actions'} scope="col" style={{ position: 'relative', padding: '8px 12px', textAlign: 'left', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', whiteSpace: 'nowrap' }}>{h ?? <span className="sr-only">{t('subs.th.actions')}</span>}</th>
                   ))}
                 </tr>
               </thead>
@@ -363,7 +363,7 @@ export default function Subscriptions() {
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <button onClick={() => toggleStatus(sub)} aria-pressed={isActive} style={{
-                          fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 8px', borderRadius: 'var(--rs)', cursor: 'pointer',
+                          fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 10px', borderRadius: 'var(--rs)', cursor: 'pointer', minHeight: 44,
                           background: isActive ? 'var(--grn-bg)' : 'var(--sur2)',
                           color: isActive ? 'var(--grn)' : 'var(--th)',
                           border: `.5px solid ${isActive ? 'var(--grn)' : 'var(--brd)'}`,
@@ -371,8 +371,8 @@ export default function Subscriptions() {
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={() => openEdit(sub)} aria-label={t('ui.editItem', { name: sub.name })} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}><Pencil size={13} strokeWidth={1.7} aria-hidden="true" /></button>
-                          <button onClick={() => remove(sub.id)} aria-label={`Eliminar ${sub.name}`} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 32, minHeight: 32 }}><span aria-hidden="true">✕</span></button>
+                          <button onClick={() => openEdit(sub)} aria-label={t('ui.editItem', { name: sub.name })} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 44, minHeight: 44 }}><Pencil size={13} strokeWidth={1.7} aria-hidden="true" /></button>
+                          <button onClick={() => remove(sub.id)} aria-label={t('ui.deleteItem', { name: sub.name })} style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', minWidth: 44, minHeight: 44 }}><X size={14} strokeWidth={1.7} aria-hidden="true" /></button>
                         </div>
                       </td>
                     </tr>
@@ -384,7 +384,7 @@ export default function Subscriptions() {
         )}
       </Card>
 
-      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 16 }}>
+      <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16 }}>
         {t('subs.disclaimer')}
       </div>
     </div>

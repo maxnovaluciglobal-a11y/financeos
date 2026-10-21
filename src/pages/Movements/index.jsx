@@ -121,7 +121,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
 
       {onImport && (
         <button type="button" onClick={onImport}
-          style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'block' }}>
+          style={{ background:'none', border:'none', padding:0, marginBottom:4, minHeight:44, fontSize:12, fontFamily:'var(--sans)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center' }}>
           <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
         </button>
       )}
@@ -509,7 +509,7 @@ export default function Movements({ setPage }) {
         {!showAdd && !showGasto && !showSub && (
           <button onClick={() => setShowAdd(true)} style={{
             background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:8,
-            padding:'8px 20px', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            padding:'8px 20px', minHeight:44, fontSize:13, fontWeight:600, cursor:'pointer' }}>
             {t('mov.addBtn')}
           </button>
         )}

@@ -24,12 +24,15 @@ export default function DemoBanner({ onReplayTour }) {
     setScenario(next)
   }
 
+  const label = t('demo.banner.label', { name: persona.name, country: t(`country.${persona.country}`) })
+  // Franja propia como landmark complementario (axe "region"): todo el contenido
+  // de la página queda dentro de un landmark.
   return (
-    <div className="demo-banner">
+    <aside className="demo-banner" aria-label={label}>
       <div className="demo-banner__row">
         <span className="demo-banner__badge">DEMO</span>
 
-        <span className="demo-banner__label">{t('demo.banner.label', { name: persona.name, country: t(`country.${persona.country}`) })}</span>
+        <span className="demo-banner__label">{label}</span>
 
         {/* Toggle escenario — muestra el estado ACTUAL, no el destino */}
         <button type="button" className="demo-banner__scenario" onClick={toggle} title={t('demo.banner.scenarioHint')}>
@@ -51,6 +54,6 @@ export default function DemoBanner({ onReplayTour }) {
           {t('demo.banner.start')}
         </a>
       </div>
-    </div>
+    </aside>
   )
 }

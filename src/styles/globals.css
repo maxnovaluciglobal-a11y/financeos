@@ -92,6 +92,10 @@ input, select, textarea {
   outline: none;
   transition: border-color 0.15s;
 }
+/* Objetivo táctil de 44 px (C-42): campos y selects, incluidos los compactos con
+   padding inline (selector de mes, tipo de deuda). Casillas y radios quedan
+   fuera: llevan su propio tamaño de 16 px dentro de una fila de 44 px. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]), select { min-height: 44px; }
 input:focus, select:focus, textarea:focus { border-color: var(--laton-700); }
 /* outline:none de arriba mata el :focus-visible global — sin esto, los
    formularios (justo donde más se navega por teclado) quedaban con un

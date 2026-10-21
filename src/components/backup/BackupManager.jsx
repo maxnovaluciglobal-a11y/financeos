@@ -427,7 +427,7 @@ export default function BackupManager() {
   const slbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
   const ssub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 2, lineHeight: 1.5 }
   const btn = (variant = 'default') => ({
-    padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+    padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, minHeight: 44,
     cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
     flexShrink: 0, transition: 'all .15s',
     ...(variant === 'primary' ? { background: 'var(--laton)', color: 'var(--navy)' } : {}),

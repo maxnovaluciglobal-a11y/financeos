@@ -9,7 +9,7 @@ import { useT } from '../../i18n/useT.js'
 import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import TEMPLATES from '../../data/templates.js'
 import { catName, prioLabel } from '../../utils/index.js'
-import { User, Users, Laptop, Store, CreditCard, PiggyBank, GraduationCap, Target } from 'lucide-react'
+import { User, Users, Laptop, Store, CreditCard, PiggyBank, GraduationCap, Target, Check } from 'lucide-react'
 import { logClientError } from '../../utils/errorLog.js'
 
 // Ícono por plantilla (T17): antes un glifo unicode en data/templates.js
@@ -61,7 +61,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
     <span key={text} style={{
       display: 'inline-block', padding: '2px 8px',
       borderRadius: 'var(--rs)', fontSize: 11, fontFamily: 'var(--mono)',
-      background: `${color}18`, color, marginRight: 4, marginBottom: 4,
+      background: `${color}18`, color: 'var(--tx)', marginRight: 4, marginBottom: 4,
       border: `0.5px solid ${color}30`,
     }}>{text}</span>
   )
@@ -83,7 +83,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           }}><TemplateIcon id={template.id} size={18} /></div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)' }}>{tr(`tpl.${template.id}.name`)}</div>
-            <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{tr(`tpl.${template.id}.tagline`)}</div>
+            <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{tr(`tpl.${template.id}.tagline`)}</div>
           </div>
         </div>
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6 }}>{tr(template.description)}</div>
@@ -97,7 +97,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           <div style={sectionTitle}>{tr('tplsel.idealFor')}</div>
           {template.bestFor.map(b => (
             <div key={b} style={{ fontSize: 11, color: 'var(--tm)', padding: '3px 0', display: 'flex', gap: 6 }}>
-              <span style={{ color: template.color }}>·</span> {tr(b)}
+              <span aria-hidden="true" style={{ color: template.color }}>·</span> {tr(b)}
             </div>
           ))}
         </div>
@@ -128,7 +128,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
               </div>
               <div style={{
                 fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
-                color: template.color, flexShrink: 0,
+                color: 'var(--tx)', flexShrink: 0,
               }}>{tr('tplsel.pctOfIncome', { pct: b.pct })}</div>
             </div>
           ))}
@@ -162,7 +162,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
             padding: '10px 12px', background: 'var(--grn-bg)',
             borderRadius: 8, border: '0.5px solid rgba(26,163,104,.2)',
           }}>
-            <div style={{ fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--grn)', marginBottom: 4 }}>
+            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--grn)', marginBottom: 4 }}>
               {tr('tplsel.advisorTip')}
             </div>
             <div style={{ fontSize: 11, color: 'var(--grn)', lineHeight: 1.6 }}>{tr(template.advisorTip)}</div>
@@ -173,7 +173,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
         <div style={{
           padding: '10px 12px', background: 'var(--amb-bg)',
           borderRadius: 8, border: '0.5px solid rgba(133,79,11,.2)',
-          fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5,
+          fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', lineHeight: 1.5,
         }}>
           <InlineIcon kind="alert" size={13} />{(() => {
             const [a, b = ''] = tr('tplsel.applyNotice').split('{notDeleted}')
@@ -189,12 +189,12 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
       }}>
         <button onClick={onClose} style={{
           background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
-          borderRadius: 6, padding: '8px 16px', fontSize: 12,
+          borderRadius: 6, padding: '8px 16px', fontSize: 12, minHeight: 44,
           cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
         }}>{tr('common.cancel')}</button>
         <button onClick={() => onApply(template)} style={{
-          background: template.color, color: '#fff', border: 'none',
-          borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600,
+          background: 'var(--laton)', color: 'var(--navy)', border: 'none',
+          borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
           cursor: 'pointer', fontFamily: 'var(--sans)',
         }}>{tr('tplsel.apply')}</button>
       </div>
@@ -217,20 +217,20 @@ function ConfirmModal({ template, hasExistingConfig, onConfirm, onCancel }) {
         </div>
         <div style={{
           padding: '8px 12px', background: 'var(--grn-bg)',
-          borderRadius: 6, fontSize: 11, color: 'var(--grn)',
-          fontFamily: 'var(--mono)', marginBottom: 20, lineHeight: 1.5,
+          borderRadius: 6, fontSize: 12, color: 'var(--grn)',
+          fontFamily: 'var(--sans)', marginBottom: 20, lineHeight: 1.5,
         }}>
-          ✓ {tr('tplsel.safe')}
+          <Check size={13} strokeWidth={2} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 4 }} />{tr('tplsel.safe')}
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
             background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
-            borderRadius: 6, padding: '8px 16px', fontSize: 12,
+            borderRadius: 6, padding: '8px 16px', fontSize: 12, minHeight: 44,
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>{tr('common.cancel')}</button>
           <button onClick={onConfirm} style={{
-            background: template.color, color: '#fff', border: 'none',
-            borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600,
+            background: 'var(--laton)', color: 'var(--navy)', border: 'none',
+            borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
             cursor: 'pointer', fontFamily: 'var(--sans)',
           }}>{tr('common.confirm')}</button>
         </div>
@@ -315,9 +315,9 @@ export default function TemplateSelector({ compact = false, onApplied }) {
               key={t.id}
               onClick={() => handleApplyClick(t)}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 32,
+                display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44,
                 padding: '4px 10px', borderRadius: 'var(--rs)', fontSize: 12,
-                cursor: 'pointer', fontFamily: 'var(--mono)',
+                cursor: 'pointer', fontFamily: 'var(--sans)',
                 background: activeTemplateId === t.id ? `${t.color}18` : 'var(--sur2)',
                 color: activeTemplateId === t.id ? t.color : 'var(--th)',
                 border: `0.5px solid ${activeTemplateId === t.id ? t.color + '40' : 'var(--brd)'}`,
@@ -346,13 +346,13 @@ export default function TemplateSelector({ compact = false, onApplied }) {
         <div style={{
           padding: '8px 12px', background: 'var(--grn-bg)',
           border: '0.5px solid rgba(26,163,104,.2)', borderRadius: 8,
-          fontSize: 11, color: 'var(--grn)', fontFamily: 'var(--mono)',
+          fontSize: 12, color: 'var(--grn)', fontFamily: 'var(--sans)',
           marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6,
         }}>
           {/* Nombre y consejo salen de la plantilla por id (traducidos), no de
               settings.activeTemplateName/templateAdvisorTip: esos quedaron
               guardados en español en dispositivos que aplicaron una plantilla antes. */}
-          ✓ {tr('tplsel.activeLabel')} <strong>{TEMPLATES.some(t => t.id === activeTemplateId) ? tr(`tpl.${activeTemplateId}.name`) : (settings.activeTemplateName || activeTemplateId)}</strong>
+          <Check size={13} strokeWidth={2} aria-hidden="true" style={{ flexShrink: 0 }} />{tr('tplsel.activeLabel')} <strong>{TEMPLATES.some(t => t.id === activeTemplateId) ? tr(`tpl.${activeTemplateId}.name`) : (settings.activeTemplateName || activeTemplateId)}</strong>
           {TEMPLATES.some(t => t.id === activeTemplateId) && (compact || settings.onboardingUseType === 'advisor') && (
             <span style={{ marginLeft: 8, color: 'var(--grn)', opacity: 0.7 }}>
               · {tr(`tpl.${activeTemplateId}.advisorTip`).slice(0, 60)}…
@@ -392,13 +392,13 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', lineHeight: 1.2 }}>{tr(`tpl.${t.id}.name`)}</div>
                   {isActive && (
-                    <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: t.color, marginTop: 1 }}>{tr('tplsel.active')}</div>
+                    <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--tm)', marginTop: 1 }}>{tr('tplsel.active')}</div>
                   )}
                 </div>
               </div>
 
               {/* Tagline */}
-              <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.4, fontFamily: 'var(--mono)' }}>
+              <div style={{ fontSize: 12, color: 'var(--th)', lineHeight: 1.4, fontFamily: 'var(--sans)' }}>
                 {tr(`tpl.${t.id}.tagline`)}
               </div>
 
@@ -419,7 +419,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                 <button
                   onClick={() => setPreview(t)}
                   style={{
-                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 11,
+                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 12, minHeight: 44,
                     cursor: 'pointer', border: '0.5px solid var(--brd2)',
                     background: 'var(--sur2)', color: 'var(--tm)',
                     fontFamily: 'var(--sans)',
@@ -429,15 +429,15 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                   onClick={() => handleApplyClick(t)}
                   disabled={isActive}
                   style={{
-                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 11,
+                    flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 12, minHeight: 44,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                     fontWeight: 600, cursor: isActive ? 'default' : 'pointer',
                     border: 'none', fontFamily: 'var(--sans)',
-                    background: isActive ? 'var(--sur2)' : t.color,
-                    color: isActive ? 'var(--th)' : '#fff',
-                    opacity: isActive ? 0.7 : 1,
+                    background: isActive ? 'var(--sur2)' : 'var(--laton)',
+                    color: isActive ? 'var(--th)' : 'var(--navy)',
                   }}
                 >
-                  {isJustApplied ? `✓ ${tr('tplsel.applied')}` : isActive ? tr('tplsel.active') : tr('tplsel.applyShort')}
+                  {isJustApplied ? <><Check size={14} strokeWidth={2} aria-hidden="true" />{tr('tplsel.applied')}</> : isActive ? tr('tplsel.active') : tr('tplsel.applyShort')}
                 </button>
               </div>
             </div>
@@ -449,7 +449,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
       <div style={{
         marginTop: 12, padding: '10px 12px', background: 'var(--sur2)',
         borderRadius: 8, border: '0.5px solid var(--brd)',
-        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.5,
+        fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
       }}>
         {tr('tplsel.note')}
       </div>

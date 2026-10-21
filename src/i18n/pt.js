@@ -387,6 +387,7 @@ export const pt = {
     'subs.th.freq': "Frequência",
     'subs.th.nextPay': "Próx. pagamento",
     'subs.th.status': "Status",
+    'subs.th.actions': "Ações",
     'subs.status.active': "Ativa",
     'subs.status.inactive': "Inativa",
     'subs.disclaimer': "As visualizações mostram o custo mensal equivalente de cada assinatura. Não constituem aconselhamento financeiro, tributário, jurídico nem de investimento.",

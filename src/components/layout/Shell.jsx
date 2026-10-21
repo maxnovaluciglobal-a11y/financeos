@@ -231,7 +231,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
         {/* Topbar — título de la página + moneda. En móvil el TabBar es la
             navegación primaria; en las pantallas empujadas (R14) aparece
             "‹ {de dónde viniste}" en lugar de la barra inferior. */}
-        <div className={s.topbar}>
+        <header className={s.topbar}>
           <div className={s.topLeft}>
             {chrome.back && (
               <button type="button" className={s.backBtn} onClick={back}
@@ -262,7 +262,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
             <span>MOY IQ · {settings.currency || 'CLP'}</span>
           </span>
           <span className="sr-only" role="status" aria-live="polite">{amountsAnnounce}</span>
-        </div>
+        </header>
 
         <main className={s.content} data-scroll-root ref={contentRef} tabIndex={0} aria-label={t(pageLabel(page))}>
           <div className={s.contentInner}>

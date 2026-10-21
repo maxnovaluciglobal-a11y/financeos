@@ -387,6 +387,7 @@ export const de = {
     'subs.th.freq': "Frequenz",
     'subs.th.nextPay': "Nächste Zahlung",
     'subs.th.status': "Status",
+    'subs.th.actions': "Aktionen",
     'subs.status.active': "Aktiv",
     'subs.status.inactive': "Inaktiv",
     'subs.disclaimer': "Die Visualisierungen zeigen die monatlichen Äquivalentkosten jedes Abos. Sie stellen keine Finanz-, Steuer-, Rechts- oder Anlageberatung dar.",

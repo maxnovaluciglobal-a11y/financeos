@@ -387,6 +387,7 @@ export const en = {
     'subs.th.freq': "Frequency",
     'subs.th.nextPay': "Next pay",
     'subs.th.status': "Status",
+    'subs.th.actions': "Actions",
     'subs.status.active': "Active",
     'subs.status.inactive': "Inactive",
     'subs.disclaimer': "Visualizations show the monthly equivalent cost of each subscription. Not financial, tax, legal, or investment advice.",

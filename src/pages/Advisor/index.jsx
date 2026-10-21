@@ -153,13 +153,15 @@ function TrafficLight({ signals }) {
           <div style={{
             fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
             color: colors[s.status], flexShrink: 0,
-            background: bg[s.status], padding: '2px 8px', borderRadius: 'var(--rs)',
+            // Fondo liso: sobre el tinte de la fila, un segundo tinte dejaba el
+            // texto de 11 px en 4,45:1 (axe color-contrast).
+            background: 'var(--sur)', padding: '2px 8px', borderRadius: 'var(--rs)',
           }}>
             {labels[s.status]}
           </div>
         </div>
       ))}
-      <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4, lineHeight: 1.5 }}>
         {t('adv.tl.disclaimer')}
       </p>
     </div>
@@ -255,7 +257,7 @@ function AdvisorNotes({ notes, onSave }) {
           onClick={handleSave}
           style={{
             background: 'var(--laton)', color: 'var(--navy)', border: 'none',
-            borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600,
+            borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
             cursor: 'pointer', fontFamily: 'var(--sans)',
           }}
         >
@@ -632,7 +634,7 @@ export default function Advisor() {
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {t('adv.pdf.chips').split('|').map((chip,i) => (
-              <span key={i} style={{fontSize:11,padding:'2px 8px',borderRadius:10,background:'var(--pos-bg)',color:'var(--pos)',fontFamily:'monospace'}}>{chip}</span>
+              <span key={i} style={{fontSize:11,padding:'2px 8px',borderRadius:10,background:'var(--pos-bg)',color:'var(--pos)',fontFamily:'var(--sans)'}}>{chip}</span>
             ))}
           </div>
         </div>
@@ -646,7 +648,7 @@ export default function Advisor() {
           <button
             onClick={handleExportPDF}
             disabled={pdfLoading || noData}
-            style={{background:pdfLoading?'var(--sur)':'var(--laton)',color:pdfLoading?'var(--th)':'var(--navy)',border:'none',borderRadius:6,padding:'10px 20px',fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
+            style={{background:pdfLoading?'var(--sur)':'var(--laton)',color:pdfLoading?'var(--th)':'var(--navy)',border:'none',borderRadius:6,padding:'10px 20px',minHeight:44,fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
           >
             {pdfLoading ? t('adv.pdf.generating') : t('adv.pdf.export')}
           </button>
@@ -666,7 +668,7 @@ export default function Advisor() {
             <button
               onClick={handleSendEmail}
               disabled={emailStatus === 'sending' || noData || !emailConsentChecked}
-              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'#fff',border:'none',borderRadius:6,padding:'9px 18px',fontSize:12,fontWeight:600,cursor:emailStatus==='sending'||noData||!emailConsentChecked?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData||!emailConsentChecked?0.5:1}}
+              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'var(--bg)',border:'none',borderRadius:6,padding:'9px 18px',minHeight:44,fontSize:12,fontWeight:600,cursor:emailStatus==='sending'||noData||!emailConsentChecked?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData||!emailConsentChecked?0.5:1}}
             >
               {emailStatus === 'sending' ? t('adv.pdf.emailSending') : emailStatus === 'sent' ? t('adv.pdf.emailSent') : t('adv.pdf.emailSend')}
             </button>

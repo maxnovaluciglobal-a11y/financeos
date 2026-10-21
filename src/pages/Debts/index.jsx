@@ -13,6 +13,7 @@ import { applyDebtPayment, monthlyRate, nextPaymentAmount } from '../../utils/de
 import { monthPlan } from '../../utils/recurring.js'
 import { debtRuleId } from '../../utils/recurringSources.js'
 import { logRejection } from '../../utils/errorLog.js'
+import { Building2 } from 'lucide-react'
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
@@ -388,10 +389,10 @@ export default function Debts() {
               <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}}>
                 {d.rate > 0 && <Badge color="red">{d.rate}% TAE</Badge>}
                 {Number(d.ufBalance) > 0 && <Badge color="amber">UF</Badge>}
-                {(d.project||'').trim() && <Badge color="green">🏢 {d.project}</Badge>}
+                {(d.project||'').trim() && <Badge color="green"><Building2 size={11} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-1px', marginRight: 3 }} />{d.project}</Badge>}
                 {d.balance > 0 && d.minPayment > 0 && confirmPay !== d.id && (
                   <button onClick={() => setConfirmPay(d.id)}
-                    style={{fontSize:11,padding:'2px 8px',borderRadius:4,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.08)',color:'var(--grn)',cursor:'pointer',fontFamily:'var(--mono)',fontWeight:600}}>
+                    style={{fontSize:12,padding:'2px 10px',minHeight:44,borderRadius:4,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.08)',color:'var(--grn)',cursor:'pointer',fontFamily:'var(--sans)',fontWeight:600}}>
                     {t('debts.card.payBtn')}
                   </button>
                 )}

@@ -100,7 +100,7 @@ export default function Income({ setPage }) {
 
           {setPage && (
             <button type="button" onClick={() => setPage('import')}
-              style={{ background:'none', border:'none', padding:0, marginBottom:10, fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'block' }}>
+              style={{ background:'none', border:'none', padding:0, marginBottom:4, minHeight:44, fontSize:12, fontFamily:'var(--sans)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center' }}>
               <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
             </button>
           )}
@@ -108,7 +108,7 @@ export default function Income({ setPage }) {
             {!showPaste ? (
               <button type="button" onClick={() => { setShowPaste(true); setPasteMsg(null) }}
                 style={{ background:'var(--sur2)', border:'.5px dashed var(--brd2)', borderRadius:6,
-                  padding:'7px 12px', fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
+                  padding:'7px 12px', minHeight:44, fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
                 {t('income.paste.btn')}
               </button>
             ) : (
@@ -120,13 +120,13 @@ export default function Income({ setPage }) {
                   <Btn variant="primary" size="sm" onClick={detectFromPaste} disabled={!pasteText.trim()}>{t('income.paste.detect')}</Btn>
                   <Btn variant="ghost" size="sm" onClick={() => { setShowPaste(false); setPasteText('') }}>{t('common.cancel')}</Btn>
                 </div>
-                <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:6, lineHeight:1.5 }}>
+                <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--sans)', marginTop:6, lineHeight:1.5 }}>
                   {t('income.paste.local')}
                 </div>
               </div>
             )}
             {pasteMsg && (
-              <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--mono)' }}>
+              <div style={{ marginTop:8, fontSize:12, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--sans)' }}>
                 <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
               </div>
             )}

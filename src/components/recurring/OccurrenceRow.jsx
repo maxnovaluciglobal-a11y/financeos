@@ -51,9 +51,12 @@ export default function OccurrenceRow({ occ, sym, onConfirm, onSkip, onUnskip, c
       </div>
       {expandable ? (
         <button type="button" className={`${s.body} ${s.bodyBtn}`} aria-expanded={editing} aria-controls={uidEdit}
-          aria-label={t('rec.action.moreAria', { name })}
+          aria-describedby={`${uidEdit}-hint`}
           onClick={() => { setAmount(String(occ.expected || '')); setEditing(v => !v) }}>
           <span className={s.name}>{name}</span>
+          {/* El nombre accesible es el texto visible (axe label-content-name-mismatch);
+              la acción va como descripción. */}
+          <span id={`${uidEdit}-hint`} className="sr-only">{t('rec.action.moreAria', { name })}</span>
           <span className={s.meta}>
             <span className={s.tag}>{t(`rec.source.${occ.rule.source || 'manual'}`)}</span>
             <span className={s.tag}>{t('rec.status.pending')}
