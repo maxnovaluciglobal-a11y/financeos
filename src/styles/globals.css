@@ -245,6 +245,19 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-chip:hover { border-color: var(--tm); color: var(--tx); }
 .fos-chip[aria-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
 .fos-chip--tall { min-height: 44px; }
+
+/* Etiqueta de texto no interactiva (prioridad de una meta, UI-Q5): hairline y
+   radio de 4 px, sin emoji ni color semántico. */
+.fos-tag {
+  display: inline-flex; align-items: center; padding: 1px 6px;
+  border: 0.5px solid var(--brd2); border-radius: var(--rs);
+  font-family: var(--sans); font-size: 12px; font-weight: 500; line-height: 1.5; color: var(--tm);
+}
+/* Estado = ícono + palabra en el color del estado (nunca solo color). */
+.fos-state {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600; line-height: 1.5;
+}
 /* Un <input> transparente encima del chip (ej. el selector de fecha nativo)
    oculta su propio outline: el anillo de foco se dibuja en el chip. */
 .fos-chip:focus-within:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }

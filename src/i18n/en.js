@@ -2842,4 +2842,7 @@ export const en = {
     'proTrial.listLabel': "Steps to try Pro",
     'ui.state.overdrawn': "Overdrawn",
     'ui.state.overBudget': "Over budget",
+    'goals.status.onTrack': "On track",
+    'goals.status.behind': "Behind",
+    'goals.status.done': "Completed",
 }

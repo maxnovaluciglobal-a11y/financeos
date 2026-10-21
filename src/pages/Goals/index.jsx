@@ -7,7 +7,8 @@ import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, Empt
 import { monthsAheadFirstDay } from '../../utils/monthMath.js'
 import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap, Pencil, X } from 'lucide-react'
 import { firstGoalPresets } from './firstGoal.js'
-import { fmtMoney as fmtMoneyRaw, fmtPct, prioEmoji, currentMonth, localMonthStr, prioLabel, currencySymbol } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, prioLabel, currencySymbol, monthYearLabel } from '../../utils/index.js'
+import { goalStatuses } from './goalStatus.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
@@ -52,6 +53,9 @@ export default function Goals() {
 
   const totalTarget = useMemo(() => goals.reduce((s,g) => s+g.target, 0), [goals])
   const totalSaved  = useMemo(() => goals.reduce((s,g) => s+g.saved, 0), [goals])
+  // Estado por ritmo, no por porcentaje (UI-Q5): "A tiempo" / "Atrasada".
+  const statuses = useMemo(() => goalStatuses(goals, { activeMonth, available: ingresoNetoGoals - gastoMensualGoals }),
+    [goals, activeMonth, ingresoNetoGoals, gastoMensualGoals])
 
   function openSuggestions() {
     setSuggestions(generateGoalSuggestions({ ingresoNeto:ingresoNetoGoals, gastoMensual:gastoMensualGoals, existingGoals:goals }, t))
@@ -106,8 +110,8 @@ export default function Goals() {
 
   return (
     <div className="stack">
-      <PageHeader title={t('goals.title')} sub={t('goals.sub')} />
-      <p style={{fontSize:12.5,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginBottom:12,marginTop:-4}}>{t('goals.intro')}</p>
+      {/* Un solo subtítulo (UI-Q11): "goals.sub" repetía lo mismo que la intro. */}
+      <PageHeader title={t('goals.title')} sub={t('goals.intro')} />
       {/* Sin metas, cuatro ceros no dicen nada: la pregunta guiada va primero. */}
       {goals.length > 0 && <div className="kpi-row">
         <KPI label={t('goals.kpi.active')}  value={goals.length} />
@@ -146,7 +150,7 @@ export default function Goals() {
           </FormRow>
           <FormRow>
             <FormGroup label={t('goals.form.date')}><input type="date" value={f.targetDate} onChange={e=>setF(p=>({...p,targetDate:e.target.value}))} /></FormGroup>
-            <FormGroup label={t('goals.form.priority')}><select value={f.priority} onChange={e=>setF(p=>({...p,priority:e.target.value}))}>{['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioEmoji(p)} {prioLabel(p, lang)}</option>)}</select></FormGroup>
+            <FormGroup label={t('goals.form.priority')}><select value={f.priority} onChange={e=>setF(p=>({...p,priority:e.target.value}))}>{['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}</select></FormGroup>
           </FormRow>
           <div style={{display:'flex',gap:8}}>
             <Btn id="goal-new-submit" variant="primary" onClick={submit}>{t('goals.form.submit')}</Btn>
@@ -227,7 +231,10 @@ export default function Goals() {
         {goals.map(g => {
           const p    = g.target > 0 ? Math.min(g.saved/g.target, 1) : 0
           const done = g.saved >= g.target
-          const clr  = done ? 'var(--grn)' : p >= 0.5 ? '#B8863B' : p < 0.25 ? 'var(--red)' : 'var(--tm)'
+          // Progreso en Navy (marca); verde solo al cumplirla. El porcentaje ya
+          // no se pinta de rojo: el estado lo dice el ritmo, con ícono y palabra.
+          const clr  = done ? 'var(--pos)' : 'var(--grn)'
+          const st   = statuses[g.id]
           const isEditing = editingId === g.id
           return (
             <div key={g.id} style={{background:'var(--sur2)',borderRadius:10,padding:'14px 16px',border:`0.5px solid ${isEditing?'rgba(10,92,62,.4)':done?'rgba(10,92,62,.25)':'var(--brd)'}`}}>
@@ -253,7 +260,7 @@ export default function Goals() {
                       <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:4}}>{t('goals.edit.priority')}</div>
                       <select value={editForm.priority||'Media'} onChange={e=>setEditForm(f=>({...f,priority:e.target.value}))}
                         style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
-                        {['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioEmoji(p)} {prioLabel(p, lang)}</option>)}
+                        {['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}
                       </select>
                     </div>
                   </div>
@@ -268,19 +275,21 @@ export default function Goals() {
                     <div style={{flex:1,paddingRight:8}}>
                       <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{g.name}</div>
                       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-                        <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{prioEmoji(g.priority)} {t('goals.card.priority', { p: prioLabel(g.priority, lang) })}</span>
-                        {g.targetDate && <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: g.targetDate.slice(0,7).replace('-','/') })}</span>}
-                        {done && <span style={{fontSize:11,padding:'1px 8px',borderRadius:10,background:'rgba(10,92,62,.12)',color:'var(--grn)',fontFamily:'var(--mono)',fontWeight:600}}>{t('goals.card.done')}</span>}
+                        {g.priority && <span className="fos-tag">{t('goals.card.priority', { p: prioLabel(g.priority, lang) })}</span>}
+                        {g.targetDate && <span style={{fontSize:12,fontFamily:'var(--sans)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: monthYearLabel(g.targetDate.slice(0,7)) })}</span>}
+                        {st === 'done' && <span className="fos-state" style={{color:'var(--pos)'}}><SignalIcon kind="ok" size={13} />{t('goals.status.done')}</span>}
+                        {st === 'onTrack' && <span className="fos-state" style={{color:'var(--pos)'}}><SignalIcon kind="ok" size={13} />{t('goals.status.onTrack')}</span>}
+                        {st === 'behind' && <span className="fos-state" style={{color:'var(--warn)'}}><SignalIcon kind="alert" size={13} />{t('goals.status.behind')}</span>}
                       </div>
                     </div>
                     <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-                      <span style={{fontSize:13,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}>{(p*100).toFixed(0)}%</span>
+                      <span className="num" style={{fontSize:14,fontWeight:600,color:'var(--tx)'}}>{fmtPct(p, { decimals: 0 })}</span>
                       <button onClick={()=>{setEditingId(g.id);setEditForm({name:g.name,target:g.target,targetDate:g.targetDate||'',priority:g.priority||'Media'})}}
                         style={{background:'none',border:'none',color:'var(--th)',fontSize:12,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}} title={t('goals.card.editTitle')} aria-label={t('goals.card.editTitle')}><Pencil size={14} strokeWidth={1.7} aria-hidden="true" /></button>
                       <button onClick={()=>deleteWithUndo('goals', g, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}><X size={16} strokeWidth={1.7} aria-hidden="true" /></button>
                     </div>
                   </div>
-                  <div style={{height:8,background:'var(--brd)',borderRadius:4,overflow:'hidden',marginBottom:8}}>
+                  <div role="progressbar" aria-valuenow={Math.round(p*100)} aria-valuemin={0} aria-valuemax={100} aria-label={g.name} style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden',marginBottom:8}}>
                     <div style={{height:'100%',width:'100%',transform:`scaleX(${p})`,transformOrigin:'left',background:clr,borderRadius:4,transition:'transform .4s'}}/>
                   </div>
                   {/* Meta de emergencia creada con la recomendación anterior (6 meses):
@@ -302,7 +311,7 @@ export default function Goals() {
                   {/* flexWrap: con montos largos (Bs. en millones) la fila no entra en 375px; se reparte en líneas en vez de salirse de la tarjeta */}
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'4px 8px'}}>
                     <div style={{display:'flex',flexWrap:'wrap',gap:'2px 6px',alignItems:'baseline',minWidth:0}}>
-                      <span style={{fontSize:11,fontFamily:'var(--mono)',color:clr,fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
+                      <span className="num" style={{fontSize:12,color:'var(--tx)',fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
                       <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
                       <span style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
                     </div>

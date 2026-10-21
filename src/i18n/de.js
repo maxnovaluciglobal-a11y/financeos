@@ -2841,4 +2841,7 @@ export const de = {
     'proTrial.listLabel': "Schritte zum Ausprobieren von Pro",
     'ui.state.overdrawn': "Im Minus",
     'ui.state.overBudget': "Überschritten",
+    'goals.status.onTrack': "Im Plan",
+    'goals.status.behind': "Im Rückstand",
+    'goals.status.done': "Erreicht",
 }

@@ -2842,4 +2842,7 @@ export const es = {
     'proTrial.listLabel': "Pasos para probar Pro",
     'ui.state.overdrawn': "Sobregiro",
     'ui.state.overBudget': "Excedido",
+    'goals.status.onTrack': "A tiempo",
+    'goals.status.behind': "Atrasada",
+    'goals.status.done': "Completada",
 }

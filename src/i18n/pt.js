@@ -2842,4 +2842,7 @@ export const pt = {
     'proTrial.listLabel': "Passos para testar o Pro",
     'ui.state.overdrawn': "Saldo negativo",
     'ui.state.overBudget': "Excedido",
+    'goals.status.onTrack': "No prazo",
+    'goals.status.behind': "Atrasada",
+    'goals.status.done': "Concluída",
 }
