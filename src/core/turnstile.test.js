@@ -35,6 +35,14 @@ describe('turnstile', () => {
     vi.useRealTimers()
   })
 
+  it('caja de tokens: después de un fallo no hace esperar al envío', async () => {
+    const box = createTokenBox()
+    box.fail()
+    expect(await box.take(60000)).toBe('')
+    box.put('tok-3')
+    expect(await box.take()).toBe('tok-3')
+  })
+
   it('reconoce los errores de captcha de Supabase Auth', () => {
     expect(isCaptchaError('captcha protection: request disallowed (no captcha response (captcha_token) found in request)')).toBe(true)
     expect(isCaptchaError('captcha verification process failed')).toBe(true)

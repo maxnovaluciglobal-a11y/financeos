@@ -46,15 +46,18 @@ export function loadTurnstile(doc = typeof document !== 'undefined' ? document :
 // Un token sirve una sola vez: take() lo consume, y el formulario llama a reset() del widget.
 export function createTokenBox() {
   let token = ''
+  let failed = false
   let waiters = []
   const flush = (value) => { const w = waiters; waiters = []; for (const fn of w) fn(value) }
   return {
-    put(value) { token = String(value || ''); if (token) flush(token) },
+    put(value) { token = String(value || ''); if (token) { failed = false; flush(token) } },
     clear() { token = '' },
-    fail() { token = ''; flush('') },
+    // Después de un fallo, take() no espera: el envío sale sin token y el servidor decide.
+    fail() { token = ''; failed = true; flush('') },
     peek() { return token },
     take(timeoutMs = 10000) {
       if (token) { const v = token; token = ''; return Promise.resolve(v) }
+      if (failed) return Promise.resolve('')
       return new Promise((resolve) => {
         const timer = setTimeout(() => { waiters = waiters.filter(w => w !== done); resolve('') }, timeoutMs)
         function done(v) { clearTimeout(timer); if (v) token = ''; resolve(v) }
