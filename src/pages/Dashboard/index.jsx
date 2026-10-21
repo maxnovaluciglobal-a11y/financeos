@@ -622,7 +622,7 @@ export default function Dashboard({ setPage }) {
         const expected = Number(settings.estimatedMonthlyIncome) || 0
         if (expected <= 0 || kpis.totalInc <= 0) return null
         const diff = kpis.totalInc - expected
-        const pctDiff = ((diff / expected) * 100).toFixed(1)
+        const pctDiff = fmtPct(diff / expected, { signed: true })
         const over = diff >= 0
         return (
           <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: `.5px solid ${over ? 'color-mix(in srgb, var(--pos) 28%, transparent)' : 'color-mix(in srgb, var(--neg) 28%, transparent)'}`, borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
@@ -633,7 +633,7 @@ export default function Dashboard({ setPage }) {
               </div>
             </div>
             <div style={{ fontFamily: 'var(--num)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
-              {over ? '+' : ''}{pctDiff}%
+              {pctDiff}
             </div>
           </div>
         )

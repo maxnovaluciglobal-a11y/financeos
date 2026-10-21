@@ -168,7 +168,7 @@ export default function Reports({ setPage }) {
       </div>
       <div className="kpi-row">
         <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+totalSubs>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />
-        <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={savingRate>=0.25?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: settings.savingGoalPct||25 })} />
+        <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={savingRate>=0.25?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: fmtPct((settings.savingGoalPct||25) / 100, { decimals: 0 }) })} />
         <KPI label={t('reports.kpi.income')}      value={fmtMoney(totalIncome,sym)} />
         <KPI label={t('reports.kpi.subs')} value={fmtMoney(totalSubs,sym)} color="amber" sub={t('reports.kpi.subsSub')} />
         <KPI label={t('reports.kpi.expenses')}        value={fmtMoney(totalExpense,sym)} />
@@ -200,7 +200,7 @@ export default function Reports({ setPage }) {
                     <div key={r.label}>
                       <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:12}}>
                         <span style={{fontWeight:500}}>{r.label}</span>
-                        <span style={{fontFamily: 'var(--sans)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
+                        <span style={{fontFamily: 'var(--sans)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: fmtPct(actualPct / 100), max: fmtPct(r.max / 100, { decimals: 0 }), mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
                       </div>
                       <div style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden'}}>
                         <div style={{height:'100%',width:'100%',transform:`scaleX(${Math.min(actualPct/r.max,1)})`,transformOrigin:'left',background:ok?r.color:'var(--red)',borderRadius:4,transition:'transform .4s'}}/>

@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartEmpty } from './ChartCard.jsx'
-import { catLabel, fmtMoney, fmtMoneyCompact, catName } from '../../utils/index.js'
+import { fmtMoney, fmtMoneyCompact, catName, fmtPct } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 import { useMoney } from '../Money.jsx'
 import css from './CategoryDonut.module.css'
@@ -20,7 +20,7 @@ function CustomTooltip({ active, payload, sym, lang, m }) {
   if (!d) return null
   return (
     <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'8px 12px', fontSize:12, fontFamily: 'var(--sans)' }}>
-      <div style={{ color: d.payload?.fill || 'var(--accent)', fontWeight:600, marginBottom:2 }}>{catLabel(d.name, lang)}</div>
+      <div style={{ color: d.payload?.fill || 'var(--accent)', fontWeight:600, marginBottom:2 }}>{catName(d.name, lang)}</div>
       <div style={{ color:'var(--tx)' }}>{m(fmtMoney(d.value, sym))}</div>
       <div style={{ color:'var(--th)' }}>{d.payload?.pct || 0}%</div>
     </div>
@@ -60,7 +60,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
       sorted = top
     }
 
-    const withPct = sorted.map(d => ({ ...d, pct: ((d.value / total) * 100).toFixed(1) }))
+    const withPct = sorted.map(d => ({ ...d, pct: fmtPct(d.value / total) }))
     return { data: withPct, total: round2(total) }
   }, [safeRecords, maxCategories])
 
@@ -102,14 +102,14 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
               onClick: () => onCategoryClick(d.name),
               onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCategoryClick(d.name) } },
               // A11Y-10: el nombre empieza por lo que se ve ("Vivienda 40,0 %").
-              'aria-label': `${catLabel(d.name, lang)} ${d.pct}%, ${t('chart.donut.viewAction')}`,
+              'aria-label': `${catName(d.name, lang)} ${d.pct}, ${t('chart.donut.viewAction')}`,
             } : {})}
             title={clickable(d.name) ? t('chart.donut.viewMovements', { cat: catName(d.name, lang) }) : undefined}
             style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d.name) ? 'pointer' : 'default', padding:'2px 0', minHeight: clickable(d.name) ? 44 : undefined }}
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>
-            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catLabel(d.name, lang)}{clickable(d.name) ? <span aria-hidden="true"> ›</span> : ''}</div>
-            <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>{d.pct}%</div>
+            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catName(d.name, lang)}{clickable(d.name) ? <span aria-hidden="true"> ›</span> : ''}</div>
+            <div className="num" style={{ fontSize:12, fontWeight:500, color:'var(--th)' }}>{d.pct}</div>
           </div>
         ))}
       </div>

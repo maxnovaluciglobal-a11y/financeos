@@ -531,3 +531,24 @@ describe('A11Y-17: tipografía por idioma', () => {
     }
   })
 })
+
+describe('paridad de las claves de la ola 1 de diseño visual (UI-Q4, Q5, Q8, M3; es/en/pt/de)', () => {
+  const prefixes = ['movl.', 'ui.state.', 'goals.status.', 'ring.legend']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(30)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+  it('sin voseo ni exclamaciones; el alemán no tutea', () => {
+    for (const k of pick(es)) expect(es[k]).not.toMatch(/\b(podés|tenés|querés|vos|tocá|buscá|elegí|mirá)\b/i)
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/[¡!]/)
+    for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+})

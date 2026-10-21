@@ -10,6 +10,21 @@ import { de } from './de.js'
 
 const ALLOWED = {
   pt: new Set([
+    // Ola 1 de diseño visual (21-oct-2026): cognados correctos en portugués.
+    'ui.state.overBudget',
+    'goals.status.behind',
+    'movl.title',
+    'movl.summary.one',
+    'movl.summary.many',
+    'movl.search.label',
+    'movl.filter.label',
+    'movl.filter.all',
+    'movl.filter.oneoff',
+    'movl.count',
+    'movl.sheet.editTitle',
+    'movl.sheet.edit',
+    'movl.sheet.type',
+    'movl.sheet.notes',
     'proTrial.hide', // "Ocultar esta lista": igual en pt (PRD-4)
     "adv.kpi.budgetsOver",
     "adv.pdf.export",
@@ -131,6 +146,7 @@ const ALLOWED = {
     "subs.form.namePh",
   ]),
   de: new Set([
+    'reports.rule.idealPct', // "{actual} / {max} ideal {mark}": solo variables + "ideal" (igual en alemán)
     "ahorroFiscal.card.rothVsTraditional",
     "apv.indicators",
     "debts.uf.balance",

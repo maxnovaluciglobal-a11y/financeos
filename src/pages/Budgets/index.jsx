@@ -167,7 +167,7 @@ export default function Budgets() {
           <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',maxWidth:320,lineHeight:1.5}}>{t('budgets.unassigned.hint')}</div>
         </div>
       )}
-      {overBudget.length > 0 && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catLabel(b.category, lang)).join(', ') })}</Alert>}
+      {overBudget.length > 0 && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') })}</Alert>}
       {ingresoNeto > 0 && totalBudget > ingresoNeto && <Alert type="danger">{t('budgets.alert.deficit', { total: fmtMoney(totalBudget,sym), inc: fmtMoney(ingresoNeto,sym), def: fmtMoney(totalBudget-ingresoNeto,sym) })}</Alert>}
       {ingresoNeto > 0 && totalBudget > 0 && totalBudget <= ingresoNeto && totalBudget/ingresoNeto > 0.8 && <Alert type="warning">{t('budgets.alert.tight', { pct: fmtPct(totalBudget/ingresoNeto) })}</Alert>}
 
@@ -232,7 +232,7 @@ export default function Budgets() {
                         </div>
                         <div style={{textAlign:'right'}}>
                           <span style={{fontSize:11,fontFamily: 'var(--num)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:600}}>{inc>0?fmtMoney(Math.round(inc*s.pct),sym):'—'}</span>
-                          <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginLeft:4}}>{(s.pct*100).toFixed(0)}%</span>
+                          <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginLeft:4}}>{fmtPct(s.pct, { decimals: 0 })}</span>
                         </div>
                       </div>
                     ))}
@@ -270,7 +270,7 @@ export default function Budgets() {
                       aria-label={`${(pct*100).toFixed(0)}% ${t('budgets.donut.used')} — ${fmtMoney(gastado,sym)} ${t('budgets.donut.ofTotal')} ${fmtMoney(total,sym)}`}>
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--brd)" strokeWidth="16"/>
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke={strokeColor} strokeWidth="16" strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ/4} strokeLinecap="round"/>
-                      <text x={cx} y={cy-10} textAnchor="middle" fontSize="18" fill={strokeColor} fontWeight="700" fontFamily="var(--num)">{(pct*100).toFixed(0)}%</text>
+                      <text x={cx} y={cy-10} textAnchor="middle" fontSize="18" fill={strokeColor} fontWeight="700" fontFamily="var(--num)">{fmtPct(pct, { decimals: 0 })}</text>
                       <text x={cx} y={cy+8}  textAnchor="middle" fontSize="9"  fill="var(--th)" fontFamily="var(--sans)">{t('budgets.donut.used')}</text>
                       <text x={cx} y={cy+22} textAnchor="middle" fontSize="8"  fill="var(--th)" fontFamily="var(--sans)">{t('budgets.donut.ofTotal')}</text>
                     </svg>
@@ -311,7 +311,7 @@ export default function Budgets() {
                             aria-label={`${catLabel(b.category, lang)}: ${(p*100).toFixed(0)}% ${over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')} — ${fmtMoney(spent,sym)} ${t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}`}>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke="var(--brd)" strokeWidth="9"/>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke={clr} strokeWidth="9" strokeDasharray={`${dash2} ${circ2}`} strokeDashoffset={circ2/4} strokeLinecap="round"/>
-                            <text x={cx2} y={cy2+4} textAnchor="middle" fontSize="13" fill={clr} fontWeight="700" fontFamily="var(--num)">{(p*100).toFixed(0)}%</text>
+                            <text x={cx2} y={cy2+4} textAnchor="middle" fontSize="13" fill={clr} fontWeight="700" fontFamily="var(--num)">{fmtPct(p, { decimals: 0 })}</text>
                           </svg>
                           <ScoreState level={lvl} label={stateLb} size={13} style={{ fontSize:12, fontFamily: 'var(--sans)' }} />
                           <div style={{textAlign:'center'}}>

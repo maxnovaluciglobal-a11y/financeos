@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
 import { useMoney } from '../Money.jsx'
 import { useT } from '../../i18n/useT.js'
-import { catName, fmtMoneyCompact } from '../../utils/index.js'
+import { catName, fmtMoneyCompact, fmtPct } from '../../utils/index.js'
 
 // Centavos: se redondea a 2 decimales (no a enteros) para que el tooltip de
 // US$42.50 no diga $43.00.
@@ -44,13 +44,13 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {data.map((d, i) => {
         const barW = max > 0 ? (d.value / max) * 100 : 0
-        const pct  = total > 0 ? ((d.value / total) * 100).toFixed(1) : '0'
+        const pct  = fmtPct(total > 0 ? d.value / total : 0)
         return (
           <div key={i}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <span style={{ fontSize: 12, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{catName(d.name, lang)}</span>
               <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', flexShrink: 0 }}>
-                {fmtV(d.value)} · {pct}%
+                {fmtV(d.value)} · {pct}
               </span>
             </div>
             <div style={{ height: 6, background: 'var(--sur2)', borderRadius: 3, overflow: 'hidden' }}>
