@@ -67,7 +67,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
         ].map((k,i) => (
           <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
             <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:5 }}>{k.label}</div>
-            <div style={{ fontFamily:'var(--display)', fontSize:19, fontWeight:700, letterSpacing:'-0.01em', fontFeatureSettings:"'tnum' 1", color:k.color }}>{k.value}</div>
+            <div className="num" style={{ fontSize:19, letterSpacing:'-0.01em', color:k.color }}>{k.value}</div>
           </div>
         ))}
       </div>

@@ -333,7 +333,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             (y su zoom) porque el teclado numérico propio de abajo escribe acá.
             Se muestra con separador de miles del locale de la moneda. */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 12, minHeight: 56 }}>
-          <span style={{ fontFamily: 'var(--display)', fontSize: 26, fontWeight: 700, color: 'var(--th)' }}>{sym}</span>
+          <span style={{ fontFamily: 'var(--num)', fontSize: 26, fontWeight: 600, color: 'var(--th)' }}>{sym}</span>
           <span ref={mirrorRef} aria-hidden="true" className="num"
             style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'pre', fontSize: amountSize, fontWeight: 700, letterSpacing: '-0.02em' }}>
             {display || '0'}

@@ -85,7 +85,7 @@ export default function LivingRing({
       {/* centro */}
       <text x="100" y="94" textAnchor="middle" fontFamily="var(--mono)" fontSize="8"
         letterSpacing="1" fill="var(--th)">{centerLabel}</text>
-      <text x="100" y="116" textAnchor="middle" fontFamily="var(--display)" fontSize="22"
+      <text x="100" y="116" textAnchor="middle" fontFamily="var(--num)" fontSize="22"
         fontWeight="700" fill="var(--tx)">{centerValue ? m(centerValue) : ''}</text>
       {footLabel && (
         <text x="100" y="132" textAnchor="middle" fontFamily="var(--mono)" fontSize="8"

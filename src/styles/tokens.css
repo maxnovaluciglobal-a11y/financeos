@@ -81,6 +81,11 @@
      sin eje de ancho variable — a diferencia de la Archivo anterior, el peso se
      controla con font-weight normal, no font-variation-settings. */
   --display:   'MOY Bullet', 'Instrument Sans', 'IBM Plex Sans', sans-serif; /* MOY Bullet: solo U+2022, ver public/fonts.css */
+  /* Cifras (dinero y porcentajes): IBM Plex Sans, que ya trae dígitos
+     tabulares por defecto y no deja huecos en "." y "," como la mono (UI-M1,
+     aprobado por Walter el 21-oct-2026). Toda cifra usa --num / .num. */
+  --num:       'IBM Plex Sans', sans-serif;
+  /* Mono: solo identificadores y códigos (claves de licencia, IBAN, ISO). */
   --mono:      'IBM Plex Mono', monospace;
   /* Radios — chicos y técnicos a propósito (nunca pill / rounded-lg grande). */
   --r:         8px;    /* botones */

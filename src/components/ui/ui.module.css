@@ -47,7 +47,7 @@
 }
 .kpiLbl { font-size: 11px; color: var(--tm); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 /* 1.65 ≈ 1 / ancho medio de un dígito en em; 100cqi = ancho útil de la tarjeta. */
-.kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 700; font-family: var(--display); letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; color: var(--tx); }
+.kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 600; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; color: var(--tx); }
 /* "green" acá es semántico de DATO (positivo), no de marca → --pos (Verde), no --grn (Navy). */
 .kpi_green { color: var(--pos); }
 .kpi_red   { color: var(--red); }
@@ -98,7 +98,7 @@
 .txInfo { flex: 1; min-width: 0; }
 .txName { font-size: 12px; color: var(--tx); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txMeta { font-size: 11px; color: var(--th); font-family: var(--mono); }
-.txAmt  { font-size: 12px; font-family: var(--mono); font-weight: 500; flex-shrink: 0; }
+.txAmt  { font-size: 13px; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; flex-shrink: 0; }
 .txInc  { color: var(--pos); }
 .txExp  { color: var(--tx); }   /* gastar no es un error: tinta neutra (UI-Q4) */
 .delBtn { background: transparent; border: none; color: var(--th); font-size: 11px; padding: 2px 5px; border-radius: 4px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease, color .15s ease, transform .16s var(--ease-out, ease-out); }

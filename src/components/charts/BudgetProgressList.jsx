@@ -4,7 +4,7 @@
 import { ChartEmpty } from './ChartCard.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useMoney } from '../Money.jsx'
-import { fmtMoneyCompact, catName } from '../../utils/index.js'
+import { fmtMoneyCompact, fmtPct, catName } from '../../utils/index.js'
 import { useT } from '../../i18n/useT.js'
 
 const STATUS = [
@@ -40,7 +40,7 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
     const limit  = Number(b.limit) || 0
     const avail  = Math.max(0, limit - spent)
     const ratio  = limit > 0 ? Math.min(spent / limit, 1) : 0
-    const pct    = limit > 0 ? ((spent / limit) * 100).toFixed(0) : '0'
+    const pct    = fmtPct(limit > 0 ? spent / limit : 0, { decimals: 0 })
     const status = getStatus(spent, limit)
     return { ...b, spent, limit, avail, ratio, pct, status }
   }).sort((a, b) => {
@@ -100,8 +100,8 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
                 <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{fmtV(r.limit, sym)}</div>
               </div>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: r.status.color, fontFamily: 'var(--display)', letterSpacing: '-0.01em', fontFeatureSettings: "'tnum' 1" }}>
-              {r.pct}%
+            <div style={{ fontSize: 20, color: r.status.color, fontFamily: 'var(--num)', fontWeight: 600, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums lining-nums' }}>
+              {r.pct}
             </div>
           </div>
         </div>

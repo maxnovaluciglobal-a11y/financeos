@@ -212,7 +212,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
               onBlur={e => { e.currentTarget.style.transform = 'none' }}
             >
               <div style={{ fontFamily: 'var(--display)', fontSize: 13, fontWeight: 600, color: p.highlight ? 'var(--grn)' : 'var(--tx)', marginBottom: 3 }}>{p.name}</div>
-              <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>
+              <div className="num" style={{ fontSize: 20, color: 'var(--tx)', marginBottom: 3 }}>
                 {p.price}{p.suffix && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--th)' }}>{p.suffix}</span>}
               </div>
               {p.badge && (

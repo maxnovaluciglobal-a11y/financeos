@@ -133,7 +133,7 @@
 
 .payRow { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
 .payDate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--r); background: var(--sur2); border: 0.5px solid var(--brd); line-height: 1.05; }
-.payDay { font-family: var(--display); font-size: 18px; font-weight: 600; color: var(--tx); font-variant-numeric: tabular-nums; }
+.payDay { font-family: var(--num); font-size: 18px; font-weight: 600; color: var(--tx); font-variant-numeric: tabular-nums; }
 .payMon { font-size: 12px; color: var(--th); text-transform: lowercase; }
 .payName { font-size: 14px; font-weight: 500; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .payKind { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--th); margin-top: 2px; }

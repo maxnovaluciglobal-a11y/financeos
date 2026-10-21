@@ -130,15 +130,14 @@ button { cursor: pointer; font-family: var(--sans); }
 /* Tipografía display — jerarquía con carácter (títulos, no cuerpo). */
 .display { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; }
 
-/* Números grandes: Instrument Sans tabular da cifras con presencia sin el aire
-   "terminal" del mono, y ocupa menos ancho — lo que permite que un monto largo
-   no rompa la tarjeta. 'tnum' se mantiene para que las cifras alineen en columna. */
-.num { font-family: var(--display); font-weight: 600;
-       font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums lining-nums;
-       letter-spacing: -0.01em; }
-/* La cifra protagonista (veredicto del mes) pide el peso mas pesado disponible. */
-.num-hero { font-family: var(--display); font-weight: 700;
-       font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums lining-nums;
+/* Cifras (UI-M1): una sola familia para todo el dinero y los porcentajes,
+   IBM Plex Sans tabular (--num). Instrument Sans queda solo para titulares y
+   Plex Mono para identificadores. */
+.num { font-family: var(--num); font-weight: 600;
+       font-variant-numeric: tabular-nums lining-nums; }
+/* La cifra protagonista: Plex Sans 600, apenas apretada en tamaños grandes. */
+.num-hero { font-family: var(--num); font-weight: 600;
+       font-variant-numeric: tabular-nums lining-nums;
        letter-spacing: -0.02em; }
 
 /* Monto oculto (T13, components/Money.jsx): el "•••" hereda tamaño y color de la
