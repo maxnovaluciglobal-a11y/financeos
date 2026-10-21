@@ -274,8 +274,8 @@
   transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
 .amountsBtn:hover { color: var(--tx); background: var(--sur2); }
-.amountsBtn[aria-pressed="true"] { color: var(--navy); background: color-mix(in srgb, var(--laton) 22%, transparent); }
-:global([data-theme="dark"]) .amountsBtn[aria-pressed="true"] { color: var(--laton-300); background: color-mix(in srgb, var(--laton) 18%, transparent); }
+.amountsBtn[aria-pressed="true"] { color: var(--tx); background: var(--grn-lt); }
+
 .amountsLbl { white-space: nowrap; }
 @media (max-width: 700px) { .amountsLbl { display: none; } }
 @media (prefers-reduced-motion: reduce) { .amountsBtn { transition: none; } }
@@ -299,7 +299,7 @@
   .backBtn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .backLbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
-:global([data-theme="dark"]) .backBtn { color: var(--laton-300); }
+:global([data-theme="dark"]) .backBtn { color: var(--tx); }
 :global([data-theme="dark"]) .backBtn:focus-visible { outline-color: var(--laton-300); }
 @media (prefers-reduced-motion: reduce) { .backBtn { transition: none; } .backBtn:active { transform: none; } }
 @media (max-width: 700px) {

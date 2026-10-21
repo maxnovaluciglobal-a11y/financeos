@@ -20,7 +20,7 @@ export default function DbErrorScreen({ kind }) {
         <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--tm)', margin: '0 0 20px' }}>{t(newer ? 'dbError.newer.keep' : 'dbError.keep')}</p>
         <button type="button" className="fos-btn-primary" onClick={() => (newer ? forceAppUpdate() : window.location.reload())}>{t(newer ? 'dbError.newer.update' : 'dbError.retry')}</button>
         <p style={{ fontSize: 13, color: 'var(--th)', margin: '16px 0 0', lineHeight: 1.5 }}>
-          {t('dbError.help')} <a href={mail} style={{ color: 'var(--laton-700)', fontWeight: 600 }}>{t('dbError.contact')}</a>
+          {t('dbError.help')} <a href={mail} style={{ color: 'var(--blu)', fontWeight: 600 }}>{t('dbError.contact')}</a>
         </p>
       </div>
     </main>

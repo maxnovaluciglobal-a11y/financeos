@@ -75,11 +75,10 @@
 .pendingVals { font-family: var(--num); font-variant-numeric: tabular-nums; color: var(--tx); }
 .reviewLink {
   display: inline-flex; align-items: center; min-height: 44px; margin: -12px 0; padding: 0 2px;
-  background: none; border: 0; cursor: pointer; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--laton-700);
+  background: none; border: 0; cursor: pointer; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--blu);
   text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
 }
 .reviewLink:hover { text-decoration-color: currentColor; }
-[data-theme="dark"] .reviewLink { color: var(--laton-300); }
 
 /* Toggle "Se repite" (QuickAdd e Ingresos) */
 .repeat { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }

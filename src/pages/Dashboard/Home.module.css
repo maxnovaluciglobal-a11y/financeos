@@ -65,13 +65,13 @@
   display: inline-flex; align-items: center; gap: 4px;
   min-height: 44px; margin: -12px 0; padding: 0 2px;
   background: none; border: 0; cursor: pointer;
-  font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--laton-700);
+  font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--blu); /* enlace = Slate Blue (Latón solo para la acción primaria y "dónde estás", UI-L1) */
   text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
   transition: text-decoration-color var(--dur) var(--ease);
   white-space: nowrap;
 }
 .cardLink:hover { text-decoration-color: currentColor; }
-[data-theme="dark"] .cardLink { color: var(--laton-300); }
+
 
 .empty { font-size: 13px; line-height: 1.55; color: var(--tm); margin: 0 0 12px; }
 
