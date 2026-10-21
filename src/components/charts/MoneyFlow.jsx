@@ -4,15 +4,17 @@
 
 import { useMemo } from 'react'
 import { ChartEmpty } from './ChartCard.jsx'
-import { fmtMoneyCompact } from '../../utils/index.js'
+import { fmtMoneyCompact, fmtPct } from '../../utils/index.js'
 import { useMoney } from '../Money.jsx'
 import { useT } from '../../i18n/useT.js'
 
 const fmtV = (v, sym) => fmtMoneyCompact(v, sym)
+const NODE_TINT = 0.2
 
 const COLORS = {
   income:  { fill: 'var(--pos)', stroke: 'var(--pos)', text: 'var(--pos)' },
-  gastos:  { fill: 'var(--neg)', stroke: 'var(--neg)', text: 'var(--neg)' },
+  // Gastar no es un error: el nodo de gastos va en el azul categórico, no en rojo (UI-Q4).
+  gastos:  { fill: 'var(--cat-1)', stroke: 'var(--cat-1)', text: 'var(--cat-1)' },
   subs:    { fill: 'var(--amb)', stroke: 'var(--amb)', text: 'var(--amb)' },
   deudas:  { fill: 'var(--accent2)', stroke: 'var(--accent2)', text: 'var(--accent2)' },
   libre:   { fill: 'var(--pos)', stroke: 'var(--pos)', text: 'var(--pos)' },
@@ -112,16 +114,18 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         aria-label={t('chart.flow.aria')}
       >
         {/* Nodo izquierdo — Ingresos */}
+        {/* Nodos tintados (relleno al 20 % + borde) con texto en --tx: antes el
+            texto iba del mismo color que el relleno y en oscuro no se leía (UI-Q9). */}
         <rect x={LEFT_X} y={PAD} width={LEFT_W} height={incH} rx="6"
-          fill={COLORS.income.fill} opacity={0.9} />
+          fill={COLORS.income.fill} fillOpacity={NODE_TINT} stroke={COLORS.income.stroke} strokeWidth="1.5" />
         <text x={LEFT_X + LEFT_W/2} y={PAD + incH/2 - 10}
           textAnchor="middle" dominantBaseline="middle"
-          style={{ fontFamily: 'var(--num)', fontSize:11, fontWeight:700, fill: COLORS.income.text }}>
+          style={{ fontFamily: 'var(--sans)', fontSize:12, fontWeight:600, fill: 'var(--tx)' }}>
           {t('chart.income')}
         </text>
         <text x={LEFT_X + LEFT_W/2} y={PAD + incH/2 + 10}
           textAnchor="middle" dominantBaseline="middle"
-          style={{ fontFamily: 'var(--sans)', fontSize: amt(totalInc).length > 8 ? 9 : 11, fill: COLORS.income.text }}>
+          style={{ fontFamily: 'var(--num)', fontSize: amt(totalInc).length > 8 ? 11 : 12, fontWeight:600, fill: 'var(--tx)' }}>
           {amt(totalInc)}
         </text>
 
@@ -141,24 +145,24 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
               />
               {/* Nodo derecha */}
               <rect x={RIGHT_X} y={node.y} width={RIGHT_W} height={node.h} rx="5"
-                fill={node.color.fill} opacity={0.88} />
+                fill={node.color.fill} fillOpacity={NODE_TINT} stroke={node.color.stroke} strokeWidth="1.5" />
               <text x={RIGHT_X + RIGHT_W/2} y={node.y + node.h/2 - (node.h > 36 ? 8 : 0)}
                 textAnchor="middle" dominantBaseline="middle"
-                style={{ fontFamily: 'var(--num)', fontSize: node.label.length > 11 ? 9 : 10, fontWeight:700, fill: node.color.text }}>
+                style={{ fontFamily: 'var(--sans)', fontSize: node.label.length > 11 ? 10 : 11, fontWeight:600, fill: 'var(--tx)' }}>
                 {node.label}
               </text>
               {node.h > 32 && (
                 <text x={RIGHT_X + RIGHT_W/2} y={node.y + node.h/2 + 9}
                   textAnchor="middle" dominantBaseline="middle"
-                  style={{ fontFamily: 'var(--sans)', fontSize: amt(node.amount).length > 8 ? 8 : 10, fill: node.color.text }}>
+                  style={{ fontFamily: 'var(--num)', fontSize: amt(node.amount).length > 8 ? 10 : 11, fill: 'var(--tx)' }}>
                   {amt(node.amount)}
                 </text>
               )}
               {/* Porcentaje a la derecha (anclado; con margen al borde del viewBox) */}
               <text x={RIGHT_X + RIGHT_W + 8} y={node.y + node.h/2}
                 dominantBaseline="middle"
-                style={{ fontFamily: 'var(--sans)', fontSize:11, fill:'var(--th)' }}>
-                {totalInc > 0 ? ((node.amount/totalInc)*100).toFixed(0) : 0}%
+                style={{ fontFamily: 'var(--num)', fontSize:11, fill:'var(--th)' }}>
+                {fmtPct(totalInc > 0 ? node.amount / totalInc : 0, { decimals: 0 })}
               </text>
             </g>
           )
@@ -170,7 +174,7 @@ export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym
         {items.map(it => (
           <span key={it.key} style={{ display:'flex', alignItems:'center', gap:4 }}>
             <span style={{ width:8, height:8, borderRadius:'50%', background:it.color.fill, display:'inline-block' }}/>
-            {it.label}: {amt(it.amount)} ({totalInc > 0 ? ((it.amount/totalInc)*100).toFixed(0) : 0}%)
+            {it.label}: {amt(it.amount)} ({fmtPct(totalInc > 0 ? it.amount / totalInc : 0, { decimals: 0 })})
           </span>
         ))}
       </div>
