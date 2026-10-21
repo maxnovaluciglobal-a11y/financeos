@@ -6,6 +6,7 @@ import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
 import Money, { MONEY_MASK } from '../Money.jsx'
 import Amount from '../Amount.jsx'
+import CategoryIcon from '../CategoryIcon.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Pencil } from 'lucide-react'
@@ -207,12 +208,13 @@ export function EmptyPickList({ label, items }) {
 // Movimientos (REC-N5): una mejora de la fila llega a las dos listas.
 // `value` + `sym`: el monto pasa por <Amount> (U+2212, ocultar montos, UI-M2);
 // `amount` (texto ya formateado) queda por compatibilidad.
-export function TxRow({ dot, name, label: labelProp, meta, amount, value, sym, isIncome, onDelete, onEdit }) {
+// `category`: ícono de categoría único (UI-M4) en vez del punto de color.
+export function TxRow({ dot, category, name, label: labelProp, meta, amount, value, sym, isIncome, onDelete, onEdit }) {
   const { t } = useT()
   const label = labelProp || (typeof name === 'string' && name) || t('ui.transaction')
   return (
     <div className={styles.txRow}>
-      <div className={styles.txDot} style={{ background: dot }} />
+      {category != null ? <CategoryIcon category={category} /> : <div className={styles.txDot} style={{ background: dot }} />}
       <div className={styles.txInfo}>
         <div className={styles.txName}>{name}</div>
         {meta && <div className={styles.txMeta}>{meta}</div>}

@@ -140,6 +140,13 @@ button { cursor: pointer; font-family: var(--sans); }
        font-variant-numeric: tabular-nums lining-nums;
        letter-spacing: -0.02em; }
 
+/* Ícono de categoría (UI-M4, components/CategoryIcon.jsx): cuadrado de 28 px
+   con el tinte categórico al 12 % (inline) e ícono monocromo en tinta. */
+.cat-icon {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  border-radius: var(--rs); color: var(--tx);
+}
+
 /* <Amount> (UI-M2): en la cifra protagonista, símbolo y centavos al 65 % y en
    --tm; la parte entera manda. En montos de fila no se atenúan. */
 .amount { white-space: nowrap; }

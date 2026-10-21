@@ -1812,7 +1812,7 @@ export const de = {
     'qa.repeat': "Wiederholen: {desc} {amount}",
     'qa.keypadThousand': "Drei Nullen",
     'settings.categoryEmoji.label': "Emoji bei Kategorien",
-    'settings.categoryEmoji.sub': "Zeigt in der Schnellerfassung ein Emoji neben jeder Kategorie.",
+    'settings.categoryEmoji.sub': "Zeigt ein Emoji statt des Symbols jeder Kategorie.",
     'onboarding.v2.progress': "Schritt {n} von {total}",
     'onboarding.v2.skip': "Überspringen",
     'onboarding.v2.step1.title': "Wo verwalten Sie Ihre Finanzen?",

@@ -1813,7 +1813,7 @@ export const en = {
     'qa.repeat': "Repeat: {desc} {amount}",
     'qa.keypadThousand': "Three zeros",
     'settings.categoryEmoji.label': "Category emoji",
-    'settings.categoryEmoji.sub': "Shows an emoji next to each category in quick add.",
+    'settings.categoryEmoji.sub': "Shows an emoji instead of each category's icon.",
     'onboarding.v2.progress': "Step {n} of {total}",
     'onboarding.v2.skip': "Skip",
     'onboarding.v2.step1.title': "Where do you manage your money?",
