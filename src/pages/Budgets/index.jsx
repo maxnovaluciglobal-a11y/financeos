@@ -226,8 +226,7 @@ export default function Budgets() {
                     {sugs.map((s,i) => (
                       <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 10px',borderRadius:6,background:s.highlight?'rgba(10,92,62,.08)':i%2===0?'var(--sur2)':'transparent',border:s.highlight?'0.5px solid rgba(10,92,62,.25)':'none'}}>
                         <div>
-                          {/* La fila de ahorro usa etiqueta traducida (no está en el mapa) → emoji fijo */}
-                          <span style={{fontSize:11,fontFamily: 'var(--sans)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{s.highlight ? `💰 ${catName(s.cat, lang)}` : catLabel(s.cat, lang)}</span>
+                          <span style={{fontSize:11,fontFamily: 'var(--sans)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{catName(s.cat, lang)}</span>
                           <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginLeft:6}}>{s.grupo}</span>
                         </div>
                         <div style={{textAlign:'right'}}>
@@ -301,14 +300,14 @@ export default function Budgets() {
                       return (
                         <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'color-mix(in srgb, var(--neg) 45%, transparent)':warn?'color-mix(in srgb, var(--warn) 35%, transparent)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>
                           <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'1px 4px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                          <div style={{fontSize:11,fontWeight:600,color:'var(--tx)',fontFamily: 'var(--num)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
+                          <div style={{fontSize:11,fontWeight:600,color:'var(--tx)',fontFamily: 'var(--sans)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catName(b.category, lang)}</div>
                           {carry > 0 && (
                             <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
                               <InlineIcon kind="subs" size={11} />+<Money>{fmtMoney(carry,sym)}</Money>
                             </div>
                           )}
                           <svg width="90" height="90" viewBox="0 0 90 90" role="img"
-                            aria-label={`${catLabel(b.category, lang)}: ${(p*100).toFixed(0)}% ${over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')} — ${fmtMoney(spent,sym)} ${t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}`}>
+                            aria-label={`${catName(b.category, lang)}: ${fmtPct(p, { decimals: 0 })} ${over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')} — ${fmtMoney(spent,sym)} ${t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}`}>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke="var(--brd)" strokeWidth="9"/>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke={clr} strokeWidth="9" strokeDasharray={`${dash2} ${circ2}`} strokeDashoffset={circ2/4} strokeLinecap="round"/>
                             <text x={cx2} y={cy2+4} textAnchor="middle" fontSize="13" fill={clr} fontWeight="700" fontFamily="var(--num)">{fmtPct(p, { decimals: 0 })}</text>
