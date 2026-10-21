@@ -8,6 +8,7 @@
 import { bearerToken, isConfirmed, getAuthUser, deleteAccount, followupMessage, type DeleteConfig } from "./deleteAccountLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { sendAlertEmail } from "../_shared/alertEmail.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: DeleteConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -21,7 +22,7 @@ function json(body: unknown, status: number, origin: string | null) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("delete-account", async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(origin) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, origin);
@@ -46,4 +47,4 @@ Deno.serve(async (req) => {
     if (!sent.ok) console.error(`delete-account: aviso a soporte no enviado (${sent.error})`);
   }
   return json({ ok: true }, 200, origin);
-});
+}));

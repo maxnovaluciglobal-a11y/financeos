@@ -101,6 +101,9 @@ describe('correos de uptime', () => {
   })
   it('describe la causa del chequeo', () => {
     expect(describeCheck(chk(false, 0, { status_code: 200, marker_found: false }))).toContain('contenido esperado')
+    expect(describeCheck(chk(false, 0, { status_code: 200, expected_status: 400 }))).toBe('HTTP 200 (se esperaba 400)')
+    expect(describeCheck(chk(false, 0, { status_code: 405, expected_status: 405, marker_found: false }))).toContain('HTTP 405 pero sin el contenido esperado')
+    expect(describeCheck(chk(true, 0, { status_code: 400, expected_status: 400 }))).toBe('HTTP 400, contenido correcto')
     expect(describeCheck(chk(false, 0, { status_code: null, timed_out: true, error_msg: 'Timeout was reached' }))).toContain('timeout')
     expect(describeCheck(chk(false, 0, { status_code: null, error_msg: "Couldn't resolve host name" }))).toContain('error de red')
   })

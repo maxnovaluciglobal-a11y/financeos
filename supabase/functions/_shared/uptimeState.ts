@@ -2,7 +2,8 @@
 // el estado guardado de un sitio y sus últimos chequeos evaluados (el más nuevo
 // primero) y devuelve el estado nuevo y qué correo mandar, si alguno.
 //
-// - Caída: 2 chequeos seguidos fallidos (status ≠ 200, timeout o sin el marker).
+// - Caída: 2 chequeos seguidos fallidos (status ≠ el esperado del sitio, 200 salvo
+//   que uptime_sites.expected_status diga otro; timeout o sin el marker).
 //   Un correo, no uno por chequeo.
 // - Mientras siga caído: un recordatorio cada 6 h.
 // - Recuperación: el primer chequeo bueno después de una caída avisada.
@@ -18,6 +19,7 @@ export interface UptimeCheck {
   timed_out: boolean | null;
   marker_found: boolean | null;
   error_msg: string | null;
+  expected_status?: number | null;
 }
 
 export interface UptimeState {
@@ -92,8 +94,9 @@ export function describeCheck(c: UptimeCheck | undefined): string {
   if (c.ok) return `HTTP ${c.status_code}, contenido correcto`;
   if (c.timed_out) return `sin respuesta (timeout)${c.error_msg ? `: ${c.error_msg}` : ""}`;
   if (c.status_code === null) return `error de red${c.error_msg ? `: ${c.error_msg}` : ""}`;
-  if (c.status_code !== 200) return `HTTP ${c.status_code}`;
-  return `HTTP 200 pero sin el contenido esperado (marker)`;
+  const expected = c.expected_status ?? 200;
+  if (c.status_code !== expected) return expected === 200 ? `HTTP ${c.status_code}` : `HTTP ${c.status_code} (se esperaba ${expected})`;
+  return `HTTP ${c.status_code} pero sin el contenido esperado (marker)`;
 }
 
 export function uptimeEmail(action: Exclude<UptimeAction, null>, site: string, url: string, state: UptimeState, latest: UptimeCheck | undefined, now: Date) {

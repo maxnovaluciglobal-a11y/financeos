@@ -1,14 +1,14 @@
 # Monitoreo desde Supabase (uptime y salud de los crons)
 
-Desde el 19-oct-2026 (auditoría 360, C-11 y C-12). Sin cuentas externas: todo corre en el proyecto `financeos-prod` (`nelwgbcddwiaimzbcuas`) con `pg_cron`, `pg_net` y dos Edge Functions. Los avisos salen por Resend desde `MOY IQ <hola@moyiq.app>` y llegan **solo** a `maxnovaluciglobal@gmail.com`.
+Desde el 19-oct-2026 (auditoría 360, C-11 y C-12; errores de Edge Functions, webhook de Stripe y proxy desde el 21-oct). Sin cuentas externas: todo corre en el proyecto `financeos-prod` (`nelwgbcddwiaimzbcuas`) con `pg_cron`, `pg_net` y dos Edge Functions. Los avisos salen por Resend desde `MOY IQ <hola@moyiq.app>` y llegan **solo** a `maxnovaluciglobal@gmail.com`.
 
-Migración: `supabase/migrations/20261019180000_cron_health_and_uptime.sql`. Funciones: `supabase/functions/uptime-alert/` y `supabase/functions/cron-health-alert/`.
+Migraciones: `supabase/migrations/20261019180000_cron_health_and_uptime.sql` y `20261021000000_edge_function_errors_and_uptime_expected_status.sql`. Funciones: `supabase/functions/uptime-alert/` y `supabase/functions/cron-health-alert/`.
 
 ## 1. Uptime (caídas de los sitios)
 
 **Qué mide.** Cada 5 minutos el job `uptime-check` corre `public.uptime_tick()`, que:
 
-1. evalúa las respuestas de la corrida anterior (`net._http_response`): un sitio está **arriba** si respondió **200**, sin timeout (10 s) y si el cuerpo contiene su `marker` (el contenido real, no solo el status);
+1. evalúa las respuestas de la corrida anterior (`net._http_response`): un sitio está **arriba** si respondió su `expected_status` (200 salvo que diga otro), sin timeout (10 s) y si el cuerpo contiene su `marker` (el contenido real, no solo el status);
 2. lanza un `net.http_get` por sitio de `public.uptime_sites`;
 3. llama a la Edge Function `uptime-alert` (header `x-cron-secret`), que mantiene `public.uptime_state` y manda los correos.
 
@@ -18,6 +18,10 @@ Migración: `supabase/migrations/20261019180000_cron_health_and_uptime.sql`. Fun
 | demo.moyiq.app | https://demo.moyiq.app/app/ | `id="root"` |
 | moyiq.app | https://moyiq.app/ | `<title>MOY IQ` |
 | invest.moyiq.app | https://invest.moyiq.app/ | `<title>MOY IQ Invest` |
+| stripe-webhook | https://nelwgbcddwiaimzbcuas.supabase.co/functions/v1/stripe-webhook | **400** + `Webhook signature verification failed` |
+| newsletter-proxy | https://moyiq-newsletter-proxy.vercel.app/api/subscribe | **405** + `method_not_allowed` |
+
+Cada sitio tiene un status esperado (`uptime_sites.expected_status`, 200 por defecto). El webhook de Stripe y el proxy no responden 200 a un GET sin firma ni token: que respondan **ese** código con **ese** texto prueba que la función arrancó y está atendiendo. Un 5xx, un `BOOT_ERROR` o un timeout cuentan como caída.
 
 **Cuándo avisa** (estado por sitio, sin spam; lógica pura en `supabase/functions/_shared/uptimeState.ts` con tests):
 
@@ -39,10 +43,10 @@ select status_code, content from net._http_response order by id desc limit 1;
 ```
 
 **Pausar un sitio:** `update public.uptime_sites set enabled = false where site = 'demo.moyiq.app';` (volver con `true`).
-**Agregar uno:** `insert into public.uptime_sites (site, url, marker) values ('…', 'https://…', 'texto que siempre está en la página');`
+**Agregar uno:** `insert into public.uptime_sites (site, url, marker, expected_status) values ('…', 'https://…', 'texto que siempre está en la página', 200);`
 **Apagar todo el uptime:** `select cron.unschedule('uptime-check');` Para volver a prenderlo: `select cron.schedule('uptime-check', '*/5 * * * *', $$select public.uptime_tick();$$);`
 
-**Límites.** Mira desde la infraestructura de Supabase: si se cae Supabase entero, no hay aviso (tampoco funcionaría la app). No mide latencia ni el webhook de Stripe. Un monitor externo (Better Stack, UptimeRobot) seguiría siendo un buen complemento si algún día se crea la cuenta.
+**Límites.** Mira desde la infraestructura de Supabase: si se cae Supabase entero, no hay aviso (tampoco funcionaría la app). No mide latencia. Del webhook de Stripe mide que arranque y verifique firmas, no que procese eventos (eso lo cubren los errores de la sección 3). Un monitor externo (Better Stack, UptimeRobot) seguiría siendo un buen complemento si algún día se crea la cuenta.
 
 ## 2. Salud de los crons (`cron_health`)
 
@@ -58,6 +62,20 @@ select status_code, content from net._http_response order by id desc limit 1;
 **Probar sin mandar correos:** igual que arriba, con la URL `…/functions/v1/cron-health-alert` y `{"mode":"check"}`.
 **Apagar el aviso diario:** `select cron.unschedule('cron-health-alert-daily');` (el snapshot horario puede quedar: no manda nada).
 
+## 3. Errores de las Edge Functions (`edge_function_errors`)
+
+**El problema que tapa.** `cron_health` solo ve las llamadas que hace `pg_net`. Un 500 de una función llamada por el navegador (bienvenidas, opt-in, reporte de Modo Asesor, borrar cuenta), por Stripe (`stripe-webhook`) o por Auth (`auth-email-hook`) quedaba solo en los logs del dashboard.
+
+**Cómo funciona.**
+
+- Las 18 funciones envuelven su handler con `withErrorReporting("<nombre>", …)` de `supabase/functions/_shared/errorReport.ts` (un test verifica que ninguna quede afuera). Si el handler lanza una excepción (responde 500 `internal_error`) o devuelve 5xx, guarda una fila en `public.edge_function_errors`: función, status y un mensaje limpio (sin correos, claves `FNOS-…`, tokens ni JWT; 300 caracteres). El guardado corre después de responder (`EdgeRuntime.waitUntil`) y nunca cambia la respuesta.
+- `uptime-alert` (cada 5 min) lee las filas sin `notified_at` y manda **un** correo "[MOY IQ] errores en Edge Functions: N (funciones)" con el conteo, los status y el último mensaje por función; después marca `notified_at`. Como máximo un correo cada 30 min: lo que llega mientras tanto va en el siguiente. Si Resend falla, no marca y reintenta.
+- Las filas se purgan a los 30 días (en `uptime_tick()`).
+- No ve un error que impide arrancar la función (`BOOT_ERROR`): eso lo cubre el uptime de `stripe-webhook` (y `cron_health` para las de los crons).
+
+**Ver los errores:** `select * from public.edge_function_errors order by id desc limit 50;`
+**Probar sin mandar correos:** `uptime-alert` con `{"mode":"check"}` devuelve `edge_errors: {pending: N}`.
+
 ## Permisos
 
-Tablas, vistas y funciones de este documento son solo de `service_role`: `anon` y `authenticated` no tienen ningún privilegio (verificado con `has_table_privilege` al desplegar). Las dos funciones tienen `verify_jwt = false` en `supabase/config.toml` y se autentican con `x-cron-secret` (el mismo `cron_secret` de `private.app_secrets` que usan los nurtures), comparado en tiempo constante.
+Tablas (incluida `edge_function_errors`), vistas y funciones de este documento son solo de `service_role`: `anon` y `authenticated` no tienen ningún privilegio (verificado con `has_table_privilege` al desplegar). Las dos funciones tienen `verify_jwt = false` en `supabase/config.toml` y se autentican con `x-cron-secret` (el mismo `cron_secret` de `private.app_secrets` que usan los nurtures), comparado en tiempo constante.

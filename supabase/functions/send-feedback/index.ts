@@ -7,6 +7,7 @@
 import { parseFeedback, bearerToken, getAuthUser, claimFeedback, claimNps, sendFeedbackEmail, type FeedbackConfig } from "./feedbackLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: FeedbackConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -20,7 +21,7 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...corsHeaders(origin) } });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-feedback", async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(origin) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, origin);
@@ -47,4 +48,4 @@ Deno.serve(async (req) => {
   const sent = await sendFeedbackEmail(input, user, config);
   if (!sent.ok) console.error(`send-feedback: ${sent.error}`);
   return json(sent.ok ? { ok: true } : { ok: false, error: sent.error }, sent.ok ? 200 : 502, origin);
-});
+}));

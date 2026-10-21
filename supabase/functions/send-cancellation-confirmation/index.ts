@@ -25,6 +25,7 @@
 
 import { processCancellation, type CancellationConfig } from "./cancellationLogic.ts";
 import { corsHeaders } from "./cors.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const SUPPORT = Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app";
 
@@ -44,7 +45,7 @@ function json(body: unknown, status: number, origin: string | null) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-cancellation-confirmation", async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(origin) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, origin);
@@ -70,4 +71,4 @@ Deno.serve(async (req) => {
     console.error(`send-cancellation-confirmation: ${e}`);
     return json({ ok: false, error: "internal" }, 500, origin);
   }
-});
+}));

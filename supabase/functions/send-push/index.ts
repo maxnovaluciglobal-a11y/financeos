@@ -16,6 +16,7 @@
 // Solo POST con el header x-cron-secret (CRON_SECRET), ver requestGuard.ts (C-45).
 
 import { guardPushRequest } from "./requestGuard.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const SUPABASE_URL   = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -142,7 +143,7 @@ async function sbFetch(path: string, init: RequestInit = {}) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-push", async (req) => {
   const denied = guardPushRequest(req.method, req.headers.get("x-cron-secret"), Deno.env.get("CRON_SECRET"));
   if (denied) {
     return new Response(denied.status === 204 ? null : JSON.stringify({ ok: false, error: denied.error }), {
@@ -203,4 +204,4 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify({ ok: true, ...results }), {
     headers: { "Content-Type": "application/json" },
   });
-});
+}));

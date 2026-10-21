@@ -33,6 +33,7 @@
 import { processOptin, type OptinConfig } from "./optinLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: OptinConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -58,7 +59,7 @@ const STATUS: Record<string, number> = {
   rate_limited: 429,
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-optin-confirmation", async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(origin) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, origin);
@@ -77,4 +78,4 @@ Deno.serve(async (req) => {
     console.error(`send-optin-confirmation: ${e}`);
     return json({ ok: false, error: "internal" }, 500, origin);
   }
-});
+}));

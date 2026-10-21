@@ -38,6 +38,7 @@ import {
 import { userIdFromClientReference } from "../_shared/emailLang.ts";
 import { subscribeToNewsletter, autoSubscribeEnabled } from "../_shared/newsletterSubscribe.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const NEWSLETTER_PROXY_URL = Deno.env.get("NEWSLETTER_PROXY_URL");
 const NEWSLETTER_PROXY_TOKEN = Deno.env.get("NEWSLETTER_PROXY_TOKEN");
@@ -73,7 +74,7 @@ const json = (r: HandlerResult) => new Response(JSON.stringify(r.body), {
   status: r.status, headers: { "Content-Type": "application/json" },
 });
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("stripe-webhook", async (req) => {
   const sig = req.headers.get("stripe-signature") ?? "";
   const raw = await req.text();
 
@@ -192,4 +193,4 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },
   });
-});
+}));

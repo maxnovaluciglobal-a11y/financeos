@@ -53,7 +53,7 @@ export async function runUptimeAlert(config: UptimeAlertConfig, now: Date, opts:
   for (const { site, url } of sites) {
     const checks = await db.get<UptimeCheck[]>(
       `uptime_checks?site=eq.${encodeURIComponent(site)}&evaluated_at=not.is.null` +
-        `&select=id,requested_at,ok,status_code,timed_out,marker_found,error_msg&order=id.desc&limit=${CHECKS_PER_SITE}`,
+        `&select=id,requested_at,ok,status_code,timed_out,marker_found,error_msg,expected_status&order=id.desc&limit=${CHECKS_PER_SITE}`,
     );
     const d = decideUptime(bySite.get(site) ?? null, site, checks, now);
     const r: SiteResult = { site, status: d.state.status, action: d.action };

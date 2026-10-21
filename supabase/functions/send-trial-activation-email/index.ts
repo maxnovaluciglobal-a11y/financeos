@@ -4,9 +4,12 @@
 //   { mode: "cron" }                      → manda los correos del día (pg_cron diario)
 //   { mode: "dry_run" }                   → cuenta qué mandaría, sin mandar nada
 //   { mode: "preview", to, step, lang }   → un paso a la cuenta de empresa, para revisar el copy
+//     step: day1 | day3 | day10, o un correo de cobro de stripe-webhook:
+//     license_trial | trial_ending | payment_failed | pro_ended (asunto con "[Vista previa]")
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { runTrialCron, sendPreview, type TrialConfig } from "./trialActivationLogic.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: TrialConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -15,13 +18,14 @@ const config: TrialConfig = {
   fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
   cronSecret: Deno.env.get("CRON_SECRET"),
   portalUrl: Deno.env.get("STRIPE_PORTAL_URL") || undefined,
+  billingFromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
 };
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-trial-activation-email", async (req) => {
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
   if (!secretEquals(req.headers.get("x-cron-secret"), config.cronSecret)) return json({ ok: false, error: "unauthorized" }, 401);
   let payload: any;
@@ -40,4 +44,4 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "internal_error" }, 500);
   }
   return json({ ok: false, error: "invalid_mode" }, 400);
-});
+}));

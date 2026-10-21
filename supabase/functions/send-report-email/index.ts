@@ -31,6 +31,7 @@ import {
 } from "./reportEmailLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: EmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -48,7 +49,7 @@ function json(body: unknown, status: number, origin: string | null) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-report-email", async (req) => {
   const origin = req.headers.get("Origin");
 
   if (req.method === "OPTIONS") {
@@ -102,4 +103,4 @@ Deno.serve(async (req) => {
   );
 
   return json(result, result.ok ? 200 : 502, origin);
-});
+}));

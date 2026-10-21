@@ -7,6 +7,7 @@
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { runReport, type ReportConfig } from "./funnelReportLogic.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: ReportConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -20,7 +21,7 @@ function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-funnel-report", async (req) => {
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
   if (!secretEquals(req.headers.get("x-cron-secret"), config.cronSecret)) return json({ ok: false, error: "unauthorized" }, 401);
   let payload: any;
@@ -34,4 +35,4 @@ Deno.serve(async (req) => {
     console.error(`send-funnel-report: ${e instanceof Error ? e.message : String(e)}`);
     return json({ ok: false, error: "internal_error" }, 500);
   }
-});
+}));

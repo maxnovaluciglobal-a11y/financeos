@@ -27,6 +27,7 @@ import {
 } from "./nurtureEmailLogic.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { corsHeaders } from "./cors.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const config: NurtureEmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
@@ -46,7 +47,7 @@ function json(body: unknown, status: number, origin: string | null) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("send-nurture-diagnostico-email", async (req) => {
   const origin = req.headers.get("Origin");
 
   if (req.method === "OPTIONS") {
@@ -89,4 +90,4 @@ Deno.serve(async (req) => {
   }
 
   return json({ ok: false, error: "invalid_mode" }, 400, origin);
-});
+}));

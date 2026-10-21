@@ -10,6 +10,7 @@
 // send-nurture-diagnostico-email/index.ts.
 import { Webhook } from 'npm:standardwebhooks@^1';
 import { detectBrand, buildActionUrl, renderEmail, sendViaResend, pickLang } from './emailHookLogic.ts';
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 // RESEND_API_KEY (el secret genérico) devuelve 403 al mandar desde
 // hola@moyiq.app / invest@moyiq.app — parece estar scopeada a otro
@@ -20,7 +21,7 @@ const RESEND_API_KEY = Deno.env.get('NURTURE_RESEND_API_KEY') ?? Deno.env.get('R
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const HOOK_SECRET = (Deno.env.get('SEND_EMAIL_HOOK_SECRET') ?? '').replace('v1,whsec_', '');
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("auth-email-hook", async (req) => {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405 });
 
   const payload = await req.text();
@@ -57,4 +58,4 @@ Deno.serve(async (req) => {
     return Response.json({ error: { message: sent.error ?? 'send_failed' } }, { status: 500 });
   }
   return Response.json({});
-});
+}));

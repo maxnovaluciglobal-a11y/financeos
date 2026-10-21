@@ -13,6 +13,7 @@
 import { secretEquals } from '../_shared/secretEquals.ts';
 import { sendAdminNotify, type SignupEvent, type SignupDetails } from './notifyLogic.ts';
 import { subscribeToNewsletter, autoSubscribeEnabled } from '../_shared/newsletterSubscribe.ts';
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const RESEND_API_KEY = Deno.env.get('NURTURE_RESEND_API_KEY') ?? Deno.env.get('RESEND_API_KEY') ?? '';
 const FROM_EMAIL = Deno.env.get('NURTURE_FROM_EMAIL') ?? 'MOY IQ <hola@moyiq.app>';
@@ -30,7 +31,7 @@ const NEWSLETTER_AUTO_SUBSCRIBE_FREE = autoSubscribeEnabled(Deno.env.get('NEWSLE
 
 const VALID_EVENTS: SignupEvent[] = ['starter_signup', 'invest_signup'];
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("notify-admin-signup", async (req) => {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405 });
 
   const provided = req.headers.get('x-internal-secret') ?? '';
@@ -70,4 +71,4 @@ Deno.serve(async (req) => {
   }
 
   return Response.json({});
-});
+}));

@@ -7,12 +7,13 @@
 // Secrets: CRON_SECRET, NURTURE_RESEND_API_KEY. Ver docs/monitoreo.md.
 import { runCronHealth } from "./cronHealthLogic.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
+import { withErrorReporting } from "../_shared/errorReport.ts";
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting("cron-health-alert", async (req) => {
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
   if (!secretEquals(req.headers.get("x-cron-secret"), Deno.env.get("CRON_SECRET"))) {
     return json({ ok: false, error: "unauthorized" }, 401);
@@ -40,4 +41,4 @@ Deno.serve(async (req) => {
     console.error(`cron-health-alert: ${e instanceof Error ? e.message : String(e)}`);
     return json({ ok: false, error: "internal_error" }, 500);
   }
-});
+}));
