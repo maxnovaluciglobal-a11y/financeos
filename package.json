@@ -15,7 +15,7 @@
     "@react-pdf/renderer": "^4.9.0",
     "@supabase/supabase-js": "^2.116.0",
     "exceljs": "^4.4.0",
-    "idb": "^8.0.0",
+    "idb": "^8.0.4",
     "lucide-react": "^1.48.0",
     "pdfjs-dist": "^4.7.76",
     "react": "^19.3.1",
