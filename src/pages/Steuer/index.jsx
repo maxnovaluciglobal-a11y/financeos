@@ -40,7 +40,7 @@ export default function Steuer() {
 
   if (country !== 'DE') {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
         {t('steuer.onlyDE')}
       </div>
     )
@@ -99,16 +99,16 @@ function LohnabzuegeCard() {
       {result && (
         <>
           <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
               {fmtEUR(result.netto)}
             </div>
-            <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
               {t('steuer.lohn.nettoSub', { pct: Math.round(result.tasaEfectiva * 100) })}
             </div>
           </div>
 
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
-            <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
               {t('steuer.lohn.sozialTitle')}
             </div>
             {[
@@ -119,11 +119,11 @@ function LohnabzuegeCard() {
             ].map(([label, val]) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', color: 'var(--tx)' }}>
                 <span>{label}</span>
-                <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(val)}</span>
+                <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(val)}</span>
               </div>
             ))}
 
-            <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', margin: '12px 0 8px' }}>
+            <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', margin: '12px 0 8px' }}>
               {t('steuer.lohn.taxesTitle')}
             </div>
             {[
@@ -133,13 +133,13 @@ function LohnabzuegeCard() {
             ].map(([label, val]) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', color: 'var(--tx)' }}>
                 <span>{label}</span>
-                <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(val)}</span>
+                <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(val)}</span>
               </div>
             ))}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, padding: '8px 0 0', marginTop: 8, borderTop: '.5px solid var(--brd)', color: 'var(--tx)' }}>
               <span>{t('steuer.lohn.totalAbzuege')}</span>
-              <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(result.totalAbzuege)}</span>
+              <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.totalAbzuege)}</span>
             </div>
           </div>
         </>
@@ -201,7 +201,7 @@ function WerbungskostenCard({ expenses, settings }) {
 
   return (
     <Card>
-      <CardHeader title={t('steuer.werb.title')} right={<span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{year}</span>} />
+      <CardHeader title={t('steuer.werb.title')} right={<span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
       <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>{t('steuer.werb.sub')}</div>
 
       <FormRow>
@@ -211,7 +211,7 @@ function WerbungskostenCard({ expenses, settings }) {
         </FormGroup>
       </FormRow>
 
-      <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', margin: '12px 0 8px' }}>
+      <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', margin: '12px 0 8px' }}>
         {t('steuer.werb.gastosLabel')}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
@@ -225,17 +225,17 @@ function WerbungskostenCard({ expenses, settings }) {
 
       <div style={{ marginTop: 16 }}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+          <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
             {fmtEUR(result.ahorro)}
           </div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
             {result.superaPauschale
               ? t('steuer.werb.resumenSupera', { gastos: result.totalGastos.toLocaleString('de-DE'), pausch: result.pausch.toLocaleString('de-DE'), pct: Math.round(result.tasa * 100) })
               : t('steuer.werb.resumenBaja', { pausch: result.pausch.toLocaleString('de-DE') })}
           </div>
         </div>
 
-        <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>
+        <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
           <span>{t('steuer.werb.aprovechamiento')}</span>
           <span>{Math.round(result.topePct)}%</span>
         </div>
@@ -247,11 +247,11 @@ function WerbungskostenCard({ expenses, settings }) {
         </div>
 
         <div style={{ marginTop: 16, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
-          <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 8 }}>{t('steuer.werb.desglose')}</div>
+          <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>{t('steuer.werb.desglose')}</div>
           {result.desglose.map(d => (
             <div key={d.key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', color: 'var(--tx)' }}>
               <span>{t('steuer.werb.cat.' + d.key)}</span>
-              <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(d.monto)}</span>
+              <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(d.monto)}</span>
             </div>
           ))}
         </div>
@@ -312,7 +312,7 @@ function ElsterExport({ desglose, year, t }) {
       {abierto && (
         <div style={{ marginTop: 10 }}>
           <pre style={{
-            fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--tx)', background: 'var(--sur2)',
+            fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tx)', background: 'var(--sur2)',
             border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '12px 14px',
             whiteSpace: 'pre-wrap', lineHeight: 1.6, marginBottom: 8,
           }}>{texto}</pre>

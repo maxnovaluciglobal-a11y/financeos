@@ -19,7 +19,7 @@ function CustomTooltip({ active, payload, sym, lang, m }) {
   const d = payload[0]
   if (!d) return null
   return (
-    <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'8px 12px', fontSize:12, fontFamily:'var(--mono)' }}>
+    <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:'8px 12px', fontSize:12, fontFamily: 'var(--sans)' }}>
       <div style={{ color: d.payload?.fill || 'var(--accent)', fontWeight:600, marginBottom:2 }}>{catLabel(d.name, lang)}</div>
       <div style={{ color:'var(--tx)' }}>{m(fmtMoney(d.value, sym))}</div>
       <div style={{ color:'var(--th)' }}>{d.payload?.pct || 0}%</div>
@@ -89,8 +89,8 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
         </div>
         {/* Label central */}
         <div aria-hidden="true" style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center', pointerEvents:'none' }}>
-          <div style={{ fontSize:15, fontWeight:700, color:'var(--tx)', fontFamily:'var(--mono)' }}>{fmtTotal}</div>
-          <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('chart.donut.total')}</div>
+          <div style={{ fontSize:15, fontWeight:700, color:'var(--tx)', fontFamily: 'var(--num)' }}>{fmtTotal}</div>
+          <div style={{ fontSize: 12, color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>{t('chart.donut.total')}</div>
         </div>
       </div>
       <div className={css.legend}>
@@ -109,7 +109,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>
             <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catLabel(d.name, lang)}{clickable(d.name) ? <span aria-hidden="true"> ›</span> : ''}</div>
-            <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{d.pct}%</div>
+            <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>{d.pct}%</div>
           </div>
         ))}
       </div>

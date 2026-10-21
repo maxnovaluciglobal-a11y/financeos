@@ -38,7 +38,7 @@ export default function ResetPassword({ onDone }) {
           {t('resetPassword.subtitle')}
         </div>
 
-        <label htmlFor="reset-password" style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--tm)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 4 }}>
+        <label htmlFor="reset-password" style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--tm)', display: 'block', marginBottom: 4 }}>
           {t('authGate.passwordPlaceholderSignup')}
         </label>
         <input
@@ -55,7 +55,7 @@ export default function ResetPassword({ onDone }) {
         />
 
         {error && (
-          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
             <InlineIcon kind="alert" size={13} />{error}
           </div>
         )}

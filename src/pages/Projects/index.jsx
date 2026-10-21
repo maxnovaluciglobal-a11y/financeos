@@ -67,7 +67,7 @@ export default function Projects() {
       {groups.length === 0 ? (
         <Card>
           <Empty text={t('projects.empty')} />
-          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.7, marginTop: 8 }}>
+          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.7, marginTop: 8 }}>
             {t('projects.emptyHint')}
           </div>
         </Card>
@@ -75,10 +75,10 @@ export default function Projects() {
         <>
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8 }}>
-              <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>
+              <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>
                 {groups.length === 1 ? t('projects.totalNet.one', { n: groups.length }) : t('projects.totalNet.many', { n: groups.length })}
               </div>
-              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--mono)', color: totalNeto >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
+              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--num)', color: totalNeto >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
                 {totalNeto >= 0 ? '+' : ''}{fmtMoney(totalNeto, sym)}
               </div>
             </div>
@@ -89,15 +89,15 @@ export default function Projects() {
               <Card key={g.name}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)' }}>{g.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('projects.movCount', { n: g.count })}</div>
+                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('projects.movCount', { n: g.count })}</div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   <Row label={t('projects.incomeRow')} value={`+${fmtMoney(g.ingresos, sym)}`} color="var(--grn)" />
                   <Row label={t('projects.expenseRow')} value={`−${fmtMoney(g.egresos, sym)}`} color="var(--neg)" />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 10, borderTop: '.5px solid var(--brd)' }}>
-                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>{t('projects.netFlow')}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--mono)', color: g.neto >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
+                  <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>{t('projects.netFlow')}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--num)', color: g.neto >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
                     {g.neto >= 0 ? '+' : ''}{fmtMoney(g.neto, sym)}
                   </div>
                 </div>
@@ -108,12 +108,12 @@ export default function Projects() {
                   const mort = mortgageOf(g.name)
                   if (editing === g.name) return (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '.5px solid var(--brd)' }}>
-                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 5 }}>{t('projects.valueHint')}</div>
+                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 5 }}>{t('projects.valueHint')}</div>
                       <div style={{ display: 'flex', gap: 6 }}>
                         {/* eslint-disable-next-line jsx-a11y/no-autofocus -- the user just opened the value editor; focus moves into the input that appeared */}
                         <input type="number" inputMode="decimal" min="0" step="any" value={draft} autoFocus placeholder="0"
                           onChange={e => setDraft(e.target.value)}
-                          style={{ flex: 1, minWidth: 0, padding: '6px 9px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--mono)', fontSize: 12 }} />
+                          style={{ flex: 1, minWidth: 0, padding: '6px 9px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--sans)', fontSize: 12 }} />
                         <button onClick={() => saveValue(g.name)} style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--laton)', color: 'var(--navy)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{t('projects.saveBtn')}</button>
                         <button onClick={() => setEditing(null)} style={{ padding: '6px 10px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'transparent', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>{t('projects.cancelBtn')}</button>
                       </div>
@@ -122,24 +122,24 @@ export default function Projects() {
                   return (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '.5px solid var(--brd)', display: 'flex', flexDirection: 'column', gap: 5 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('projects.estValue')}</span>
+                        <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('projects.estValue')}</span>
                         <span>
-                          {val > 0 && <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--mono)', color: 'var(--tx)', marginRight: 8 }}>{fmtMoney(val, sym)}</span>}
-                          <button onClick={() => startEdit(g.name)} style={{ background: 'none', border: 'none', color: 'var(--grn)', fontSize: 11, fontFamily: 'var(--mono)', cursor: 'pointer', padding: 0 }}>
+                          {val > 0 && <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--num)', color: 'var(--tx)', marginRight: 8 }}>{fmtMoney(val, sym)}</span>}
+                          <button onClick={() => startEdit(g.name)} style={{ background: 'none', border: 'none', color: 'var(--grn)', fontSize: 11, fontFamily: 'var(--sans)', cursor: 'pointer', padding: 0 }}>
                             {val > 0 ? t('projects.editValue') : t('projects.setValue')}
                           </button>
                         </span>
                       </div>
                       {mort > 0 && <Row label={t('projects.linkedMortgage')} value={`−${fmtMoney(mort, sym)}`} color="var(--neg)" />}
                       {val > 0 && mort === 0 && (
-                        <div style={{ fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
+                        <div style={{ fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--sans)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
                           <InlineIcon kind="alert" size={13} />{t('projects.noMortgageHint')}
                         </div>
                       )}
                       {val > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                          <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>{t('projects.equity')}</span>
-                          <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--mono)', color: (val - mort) >= 0 ? 'var(--grn)' : 'var(--neg)' }}>{fmtMoney(val - mort, sym)}</span>
+                          <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>{t('projects.equity')}</span>
+                          <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--num)', color: (val - mort) >= 0 ? 'var(--grn)' : 'var(--neg)' }}>{fmtMoney(val - mort, sym)}</span>
                         </div>
                       )}
                     </div>
@@ -149,7 +149,7 @@ export default function Projects() {
             ))}
           </div>
 
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, padding: '0 4px' }}>
             {t('projects.disclaimer')}
           </div>
         </>
@@ -162,8 +162,8 @@ export default function Projects() {
 function Row({ label, value, color }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-      <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--mono)', color }}>{value}</span>
+      <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--num)', color }}>{value}</span>
     </div>
   )
 }

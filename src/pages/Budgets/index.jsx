@@ -148,7 +148,7 @@ export default function Budgets() {
           cta={t('empty.budgets.cta')} onCta={focusNewBudget} />
       )}
       {rolloverOn && (
-        <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', lineHeight: 1.6 }}>
+        <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.6 }}>
           <InlineIcon kind="subs" size={13} />{t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
         </div>
       )}
@@ -161,10 +161,10 @@ export default function Budgets() {
       {ingresoNeto > totalBudget && (
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',background:'var(--accent-bg)',border:'.5px solid var(--accent)',borderRadius:8}}>
           <div>
-            <div style={{fontSize:11,color:'var(--accent)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('budgets.unassigned.label')}</div>
-            <div style={{fontSize:16,fontWeight:700,color:'var(--accent)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto-totalBudget,sym)}</Money></div>
+            <div style={{fontSize: 12,color:'var(--accent)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('budgets.unassigned.label')}</div>
+            <div style={{fontSize:16,fontWeight:700,color:'var(--accent)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(ingresoNeto-totalBudget,sym)}</Money></div>
           </div>
-          <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',maxWidth:320,lineHeight:1.5}}>{t('budgets.unassigned.hint')}</div>
+          <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',maxWidth:320,lineHeight:1.5}}>{t('budgets.unassigned.hint')}</div>
         </div>
       )}
       {overBudget.length > 0 && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catLabel(b.category, lang)).join(', ') })}</Alert>}
@@ -187,11 +187,11 @@ export default function Budgets() {
             <CardHeader title={t('budgets.model.title')} />
             {ingresoNeto > 0 ? (
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
-                <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.model.netIncome', { month: monthLabel(activeMonth) })}</span>
-                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(ingresoNeto,sym)}</Money></span>
+                <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('budgets.model.netIncome', { month: monthLabel(activeMonth) })}</span>
+                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(ingresoNeto,sym)}</Money></span>
               </div>
             ) : (
-              <div style={{fontSize:11,color:'var(--neg)',fontFamily:'var(--mono)',marginBottom:10,padding:'6px 10px',background:'var(--neg-bg)',borderRadius:6}}>
+              <div style={{fontSize:11,color:'var(--neg)',fontFamily: 'var(--sans)',marginBottom:10,padding:'6px 10px',background:'var(--neg-bg)',borderRadius:6}}>
                 <InlineIcon kind="alert" size={13} />{t('budgets.model.noIncome', { month: monthLabel(activeMonth) })}
               </div>
             )}
@@ -227,18 +227,18 @@ export default function Budgets() {
                       <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 10px',borderRadius:6,background:s.highlight?'rgba(10,92,62,.08)':i%2===0?'var(--sur2)':'transparent',border:s.highlight?'0.5px solid rgba(10,92,62,.25)':'none'}}>
                         <div>
                           {/* La fila de ahorro usa etiqueta traducida (no está en el mapa) → emoji fijo */}
-                          <span style={{fontSize:11,fontFamily:'var(--mono)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{s.highlight ? `💰 ${catName(s.cat, lang)}` : catLabel(s.cat, lang)}</span>
-                          <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:6}}>{s.grupo}</span>
+                          <span style={{fontSize:11,fontFamily: 'var(--sans)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:s.highlight?700:400}}>{s.highlight ? `💰 ${catName(s.cat, lang)}` : catLabel(s.cat, lang)}</span>
+                          <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginLeft:6}}>{s.grupo}</span>
                         </div>
                         <div style={{textAlign:'right'}}>
-                          <span style={{fontSize:11,fontFamily:'var(--mono)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:600}}>{inc>0?fmtMoney(Math.round(inc*s.pct),sym):'—'}</span>
-                          <span style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginLeft:4}}>{(s.pct*100).toFixed(0)}%</span>
+                          <span style={{fontSize:11,fontFamily: 'var(--num)',color:s.highlight?'var(--grn)':'var(--tx)',fontWeight:600}}>{inc>0?fmtMoney(Math.round(inc*s.pct),sym):'—'}</span>
+                          <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginLeft:4}}>{(s.pct*100).toFixed(0)}%</span>
                         </div>
                       </div>
                     ))}
                   </div>
                   {inc > 0 && <>
-                    <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:8}}>{t('budgets.model.onlyNew')}</div>
+                    <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:8}}>{t('budgets.model.onlyNew')}</div>
                     <Btn variant="primary" onClick={aplicar}>{t('budgets.model.apply')}</Btn>
                   </>}
                 </div>
@@ -251,7 +251,7 @@ export default function Budgets() {
           <CardHeader title={t('budgets.summary', { month: monthLabel(activeMonth) })} />
           {budgets.length === 0 ? (
             <div style={{textAlign:'center',padding:'24px 0'}}>
-              <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.summary.empty')}</div>
+              <div style={{fontSize:13,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('budgets.summary.empty')}</div>
             </div>
           ) : (() => {
             const total   = budgets.reduce((s,b) => s+(effectiveLimitByCat[b.category]||b.limit), 0)
@@ -270,22 +270,22 @@ export default function Budgets() {
                       aria-label={`${(pct*100).toFixed(0)}% ${t('budgets.donut.used')} — ${fmtMoney(gastado,sym)} ${t('budgets.donut.ofTotal')} ${fmtMoney(total,sym)}`}>
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--brd)" strokeWidth="16"/>
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke={strokeColor} strokeWidth="16" strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ/4} strokeLinecap="round"/>
-                      <text x={cx} y={cy-10} textAnchor="middle" fontSize="18" fill={strokeColor} fontWeight="700" fontFamily="var(--mono)">{(pct*100).toFixed(0)}%</text>
-                      <text x={cx} y={cy+8}  textAnchor="middle" fontSize="9"  fill="var(--th)" fontFamily="var(--mono)">{t('budgets.donut.used')}</text>
-                      <text x={cx} y={cy+22} textAnchor="middle" fontSize="8"  fill="var(--th)" fontFamily="var(--mono)">{t('budgets.donut.ofTotal')}</text>
+                      <text x={cx} y={cy-10} textAnchor="middle" fontSize="18" fill={strokeColor} fontWeight="700" fontFamily="var(--num)">{(pct*100).toFixed(0)}%</text>
+                      <text x={cx} y={cy+8}  textAnchor="middle" fontSize="9"  fill="var(--th)" fontFamily="var(--sans)">{t('budgets.donut.used')}</text>
+                      <text x={cx} y={cy+22} textAnchor="middle" fontSize="8"  fill="var(--th)" fontFamily="var(--sans)">{t('budgets.donut.ofTotal')}</text>
                     </svg>
                   </div>
                   <div style={{flex:1,display:'flex',flexDirection:'column',gap:8}}>
                     {[{lb:t('budgets.lb.total'),v:fmtMoney(total,sym),c:'var(--tx)'},{lb:t('budgets.lb.spent'),v:fmtMoney(gastado,sym),c:strokeColor},{lb:t('budgets.lb.available'),v:fmtMoney(disponible,sym),c:'var(--grn)'}].map(item => (
                       <div key={item.lb} style={{background:'var(--sur2)',borderRadius:6,padding:'8px 12px'}}>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:2}}>{item.lb}</div>
-                        <div style={{fontSize:14,fontWeight:700,color:item.c,fontFamily:'var(--mono)'}}>{item.v}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:2}}>{item.lb}</div>
+                        <div style={{fontSize:14,fontWeight:700,color:item.c,fontFamily: 'var(--num)'}}>{item.v}</div>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div style={{marginTop:16,paddingTop:16,borderTop:'0.5px solid var(--brd)'}}>
-                  <div style={{fontFamily:'var(--mono)',fontSize:11,letterSpacing:'1px',textTransform:'uppercase',color:'var(--grn)',marginBottom:10}}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</div>
+                  <div style={{fontFamily: 'var(--sans)', fontWeight: 600,fontSize: 12,color:'var(--grn)',marginBottom:10}}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))',gap:10}}>
                     {budgets.map(b => {
                       const spent    = expByCat[b.category] || 0
@@ -301,9 +301,9 @@ export default function Budgets() {
                       return (
                         <div key={b.id} style={{background:'var(--bg)',borderRadius:8,padding:'10px',border:`0.5px solid ${over?'color-mix(in srgb, var(--neg) 45%, transparent)':warn?'color-mix(in srgb, var(--warn) 35%, transparent)':'var(--brd)'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:6,position:'relative'}}>
                           <button onClick={() => deleteWithUndo('budgets', b, t('common.deleted'), t('common.undo'))} aria-label={t('common.confirmDelete')} style={{position:'absolute',top:4,right:4,background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'1px 4px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                          <div style={{fontSize:11,fontWeight:600,color:'var(--tx)',fontFamily:'var(--mono)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
+                          <div style={{fontSize:11,fontWeight:600,color:'var(--tx)',fontFamily: 'var(--num)',textAlign:'center',lineHeight:1.2,paddingRight:10}}>{catLabel(b.category, lang)}</div>
                           {carry > 0 && (
-                            <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
+                            <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--accent)',background:'var(--accent-bg)',borderRadius:4,padding:'1px 5px'}}>
                               <InlineIcon kind="subs" size={11} />+<Money>{fmtMoney(carry,sym)}</Money>
                             </div>
                           )}
@@ -311,12 +311,12 @@ export default function Budgets() {
                             aria-label={`${catLabel(b.category, lang)}: ${(p*100).toFixed(0)}% ${over?t('budgets.cat.over'):warn?t('budgets.cat.warn'):t('budgets.cat.ok')} — ${fmtMoney(spent,sym)} ${t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}`}>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke="var(--brd)" strokeWidth="9"/>
                             <circle cx={cx2} cy={cy2} r={r2} fill="none" stroke={clr} strokeWidth="9" strokeDasharray={`${dash2} ${circ2}`} strokeDashoffset={circ2/4} strokeLinecap="round"/>
-                            <text x={cx2} y={cy2+4} textAnchor="middle" fontSize="13" fill={clr} fontWeight="700" fontFamily="var(--mono)">{(p*100).toFixed(0)}%</text>
+                            <text x={cx2} y={cy2+4} textAnchor="middle" fontSize="13" fill={clr} fontWeight="700" fontFamily="var(--num)">{(p*100).toFixed(0)}%</text>
                           </svg>
-                          <ScoreState level={lvl} label={stateLb} size={13} style={{ fontSize:12, fontFamily:'var(--mono)' }} />
+                          <ScoreState level={lvl} label={stateLb} size={13} style={{ fontSize:12, fontFamily: 'var(--sans)' }} />
                           <div style={{textAlign:'center'}}>
-                            <div style={{fontSize:11,fontWeight:700,color:clr,fontFamily:'var(--mono)'}}><Money>{fmtMoney(spent,sym)}</Money></div>
-                            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}{carry > 0 ? t('budgets.cat.base', { base: fmtMoney(b.limit,sym) }) : ''}</div>
+                            <div style={{fontSize:11,fontWeight:700,color:clr,fontFamily: 'var(--num)'}}><Money>{fmtMoney(spent,sym)}</Money></div>
+                            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('budgets.cat.of', { limit: fmtMoney(effLimit,sym) })}{carry > 0 ? t('budgets.cat.base', { base: fmtMoney(b.limit,sym) }) : ''}</div>
                           </div>
                         </div>
                       )

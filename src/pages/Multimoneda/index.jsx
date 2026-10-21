@@ -58,7 +58,7 @@ export default function Multimoneda() {
 
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
         {t('multimoneda.onlyVE')}
       </div>
     )
@@ -99,7 +99,7 @@ export default function Multimoneda() {
               background: fuenteTasa === 'oficial' ? 'var(--grn-bg)' : 'var(--sur2)',
               color: fuenteTasa === 'oficial' ? 'var(--grn)' : 'var(--tx)',
             }}>
-              {t('multimoneda.tasa.oficialBtn')}{live && <span style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, marginTop: 2 }}>{Number(live.oficial).toLocaleString('es-VE')}</span>}
+              {t('multimoneda.tasa.oficialBtn')}{live && <span style={{ display: 'block', fontFamily: 'var(--num)', fontSize: 14, fontWeight: 700, marginTop: 2 }}>{Number(live.oficial).toLocaleString('es-VE')}</span>}
             </button>
             <button type="button" aria-pressed={fuenteTasa === 'paralelo'} onClick={() => elegirFuente('paralelo')} disabled={paraleloNoDisponible} style={{
               flex: 1, minHeight: 44, padding: '9px 12px', borderRadius: 'var(--r)', fontSize: 12,
@@ -110,7 +110,7 @@ export default function Multimoneda() {
               color: fuenteTasa === 'paralelo' ? 'var(--grn)' : 'var(--tx)',
             }}>
               {t('multimoneda.tasa.paraleloBtn')}{live && (
-                <span style={{ display: 'block', fontFamily: paraleloNoDisponible ? 'inherit' : 'var(--mono)', fontSize: paraleloNoDisponible ? 11 : 14, fontWeight: paraleloNoDisponible ? 400 : 700, marginTop: 2 }}>
+                <span style={{ display: 'block', fontFamily: paraleloNoDisponible ? 'inherit' : 'var(--num)', fontSize: paraleloNoDisponible ? 11 : 14, fontWeight: paraleloNoDisponible ? 400 : 700, marginTop: 2 }}>
                   {paraleloNoDisponible ? t('multimoneda.tasa.noDisponible') : Number(live.paralelo).toLocaleString('es-VE')}
                 </span>
               )}
@@ -155,15 +155,15 @@ export default function Multimoneda() {
           <Card>
             <CardHeader title={t('multimoneda.result.title')} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 32, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 32, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 <Money>{fmtUSD(result.totalUSD)}</Money>
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {t('multimoneda.result.breakdown', { bs: m(fmtUSD(result.bsEnUSD)), usd: m(fmtUSD(Number(usd) || 0)) })}
               </div>
             </div>
 
-            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>
+            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
               <span>{t('multimoneda.result.exposicion')}</span>
               <span>{Math.round(result.exposicionBsPct)}%</span>
             </div>

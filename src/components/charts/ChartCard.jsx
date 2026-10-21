@@ -10,7 +10,7 @@ export default function ChartCard({ title, subtitle, children, minHeight = 220 }
             <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--accent)', display:'inline-block', flexShrink:0 }}/>
             {title}
           </div>
-          {subtitle && <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:3, marginLeft:14 }}>{subtitle}</div>}
+          {subtitle && <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:3, marginLeft:14 }}>{subtitle}</div>}
         </div>
       )}
       <div style={{ minHeight }}>{children}</div>
@@ -23,7 +23,7 @@ export function ChartEmpty({ msg }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:160, flexDirection:'column', gap:8 }}>
       <div style={{ opacity:.35, color:'var(--th)' }}><SignalIcon kind="category" size={22} /></div>
-      <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)', textAlign:'center', maxWidth:220 }}>{msg || t('chart.empty.generic')}</div>
+      <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', textAlign:'center', maxWidth:220 }}>{msg || t('chart.empty.generic')}</div>
     </div>
   )
 }

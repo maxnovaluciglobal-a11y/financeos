@@ -151,7 +151,7 @@ function TrafficLight({ signals }) {
             <div style={{ fontSize: 12, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>{s.note}</div>
           </div>
           <div style={{
-            fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
+            fontSize: 11, fontFamily: 'var(--num)', fontWeight: 600,
             color: colors[s.status], flexShrink: 0,
             // Fondo liso: sobre el tinte de la fila, un segundo tinte dejaba el
             // texto de 11 px en 4,45:1 (axe color-contrast).
@@ -179,9 +179,9 @@ function AdvisorKPI({ label, value, sub, color = 'var(--tx)' }) {
       background: 'var(--sur2)', border: '0.5px solid var(--brd)',
       borderRadius: 8, padding: '12px 14px', minWidth: 0, overflow: 'hidden',
     }}>
-      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: valSize, fontWeight: 700, color, fontFamily: 'var(--mono)', letterSpacing: '-0.5px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 3, overflowWrap: 'anywhere' }}>{sub}</div>}
+      <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: valSize, fontWeight: 700, color, fontFamily: 'var(--num)', letterSpacing: '-0.5px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3, overflowWrap: 'anywhere' }}>{sub}</div>}
     </div>
   )
 }
@@ -247,7 +247,7 @@ function AdvisorNotes({ notes, onSave }) {
           onChange={e => setNextSteps(e.target.value)}
           placeholder={t('adv.notes.nextStepsPh')}
         />
-        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
+        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
           {t('adv.notes.nextStepsHint')}
         </div>
       </div>
@@ -264,14 +264,14 @@ function AdvisorNotes({ notes, onSave }) {
           {saved ? t('adv.notes.saved') : t('adv.notes.save')}
         </button>
         {notes.updatedAt && (
-          <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+          <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('adv.notes.updated', { d: new Date(notes.updatedAt).toLocaleDateString(dateLocale()) })}
           </span>
         )}
       </div>
 
       <div style={{
-        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)',
+        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)',
         padding: '8px 10px', background: 'var(--sur2)',
         borderRadius: 6, borderLeft: '2px solid var(--brd2)', lineHeight: 1.5,
       }}>
@@ -416,14 +416,14 @@ export default function Advisor() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
             <h1 className="display" style={{ fontSize: 24, fontWeight: 700 }}>{t('adv.title')}</h1>
             <div style={{
-              fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
+              fontSize: 11, fontFamily: 'var(--num)', fontWeight: 600,
               background: 'var(--grn-bg)', color: 'var(--grn)',
               padding: '2px 8px', borderRadius: 'var(--rs)', letterSpacing: '0.5px',
             }}>
               {t('adv.badge')}
             </div>
           </div>
-          <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+          <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('adv.sub', { month: monthLabel(activeMonth) })}
           </p>
         </div>
@@ -468,7 +468,7 @@ export default function Advisor() {
                 flexShrink: 0,
               }}>
                 <div className="num" style={{ fontSize: 24, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{score}</div>
-                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>/ 100</div>
+                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>/ 100</div>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: scoreColor, marginBottom: 3 }}>{scoreLabel}</div>
@@ -477,7 +477,7 @@ export default function Advisor() {
                   {t('adv.score.summary', { g: signals.filter(s => s.status === 'green').length, y: signals.filter(s => s.status === 'yellow').length, r: signals.filter(s => s.status === 'red').length })}
                 </div>
                 {advisorNotes.meetingDate && (
-                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
+                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
                     {t('adv.score.nextMeeting', { d: new Date(advisorNotes.meetingDate + 'T12:00').toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) })}
                   </div>
                 )}
@@ -488,7 +488,7 @@ export default function Advisor() {
                   { c: 'var(--warn)', l: t('adv.status.yellow') },
                   { c: 'var(--neg)', l: t('adv.status.red') },
                 ].map(i => (
-                  <div key={i.l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+                  <div key={i.l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: i.c }} />
                     {i.l}
                   </div>
@@ -524,7 +524,7 @@ export default function Advisor() {
                   <Alert key={i} type={a.type}>{a.text}</Alert>
                 ))}
               </div>
-              <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 8, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 8, lineHeight: 1.5 }}>
                 {t('adv.alertsDisclaimer')}
               </p>
             </Card>
@@ -545,19 +545,19 @@ export default function Advisor() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                         <div>
                           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{d.creditor}</div>
-                          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+                          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                             {t('adv.debts.rateLine', { rate: d.rate, v: fmtMoney(d.minPayment || 0, sym) })}
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--warn)', fontFamily: 'var(--mono)' }}>{fmtMoney(d.balance, sym)}</div>
-                          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{t('adv.debts.pending')}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--warn)', fontFamily: 'var(--num)' }}>{fmtMoney(d.balance, sym)}</div>
+                          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('adv.debts.pending')}</div>
                         </div>
                       </div>
                       <div style={{ height: 4, background: 'var(--brd)', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${Math.min(pct * 100, 100)}%`, background: 'var(--grn)', borderRadius: 2 }} />
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 3 }}>
+                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3 }}>
                         {t('adv.debts.paidDue', { pct: fmtPct(pct), d: d.dueDate || '—' })}
                       </div>
                     </div>
@@ -578,14 +578,14 @@ export default function Advisor() {
                     <div key={g.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{g.name}</span>
-                        <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>
+                        <span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
                           {fmtMoney(g.saved, sym)} / {fmtMoney(g.target, sym)}
                         </span>
                       </div>
                       <div style={{ height: 5, background: 'var(--brd)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${pct * 100}%`, background: g.color || 'var(--grn)', borderRadius: 3 }} />
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                         {t('adv.goals.line', { pct: fmtPct(pct), d: g.targetDate || '—', p: g.priority || '—' })}
                       </div>
                     </div>
@@ -615,7 +615,7 @@ export default function Advisor() {
         <div style={{background:'var(--sur)',padding:'16px 20px',borderBottom:'0.5px solid var(--brd)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:700,color:'var(--tx)',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
-            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>MOY IQ Pro</div>
+            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>MOY IQ Pro</div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             {[
@@ -624,7 +624,7 @@ export default function Advisor() {
               {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'var(--pos)'},
             ].map((item,i) => (
               <div key={i} style={{background:'var(--sur2)',borderRadius:6,padding:'8px 10px',minWidth:0,overflow:'hidden'}}>
-                <div style={{fontSize:11,color:'var(--th)',marginBottom:2,textTransform:'uppercase',letterSpacing:.5}}>{item.l}</div>
+                <div style={{fontSize:12,fontWeight:600,color:'var(--th)',marginBottom:2}}>{item.l}</div>
                 <div style={{fontSize: String(item.v).length>11?11:13,fontWeight:700,color:item.c,fontFamily:'monospace',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{item.v}</div>
               </div>
             ))}
@@ -639,8 +639,8 @@ export default function Advisor() {
         <div style={{padding:'14px 20px',background:'var(--grn-bg)',display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{t('adv.pdf.ctaTitle')}</div>
-            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)'}}>{t('adv.pdf.ctaSub')}</div>
-            {pdfError && <div style={{fontSize:11,color:'var(--neg)',fontFamily:'var(--mono)',marginTop:4}}>{pdfError}</div>}
+            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('adv.pdf.ctaSub')}</div>
+            {pdfError && <div style={{fontSize:11,color:'var(--neg)',fontFamily: 'var(--sans)',marginTop:4}}>{pdfError}</div>}
           </div>
           <button
             onClick={handleExportPDF}
@@ -671,7 +671,7 @@ export default function Advisor() {
             </button>
           </div>
           {emailStatus === 'error' && emailErrorMsg && (
-            <div style={{fontSize:11,color:'var(--neg)',fontFamily:'var(--mono)'}}>{emailErrorMsg}</div>
+            <div style={{fontSize:11,color:'var(--neg)',fontFamily: 'var(--sans)'}}>{emailErrorMsg}</div>
           )}
           <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
             <input
@@ -682,7 +682,7 @@ export default function Advisor() {
               disabled={noData}
               style={{width:16,height:16,flexShrink:0,marginTop:1}}
             />
-            <label htmlFor="adv-pdf-email-consent" style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.5,cursor:noData?'default':'pointer'}}>
+            <label htmlFor="adv-pdf-email-consent" style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.5,cursor:noData?'default':'pointer'}}>
               {t('adv.pdf.emailConsent')}
             </label>
           </div>
@@ -692,10 +692,10 @@ export default function Advisor() {
       {/* ── SECCIÓN SUSCRIPCIONES EN MODO ASESOR ── */}
       {subCount > 0 && (
         <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '16px', marginBottom: 0 }}>
-          <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 2 }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2 }}>
             {t('adv.subs.title')}
           </div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>
             {t('adv.subs.note')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px,1fr))', gap: 8, marginBottom: 12 }}>
@@ -706,8 +706,8 @@ export default function Advisor() {
               { label: t('adv.subs.pctIncome'), value: mIncome > 0 ? fmtPct(subPct) : '—' },
             ].map(m => (
               <div key={m.label} style={{ background: 'var(--sur2)', borderRadius: 6, padding: '8px 10px', border: '.5px solid var(--brd)' }}>
-                <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.5px' }}>{m.label}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{m.value}</div>
+                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2}}>{m.label}</div>
+                <div style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--num)', color: 'var(--tx)' }}>{m.value}</div>
               </div>
             ))}
           </div>
@@ -715,13 +715,13 @@ export default function Advisor() {
           {subAlerts.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {subAlerts.map((a, i) => (
-                <div key={i} style={{ fontSize: 11, fontFamily: 'var(--mono)', color: a.type === 'duplicate' ? 'var(--amb)' : a.type === 'income' ? 'var(--amb)' : 'var(--th)', background: 'var(--sur2)', padding: '6px 10px', borderRadius: 6, borderLeft: `2px solid ${a.type === 'duplicate' || a.type === 'income' ? 'var(--amb)' : 'var(--brd)'}` }}>
+                <div key={i} style={{ fontSize: 11, fontFamily: 'var(--sans)', color: a.type === 'duplicate' ? 'var(--amb)' : a.type === 'income' ? 'var(--amb)' : 'var(--th)', background: 'var(--sur2)', padding: '6px 10px', borderRadius: 6, borderLeft: `2px solid ${a.type === 'duplicate' || a.type === 'income' ? 'var(--amb)' : 'var(--brd)'}` }}>
                   {a.msg}
                 </div>
               ))}
             </div>
           )}
-          <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 10 }}>
+          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 10 }}>
             {t('adv.subs.disclaimer')}
           </div>
         </div>

@@ -83,9 +83,9 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
   const categoriesExpense = getCategoriesExpense(settings)
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
     padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
-    boxSizing:'border-box', fontFamily:'var(--mono)' }
-  const lbl = { fontSize:11, color:'var(--th)', fontFamily:'var(--mono)',
-    textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3, display:'block' }
+    boxSizing:'border-box', fontFamily: 'var(--sans)' }
+  const lbl = { fontSize: 12, color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600,
+    marginBottom:3, display:'block' }
 
   const subcatOptions = SUBCATS[f.category] || []
 
@@ -151,13 +151,13 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
                 {t('common.cancel')}
               </button>
             </div>
-            <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:6, lineHeight:1.5 }}>
+            <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:6, lineHeight:1.5 }}>
               {t('mov.form.pasteLocal')}
             </div>
           </div>
         )}
         {pasteMsg && (
-          <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--mono)' }}>
+          <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily: 'var(--sans)' }}>
             <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
           </div>
         )}
@@ -189,7 +189,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings })
                   onClick={() => set('subcategory', f.subcategory === sc ? '' : sc)}
                   style={{
                     padding:'4px 10px', borderRadius:16, fontSize:11, cursor:'pointer',
-                    fontFamily:'var(--mono)', border:`.5px solid ${f.subcategory === sc ? 'var(--accent)' : 'var(--brd2)'}`,
+                    fontFamily:'var(--sans)', border:`.5px solid ${f.subcategory === sc ? 'var(--accent)' : 'var(--brd2)'}`,
                     background: f.subcategory === sc ? 'var(--accent-bg)' : 'var(--sur2)',
                     color: f.subcategory === sc ? 'var(--accent)' : 'var(--th)',
                     fontWeight: f.subcategory === sc ? 600 : 400,
@@ -248,7 +248,7 @@ function FormSub({ onSave, onCancel }) {
   const set = (k,v) => setF(p => ({ ...p, [k]:v }))
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
     padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
-    boxSizing:'border-box', fontFamily:'var(--mono)' }
+    boxSizing:'border-box', fontFamily: 'var(--sans)' }
 
   return (
     <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
@@ -460,12 +460,12 @@ export default function Movements({ setPage }) {
 
       {/* Header */}
       <div style={{ marginBottom:20 }}>
-        <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--grn)',
-          textTransform:'uppercase', letterSpacing:'1.2px', marginBottom:4 }}>{t('mov.kicker')}</div>
+        <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--grn)',
+          marginBottom:4 }}>{t('mov.kicker')}</div>
         <h1 className="display" style={{ fontSize:24, fontWeight:700, color:'var(--tx)', marginBottom:2 }}>
           {t('mov.title')}
         </h1>
-        <p style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>
+        <p style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>
           {t('mov.sub', { month: activeMonth })}
         </p>
       </div>
@@ -487,10 +487,10 @@ export default function Movements({ setPage }) {
         <div style={{ marginBottom:16 }}>
           <Alert type={totalSubs > totalInc * 0.15 ? 'danger' : 'warn'}>
             <div>
-              <div style={{ fontSize:12, fontWeight:600, fontFamily:'var(--mono)', marginBottom:3 }}>
+              <div style={{ fontSize:12, fontWeight:600, fontFamily: 'var(--num)', marginBottom:3 }}>
                 {t('mov.banner.title')}
               </div>
-              <div style={{ fontSize:13, color:'var(--tx)', fontFamily:'var(--mono)' }}>
+              <div style={{ fontSize:13, color:'var(--tx)', fontFamily: 'var(--sans)' }}>
                 <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
                 {' → '}
                 <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
@@ -578,18 +578,18 @@ export default function Movements({ setPage }) {
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div style={{ fontSize:11, fontWeight:600, color:'var(--tx)',
-              fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>
+            <div style={{ fontSize: 12, fontWeight:600, color:'var(--tx)',
+              fontFamily: 'var(--sans)'}}>
               {t('mov.list.expenses', { n: listExp.length })}
             </div>
             <div style={{ fontSize:11, fontWeight:700, color:'var(--tx)',
-              fontFamily:'var(--mono)' }}><Money>{fmtM(totalExp, sym)}</Money></div>
+              fontFamily: 'var(--num)' }}><Money>{fmtM(totalExp, sym)}</Money></div>
           </div>
           {drillCat && (
             <div style={{ padding:'8px 14px', borderBottom:'.5px solid var(--brd)', display:'flex', alignItems:'center', gap:8, background:'var(--accent-bg)' }}>
-              <span style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--tx)' }}>{t('mov.list.filtering')} <strong>{drillCat}</strong></span>
+              <span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--tx)' }}>{t('mov.list.filtering')} <strong>{drillCat}</strong></span>
               <button onClick={() => setDrillCat(null)} aria-label={t('mov.list.removeFilter')}
-                style={{ marginLeft:'auto', background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 10px', fontSize:11, fontFamily:'var(--mono)', color:'var(--tm)', cursor:'pointer' }}>
+                style={{ marginLeft:'auto', background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 10px', fontSize:11, fontFamily: 'var(--sans)', color:'var(--tm)', cursor:'pointer' }}>
                 {t('mov.list.clearFilter')}
               </button>
             </div>
@@ -627,8 +627,8 @@ export default function Movements({ setPage }) {
                   </select>
                 </div>
                 <div style={{display:'flex',gap:6}}>
-                  <button onClick={()=>saveEdit(e)} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'none',background:'var(--laton)',color:'var(--navy)',cursor:'pointer',fontFamily:'var(--mono)',fontWeight:600}}>{t('mov.edit.save')}</button>
-                  <button onClick={()=>{setEditingId(null);setEditForm({})}} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'.5px solid var(--brd)',background:'none',color:'var(--th)',cursor:'pointer',fontFamily:'var(--mono)'}}>{t('common.cancel')}</button>
+                  <button onClick={()=>saveEdit(e)} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'none',background:'var(--laton)',color:'var(--navy)',cursor:'pointer',fontFamily: 'var(--num)',fontWeight:600}}>{t('mov.edit.save')}</button>
+                  <button onClick={()=>{setEditingId(null);setEditForm({})}} style={{fontSize:11,padding:'3px 10px',borderRadius:4,border:'.5px solid var(--brd)',background:'none',color:'var(--th)',cursor:'pointer',fontFamily: 'var(--sans)'}}>{t('common.cancel')}</button>
                 </div>
               </div>
             ) : (
@@ -662,8 +662,8 @@ export default function Movements({ setPage }) {
           borderRadius:'var(--r)', overflow:'hidden' }}>
           <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
             display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:'var(--amb)',
-              fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'.5px' }}>
+            <div style={{ fontSize: 12, fontWeight:600, color:'var(--amb)',
+              fontFamily: 'var(--sans)'}}>
               {t('rec.mov.title', { n: fixedExp.length })}
             </div>
             {setPage && (
@@ -686,7 +686,7 @@ export default function Movements({ setPage }) {
 
 
       {/* Disclaimer */}
-      <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:4 }}>
+      <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:4 }}>
         {t('mov.disclaimer')}
       </div>
     </div>

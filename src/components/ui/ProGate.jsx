@@ -51,7 +51,7 @@ function DemoProStrip({ t, days }) {
       background: 'var(--amb-bg)', border: '.5px solid var(--brd2)', borderRadius: 'var(--r)',
       fontSize: 13, color: 'var(--tm)', lineHeight: 1.45,
     }}>
-      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, letterSpacing: '.5px', color: 'var(--amb)', flexShrink: 0 }}>PRO</span>
+      <span style={{ fontFamily: 'var(--num)', fontSize: 11, fontWeight: 700, letterSpacing: '.5px', color: 'var(--amb)', flexShrink: 0 }}>PRO</span>
       <span>{t('pro.demo.strip', { days })}</span>
     </div>
   )
@@ -88,7 +88,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }} aria-hidden="true">
         <IconIQScore size={40} />
       </div>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--tm)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
+      <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--tm)', marginBottom: 8 }}>
         {t('pro.gate.kicker')}
       </div>
       <h2 style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.3 }}>
@@ -147,7 +147,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
     <>
       {gate}
       <section aria-label={t('pro.gate.previewLabel')} style={{ maxWidth: 960, margin: '0 auto 32px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
+        <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)', marginBottom: 8 }}>
           {t('pro.gate.previewLabel')}
         </div>
         <div inert data-pro-preview="" style={{

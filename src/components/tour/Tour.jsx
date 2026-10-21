@@ -155,7 +155,7 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
         }}
       >
         <div aria-live="polite">
-          <div className="num" style={{ fontFamily: 'var(--mono)', fontWeight: 500, fontSize: 12, color: 'var(--th)', marginBottom: 6 }}>
+          <div className="num" style={{ fontFamily: 'var(--sans)', fontWeight: 500, fontSize: 12, color: 'var(--th)', marginBottom: 6 }}>
             {t('tour.count', { n: i + 1, total: steps.length })}
           </div>
           <h2 id={labelledBy} style={{ margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)' }}>

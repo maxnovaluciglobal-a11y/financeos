@@ -65,7 +65,7 @@ export default function ResicoMX() {
 
   if (country !== 'MX') {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
         {t('resicomx.onlyMX')}
       </div>
     )
@@ -83,7 +83,7 @@ export default function ResicoMX() {
         </Alert>
 
         <Card>
-          <CardHeader title={t('resicomx.income.title')} right={<span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{activeMonth}</span>} />
+          <CardHeader title={t('resicomx.income.title')} right={<span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{activeMonth}</span>} />
           <FormRow>
             <FormGroup label={t('resicomx.income.label')}>
               <input type="number" inputMode="decimal" min="0" value={ingreso} placeholder="0"
@@ -92,7 +92,7 @@ export default function ResicoMX() {
           </FormRow>
 
           {ingresoEstimado > 0 && (
-            <div style={{ marginTop: 2, marginBottom: 10, fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 2, marginBottom: 10, fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', lineHeight: 1.5 }}>
               {!ingresoTouched
                 ? <>✓ {t('resicomx.income.autoNote')}</>
                 : <>{t('resicomx.income.suggestedNote', { v: fmtMXN(ingresoEstimado) })} <button type="button" style={{ color: 'var(--grn)', cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 0, padding: 0, font: 'inherit' }} onClick={() => { setIngresoTouched(false); setIngreso(String(ingresoEstimado)) }}>{t('resicomx.income.useAuto')}</button></>}
@@ -115,13 +115,13 @@ export default function ResicoMX() {
           <Card>
             <CardHeader title={t('resicomx.result.title')} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.5px' }}>
+              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 4}}>
                 {haySaldoAFavor ? t('resicomx.result.saldoFavor') : t('resicomx.result.aPagarSAT')}
               </div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 34, fontWeight: 700, color: haySaldoAFavor ? 'var(--pos)' : 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: haySaldoAFavor ? 'var(--pos)' : 'var(--accent)', lineHeight: 1 }}>
                 {fmtMXN(haySaldoAFavor ? result.saldoAFavor : result.aPagar)}
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {t('resicomx.result.tasaSub', { pct: (result.tasa * 100).toFixed(2), neto: fmtMXN(result.neto) })}
               </div>
             </div>
@@ -130,13 +130,13 @@ export default function ResicoMX() {
             <div style={{ border: '.5px solid var(--brd)', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 12 }}>
                 <span style={{ color: 'var(--th)' }}>{t('resicomx.result.causado')}</span>
-                <span style={{ fontFamily: 'var(--mono)', color: 'var(--tx)', fontWeight: 600 }}>{fmtMXN(result.isrCausado)}</span>
+                <span style={{ fontFamily: 'var(--num)', color: 'var(--tx)', fontWeight: 600 }}>{fmtMXN(result.isrCausado)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 12, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ color: 'var(--th)' }}>
                   {t('resicomx.result.retencionLabel', { pct: (RETENCION_PERSONA_MORAL * 100).toFixed(2) })}
                 </span>
-                <span style={{ fontFamily: 'var(--mono)', color: result.retencion > 0 ? 'var(--tx)' : 'var(--th)', fontWeight: 600 }}>
+                <span style={{ fontFamily: 'var(--num)', color: result.retencion > 0 ? 'var(--tx)' : 'var(--th)', fontWeight: 600 }}>
                   {result.retencion > 0 ? `− ${fmtMXN(result.retencion)}` : '—'}
                 </span>
               </div>
@@ -144,7 +144,7 @@ export default function ResicoMX() {
                 <span style={{ color: haySaldoAFavor ? 'var(--pos)' : 'var(--tx)', fontWeight: 600 }}>
                   {haySaldoAFavor ? t('resicomx.result.saldoFavor') : t('resicomx.result.aPagarShort')}
                 </span>
-                <span style={{ fontFamily: 'var(--mono)', color: haySaldoAFavor ? 'var(--pos)' : 'var(--tx)', fontWeight: 700 }}>
+                <span style={{ fontFamily: 'var(--num)', color: haySaldoAFavor ? 'var(--pos)' : 'var(--tx)', fontWeight: 700 }}>
                   {fmtMXN(haySaldoAFavor ? result.saldoAFavor : result.aPagar)}
                 </span>
               </div>
@@ -173,13 +173,13 @@ export default function ResicoMX() {
             )}
 
             {!result.superaTope && !result.topeEsProyeccion && (
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 14, lineHeight: 1.6 }}>
                 {t('resicomx.result.acumuladoNote', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO), pct: Math.round((result.baseTope / TOPE_ANUAL_RESICO) * 100) })}
               </div>
             )}
 
             <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 8 }}>
+              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
                 {t('resicomx.tramos.title')}
               </div>
               {TRAMOS_RESICO.map((tr, i) => {
@@ -200,7 +200,7 @@ export default function ResicoMX() {
                         ? t('resicomx.tramos.fuera', { v: fmtMXN(tr.hasta) })
                         : <>{fmtMXN(desde)} — {fmtMXN(tr.hasta)}</>}
                     </span>
-                    <span style={{ fontFamily: 'var(--mono)' }}>{(tr.tasa * 100).toFixed(2)}%</span>
+                    <span style={{ fontFamily: 'var(--sans)' }}>{(tr.tasa * 100).toFixed(2)}%</span>
                   </div>
                 )
               })}

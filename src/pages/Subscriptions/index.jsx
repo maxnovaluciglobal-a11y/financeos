@@ -340,7 +340,7 @@ export default function Subscriptions() {
               <thead>
                 <tr style={{ background: 'var(--sur2)', borderBottom: '.5px solid var(--brd)' }}>
                   {[t('subs.th.service'), t('subs.th.category'), t('subs.th.perMonth'), t('subs.th.perYear'), t('subs.th.freq'), t('subs.th.nextPay'), t('subs.th.status'), null].map(h => (
-                    <th key={h || 'actions'} scope="col" style={{ position: 'relative', padding: '8px 12px', textAlign: 'left', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', whiteSpace: 'nowrap' }}>{h ?? <span className="sr-only">{t('subs.th.actions')}</span>}</th>
+                    <th key={h || 'actions'} scope="col" style={{ position: 'relative', padding: '8px 12px', textAlign: 'left', fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', whiteSpace: 'nowrap' }}>{h ?? <span className="sr-only">{t('subs.th.actions')}</span>}</th>
                   ))}
                 </tr>
               </thead>
@@ -355,15 +355,15 @@ export default function Subscriptions() {
                       <td style={{ padding: '9px 12px' }}>
                         <Badge color="blue">{subLabel(sub.category, lang)}</Badge>
                       </td>
-                      <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly, sub.currency || currency)}</td>
-                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
-                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
-                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '9px 12px', fontSize: 12, fontFamily: 'var(--sans)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly, sub.currency || currency)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
                         {sub.nextPaymentDate ? (toLocal(sub.nextPaymentDate) || new Date(sub.nextPaymentDate)).toLocaleDateString(dateLocale()) : '—'}
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <button onClick={() => toggleStatus(sub)} aria-pressed={isActive} style={{
-                          fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 10px', borderRadius: 'var(--rs)', cursor: 'pointer', minHeight: 44,
+                          fontSize: 11, fontFamily: 'var(--sans)', padding: '2px 10px', borderRadius: 'var(--rs)', cursor: 'pointer', minHeight: 44,
                           background: isActive ? 'var(--grn-bg)' : 'var(--sur2)',
                           color: isActive ? 'var(--grn)' : 'var(--th)',
                           border: `.5px solid ${isActive ? 'var(--grn)' : 'var(--brd)'}`,

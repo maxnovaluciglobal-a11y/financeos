@@ -23,11 +23,11 @@
   border-bottom: 0.5px solid var(--brd);
   margin-bottom: 6px;
 }
-.logoSub  { font-size: 11px; color: var(--th); font-family: var(--mono); margin-top: 3px; }
+.logoSub  { font-size: 11px; color: var(--th); font-family: var(--sans); margin-top: 3px; }
 
 .sec {
-  font-size: 11px; font-family: var(--mono); color: var(--th);
-  padding: 10px 14px 3px; text-transform: uppercase; letter-spacing: 1px;
+  font-size: 12px; font-weight: 600; font-family: var(--sans); color: var(--th);
+  padding: 10px 14px 3px;
 }
 .ni {
   display: flex; align-items: center; gap: 9px; min-height: 44px; box-sizing: border-box;
@@ -64,8 +64,8 @@
 /* min-width:0 + ellipsis: sin esto, un nombre de página largo (ej. "Impuestos
    Alemania") no se achica — por defecto un flex item no encoge bajo el ancho de
    su propio texto, así que terminaba pegado sin espacio contra topRight. */
-.crumb    { font-size: 11px; color: var(--th); font-family: var(--mono); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topRight { font-size: 11px; color: var(--th); font-family: var(--mono); flex-shrink: 0; white-space: nowrap; }
+.crumb    { font-size: 12px; color: var(--th); font-family: var(--sans); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topRight { font-size: 12px; color: var(--th); font-family: var(--sans); flex-shrink: 0; white-space: nowrap; }
 .content  { flex: 1; overflow-y: auto; padding: 14px 18px 24px; }
 /* El área de contenido es la que se desplaza (la ventana no): con tabIndex 0
    se puede desplazar con el teclado aunque la pantalla no tenga controles
@@ -117,7 +117,7 @@
 .appVersion {
   font-size: 11px;
   color: var(--th);
-  font-family: var(--mono);
+  font-family: var(--sans);
   margin-top: 8px;
   line-height: 1.5;
 }

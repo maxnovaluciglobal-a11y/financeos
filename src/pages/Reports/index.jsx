@@ -125,7 +125,7 @@ export default function Reports({ setPage }) {
 
   const axisStyle = {fill:'var(--th)',fontSize:11}
   const gridStyle = {stroke:'rgba(0,0,0,0.05)',strokeDasharray:'3 3'}
-  const ttStyle   = {background:'var(--sur)',border:'0.5px solid var(--brd2)',borderRadius:8,padding:'8px 12px',fontSize:11,fontFamily:'var(--mono)'}
+  const ttStyle   = {background:'var(--sur)',border:'0.5px solid var(--brd2)',borderRadius:8,padding:'8px 12px',fontSize:11,fontFamily: 'var(--sans)'}
 
   return (
     <div className="stack">
@@ -158,7 +158,7 @@ export default function Reports({ setPage }) {
               marginLeft:'auto', display:'flex', alignItems:'center', gap:6,
               padding:'7px 14px', borderRadius:8, border:'.5px solid var(--amb)',
               background:'rgba(245,166,35,.08)', color:'var(--amb)',
-              fontFamily:'var(--mono)', fontWeight:700, fontSize:12,
+              fontFamily: 'var(--num)', fontWeight:700, fontSize:12,
               textDecoration:'none', flexShrink:0, whiteSpace:'nowrap',
             }}
           >
@@ -200,12 +200,12 @@ export default function Reports({ setPage }) {
                     <div key={r.label}>
                       <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:12}}>
                         <span style={{fontWeight:500}}>{r.label}</span>
-                        <span style={{fontFamily:'var(--mono)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
+                        <span style={{fontFamily: 'var(--sans)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: actualPct.toFixed(1), max: r.max, mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
                       </div>
                       <div style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden'}}>
                         <div style={{height:'100%',width:'100%',transform:`scaleX(${Math.min(actualPct/r.max,1)})`,transformOrigin:'left',background:ok?r.color:'var(--red)',borderRadius:4,transition:'transform .4s'}}/>
                       </div>
-                      <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginTop:2,display:'flex',justifyContent:'space-between'}}>
+                      <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:2,display:'flex',justifyContent:'space-between'}}>
                         <span><Money>{fmtMoney(r.actual,sym)}</Money></span><span>{t('reports.rule.ideal', { v: fmtMoney(r.ideal,sym) })}</span>
                       </div>
                     </div>
@@ -225,7 +225,7 @@ export default function Reports({ setPage }) {
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
                   <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
                   <RTooltip contentStyle={ttStyle} formatter={(v) => fmtMoney(v, sym)}/>
-                  <Legend wrapperStyle={{fontSize:11,fontFamily:'var(--mono)',paddingTop:8}}/>
+                  <Legend wrapperStyle={{fontSize:11,fontFamily: 'var(--sans)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--grn)" radius={[3,3,0,0]} opacity={0.85}/>
                   <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--cat-1)" radius={[3,3,0,0]} opacity={0.75}/>
                 </BarChart>
@@ -288,7 +288,7 @@ export default function Reports({ setPage }) {
       {subMetrics.count > 0 && (
         <Card>
           <CardHeader title={t('reports.subs.title')} />
-          <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',marginBottom:12}}>{t('reports.subs.note')}</div>
+          <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginBottom:12}}>{t('reports.subs.note')}</div>
           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
             {[
               {lb:t('reports.subs.monthly'),v:fmtMoney(subMetrics.monthly,sym)},
@@ -297,38 +297,38 @@ export default function Reports({ setPage }) {
               ...(subMetrics.monthlyIncome>0?[{lb:t('reports.subs.pctIncome'),v:fmtPct(subMetrics.pct)}]:[]),
             ].map(m=>(
               <div key={m.lb} style={{flex:'1 1 110px',background:'var(--sur2)',borderRadius:6,padding:'8px 10px',border:'.5px solid var(--brd)'}}>
-                <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{m.lb}</div>
-                <div style={{fontSize:14,fontWeight:700,fontFamily:'var(--mono)',color:'var(--tx)'}}>{m.v}</div>
+                <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:2}}>{m.lb}</div>
+                <div style={{fontSize:14,fontWeight:700,fontFamily: 'var(--num)',color:'var(--tx)'}}>{m.v}</div>
               </div>
             ))}
           </div>
           {subMetrics.byCategory.length>0 && (
             <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:7}}>{t('reports.subs.byCat')}</div>
+              <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:7}}>{t('reports.subs.byCat')}</div>
               {subMetrics.byCategory.map(([cat,data])=>(
                 <div key={cat} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'.5px solid var(--brd)',fontSize:12}}>
                   <span style={{color:'var(--tm)'}}>{subLabel(cat, lang)}</span>
-                  <span style={{fontFamily:'var(--mono)',color:'var(--tx)'}}>{t('reports.subs.perMonthCount', { v: fmtMoney(data.monthly,sym), n: data.count })}</span>
+                  <span style={{fontFamily: 'var(--sans)',color:'var(--tx)'}}>{t('reports.subs.perMonthCount', { v: fmtMoney(data.monthly,sym), n: data.count })}</span>
                 </div>
               ))}
             </div>
           )}
           {subMetrics.alerts.map((a,i)=><Alert key={i} type={a.type==='duplicate'?'warn':'info'}>{a.msg}</Alert>)}
-          <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',marginTop:8}}>{t('reports.subs.disclaimer')}</div>
+          <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:8}}>{t('reports.subs.disclaimer')}</div>
         </Card>
       )}
       {/* Resumen de patrimonio (stock a hoy) — el desglose vive en la página Patrimonio */}
       {nw.hasData && (
         <div style={{padding:'12px 16px',background:'var(--sur)',border:'.5px solid var(--brd)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <div style={{flex:1,minWidth:200}}>
-            <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:3}}>{t('reports.networth.title')}</div>
+            <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:3}}>{t('reports.networth.title')}</div>
             <div className="num" style={{fontSize:22,fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
               {nw.netWorth >= 0 ? '' : '−'}<Money>{fmtMoney(Math.abs(nw.netWorth), sym)}</Money>
             </div>
-            <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
+            <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
           </div>
           {setPage && (
-            <button onClick={() => setPage('networth')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap',flexShrink:0}}>
+            <button onClick={() => setPage('networth')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.networth.detail')}
             </button>
           )}
@@ -340,7 +340,7 @@ export default function Reports({ setPage }) {
         <div style={{padding:'12px 16px',background:'var(--sur)',border:'.5px solid var(--brd)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--sans)',flex:1,minWidth:200,lineHeight:1.5}}><InlineIcon kind="diagnosis" size={13} />{t('reports.diag.linkText')}</span>
           {setPage && (
-            <button onClick={() => setPage('coach')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily:'var(--mono)',whiteSpace:'nowrap',flexShrink:0}}>
+            <button onClick={() => setPage('coach')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.diag.linkBtn')}
             </button>
           )}

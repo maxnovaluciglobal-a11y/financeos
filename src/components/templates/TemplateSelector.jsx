@@ -55,14 +55,13 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
   if (!template) return null
 
   const sectionTitle = {
-    fontSize: 11, fontWeight: 600, color: 'var(--th)',
-    textTransform: 'uppercase', letterSpacing: '0.8px',
-    marginBottom: 8, fontFamily: 'var(--mono)',
+    fontSize: 12, fontWeight: 600, color: 'var(--th)',
+    marginBottom: 8, fontFamily: 'var(--sans)',
   }
   const pill = (text, color) => (
     <span key={text} style={{
       display: 'inline-block', padding: '2px 8px',
-      borderRadius: 'var(--rs)', fontSize: 11, fontFamily: 'var(--mono)',
+      borderRadius: 'var(--rs)', fontSize: 11, fontFamily: 'var(--sans)',
       background: `${color}18`, color: 'var(--tx)', marginRight: 4, marginBottom: 4,
       border: `0.5px solid ${color}30`,
     }}>{text}</span>
@@ -129,7 +128,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
                 <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{tr(b.note)}</div>
               </div>
               <div style={{
-                fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
+                fontSize: 11, fontFamily: 'var(--num)', fontWeight: 600,
                 color: 'var(--tx)', flexShrink: 0,
               }}>{tr('tplsel.pctOfIncome', { pct: b.pct })}</div>
             </div>
@@ -147,7 +146,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
                 <div style={{ fontSize: 11.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.45 }}>{tr(g.note)}</div>
               </div>
               <span style={{
-                marginLeft: 'auto', fontSize: 11, fontFamily: 'var(--mono)',
+                marginLeft: 'auto', fontSize: 11, fontFamily: 'var(--sans)',
                 flexShrink: 0, padding: '1px 7px', borderRadius: 'var(--rs)',
                 background: g.priority === 'Alta' ? 'var(--red-bg)' : 'var(--amb-bg)',
                 color: g.priority === 'Alta' ? 'var(--red)' : 'var(--amb)',
@@ -407,11 +406,11 @@ export default function TemplateSelector({ compact = false, onApplied }) {
               {/* Stats */}
               <div style={{ display: 'flex', gap: 6 }}>
                 <span style={{
-                  fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 6px',
+                  fontSize: 11, fontFamily: 'var(--sans)', padding: '2px 6px',
                   borderRadius: 'var(--rs)', background: 'var(--sur2)', color: 'var(--th)',
                 }}>{tr('tplsel.categoriesN', { n: t.categoriesExpense.length })}</span>
                 <span style={{
-                  fontSize: 11, fontFamily: 'var(--mono)', padding: '2px 6px',
+                  fontSize: 11, fontFamily: 'var(--sans)', padding: '2px 6px',
                   borderRadius: 'var(--rs)', background: 'var(--sur2)', color: 'var(--th)',
                 }}>{tr('tplsel.budgetsN', { n: t.suggestedBudgets.length })}</span>
               </div>

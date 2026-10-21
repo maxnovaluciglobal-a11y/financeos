@@ -85,7 +85,7 @@ function DebtPayoffSimulator({ debts, sym }) {
   return (
     <Card>
       <CardHeader title={t('debts.sim.title')} />
-      <p style={{fontSize:12,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:16,marginTop:-4,lineHeight:1.6}}>
+      <p style={{fontSize:12,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:16,marginTop:-4,lineHeight:1.6}}>
         {t('debts.sim.intro')}
       </p>
 
@@ -100,7 +100,7 @@ function DebtPayoffSimulator({ debts, sym }) {
             border: method===m.id ? '1.5px solid var(--grn)' : '.5px solid var(--brd)',
             background: method===m.id ? 'rgba(10,92,62,.06)' : 'var(--sur)',
           }}>
-            <div style={{fontSize:12,fontWeight:600,color: method===m.id ? 'var(--grn)' : 'var(--tx)',fontFamily:'var(--mono)'}}>{m.label}</div>
+            <div style={{fontSize:12,fontWeight:600,color: method===m.id ? 'var(--grn)' : 'var(--tx)',fontFamily: 'var(--num)'}}>{m.label}</div>
             <div style={{fontSize:11.5,color:'var(--th)',fontFamily:'var(--sans)',marginTop:3,lineHeight:1.45}}>{m.desc}</div>
           </button>
         ))}
@@ -108,7 +108,7 @@ function DebtPayoffSimulator({ debts, sym }) {
 
       {/* Input pago extra */}
       <div style={{marginBottom:16}}>
-        <label htmlFor="debt-extra-payment" style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',display:'block',marginBottom:4}}>
+        <label htmlFor="debt-extra-payment" style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,display:'block',marginBottom:4}}>
           {t('debts.sim.extraLabel', { sym })}
         </label>
         <input
@@ -116,49 +116,49 @@ function DebtPayoffSimulator({ debts, sym }) {
           type="number" inputMode="decimal" min="0" value={extra}
           onChange={e => setExtra(e.target.value)}
           placeholder={t('debts.sim.extraPh')}
-          style={{width:'100%',maxWidth:240,padding:'7px 10px',borderRadius:7,border:'.5px solid var(--brd)',background:'var(--sur)',color:'var(--tx)',fontFamily:'var(--mono)',fontSize:13}}
+          style={{width:'100%',maxWidth:240,padding:'7px 10px',borderRadius:7,border:'.5px solid var(--brd)',background:'var(--sur)',color:'var(--tx)',fontFamily: 'var(--sans)',fontSize:13}}
         />
       </div>
 
       {/* Resultados */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:12}}>
         <div style={{padding:'12px 14px',borderRadius:8,background:'var(--sur)',border:'.5px solid var(--brd)'}}>
-          <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{t('debts.sim.freeIn')}</div>
-          <div style={{fontSize:18,fontWeight:700,color:'var(--tx)',fontFamily:'var(--mono)'}}>{fmtMonths(withExtra.months)}</div>
-          {monthsSaved > 0 && <div style={{fontSize:11,color:'var(--grn)',fontFamily:'var(--mono)',marginTop:3}}>{t('debts.sim.earlier', { t: fmtMonths(monthsSaved) })}</div>}
+          <div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:4}}>{t('debts.sim.freeIn')}</div>
+          <div style={{fontSize:18,fontWeight:700,color:'var(--tx)',fontFamily: 'var(--num)'}}>{fmtMonths(withExtra.months)}</div>
+          {monthsSaved > 0 && <div style={{fontSize:11,color:'var(--grn)',fontFamily: 'var(--sans)',marginTop:3}}>{t('debts.sim.earlier', { t: fmtMonths(monthsSaved) })}</div>}
         </div>
         <div style={{padding:'12px 14px',borderRadius:8,background:'var(--sur)',border:'.5px solid var(--brd)'}}>
-          <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{t('debts.sim.totalInterest')}</div>
-          <div style={{fontSize:18,fontWeight:700,color:'var(--red)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(withExtra.totalInterest,sym)}</Money></div>
-          {interestSaved > 0 && <div style={{fontSize:11,color:'var(--grn)',fontFamily:'var(--mono)',marginTop:3}}>{t('debts.sim.saved', { v: fmtMoney(interestSaved,sym) })}</div>}
+          <div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:4}}>{t('debts.sim.totalInterest')}</div>
+          <div style={{fontSize:18,fontWeight:700,color:'var(--red)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(withExtra.totalInterest,sym)}</Money></div>
+          {interestSaved > 0 && <div style={{fontSize:11,color:'var(--grn)',fontFamily: 'var(--sans)',marginTop:3}}>{t('debts.sim.saved', { v: fmtMoney(interestSaved,sym) })}</div>}
         </div>
         {(Number(extra)||0) > 0 && monthsSaved > 0 && (
           <div style={{padding:'12px 14px',borderRadius:8,background:'rgba(10,92,62,.06)',border:'1px solid rgba(10,92,62,.2)'}}>
-            <div style={{fontSize:11,color:'var(--grn)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{t('debts.sim.withExtra', { v: m(fmtMoneyRaw(Number(extra), sym)) })}</div>
-            <div style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily:'var(--mono)'}}>{t('debts.sim.youSave', { v: fmtMoney(interestSaved,sym) })}</div>
-            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginTop:3}}>{t('debts.sim.inLess', { t: fmtMonths(monthsSaved) })}</div>
+            <div style={{fontSize: 12,color:'var(--grn)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:4}}>{t('debts.sim.withExtra', { v: m(fmtMoneyRaw(Number(extra), sym)) })}</div>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}>{t('debts.sim.youSave', { v: fmtMoney(interestSaved,sym) })}</div>
+            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:3}}>{t('debts.sim.inLess', { t: fmtMonths(monthsSaved) })}</div>
           </div>
         )}
       </div>
 
       {/* Orden de pago */}
       <div style={{marginTop:4}}>
-        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:8}}>
+        <div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:8}}>
           {t('debts.sim.order', { m: method === 'avalanche' ? 'Avalanche' : 'Snowball' })}
         </div>
         {[...activeDebts]
           .sort((a,b) => method==='avalanche' ? (Number(b.rate)||0)-(Number(a.rate)||0) : Number(a.balance)-Number(b.balance))
           .map((d,i) => (
             <div key={d.id} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 0',borderTop:i>0?'.5px solid var(--brd)':'none'}}>
-              <div style={{width:20,height:20,borderRadius:'50%',background:i===0?'var(--grn)':'var(--brd)',color:i===0?'#fff':'var(--th)',fontSize:11,fontFamily:'var(--mono)',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{i+1}</div>
-              <div style={{flex:1,fontSize:12,fontFamily:'var(--mono)',color:'var(--tx)'}}>{d.creditor}</div>
-              <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}><Money>{fmtMoney(d.balance,sym)}</Money></div>
+              <div style={{width:20,height:20,borderRadius:'50%',background:i===0?'var(--grn)':'var(--brd)',color:i===0?'#fff':'var(--th)',fontSize:11,fontFamily: 'var(--num)',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{i+1}</div>
+              <div style={{flex:1,fontSize:12,fontFamily: 'var(--sans)',color:'var(--tx)'}}>{d.creditor}</div>
+              <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}><Money>{fmtMoney(d.balance,sym)}</Money></div>
               {Number(d.rate) > 0 && <Badge color="red">{d.rate}% TAE</Badge>}
             </div>
           ))
         }
       </div>
-      <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginTop:12,lineHeight:1.6}}>
+      <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:12,lineHeight:1.6}}>
         {t('debts.sim.disclaimer')}
       </div>
     </Card>
@@ -180,7 +180,7 @@ export default function Debts() {
   const ufPreview = (v) => {
     const n = Number(v)
     if (!f.ufDebt || !ufValue || !n) return null
-    return <div style={{fontSize:11,color:'var(--grn)',fontFamily:'var(--mono)',marginTop:3}}>≈ ${Math.round(n*ufValue).toLocaleString(moneyLocale())} CLP</div>
+    return <div style={{fontSize:11,color:'var(--grn)',fontFamily: 'var(--sans)',marginTop:3}}>≈ ${Math.round(n*ufValue).toLocaleString(moneyLocale())} CLP</div>
   }
   const sym = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
@@ -299,7 +299,7 @@ export default function Debts() {
           {isChile && ufValue > 0 && (
             <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', margin:'0 0 10px', lineHeight:1.4 }}>
               <input type="checkbox" checked={!!f.ufDebt} onChange={e => setF(p=>({...p, ufDebt:e.target.checked}))} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />
-              <span style={{ minWidth:0 }}>{t('debts.uf.check')} <span style={{ fontSize:11, color: ufIsFallback ? 'var(--amb)' : 'var(--th)', fontFamily:'var(--mono)' }}>({t('debts.uf.rate', { v: '$'+Math.round(ufValue).toLocaleString(moneyLocale()) })}{ufIsFallback ? ' · ' + t('debts.uf.stale') : ''})</span></span>
+              <span style={{ minWidth:0 }}>{t('debts.uf.check')} <span style={{ fontSize:11, color: ufIsFallback ? 'var(--amb)' : 'var(--th)', fontFamily: 'var(--sans)' }}>({t('debts.uf.rate', { v: '$'+Math.round(ufValue).toLocaleString(moneyLocale()) })}{ufIsFallback ? ' · ' + t('debts.uf.stale') : ''})</span></span>
             </label>
           )}
           <FormRow>
@@ -315,7 +315,7 @@ export default function Debts() {
           </FormRow>
           <div style={{marginTop:8,marginBottom:8}}>
             <button type="button" onClick={() => setF(p=>({...p,_showExtra:!p._showExtra}))} aria-expanded={!!f._showExtra}
-              style={{background:'none',border:'none',color:'var(--grn)',fontSize:12,fontFamily:'var(--mono)',cursor:'pointer',padding:0}}>
+              style={{background:'none',border:'none',color:'var(--grn)',fontSize:12,fontFamily: 'var(--sans)',cursor:'pointer',padding:0}}>
               {f._showExtra ? t('debts.form.less') : t('debts.form.more')}
             </button>
           </div>
@@ -346,7 +346,7 @@ export default function Debts() {
       )}
       {debts.length === 0 && !show && (
         <Card><div style={{textAlign:'center',padding:'24px 0'}}>
-          <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12}}>{t('debts.empty')}</div>
+          <div style={{fontSize:13,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12}}>{t('debts.empty')}</div>
           <button onClick={() => setShow(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('debts.emptyBtn')}</button>
         </div></Card>
       )}
@@ -399,13 +399,13 @@ export default function Debts() {
                     {t('debts.card.payBtn')}
                   </button>
                 )}
-                {d.balance <= 0 && <span style={{fontSize:11,padding:'2px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily:'var(--mono)'}}>{t('debts.card.settled')}</span>}
+                {d.balance <= 0 && <span style={{fontSize:11,padding:'2px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily: 'var(--sans)'}}>{t('debts.card.settled')}</span>}
                 <button onClick={() => deleteWithUndo('debts', d, t('common.deleted'), t('common.undo'))} aria-label={t('debts.card.delete')} style={{background:'none',border:'none',color:'var(--th)',fontSize:13,cursor:'pointer',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>✕</button>
               </div>
             </div>
             {confirmPay === d.id && (
               <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(10,92,62,.06)',borderRadius:6,border:'0.5px solid rgba(10,92,62,.2)',flexWrap:'wrap'}}>
-                <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>
+                <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
                   {t('debts.card.confirmPay', { amt: m(fmtMoneyRaw(nextPaymentAmount(d), sym)), creditor: d.creditor })}
                 </span>
                 <div style={{display:'flex',gap:6}}>
@@ -415,12 +415,12 @@ export default function Debts() {
               </div>
             )}
             {payMsg?.id === d.id && (
-              <div style={{fontSize:11,color:'var(--grn)',fontFamily:'var(--mono)',marginBottom:6,padding:'4px 8px',background:'rgba(10,92,62,.06)',borderRadius:4}}>{payMsg.text}</div>
+              <div style={{fontSize:11,color:'var(--grn)',fontFamily: 'var(--sans)',marginBottom:6,padding:'4px 8px',background:'rgba(10,92,62,.06)',borderRadius:4}}>{payMsg.text}</div>
             )}
             {!(d.project||'').trim() && knownProjects.length > 0 && (
               linkingId === d.id ? (
                 <div style={{marginBottom:8,padding:'8px 10px',background:'var(--sur2)',border:'.5px solid var(--brd2)',borderRadius:6}}>
-                  <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:6,lineHeight:1.5}}>{t('debts.linkProjectHint')}</div>
+                  <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:6,lineHeight:1.5}}>{t('debts.linkProjectHint')}</div>
                   <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                     <input type="text" list="fnos-debt-projects" value={linkValue} placeholder={t('debts.projectPlaceholder')}
                       onChange={e=>setLinkValue(e.target.value)}
@@ -431,35 +431,35 @@ export default function Debts() {
                 </div>
               ) : (
                 <button onClick={()=>{setLinkingId(d.id);setLinkValue('')}}
-                  style={{marginBottom:8,background:'none',border:'.5px dashed var(--brd2)',borderRadius:6,padding:'4px 10px',fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',cursor:'pointer'}}>
+                  style={{marginBottom:8,background:'none',border:'.5px dashed var(--brd2)',borderRadius:6,padding:'4px 10px',fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',cursor:'pointer'}}>
                   {t('debts.linkProject')}
                 </button>
               )
             )}
-            <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:8}}>
+            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:8}}>
               {Number(d.ufBalance) > 0
                 ? <>{t('debts.uf.balance', { uf: m(d.ufBalance.toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })), clp: fmtMoney(d.balance,sym) })}{d.ufMinPayment > 0 ? t('debts.uf.installment', { uf: m(d.ufMinPayment.toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })), clp: fmtMoney(d.minPayment,sym) }) : ''}{d.dueDate ? t('debts.card.due', { d: d.dueDate.slice(5).replace('-','/') }) : ''}</>
                 : <>{t('debts.card.balance', { v: fmtMoney(d.balance,sym) })}{d.minPayment ? t('debts.card.installment', { v: fmtMoney(d.minPayment,sym) }) : ''}{d.dueDate ? t('debts.card.due', { d: d.dueDate.slice(5).replace('-','/') }) : ''}</>
               }
             </div>
             <div style={{marginBottom:8}}>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',marginBottom:3}}>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginBottom:3}}>
                 <span>{t('debts.card.progressAmt')}</span><span>{t('debts.card.paidPct', { pct: fmtPct(prog) })}</span>
               </div>
               <ProgressBar value={paid} max={d.initial} color="green" height={5} label={`${t('debts.card.progressAmt')}: ${t('debts.card.paidPct', { pct: fmtPct(prog) })}`}/>
-              <div style={{display:'flex',justifyContent:'space-between',marginTop:3,fontSize:11,fontFamily:'var(--mono)',color:'var(--th)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginTop:3,fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>
                 <span>{t('debts.card.paidLb', { v: fmtMoney(paid,sym) })}{Number(d.ufInitial) > 0 && Number(d.ufBalance) >= 0 ? ' · ' + t('debts.uf.paid', { uf: m((d.ufInitial - d.ufBalance).toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })) }) : ''}</span><span>{t('debts.card.initialLb', { v: fmtMoney(d.initial,sym) })}</span>
               </div>
             </div>
             {totalInst > 0 && (
               <div style={{marginBottom:8}}>
-                <div style={{display:'flex',justifyContent:'space-between',fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',marginBottom:3}}>
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginBottom:3}}>
                   <span>{t('debts.card.installments')}</span><span>{paidInst}/{totalInst}</span>
                 </div>
                 <div style={{height:5,background:'var(--brd)',borderRadius:3,overflow:'hidden'}}>
                   <div style={{height:'100%',width:`${Math.min(instProg*100,100)}%`,background:'var(--accent)',borderRadius:3,transition:'.3s'}}/>
                 </div>
-                <div style={{display:'flex',justifyContent:'space-between',marginTop:3,fontSize:11,fontFamily:'var(--mono)'}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginTop:3,fontSize:11,fontFamily: 'var(--sans)'}}>
                   <span style={{color:'var(--accent)'}}>{t('debts.card.instPaid', { n: paidInst })}</span>
                   <span style={{color:'var(--amb)'}}>{t('debts.card.instPending', { n: pendInst })}</span>
                 </div>
@@ -467,9 +467,9 @@ export default function Debts() {
             )}
             {monthsLeft > 0 && (
               <div style={{marginTop:6,padding:'8px 10px',borderRadius:6,background:'var(--accent-bg)',border:'.5px solid var(--accent)',display:'flex',gap:16,flexWrap:'wrap'}}>
-                <div><div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('debts.card.monthsLeft')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--tx)',fontFamily:'var(--mono)'}}>{monthsLeft}</div></div>
-                {finDate && <div><div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('debts.card.estEnd')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--accent)',fontFamily:'var(--mono)'}}>📅 {finDate}</div></div>}
-                {d.minPayment > 0 && <div><div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>{t('debts.card.totalLeft')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--red)',fontFamily:'var(--mono)'}}><Money>{fmtMoney(d.balance,sym)}</Money></div></div>}
+                <div><div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('debts.card.monthsLeft')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--tx)',fontFamily: 'var(--num)'}}>{monthsLeft}</div></div>
+                {finDate && <div><div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('debts.card.estEnd')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--accent)',fontFamily: 'var(--num)'}}>📅 {finDate}</div></div>}
+                {d.minPayment > 0 && <div><div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('debts.card.totalLeft')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--red)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(d.balance,sym)}</Money></div></div>}
               </div>
             )}
           </Card>

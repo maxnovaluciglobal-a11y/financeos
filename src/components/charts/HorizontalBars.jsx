@@ -49,7 +49,7 @@ export default function HorizontalBars({ records, sym = '$', maxItems = 6, value
           <div key={i}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <span style={{ fontSize: 12, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{catName(d.name, lang)}</span>
-              <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', flexShrink: 0 }}>
+              <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', flexShrink: 0 }}>
                 {fmtV(d.value)} · {pct}%
               </span>
             </div>

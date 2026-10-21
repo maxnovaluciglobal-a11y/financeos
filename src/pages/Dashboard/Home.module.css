@@ -93,7 +93,7 @@
    un dígito en em; 32px = padding de la tarjeta. cqi = ancho de esta tarjeta. */
 .kpiValue { font-size: clamp(13px, calc((100cqi - 32px) * 1.65 / var(--chars, 8)), 24px); line-height: 1.1; color: var(--tx); white-space: nowrap; }
 .kpiSub { font-size: 12px; color: var(--th); line-height: 1.4; }
-.kpiDual { font-family: var(--mono); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
+.kpiDual { font-family: var(--num); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
 
 .left { display: flex; align-items: center; gap: 14px; }
 .leftBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
@@ -124,7 +124,7 @@
 
 .budgetTop { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
 .budgetCat { font-size: 14px; font-weight: 500; color: var(--tx); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.budgetAmt { font-family: var(--mono); font-size: 12px; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.budgetAmt { font-family: var(--num); font-size: 12px; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .budgetAmt b { font-weight: 600; color: var(--tx); }
 .budgetBottom { display: flex; align-items: center; gap: 10px; }
 .bar { flex: 1; height: 6px; border-radius: var(--rs); background: var(--sur3); overflow: hidden; }
@@ -137,7 +137,7 @@
 .payMon { font-size: 12px; color: var(--th); text-transform: lowercase; }
 .payName { font-size: 14px; font-weight: 500; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .payKind { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--th); margin-top: 2px; }
-.payAmt { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--tx); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.payAmt { font-family: var(--num); font-size: 13px; font-weight: 600; color: var(--tx); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .payWhen { font-size: 12px; color: var(--warn); font-weight: 600; }
 
 .footLinks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
@@ -146,7 +146,7 @@
 /* ── IQ Score ──────────────────────────────────────────────────────────── */
 .scoreTop { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .scoreNum { font-size: 44px; line-height: 1; }
-.scoreOf { font-family: var(--mono); font-size: 12px; color: var(--th); margin-top: 2px; text-align: center; }
+.scoreOf { font-family: var(--num); font-size: 12px; color: var(--th); margin-top: 2px; text-align: center; }
 .scoreMeta { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
 .scoreLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
 .next {
@@ -159,7 +159,7 @@
 .nextSub { font-size: 12px; line-height: 1.5; color: var(--tm); }
 .factors { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px 12px; margin-top: 14px; }
 .factor { display: flex; flex-direction: column; gap: 2px; }
-.factorPts { display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.factorPts { display: inline-flex; align-items: center; gap: 4px; font-family: var(--num); font-size: 13px; font-weight: 600; }
 .factorPts small { font-weight: 400; color: var(--th); font-size: 12px; }
 .factorLabel { font-size: 12px; color: var(--th); line-height: 1.3; }
 
@@ -196,7 +196,7 @@
 .stepsSeg, .stepsSegOn { height: 6px; border-radius: 1px; background: var(--sur3); }
 .stepsSegOn { background: var(--laton); }
 .stepsText { font-size: 14px; font-weight: 600; line-height: 1.3; min-width: 0; }
-.stepsCount { font-family: var(--mono); font-size: 12px; color: var(--tm); white-space: nowrap; }
+.stepsCount { font-family: var(--num); font-size: 12px; color: var(--tm); white-space: nowrap; }
 .stepsChevron { color: var(--th); }
 
 .sheetTitle { margin: 4px 0 6px; font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); }
@@ -207,7 +207,7 @@
 .stepMark, .stepMarkDone {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; border-radius: var(--r);
-  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  font-family: var(--num); font-size: 13px; font-weight: 600;
   border: 1px solid var(--brd2); color: var(--tm);
 }
 .stepMarkDone { border-color: transparent; background: color-mix(in srgb, var(--pos) 14%, transparent); color: var(--pos); }
@@ -268,7 +268,7 @@
 .refOpt {
   position: relative; min-width: 44px; height: 26px; padding: 0 8px;
   border: 0; border-radius: calc(var(--r) - 2px); background: transparent;
-  font: 600 11px/1 var(--mono); letter-spacing: .04em; color: var(--tm); cursor: pointer;
+  font: 600 11px/1 var(--mono);  /* código ISO de moneda: identificador */ letter-spacing: .04em; color: var(--tm); cursor: pointer;
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .refOpt::after { content: ''; position: absolute; inset: -9px -2px; }

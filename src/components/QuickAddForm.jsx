@@ -62,7 +62,7 @@ function NumericKeypad({ setAmount, decimals, t }) {
           aria-label={k === KEY_BACKSPACE ? t('qa.keypadBackspace') : k === KEY_DECIMAL ? t('qa.keypadDecimal') : k === KEY_THOUSAND ? t('qa.keypadThousand') : k}
           style={{
             minHeight: 48, borderRadius: 'var(--r)', border: 'none', cursor: 'pointer',
-            background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--mono)',
+            background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--num)',
             fontSize: 18, fontWeight: 600,
           }}
         >

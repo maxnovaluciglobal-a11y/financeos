@@ -42,7 +42,7 @@ export default function CountryTool({ country, setPage }) {
     >
       <span style={{ lineHeight: 0, flexShrink: 0, color: 'var(--grn)' }} aria-hidden="true"><CountryBadge code={cc} size={30} /></span>
       <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)' }}>
+        <span style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--grn)' }}>
           {t('countryTool.eyebrow')}
         </span>
         <span className="display" style={{ fontSize: 17, fontWeight: 700, color: 'var(--tx)', lineHeight: 1.15 }}>
@@ -53,7 +53,7 @@ export default function CountryTool({ country, setPage }) {
         </span>
       </span>
       <span style={{
-        flexShrink: 0, fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600,
+        flexShrink: 0, fontFamily: 'var(--num)', fontSize: 12, fontWeight: 600,
         color: 'var(--grn)', display: 'inline-flex', alignItems: 'center', gap: 5,
         border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)',
         borderRadius: 'var(--r)', padding: '6px 12px', whiteSpace: 'nowrap',

@@ -59,7 +59,7 @@
 .key {
   min-height: 56px; border-radius: var(--r); border: none; cursor: pointer;
   background: var(--sur2); color: var(--tx);
-  font-family: var(--mono); font-size: 22px; font-weight: 600;
+  font-family: var(--num); font-size: 22px; font-weight: 600;
   display: inline-flex; align-items: center; justify-content: center;
   touch-action: manipulation;
   transition: background var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);

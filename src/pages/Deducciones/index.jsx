@@ -57,7 +57,7 @@ export default function Deducciones() {
   // Guard: país sin módulo
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
         {t('deducciones.notAvailable')}
       </div>
     )
@@ -78,7 +78,7 @@ export default function Deducciones() {
 
         {/* Inputs */}
         <Card>
-          <CardHeader title={t('deducciones.card.yourYearData')} right={<span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>{year}</span>} />
+          <CardHeader title={t('deducciones.card.yourYearData')} right={<span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
 
           {config.needsIngreso && (
             <FormRow>
@@ -106,7 +106,7 @@ export default function Deducciones() {
             </FormRow>
           )}
 
-          <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', margin: '12px 0 8px' }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', margin: '12px 0 8px' }}>
             {t('deducciones.deductibleExpenses')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
@@ -124,16 +124,16 @@ export default function Deducciones() {
           <Card>
             <CardHeader title={result.tituloResultado} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 {fmt(result.ahorro)}
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {result.resumen}
               </div>
             </div>
 
             {/* Progreso al tope */}
-            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)' }}>
+            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
               <span>{t('deducciones.capUsage')}</span>
               <span>{Math.round(result.topePct)}%</span>
             </div>
@@ -150,11 +150,11 @@ export default function Deducciones() {
 
             {/* Desglose */}
             <div style={{ marginTop: 16, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 8 }}>{t('deducciones.breakdown')}</div>
+              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>{t('deducciones.breakdown')}</div>
               {result.desglose.map((d, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', color: 'var(--tx)' }}>
-                  <span>{d.label}{d.rate ? <span style={{ color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 11 }}> · {t('deducciones.deductiblePct', { pct: Math.round(d.rate * 100) })}</span> : null}</span>
-                  <span style={{ fontFamily: 'var(--mono)' }}>
+                  <span>{d.label}{d.rate ? <span style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 11 }}> · {t('deducciones.deductiblePct', { pct: Math.round(d.rate * 100) })}</span> : null}</span>
+                  <span style={{ fontFamily: 'var(--sans)' }}>
                     {fmt(d.monto)}{d.aporta != null ? <span style={{ color: 'var(--accent)' }}> → {fmt(d.aporta)}</span> : null}
                   </span>
                 </div>
@@ -214,8 +214,8 @@ function EventosCard({ config, fmt }) {
           return (
             <div key={item.key} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '14px 16px' }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{item.label}</div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginBottom: 10 }}>{item.when}</div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 24, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>{item.when}</div>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 24, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 {fmt(monto)}
               </div>
               <div style={{ fontSize: 11, color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>{item.info}</div>

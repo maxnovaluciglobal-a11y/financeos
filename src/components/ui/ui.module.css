@@ -31,9 +31,8 @@
 }
 .cardHd {
   display: flex; align-items: center; justify-content: space-between;
-  font-size: 11px; font-weight: 500; color: var(--tm);
-  text-transform: uppercase; letter-spacing: 0.8px;
-  font-family: var(--mono); margin-bottom: 12px;
+  font-size: 12px; font-weight: 600; color: var(--tm);
+  font-family: var(--sans); margin-bottom: 12px;
 }
 
 /* KPI */
@@ -45,19 +44,20 @@
      así que la tarjeta puede ser contenedor: la cifra se mide con su ancho. */
   container-type: inline-size;
 }
-.kpiLbl { font-size: 11px; color: var(--tm); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+/* Etiquetas en Plex Sans 12/600, tipo oración (UI-Q6): nada de mayúsculas mono. */
+.kpiLbl { font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--tm); font-family: var(--sans); margin-bottom: 6px; }
 /* 1.65 ≈ 1 / ancho medio de un dígito en em; 100cqi = ancho útil de la tarjeta. */
 .kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 600; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; color: var(--tx); }
 /* "green" acá es semántico de DATO (positivo), no de marca → --pos (Verde), no --grn (Navy). */
 .kpi_green { color: var(--pos); }
 .kpi_red   { color: var(--red); }
 .kpi_amber { color: var(--amb); }
-.kpiSub { font-size: 11px; color: var(--th); font-family: var(--mono); margin-top: 2px; }
+.kpiSub { font-size: 12px; color: var(--th); font-family: var(--sans); margin-top: 2px; }
 .kpiAlert { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--red); font-family: var(--sans); margin-top: 2px; }
 
 /* BADGE — radios chicos y técnicos a propósito, nunca pill (ver globals.css). */
 .badge {
-  font-size: 11px; font-family: var(--mono); padding: 2px 7px;
+  font-size: 12px; font-family: var(--sans); padding: 2px 7px;
   border-radius: var(--rs); font-weight: 500; display: inline-block;
 }
 .badge_green { background: var(--pos-bg); color: var(--pos); }
@@ -75,7 +75,7 @@
 
 /* FORM */
 .fg { margin-bottom: 10px; }
-.fl { font-size: 11px; font-family: var(--mono); color: var(--tm); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+.fl { font-size: 12px; font-weight: 600; font-family: var(--sans); color: var(--tm); display: block; margin-bottom: 4px; }
 .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .frow > * { min-width: 0; }  /* permite que los inputs (ej. fecha) encojan sin desbordar */
 @media (max-width: 480px) { .frow { grid-template-columns: 1fr; } }  /* móvil: una columna */
@@ -97,7 +97,7 @@
 .txDot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .txInfo { flex: 1; min-width: 0; }
 .txName { font-size: 12px; color: var(--tx); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.txMeta { font-size: 11px; color: var(--th); font-family: var(--mono); }
+.txMeta { font-size: 12px; color: var(--th); font-family: var(--sans); }
 .txAmt  { font-size: 13px; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; flex-shrink: 0; }
 .txInc  { color: var(--pos); }
 .txExp  { color: var(--tx); }   /* gastar no es un error: tinta neutra (UI-Q4) */
@@ -109,13 +109,13 @@
 .barRow { margin-bottom: 8px; }
 .barLbl { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
 .barLbl span:first-child { color: var(--tx); }
-.barLbl span:last-child  { color: var(--tm); font-family: var(--mono); }
+.barLbl span:last-child  { color: var(--tm); font-family: var(--num); font-variant-numeric: tabular-nums; }
 .barBg  { height: 5px; background: var(--sur3); border-radius: 3px; overflow: hidden; }
 .barFill { height: 100%; width: 100%; border-radius: 3px; transform-origin: left; transition: transform 0.4s; will-change: transform; }
 
 /* PAGE HEADER — movido a components/layout/largeTitle.module.css (PageHeader
    ahora renderiza LargeTitle, que agrega la barra compacta al hacer scroll) */
-.sectionTitle  { font-size: 11px; font-weight: 500; color: var(--tm); text-transform: uppercase; letter-spacing: 0.8px; font-family: var(--mono); margin-bottom: 10px; }
+.sectionTitle  { font-size: 12px; font-weight: 600; color: var(--tm); font-family: var(--sans); margin-bottom: 10px; }
 
 /* ── Estado vacío uniforme (R10) ── */
 .emptyState {
@@ -143,5 +143,5 @@
 .emptyPick li { border-bottom: 0.5px solid var(--brd); }
 .emptyPick label { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 4px 2px; cursor: pointer; font-family: var(--sans); font-size: 14px; color: var(--tx); }
 .emptyPickCat { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.emptyPickAmt { font-family: var(--mono); font-size: 13px; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.emptyPickAmt { font-family: var(--num); font-size: 13px; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
 [data-theme="dark"] .emptyChoiceTop svg { color: var(--laton-300); }

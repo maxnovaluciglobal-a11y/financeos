@@ -131,7 +131,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
           <Logo size={22} />
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)' }}>{t('licenseGate.version')}</div>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)' }}>{t('licenseGate.version')}</div>
         </div>
 
         {/* Activate */}
@@ -139,7 +139,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>{t('licenseGate.title')}</h1>
           <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14, fontFamily: 'var(--sans)' }}>
             {t('licenseGate.subtitle')}{' '}
-            <span style={{ fontFamily: 'var(--mono)', background: 'var(--sur3)', padding: '1px 6px', borderRadius: 4 }}>{t('licenseGate.keyFormat')}</span>
+            <span style={{ fontFamily: 'var(--sans)', background: 'var(--sur3)', padding: '1px 6px', borderRadius: 4 }}>{t('licenseGate.keyFormat')}</span>
           </div>
           <input
             style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--mono)', background: 'var(--bg)', color: 'var(--tx)', letterSpacing: 1, marginBottom: 10, boxSizing: 'border-box' }}
@@ -154,7 +154,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           />
 
           {error && (
-            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
               <InlineIcon kind="alert" size={13} />{error}
             </div>
           )}
@@ -168,7 +168,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           </button>
 
           {showHelp && (
-            <div style={{ marginTop: 12, padding: '12px 14px', background: 'var(--sur2)', borderRadius: 8, fontSize: 11, color: 'var(--tm)', fontFamily: 'var(--mono)', lineHeight: 1.65 }}>
+            <div style={{ marginTop: 12, padding: '12px 14px', background: 'var(--sur2)', borderRadius: 8, fontSize: 11, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.65 }}>
               <strong style={{ color: 'var(--tx)' }}>{t('licenseGate.helpTitle')}</strong><br />
               1. {t('licenseGate.helpStep1')}<br />
               2. {t('licenseGate.helpStep2')}<br />
@@ -184,7 +184,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '24px 0' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--brd)' }} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)', flexShrink: 0 }}>{t('licenseGate.dividerNoLicense')}</span>
+          <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)', flexShrink: 0 }}>{t('licenseGate.dividerNoLicense')}</span>
           <div style={{ flex: 1, height: '1px', background: 'var(--brd)' }} />
         </div>
 
@@ -216,11 +216,11 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
                 {p.price}{p.suffix && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--th)' }}>{p.suffix}</span>}
               </div>
               {p.badge && (
-                <div style={{ display: 'inline-block', fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600, color: 'var(--navy)', background: 'var(--laton)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
+                <div style={{ display: 'inline-block', fontFamily: 'var(--num)', fontSize: 11, fontWeight: 600, color: 'var(--navy)', background: 'var(--laton)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
               )}
               <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)', lineHeight: 1.45 }}>{p.desc}</div>
               {buying === p.product && (
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--grn)', marginTop: 6 }}>{t('licenseGate.redirecting')}</div>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--grn)', marginTop: 6 }}>{t('licenseGate.redirecting')}</div>
               )}
             </button>
           ))}
@@ -253,7 +253,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         )}
 
         {/* Demo link */}
-        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>
+        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
           <a href="https://demo.moyiq.app/app/?demo=true" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)', textDecoration: 'none' }}>
             {t('licenseGate.demoLink')}
           </a>

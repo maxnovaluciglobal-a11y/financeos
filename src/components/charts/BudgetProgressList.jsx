@@ -63,7 +63,7 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{catName(r.category, lang)}</span>
             </div>
             <span style={{
-              fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
+              fontSize: 11, fontFamily: 'var(--sans)', fontWeight: 600,
               color: r.status.color, background: `${r.status.color}18`,
               padding: '2px 8px', borderRadius: 'var(--rs)',
             }}>{t(r.status.label)}</span>
@@ -86,18 +86,18 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 14 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>{t('chart.budget.used')}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: r.status.color, fontFamily: 'var(--mono)' }}>{fmtV(r.spent, sym)}</div>
+                <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 1 }}>{t('chart.budget.used')}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: r.status.color, fontFamily: 'var(--num)' }}>{fmtV(r.spent, sym)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>{t('chart.budget.available')}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: r.avail > 0 ? 'var(--accent)' : 'var(--red)', fontFamily: 'var(--mono)' }}>
+                <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 1 }}>{t('chart.budget.available')}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: r.avail > 0 ? 'var(--accent)' : 'var(--red)', fontFamily: 'var(--num)' }}>
                   {r.avail > 0 ? fmtV(r.avail, sym) : `−${fmtV(r.spent - r.limit, sym)}`}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 1 }}>{t('chart.budget.limit')}</div>
-                <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{fmtV(r.limit, sym)}</div>
+                <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 1 }}>{t('chart.budget.limit')}</div>
+                <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{fmtV(r.limit, sym)}</div>
               </div>
             </div>
             <div style={{ fontSize: 20, color: r.status.color, fontFamily: 'var(--num)', fontWeight: 600, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums lining-nums' }}>

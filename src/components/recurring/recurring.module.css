@@ -7,7 +7,7 @@
 .month { margin: 0; font-family: var(--display); font-size: 26px; font-weight: 600; letter-spacing: -0.015em; color: var(--tx); line-height: 1.1; }
 .prev { font-size: 13px; color: var(--tm); margin-top: 6px; }
 .lead { font-size: 14px; line-height: 1.5; color: var(--tx); margin: 10px 0 0; }
-.totals { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.totals { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-family: var(--num); font-size: 13px; font-variant-numeric: tabular-nums; }
 .inc { color: var(--pos); font-weight: 600; }
 .exp { color: var(--neg); font-weight: 600; }
 
@@ -41,7 +41,7 @@
 .done { color: var(--pos); font-weight: 600; }
 .skipped { color: var(--th); text-decoration: line-through; }
 .right { display: flex; align-items: center; gap: 2px; justify-content: flex-end; }
-.amt { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--tx); white-space: nowrap; font-variant-numeric: tabular-nums; padding-right: 4px; }
+.amt { font-family: var(--num); font-size: 13px; font-weight: 600; color: var(--tx); white-space: nowrap; font-variant-numeric: tabular-nums; padding-right: 4px; }
 .amtPending { color: var(--tm); font-weight: 500; }
 .amtIncome { color: var(--pos); }
 
@@ -56,7 +56,7 @@
 .confirmBtn:hover { background: var(--pos-bg); color: var(--pos); }
 
 .edit { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 10px; margin-top: 4px; border-radius: var(--r); background: var(--sur2); border: 0.5px solid var(--brd); }
-.edit input[type="number"] { width: 140px; min-height: 40px; font-family: var(--mono); }
+.edit input[type="number"] { width: 140px; min-height: 40px; font-family: var(--num); }
 .check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--tm); cursor: pointer; }
 .check input { width: 16px; height: 16px; flex-shrink: 0; }
 
@@ -72,7 +72,7 @@
 /* Línea "Previsto pendiente" bajo "Te queda" */
 .pending { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 13px; color: var(--tm); }
 .pendingLabel { font-weight: 500; }
-.pendingVals { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--tx); }
+.pendingVals { font-family: var(--num); font-variant-numeric: tabular-nums; color: var(--tx); }
 .reviewLink {
   display: inline-flex; align-items: center; min-height: 44px; margin: -12px 0; padding: 0 2px;
   background: none; border: 0; cursor: pointer; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--laton-700);

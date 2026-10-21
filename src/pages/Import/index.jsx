@@ -21,7 +21,7 @@ import {
 const s = {
   page: {},
   header: { marginBottom: 24 },
-  eyebrow: { fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--grn)', marginBottom: 6 },
+  eyebrow: { fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--grn)', marginBottom: 6 },
   h1: { fontSize: 24, fontWeight: 700, color: 'var(--tx)', fontFamily: 'var(--display)', letterSpacing: '-.02em', marginBottom: 4 },
   sub: { fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)' },
   card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
@@ -29,7 +29,7 @@ const s = {
   steps: { display: 'flex', gap: 8, marginBottom: 28 },
   step: (active, done) => ({
     flex: 1, textAlign: 'center', padding: '8px 4px', borderRadius: 8,
-    fontSize: 11, fontFamily: 'var(--mono)',
+    fontSize: 11, fontFamily: 'var(--sans)',
     background: done ? 'var(--grn-bg)' : active ? 'var(--accent-bg)' : 'var(--sur)',
     color: done ? 'var(--grn)' : active ? 'var(--accent)' : 'var(--th)',
     border: `.5px solid ${done ? 'var(--grn)' : active ? 'var(--accent)' : 'var(--brd)'}`,
@@ -52,11 +52,11 @@ const s = {
     borderRadius: 8, padding: '10px 12px', marginTop: 8,
     fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
-  select: { width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)' },
-  label: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.5px' },
+  select: { width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--sans)' },
+  label: { fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4},
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 12 },
-  th: { textAlign: 'left', padding: '7px 10px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--mono)' },
-  td: { padding: '7px 10px', borderBottom: '.5px solid var(--brd)', fontFamily: 'var(--mono)', verticalAlign: 'top' },
+  th: { textAlign: 'left', padding: '7px 10px', fontSize: 12, color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--sans)', fontWeight: 600 },
+  td: { padding: '7px 10px', borderBottom: '.5px solid var(--brd)', fontFamily: 'var(--sans)', verticalAlign: 'top' },
   badge: (status) => ({
     display: 'inline-block', padding: '2px 7px', borderRadius: 'var(--rs)', fontSize: 11, fontWeight: 600,
     background: status === 'valid' ? 'var(--accent-bg)' : status === 'duplicate' ? 'rgba(245,166,35,.12)' : 'rgba(255,77,106,.12)',
@@ -64,8 +64,8 @@ const s = {
   }),
   summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, marginBottom: 16 },
   summaryItem: { background: 'var(--sur2)', borderRadius: 8, padding: '10px 12px', border: '.5px solid var(--brd)' },
-  summaryLabel: { fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 3 },
-  summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--tx)' },
+  summaryLabel: { fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 3 },
+  summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--tx)' },
   btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: '.15s' },
   btnPrimary: { background: 'var(--laton)', color: 'var(--navy)' },
   btnSecondary: { background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)' },
@@ -320,12 +320,12 @@ export default function ImportMovements({ setPage } = {}) {
               banks: BANK_TEMPLATES.filter(b => b.country === code),
             })).map(group => (
               <div key={group.code} style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
                   <CountryBadge code={group.code} size={14} title={group.label} />{group.label}
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {group.banks.map(b => (
-                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--sur2)', border: '.5px solid var(--brd)', fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--mono)' }}>
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--sur2)', border: '.5px solid var(--brd)', fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
                       <span>{b.name}</span>
                     </div>
                   ))}
@@ -381,7 +381,7 @@ export default function ImportMovements({ setPage } = {}) {
                 <div style={{fontSize:12,fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
               </div>
-              <div style={{fontSize:11,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily:'var(--mono)',flexShrink:0}}>{t('imp.map.auto')}</div>
+              <div style={{fontSize:11,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily: 'var(--sans)',flexShrink:0}}>{t('imp.map.auto')}</div>
             </div>
           ) : (
             <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--sur2)',border:'0.5px solid var(--brd)',borderRadius:8,marginBottom:16}}>
@@ -540,7 +540,7 @@ export default function ImportMovements({ setPage } = {}) {
                       <option value="">{t('imp.review.noCategory')}</option>
                       {(row.type === 'income' ? categoriesIncome : categoriesExpense).map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
                     </select>
-                    {row.categorySuggested && <div style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
+                    {row.categorySuggested && <div style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
                   </td>
                   <td style={s.td}>
                     <span style={s.badge(row.status)}>{row.status === 'valid' ? t('imp.review.stValid') : row.status === 'duplicate' ? t('imp.review.stDup') : t('imp.review.stError')}</span>

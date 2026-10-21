@@ -292,7 +292,7 @@ export default function Dashboard({ setPage }) {
     const ok = balance >= 0
     return (
       <Sheet open={showCloseModal} onClose={dismissClose} ariaLabel={t('dash.close.title')} maxWidth={380}>
-          <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'1px', marginBottom:8 }}>
+          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:8 }}>
             {t('dash.close.title')}
           </div>
           <div style={{ fontSize:20, fontWeight:700, color:'var(--tx)', marginBottom:4 }}>
@@ -310,17 +310,17 @@ export default function Dashboard({ setPage }) {
               { label:t('dash.close.savings'),      val:pct(kpis.savingRate),            color: kpis.savingRate >= 0.2 ? 'var(--accent)' : 'var(--amb)' },
             ].map(k => (
               <div key={k.label} style={{ background:'var(--bg2)', borderRadius:10, padding:'10px 12px' }}>
-                <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3 }}>{k.label}</div>
-                <div style={{ fontSize:15, fontWeight:700, fontFamily:'var(--mono)', color:k.color }}>{k.prefix||''}{k.val}</div>
+                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)', marginBottom:3 }}>{k.label}</div>
+                <div style={{ fontSize:15, fontWeight:700, fontFamily: 'var(--num)', color:k.color }}>{k.prefix||''}{k.val}</div>
               </div>
             ))}
           </div>
 
           {healthScore && (
             <div style={{ background:'var(--bg2)', borderRadius:10, padding:'10px 12px', marginBottom:20, display:'flex', alignItems:'center', gap:12 }}>
-              <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--mono)', color:healthScore.color }}>{healthScore.score}</div>
+              <div style={{ fontSize:28, fontWeight:700, fontFamily: 'var(--num)', color:healthScore.color }}>{healthScore.score}</div>
               <div>
-                <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('dash.health.title')}</div>
+                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('dash.health.title')}</div>
                 <ScoreState level={healthScore.level} label={healthScore.label} style={{ fontSize:13 }} />
               </div>
             </div>
@@ -329,13 +329,13 @@ export default function Dashboard({ setPage }) {
           <div style={{ display:'flex', gap:10, flexDirection:'column' }}>
             <button
               onClick={goNextMonth}
-              style={{ background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--mono)' }}
+              style={{ background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily: 'var(--num)' }}
             >
               {t('dash.close.next')}
             </button>
             <button
               onClick={dismissClose}
-              style={{ background:'none', color:'var(--th)', border:'.5px solid var(--brd)', borderRadius:9, padding:'9px 18px', fontSize:12, cursor:'pointer', fontFamily:'var(--mono)' }}
+              style={{ background:'none', color:'var(--th)', border:'.5px solid var(--brd)', borderRadius:9, padding:'9px 18px', fontSize:12, cursor:'pointer', fontFamily: 'var(--sans)' }}
             >
               {t('dash.close.stay', { m: activeMonth })}
             </button>
@@ -357,7 +357,7 @@ export default function Dashboard({ setPage }) {
         style={{
           marginTop:6, background:'none', border:`.5px solid ${color}`, borderRadius:6,
           padding:'5px 11px', fontSize:11, fontWeight:600, color, cursor:'pointer',
-          fontFamily:'var(--mono)', whiteSpace:'nowrap',
+          fontFamily:'var(--sans)', whiteSpace:'nowrap',
         }}
       >
         {label} →
@@ -558,7 +558,7 @@ export default function Dashboard({ setPage }) {
             title={<><InlineIcon kind="diagnosis" size={13} />{t('dash.signals.title')}</>}
             right={setPage && (
               <button type="button" onClick={() => setPage('coach')}
-                style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
+                style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
                 {t('dash.signals.viewAll')}
               </button>
             )}
@@ -595,7 +595,7 @@ export default function Dashboard({ setPage }) {
       {/* Acciones rápidas — solo en vista detallada (reduce ruido inicial) */}
       {setPage && !compact && (
         <div style={{ marginBottom:20 }}>
-          <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:10 }}>{t('dash.quick.title')}</div>
+          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:10 }}>{t('dash.quick.title')}</div>
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             {[
               { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
@@ -607,7 +607,7 @@ export default function Dashboard({ setPage }) {
               <button key={i} onClick={() => setPage(a.page)} style={{
                 background:'none', border:`.5px solid ${a.color}`, borderRadius:8,
                 padding:'7px 14px', fontSize:12, fontWeight:600, color:a.color,
-                cursor:'pointer', fontFamily:'var(--mono)', transition:'.15s',
+                cursor:'pointer', fontFamily:'var(--sans)', transition:'.15s',
                 whiteSpace:'nowrap',
               }}>
                 <InlineIcon kind={a.icon} size={13} />{a.label}
@@ -627,12 +627,12 @@ export default function Dashboard({ setPage }) {
         return (
           <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: `.5px solid ${over ? 'color-mix(in srgb, var(--pos) 28%, transparent)' : 'color-mix(in srgb, var(--neg) 28%, transparent)'}`, borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4 }}>{t('dash.expected.title')}</div>
+              <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>{t('dash.expected.title')}</div>
               <div style={{ fontSize: 13, color: 'var(--tx)' }}>
                 {t('dash.expected.expected')} <strong><Money>{fmtMoney(expected, sym)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{fmtMoney(kpis.totalInc, sym)}</Money></strong>
               </div>
             </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
               {over ? '+' : ''}{pctDiff}%
             </div>
           </div>
@@ -650,7 +650,7 @@ export default function Dashboard({ setPage }) {
           <Card style={{ border: over ? '.5px solid color-mix(in srgb, var(--neg) 32%, transparent)' : undefined, padding:'14px 16px', marginBottom:16 }}>
             <CardHeader
               title={t('dash.proj.title')}
-              right={<span style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'none', letterSpacing:'normal' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</span>}
+              right={<span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', textTransform:'none', letterSpacing:'normal' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</span>}
             />
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:10 }}>
               {[
@@ -659,10 +659,10 @@ export default function Dashboard({ setPage }) {
                 { label:t('dash.proj.daily'),       value:t('dash.proj.perDay', { v: money(dailyExp) }),       color:'var(--th)',                                   rawVal: null },
               ].map(k => (
                 <div key={k.label}>
-                  <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:3 }}>{k.label}</div>
-                  <div style={{ fontSize:13, fontWeight:700, fontFamily:'var(--mono)', color:k.color }}>{k.prefix || ''}{k.value}</div>
+                  <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)', marginBottom:3 }}>{k.label}</div>
+                  <div style={{ fontSize:13, fontWeight:700, fontFamily: 'var(--num)', color:k.color }}>{k.prefix || ''}{k.value}</div>
                   {dualOn && k.rawVal != null && (
-                    <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', opacity:.7, marginTop:2 }}>{toUSD(k.rawVal)}</div>
+                    <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', opacity:.7, marginTop:2 }}>{toUSD(k.rawVal)}</div>
                   )}
                 </div>
               ))}
@@ -671,16 +671,16 @@ export default function Dashboard({ setPage }) {
               <div style={{ height:'100%', width:'100%', transform:`scaleX(${pctMonth / 100})`, transformOrigin:'left', background: over ? 'var(--red)' : 'var(--accent)', borderRadius:2, transition:'transform .3s' }} />
             </div>
             {avgExp > 0 && avgExpMonths > 0 && (
-              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
+              <div style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
                 {t('dash.proj.basis', { cur: money(kpis.totalExp), med: money(medianDaily), left: daysLeft, avg: money(avgExp) })}
               </div>
             )}
             {(pendingExp > 0 || pendingInc > 0) && (
-              <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
+              <div style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
                 {t('dash.proj.pendingBasis', { exp: money(pendingExp), inc: money(pendingInc) })}
               </div>
             )}
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontFamily:'var(--mono)', color:'var(--th)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)' }}>
               <span>{t('dash.proj.elapsed', { pct: pctMonth })}</span>
               {setPage && <button type="button" onClick={() => setPage('cashflow')} style={{ color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0, font:'inherit' }}>{t('dash.proj.viewFull')}</button>}
             </div>
@@ -709,8 +709,8 @@ export default function Dashboard({ setPage }) {
       {/* Link a Diagnóstico — vista detallada */}
       {setPage && !compact && (
         <div style={{ padding:'10px 14px', background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-          <span style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}><InlineIcon kind="diagnosis" size={13} />{t('dash.coachLink.text')}</span>
-          <button onClick={() => setPage('coach')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 12px', fontSize:11, color:'var(--accent)', cursor:'pointer', fontFamily:'var(--mono)' }}>
+          <span style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}><InlineIcon kind="diagnosis" size={13} />{t('dash.coachLink.text')}</span>
+          <button onClick={() => setPage('coach')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 12px', fontSize:11, color:'var(--accent)', cursor:'pointer', fontFamily: 'var(--sans)' }}>
             {t('dash.coachLink.btn')}
           </button>
         </div>
@@ -721,14 +721,14 @@ export default function Dashboard({ setPage }) {
           días y botón de un clic es la franja de la primera vista (M5) */}
       {!compact && <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
         <div>
-          <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--th)', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:3 }}>{t('dash.backup.title')}</div>
-          <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--mono)' }}>{t('dash.backup.text')}</div>
+          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:3 }}>{t('dash.backup.title')}</div>
+          <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>{t('dash.backup.text')}</div>
         </div>
-        {setPage && <button onClick={() => setPage?.('settings')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'5px 12px', fontSize:11, color:'var(--tx)', cursor:'pointer', fontFamily:'var(--mono)', whiteSpace:'nowrap', flexShrink:0 }}>{t('dash.backup.btn')}</button>}
+        {setPage && <button onClick={() => setPage?.('settings')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'5px 12px', fontSize:11, color:'var(--tx)', cursor:'pointer', fontFamily: 'var(--sans)', whiteSpace:'nowrap', flexShrink:0 }}>{t('dash.backup.btn')}</button>}
       </div>}
       </div>
 
-      <div style={{ fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', lineHeight:1.6, marginTop:16 }}>
+      <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.6, marginTop:16 }}>
         {t('dash.disclaimer')}
       </div>
     </div>

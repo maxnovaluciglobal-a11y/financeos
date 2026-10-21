@@ -30,7 +30,7 @@ export default function IRPFEspana() {
 
   if (country !== 'ES') {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
         {t('irpfes.onlyES')}
       </div>
     )
@@ -59,7 +59,7 @@ export default function IRPFEspana() {
             return (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0', color: 'var(--tx)' }}>
                 <span>{fmtEUR(desde)} — {tr.hasta === Infinity ? t('irpfes.tramos.enAdelante') : fmtEUR(tr.hasta)}</span>
-                <span style={{ fontFamily: 'var(--mono)' }}>{(tr.tasa * 100).toFixed(0)}%</span>
+                <span style={{ fontFamily: 'var(--sans)' }}>{(tr.tasa * 100).toFixed(0)}%</span>
               </div>
             )
           })}
@@ -93,36 +93,36 @@ function EmpleadoCard() {
       {result && (
         <>
           <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
               {fmtEUR(result.retencionMensual)}
             </div>
-            <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
               {t('irpfes.empleado.retencionSub', { pct: (result.tipoEfectivo * 100).toFixed(1) })}
             </div>
           </div>
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
               <span>{t('irpfes.empleado.netoMensual')}</span>
-              <span style={{ fontFamily: 'var(--mono)', fontWeight: 600 }}>{fmtEUR(result.netoMensual)}</span>
+              <span style={{ fontFamily: 'var(--num)', fontWeight: 600 }}>{fmtEUR(result.netoMensual)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
               <span>{t('irpfes.empleado.ssParte')}</span>
-              <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(result.seguridadSocialMensual)}</span>
+              <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.seguridadSocialMensual)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
               <span>{t('irpfes.empleado.cuotaAnual')}</span>
-              <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(result.cuotaAnual)}</span>
+              <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.cuotaAnual)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
               <span>{t('irpfes.empleado.reduccionTrabajo')}</span>
-              <span style={{ fontFamily: 'var(--mono)' }}>−{fmtEUR(result.reduccionTrabajo)}</span>
+              <span style={{ fontFamily: 'var(--sans)' }}>−{fmtEUR(result.reduccionTrabajo)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
               <span>{t('irpfes.empleado.baseLiquidable')}</span>
-              <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(result.baseLiquidable)}</span>
+              <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.baseLiquidable)}</span>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
             {t('irpfes.empleado.footnote', { ss: fmtEUR(result.seguridadSocial), minimo: fmtEUR(result.minimoPersonalFamiliar) })}
           </div>
         </>
@@ -150,24 +150,24 @@ function AutonomoCard() {
         </FormGroup>
       </FormRow>
       <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+        <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
           {fmtEUR(result.pagoFraccionado)}
         </div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--th)', marginTop: 6 }}>
+        <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
           {t('irpfes.autonomo.pagarSub', { pct: (result.tasa * 100).toFixed(0) })}
         </div>
       </div>
       <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
           <span>{t('irpfes.autonomo.rendimientoNeto')}</span>
-          <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(result.rendimientoNeto)}</span>
+          <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.rendimientoNeto)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
           <span>{t('irpfes.autonomo.gastosDificilJust')}</span>
-          <span style={{ fontFamily: 'var(--mono)' }}>{fmtEUR(result.gastosDificilJust)}</span>
+          <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.gastosDificilJust)}</span>
         </div>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
         {t('irpfes.autonomo.footnote1')}
         <br /><br />
         {t('irpfes.autonomo.footnote2')}

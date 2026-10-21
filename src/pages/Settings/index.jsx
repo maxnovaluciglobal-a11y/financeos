@@ -107,7 +107,7 @@ export default function Settings() {
 
   const srow = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 0', borderBottom:'0.5px solid var(--brd)' }
   const slbl = { fontSize:13, fontWeight:500, color:'var(--tx)' }
-  const ssub = { fontSize:11, color:'var(--th)', fontFamily:'var(--mono)', marginTop:1 }
+  const ssub = { fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:1 }
 
   return (
     <div className="stack">
@@ -132,7 +132,7 @@ export default function Settings() {
         </div>
         {confirmAction?.type === 'currency' && (
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
               {t('settings.confirmChangeCurrency', { currency: confirmAction.payload.nextCurrency })}
             </span>
             <div style={{display:'flex',gap:6}}>
@@ -241,9 +241,9 @@ export default function Settings() {
                 placeholder={String(liveRate(settings.currency) || '')}
                 onChange={e => { const v = parseFloat(e.target.value) || 0; updateSettings({...settings, usdRate: v, usdRateAt: v > 0 ? Date.now() : null, usdRateSource: v > 0 ? 'manual' : null}) }}
                 style={{flex:1, padding:'7px 10px', borderRadius:6, border:'.5px solid var(--brd2)',
-                  background:'var(--sur2)', color:'var(--tx)', fontSize:13, fontFamily:'var(--mono)'}}
+                  background:'var(--sur2)', color:'var(--tx)', fontSize:13, fontFamily: 'var(--sans)'}}
               />
-              <span style={{fontSize:12, color:'var(--th)', fontFamily:'var(--mono)', whiteSpace:'nowrap'}}>
+              <span style={{fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', whiteSpace:'nowrap'}}>
                 {t('settings.exchangeRate.perUsd', { currency: settings.currency || 'CLP' })}
               </span>
               <Btn variant="ghost" size="sm"
@@ -252,12 +252,12 @@ export default function Settings() {
               </Btn>
             </div>
             {fx && (
-              <div style={{fontSize:11, color: fx.source === 'fixer' ? 'var(--grn)' : 'var(--th)', fontFamily:'var(--mono)'}}>
+              <div style={{fontSize:11, color: fx.source === 'fixer' ? 'var(--grn)' : 'var(--th)', fontFamily: 'var(--sans)'}}>
                 {fx.source === 'fixer' ? `● ${t('settings.exchangeRate.live')}` : `○ ${t('settings.exchangeRate.offline')}`}
               </div>
             )}
             {settings.usdRate > 0 && (
-              <div style={{fontSize:11, color:'var(--accent)', fontFamily:'var(--mono)'}}>
+              <div style={{fontSize:11, color:'var(--accent)', fontFamily: 'var(--sans)'}}>
                 → US$1 = {Number(settings.usdRate).toLocaleString(moneyLocale())} {settings.currency} · US$100 = {(settings.usdRate * 100).toLocaleString(moneyLocale())} {settings.currency}
               </div>
             )}
@@ -265,7 +265,7 @@ export default function Settings() {
         )}
         {settings.showDualCurrency && settings.currency === 'USD' && (
           <div style={{...srow, borderBottom:'none'}}>
-            <div style={{fontSize:11, color:'var(--th)', fontFamily:'var(--mono)'}}>
+            <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
               {t('settings.dualCurrency.alreadyUsd')}
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function Settings() {
       </Card>
       <Card>
         <CardHeader title={t('settings.templates.title')} />
-        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12,lineHeight:1.5}}>
+        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>
           {t('settings.templates.sub')}
         </div>
         <TemplateSelector />
@@ -300,7 +300,7 @@ export default function Settings() {
         </div>
         {confirmAction?.type === 'loadDemo' ? (
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmLoadDemo')}</span>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmLoadDemo')}</span>
             <div style={{display:'flex',gap:6}}>
               <Btn variant="danger" size="xs" onClick={handleLoadDemo}>{t('debts.card.confirm')}</Btn>
               <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
@@ -325,7 +325,7 @@ export default function Settings() {
         )}
         {!isDemo && (confirmAction?.type === 'deactivate' ? (
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmDeactivateLicense')}</span>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeactivateLicense')}</span>
             <div style={{display:'flex',gap:6}}>
               <Btn variant="primary" size="xs" onClick={handleDeactivate}>{t('debts.card.confirm')}</Btn>
               <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
@@ -346,7 +346,7 @@ export default function Settings() {
         {!isDemo && getLicensePlan() !== 'pro' && <UpgradeCard subStyle={ssub} />}
         {confirmAction?.type === 'clearAll' ? (
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily:'var(--mono)',flex:1}}>{t('settings.confirmDeleteAll')}</span>
+            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeleteAll')}</span>
             <div style={{display:'flex',gap:6}}>
               <Btn variant="danger" size="xs" onClick={handleClear}>{t('debts.card.confirm')}</Btn>
               <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
@@ -365,7 +365,7 @@ export default function Settings() {
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.indexeddbLabel')}</span> — {t('settings.dataStorage.indexeddbDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.serverLabel')}</span> — {t('settings.dataStorage.serverDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.backupLabel')}</span> — {t('settings.dataStorage.backupDesc')}</div>
-          <div style={{fontSize:12,fontFamily:'var(--mono)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
+          <div style={{fontSize:12,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
         </div>
       </Card>
       {!isDemo && accountEmail && <DeleteAccountSection autoOpen={wantsDeleteAccount(initialSearch(window.location.search))} />}
@@ -392,7 +392,7 @@ export default function Settings() {
         {' · '}{t('settings.support.time')}{' · '}
         <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
       </p>
-      <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',lineHeight:1.7,marginTop:8}}>
+      <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.7,marginTop:8}}>
         {t('settings.footer')}
       </div>
     </div>
@@ -413,7 +413,7 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
   const result = taxId ? validateTaxId(cc, taxId) : null
 
   const srow = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '0.5px solid var(--brd)' }
-  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 1 }
+  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }
   const lbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
 
   let feedback = null
@@ -446,7 +446,7 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
         }}
       />
       {feedback && (
-        <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: feedback.color }}>{feedback.text}</div>
+        <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: feedback.color }}>{feedback.text}</div>
       )}
       {result?.checkedVia === 'format-only' && (
         <div style={{ ...sub, lineHeight: 1.5 }}>{t('settings.taxId.formatOnly', { label })}</div>
@@ -466,7 +466,7 @@ function PushSection() {
   const supported = pushSupported()
 
   const lbl = { fontSize: 13, color: 'var(--tx)', fontWeight: 500 }
-  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, marginTop: 4 }
+  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 4 }
 
   async function toggle() {
     if (busy) return

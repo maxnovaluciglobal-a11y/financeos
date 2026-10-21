@@ -90,7 +90,7 @@ export default function PPRPage() {
     <div className="stack">
       <PageHeader title={t('ppr.title')} sub={t('ppr.sub')} />
       <Alert type="info">{t('ppr.disclaimer')}</Alert>
-      <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: -4, marginBottom: 8, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: -4, marginBottom: 8, lineHeight: 1.6 }}>
         {t('ppr.intro')}
       </p>
 
@@ -150,7 +150,7 @@ export default function PPRPage() {
 
           <Card>
             <CardHeader title={t('ppr.card.rules')} />
-            <ul style={{ fontSize: 12, color: 'var(--tm)', fontFamily: 'var(--mono)', lineHeight: 1.9, paddingLeft: 18, margin: 0 }}>
+            <ul style={{ fontSize: 12, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.9, paddingLeft: 18, margin: 0 }}>
               <li>{t('ppr.rule1')}</li>
               <li>{t('ppr.rule2')}</li>
               <li>{t('ppr.rule3')}</li>
@@ -159,7 +159,7 @@ export default function PPRPage() {
             </ul>
           </Card>
 
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', lineHeight: 1.6, padding: '0 4px' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, padding: '0 4px' }}>
             {t('ppr.footer')}
           </div>
         </>

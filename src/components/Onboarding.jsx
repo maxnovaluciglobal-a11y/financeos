@@ -287,7 +287,7 @@ export default function Onboarding({ onComplete }) {
           <button key={l.code} type="button" className="fos-chip fos-chip--tall"
             aria-pressed={currentLang === l.code} aria-label={l.name} lang={l.code}
             onClick={() => updateSettings({ ...settings, language: l.code, languageExplicit: true })}
-            style={{ fontFamily: 'var(--mono)', letterSpacing: '.06em' }}>
+            style={{ fontFamily: 'var(--sans)', letterSpacing: '.06em' }}>
             {l.code.toUpperCase()}
           </button>
         ))}
@@ -301,7 +301,7 @@ export default function Onboarding({ onComplete }) {
             style={{ justifyContent: 'flex-start', textAlign: 'left', gap: 10 }}>
             {/* D5 (08-oct-2026): CountryBadge en vez del código ISO suelto. "Otro" no
                 tiene país → texto. aria-hidden: el nombre del botón es el país. */}
-            <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', minWidth: 22, color: 'var(--tm)', fontFamily: 'var(--mono)', fontSize: 12 }}>
+            <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', minWidth: 22, color: 'var(--tm)', fontFamily: 'var(--sans)', fontSize: 12 }}>
               {c.code === 'OTHER' ? '··' : <CountryBadge code={c.code} size={22} />}
             </span>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t(countryKey(c.code))}</span>
@@ -334,7 +334,7 @@ export default function Onboarding({ onComplete }) {
       {/* Vista previa del formato — mono porque es un dato */}
       <div aria-live="polite" style={{ padding: '12px 14px', borderRadius: 'var(--rl)', background: 'var(--sur2)', border: '1px solid var(--brd)', marginBottom: 14 }}>
         <div className="num" style={{ fontSize: 24, color: 'var(--tx)', lineHeight: 1.2 }}>
-          {previewAmount(answers.currency, lang)} <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
+          {previewAmount(answers.currency, lang)} <span style={{ fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
         </div>
         <div style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>{t('onboarding.v2.step1.preview')}</div>
       </div>
@@ -420,7 +420,7 @@ export default function Onboarding({ onComplete }) {
             <span className="num-hero" style={{ fontSize: 'var(--fs-hero)', color: score.color, lineHeight: 1 }}>
               <CountUp value={score.score} format={(v) => Math.round(v)} duration={900} overshoot />
             </span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--th)' }}>/ 100</span>
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--th)' }}>/ 100</span>
             <ScoreState level={score.level} label={score.label} size={16} style={{ fontSize: 15, fontFamily: 'var(--sans)', marginLeft: 'auto', alignSelf: 'center' }} />
           </div>
 

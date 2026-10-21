@@ -246,7 +246,7 @@ export default function AuthGate({ onAuthenticated }) {
           />
           {captchaWidget}
           {error && (
-            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
               <InlineIcon kind="alert" size={13} />{error}
             </div>
           )}
@@ -376,7 +376,7 @@ export default function AuthGate({ onAuthenticated }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
+          <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
           <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
         </div>
 
@@ -437,7 +437,7 @@ export default function AuthGate({ onAuthenticated }) {
         {captchaWidget}
 
         {error && (
-          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--mono)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
             <InlineIcon kind="alert" size={13} />{error}
           </div>
         )}

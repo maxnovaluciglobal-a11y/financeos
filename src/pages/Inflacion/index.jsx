@@ -35,7 +35,7 @@ export default function Inflacion() {
 
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--mono)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
         {t('inflacion.notAvailable')}
       </div>
     )
@@ -87,7 +87,7 @@ export default function Inflacion() {
           <Card>
             <CardHeader title={t('inflacion.result.title', { from: fmtMes(desde), to: fmtMes(hasta) })} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 30, fontWeight: 700, color: 'var(--accent)', lineHeight: 1.1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 30, fontWeight: 700, color: 'var(--accent)', lineHeight: 1.1 }}>
                 {fmt(result.valorAjustado)}
               </div>
               <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>
@@ -112,7 +112,7 @@ function Row({ label, value, color }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
       <span>{label}</span>
-      <span style={{ fontFamily: 'var(--mono)', fontWeight: 600, color }}>{value}</span>
+      <span style={{ fontFamily: 'var(--num)', fontWeight: 600, color }}>{value}</span>
     </div>
   )
 }

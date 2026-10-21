@@ -172,7 +172,7 @@ export default function Income({ setPage }) {
           <CardHeader title={t('income.history', { n: filtered.length })} />
           {filtered.length === 0
             ? <div style={{textAlign:'center',padding:'24px 0'}}>
-                <div style={{fontSize:13,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:12}}>{t('income.emptyText')}</div>
+                <div style={{fontSize:13,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12}}>{t('income.emptyText')}</div>
                 <button onClick={() => setRepeat(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('income.emptyBtn')}</button>
               </div>
             : <div style={{ maxHeight: 280, overflowY: 'auto' }}>
@@ -180,22 +180,22 @@ export default function Income({ setPage }) {
                   <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.04)',marginBottom:6}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
                       <div style={{gridColumn:'1/-1'}}>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.source')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.source')}</div>
                         <input type="text" value={editForm.source||''} onChange={e=>setEditForm(f=>({...f,source:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.amount')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.amount')}</div>
                         <input type="number" inputMode="decimal" min="0" step="any" value={editForm.amount||''} onChange={e=>setEditForm(f=>({...f,amount:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.date')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.date')}</div>
                         <input type="date" value={editForm.date||''} onChange={e=>setEditForm(f=>({...f,date:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--mono)',marginBottom:3}}>{t('income.edit.category')}</div>
+                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.category')}</div>
                         <select value={editForm.category||''} onChange={e=>setEditForm(f=>({...f,category:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                           {categoriesIncome.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
