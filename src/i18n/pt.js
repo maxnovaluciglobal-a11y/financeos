@@ -662,7 +662,7 @@ export const pt = {
     'income.kpi.invOfWhich': "dos quais {v} investimento",
     'income.kpi.fixed': "Fixo",
     'income.kpi.variable': "Variável",
-    'income.kpi.pctOfTotal': "{pct}% do total",
+    'income.kpi.pctOfTotal': "{pct} do total",
     'income.new': "Nova receita",
     'income.paste.btn': "Colar mensagem do banco (depósito/transferência) →",
     'income.paste.placeholder': "Ex.: \"Você recebeu um Pix de R$ 2.000,00...\"",

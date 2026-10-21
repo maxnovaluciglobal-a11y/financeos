@@ -112,7 +112,7 @@ export default function Goals() {
       {goals.length > 0 && <div className="kpi-row">
         <KPI label={t('goals.kpi.active')}  value={goals.length} />
         <KPI label={t('goals.kpi.target')} value={fmtMoney(totalTarget,sym)} />
-        <KPI label={t('goals.kpi.saved')} value={fmtMoney(totalSaved,sym)} color="green" sub={totalTarget>0 ? t('goals.kpi.savedSub', { pct: fmtPct(totalSaved/totalTarget) }) : '-'} />
+        <KPI label={t('goals.kpi.saved')} value={fmtMoney(totalSaved,sym)} color="green" sub={totalTarget>0 ? t('goals.kpi.savedSub', { pct: fmtPct(totalSaved/totalTarget) }) : '—'} />
         <KPI label={t('goals.kpi.done')}    value={goals.filter(g=>g.saved>=g.target).length} color="green" />
       </div>}
       {/* Disponible este mes para ahorrar */}

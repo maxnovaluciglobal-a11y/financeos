@@ -93,7 +93,7 @@ export default function Projects() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   <Row label={t('projects.incomeRow')} value={`+${fmtMoney(g.ingresos, sym)}`} color="var(--grn)" />
-                  <Row label={t('projects.expenseRow')} value={`-${fmtMoney(g.egresos, sym)}`} color="var(--neg)" />
+                  <Row label={t('projects.expenseRow')} value={`−${fmtMoney(g.egresos, sym)}`} color="var(--neg)" />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 10, borderTop: '.5px solid var(--brd)' }}>
                   <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.5px' }}>{t('projects.netFlow')}</div>
@@ -130,7 +130,7 @@ export default function Projects() {
                           </button>
                         </span>
                       </div>
-                      {mort > 0 && <Row label={t('projects.linkedMortgage')} value={`-${fmtMoney(mort, sym)}`} color="var(--neg)" />}
+                      {mort > 0 && <Row label={t('projects.linkedMortgage')} value={`−${fmtMoney(mort, sym)}`} color="var(--neg)" />}
                       {val > 0 && mort === 0 && (
                         <div style={{ fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--mono)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
                           <InlineIcon kind="alert" size={13} />{t('projects.noMortgageHint')}

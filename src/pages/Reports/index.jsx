@@ -323,7 +323,7 @@ export default function Reports({ setPage }) {
           <div style={{flex:1,minWidth:200}}>
             <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:3}}>{t('reports.networth.title')}</div>
             <div className="num" style={{fontSize:22,fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
-              {nw.netWorth >= 0 ? '' : '-'}<Money>{fmtMoney(Math.abs(nw.netWorth), sym)}</Money>
+              {nw.netWorth >= 0 ? '' : '−'}<Money>{fmtMoney(Math.abs(nw.netWorth), sym)}</Money>
             </div>
             <div style={{fontSize:11,fontFamily:'var(--mono)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
           </div>

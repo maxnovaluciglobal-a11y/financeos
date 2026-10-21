@@ -662,7 +662,7 @@ export const es = {
     'income.kpi.invOfWhich': "de los cuales {v} inversión",
     'income.kpi.fixed': "Fijo",
     'income.kpi.variable': "Variable",
-    'income.kpi.pctOfTotal': "{pct}% del total",
+    'income.kpi.pctOfTotal': "{pct} del total",
     'income.new': "Nuevo ingreso",
     'income.paste.btn': "Pegar mensaje del banco (abono/transferencia) →",
     'income.paste.placeholder': "Ej: \"Recibiste un abono por $200.000...\"",

@@ -140,7 +140,7 @@ export function fmtAmount(n, decimals = _moneyDecimals, locale = _moneyLocale) {
 }
 
 // Monto con símbolo, SIEMPRE en valor absoluto (el signo lo pone quien llama,
-// como hasta ahora: "-" + fmtMoney(x)). "$42.50" / "$42.500" / "42,50 €".
+// con MINUS (U+2212), nunca con "-": MINUS + fmtMoney(x)). "$42.50" / "$42.500" / "42,50 €".
 export const fmtMoney = (n, symbol = '$') => {
   const num = fmtAmount(Math.abs(Number(n) || 0))
   return symbolAfter(symbol) ? `${num}\u00a0${symbol}` : symbol + num

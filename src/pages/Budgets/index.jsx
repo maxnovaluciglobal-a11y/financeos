@@ -154,7 +154,7 @@ export default function Budgets() {
       )}
       <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(4,1fr)' }} data-tour="bud-kpis">
         <KPI label={t('budgets.kpi.total')}     value={fmtMoney(totalBudget, sym)} />
-        <KPI label={t('budgets.kpi.spent')} value={fmtMoney(totalBudgeted, sym)} color="red" sub={totalBudget > 0 ? fmtPct(totalBudgeted/totalBudget) : '-'} />
+        <KPI label={t('budgets.kpi.spent')} value={fmtMoney(totalBudgeted, sym)} color="red" sub={totalBudget > 0 ? fmtPct(totalBudgeted/totalBudget) : '—'} />
         <KPI label={t('budgets.kpi.over')}  value={overBudget.length} color={overBudget.length > 0 ? 'red' : 'green'} sub={overBudget.length > 0 ? t('budgets.kpi.review') : t('budgets.kpi.allOk')} />
         <KPI label={t('budgets.kpi.coverage')} value={ingresoNeto > 0 ? fmtPct(totalBudget/ingresoNeto) : '—'} color={ingresoNeto > 0 && totalBudget > ingresoNeto ? 'red' : ingresoNeto > 0 && totalBudget/ingresoNeto > 0.8 ? 'amber' : 'green'} sub={ingresoNeto > 0 ? (totalBudget > ingresoNeto ? <><InlineIcon kind="alert" size={12} />{t('budgets.kpi.exceedsIncome')}</> : totalBudget/ingresoNeto > 0.8 ? t('budgets.kpi.noMargin') : t('budgets.kpi.healthy')) : t('budgets.kpi.noIncome')} />
       </div>

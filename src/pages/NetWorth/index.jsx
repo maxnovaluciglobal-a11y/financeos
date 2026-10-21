@@ -44,7 +44,7 @@ export default function NetWorth() {
                 {t('networth.headline')}
               </div>
               <div className="num" style={{ fontSize: 36, fontWeight: 700, color: netWorth >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
-                {netWorth >= 0 ? '' : '-'}<Money><CountUp value={Math.abs(netWorth)} format={(v) => fmtMoneyRaw(v, sym)} duration={750} /></Money>
+                {netWorth >= 0 ? '' : '−'}<Money><CountUp value={Math.abs(netWorth)} format={(v) => fmtMoneyRaw(v, sym)} duration={750} /></Money>
               </div>
               <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)', marginTop: 4 }}>
                 {t('networth.formula', { a: fmtMoney(totalActivos, sym), p: fmtMoney(totalPasivos, sym) })}

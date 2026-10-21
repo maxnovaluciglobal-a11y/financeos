@@ -27,7 +27,8 @@ describe('TxRow (REC-N5)', () => {
     }))
     expect(html).toContain(`aria-label="${translate('es', 'ui.editItem', { name: 'Café' })}"`)
     expect(html).toContain(`aria-label="${translate('es', 'ui.deleteItem', { name: 'Café' })}"`)
-    expect(html).toContain('-$ 2.500')
+    expect(html).toContain('\u2212$ 2.500')
+    expect(html).not.toContain('-$')
     expect(html).not.toContain('[object Object]')
   })
 

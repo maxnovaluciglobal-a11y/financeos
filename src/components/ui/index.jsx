@@ -8,6 +8,7 @@ import Money, { MONEY_MASK } from '../Money.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Pencil } from 'lucide-react'
+import { MINUS } from '../../utils/index.js'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -210,7 +211,7 @@ export function TxRow({ dot, name, label: labelProp, meta, amount, isIncome, onD
         {meta && <div className={styles.txMeta}>{meta}</div>}
       </div>
       <div className={[styles.txAmt, isIncome ? styles.txInc : styles.txExp].join(' ')}>
-        {isIncome ? '+' : '-'}<Money>{amount}</Money>
+        {isIncome ? '+' : MINUS}<Money>{amount}</Money>
       </div>
       {onEdit && (
         <button className={styles.delBtn} onClick={onEdit} title={t('ui.edit')} aria-label={t('ui.editItem', { name: label })} style={{marginRight:2,fontSize:11}}>

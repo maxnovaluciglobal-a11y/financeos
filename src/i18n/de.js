@@ -662,7 +662,7 @@ export const de = {
     'income.kpi.invOfWhich': "davon {v} Investition",
     'income.kpi.fixed': "Fix",
     'income.kpi.variable': "Variabel",
-    'income.kpi.pctOfTotal': "{pct} % der Summe",
+    'income.kpi.pctOfTotal': "{pct} der Summe",
     'income.new': "Neue Einnahme",
     'income.paste.btn': "Bank-Nachricht einfügen (Gutschrift/Überweisung) →",
     'income.paste.placeholder': "z. B.: „Gutschrift über 200,00 € erhalten...“",

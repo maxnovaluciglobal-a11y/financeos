@@ -352,14 +352,14 @@ export default function CashFlow({ setPage }) {
                         <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>-<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
+                        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 500, color: 'var(--red)' }}>−<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
                         <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--mono)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 12, fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
                   <span>{t('cf.rec.totalMonthly')}</span>
-                  <span style={{ color: 'var(--red)', fontFamily: 'var(--mono)' }}>-{fmtMoney(monthlyRecExp, sym)}</span>
+                  <span style={{ color: 'var(--red)', fontFamily: 'var(--mono)' }}>−{fmtMoney(monthlyRecExp, sym)}</span>
                 </div>
               </div>
             )

@@ -662,7 +662,7 @@ export const en = {
     'income.kpi.invOfWhich': "of which {v} investment",
     'income.kpi.fixed': "Fixed",
     'income.kpi.variable': "Variable",
-    'income.kpi.pctOfTotal': "{pct}% of total",
+    'income.kpi.pctOfTotal': "{pct} of total",
     'income.new': "New income",
     'income.paste.btn': "Paste bank message (deposit/transfer) →",
     'income.paste.placeholder': "E.g. \"You received a deposit of $200,000...\"",

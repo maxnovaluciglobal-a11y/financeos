@@ -4,7 +4,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth, currencySymbol } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth, currencySymbol, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
@@ -90,8 +90,8 @@ export default function Income({ setPage }) {
       </div>
       <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         <KPI label={t('income.kpi.totalMonth')} value={fmtMoney(total, sym)} color="green" sub={investment > 0 ? t('income.kpi.invOfWhich', { v: fmtMoney(investment, sym) }) : undefined} />
-        <KPI label={t('income.kpi.fixed')}      value={fmtMoney(fixed, sym)} sub={total > 0 ? t('income.kpi.pctOfTotal', { pct: (fixed/total*100).toFixed(1) }) : '-'} />
-        <KPI label={t('income.kpi.variable')}  value={fmtMoney(total - fixed, sym)} sub={total > 0 ? t('income.kpi.pctOfTotal', { pct: ((total-fixed)/total*100).toFixed(1) }) : '-'} />
+        <KPI label={t('income.kpi.fixed')}      value={fmtMoney(fixed, sym)} sub={total > 0 ? t('income.kpi.pctOfTotal', { pct: fmtPct(fixed/total) }) : '—'} />
+        <KPI label={t('income.kpi.variable')}  value={fmtMoney(total - fixed, sym)} sub={total > 0 ? t('income.kpi.pctOfTotal', { pct: fmtPct((total-fixed)/total) }) : '—'} />
       </div>
       <div className="grid2">
         <Card>
