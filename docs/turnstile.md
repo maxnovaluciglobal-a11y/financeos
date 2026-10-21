@@ -1,8 +1,24 @@
 # Turnstile (anti-bots) en los formularios públicos
 
-Auditoría 360, items SEG-1 (formularios) y SEG-7 (login). Estado al 21-oct-2026:
-**el servidor está listo y en modo apagado**: los formularios funcionan igual que antes
-hasta que el frontend mande el token y se prenda `TURNSTILE_ENFORCE`.
+Auditoría 360, items SEG-1 (formularios) y SEG-7 (login). **Estado al 21-oct-2026 (06:30 UTC):**
+
+- Widget `moyiq-forms` creado; secreto `TURNSTILE_SECRET_KEY` cargado en Supabase.
+- Landing, Invest, app y demo mandan el token (verificado en producción: `turnstile (observar): válido`
+  en los logs de `lead-submit` para newsletter, quiz de Invest y gate del demo).
+- **`TURNSTILE_ENFORCE=1` prendido**: sin token o con token inválido, `lead-submit` responde 403
+  `captcha_failed` (probado); con token real, 200 (newsletter y calculadora probados después).
+- **EXECUTE revocado** a `anon`/`authenticated` en las 7 RPC (migración
+  `20261021060000_lead_rpcs_service_role_only.sql`): `/rest/v1/rpc/register_*` con la clave publicable
+  → 401 `42501` (probado).
+- Login de la app (`app.moyiq.app`) y de Invest (`invest.moyiq.app/app`) ya mandan
+  `gotrue_meta_security.captcha_token` (comprobado interceptando el request, sin enviarlo).
+- **Falta solo el captcha de Supabase Auth** (paso de Walter, ver "Login (SEG-7)"): pegar la secret key
+  en el panel. Ojo con la PWA: el service worker sirve el bundle viejo en la primera carga y el nuevo en
+  la siguiente; quien tenga la app abierta desde antes del 21-oct puede necesitar recargar una vez.
+
+Rollback rápido si algo falla: `supabase secrets unset TURNSTILE_ENFORCE --project-ref nelwgbcddwiaimzbcuas`
+(vuelve a modo observar) y, si hiciera falta, el `grant execute ... to anon, authenticated` que está al
+final de la migración.
 
 ## Widget de Cloudflare
 
