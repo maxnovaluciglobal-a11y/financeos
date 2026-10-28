@@ -1,0 +1,745 @@
+{
+ "version": 1,
+ "generated_from": "production catalog 2026-10-28 (read-only) + policies review",
+ "extras": {
+  "service_role": "arwdDxtXU"
+ },
+ "tables": {
+  "private.app_secrets": {
+   "authenticated": "",
+   "service_role": "",
+   "rls": true
+  },
+  "private.funnel_weekly": {
+   "authenticated": "",
+   "service_role": "",
+   "rls": false
+  },
+  "private.lead_rate_events": {
+   "authenticated": "",
+   "service_role": "",
+   "rls": true
+  },
+  "public.account_deletions": {
+   "authenticated": "",
+   "service_role": "ar",
+   "rls": true
+  },
+  "public.cancellation_requests": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.cloud_backups": {
+   "authenticated": "ardw",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.consents": {
+   "authenticated": "ar",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.crm_activities": {
+   "authenticated": "dr",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.crm_contacts": {
+   "authenticated": "ardw",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.crm_funnel": {
+   "authenticated": "r",
+   "service_role": "r",
+   "rls": false
+  },
+  "public.cron_health": {
+   "authenticated": "",
+   "service_role": "r",
+   "rls": false
+  },
+  "public.cron_http_log": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.demo_leads": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.diagnostico_leads": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.edge_function_errors": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.feedback_sends": {
+   "authenticated": "",
+   "service_role": "adr",
+   "rls": true
+  },
+  "public.funnel_report_runs": {
+   "authenticated": "",
+   "service_role": "ar",
+   "rls": true
+  },
+  "public.invest_activity_days": {
+   "authenticated": "a",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.invest_leads": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.invest_weekly_active": {
+   "authenticated": "",
+   "service_role": "r",
+   "rls": false
+  },
+  "public.leads_retention_candidates": {
+   "authenticated": "",
+   "service_role": "r",
+   "rls": false
+  },
+  "public.leads_retention_runs": {
+   "authenticated": "",
+   "service_role": "ar",
+   "rls": true
+  },
+  "public.licenses": {
+   "authenticated": "",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.newsletter_signups": {
+   "authenticated": "r",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.nps_answers": {
+   "authenticated": "",
+   "service_role": "adr",
+   "rls": true
+  },
+  "public.portfolio_holdings": {
+   "authenticated": "ard",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.profiles": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.push_subscriptions": {
+   "authenticated": "",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.report_email_sends": {
+   "authenticated": "",
+   "service_role": "adr",
+   "rls": true
+  },
+  "public.starter_leads": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.subscription_expiry_pending": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.synced_data": {
+   "authenticated": "",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.tax_calculator_leads": {
+   "authenticated": "r",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.trial_activation_emails": {
+   "authenticated": "",
+   "service_role": "Dadrtwx",
+   "rls": true
+  },
+  "public.trial_emails": {
+   "authenticated": "",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.uptime_checks": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.uptime_sites": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.uptime_state": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.uptime_status": {
+   "authenticated": "",
+   "service_role": "r",
+   "rls": false
+  },
+  "public.uptime_ticks": {
+   "authenticated": "",
+   "service_role": "adrw",
+   "rls": true
+  },
+  "public.user_entitlements": {
+   "authenticated": "ardw",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.watchlist": {
+   "authenticated": "ard",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.webhook_events": {
+   "authenticated": "",
+   "service_role": "arwd",
+   "rls": true
+  },
+  "public.webhook_events_processed": {
+   "authenticated": "",
+   "service_role": "adr",
+   "rls": true
+  }
+ },
+ "sequences": {
+  "private.lead_rate_events_id_seq": {
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.account_deletions_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.edge_function_errors_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.feedback_sends_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.leads_retention_runs_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.portfolio_holdings_id_seq": {
+   "authenticated": "U",
+   "service_role": "U"
+  },
+  "public.report_email_sends_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.trial_emails_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.uptime_checks_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.uptime_ticks_id_seq": {
+   "authenticated": "",
+   "service_role": "U"
+  },
+  "public.watchlist_id_seq": {
+   "authenticated": "U",
+   "service_role": "U"
+  }
+ },
+ "functions": {
+  "private.get_secret(text)": {
+   "kind": "private",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "private.is_internal_email(text)": {
+   "kind": "private",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "private.lead_rate_ok(text)": {
+   "kind": "private",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.attach_license_to_account(uuid, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.confirm_marketing_consent(uuid)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.crm_add_activity(uuid, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.crm_followup_check(uuid, timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.crm_is_admin_caller()": {
+   "kind": "helper",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.crm_on_auth_user_created()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.crm_on_auth_user_login()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.crm_on_entitlement_change()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.crm_refresh_contact(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.crm_refresh_contact_safe(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.crm_set_estado(uuid, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.crm_set_next_action(uuid, text, date)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.crm_touch_on_contactado()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.crm_touch_on_nurture_sent()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.cron_expected_interval(text)": {
+   "kind": "helper",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.cron_health_snapshot()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.delete_account_data(uuid, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.delete_push_subscription(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.extend_license_expiry(text, timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.feedback_claim(uuid, integer)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_caller_owns_license(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_has_legacy_sync_blob(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_license_id(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_license_key_id(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_license_upgrade(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_resolve_hash(text)": {
+   "kind": "helper",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.forget_license_key_after_v2_sync()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.funnel_report_data(date)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.funnel_report_mark_sent(date, jsonb)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.funnel_report_metrics(date)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.handle_new_user()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.hash_entitlement_license_key()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.invest_record_activity()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.issue_license(text, text, text, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.issue_license(text, text, text, text, text, text, timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.lock_entitlements_plan_column()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.mark_diagnostico_lead_account_created()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.mark_invest_lead_account_created()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.mark_license_trial(text, timestamp with time zone, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.mark_starter_lead_account_created()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.mark_trial_activation_sent(uuid, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.notify_invest_signup(text)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.nps_claim(uuid)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.protect_trial_reuse()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.purge_unconfirmed_leads()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.register_demo_lead(text, text, boolean, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.register_diagnostico_lead(text, integer, text, boolean, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.register_invest_lead(text, text, integer, text, boolean)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.register_newsletter_signup(text, text, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.register_starter_lead(text, text, boolean)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.register_tax_calculator_lead(text, text, numeric, numeric)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.report_email_claim(uuid, text, integer)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.revoke_license(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.revoke_license_by_subscription(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.save_push_subscription(text, text, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.set_license_email(text, text)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.set_updated_at()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.submit_cancellation_request(text, text, text, text, text, text, date, text, text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.sync_demo_lead_to_crm()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.sync_diagnostico_lead_to_crm()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.sync_invest_lead_to_crm()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.sync_license_activation_to_crm()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.sync_pull(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.sync_push(text, text, bigint)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.sync_starter_lead_to_crm()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.sync_tax_calculator_lead_to_crm()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.trial_activation_due(timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.unsubscribe_demo_lead(uuid)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.unsubscribe_diagnostico_lead(uuid)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.unsubscribe_invest_lead(uuid)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.unsubscribe_starter_lead(uuid)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.unsubscribe_trial_activation(uuid)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.uptime_evaluate()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.uptime_tick()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.validate_license(text)": {
+   "kind": "rpc",
+   "anon": "X",
+   "authenticated": "X",
+   "service_role": "X"
+  }
+ }
+}

@@ -11,6 +11,6 @@ export default defineConfig({
   esbuild: { jsx: 'automatic' },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.js', 'api/**/*.test.js', 'supabase/functions/**/*.test.ts', 'scripts/**/*.test.js'],
+    include: ['src/**/*.test.js', 'api/**/*.test.js', 'supabase/functions/**/*.test.ts', 'scripts/**/*.test.js', 'supabase/tests/**/*.test.js'],
   },
 })

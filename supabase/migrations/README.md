@@ -21,11 +21,15 @@ acá, no como otro archivo suelto en la raíz:**
 ```bash
 supabase migration new nombre_descriptivo
 # escribir el SQL en el archivo que genera (supabase/migrations/<timestamp>_nombre_descriptivo.sql)
-supabase db push --linked --project-ref nelwgbcddwiaimzbcuas
+supabase db query --linked --project-ref nelwgbcddwiaimzbcuas --workdir "$(mktemp -d)" -f "$PWD/supabase/migrations/<timestamp>_nombre_descriptivo.sql"
+supabase migration repair --status applied <timestamp> --linked --project-ref nelwgbcddwiaimzbcuas
 ```
 
+**No usar `supabase db push`:** el historial remoto es compartido con `invest-web` y `db push` lo trata como propio (ver `docs/esquema-base.md`).
+**Cada tabla o función nueva lleva su GRANT en la misma migración y su fila en `supabase/tests/acl-esperada.json`** (`npm test` lo vigila con `supabase/tests/grants-explicitos.test.js`; comparar con producción: `scripts/aclCheck.mjs`).
+
 Esto dos cosas que el patrón anterior no daba:
-1. **Verificable**: `supabase db push` compara contra lo que ya está aplicado en producción — ya no se puede "pisar" una función buena con una vieja sin que el CLI lo note.
+1. **Verificable**: `supabase migration list --linked` muestra lo que ya está aplicado en producción.
 2. **Auditable**: cada cambio queda con fecha y nombre en el historial de git, no mezclado dentro de un archivo que ya tenía otro propósito.
 
 Antes de escribir una migración nueva sobre `licenses`, `push_subscriptions`

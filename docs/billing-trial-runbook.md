@@ -103,7 +103,8 @@ supabase db query --linked --project-ref nelwgbcddwiaimzbcuas \
 3. Aplicar:
 
 ```bash
-supabase db push --linked --project-ref nelwgbcddwiaimzbcuas
+supabase db query --linked --project-ref nelwgbcddwiaimzbcuas --workdir "$(mktemp -d)" -f "$PWD/supabase/migrations/20261008000000_trial_subscription_billing.sql"
+supabase migration repair --status applied 20261008000000 --linked --project-ref nelwgbcddwiaimzbcuas
 ```
 
 4. Verificar: que existan `issue_license(... , timestamptz)`, `extend_license_expiry` devolviendo `jsonb`, `revoke_license_by_subscription(text)`, las tablas `subscription_expiry_pending` y `webhook_events_processed`, y que `anon_exec` dé `false` para las tres funciones.
