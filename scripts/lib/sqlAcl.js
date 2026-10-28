@@ -33,6 +33,15 @@ export function createdTables(sql) {
   return out
 }
 
+export function createdViews(sql) {
+  const out = []
+  for (const s of statements(sql)) {
+    const m = /\bcreate (?:or replace )?(?:materialized )?view ([\w."]+)/i.exec(s)
+    if (m) out.push(qualify(m[1]))
+  }
+  return out
+}
+
 export function createdFunctions(sql) {
   const out = []
   for (const s of statements(sql)) {

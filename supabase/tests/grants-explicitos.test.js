@@ -9,6 +9,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   createdTables,
+  createdViews,
   createdFunctions,
   grants,
   tableGrantRoles,
@@ -78,6 +79,18 @@ describe('explicit grants in the migrations', () => {
     const missing = tables.filter(
       (t) => matrix.tables[t] && matrix.tables[t].authenticated && !(granted.get(t) || new Set()).has('authenticated'),
     )
+    expect(missing).toEqual([])
+  })
+
+  it('gives every view in the matrix its explicit grants too', () => {
+    const views = [...new Set(migFiles.flatMap((f) => createdViews(read(f))))].filter((v) => matrix.tables[v])
+    expect(views.length).toBeGreaterThanOrEqual(3)
+    const missing = []
+    for (const v of views) {
+      for (const r of ['authenticated', 'service_role']) {
+        if (matrix.tables[v][r] && !(granted.get(v) || new Set()).has(r)) missing.push(`${v} -> ${r}`)
+      }
+    }
     expect(missing).toEqual([])
   })
 

@@ -28,3 +28,24 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  # Replays supabase/migrations on an empty Postgres that simulates Supabase from 2026-10-30 (no automatic
+  # privileges), then runs the SQL tests and compares the resulting ACL with supabase/tests/acl-esperada.json.
+  # No secrets, no network access for the database (see scripts/test-db/start.sh).
+  db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: bash scripts/test-db/start.sh
+      - run: bash scripts/test-db/apply-migrations.sh
+      - run: bash scripts/test-db/runSqlTests.sh
+      - name: ACL of the rebuilt database against the expected matrix
+        run: |
+          docker exec -i moyiq-test-db psql -X -q -U supabase_admin -d postgres -A -t < supabase/tests/acl_catalog.sql > acl-local.json
+          node scripts/aclCheck.mjs --catalog acl-local.json --matrix supabase/tests/acl-esperada.json
+      - if: always()
+        run: bash scripts/test-db/stop.sh

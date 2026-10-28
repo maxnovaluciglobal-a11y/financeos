@@ -1,5 +1,6 @@
 -- Prueba de C-19/C-23 contra una base LOCAL (nunca producción): todo corre en
--- una transacción que termina en ROLLBACK. Uso:
+-- una transacción que termina en ROLLBACK. Desde el 28-oct-2026 las altas se ejercen como
+-- service_role (así las llama lead-submit desde SEG-1) y se comprueba que anon no puede. Uso:
 --   supabase start (solo db) + esquema de producción + migraciones nuevas, y
 --   psql "$LOCAL_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/leads_hardening.sql
 -- Falla con una excepción si algún caso no se cumple.
@@ -21,6 +22,19 @@ begin
 end
 $$;
 
+-- SEG-1 (migración 20261021060000): las RPC de altas son solo de service_role (las llama la
+-- Edge Function lead-submit). anon recibe 42501.
+do $$
+begin
+  begin
+    perform public.register_starter_lead('x@example.com', 'es', false);
+    raise exception 'FALLA: anon ejecutó register_starter_lead';
+  exception when insufficient_privilege then null;
+  end;
+end
+$$;
+reset role;
+set local role service_role;
 select set_config('request.headers', '{"x-forwarded-for":"203.0.113.7, 10.0.0.1"}', true);
 do $$
 declare r1 jsonb; r2 jsonb; r3 jsonb; i int; v_rows int;
@@ -74,7 +88,7 @@ $$;
 
 -- Límite global por tabla: 120 por hora.
 insert into private.lead_rate_events (bucket, ip_hash) select 'invest', 'h' || g from generate_series(1, 120) g;
-set local role anon;
+set local role service_role;
 select set_config('request.headers', '{"x-forwarded-for":"192.0.2.55"}', true);
 do $$
 begin
