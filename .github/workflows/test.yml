@@ -41,6 +41,8 @@ jobs:
         with:
           node-version: 22
       - run: bash scripts/test-db/start.sh
+        env:
+          IMAGE: ghcr.io/supabase/postgres:17.6.1.165
       - run: bash scripts/test-db/apply-migrations.sh
       - run: bash scripts/test-db/runSqlTests.sh
       - name: ACL of the rebuilt database against the expected matrix
