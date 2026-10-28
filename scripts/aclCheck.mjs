@@ -43,7 +43,9 @@ export function compare(catalog, matrix, { ignore = [] } = {}) {
     throw new Error('catalog or matrix is not in the expected shape')
   }
   const extras = matrix.extras || {}
-  const skip = new Set(ignore)
+  // replay_only: legacy overloads that exist only when the migrations are replayed (production dropped
+  // them by hand): known drift, not an unclassified object.
+  const skip = new Set([...ignore, ...(matrix.replay_only || [])])
   const groups = [
     ['tables', 'tabla'],
     ['sequences', 'secuencia'],
