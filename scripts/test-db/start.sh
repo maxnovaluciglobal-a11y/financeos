@@ -4,12 +4,14 @@
 # database must never be able to reach them) and applies scripts/test-db/bootstrap.sql.
 # The container keeps the platform defaults on purpose: no preseed granting ALL to anon /
 # authenticated, so a missing GRANT shows up here the way it would in production.
+# IMAGE can be overridden (CI uses ghcr.io/supabase/postgres: the ECR public registry rate-limits shared runners).
 #   scripts/test-db/start.sh      -> prints nothing, leaves container `moyiq-test-db` running
 set -euo pipefail
 NAME="${TEST_DB_NAME:-moyiq-test-db}"
 IMAGE="${IMAGE:-public.ecr.aws/supabase/postgres:17.6.1.165}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 docker rm -f "$NAME" >/dev/null 2>&1 || true
+for attempt in 1 2 3; do docker pull -q "$IMAGE" >/dev/null && break; [ "$attempt" = 3 ] && { echo "cannot pull $IMAGE" >&2; exit 1; }; sleep 15; done
 docker run -d --name "$NAME" --network none -e POSTGRES_PASSWORD="$(openssl rand -hex 16)" "$IMAGE" >/dev/null
 ready=0
 for _ in $(seq 1 90); do
