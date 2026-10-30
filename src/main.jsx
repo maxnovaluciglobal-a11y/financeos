@@ -8,11 +8,14 @@ import { installGlobalErrorLog } from './utils/errorLog.js'
 import { detectLanguage } from './i18n/translate.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
 import { watchServiceWorkerUpdates } from './core/swUpdate.js'
+import { skewCookieStrings } from './utils/skewCookie.js'
 
-// Skew Protection (C-49): fija este deploy para los chunks lazy que se pidan
-// después (cookie técnica de Vercel, sin seguimiento). Vacío en local.
+// Skew Protection (C-49): fija este deploy SOLO para los chunks lazy de
+// /app/assets (cookie técnica de Vercel, sin seguimiento). Vacío en local.
+// Con path=/app también se fijaban el HTML y sw.js y el usuario quedaba en la
+// versión anterior toda la sesión: ver utils/skewCookie.js.
 /* global __VERCEL_DPL__ */
-try { if (typeof __VERCEL_DPL__ === 'string' && __VERCEL_DPL__) document.cookie = `__vdpl=${__VERCEL_DPL__}; path=/app; secure; samesite=lax` } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
+try { for (const c of skewCookieStrings(typeof __VERCEL_DPL__ === 'string' ? __VERCEL_DPL__ : '')) document.cookie = c } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 
 installGlobalErrorLog()
 installWebAnalytics()
