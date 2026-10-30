@@ -25,7 +25,7 @@ describe('pageTours (R08)', () => {
 
   it('nunca arranca solo en el demo ni en páginas sin recorrido', () => {
     expect(shouldAutoStartTour({ page: 'dashboard', seen: [], isDemo: true })).toBe(false)
-    expect(shouldAutoStartTour({ page: 'goals', seen: [] })).toBe(false)
+    expect(shouldAutoStartTour({ page: 'settings', seen: [] })).toBe(false)
   })
 
   it('parseSeen tolera basura y withSeen no duplica', () => {
