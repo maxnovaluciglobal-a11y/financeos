@@ -303,6 +303,8 @@
 .refMeta { font-size: 12px; line-height: 1.45; color: var(--th); overflow-wrap: anywhere; }
 .refStale { color: var(--warn); font-weight: 500; }
 .refActions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+/* B2: "Convertir" a la izquierda: a la derecha lo tapaba el "+" en pantallas bajas (667 px). */
+.refActions .refTool { order: -1; }
 .refLink {
   min-height: 44px; margin: -10px 0 -10px -2px; padding: 0 2px;
   background: none; border: 0; cursor: pointer;

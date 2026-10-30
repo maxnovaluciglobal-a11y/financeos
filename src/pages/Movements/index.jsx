@@ -663,20 +663,21 @@ export default function Movements({ setPage }) {
 
       <MovementsList items={items} type={type} sym={lsym} lens={lens} category={drillCat} onCategory={setDrillCat}
         onOpen={setOpenExp}
-        toolbarEnd={<>
+        toolbarEnd={<div className={ms.toolActions}>
           {/* Secundario, no Latón (un primario por pantalla: el + global). Abre el
-              mismo menú de gasto detallado o suscripción de siempre. */}
+              mismo menú de gasto detallado o suscripción de siempre. En una sola
+              fila con "Exportar" (ícono de 44 px) para que la lista empiece antes. */}
           {!showAdd && !showGasto && !showSub && (
             <button type="button" data-tour="mov-add" className={`fos-btn-secondary ${ms.addSecondary}`} onClick={() => setShowAdd(true)}>
               {t('mov.addBtn')}
             </button>
           )}
           {exportCSV && (
-            <button type="button" className="fos-link" onClick={exportCSV}>
-              <Download size={16} strokeWidth={1.7} aria-hidden="true" />{t('movl.export')}
+            <button type="button" className={ms.exportIcon} onClick={exportCSV} aria-label={t('movl.export')} title={t('movl.export')}>
+              <Download size={18} strokeWidth={1.7} aria-hidden="true" />
             </button>
           )}
-        </>}
+        </div>}
         empty={type === 'income'
           ? <EmptyState compact icon={ArrowLeftRight} title={t('movl.emptyInc.title')} text={t('movl.emptyInc.text')}
               cta={t('movl.emptyInc.cta')} onCta={() => openQuickAdd('income')} />

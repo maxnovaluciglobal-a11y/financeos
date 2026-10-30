@@ -55,7 +55,12 @@
 .lensOpt:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
 
 /* Secundario "+ Gasto detallado o suscripción" y enlace "Exportar" */
-.addSecondary { width: auto; flex-shrink: 0; }
+.addSecondary { width: auto; flex-shrink: 1; min-width: 0; }
+.toolActions { display: flex; align-items: center; gap: 8px; width: 100%; }
+.toolActions .addSecondary { flex: 1; }
+.exportIcon { flex-shrink: 0; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tx); cursor: pointer; }
+.exportIcon:hover { background: var(--sur2); }
+.exportIcon:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
 
 /* Barra de herramientas: búsqueda + agregar */
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 8px; }

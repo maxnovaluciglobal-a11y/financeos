@@ -57,7 +57,8 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const freeColor = !hasData ? 'var(--th)' : free > 0 ? 'var(--pos)' : free === 0 ? 'var(--warn)' : 'var(--neg)'
 
   const tiles = [
-    { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'income',
+    // B3a: la tarjeta abre Movimientos con el filtro Ingresos (la página Ingresos sigue en el Menú).
+    { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'movements', filter: 'income',
       delta: deltaOf(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0 }) },
     { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, page: 'movements',
       delta: deltaOf(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0 }) },
@@ -136,7 +137,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
             <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
               className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''}`}
               style={{ animationDelay: `${40 + i * 40}ms` }}
-              onClick={onOpen ? () => onOpen(k.page) : undefined}>
+              onClick={onOpen ? () => { if (k.filter) { try { sessionStorage.setItem('fos_mov_filter', k.filter) } catch { /* modo privado: abre sin filtro */ } } onOpen(k.page) } : undefined}>
               <div className={s.kpiLabel}>
                 {k.label}
                 {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
