@@ -14,7 +14,6 @@ import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
 import PageSkeleton from './components/ui/PageSkeleton.jsx'
 import BootSplash from './components/ui/BootSplash.jsx'
-import Onboarding from './components/Onboarding.jsx'
 import DemoShell from './demo/DemoShell.jsx'
 import AdminCRM from './admin/AdminCRM.jsx'
 import TrialUnsubscribe from './components/TrialUnsubscribe.jsx'
@@ -66,6 +65,8 @@ const License       = lazy(() => import('./pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
 const More          = lazy(() => import('./pages/More/index.jsx'))
 const NpsPrompt     = lazy(() => import('./components/NpsPrompt.jsx'))
+// V4 (30-oct-2026): el onboarding solo lo ve una cuenta nueva: fuera del JS inicial.
+const Onboarding    = lazy(() => import('./components/Onboarding.jsx'))
 
 const PageLoader = () => <PageSkeleton />
 
@@ -304,7 +305,7 @@ function Inner() {
   if (showOnboarding) {
     // goTo: el onboarding puede pedir abrir una página al terminar (ej. 'import'
     // cuando el usuario elige subir su cartola). Sin goTo, cae a dashboard.
-    return <Onboarding onComplete={(goTo) => { if (goTo) setPage(goTo) }} />
+    return <Suspense fallback={<PageLoader />}><Onboarding onComplete={(goTo) => { if (goTo) setPage(goTo) }} /></Suspense>
   }
 
   return (

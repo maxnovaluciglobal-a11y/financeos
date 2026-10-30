@@ -1,6 +1,6 @@
 // src/components/layout/Shell.jsx — Fase mobile nav
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import s from './shell.module.css'
@@ -18,9 +18,10 @@ import { chromeFor } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
 import { QUICK_ADD_EVENT, NAVIGATE_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
-import PushAsk from '../PushAsk.jsx'
 import UpdateNotice from '../UpdateNotice.jsx'
-import WhatsNew from '../WhatsNew.jsx'
+// V4: piezas ocasionales fuera del JS inicial.
+const PushAsk = lazy(() => import('../PushAsk.jsx'))
+const WhatsNew = lazy(() => import('../WhatsNew.jsx'))
 import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
 import { pushSupported, isPushEnabled } from '../../core/push.js'
 import { getLicenseKey, getLicensePlan } from '../../utils/licenseValidator.js'
@@ -297,9 +298,9 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
 
       <PageTour page={page} open={tour.open} onClose={tour.close} />
       <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => setPushCheck(true)} />
-      <PushAsk open={pushAskOpen} onClose={() => setPushAskOpen(false)} onResult={onPushResult} />
+      {pushAskOpen && <Suspense fallback={null}><PushAsk open={pushAskOpen} onClose={() => setPushAskOpen(false)} onResult={onPushResult} /></Suspense>}
       <UpdateNotice />
-      <WhatsNew />
+      <Suspense fallback={null}><WhatsNew /></Suspense>
     </div>
   )
 }

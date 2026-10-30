@@ -26,9 +26,14 @@ export function systemPrefersDark() {
   return !!mediaQuery()?.matches
 }
 
-export function applyTheme(setting) {
+export const THEME_PREF_KEY = 'fos_theme_pref'
+
+// Además de pintar, deja la preferencia en localStorage para que
+// public/theme-boot.js la aplique antes de React en la próxima apertura.
+export function applyTheme(setting, storage = globalThis.localStorage) {
   if (typeof document === 'undefined') return
   document.documentElement.setAttribute('data-theme', resolveTheme(setting, systemPrefersDark()))
+  if (THEME_SETTINGS.includes(setting)) { try { storage?.setItem(THEME_PREF_KEY, setting) } catch { /* modo privado: solo en memoria */ } }
 }
 
 // Llama a onChange(prefersDark) cada vez que el sistema cambia de claro a

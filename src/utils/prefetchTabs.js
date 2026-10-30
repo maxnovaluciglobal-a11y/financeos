@@ -11,6 +11,8 @@ export const TAB_IMPORTS = [
   () => import('../pages/Budgets/index.jsx'),
   () => import('../pages/Goals/index.jsx'),
   () => import('../pages/More/index.jsx'),
+  // V4: el formulario del alta rápida ya no va en el JS inicial.
+  () => import('../components/QuickAddForm.jsx'),
 ]
 
 let started = false
