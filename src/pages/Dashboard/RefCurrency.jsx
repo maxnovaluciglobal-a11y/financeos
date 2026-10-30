@@ -11,6 +11,11 @@
 // - El botón de la fila abre el conversor rápido GRATIS (B2,
 //   components/ConverterSheet.jsx); el panel multimoneda PRO queda en el Menú
 //   y como enlace dentro del conversor.
+// - Lente en euros (rial #20): settings.refCurrency 'EUR' se elige en el
+//   conversor; la tasa por 1 € se deriva de la de US$ (refRate.js →
+//   resolveLensRate) y la etiqueta dice de dónde sale ("Tasa BCV × EUR/USD
+//   Fixer"). El Inicio fija la moneda de la lente con setLensCurrency() al
+//   renderizar (como setMoneyLocale), para que fmtRef() y RefSwitch la usen.
 // Ninguna tasa se muestra sin su fecha (o sin decir "sin fecha").
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeftRight } from 'lucide-react'
@@ -18,7 +23,7 @@ import Sheet from '../../components/ui/Sheet.jsx'
 import Money from '../../components/Money.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtAmount, moneyLocale, currencySymbol, dateLocale } from '../../utils/index.js'
-import { SOURCE_LABEL, REF_CURRENCY, toRef, isStale, rateAgeDays, rateOptions, loadersFor, defaultRateOption, rateLabelParts } from '../../utils/refRate.js'
+import { SOURCE_LABEL, REF_CURRENCY, toRef, isStale, rateAgeDays, rateOptions, loadersFor, defaultRateOption, lensLabelParts } from '../../utils/refRate.js'
 import { loadTasaVE } from '../../utils/tasaVE.js'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
@@ -27,9 +32,27 @@ import s from './Home.module.css'
 const HOSTS = { ve: 've.dolarapi.com', ar: 'dolarapi.com', fixer: 'Fixer' }
 const LOADERS = { ve: loadTasaVE, ar: loadTasaAR, fixer: loadFixerRates }
 
-// US$ con los separadores de la moneda principal (es-VE "US$1.234,56").
-export function fmtRef(n, lang) {
-  return currencySymbol(REF_CURRENCY, lang) + fmtAmount(Math.abs(Number(n) || 0), 2, moneyLocale())
+// Moneda de la lente del Inicio ('USD' | 'EUR'). La fija el Inicio en cada
+// render; quien formatea dólares de verdad (Multimoneda, el conversor) pasa la
+// moneda explícita a fmtRef() y no depende de esto.
+let lensCur = REF_CURRENCY
+export function setLensCurrency(code) { lensCur = code === 'EUR' ? 'EUR' : REF_CURRENCY }
+export const currentLensCurrency = () => lensCur
+
+// La moneda de referencia con los separadores de la moneda principal
+// (es-VE "US$1.234,56"; el euro va detrás fuera del inglés: "1.234,56 €").
+export function fmtRef(n, lang, code = lensCur) {
+  const sym = currencySymbol(code, lang)
+  const num = fmtAmount(Math.abs(Number(n) || 0), 2, moneyLocale())
+  return sym === '€' && !String(moneyLocale()).startsWith('en') ? `${num}\u00a0${sym}` : sym + num
+}
+
+// Nombre de la fuente de una tasa de la lente: "Tasa BCV" o, cruzada con
+// Fixer, "Tasa BCV × EUR/USD Fixer".
+export function rateSourceName(r, t) {
+  const p = lensLabelParts(r)
+  if (!p) return ''
+  return p.baseKey ? t(p.sourceKey, { base: t(p.baseKey) }) : t(p.sourceKey)
 }
 
 // Consulta las tasas de hoy con los loaders existentes (mismos hosts que la
@@ -45,9 +68,9 @@ export async function fetchRateOptions(settings) {
 // "Tasa BCV · 28 oct" o "Tasa guardada · sin fecha": la misma frase en el
 // Inicio, Ajustes, el conversor y los paneles (rateLabelParts en refRate.js).
 export function rateSourceText(r, t) {
-  const p = rateLabelParts(r)
+  const p = lensLabelParts(r)
   if (!p) return ''
-  return `${t(p.sourceKey)} · ${p.at ? fmtDay(p.at) : t('refcur.noDate')}`
+  return `${rateSourceName(r, t)} · ${p.at ? fmtDay(p.at) : t('refcur.noDate')}`
 }
 
 // B1: aviso en línea con la tasa más reciente; un toque la guarda con su
@@ -76,11 +99,11 @@ export function fmtDay(at, withTime = false) {
   } catch { return '' }
 }
 
-export function RefSwitch({ mode, onChange, localCode }) {
+export function RefSwitch({ mode, onChange, localCode, refCode = lensCur }) {
   const { t } = useT()
   return (
     <span className={s.refSwitch} role="group" aria-label={t('refcur.switchAria')}>
-      {[['local', localCode], ['ref', REF_CURRENCY]].map(([m, code]) => (
+      {[['local', localCode], ['ref', refCode]].map(([m, code]) => (
         <button key={m} type="button" className={s.refOpt} aria-pressed={mode === m} onClick={() => onChange(m)}>
           <span className={s.refOptFace}>{code}</span>
         </button>
@@ -93,6 +116,7 @@ export function RefRow({ refRate, mode, free, sym, country, showAmount, onEdit, 
   const { t, lang } = useT()
   const stale = refRate && isStale(refRate.at, country)
   const days = refRate ? rateAgeDays(refRate.at) : null
+  const refCode = refRate?.ref === 'EUR' ? 'EUR' : REF_CURRENCY
   return (
     <div className={s.refRow}>
       {refRate ? (
@@ -103,16 +127,16 @@ export function RefRow({ refRate, mode, free, sym, country, showAmount, onEdit, 
                 <div className={`num ${s.refEquiv}`}>
                   ≈ <Money>{mode === 'ref'
                     ? `${free < 0 ? '−' : ''}${fmtMoney(Math.abs(free), sym)}`
-                    : `${free < 0 ? '−' : ''}${fmtRef(toRef(Math.abs(free), refRate.rate), lang)}`}</Money>
+                    : `${free < 0 ? '−' : ''}${fmtRef(toRef(Math.abs(free), refRate.rate), lang, refCode)}`}</Money>
                 </div>
               )}
               {switcher}
             </div>
           )}
           <div className={s.refMeta}>
-            <span className="num">1 {currencySymbol(REF_CURRENCY, lang)} = {fmtMoney(refRate.rate, sym)}</span>
+            <span className="num">1 {currencySymbol(refCode, lang)} = {fmtMoney(refRate.rate, sym)}</span>
             <span aria-hidden="true"> · </span>
-            <span>{t(rateLabelParts(refRate).sourceKey)}</span>
+            <span>{rateSourceName(refRate, t)}</span>
             <span aria-hidden="true"> · </span>
             <span className={stale ? s.refStale : undefined}>
               {refRate.at ? fmtDay(refRate.at) : t('refcur.noDate')}

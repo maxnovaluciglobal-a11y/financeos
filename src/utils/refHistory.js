@@ -71,3 +71,48 @@ export async function loadHistory(fuente = 'oficial', {
   } catch { /* sin red: se usa la caché vieja si existe */ }
   return cached?.rows || null
 }
+
+// ── B2b (rial #29): historial de la tasa en el conversor ────────────────────
+// Ventanas de 7, 30 y 90 días sobre el mismo histórico diario (o la foto
+// mensual de la demo). Sin datos suficientes, null: la pantalla lo oculta.
+export const HIST_WINDOWS = [7, 30, 90]
+export const HIST_DEFAULT_WINDOW = 30
+
+// 'YYYY-MM-DD' ± n días (aritmética en UTC: sin saltos por horario de verano).
+export function shiftDate(date, n) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date || ''))
+  if (!m) return null
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + n)).toISOString().slice(0, 10)
+}
+
+// Los puntos de la ventana [hoy − días, hoy]: la tasa vigente al empezar (la
+// última publicada en o antes de ese día, con SU fecha) y las publicadas
+// después. Devuelve primero/último/mín./máx. con fechas y la variación
+// (fracción, para fmtPct). Menos de dos puntos: null.
+export function historyWindow(rows, days, today) {
+  if (!Array.isArray(rows) || !rows.length || !(days > 0)) return null
+  const start = shiftDate(today, -days)
+  if (!start) return null
+  let baseIdx = -1
+  for (let i = 0; i < rows.length && rows[i][0] <= start; i++) baseIdx = i
+  const inside = rows.filter(([d]) => d > start && d <= today)
+  const points = (baseIdx >= 0 ? [rows[baseIdx], ...inside] : inside).map(([date, value]) => ({ date, value }))
+  if (points.length < 2) return null
+  let min = points[0], max = points[0]
+  for (const p of points) { if (p.value < min.value) min = p; if (p.value > max.value) max = p }
+  const first = points[0], last = points[points.length - 1]
+  return { days, start, end: today, points, first, last, min, max, change: last.value / first.value - 1 }
+}
+
+// Trazo SVG de la ventana: x por fecha (el punto de partida, que puede ser
+// anterior a la ventana, se dibuja en el borde izquierdo), y de mín. a máx.
+// con un margen de `pad` px. Una serie plana queda en el medio.
+export function sparkPath(win, { width = 300, height = 64, pad = 4 } = {}) {
+  if (!win || !win.points?.length) return ''
+  const t0 = Date.parse(win.start + 'T00:00:00Z'), t1 = Date.parse(win.end + 'T00:00:00Z')
+  const span = Math.max(1, t1 - t0)
+  const lo = win.min.value, hi = win.max.value
+  const x = (d) => pad + (Math.min(Math.max(Date.parse(d + 'T00:00:00Z'), t0), t1) - t0) / span * (width - 2 * pad)
+  const y = (v) => (hi === lo ? height / 2 : pad + (hi - v) / (hi - lo) * (height - 2 * pad))
+  return win.points.map((p, i) => `${i ? 'L' : 'M'}${x(p.date).toFixed(1)} ${y(p.value).toFixed(1)}`).join(' ')
+}

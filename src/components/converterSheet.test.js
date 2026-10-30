@@ -67,4 +67,81 @@ describe('ConverterSheet (B2, gratis)', () => {
     expect(legacy).toContain('Tasa guardada')
     expect(legacy).toContain('sin fecha')
   })
+
+  const at = new Date(2026, 9, 1, 12).getTime()
+  const veRate = { rate: 880, at, source: 'bcv' }
+
+  it('US$ | € solo con onRefCurrency y si la cuenta no es en euros', () => {
+    const ve = text(renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, settings: { country: 'VE', currency: 'VES' }, sym: 'Bs.', refRate: veRate, onRefCurrency() {},
+    })))
+    expect(ve).toMatch(/USD\s+EUR/)
+    const noCb = text(renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, settings: { country: 'VE', currency: 'VES' }, sym: 'Bs.', refRate: veRate,
+    })))
+    expect(noCb).not.toMatch(/USD\s+EUR/)
+    const de = text(renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, settings: { country: 'DE', currency: 'EUR', showDualCurrency: true }, sym: '€',
+      refRate: { rate: 0.92, at, source: 'fixer' }, onRefCurrency() {},
+    })))
+    expect(de).not.toMatch(/USD\s+EUR/)
+  })
+
+  it('con la lente en euros: "Equivale en EUR" y la fuente dice el cruce con Fixer', () => {
+    const prev = globalThis.localStorage
+    globalThis.localStorage = { getItem: (k) => (k === 'fnos_tasa_fixer_v1'
+      ? JSON.stringify({ source: 'fixer', ts: new Date(2026, 9, 2, 12).getTime(), rates: { USD: 1, EUR: 0.8 } }) : null) }
+    try {
+      setMoneyLocale('VES', 'es')
+      const tx = text(renderToStaticMarkup(createElement(ConverterSheet, {
+        open: true, onClose() {}, settings: { country: 'VE', currency: 'VES', refCurrency: 'EUR' }, sym: 'Bs.', refRate: veRate, onRefCurrency() {},
+      })))
+      expect(tx).toContain('Equivale en EUR')
+      expect(tx).toContain('Tasa BCV × EUR/USD Fixer')
+      expect(tx).toMatch(/1 € = Bs\.1\.100,00/)
+      expect(tx).toMatch(/1 oct/) // la fecha más vieja de las dos
+    } finally { globalThis.localStorage = prev }
+  })
+
+  it('euro elegido sin Fixer en el dispositivo: sigue en US$ y lo explica', () => {
+    const tx = text(renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, settings: { country: 'VE', currency: 'VES', refCurrency: 'EUR' }, sym: 'Bs.', refRate: veRate, onRefCurrency() {},
+    })))
+    expect(tx).toContain('Equivale en USD')
+    expect(tx).toContain('Falta la cotización EUR/USD')
+  })
+
+  it('historial (B2b): cerrado por defecto detrás de "Ver historial"; sin datos, no aparece', () => {
+    const html = renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, sym: 'Bs.', refRate: veRate,
+      settings: { country: 'VE', currency: 'VES', monthlyRefRates: { '2026-08': 700, '2026-09': 832.15, '2026-10': 885.4 } },
+    }))
+    expect(text(html)).toContain('Ver historial')
+    expect(html).toMatch(/aria-expanded="false"/)
+    expect(html).not.toMatch(/<svg[^>]*viewBox="0 0 300 64"/)
+    const none = text(renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, settings: { country: 'VE', currency: 'VES' }, sym: 'Bs.', refRate: veRate,
+    })))
+    expect(none).not.toContain('Ver historial')
+    const cl = text(renderToStaticMarkup(createElement(ConverterSheet, {
+      open: true, onClose() {}, settings: { country: 'CL', currency: 'CLP', showDualCurrency: true, monthlyRefRates: { '2026-09': 1, '2026-10': 2 } }, sym: '$', refRate: { rate: 950, at, source: 'fixer' },
+    })))
+    expect(cl).not.toContain('Ver historial')
+  })
+})
+
+describe('fmtRef: la moneda de la lente', () => {
+  it('US$ por defecto; el euro detrás fuera del inglés; setLensCurrency cambia el valor por defecto', async () => {
+    const { fmtRef, setLensCurrency } = await import('../pages/Dashboard/RefCurrency.jsx')
+    setMoneyLocale('VES', 'es')
+    expect(fmtRef(1234.5, 'es')).toBe('US$1.234,50')
+    expect(fmtRef(1234.5, 'es', 'EUR')).toBe('1.234,50\u00a0€')
+    setLensCurrency('EUR')
+    try {
+      expect(fmtRef(10, 'es')).toBe('10,00\u00a0€')
+      expect(fmtRef(10, 'es', 'USD')).toBe('US$10,00')
+    } finally { setLensCurrency('USD') }
+    setLensCurrency('XYZ')
+    expect(fmtRef(10, 'es')).toBe('US$10,00')
+  })
 })

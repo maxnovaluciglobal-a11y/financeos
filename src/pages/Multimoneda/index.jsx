@@ -101,7 +101,7 @@ export default function Multimoneda() {
   const tasaEsRef = Boolean(ref && tasaValida && Number(ref.rate) === tasaNum)
   const paraleloNoDisponible = Boolean(live && !live.paraleloDisponible)
 
-  const fmtUSD = (n) => fmtRef(n, lang)
+  const fmtUSD = (n) => fmtRef(n, lang, 'USD')
   const tasaMeta = tasaEsRef ? t('refcur.inUse', { desc: rateSourceText(ref, t) })
     : !live ? null
     : live.source !== 'api' ? t('multimoneda.tasa.offline', { date: fmtDay(live.at ?? live.ts) })

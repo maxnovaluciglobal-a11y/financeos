@@ -11,6 +11,8 @@ import { de } from './de.js'
 const ALLOWED = {
   pt: new Set([
     'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
+    'refcur.source.crossEur', // rial #20: "{base} × EUR/USD Fixer", variable + nombres propios
+    'conv.hist.unit', 'conv.hist.stats', // B2b: "{source}, {code} por 1 US$" y "Mín./Máx.": iguales en portugués
     // Ola 1 de diseño visual (21-oct-2026): cognados correctos en portugués.
     'ui.state.overBudget',
     // Ola 2 (21-oct-2026): cognados correctos en portugués.
@@ -134,6 +136,7 @@ const ALLOWED = {
   ]),
   en: new Set([
     'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
+    'refcur.source.crossEur', // rial #20: "{base} × EUR/USD Fixer", variable + nombres propios
     "ahorroFiscal.card.rothVsTraditional",
     "ahorroFiscal.coverage.self",
     "apv.indicators",
@@ -152,6 +155,7 @@ const ALLOWED = {
   ]),
   de: new Set([
     'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
+    'refcur.source.crossEur', // rial #20: "{base} × EUR/USD Fixer", variable + nombres propios
     'reports.rule.idealPct', // "{actual} / {max} ideal {mark}": solo variables + "ideal" (igual en alemán)
     "ahorroFiscal.card.rothVsTraditional",
     "apv.indicators",

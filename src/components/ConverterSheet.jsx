@@ -11,23 +11,94 @@
 // - La tasa usada con su fuente y su fecha ("sin fecha" si no la tiene).
 // - Venezuela: la brecha del paralelo sobre el BCV cuando se conocen las dos.
 // - Copiar y compartir (hoja nativa del sistema si existe; si no, copia).
+// - US$ | € (rial #20): la moneda de referencia se elige acá (onRefCurrency →
+//   settings.refCurrency). El euro se deriva de la tasa en US$ (hooks/
+//   useLensRate.js) y la etiqueta dice cómo ("Tasa BCV × EUR/USD Fixer").
+// - Venezuela: historial de la tasa (B2b, rial #29), cerrado por defecto
+//   detrás de "Ver historial"; 7/30/90 días (30 por defecto). Sin datos (sin
+//   red ni caché), no aparece: nunca un error.
 // Las cifras son las que escribe el usuario, no saldos de cuentas: no pasan
 // por "ocultar montos".
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowUpDown, Copy, Share2, ChevronRight } from 'lucide-react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { ArrowUpDown, Copy, Share2, ChevronRight, ChevronDown } from 'lucide-react'
 import Sheet from './ui/Sheet.jsx'
 import { useT } from '../i18n/useT.js'
-import { fmtMoney, moneyLocale, currencyDecimals, currencySymbol, fmtPct } from '../utils/index.js'
-import { REF_CURRENCY, isStale, rateAgeDays, rateLabelParts } from '../utils/refRate.js'
+import { fmtMoney, moneyLocale, currencyDecimals, currencySymbol, fmtPct, localDateStr } from '../utils/index.js'
+import { REF_CURRENCY, REF_CURRENCIES, isStale, rateAgeDays, lensLabelParts, eurSelectable, SOURCE_LABEL } from '../utils/refRate.js'
+import { HIST_WINDOWS, HIST_DEFAULT_WINDOW, historyWindow, sparkPath, histFuente } from '../utils/refHistory.js'
+import { useLensRate } from '../hooks/useLensRate.js'
+import { useRateHistory } from '../hooks/useRefHistory.js'
 import { evalAmount, isExpression, convertAmount, toFieldText, usesDecimalComma, veGap } from '../utils/converter.js'
 import { loadTasaVE } from '../utils/tasaVE.js'
 import { logRejection } from '../utils/errorLog.js'
-import { fmtRef, fmtDay, FreshRate } from '../pages/Dashboard/RefCurrency.jsx'
+import { fmtRef, fmtDay, FreshRate, rateSourceName } from '../pages/Dashboard/RefCurrency.jsx'
 import s from './ConverterSheet.module.css'
 
 const OPS = [['+', '+'], ['-', '−'], ['*', '×'], ['/', '÷']]
 
-export default function ConverterSheet({ open, onClose, settings = {}, refRate, sym, onEditRate, onOpenPanel, panelId, fresh, onUseFresh }) {
+// Fecha 'YYYY-MM-DD' del histórico → "28 oct" (mediodía local: sin corrimiento de día).
+const histDay = (d) => fmtDay(new Date(`${d}T12:00:00`).getTime())
+
+// B2b: historial de la tasa (Bs por 1 US$). `rows` ya cargadas; sin ventana
+// con dos puntos o más, no se dibuja nada.
+function RateHistory({ rows, sourceKey, code, sym }) {
+  const { t } = useT()
+  const id = useId()
+  const [openHist, setOpenHist] = useState(false)
+  const [days, setDays] = useState(HIST_DEFAULT_WINDOW)
+  const today = localDateStr()
+  const win = useMemo(() => historyWindow(rows, days, today), [rows, days, today])
+  // Sin ninguna ventana con datos, la sección no existe.
+  const any = useMemo(() => HIST_WINDOWS.some(n => historyWindow(rows, n, today)), [rows, today])
+  if (!any) return null
+  const money = (v) => fmtMoney(v, sym)
+  const source = t(sourceKey)
+  const summary = win ? t('conv.hist.summary', {
+    source, from: money(win.first.value), fromDate: histDay(win.first.date),
+    to: money(win.last.value), toDate: histDay(win.last.date), n: days,
+    pct: fmtPct(win.change, { decimals: 1, signed: true }),
+  }) : t('conv.hist.empty', { n: days })
+  return (
+    <div className={s.hist}>
+      <button type="button" className={s.histToggle} aria-expanded={openHist} aria-controls={id} onClick={() => setOpenHist(v => !v)}>
+        <span>{t(openHist ? 'conv.hist.hide' : 'conv.hist.show')}</span>
+        <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" className={openHist ? s.histChevOpen : undefined} />
+      </button>
+      {openHist && (
+        <div id={id} className={s.histBody}>
+          <div className={s.histHead}>
+            <span className={s.histUnit}>{t('conv.hist.unit', { source, code })}</span>
+            <span className={s.seg} role="group" aria-label={t('conv.hist.rangeAria')}>
+              {HIST_WINDOWS.map(n => (
+                <button key={n} type="button" className={s.segOpt} aria-pressed={days === n}
+                  aria-label={t('conv.hist.rangeDays', { n })} onClick={() => setDays(n)}>
+                  <span className={s.segFace} aria-hidden="true">{t('conv.hist.range', { n })}</span>
+                </button>
+              ))}
+            </span>
+          </div>
+          {win && (
+            <svg className={s.spark} viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <path d={sparkPath(win, { width: 300, height: 64 })} fill="none" stroke="var(--chart-net)" strokeWidth="1.75"
+                strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+            </svg>
+          )}
+          <p className={s.histSummary} aria-live="polite">{summary}</p>
+          {win && (
+            <p className={`num ${s.histStats}`}>
+              {t('conv.hist.stats', {
+                min: money(win.min.value), minDate: histDay(win.min.date),
+                max: money(win.max.value), maxDate: histDay(win.max.date),
+              })}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function ConverterSheet({ open, onClose, settings = {}, refRate, sym, onEditRate, onOpenPanel, panelId, fresh, onUseFresh, onRefCurrency }) {
   const { t, lang } = useT()
   const inputRef = useRef(null)
   const [dir, setDir] = useState('toRef') // toRef: principal → US$ · toLocal: US$ → principal
@@ -39,7 +110,14 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
   const country = String(settings.country || '').toUpperCase()
   const localDecimals = currencyDecimals(code)
   const decimalComma = usesDecimalComma(moneyLocale())
-  const refSym = currencySymbol(REF_CURRENCY, lang)
+  // La tasa que se usa: la de la lente (US$ o €, derivada de refRate).
+  const lens = useLensRate(settings, refRate || null, open)
+  const rate = useMemo(() => (refRate ? (lens || { ...refRate, ref: REF_CURRENCY }) : null), [refRate, lens])
+  const refCode = rate?.ref === 'EUR' ? 'EUR' : REF_CURRENCY
+  const refSym = currencySymbol(refCode, lang)
+  const showLens = !!onRefCurrency && eurSelectable(settings)
+  const histRows = useRateHistory(settings, open)
+  const histSourceKey = SOURCE_LABEL[histFuente(settings.usdRateSource) === 'paralelo' ? 'paralelo' : 'bcv']
 
   useEffect(() => {
     if (!open) return
@@ -53,15 +131,15 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
   }, [open, country, code])
 
   const amount = useMemo(() => evalAmount(expr, { decimalComma }), [expr, decimalComma])
-  const result = useMemo(() => (amount == null || !refRate ? null
-    : convertAmount({ amount, rate: refRate.rate, dir, localDecimals, refDecimals: 2 })), [amount, refRate, dir, localDecimals])
+  const result = useMemo(() => (amount == null || !rate ? null
+    : convertAmount({ amount, rate: rate.rate, dir, localDecimals, refDecimals: 2 })), [amount, rate, dir, localDecimals])
 
   const fmtLocal = (n) => `${n < 0 ? '−' : ''}${fmtMoney(Math.abs(n), sym)}`
-  const fmtUsd = (n) => `${n < 0 ? '−' : ''}${fmtRef(Math.abs(n), lang)}`
+  const fmtUsd = (n) => `${n < 0 ? '−' : ''}${fmtRef(Math.abs(n), lang, refCode)}`
   const fmtFrom = dir === 'toRef' ? fmtLocal : fmtUsd
   const fmtTo = dir === 'toRef' ? fmtUsd : fmtLocal
-  const fromCode = dir === 'toRef' ? code : REF_CURRENCY
-  const toCode = dir === 'toRef' ? REF_CURRENCY : code
+  const fromCode = dir === 'toRef' ? code : refCode
+  const toCode = dir === 'toRef' ? refCode : code
   const invalid = expr.trim() !== '' && amount == null
 
   function swap() {
@@ -78,11 +156,11 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
     inputRef.current?.focus()
   }
 
-  const shareText = result == null || !refRate ? '' : t('conv.shareText', {
+  const shareText = result == null || !rate ? '' : t('conv.shareText', {
     from: fmtFrom(amount), to: fmtTo(result),
-    rate: `1 ${refSym} = ${fmtMoney(refRate.rate, sym)}`,
-    source: t(rateLabelParts(refRate).sourceKey),
-    date: refRate.at ? fmtDay(refRate.at) : t('refcur.noDate'),
+    rate: `1 ${refSym} = ${fmtMoney(rate.rate, sym)}`,
+    source: rateSourceName(rate, t),
+    date: rate.at ? fmtDay(rate.at) : t('refcur.noDate'),
   })
 
   async function copy() {
@@ -97,13 +175,34 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
     copy()
   }
 
-  const stale = refRate && isStale(refRate.at, country)
-  const days = refRate ? rateAgeDays(refRate.at) : null
-  const parts = rateLabelParts(refRate)
+  const stale = rate && isStale(rate.at, country)
+  const days = rate ? rateAgeDays(rate.at) : null
+  const parts = lensLabelParts(rate)
+
+  // Lo elegido (aunque el euro no esté disponible sin red y se muestre en US$).
+  const lensPicked = rate?.wanted || refCode
+  function pickLens(c) {
+    if (c === lensPicked) return
+    onRefCurrency(c)
+  }
 
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={t('conv.title')} initialFocusRef={refRate ? inputRef : undefined}>
-      <h2 className={s.title}>{t('conv.title')}</h2>
+      <div className={s.titleRow}>
+        <h2 className={s.title}>{t('conv.title')}</h2>
+        {rate && showLens && (
+          <span className={s.seg} role="group" aria-label={t('conv.lensAria')}>
+            {REF_CURRENCIES.map(c => {
+              const on = lensPicked === c
+              return (
+                <button key={c} type="button" className={s.segOpt} aria-pressed={on} onClick={() => pickLens(c)}>
+                  <span className={`${s.segFace} ${s.segCode}`}>{c}</span>
+                </button>
+              )
+            })}
+          </span>
+        )}
+      </div>
 
       {!refRate ? (
         <>
@@ -116,9 +215,9 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
         <>
           <div className={s.metaRow}>
             <span className={s.meta}>
-              <span className="num">1 {refSym} = {fmtMoney(refRate.rate, sym)}</span>
+              <span className="num">1 {refSym} = {fmtMoney(rate.rate, sym)}</span>
               <span aria-hidden="true"> · </span>
-              <span>{t(parts.sourceKey)}</span>
+              <span>{rateSourceName(rate, t)}</span>
               <span aria-hidden="true"> · </span>
               <span className={stale ? s.stale : undefined}>
                 {parts.at ? fmtDay(parts.at) : t('refcur.noDate')}
@@ -129,6 +228,7 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
               <button type="button" className={s.link} onClick={onEditRate}>{t('refcur.edit')}</button>
             )}
           </div>
+          {rate.wanted === 'EUR' && <p className={s.lensNote}>{t('conv.eurMissing')}</p>}
           <FreshRate fresh={fresh} sym={sym} onUse={onUseFresh} className={s.fresh} />
 
           <label className={s.field}>
@@ -170,6 +270,8 @@ export default function ConverterSheet({ open, onClose, settings = {}, refRate, 
               {gap.at ? fmtDay(gap.at) : t('refcur.noDate')}
             </div>
           )}
+
+          {histRows && <RateHistory rows={histRows} sourceKey={histSourceKey} code={code} sym={sym} />}
 
           <div className={s.actions}>
             <button type="button" className="fos-btn-primary" onClick={copy} disabled={!shareText}>

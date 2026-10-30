@@ -27,7 +27,8 @@ import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
 import NetWorthCard from './NetWorthCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
-import { RateSheet, fetchRateOptions } from './RefCurrency.jsx'
+import { RateSheet, fetchRateOptions, setLensCurrency } from './RefCurrency.jsx'
+import { useLensRate } from '../../hooks/useLensRate.js'
 import ConverterSheet from '../../components/ConverterSheet.jsx'
 import { logRejection } from '../../utils/errorLog.js'
 import { refEligible, resolveRefRate, rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
@@ -93,6 +94,10 @@ export default function Dashboard({ setPage }) {
     : null),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [refOn, settings.usdRate, settings.usdRateAt, settings.usdRateSource, settings.country, settings.currency, rateTick])
+  // Rial #20: la lente del héroe en US$ o € (settings.refCurrency, se elige en
+  // el conversor). El euro se deriva de refRate; sin Fixer queda en US$.
+  const lensRate = useLensRate(settings, refRate, refOn)
+  setLensCurrency(refOn ? lensRate?.ref : 'USD')
   const effectiveUsdRate = refOn ? (refRate?.rate || 0) : (Number(settings.usdRate) || DEFAULT_USD_RATES[settings.currency] || 0)
   const dualOn      = !!settings.showDualCurrency && settings.currency !== 'USD' && effectiveUsdRate > 0
   const usdRate     = effectiveUsdRate || 1
@@ -484,7 +489,7 @@ export default function Dashboard({ setPage }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- solo cuando cambia la tasa en uso o la moneda
   }, [refOn, refRate?.at, refRate?.rate, settings.country, settings.currency])
   const refc = refOn ? {
-    rate: refRate, mode: refRate ? refMode : 'local', setMode: setRefMode,
+    rate: lensRate, mode: lensRate ? refMode : 'local', setMode: setRefMode,
     localCode: String(settings.currency || '').toUpperCase(), country: settings.country,
     onEdit: () => setRateSheetOpen(true),
     tool: true, onTool: () => setConvOpen(true),
@@ -506,6 +511,7 @@ export default function Dashboard({ setPage }) {
         current={refRate} onSave={saveRate} />}
       {refOn && <ConverterSheet open={convOpen} onClose={() => setConvOpen(false)} settings={settings} sym={sym}
         refRate={refRate} fresh={freshRate} onUseFresh={() => saveRate(ratePatch(freshRate))}
+        onRefCurrency={(c) => updateSettings?.({ ...settings, refCurrency: c })}
         onEditRate={() => { setConvOpen(false); setRateSheetOpen(true) }}
         panelId={rateTool}
         onOpenPanel={rateTool && setPage ? () => { setConvOpen(false); setPage(rateTool) } : undefined} />}

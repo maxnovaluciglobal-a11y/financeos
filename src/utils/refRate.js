@@ -169,3 +169,83 @@ export function ratePatch(opt) {
   if (!opt || !validRate(opt.rate)) return null
   return { usdRate: Number(opt.rate), usdRateAt: Number(opt.at) || null, usdRateSource: opt.at ? (opt.source || 'manual') : null }
 }
+
+// ── Euro como moneda de referencia (rial #20, 30-oct-2026) ──────────────────
+// settings.refCurrency: 'USD' (por defecto, y lo que vale si falta) | 'EUR'.
+// Todo lo anterior (refEligible, savedRate, resolveRefRate, ratePatch) sigue
+// siendo en US$: la tasa que el usuario escribe o consulta es SIEMPRE por 1 US$
+// y se guarda en settings.usdRate como antes. El euro es una lente que se
+// deriva encima, sin inventar nada:
+// - VE/AR: sus fuentes locales son en dólares, así que Bs por 1 € = (Bs por
+//   1 US$) ÷ (€ por 1 US$ de Fixer). La etiqueta lo dice: "Tasa BCV × EUR/USD
+//   Fixer", con la fecha más vieja de las dos.
+// - El resto: Fixer ya trae la moneda local por 1 € (rates[cur] ÷ rates.EUR,
+//   porque la caché guarda todo "por 1 US$", ver api/fixer.js).
+// Sin la cotización de Fixer en el dispositivo, la lente vuelve a US$ (y lo
+// marca con `wanted: 'EUR'` para que la pantalla lo explique).
+export const REF_CURRENCIES = ['USD', 'EUR']
+
+// La moneda de la lente: la elegida, salvo que sea la misma moneda principal
+// (una cuenta en euros no puede mirarse "en euros"): entonces US$.
+export function lensCurrency(settings = {}) {
+  const want = String(settings.refCurrency || '').toUpperCase() === 'EUR' ? 'EUR' : REF_CURRENCY
+  const cur = String(settings.currency || '').toUpperCase()
+  return want === 'EUR' && cur === 'EUR' ? REF_CURRENCY : want
+}
+
+// ¿Se ofrece elegir US$ | €? Solo si hay lente (refEligible) y la moneda
+// principal no es ninguna de las dos.
+export function eurSelectable(settings = {}) {
+  const cur = String(settings.currency || '').toUpperCase()
+  return refEligible(settings) && cur !== 'EUR'
+}
+
+// € por 1 US$ según la última consulta de Fixer guardada en caché, con SU fecha.
+export function eurUsdRate(read = () => null) {
+  try {
+    const raw = read(CACHE_KEYS.FIXER)
+    const f = raw ? JSON.parse(raw) : null
+    if (f?.source !== 'fixer' || !validRate(f.rates?.EUR) || !f.ts) return null
+    return { rate: Number(f.rates.EUR), at: Number(f.ts), rates: f.rates }
+  } catch { return null }
+}
+
+// Tasa por 1 US$ → tasa por 1 €, cruzada con el € por 1 US$ de Fixer.
+// La fecha es la más vieja de las dos (sin fecha si alguna no la tiene).
+export function crossToEur(usd, eurUsd) {
+  if (!usd || !validRate(usd.rate) || !eurUsd || !validRate(eurUsd.rate)) return null
+  const at = usd.at && eurUsd.at ? Math.min(Number(usd.at), Number(eurUsd.at)) : null
+  return {
+    rate: Number(usd.rate) / Number(eurUsd.rate), at, source: usd.source, ref: 'EUR',
+    via: { base: { rate: Number(usd.rate), at: usd.at || null, source: usd.source }, eurUsd: { rate: Number(eurUsd.rate), at: Number(eurUsd.at) } },
+  }
+}
+
+// La tasa de la lente: { rate, at, source, ref } donde rate = moneda principal
+// por 1 `ref`. `usd` es la tasa en US$ ya resuelta (resolveRefRate) si el
+// llamador la tiene. Sin tasa en US$ no hay lente (ni en euros: en VE/AR el
+// euro sale de ella; en el resto sí podría salir de Fixer, pero el Inicio pide
+// primero la tasa en US$, igual que antes).
+export function resolveLensRate(settings = {}, read = () => null, usd = resolveRefRate(settings, read)) {
+  if (!usd || !validRate(usd.rate)) return null
+  const asUsd = { ...usd, ref: REF_CURRENCY }
+  if (lensCurrency(settings) !== 'EUR') return asUsd
+  const cc = String(settings.country || '').toUpperCase()
+  const cur = String(settings.currency || '').toUpperCase()
+  const eu = eurUsdRate(read)
+  let eur = null
+  if ((cc === 'VE' && cur === 'VES') || (cc === 'AR' && cur === 'ARS')) {
+    eur = crossToEur(usd, eu)
+  } else if (eu && validRate(eu.rates?.[cur])) {
+    eur = { rate: Number(eu.rates[cur]) / eu.rate, at: eu.at, source: 'fixer', ref: 'EUR' }
+  }
+  return eur || { ...asUsd, wanted: 'EUR' }
+}
+
+// Partes de la etiqueta de una tasa de la lente: como rateLabelParts, y para
+// el cruce, la clave "{base} × EUR/USD Fixer" con la fuente base.
+export function lensLabelParts(r) {
+  const p = rateLabelParts(r)
+  if (!p || !r.via) return p
+  return { sourceKey: 'refcur.source.crossEur', baseKey: SOURCE_LABEL[r.via.base.source] || SOURCE_LABEL.manual, at: p.at }
+}

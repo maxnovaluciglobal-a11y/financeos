@@ -1,6 +1,8 @@
 /* Conversor rápido (B2). Líneas, no cajas: los campos llevan su borde de
    formulario; nada más tiene caja. Radios --r (8–12), nunca pill. Un solo
    primario Latón ("Copiar"). Todo control mide ≥ 44 px. */
+.titleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 6px; }
+.titleRow .title { margin: 0; }
 .title { margin: 4px 0 6px; font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); }
 .sub { margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: var(--tm); }
 
@@ -56,6 +58,49 @@
 }
 .panel svg { color: var(--th); }
 .panel:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+/* Control segmentado compacto (US$ | €, 7 | 30 | 90 días): botón de 44 px con
+   una cara de 28 px, como RefSwitch del Inicio. Radios 8 / 6, nunca pill. */
+.seg { position: relative; display: inline-flex; flex-shrink: 0; gap: 2px; padding: 0 2px; margin: -8px 0; }
+.seg::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 8px; bottom: 8px;
+  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
+}
+.segOpt {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  font: 500 12px/1 var(--sans); color: var(--tm);
+}
+.segFace {
+  display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 28px; padding: 0 8px;
+  border-radius: calc(var(--r) - 2px);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.segCode { font: 600 11px/1 var(--mono); letter-spacing: .04em; } /* código ISO: identificador */
+.segOpt[aria-pressed="true"] .segFace { background: var(--sur); color: var(--navy); box-shadow: 0 1px 2px rgba(20,33,61,.12); }
+:global([data-theme="dark"]) .segOpt[aria-pressed="true"] .segFace { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-300); box-shadow: none; }
+.segOpt:focus-visible { outline: none; }
+.segOpt:focus-visible .segFace { outline: 2px solid var(--navy); outline-offset: 1px; }
+.lensNote { margin: -4px 0 12px; font-size: 12px; line-height: 1.45; color: var(--tm); }
+
+/* B2b: historial, cerrado por defecto. Línea fina arriba, sin caja. */
+.hist { margin-top: 12px; border-top: 0.5px solid var(--brd); }
+.histToggle {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: 500 13px/1.2 var(--sans); color: var(--tx);
+}
+.histToggle svg { color: var(--th); transition: transform var(--dur) var(--ease); }
+.histChevOpen { transform: rotate(180deg); }
+.histToggle:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.histBody { padding-bottom: 4px; }
+.histHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.histUnit { font-size: 12px; line-height: 1.45; color: var(--th); }
+.spark { display: block; width: 100%; height: 64px; }
+.histSummary { margin: 8px 0 2px; font-size: 13px; line-height: 1.45; color: var(--tx); }
+.histStats { margin: 0; font-size: 12px; line-height: 1.45; color: var(--tm); }
+
+@media (prefers-reduced-motion: reduce) { .segFace, .histToggle svg { transition: none; } }
 
 @media (max-width: 360px) {
   .ops { flex-wrap: wrap; }
