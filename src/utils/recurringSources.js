@@ -14,6 +14,7 @@
 // después de cada cambio de suscripción/deuda, y el demo.
 
 import { addDays, amountAt, monthBounds, monthOf, parseYMD, withAmountFrom } from './recurring.js'
+import { isOwed } from './debtDirection.js'
 
 export const subRuleId = (subId) => `rs-${subId}`
 export const debtRuleId = (debtId) => `rd-${debtId}`
@@ -178,7 +179,8 @@ export function reconcileRules(rules, subscriptions, debts, { today, now = new D
   }
 
   for (const debt of Array.isArray(debts) ? debts : []) {
-    if (!debt || !debt.id) continue
+    // "Me deben" (D2) no es una cuota mía: nunca genera un gasto fijo.
+    if (!debt || !debt.id || isOwed(debt)) continue
     const id = debtRuleId(debt.id)
     const cur = byId.get(id)
     if (!cur && !debtActive(debt)) continue   // sin cuota o ya saldada: no hace falta regla

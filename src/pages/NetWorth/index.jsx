@@ -13,7 +13,7 @@ import CountUp from '../../components/CountUp.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 
 export default function NetWorth() {
-  const { goals, debts, incomes, expenses, settings } = useApp()
+  const { goals, debts, receivables, incomes, expenses, settings } = useApp()
   const { t } = useT()
   const sym = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
@@ -21,9 +21,9 @@ export default function NetWorth() {
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
 
   // Cálculo compartido (mismo que usa el resumen en Reportes/PDF)
-  const { savedInGoals, propsValueTotal, propertiesNet, pendingDebt, totalActivos, totalPasivos, netWorth, hasData } =
-    useMemo(() => calcNetWorth({ goals, debts, incomes, expenses, settings }),
-      [goals, debts, incomes, expenses, settings])
+  const { savedInGoals, propsValueTotal, propertiesNet, pendingDebt, receivablesPending, totalActivos, totalPasivos, netWorth, hasData } =
+    useMemo(() => calcNetWorth({ goals, debts, receivables, incomes, expenses, settings }),
+      [goals, debts, receivables, incomes, expenses, settings])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -58,6 +58,7 @@ export default function NetWorth() {
               <Row label={t('networth.savedInGoals')} value={savedInGoals} sym={sym} color="var(--grn)" />
               <Row label={t('networth.propsValue')} value={propsValueTotal} sym={sym} color="var(--grn)" />
               <Row label={t('networth.propsPositive')} value={Math.max(0, propertiesNet)} sym={sym} color="var(--grn)" />
+              <Row label={t('networth.receivables')} value={receivablesPending} sym={sym} color="var(--grn)" />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalAssets')}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--grn)' }}><Money>{fmtMoney(totalActivos, sym)}</Money></span>

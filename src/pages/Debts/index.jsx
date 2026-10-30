@@ -1,9 +1,14 @@
-// src/pages/Debts/index.jsx — v1.5
+// src/pages/Debts/index.jsx — v1.6
+// D2 (30-oct-2026): selector "Debo · Me deben" (patrón rial). "Me deben" vive
+// en Receivables.jsx; aquí queda la pestaña "Debo" de siempre. V2: un solo
+// botón Latón por pantalla (el de alta, o "Registrar deuda" con el formulario
+// abierto); las acciones de cada tarjeta son secundarias.
 import { useState, useMemo, useEffect } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader } from '../../components/ui/index.jsx'
+import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader, ChoiceGroup } from '../../components/ui/index.jsx'
+import Receivables from './Receivables.jsx'
 import { fmtMoney as fmtMoneyRaw, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr, currencySymbol } from '../../utils/index.js'
 import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
@@ -166,8 +171,10 @@ function DebtPayoffSimulator({ debts, sym }) {
 }
 
 export default function Debts() {
-  const { debts, addDebt, updateDebt, addExpense, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences } = useApp()
+  const { debts, receivables = [], addDebt, updateDebt, addExpense, addIncome, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences } = useApp()
   const { t } = useT()
+  // "Debo" por defecto; si solo hay "Me deben", se abre en esa pestaña.
+  const [dir, setDir]               = useState(() => (debts.length === 0 && receivables.length > 0 ? 'owed' : 'owe'))
   const [show, setShow]             = useState(false)
   const [f, setF]                   = useState({ creditor:'', debtType:'Tarjeta', initial:'', balance:'', minPayment:'', dueDate:'', rate:'', totalInstallments:'', paidInstallments:'', project:'', ufDebt:false })
   const [err, setErr]               = useState('')
@@ -284,14 +291,22 @@ export default function Debts() {
   return (
     <div className="stack">
       <PageHeader title={t('debts.title')} sub={t('debts.sub')} />
-      <p style={{fontSize:12.5,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginBottom:12,marginTop:-4}}>{t('debts.intro')}</p>
+      <div data-tour="debt-direction">
+        <ChoiceGroup value={dir} onChange={setDir} label={t('debts.dir.label')}
+          options={[{ value: 'owe', label: t('debts.dir.owe') }, { value: 'owed', label: t('debts.dir.owed') }]} />
+      </div>
+      {dir === 'owed' ? (
+        <Receivables receivables={receivables} addDebt={addDebt} updateDebt={updateDebt} addIncome={addIncome}
+          deleteWithUndo={deleteWithUndo} settings={settings} sym={sym} />
+      ) : (<>
+      <p style={{fontSize:12.5,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,margin:0}}>{t('debts.intro')}</p>
       <div className="kpi-row" data-tour="debt-kpis">
         <KPI label={t('debts.kpi.total')}       value={fmtMoney(totalBalance,sym)} color="red" />
         <KPI label={t('debts.kpi.minPay')} value={fmtMoney(totalMin,sym)} />
         <KPI label={t('debts.kpi.active')}    value={debts.length} />
         <KPI label={t('debts.kpi.paid')}      value={fmtMoney(totalPaid,sym)} color="green" />
       </div>
-      <div data-tour="debt-new"><Btn variant="primary" onClick={() => setShow(s => !s)} aria-expanded={show}>{show ? t('debts.toggle.close') : t('debts.toggle.new')}</Btn></div>
+      <div data-tour="debt-new"><Btn variant={show ? 'ghost' : 'primary'} onClick={() => setShow(s => !s)} aria-expanded={show}>{show ? t('debts.toggle.close') : t('debts.toggle.new')}</Btn></div>
       {show && (
         <Card>
           <CardHeader title={t('debts.new')} />
@@ -347,7 +362,7 @@ export default function Debts() {
       {debts.length === 0 && !show && (
         <Card><div style={{textAlign:'center',padding:'24px 0'}}>
           <div style={{fontSize:13,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12}}>{t('debts.empty')}</div>
-          <button onClick={() => setShow(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('debts.emptyBtn')}</button>
+          <Btn variant="ghost" onClick={() => setShow(true)} style={{color:'var(--tx)',fontWeight:600}}>{t('debts.emptyBtn')}</Btn>
         </div></Card>
       )}
       {debts.map(d => {
@@ -409,8 +424,8 @@ export default function Debts() {
                   {t('debts.card.confirmPay', { amt: m(fmtMoneyRaw(nextPaymentAmount(d), sym)), creditor: d.creditor })}
                 </span>
                 <div style={{display:'flex',gap:6}}>
-                  <Btn variant="primary" size="xs" onClick={() => handleRegisterPayment(d)}>{t('debts.card.confirm')}</Btn>
-                  <Btn variant="ghost"   size="xs" onClick={() => setConfirmPay(null)}>{t('common.cancel')}</Btn>
+                  <Btn variant="ghost" size="sm" onClick={() => handleRegisterPayment(d)} style={{color:'var(--tx)',fontWeight:600,borderColor:'var(--tm)'}}>{t('debts.card.confirm')}</Btn>
+                  <Btn variant="ghost" size="sm" onClick={() => setConfirmPay(null)}>{t('common.cancel')}</Btn>
                 </div>
               </div>
             )}
@@ -425,8 +440,8 @@ export default function Debts() {
                     <input type="text" list="fnos-debt-projects" value={linkValue} placeholder={t('debts.projectPlaceholder')}
                       onChange={e=>setLinkValue(e.target.value)}
                       style={{flex:1,minWidth:160,padding:'5px 9px',fontSize:12,borderRadius:6,border:'.5px solid var(--brd2)',background:'var(--bg)',color:'var(--tx)'}}/>
-                    <Btn variant="primary" size="xs" aria-label={t('debts.card.confirmLink')} onClick={async()=>{ if(linkValue.trim()){ await updateDebt({...d, project:linkValue.trim()}); setLinkingId(null); setLinkValue('') } }}>✓</Btn>
-                    <Btn variant="ghost" size="xs" aria-label={t('common.cancel')} onClick={()=>{setLinkingId(null);setLinkValue('')}}>✕</Btn>
+                    <Btn variant="ghost" size="sm" style={{color:'var(--tx)',fontWeight:600,borderColor:'var(--tm)'}} aria-label={t('debts.card.confirmLink')} onClick={async()=>{ if(linkValue.trim()){ await updateDebt({...d, project:linkValue.trim()}); setLinkingId(null); setLinkValue('') } }}>✓</Btn>
+                    <Btn variant="ghost" size="sm" aria-label={t('common.cancel')} onClick={()=>{setLinkingId(null);setLinkValue('')}}>✕</Btn>
                   </div>
                 </div>
               ) : (
@@ -477,6 +492,7 @@ export default function Debts() {
       })}
       {debts.length > 0 && <ProGate featureKey="debts.sim.proFeature"><DebtPayoffSimulator debts={debts} sym={sym} /></ProGate>}
       {debts.length > 0 && <DebtProgressList debts={debts} sym={sym} />}
+      </>)}
     </div>
   )
 }

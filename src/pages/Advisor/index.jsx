@@ -284,7 +284,7 @@ function AdvisorNotes({ notes, onSave }) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function Advisor() {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts, goals, settings, updateSettings } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts, receivables, goals, settings, updateSettings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
@@ -397,8 +397,8 @@ export default function Advisor() {
 
   // Patrimonio neto (stock a hoy) — opcional: solo si hay datos que lo alimenten.
   // Usa movimientos SIN filtrar inversión (el flujo de propiedades vive en registros 💼).
-  const nw = useMemo(() => calcNetWorth({ goals, debts, incomes: _incAll, expenses: _expAll, settings }),
-    [goals, debts, _incAll, _expAll, settings])
+  const nw = useMemo(() => calcNetWorth({ goals, debts, receivables, incomes: _incAll, expenses: _expAll, settings }),
+    [goals, debts, receivables, _incAll, _expAll, settings])
 
   const noData = mIncome === 0 && mExpense === 0 && debts.length === 0
 
