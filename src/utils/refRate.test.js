@@ -103,3 +103,54 @@ describe('tasa preseleccionada al consultar (decisión: BCV oficial en VE)', () 
     expect(defaultRateOption([])).toBe(null)
   })
 })
+
+describe('B1: una sola tasa, descrita igual en todos lados', () => {
+  it('rateLabelParts: fuente y fecha; guardada sin fecha = "Tasa guardada" sin fecha', async () => {
+    const { rateLabelParts } = await import('./refRate.js')
+    expect(rateLabelParts(savedRate({ usdRate: 885.4, usdRateAt: 10, usdRateSource: 'bcv' }))).toEqual({ sourceKey: 'refcur.source.bcv', at: 10 })
+    // El caso del bug: Ajustes decía "Fixer" y el Inicio "sin fecha" para la misma tasa.
+    expect(rateLabelParts(savedRate({ usdRate: 36 }))).toEqual({ sourceKey: 'refcur.source.legacy', at: null })
+    expect(rateLabelParts(savedRate({ usdRate: 900, usdRateAt: 10 }))).toEqual({ sourceKey: 'refcur.source.manual', at: 10 })
+    expect(rateLabelParts(null)).toBe(null)
+  })
+
+  it('fresherRate: solo si la actual está vieja o sin fecha, y la nueva es posterior y distinta', async () => {
+    const { fresherRate } = await import('./refRate.js')
+    const now = 100 * DAY
+    const opts = [
+      { source: 'bcv', rate: 900, at: now - DAY / 2 },
+      { source: 'paralelo', rate: 1010, at: now - DAY / 2 },
+    ]
+    // Vigente (VE: ≤ 1 día) → no se ofrece nada.
+    expect(fresherRate({ rate: 880, at: now - DAY / 4, source: 'bcv' }, opts, 'VE', now)).toBe(null)
+    // Vieja → la misma fuente que la actual.
+    expect(fresherRate({ rate: 880, at: now - 5 * DAY, source: 'paralelo' }, opts, 'VE', now)).toEqual(opts[1])
+    // Vieja de fuente propia → la oficial del BCV.
+    expect(fresherRate({ rate: 880, at: now - 5 * DAY, source: 'manual' }, opts, 'VE', now)).toEqual(opts[0])
+    // Sin fecha → se ofrece la consultada (con su fecha).
+    expect(fresherRate({ rate: 36, at: null, source: 'legacy' }, opts, 'VE', now)).toEqual(opts[0])
+    // Mismo valor → no es "más reciente".
+    expect(fresherRate({ rate: 900, at: null, source: 'legacy' }, opts, 'VE', now)).toBe(null)
+    // Consultada más vieja que la actual → nada.
+    expect(fresherRate({ rate: 880, at: now - DAY / 4 + 1, source: 'bcv' }, [{ source: 'bcv', rate: 900, at: now - 3 * DAY }], 'VE', now + 3 * DAY)).toBe(null)
+    // Sin opciones (sin red) → nada.
+    expect(fresherRate({ rate: 880, at: null, source: 'legacy' }, [], 'VE', now)).toBe(null)
+  })
+
+  it('fresherRate en AR prefiere el oficial; en el resto, Fixer con 7 días de margen', async () => {
+    const { fresherRate } = await import('./refRate.js')
+    const now = 100 * DAY
+    const ar = [{ source: 'blue', rate: 1545, at: now }, { source: 'oficial', rate: 1510, at: now }]
+    expect(fresherRate({ rate: 1400, at: now - 3 * DAY, source: 'manual' }, ar, 'AR', now)).toEqual(ar[1])
+    const fx = [{ source: 'fixer', rate: 950, at: now }]
+    expect(fresherRate({ rate: 940, at: now - 3 * DAY, source: 'fixer' }, fx, 'CL', now)).toBe(null)
+    expect(fresherRate({ rate: 940, at: now - 8 * DAY, source: 'fixer' }, fx, 'CL', now)).toEqual(fx[0])
+  })
+
+  it('ratePatch guarda tasa, fecha y fuente', async () => {
+    const { ratePatch } = await import('./refRate.js')
+    expect(ratePatch({ source: 'bcv', rate: 900, at: 7 })).toEqual({ usdRate: 900, usdRateAt: 7, usdRateSource: 'bcv' })
+    expect(ratePatch(null)).toBe(null)
+    expect(ratePatch({ source: 'bcv', rate: 0, at: 7 })).toBe(null)
+  })
+})

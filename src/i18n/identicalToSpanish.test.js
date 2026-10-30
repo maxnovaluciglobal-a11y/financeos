@@ -10,6 +10,7 @@ import { de } from './de.js'
 
 const ALLOWED = {
   pt: new Set([
+    'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
     // Ola 1 de diseño visual (21-oct-2026): cognados correctos en portugués.
     'ui.state.overBudget',
     // Ola 2 (21-oct-2026): cognados correctos en portugués.
@@ -132,6 +133,7 @@ const ALLOWED = {
     "ui.editItem",
   ]),
   en: new Set([
+    'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
     "ahorroFiscal.card.rothVsTraditional",
     "ahorroFiscal.coverage.self",
     "apv.indicators",
@@ -149,6 +151,7 @@ const ALLOWED = {
     "subs.form.namePh",
   ]),
   de: new Set([
+    'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
     'reports.rule.idealPct', // "{actual} / {max} ideal {mark}": solo variables + "ideal" (igual en alemán)
     "ahorroFiscal.card.rothVsTraditional",
     "apv.indicators",

@@ -116,6 +116,12 @@ describe('persona de Venezuela (EST-5)', () => {
     expect(st.settings.usdRateAt).toBeGreaterThan(0)
     expect(p.subscriptions.every(s => s.currency === 'VES')).toBe(true)
   })
+  it('B1: la tasa guardada lleva la fecha de esa tasa (la del mes), no la de carga del demo', () => {
+    const at = new Date(st.settings.usdRateAt)
+    expect(st.settings.usdRateSource).toBe('bcv')
+    expect(`${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, '0')}`).toBe(M0)
+    expect(at.getDate()).toBe(1)
+  })
   it('ingresos en Bs y en US$, con BCV y paralelo a la vista', () => {
     const m0 = p.incomesGood.filter(r => r.date.startsWith(M0))
     expect(m0.filter(r => r.category === 'Salario').length).toBe(2)

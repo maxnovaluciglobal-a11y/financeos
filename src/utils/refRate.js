@@ -136,3 +136,36 @@ export function loadersFor({ country, currency }) {
 export function rateToolFor(country) {
   return RATE_TOOL_BY_COUNTRY[String(country || '').toUpperCase()] || null
 }
+
+// B1 (una sola tasa): cómo se describe una tasa, igual en el Inicio, en Ajustes
+// y en los paneles. Fuente siempre; fecha o "sin fecha" (at null). Es la misma
+// derivación de savedRate(): una tasa guardada sin usdRateAt es 'legacy'.
+export function rateLabelParts(r) {
+  if (!r || !validRate(r.rate)) return null
+  return { sourceKey: SOURCE_LABEL[r.source] || SOURCE_LABEL.manual, at: Number(r.at) || null }
+}
+
+// B1: ¿hay una tasa más reciente que la que se está usando? Solo si la actual
+// está vieja (isStale) o no tiene fecha, y la consultada es de una fecha
+// posterior y de otro valor. Se prefiere la misma fuente que la actual (quien
+// usa el paralelo ve el paralelo), después la oficial del BCV, después el
+// dólar oficial de AR, después la primera. Nunca reemplaza nada sola: el
+// usuario la elige con "Usar".
+export function fresherRate(current, options = [], country, now = Date.now()) {
+  if (!options || options.length === 0) return null
+  if (current?.at && !isStale(current.at, country, now)) return null
+  const pick = (current && options.find(o => o.source === current.source))
+    || defaultRateOption(options)
+    || options.find(o => o.source === 'oficial')
+    || options[0]
+  if (!pick || !validRate(pick.rate) || !(Number(pick.at) > 0)) return null
+  if (current?.at && Number(pick.at) <= Number(current.at)) return null
+  if (current && Number(pick.rate) === Number(current.rate)) return null
+  return pick
+}
+
+// Lo que se guarda en settings al elegir una tasa consultada.
+export function ratePatch(opt) {
+  if (!opt || !validRate(opt.rate)) return null
+  return { usdRate: Number(opt.rate), usdRateAt: Number(opt.at) || null, usdRateSource: opt.at ? (opt.source || 'manual') : null }
+}

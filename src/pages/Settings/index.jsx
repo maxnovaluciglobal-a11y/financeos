@@ -24,6 +24,8 @@ import { useT } from '../../i18n/useT.js'
 import { moneyLocale } from '../../utils/index.js'
 import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
+import { savedRate } from '../../utils/refRate.js'
+import { rateSourceText, fmtDay } from '../Dashboard/RefCurrency.jsx'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 
 export default function Settings() {
@@ -253,9 +255,20 @@ export default function Settings() {
                 {t('settings.exchangeRate.reset')}
               </Btn>
             </div>
-            {fx && (
-              <div style={{fontSize:11, color: fx.source === 'fixer' ? 'var(--grn)' : 'var(--th)', fontFamily: 'var(--sans)'}}>
-                {fx.source === 'fixer' ? `● ${t('settings.exchangeRate.live')}` : `○ ${t('settings.exchangeRate.offline')}`}
+            {/* B1: la misma descripción de la tasa que el Inicio (fuente · fecha o "sin fecha"). */}
+            {savedRate(settings) && (
+              <div style={{fontSize:11, color:'var(--tm)', fontFamily: 'var(--sans)'}}>
+                ● {t('refcur.inUse', { desc: rateSourceText(savedRate(settings), t) })}
+              </div>
+            )}
+            {fx && fx.source === 'fixer' && liveRate(settings.currency) > 0 && Number(liveRate(settings.currency)) !== Number(settings.usdRate) && (
+              <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
+                ○ {t('refcur.fixerToday', { rate: Number(liveRate(settings.currency)).toLocaleString(moneyLocale()), date: fmtDay(fx.ts) })}
+              </div>
+            )}
+            {fx && fx.source !== 'fixer' && (
+              <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
+                ○ {t('settings.exchangeRate.offline')}
               </div>
             )}
             {settings.usdRate > 0 && (

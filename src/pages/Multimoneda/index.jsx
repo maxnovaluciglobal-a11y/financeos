@@ -6,6 +6,10 @@
 // del BCV (decisión 08-oct-2026); el paralelo queda visible como opción y el
 // campo sigue editable para quien tenga una referencia mejor (P2P, etc.).
 // Toda tasa se muestra con su fuente y su fecha.
+// B1 (una sola tasa): el panel arranca con la tasa de referencia del usuario
+// (resolveRefRate, la misma del Inicio). Lo consultado en vivo se ofrece como
+// opción (botones BCV/paralelo y "Hay una tasa más reciente… Usar"), nunca
+// reemplaza la guardada sin un toque.
 
 import { useState, useMemo, useEffect } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
@@ -16,35 +20,55 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import veConfig from '../../config/multimoneda/ve.js'
 import { loadTasaVE, defaultFuenteVE, DEFAULT_FUENTE_VE } from '../../utils/tasaVE.js'
 import Money, { useMoney } from '../../components/Money.jsx'
-import { fmtRef, fmtDay } from '../Dashboard/RefCurrency.jsx'
-import { SOURCE_LABEL } from '../../utils/refRate.js'
-import { fmtPctPoints } from '../../utils/index.js'
+import { fmtRef, fmtDay, rateSourceText, FreshRate } from '../Dashboard/RefCurrency.jsx'
+import { SOURCE_LABEL, resolveRefRate, rateOptions, fresherRate, ratePatch } from '../../utils/refRate.js'
+import { fmtPctPoints, currencySymbol } from '../../utils/index.js'
 
 const CONFIGS = { VE: veConfig }
 
 export default function Multimoneda() {
-  const { settings } = useApp()
+  const { settings, updateSettings, showToast } = useApp()
   const { t, lang } = useT()
   const { m } = useMoney()
   const country = (settings.country || 'CL').toUpperCase()
   const config = CONFIGS[country]
+  // Tasa de referencia del usuario (la misma que el Inicio y Ajustes).
+  const ref = useMemo(() => resolveRefRate(settings, (k) => { try { return localStorage.getItem(k) } catch { return null } }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo los campos de la tasa
+    [settings.usdRate, settings.usdRateAt, settings.usdRateSource, settings.country, settings.currency])
+  const refFuente = ref?.source === 'paralelo' ? 'paralelo' : ref?.source === 'bcv' ? 'oficial' : null
 
   const [bs, setBs] = useState('')
   const [usd, setUsd] = useState('')
-  const [tasa, setTasa] = useState(config?.tasaDefault ?? '')
-  const [fuenteTasa, setFuenteTasa] = useState(DEFAULT_FUENTE_VE)
+  const [tasa, setTasa] = useState(ref?.rate ?? config?.tasaDefault ?? '')
+  const [fuenteTasa, setFuenteTasa] = useState(ref ? refFuente : DEFAULT_FUENTE_VE)
   const [live, setLive] = useState(null)
 
   useEffect(() => {
     if (!config) return
     loadTasaVE().then(data => {
       setLive(data)
-      // Oficial del BCV por defecto; el paralelo solo si el usuario lo elige.
+      // Con tasa de referencia, el panel la conserva: lo consultado queda como
+      // opción. Sin ella, la oficial del BCV por defecto (el paralelo, a elección).
+      if (ref) return
       const f = defaultFuenteVE(data)
       setFuenteTasa(f)
       setTasa(data[f])
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- una consulta al abrir
   }, [config])
+
+  const fresh = useMemo(() => (live ? fresherRate(ref, rateOptions(settings, { ve: live }), 'VE') : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [live, ref])
+  function usarFresh() {
+    const patch = ratePatch(fresh)
+    if (!patch) return
+    updateSettings?.({ ...settings, ...patch })
+    setTasa(fresh.rate)
+    setFuenteTasa(fresh.source === 'paralelo' ? 'paralelo' : 'oficial')
+    showToast?.(t('refcur.saved'))
+  }
 
   // La tasa vacía o inválida NO cae a un default silencioso: bloquea el cálculo.
   const tasaNum = Number(tasa)
@@ -73,11 +97,13 @@ export default function Multimoneda() {
 
   // "Consultada" solo si la tasa que se está usando ES la que vino de la API
   // (con su fecha de consulta). Si el usuario la editó, se dice que es propia.
-  const tasaEsLive = Boolean(live && live.source === 'api' && tasaValida && Number(live[fuenteTasa]) === tasaNum)
+  const tasaEsLive = Boolean(live && live.source === 'api' && tasaValida && fuenteTasa && Number(live[fuenteTasa]) === tasaNum)
+  const tasaEsRef = Boolean(ref && tasaValida && Number(ref.rate) === tasaNum)
   const paraleloNoDisponible = Boolean(live && !live.paraleloDisponible)
 
   const fmtUSD = (n) => fmtRef(n, lang)
-  const tasaMeta = !live ? null
+  const tasaMeta = tasaEsRef ? t('refcur.inUse', { desc: rateSourceText(ref, t) })
+    : !live ? null
     : live.source !== 'api' ? t('multimoneda.tasa.offline', { date: fmtDay(live.at ?? live.ts) })
     : tasaEsLive ? `${t(SOURCE_LABEL[fuenteTasa === 'oficial' ? 'bcv' : 'paralelo'])} · ${t('multimoneda.tasa.live', { host: 've.dolarapi.com', date: fmtDay(live.at ?? live.ts, true) })}`
     : t('multimoneda.tasa.edited')
@@ -119,9 +145,11 @@ export default function Multimoneda() {
           </div>
           {tasaMeta && (
             <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, marginBottom: 6 }}>
-              <span aria-hidden="true" style={{ color: tasaEsLive ? 'var(--pos)' : 'var(--th)' }}>{tasaEsLive ? '● ' : '○ '}</span>{tasaMeta}
+              <span aria-hidden="true" style={{ color: tasaEsLive || tasaEsRef ? 'var(--pos)' : 'var(--th)' }}>{tasaEsLive || tasaEsRef ? '● ' : '○ '}</span>{tasaMeta}
             </div>
           )}
+          <FreshRate fresh={fresh} sym={currencySymbol('VES', lang)} onUse={usarFresh} />
+          {fresh && <div style={{ height: 6 }} aria-hidden="true" />}
           <div style={{ fontSize: 12, color: 'var(--th)', lineHeight: 1.5, marginBottom: 10 }}>
             {t('multimoneda.tasa.defaultNote')}
           </div>

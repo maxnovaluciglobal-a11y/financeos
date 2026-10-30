@@ -124,7 +124,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
           {/* R12/R13: a todo el ancho de la tarjeta, debajo de la cifra y el anillo */}
           {refc && (
             <RefRow refRate={refc.rate} mode={showRef ? 'ref' : 'local'} free={free} sym={sym} country={refc.country}
-              showAmount={hasData} onEdit={refc.onEdit} tool={refc.tool} onTool={refc.onTool}
+              showAmount={hasData} onEdit={refc.onEdit} tool={refc.tool} onTool={refc.onTool} fresh={refc.fresh} onUseFresh={refc.onUseFresh}
               switcher={refc.rate && hasData ? <RefSwitch mode={refc.mode} onChange={refc.setMode} localCode={refc.localCode} /> : null} />
           )}
         </div>

@@ -27,8 +27,10 @@ import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
 import NetWorthCard from './NetWorthCard.jsx'
 import DeltaLine from './DeltaLine.jsx'
-import { RateSheet } from './RefCurrency.jsx'
-import { refEligible, resolveRefRate, rateToolFor } from '../../utils/refRate.js'
+import { RateSheet, fetchRateOptions } from './RefCurrency.jsx'
+import ConverterSheet from '../../components/ConverterSheet.jsx'
+import { logRejection } from '../../utils/errorLog.js'
+import { refEligible, resolveRefRate, rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
 import { prevMonthOf, homeMonthTotals } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, currencySymbol, fmtPctPoints } from '../../utils/index.js'
@@ -460,17 +462,40 @@ export default function Dashboard({ setPage }) {
   const [refMode, setRefModeState] = useState(() => { try { return localStorage.getItem('fos_home_refcur') === 'ref' ? 'ref' : 'local' } catch { return 'local' } })
   const setRefMode = (m) => { setRefModeState(m); try { localStorage.setItem('fos_home_refcur', m) } catch { /* modo privado */ } }
   const [rateSheetOpen, setRateSheetOpen] = useState(false)
+  // B2: la fila de tasa abre el conversor GRATIS; el panel PRO del país queda
+  // como enlace dentro de la hoja (y en el Menú, sin cambios).
+  const [convOpen, setConvOpen] = useState(false)
   const rateTool = rateToolFor(settings.country)
+  // B1: con la tasa vieja o sin fecha, se consulta en segundo plano (mismos
+  // loaders y caché; sin red no se intenta) y se ofrece la más reciente con
+  // "Usar". Nada se reemplaza solo.
+  const [freshRate, setFreshRate] = useState(null)
+  useEffect(() => {
+    if (!refOn || (refRate?.at && !isStale(refRate.at, settings.country))) { setFreshRate(null); return }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return
+    let alive = true
+    fetchRateOptions(settings).then(({ options }) => {
+      if (!alive) return
+      setFreshRate(fresherRate(refRate, options, settings.country))
+      // Sin tasa guardada, el Inicio usa la caché: releerla tras la consulta.
+      if (!savedRate(settings)) setRateTick(n => n + 1)
+    }).catch(logRejection('home.freshRate'))
+    return () => { alive = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- solo cuando cambia la tasa en uso o la moneda
+  }, [refOn, refRate?.at, refRate?.rate, settings.country, settings.currency])
   const refc = refOn ? {
     rate: refRate, mode: refRate ? refMode : 'local', setMode: setRefMode,
     localCode: String(settings.currency || '').toUpperCase(), country: settings.country,
     onEdit: () => setRateSheetOpen(true),
-    tool: !!(rateTool && setPage), onTool: () => setPage?.(rateTool),
+    tool: true, onTool: () => setConvOpen(true),
+    fresh: freshRate, onUseFresh: () => saveRate(ratePatch(freshRate)),
   } : null
   function saveRate(patch) {
+    if (!patch) return
     updateSettings?.({ ...settings, ...patch })
     setRateTick(n => n + 1)
     setRateSheetOpen(false)
+    setFreshRate(null)
     ctx.showToast?.(t('refcur.saved'))
   }
 
@@ -479,6 +504,11 @@ export default function Dashboard({ setPage }) {
       {!isCurrent && <MonthlyCloseModal />}
       {refOn && <RateSheet open={rateSheetOpen} onClose={() => setRateSheetOpen(false)} settings={settings} sym={sym}
         current={refRate} onSave={saveRate} />}
+      {refOn && <ConverterSheet open={convOpen} onClose={() => setConvOpen(false)} settings={settings} sym={sym}
+        refRate={refRate} fresh={freshRate} onUseFresh={() => saveRate(ratePatch(freshRate))}
+        onEditRate={() => { setConvOpen(false); setRateSheetOpen(true) }}
+        panelId={rateTool}
+        onOpenPanel={rateTool && setPage ? () => { setConvOpen(false); setPage(rateTool) } : undefined} />}
       <MonthSheet open={sheetOpen} onClose={closeSheet} month={activeMonth} plan={plan} today={todayStr} sym={sym}
         prev={autoStart && prevHasData ? { month: prevMonthKey, balance: kpis.prev.balance } : null}
         onGoToList={setPage ? () => { closeSheet(); setPage('recurring') } : undefined} />
