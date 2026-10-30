@@ -54,6 +54,22 @@
 :global([data-theme="dark"]) .lensOpt[aria-pressed="true"] { background: var(--sur3); box-shadow: none; }
 .lensOpt:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
 
+/* Lista | Calendario (B3b): un botón de 44 px en la fila de controles; la
+   palabra solo aparece cuando sobra ancho (en el celular, ícono + nombre accesible). */
+.viewBtn {
+  flex-shrink: 0; margin-right: auto; min-width: 44px; height: 44px; padding: 0 12px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tm); cursor: pointer;
+  font-family: var(--sans); font-size: 14px; font-weight: 500;
+}
+.viewBtn:hover { color: var(--tx); background: var(--sur2); }
+.viewBtn[aria-pressed="true"] { color: var(--tx); font-weight: 600; background: var(--sur2); box-shadow: inset 0 0 0 1.5px var(--tx); }
+.viewBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.viewBtnWord { display: none; }
+@media (min-width: 600px) { .viewBtnWord { display: inline; } }
+@media (max-width: 599px) { .viewBtn { padding: 0; width: 44px; } }
+.calToolbar { margin: 12px 0 0; }
+
 /* Secundario "+ Gasto detallado o suscripción" y enlace "Exportar" */
 .addSecondary { width: auto; flex-shrink: 1; min-width: 0; }
 .toolActions { display: flex; align-items: center; gap: 8px; width: 100%; }

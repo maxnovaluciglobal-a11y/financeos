@@ -20,15 +20,19 @@ import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
 import { FormGroup, KPI, Alert, Empty, EmptyState, PageHeader } from '../../components/ui/index.jsx'
-import { ArrowLeftRight, ChevronDown, Download } from 'lucide-react'
+import { ArrowLeftRight, CalendarDays, ChevronDown, Download } from 'lucide-react'
 import Amount from '../../components/Amount.jsx'
 import MovementsList from './MovementsList.jsx'
 import MovementSheet from './MovementSheet.jsx'
+import DaySheet from './DaySheet.jsx'
+import MonthCalendar from '../../components/calendar/MonthCalendar.jsx'
+import UndatedPlanned from '../../components/calendar/UndatedPlanned.jsx'
+import { buildCalendar, weekStartFor } from '../../components/calendar/calendarModel.js'
 import ms from './movements.module.css'
 import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 import MonthSelector from '../shared/MonthSelector.jsx'
-import { closeKeyToDismiss } from '../shared/monthNav.js'
+import { closeKeyToDismiss, shiftMonth } from '../shared/monthNav.js'
 import { refEligible, resolveRefRate, SOURCE_LABEL, REF_CURRENCY } from '../../utils/refRate.js'
 import { mergeMovements, monthTotals, lensState, inLens, parseExpensePrefill, PREFILL_KEY, normType } from './movementsList.js'
 
@@ -39,6 +43,10 @@ export const MOV_FILTER_KEY = 'fos_mov_filter'
 const readSession = (k) => { try { return sessionStorage.getItem(k) } catch { return null } }
 const dropSession = (k) => { try { sessionStorage.removeItem(k) } catch { /* almacenamiento no disponible */ } }
 const readLocal = (k) => { try { return localStorage.getItem(k) } catch { return null } }
+
+// Vista Lista | Calendario (B3b): se recuerda en este dispositivo (por cuenta,
+// como el resto de las claves fos_*). Por defecto, la lista.
+export const MOV_VIEW_KEY = 'fos_mov_view'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -393,6 +401,10 @@ export default function Movements({ setPage }) {
   // Cifra en la lente activa, con "ocultar montos".
   const fmtL = (n) => m(fmtMRaw(inLens(n, lens), lsym))
 
+  const [view, setViewState] = useState(() => (readLocal(MOV_VIEW_KEY) === 'cal' ? 'cal' : 'list'))
+  const setView = (v) => { setViewState(v); try { localStorage.setItem(MOV_VIEW_KEY, v) } catch { /* modo privado */ } }
+  const [openDay, setOpenDay] = useState(null) // fecha 'YYYY-MM-DD' con la hoja del día abierta
+
   // ── Cálculos ─────────────────────────────────────────────────────────────────
   const monthExp   = useMemo(() =>
     expenses.filter(e => e?.date?.startsWith(activeMonth))
@@ -454,6 +466,24 @@ export default function Movements({ setPage }) {
   const pendingFixed = pendingTotals(plan).expense
   const { confirm, skip, unskip, live } = useOccurrenceActions()
 
+  // Calendario (B3b + D4): lo real por día con el filtro de tipo y
+  // la lente; lo previsto de hoy en adelante, aparte. Los chips de categoría
+  // son de la lista: el calendario no filtra por algo que no se ve. La semana
+  // empieza según el país de Ajustes o el idioma.
+  const calLocale = dateLocale()
+  const weekStart = useMemo(() => weekStartFor(calLocale, settings.country), [calLocale, settings.country])
+  const calendar = useMemo(() => {
+    if (view !== 'cal') return null
+    return buildCalendar({
+      ym: activeMonth, items, plan, today: todayStr2, type, weekStart,
+      debts: ctx.debts || [], subscriptions, amount: (n) => inLens(n, lens),
+    })
+  }, [view, items, activeMonth, plan, todayStr2, type, weekStart, ctx.debts, subscriptions, lens])
+  const dayCell = useMemo(() => (calendar && openDay ? calendar.weeks.flat().find(c => c && c.date === openDay) || null : null), [calendar, openDay])
+  // En el calendario se puede avanzar un mes más allá de los datos: es donde se
+  // ve lo que viene ("por pagar", rial #46). El selector solo mira las fechas.
+  const navExpenses = useMemo(() => (view === 'cal' ? [...expenses, { date: `${shiftMonth(currentMonth(), 1)}-01` }] : expenses), [view, expenses])
+
   // Disponible PERSONAL = ingresos personales − gastos personales (solo lo real,
   // igual que "Te queda" del Inicio; excluye inversión 💼).
   const balance      = personalInc - personalExp
@@ -507,6 +537,26 @@ export default function Movements({ setPage }) {
     setShowSub(false); setShowAdd(false)
   }
 
+  // Acciones de la barra: las mismas en la lista y en el calendario (el gasto
+  // detallado no desaparece en ninguna vista, lista de protección).
+  const toolActions = (
+    <div className={ms.toolActions}>
+      {/* Secundario, no Latón (un primario por pantalla: el + global). Abre el
+          mismo menú de gasto detallado o suscripción de siempre. En una sola
+          fila con "Exportar" (ícono de 44 px) para que la lista empiece antes. */}
+      {!showAdd && !showGasto && !showSub && (
+        <button type="button" data-tour="mov-add" className={`fos-btn-secondary ${ms.addSecondary}`} onClick={() => setShowAdd(true)}>
+          {t('mov.addBtn')}
+        </button>
+      )}
+      {exportCSV && (
+        <button type="button" className={ms.exportIcon} onClick={exportCSV} aria-label={t('movl.export')} title={t('movl.export')}>
+          <Download size={18} strokeWidth={1.7} aria-hidden="true" />
+        </button>
+      )}
+    </div>
+  )
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div>
@@ -523,8 +573,15 @@ export default function Movements({ setPage }) {
             </button>
           ))}
         </div>
+        {/* Lista | Calendario (B3b): un solo botón de 44 px junto al tipo, en la misma fila (no suma filas en el celular). */}
+        <button type="button" className={ms.viewBtn} aria-pressed={view === 'cal'}
+          aria-label={t('movl.cal.toggle')} title={t('movl.cal.toggleHint')}
+          onClick={() => { setView(view === 'cal' ? 'list' : 'cal'); setOpenDay(null) }}>
+          <CalendarDays size={18} strokeWidth={1.7} aria-hidden="true" />
+          <span className={ms.viewBtnWord} aria-hidden="true">{t('movl.cal.toggle')}</span>
+        </button>
         <div className={ms.controlsEnd}>
-          <MonthSelector variant="stepper" incomes={incomes} expenses={expenses} onBeforeChange={beforeMonthChange} />
+          <MonthSelector variant="stepper" incomes={incomes} expenses={navExpenses} onBeforeChange={beforeMonthChange} />
           {/* Lente de moneda (R12): el mismo VES | USD del Inicio, solo si hay tasa con fecha. */}
           {lens.available && (
             <span className={ms.lensSwitch} role="group" aria-label={t('movl.lens.switchAria')}>
@@ -661,28 +718,31 @@ export default function Movements({ setPage }) {
         {showSub   && <FormSub              onSave={handleSaveSub}   onCancel={() => setShowSub(false)}/>}
       </div>
 
-      <MovementsList items={items} type={type} sym={lsym} lens={lens} category={drillCat} onCategory={setDrillCat}
-        onOpen={setOpenExp}
-        toolbarEnd={<div className={ms.toolActions}>
-          {/* Secundario, no Latón (un primario por pantalla: el + global). Abre el
-              mismo menú de gasto detallado o suscripción de siempre. En una sola
-              fila con "Exportar" (ícono de 44 px) para que la lista empiece antes. */}
-          {!showAdd && !showGasto && !showSub && (
-            <button type="button" data-tour="mov-add" className={`fos-btn-secondary ${ms.addSecondary}`} onClick={() => setShowAdd(true)}>
-              {t('mov.addBtn')}
-            </button>
-          )}
-          {exportCSV && (
-            <button type="button" className={ms.exportIcon} onClick={exportCSV} aria-label={t('movl.export')} title={t('movl.export')}>
-              <Download size={18} strokeWidth={1.7} aria-hidden="true" />
-            </button>
-          )}
-        </div>}
-        empty={type === 'income'
-          ? <EmptyState compact icon={ArrowLeftRight} title={t('movl.emptyInc.title')} text={t('movl.emptyInc.text')}
-              cta={t('movl.emptyInc.cta')} onCta={() => openQuickAdd('income')} />
-          : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
-              cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />} />
+      {view === 'list' ? (
+        <MovementsList items={items} type={type} sym={lsym} lens={lens} category={drillCat} onCategory={setDrillCat}
+          onOpen={setOpenExp}
+          toolbarEnd={toolActions}
+          empty={type === 'income'
+            ? <EmptyState compact icon={ArrowLeftRight} title={t('movl.emptyInc.title')} text={t('movl.emptyInc.text')}
+                cta={t('movl.emptyInc.cta')} onCta={() => openQuickAdd('income')} />
+            : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
+                cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />} />
+      ) : calendar && (
+        <section aria-labelledby="movc-title" data-tour="mov-list">
+          <h2 id="movc-title" className="sr-only">{t('movl.cal.title', { month: monthYearLabel(activeMonth) })}</h2>
+          <div className={ms.calToolbar}>{toolActions}</div>
+          <MonthCalendar ym={activeMonth} weeks={calendar.weeks} weekStart={weekStart} today={todayStr2} locale={calLocale}
+            labelledBy="movc-title" fmtFull={(n) => m(fmtSignedMoney(n, lsym))}
+            onOpenDay={(cell) => setOpenDay(cell.date)} />
+          <UndatedPlanned items={calendar.undated} sym={sym} />
+        </section>
+      )}
+      {dayCell && (
+        <DaySheet cell={dayCell} type={type} sym={lsym} lens={lens} localSym={sym}
+          onClose={() => setOpenDay(null)}
+          onOpenMovement={(e) => { setOpenDay(null); setOpenExp(e) }}
+          onConfirm={confirm} onSkip={skip} onUnskip={unskip} live={live} />
+      )}
 
       {openExp && openExp.kind === 'income' && (
         <MovementSheet kind="income" expense={openExp.rec} sym={sym} categories={categoriesIncome}
