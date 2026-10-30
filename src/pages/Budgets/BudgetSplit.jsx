@@ -17,6 +17,32 @@ const SEG = [
   { key: 'free',     color: 'var(--th)' },
 ]
 
+// Barra de tres tramos + leyenda + exceso. La reusa el asistente (R8b).
+export function SplitBar({ split, sym }) {
+  const { t } = useT()
+  if (!split?.share) return null
+  return (
+    <>
+      <div className={s.splitBar} role="img" aria-label={t('budgets.split.aria', {
+        b: fmtPct(split.share.budgeted, { decimals: 0 }), s: fmtPct(split.share.savings, { decimals: 0 }), f: fmtPct(split.share.free, { decimals: 0 }) })}>
+        {SEG.map(g => split.share[g.key] > 0 && (
+          <span key={g.key} style={{ flexGrow: split.share[g.key], background: g.color }} />
+        ))}
+      </div>
+      <ul className={s.splitLegend}>
+        {SEG.map(g => (
+          <li key={g.key}>
+            <span className={s.splitDot} style={{ background: g.color }} aria-hidden="true" />
+            <span className={s.splitLbl}>{t(`budgets.split.${g.key}`)}</span>
+            <span className="num"><Money>{fmtMoney(split[g.key], sym)}</Money></span>
+          </li>
+        ))}
+      </ul>
+      {split.over > 0 && <p className={s.splitOver}>{t('budgets.split.over')} <Money>{fmtMoney(split.over, sym)}</Money></p>}
+    </>
+  )
+}
+
 export default function BudgetSplit({ income, budgeted, savingsPct = 0, unbudgeted = 0, sym, onSavingsPct }) {
   const { t } = useT()
   const [draft, setDraft] = useState(String(savingsPct || ''))
@@ -35,22 +61,7 @@ export default function BudgetSplit({ income, budgeted, savingsPct = 0, unbudget
           <span aria-hidden="true">%</span>
         </label>
       </div>
-      <div className={s.splitBar} role="img" aria-label={t('budgets.split.aria', {
-        b: fmtPct(split.share.budgeted, { decimals: 0 }), s: fmtPct(split.share.savings, { decimals: 0 }), f: fmtPct(split.share.free, { decimals: 0 }) })}>
-        {SEG.map(g => split.share[g.key] > 0 && (
-          <span key={g.key} style={{ flexGrow: split.share[g.key], background: g.color }} />
-        ))}
-      </div>
-      <ul className={s.splitLegend}>
-        {SEG.map(g => (
-          <li key={g.key}>
-            <span className={s.splitDot} style={{ background: g.color }} aria-hidden="true" />
-            <span className={s.splitLbl}>{t(`budgets.split.${g.key}`)}</span>
-            <span className="num"><Money>{fmtMoney(split[g.key], sym)}</Money></span>
-          </li>
-        ))}
-      </ul>
-      {split.over > 0 && <p className={s.splitOver}>{t('budgets.split.over')} <Money>{fmtMoney(split.over, sym)}</Money></p>}
+      <SplitBar split={split} sym={sym} />
       {split.free > 0 && <p className={s.splitHint}>{t('budgets.unassigned.hint')}</p>}
       {unbudgeted > 0 && <p className={s.splitHint}>{t('budgets.split.unbudgeted')} <Money>{fmtMoney(unbudgeted, sym)}</Money></p>}
     </section>

@@ -22,6 +22,7 @@ export const PAGE_TOURS = {
   budgets: [
     { id: 'bud-kpis',    title: 'tour.bud.kpis.title',    body: 'tour.bud.kpis.body' },
     { id: 'bud-new',     title: 'tour.bud.new.title',     body: 'tour.bud.new.body' },
+    // R8b: el paso del modelo también nombra el asistente de 3 pasos (máx. 5 pasos).
     { id: 'bud-model',   title: 'tour.bud.model.title',   body: 'tour.bud.model.body' },
     { id: 'bud-summary', title: 'tour.bud.summary.title', body: 'tour.bud.summary.body' },
     // R8a: reparto del ingreso (patrón rial).
