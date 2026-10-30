@@ -4,6 +4,35 @@
 // Voz de producto: seca, sin exclamaciones, sin voseo.
 export const RELEASE_NOTES = [
   {
+    id: '2026-10-30b',
+    items: {
+      es: [
+        'Ajustes en pocas filas, con buscador. Todo sigue ahí, agrupado.',
+        'Deudas separa "Debo" y "Me deben": lo que te deben cuenta en tu patrimonio y aparece como cobro próximo.',
+        'Movimientos tiene vista de calendario, con lo previsto de cada día.',
+        'Metas con plantillas, fondo de emergencia siempre a mano y un asistente de presupuesto en 3 pasos.',
+      ],
+      en: [
+        'Settings in a few rows, with search. Everything is still there, grouped.',
+        'Debts separates "I owe" and "Owed to me": what you are owed counts in your net worth and shows as an upcoming collection.',
+        'Transactions has a calendar view, with what is planned each day.',
+        'Goals with templates, an emergency fund always at hand and a 3-step budget assistant.',
+      ],
+      pt: [
+        'Ajustes em poucas linhas, com busca. Tudo continua lá, agrupado.',
+        'Dívidas separa "Devo" e "Me devem": o que te devem conta no seu patrimônio e aparece como recebimento próximo.',
+        'Movimentos tem visão de calendário, com o previsto de cada dia.',
+        'Metas com modelos, fundo de emergência sempre à mão e um assistente de orçamento em 3 passos.',
+      ],
+      de: [
+        'Einstellungen in wenigen Zeilen, mit Suche. Alles ist noch da, gruppiert.',
+        'Schulden trennt „Ich schulde“ und „Man schuldet mir“: Forderungen zählen zum Vermögen und erscheinen als anstehender Eingang.',
+        'Buchungen hat eine Kalenderansicht mit dem Geplanten pro Tag.',
+        'Ziele mit Vorlagen, Notgroschen immer zur Hand und ein Budget-Assistent in 3 Schritten.',
+      ],
+    },
+  },
+  {
     id: '2026-10-30',
     items: {
       es: [
