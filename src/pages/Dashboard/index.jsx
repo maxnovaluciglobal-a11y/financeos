@@ -71,7 +71,8 @@ function TodoStrip({ children }) {
   }, [])
   const extra = Math.max(0, count - 1)
   return (
-    <div className={hs.oTodo}>
+    // Sin avisos no ocupa lugar (ni el espacio entre bloques).
+    <div className={hs.oTodo} data-tour="first-steps" hidden={count === 0}>
       <div ref={ref} className={`${hs.todo} ${open ? '' : hs.todoCollapsed}`}>
         {children}
       </div>
@@ -324,14 +325,12 @@ export default function Dashboard({ setPage }) {
           {/* "Para hacer": un aviso por vez, en orden de prioridad. Los pagos
               por confirmar ya están en el héroe ("Previsto pendiente · Revisar")
               y la tasa más reciente en su fila ("Usar"). */}
-          <div data-tour="first-steps">
-            <TodoStrip>
+          <TodoStrip>
               <Slot><FirstSteps setPage={setPage} /></Slot>
               <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>
               <Slot><BackupReminderBanner suppress={backupStepPending} /></Slot>
               <Slot><SafariStorageNotice /></Slot>
-            </TodoStrip>
-          </div>
+          </TodoStrip>
 
           <div className={hs.pair}>
             <UpcomingPayments rules={rules} incomes={ctx.incomes} expenses={ctx.expenses} debts={debts} subscriptions={subs} sym={sym} setPage={setPage}
@@ -385,9 +384,13 @@ export default function Dashboard({ setPage }) {
         <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--th)', lineHeight: 1.5 }}>{t('home.edit.note')}</p>
       </Sheet>
 
-      <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.6, marginTop:16 }}>
-        {t('dash.disclaimer')}
-      </div>
+      {/* El aviso habla de los gráficos: en el Inicio solo aparece si la
+          persona sumó alguno en "Editar Inicio" (Panorama lo muestra siempre). */}
+      {HOME_CARDS.some(cardOn) && (
+        <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.6, marginTop:16 }}>
+          {t('dash.disclaimer')}
+        </div>
+      )}
     </div>
   )
 }

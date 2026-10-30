@@ -204,3 +204,18 @@ export function planWizardWrites({ rows = [], budgets = [], updateExisting = fal
   }
   return { create, update, keep }
 }
+
+// "Ocultar montos" en los campos editables (T13). Con el modo activo y sin
+// edición en curso, el campo muestra la máscara (o vacío si no hay monto): la
+// cifra real nunca llega al DOM. Mientras se edita, se ve lo que se teclea.
+export function maskedInputValue(hidden, editing, raw, mask = '•••') {
+  if (!hidden || editing) return raw ?? ''
+  return raw ? mask : ''
+}
+
+// Lo que quedó en el campo después de teclear sobre la máscara: se descartan
+// los puntos de la máscara y queda solo lo nuevo (borrar la máscara = vacío).
+export function unmaskTyped(typed, mask = '•••') {
+  const ch = mask[0] || '•'
+  return String(typed ?? '').split(ch).join('')
+}

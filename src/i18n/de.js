@@ -3320,4 +3320,6 @@ export const de = {
     "more.debts": "Schulden und Forderungen",
     "home.budget.hintRisk": "am stärksten gefährdet",
     "home.upcoming.viewAllN": "Alle {n} ansehen",
+    "debts.owed.deletedWithIncome.one": "Zusammen mit der Einnahme aus dem Eingang gelöscht",
+    "debts.owed.deletedWithIncome.many": "Zusammen mit den {n} Einnahmen aus den Eingängen gelöscht",
 }

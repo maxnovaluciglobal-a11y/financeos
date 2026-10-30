@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest'
 import {
   OWE, OWED, debtDirection, isOwed, isOwe, splitDebts, newReceivable, owedTotals,
   applyCollection, groupReceivables, receivableState, upcomingCollections, mergeUpcoming, collectedOf,
+  linkedCollectionIncomes,
 } from './debtDirection.js'
 import { calcNetWorth } from './netWorth.js'
 import { personalDebtRatio, personalDebts, pendingDebtMonthly } from './personal.js'
@@ -165,5 +166,32 @@ describe('fijos y CSV', () => {
     const rows = extraCsvRows({ debts: [card, ana] }, k => k)
     expect(rows[0]).toEqual(['csv.type.debt', '', 'Banco', 'Tarjeta', -800, '', '', 'min 100'])
     expect(rows[1]).toEqual(['csv.type.receivable', '2026-11-10', 'Ana', '', 300, '', '', 'viaje'])
+  })
+})
+
+describe('ingresos vinculados a los cobros de un "me deben"', () => {
+  const incomes = [
+    { id: 'i1', amount: 150, date: '2026-10-01', receivableId: 'r2', collectionId: 'c1' },
+    { id: 'i2', amount: 20, date: '2026-10-02', receivableId: 'r2' }, // anterior al collectionId
+    { id: 'i3', amount: 150, date: '2026-10-01', source: 'Cobro a Leo' }, // sin vínculo: mismo monto y fecha
+    { id: 'i4', amount: 300, date: '2026-10-03', receivableId: 'r1', collectionId: 'c9' },
+    null,
+  ]
+  it('al borrar el registro devuelve solo los ingresos con su receivableId', () => {
+    expect(linkedCollectionIncomes(leo, incomes).map(r => r.id)).toEqual(['i1', 'i2'])
+    expect(linkedCollectionIncomes(ana, incomes).map(r => r.id)).toEqual(['i4'])
+  })
+  it('nunca adivina por monto, fecha o descripción', () => {
+    expect(linkedCollectionIncomes(done, incomes)).toEqual([])
+    expect(linkedCollectionIncomes(leo, incomes).some(r => r.id === 'i3')).toBe(false)
+  })
+  it('por cobro puntual exige el collectionId (los ingresos viejos no se atribuyen)', () => {
+    expect(linkedCollectionIncomes(leo, incomes, { collectionId: 'c1' }).map(r => r.id)).toEqual(['i1'])
+    expect(linkedCollectionIncomes(leo, incomes, { collectionId: 'c2' })).toEqual([])
+  })
+  it('acepta entradas vacías', () => {
+    expect(linkedCollectionIncomes(null, incomes)).toEqual([])
+    expect(linkedCollectionIncomes(leo, null)).toEqual([])
+    expect(linkedCollectionIncomes({ id: 'r2' }, [{ receivableId: 'r2' }])).toEqual([])
   })
 })

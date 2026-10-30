@@ -14,7 +14,7 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel, showProChip, navItemVisible } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
-import { chromeFor } from './pageStack.js'
+import { chromeFor, SUB_BACK_EVENT } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
 import { QUICK_ADD_EVENT, NAVIGATE_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
@@ -85,7 +85,18 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   // R14/L2: raíces (Inicio · Movimientos · Presupuestos · Metas · Menú) con barra; el resto se abre
   // "empujado": "‹" arriba, sin barra y sin "+" (salvo páginas de registrar).
   const chrome = chromeFor(page)
-  const back = onBack || (() => setPage(chrome.parent))
+  // Una subpantalla dentro de la página (hoy, Ajustes › Perfil y país…) toma
+  // el "‹" de la barra: dice a dónde vuelve (la raíz de Ajustes) y vuelve con
+  // el historial, así no conviven "‹ Más" y "‹ Ajustes" en el celular.
+  const [subBack, setSubBack] = useState(null)
+  useEffect(() => {
+    const on = (e) => setSubBack(e.detail?.label || null)
+    window.addEventListener(SUB_BACK_EVENT, on)
+    return () => window.removeEventListener(SUB_BACK_EVENT, on)
+  }, [])
+  const pageBack = onBack || (() => setPage(chrome.parent))
+  const back = subBack ? () => history.back() : pageBack
+  const backLabel = subBack || pageLabel(backTo || chrome.parent)
   // El atributo vive en <html> para que --tabbar-h (Toast, CountrySelect, CTA
   // del demo, aire del contenido) se recalcule también en lo que va en portal.
   useEffect(() => {
@@ -251,9 +262,9 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
           <div className={s.topLeft}>
             {chrome.back && (
               <button type="button" className={s.backBtn} onClick={back}
-                aria-label={t('nav.backTo', { page: t(pageLabel(backTo || chrome.parent)) })}>
+                aria-label={t('nav.backTo', { page: t(backLabel) })}>
                 <ChevronLeft size={22} strokeWidth={2} aria-hidden="true" />
-                <span className={s.backLbl}>{t(pageLabel(backTo || chrome.parent))}</span>
+                <span className={s.backLbl}>{t(backLabel)}</span>
               </button>
             )}
           </div>

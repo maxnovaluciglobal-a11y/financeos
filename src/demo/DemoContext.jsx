@@ -143,12 +143,15 @@ export function DemoProvider({ children }) {
   const dismissToast = useCallback(() => dispatch({ type: 'SET_TOAST', toast: null }), [])
 
   // Borrado con deshacer en demo (en memoria: re-dispatch del ADD con el mismo item)
-  const deleteWithUndo = useCallback((store, item, deletedMsg, undoLabel) => {
-    const DEL = { incomes:'DEL_INCOME', expenses:'DEL_EXPENSE', budgets:'DEL_BUDGET', debts:'DEL_DEBT', goals:'DEL_GOAL', subscriptions:'DEL_SUB', recurring:'DEL_RULE' }[store]
-    const ADD = { incomes:'ADD_INCOME', expenses:'ADD_EXPENSE', budgets:'ADD_BUDGET', debts:'ADD_DEBT', goals:'ADD_GOAL', subscriptions:'ADD_SUB', recurring:'UPSERT_RULE' }[store]
-    if (!DEL || !item?.id) return
-    dispatch({ type: DEL, id: item.id })
-    showToast(deletedMsg || tr('common.deleted'), 'ok', { label: undoLabel || tr('common.undo'), onAction: () => dispatch({ type: ADD, item }) })
+  // `linked`: mismo contrato que AppContext — registros que se borran y se
+  // restauran junto con el principal (ingresos de los cobros de "Me deben").
+  const deleteWithUndo = useCallback((store, item, deletedMsg, undoLabel, linked = []) => {
+    const DEL = { incomes:'DEL_INCOME', expenses:'DEL_EXPENSE', budgets:'DEL_BUDGET', debts:'DEL_DEBT', goals:'DEL_GOAL', subscriptions:'DEL_SUB', recurring:'DEL_RULE' }
+    const ADD = { incomes:'ADD_INCOME', expenses:'ADD_EXPENSE', budgets:'ADD_BUDGET', debts:'ADD_DEBT', goals:'ADD_GOAL', subscriptions:'ADD_SUB', recurring:'UPSERT_RULE' }
+    if (!DEL[store] || !item?.id) return
+    const all = [{ store, item }, ...(Array.isArray(linked) ? linked : []).filter(l => DEL[l?.store] && l?.item?.id)]
+    for (const l of all) dispatch({ type: DEL[l.store], id: l.item.id })
+    showToast(deletedMsg || tr('common.deleted'), 'ok', { label: undoLabel || tr('common.undo'), onAction: () => { for (const l of all) dispatch({ type: ADD[l.store], item: l.item }) } })
   }, [showToast, tr])
 
   // Todas las operaciones son en memoria — sin await, sin IndexedDB

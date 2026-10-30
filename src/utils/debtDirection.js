@@ -16,6 +16,12 @@
 // CSV y el sync sigan siendo genéricos: `creditor` = quién me debe, `initial` /
 // `balance` = monto y saldo pendiente, `dueDate` = fecha esperada (opcional),
 // `notes`, y `collections` = historial de cobros parciales [{ id, date, amount }].
+//
+// Un cobro registrado "como ingreso" crea un ingreso con `receivableId` (el id
+// del "me deben") y, desde el 30-oct-2026, `collectionId` (el id del cobro).
+// Ese par es el vínculo: al borrar el "me deben" se borran con él (un solo
+// Deshacer) solo los ingresos que lo llevan. Un ingreso sin `receivableId` no
+// se toca nunca, aunque coincidan monto, fecha y descripción.
 
 export const OWE = 'owe'
 export const OWED = 'owed'
@@ -127,4 +133,17 @@ export function mergeUpcoming(payments, collections, { limit = 5 } = {}) {
   const all = [...(payments || []), ...(collections || [])]
   all.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount)
   return { items: all.slice(0, limit), total: all.length }
+}
+
+// Ingresos creados por los cobros de un "me deben" (ver el vínculo arriba).
+// Sin `collectionId` devuelve los de todo el registro; con él, solo el ingreso
+// de ese cobro (los ingresos viejos sin `collectionId` no se atribuyen a un
+// cobro puntual: no se puede probar cuál fue). Nunca adivina por monto o fecha.
+export function linkedCollectionIncomes(d, incomes, { collectionId } = {}) {
+  if (!d?.id) return []
+  return (Array.isArray(incomes) ? incomes : []).filter((r) => {
+    if (!r?.id || r.receivableId == null || String(r.receivableId) !== String(d.id)) return false
+    if (collectionId == null) return true
+    return r.collectionId != null && String(r.collectionId) === String(collectionId)
+  })
 }

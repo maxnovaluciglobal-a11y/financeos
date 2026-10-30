@@ -28,6 +28,7 @@ import { Setting } from './settingsUi.jsx'
 import m from '../More/more.module.css'
 import { SETTINGS_SECTIONS, groupById, searchSettings, subFromState, withSub, takePendingSub } from './settingsIndex.js'
 import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
+import { announceSubBack } from '../../components/layout/pageStack.js'
 import { getSession } from '../../core/auth.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import config from '../../config.js'
@@ -125,6 +126,13 @@ export default function Settings() {
     if (pending && !subFromState(history.state)) openSub(pending)
   }, [openSub])
 
+  // El "‹" de la barra superior vuelve a la raíz de Ajustes mientras haya
+  // una subpantalla abierta (pageStack.js › SUB_BACK_EVENT).
+  useEffect(() => {
+    announceSubBack(sub ? 'settings.title' : null)
+    return () => announceSubBack(null)
+  }, [sub])
+
   function closeSub() {
     if (subFromState(history.state)) { history.back(); return }
     setSub(null)
@@ -159,7 +167,8 @@ export default function Settings() {
     return (
       <div className="stack" data-settings-sub={sub}>
         <div>
-          <button type="button" onClick={closeSub} aria-label={t('settings.backTo')}
+          {/* En el celular el "‹ Ajustes" vive en la barra superior (Shell). */}
+          <button type="button" className="fos-hide-mobile" onClick={closeSub} aria-label={t('settings.backTo')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 2, minHeight: 44, padding: '0 8px 0 0', background: 'none', border: 'none', color: 'var(--blu)', fontSize: 14, fontFamily: 'var(--sans)', cursor: 'pointer' }}>
             <ChevronLeft size={20} strokeWidth={1.7} aria-hidden="true" />{t('settings.title')}
           </button>

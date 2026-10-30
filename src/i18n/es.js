@@ -3321,4 +3321,6 @@ export const es = {
     "more.debts": "Deudas y cobros",
     "home.budget.hintRisk": "las más en riesgo",
     "home.upcoming.viewAllN": "Ver los {n}",
+    "debts.owed.deletedWithIncome.one": "Eliminado junto con el ingreso de su cobro",
+    "debts.owed.deletedWithIncome.many": "Eliminado junto con los {n} ingresos de sus cobros",
 }

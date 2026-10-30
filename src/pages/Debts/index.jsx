@@ -296,7 +296,7 @@ export default function Debts() {
           options={[{ value: 'owe', label: t('debts.dir.owe') }, { value: 'owed', label: t('debts.dir.owed') }]} />
       </div>
       {dir === 'owed' ? (
-        <Receivables receivables={receivables} addDebt={addDebt} updateDebt={updateDebt} addIncome={addIncome}
+        <Receivables receivables={receivables} incomes={incomes} addDebt={addDebt} updateDebt={updateDebt} addIncome={addIncome}
           deleteWithUndo={deleteWithUndo} settings={settings} sym={sym} />
       ) : (<>
       <p style={{fontSize:12.5,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,margin:0}}>{t('debts.intro')}</p>

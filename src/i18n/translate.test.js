@@ -582,7 +582,7 @@ describe('paridad de las claves de "Debo · Me deben" (D2, es/en/pt/de)', () => 
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
-    expect(base.length).toBe(46)
+    expect(base.length).toBe(48) // +2: aviso al borrar un "me deben" con sus ingresos (30-oct)
     expect(pick(en)).toEqual(base)
     expect(pick(pt)).toEqual(base)
     expect(pick(de)).toEqual(base)

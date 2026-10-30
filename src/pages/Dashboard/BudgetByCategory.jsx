@@ -35,8 +35,13 @@ export default function BudgetByCategory({ budgets, expenses, monthExpenses, act
   return (
     <section className={`${s.card} rise`} aria-labelledby="home-budget-title">
       <div className={s.cardHead}>
-        <h2 id="home-budget-title" className={s.cardTitle}>{t('home.budget.title')}</h2>
-        {rows.length > 0 && <span className={s.cardHint}>{t(short ? 'home.budget.hintRisk' : 'home.budget.hint')}</span>}
+        <h2 id="home-budget-title" className={s.cardTitle}>
+          {t('home.budget.title')}
+          {short && rows.length > 0 && <span className={s.cardHintInline}> · {t('home.budget.hintRisk')}</span>}
+        </h2>
+        {short && setPage && rows.length > 0
+          ? <button type="button" className={s.cardLink} onClick={() => setPage('budgets')}>{t('home.budget.viewAll')} →</button>
+          : rows.length > 0 && <span className={s.cardHint}>{t('home.budget.hint')}</span>}
       </div>
 
       {rows.length === 0 ? (
@@ -75,7 +80,7 @@ export default function BudgetByCategory({ budgets, expenses, monthExpenses, act
             })}
           </ul>
           {hiddenCount > 0 && !short && <div className={s.more}>{t(`home.budget.more.${hiddenCount === 1 ? 'one' : 'many'}`, { n: hiddenCount })}</div>}
-          {setPage && (
+          {setPage && !short && (
             <div className={s.footLinks}>
               <button type="button" className={s.cardLink} onClick={() => setPage('budgets')}>{t('home.budget.viewAll')} →</button>
             </div>

@@ -12,7 +12,7 @@ import { Plus, Trash2, X } from 'lucide-react'
 import Sheet from '../../components/ui/Sheet.jsx'
 import CategoryIcon from '../../components/CategoryIcon.jsx'
 import { StateTag } from '../../components/ledger/index.js'
-import Money, { useMoney } from '../../components/Money.jsx'
+import Money, { useMoney, MONEY_MASK } from '../../components/Money.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtPct, catName, catLabel, currencySymbol, currentMonth, getCategoriesExpense, today as todayStr } from '../../utils/index.js'
@@ -23,12 +23,36 @@ import { prevMonthKey } from './budgetCopy.js'
 import { SplitBar } from './BudgetSplit.jsx'
 import {
   suggestWizardIncome, initialSavingsPct, suggestWizardRows, wizardTotals,
-  validateIncome, validateRows, planWizardWrites, parseAmountInput,
+  validateIncome, validateRows, planWizardWrites, parseAmountInput, maskedInputValue, unmaskTyped,
 } from './budgetWizard.js'
 import w from './budgetWizard.module.css'
 
 const SAVINGS_CHIPS = [0, 5, 10, 15, 20]
 const asInput = (n) => (Number(n) > 0 ? String(Math.round(Number(n))) : '')
+
+// Campo de monto que respeta "ocultar montos" (T13): con el modo activo, el
+// valor del DOM es "•••" (el número real no llega ni al lector de pantalla ni a
+// una captura), también con foco: la hoja enfoca el ingreso al abrirse y eso no
+// debe destapar la sugerencia. Lo primero que se teclea reemplaza el monto y
+// desde ahí se ve lo que se escribe (como el teclado de QuickAdd); al salir del
+// campo vuelve a enmascararse. Un campo deshabilitado queda siempre oculto.
+function AmountInput({ value, onChange, onBlur, inputRef, ...rest }) {
+  const { hidden } = useMoney()
+  const [editing, setEditing] = useState(false)
+  const shown = maskedInputValue(hidden, editing, value, MONEY_MASK)
+  return (
+    <input {...rest} ref={inputRef} type="text" inputMode="decimal" autoComplete="off"
+      value={shown}
+      onBlur={e => { setEditing(false); onBlur?.(e) }}
+      onChange={e => {
+        if (hidden && !editing) {
+          setEditing(true)
+          e.target.value = unmaskTyped(e.target.value, MONEY_MASK)
+        }
+        onChange?.(e)
+      }} />
+  )
+}
 
 export default function BudgetWizard({ onClose }) {
   const { budgets, expenses, incomes, recurring, settings, addBudget, updateBudget, updateSettings, showToast } = useApp()
@@ -146,7 +170,7 @@ export default function BudgetWizard({ onClose }) {
               <label htmlFor="bud-wiz-income" className={w.label}>{t('budgets.wiz.income.label', { month: monthLabel(activeMonth) })}</label>
               <div className={w.amountBox}>
                 <span className={w.sym} aria-hidden="true">{sym}</span>
-                <input id="bud-wiz-income" ref={incomeRef} type="text" inputMode="decimal" autoComplete="off"
+                <AmountInput id="bud-wiz-income" inputRef={incomeRef}
                   className={w.amountInput} value={incomeRaw} placeholder="0"
                   aria-invalid={incomeErr ? 'true' : undefined} aria-describedby="bud-wiz-income-src"
                   onChange={e => setIncomeRaw(e.target.value.replace(/[^\d.,\s]/g, '').slice(0, 16))}
@@ -225,7 +249,7 @@ export default function BudgetWizard({ onClose }) {
                       </div>
                       <div className={`${w.amountBox} ${w.rowAmount}`}>
                         <span className={w.sym} aria-hidden="true">{sym}</span>
-                        <input id={id} type="text" inputMode="decimal" autoComplete="off" className={w.amountInput}
+                        <AmountInput id={id} className={w.amountInput}
                           value={locked ? asInput(ex.limit) : r.amount} disabled={locked} placeholder="0"
                           aria-label={t('budgets.wiz.cats.limitAria', { cat: name })}
                           aria-invalid={err ? 'true' : undefined} aria-describedby={err ? `${id}-err` : undefined}

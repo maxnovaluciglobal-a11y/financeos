@@ -16,6 +16,14 @@ import { TAB_IDS, activeTabFor } from './navConfig.js'
 // (Ingresos es la lista de ingresos del mes; el "+" abre el registro rápido.)
 export const FAB_SECONDARY_PAGES = new Set(['income'])
 
+// Una página con subpantallas propias (Ajustes) avisa a Shell con este evento
+// { label: clave i18n | null } para que el "‹" de la barra vuelva a su raíz.
+export const SUB_BACK_EVENT = 'fos:sub-back'
+export function announceSubBack(label) {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent(SUB_BACK_EVENT, { detail: { label: label || null } }))
+}
+
 export function isRootPage(page) {
   return !page || TAB_IDS.includes(page)
 }

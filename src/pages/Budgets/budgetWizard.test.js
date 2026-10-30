@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseAmountInput, suggestWizardIncome, initialSavingsPct, topExpenseCategories, split503020,
-  suggestWizardRows, wizardTotals, validateIncome, validateRows, planWizardWrites,
+  suggestWizardRows, wizardTotals, validateIncome, validateRows, planWizardWrites, maskedInputValue, unmaskTyped,
   WIZARD_DEFAULT_SAVINGS_PCT, DEFAULT_MODEL,
 } from './budgetWizard.js'
 
@@ -165,5 +165,22 @@ describe('planWizardWrites', () => {
     const w = planWizardWrites({ rows, budgets, updateExisting: true })
     expect(w.update).toEqual([{ id: 'b1', category: 'Vivienda', limit: 600, createdAt: '2026-01-01' }])
     expect(w.keep).toEqual(['Salud'])
+  })
+})
+
+describe('ocultar montos en los campos (T13)', () => {
+  it('con el modo activo y sin edición, el campo nunca muestra dígitos', () => {
+    expect(maskedInputValue(true, false, '125000', '•••')).toBe('•••')
+    expect(maskedInputValue(true, false, '', '•••')).toBe('')
+    expect(maskedInputValue(true, false, undefined, '•••')).toBe('')
+  })
+  it('mientras se edita (o sin el modo) se ve lo que se teclea', () => {
+    expect(maskedInputValue(true, true, '12', '•••')).toBe('12')
+    expect(maskedInputValue(false, false, '125000', '•••')).toBe('125000')
+  })
+  it('teclear sobre la máscara deja solo lo nuevo; borrarla deja vacío', () => {
+    expect(unmaskTyped('•••5', '•••')).toBe('5')
+    expect(unmaskTyped('••', '•••')).toBe('')
+    expect(unmaskTyped('7', '•••')).toBe('7')
   })
 })

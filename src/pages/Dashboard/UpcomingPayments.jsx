@@ -58,8 +58,15 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
   return (
     <section className={`${s.card} rise`} aria-labelledby="home-upcoming-title">
       <div className={s.cardHead}>
-        <h2 id="home-upcoming-title" className={s.cardTitle}>{t(hasCollect ? 'home.upcoming.titleBoth' : 'home.upcoming.title')}</h2>
-        <span className={s.cardHint}>{t(short ? 'home.upcoming.hint7' : 'home.upcoming.hint')}</span>
+        <h2 id="home-upcoming-title" className={s.cardTitle}>
+          {t(hasCollect ? 'home.upcoming.titleBoth' : 'home.upcoming.title')}
+          {short && <span className={s.cardHintInline}> · {t('home.upcoming.hint7')}</span>}
+        </h2>
+        {short && setPage
+          ? <button type="button" className={s.cardLink} onClick={() => setPage('recurring')}>
+              {hiddenCount > 0 ? t('home.upcoming.viewAllN', { n: total }) : t('home.upcoming.viewAll')} →
+            </button>
+          : <span className={s.cardHint}>{t(short ? 'home.upcoming.hint7' : 'home.upcoming.hint')}</span>}
       </div>
 
       {items.length === 0 ? (
@@ -95,12 +102,9 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
       )}
 
       {hiddenCount > 0 && !short && <div className={s.more}>{t(`home.upcoming.more.${hiddenCount === 1 ? 'one' : 'many'}`, { n: hiddenCount })}</div>}
-      {setPage && short && (
+      {setPage && short && hasCollect && (
         <div className={s.footLinks}>
-          <button type="button" className={s.cardLink} onClick={() => setPage('recurring')}>
-            {hiddenCount > 0 ? t('home.upcoming.viewAllN', { n: total }) : t('home.upcoming.viewAll')} →
-          </button>
-          {hasCollect && <button type="button" className={s.cardLink} onClick={() => setPage('debts')}>{t('dash.action.viewDebts')} →</button>}
+          <button type="button" className={s.cardLink} onClick={() => setPage('debts')}>{t('dash.action.viewDebts')} →</button>
         </div>
       )}
       {setPage && !short && (

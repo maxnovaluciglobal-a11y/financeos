@@ -5,7 +5,8 @@
 // aparece como "Cobro" en Próximos pagos cuando tiene fecha y no entra en la
 // carga de deuda del IQ Score. Un cobro (parcial o total) baja el saldo y, si
 // se deja marcado "Registrar como ingreso", crea el ingreso con addIncome para
-// que aparezca en Movimientos.
+// que aparezca en Movimientos. Ese ingreso lleva receivableId + collectionId:
+// al borrar el "me deben" se borra con él (un solo Deshacer).
 //
 // V2 (un primario por pantalla): el único botón Latón es "+ Nuevo por cobrar"
 // (o "Guardar" con el formulario abierto); las acciones de cada fila son
@@ -16,7 +17,7 @@ import StateTag from '../../components/ledger/StateTag.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, dateLocale, localDateStr, uid } from '../../utils/index.js'
-import { applyCollection, groupReceivables, newReceivable, owedTotals, receivableState } from '../../utils/debtDirection.js'
+import { applyCollection, groupReceivables, linkedCollectionIncomes, newReceivable, owedTotals, receivableState } from '../../utils/debtDirection.js'
 
 const STATE_TONE = { pending: 'muted', late: 'warn', undated: 'muted', collected: 'ok' }
 const EMPTY_FORM = { who: '', amount: '', date: '', notes: '' }
@@ -29,7 +30,7 @@ function shortDate(iso) {
 
 const groupHead = { display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0 0', paddingTop: 12, borderTop: '1px solid var(--brd2)', fontSize: 12, fontWeight: 600, color: 'var(--tm)', fontFamily: 'var(--sans)' }
 
-export default function Receivables({ receivables, addDebt, updateDebt, addIncome, deleteWithUndo, settings, sym }) {
+export default function Receivables({ receivables, incomes, addDebt, updateDebt, addIncome, deleteWithUndo, settings, sym }) {
   const { t } = useT()
   const { m } = useMoney()
   const money = (v) => m(fmtMoney(v, sym))
@@ -60,7 +61,8 @@ export default function Receivables({ receivables, addDebt, updateDebt, addIncom
   }
 
   async function confirmCollect(d) {
-    const { debt, amount } = applyCollection(d, collectAmt, { date: today, id: uid() })
+    const collectionId = uid()
+    const { debt, amount } = applyCollection(d, collectAmt, { date: today, id: collectionId })
     if (amount <= 0) return
     await updateDebt(debt)
     if (asIncome && addIncome) {
@@ -72,11 +74,21 @@ export default function Receivables({ receivables, addDebt, updateDebt, addIncom
         recurrence: 'Único',
         notes: d.notes || '',
         receivableId: d.id,
+        collectionId,
       })
     }
     setCollectId(null)
     setMsg({ id: d.id, text: t('debts.owed.collect.done', { amt: money(amount) }) })
     setTimeout(() => setMsg(null), 3000)
+  }
+
+  // Borrar un "me deben" borra también los ingresos que crearon sus cobros
+  // (solo los vinculados por receivableId) y "Deshacer" restaura todo junto.
+  function remove(d) {
+    const linked = linkedCollectionIncomes(d, incomes)
+    const n = linked.length
+    const text = n === 0 ? t('common.deleted') : t(n === 1 ? 'debts.owed.deletedWithIncome.one' : 'debts.owed.deletedWithIncome.many', { n })
+    deleteWithUndo('debts', d, text, t('common.undo'), linked.map(item => ({ store: 'incomes', item })))
   }
 
   const renderRow = (d, i) => {
@@ -119,7 +131,7 @@ export default function Receivables({ receivables, addDebt, updateDebt, addIncom
             <Btn variant="ghost" size="sm" onClick={() => openCollect(d)} style={{ color: 'var(--tx)', fontWeight: 600 }}>{t('debts.owed.collectBtn')}</Btn>
           )}
           <span style={{ flex: 1 }} />
-          <button type="button" onClick={() => deleteWithUndo('debts', d, t('common.deleted'), t('common.undo'))} aria-label={t('debts.owed.delete')}
+          <button type="button" onClick={() => remove(d)} aria-label={t('debts.owed.delete')}
             style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 13, cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
         {collectId === d.id && (

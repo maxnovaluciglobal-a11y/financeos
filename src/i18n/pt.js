@@ -3321,4 +3321,6 @@ export const pt = {
     "more.debts": "Dívidas e valores a receber",
     "home.budget.hintRisk": "as mais em risco",
     "home.upcoming.viewAllN": "Ver os {n}",
+    "debts.owed.deletedWithIncome.one": "Excluído junto com a receita do seu recebimento",
+    "debts.owed.deletedWithIncome.many": "Excluído junto com as {n} receitas dos seus recebimentos",
 }

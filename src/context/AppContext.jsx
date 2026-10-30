@@ -165,17 +165,33 @@ export function AppProvider({ children }) {
       if (next) { await dbAdd('recurring', next); dispatch({ type: 'UPSERT_RULE', item: next }) }
     } catch (e) { console.error('[MOY IQ] fijo del registro borrado:', e) }
   }
-  const deleteWithUndo = useCallback(async (store, item, deletedMsg, undoLabel) => {
+  // `linked` (opcional): registros que se borran y se restauran JUNTO con el
+  // principal, con un solo "Deshacer" — ej. los ingresos que creó un cobro de
+  // "Me deben" (utils/debtDirection.js · linkedCollectionIncomes).
+  const deleteWithUndo = useCallback(async (store, item, deletedMsg, undoLabel, linked = []) => {
     if (!item?.id) return
+    const all = [{ store, item }, ...(Array.isArray(linked) ? linked : []).filter(l => l?.store && l?.item?.id)]
+    const isRecord = (st) => st === 'incomes' || st === 'expenses'
     try {
-      await dbDelete(store, item.id)
-      if (store === 'incomes' || store === 'expenses') await markLinked(item, true)
+      for (const l of all) {
+        await dbDelete(l.store, l.item.id)
+        if (isRecord(l.store)) await markLinked(l.item, true)
+      }
       await rehydrate()
-      await resyncIfSource(store)
+      for (const st of new Set(all.map(l => l.store))) await resyncIfSource(st)
       hapticTap()
       showToast(deletedMsg || tr('common.deleted'), 'ok', {
         label: undoLabel || tr('common.undo'),
-        onAction: async () => { try { await dbAdd(store, item); if (store === 'incomes' || store === 'expenses') await markLinked(item, false); await rehydrate(); await resyncIfSource(store) } catch (e) { showToast(tr('toast.undoFailed'), 'error') } },
+        onAction: async () => {
+          try {
+            for (const l of all) {
+              await dbAdd(l.store, l.item)
+              if (isRecord(l.store)) await markLinked(l.item, false)
+            }
+            await rehydrate()
+            for (const st of new Set(all.map(l => l.store))) await resyncIfSource(st)
+          } catch (e) { showToast(tr('toast.undoFailed'), 'error') }
+        },
       })
     } catch (e) {
       showToast(tr('toast.deleteError'), 'error')

@@ -2,7 +2,7 @@
    Una columna en el orden del DOM; en escritorio (contenedor ≥ 760px) los
    pares (pagos | presupuesto) van a dos columnas. Panorama reusa estas clases. */
 
-.home { container-type: inline-size; margin-bottom: 16px; }
+.home { container-type: inline-size; margin-bottom: 8px; }
 
 .stack { display: flex; flex-direction: column; gap: 16px; }
 
@@ -14,6 +14,7 @@
    rápidas → Para hacer (un aviso) → pagos y cobros de 7 días → presupuesto en
    riesgo (3) → IQ en una línea → tarjetas opcionales de "Editar Inicio". */
 .oTodo:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-3); }
+.oTodo[hidden] { display: none; }
 .oExtra:not(:empty) { display: flex; flex-direction: column; gap: 16px; }
 
 @container (min-width: 760px) {
@@ -44,6 +45,10 @@
 .cardHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .cardTitle { margin: 0; font-family: var(--display); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--tx); }
 .cardHint { font-size: 12px; color: var(--th); }
+/* Inicio (poda): el plazo va junto al título y "Ver todos" a la derecha. */
+.cardHintInline { font-family: var(--sans); font-size: 12px; font-weight: 400; letter-spacing: 0; color: var(--th); }
+.cardHead .cardLink { flex-shrink: 0; }
+.cardHead:has(> .cardLink) { align-items: center; margin-bottom: 4px; }
 
 /* Enlace de tarjeta ("Ver presupuestos →"): área táctil de 44px sin ocupar 44px visuales */
 .cardLink {
@@ -121,7 +126,7 @@ button.pairItem:active { transform: scale(.99); }
 /* Plegado: solo el primer aviso con contenido; los demás, con "N más". */
 .todoCollapsed > .todoSlot:not(:empty) ~ .todoSlot { display: none; }
 .todoMore { align-self: flex-start; min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-.homeFoot { display: flex; justify-content: center; margin-top: 4px; }
+.homeFoot { display: flex; justify-content: center; }
 .homeFootBtn { min-height: 44px; padding: 0 14px; background: none; border: 0.5px solid var(--brd2); border-radius: var(--r); color: var(--tm); font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .homeFootBtn:hover { color: var(--tx); border-color: var(--navy-400); }
 

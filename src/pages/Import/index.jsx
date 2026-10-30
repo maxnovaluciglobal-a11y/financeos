@@ -14,6 +14,7 @@ import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplat
 import { canonicalCategory } from '../../utils/categoryAliases.js'
 import { logClientError } from '../../utils/errorLog.js'
 import { PageHeader } from '../../components/ui/index.jsx'
+import Money from '../../components/Money.jsx'
 import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
   createImportBatch, buildTransactions, MAX_ROWS,
@@ -346,8 +347,8 @@ export default function ImportMovements({ setPage } = {}) {
                       <td style={{ ...s.td, color: 'var(--tx)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.fileName}</td>
                       <td style={{ ...s.td, color: 'var(--th)' }}>{b.importedAt?.slice(0,10)}</td>
                       <td style={{ ...s.td, fontWeight: 600 }}>{b.importedRows}</td>
-                      <td style={{ ...s.td, color: 'var(--accent)' }}>{fmtMoney(b.totalIncome, sym)}</td>
-                      <td style={{ ...s.td, color: 'var(--red)' }}>{fmtMoney(b.totalExpense, sym)}</td>
+                      <td style={{ ...s.td, color: 'var(--accent)' }}><Money>{fmtMoney(b.totalIncome, sym)}</Money></td>
+                      <td style={{ ...s.td, color: 'var(--red)' }}><Money>{fmtMoney(b.totalExpense, sym)}</Money></td>
                       <td style={{ ...s.td, color: 'var(--th)' }}>{(b.skippedRows||0)+(b.duplicateRows||0)}</td>
                     </tr>
                   ))}</tbody>
@@ -495,8 +496,8 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.valid')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)' }}>{stats.valid}</div></div>
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.dup')}</div><div style={{ ...s.summaryVal, color: 'var(--amb)' }}>{stats.duplicate}</div></div>
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.error')}</div><div style={{ ...s.summaryVal, color: 'var(--red)' }}>{stats.error}</div></div>
-              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.incomeEst')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 13 }}>{fmtMoney(stats.incomeAmt, sym)}</div></div>
-              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.expenseEst')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 13 }}>{fmtMoney(stats.expenseAmt, sym)}</div></div>
+              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.incomeEst')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 13 }}><Money>{fmtMoney(stats.incomeAmt, sym)}</Money></div></div>
+              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.expenseEst')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 13 }}><Money>{fmtMoney(stats.expenseAmt, sym)}</Money></div></div>
             </div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
               {[
@@ -523,7 +524,7 @@ export default function ImportMovements({ setPage } = {}) {
                   <td style={s.td}><input type="checkbox" aria-label={t('imp.review.includeRow', { desc: row.description || row.date })} style={{width:16,height:16,flexShrink:0}} checked={!!row._include} onChange={e => setRows(r => r.map((x, j) => j === i ? { ...x, _include: e.target.checked } : x))} /></td>
                   <td style={{ ...s.td, color: 'var(--th)' }}>{row.date || '—'}</td>
                   <td style={{ ...s.td, color: 'var(--tx)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.description || '—'}</td>
-                  <td style={{ ...s.td, color: row.type === 'income' ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{row.type === 'income' ? '+' : '−'}{fmtMoney(row.amount, sym)}</td>
+                  <td style={{ ...s.td, color: row.type === 'income' ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{row.type === 'income' ? '+' : '−'}<Money>{fmtMoney(row.amount, sym)}</Money></td>
                   <td style={{ ...s.td, color: 'var(--th)' }}>{row.type === 'income' ? t('imp.review.typeIncome') : t('imp.review.typeExpense')}</td>
                   <td style={s.td}>
                     <select
@@ -576,8 +577,8 @@ export default function ImportMovements({ setPage } = {}) {
                 {t('imp.done.imported', { n: result?.importedRows })}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, margin: '20px auto', maxWidth: 400 }}>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.income')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 14 }}>{fmtMoney(result?.totalIncome, sym)}</div></div>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 14 }}>{fmtMoney(result?.totalExpense, sym)}</div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.income')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 14 }}><Money>{fmtMoney(result?.totalIncome, sym)}</Money></div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 14 }}><Money>{fmtMoney(result?.totalExpense, sym)}</Money></div></div>
                 <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.skipped')}</div><div style={{ ...s.summaryVal, color: 'var(--th)', fontSize: 14 }}>{(result?.skippedRows||0)+(result?.duplicateRows||0)}</div></div>
               </div>
               <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>{t('imp.done.visible')}</p>

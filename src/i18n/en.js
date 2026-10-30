@@ -3321,4 +3321,6 @@ export const en = {
     "more.debts": "Debts and money owed to me",
     "home.budget.hintRisk": "most at risk",
     "home.upcoming.viewAllN": "See all {n}",
+    "debts.owed.deletedWithIncome.one": "Deleted along with the income from its collection",
+    "debts.owed.deletedWithIncome.many": "Deleted along with the {n} incomes from its collections",
 }

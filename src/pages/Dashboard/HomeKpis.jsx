@@ -42,7 +42,9 @@ export function useKpiDeltas({ kpis, activeMonth, country }) {
   const curRate = hist ? rateOnOrBefore(hist, curDate) : null
   const prevRate = hist ? rateOnOrBefore(hist, prevDate) : null
   const usdOn = !!(curRate && prevRate)
-  const usdFmt = (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(Math.abs(d), lang)
+  // La variación B5 se calcula en US$ (tasa BCV de cada período): se rotula
+  // siempre en US$, aunque la lente del héroe esté en euros.
+  const usdFmt = (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(Math.abs(d), lang, 'USD')
   const deltaOf = (c, p, opts) => (usdOn
     ? usdMonthDelta(c, p, { ...opts, curRate, prevRate })
     : monthDelta(c, p, { ...opts, preferAmount }))

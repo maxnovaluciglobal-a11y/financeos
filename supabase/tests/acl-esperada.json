@@ -742,7 +742,5 @@
    "service_role": "X"
   }
  },
- "replay_only": [
-  "public.register_diagnostico_lead(text, integer, text)"
- ]
+ "replay_only": []
 }
