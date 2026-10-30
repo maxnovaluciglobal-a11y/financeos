@@ -11,7 +11,8 @@ import Amount from '../../components/Amount.jsx'
 import { interpolateParts } from '../../i18n/translate.js'
 import s from './budgets.module.css'
 import { budgetsFromPreviousMonth } from './budgetCopy.js'
-import { budgetRollover, budgetStatus, budgetPace, categoryState, CATEGORY_STATE_TONE, exceedsWithTolerance } from '../../utils/budgets.js'
+import { budgetRollover, budgetStatus, budgetPace, categoryState, CATEGORY_STATE_TONE, exceedsWithTolerance, unbudgetedSpent } from '../../utils/budgets.js'
+import BudgetSplit from './BudgetSplit.jsx'
 import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
@@ -231,14 +232,13 @@ export default function Budgets() {
           <KPI label={t('budgets.kpi.total')} value={fmtMoney(totalBudget, sym)} />
         </div>
       )}
-      {exceedsWithTolerance(ingresoNeto, totalBudget) && (
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',background:'var(--accent-bg)',borderRadius:8}}>
-          <div>
-            <div style={{fontSize: 12,color:'var(--accent)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('budgets.unassigned.label')}</div>
-            <div className="num" style={{fontSize:16,color:'var(--accent)'}}><Money>{fmtMoney(ingresoNeto-totalBudget,sym)}</Money></div>
-          </div>
-          <div style={{fontSize:12,color:'var(--tm)',fontFamily: 'var(--sans)',maxWidth:320,lineHeight:1.5}}>{t('budgets.unassigned.hint')}</div>
-        </div>
+      {/* R8a (ola C, patrón rial): reparto del ingreso; reemplaza el recuadro
+          "Ingreso sin asignar" (el dato sigue: es el tramo "Sin asignar"). */}
+      {totalBudget > 0 && (
+        <BudgetSplit income={ingresoNeto} budgeted={totalBudget} sym={sym}
+          savingsPct={settings.savingsTargetPct || 0}
+          unbudgeted={unbudgetedSpent(expByCat, budgetedCats)}
+          onSavingsPct={(v) => updateSettings({ ...settings, savingsTargetPct: v })} />
       )}
       {overBudget.length > 0 && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') })}</Alert>}
       {ingresoNeto > 0 && overIncome && <Alert type="danger">{t('budgets.alert.deficit', { total: fmtMoney(totalBudget,sym), inc: fmtMoney(ingresoNeto,sym), def: fmtMoney(totalBudget-ingresoNeto,sym) })}</Alert>}

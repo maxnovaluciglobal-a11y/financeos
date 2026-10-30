@@ -51,3 +51,18 @@
 /* Modelo 50/30/20 como tabla de hairlines */
 .model th[scope="row"] { font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .iconBtn { transition: none; } }
+
+/* R8a (ola C): reparto del ingreso — barra de tres tramos, sin caja (regla 1). */
+.split { border-top: 1px solid var(--brd2); padding-top: 14px; margin: 4px 0 8px; }
+.splitHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.splitPct { display: inline-flex; align-items: center; gap: 6px; font: 500 13px/1 var(--sans); color: var(--tm); }
+.splitPct input { width: 56px; min-height: 44px; padding: 0 10px; border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tx); font: 600 15px/1 var(--num); text-align: right; }
+.splitPct input:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.splitBar { display: flex; gap: 2px; height: 12px; border-radius: 3px; overflow: hidden; background: var(--sur3); }
+.splitBar span { display: block; min-width: 3px; }
+.splitLegend { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.splitLegend li { display: flex; align-items: center; gap: 8px; font: 400 13px/1.4 var(--sans); color: var(--tx); }
+.splitLbl { flex: 1; }
+.splitDot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.splitOver { margin: 8px 0 0; font: 600 13px/1.4 var(--sans); color: var(--neg); }
+.splitHint { margin: 8px 0 0; font: 400 12px/1.5 var(--sans); color: var(--tm); }

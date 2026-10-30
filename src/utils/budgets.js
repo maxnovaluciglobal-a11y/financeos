@@ -131,3 +131,28 @@ export function budgetPace({ spent, total, activeMonth, today = new Date() }) {
   const perDay = e.daysLeft > 0 && left > 0 ? left / e.daysLeft : 0
   return { ...e, used, left, pace, perDay }
 }
+
+// R8a (ola C, patrón de rial "Ahorro / Gastos / Libre"), 30-oct-2026: cómo se
+// reparte el ingreso del mes entre lo presupuestado, el ahorro objetivo y lo
+// que queda libre. `over` > 0 si presupuesto + ahorro superan el ingreso.
+export const SAVINGS_PCT_MAX = 90
+export function clampSavingsPct(v) {
+  const n = Math.round(Number(String(v ?? '').replace(',', '.')))
+  return Number.isFinite(n) ? Math.min(SAVINGS_PCT_MAX, Math.max(0, n)) : 0
+}
+export function budgetSplit({ income = 0, budgeted = 0, savingsPct = 0 } = {}) {
+  const inc = Math.max(0, Number(income) || 0)
+  const bud = Math.max(0, Number(budgeted) || 0)
+  const savings = Math.round(inc * clampSavingsPct(savingsPct)) / 100
+  const used = bud + savings
+  return {
+    income: inc, budgeted: bud, savings,
+    free: Math.max(0, inc - used),
+    over: Math.max(0, used - inc),
+    share: inc > 0 ? { budgeted: bud / inc, savings: savings / inc, free: Math.max(0, inc - used) / inc } : null,
+  }
+}
+// Gasto del mes en categorías sin presupuesto (el "Gasto libre" de rial).
+export function unbudgetedSpent(expByCat = {}, budgetedCats = new Set()) {
+  return Object.entries(expByCat).reduce((s, [cat, v]) => s + (budgetedCats.has(cat) ? 0 : (Number(v) > 0 ? Number(v) : 0)), 0)
+}
