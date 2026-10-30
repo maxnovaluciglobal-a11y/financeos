@@ -146,3 +146,31 @@
 .emptyPickCat { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .emptyPickAmt { font-family: var(--num); font-size: 13px; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
 [data-theme="dark"] .emptyChoiceTop svg { color: var(--laton-300); }
+
+/* ── ChoiceGroup (radiogroup de pocas opciones; tema Sistema · Claro · Oscuro) ──
+   Cuadrados técnicos (--r), nunca píldora. Elegida: borde --tx + fondo de
+   selección neutro + ✓ (estado = ícono + palabra). Sin Latón. */
+.choiceGroup { display: flex; flex-wrap: wrap; gap: 6px; }
+.choice {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; min-width: 44px; padding: 0 12px;
+  border: 1px solid var(--brd2); border-radius: var(--r);
+  background: var(--sur); color: var(--tm); cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 500; line-height: 1.2;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.choice:hover { border-color: var(--tm); color: var(--tx); }
+.choiceOn, .choiceOn:hover { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
+.choice:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+[data-theme="dark"] .choice:focus-visible { outline-color: var(--laton-300); }
+.choiceCheck { flex-shrink: 0; }
+/* Miniatura decorativa: Papel, Navy o mitad y mitad (Sistema). Colores fijos de
+   marca a propósito: muestran cómo se ve cada tema, sea cual sea el actual. */
+.choicePreview {
+  width: 18px; height: 14px; flex-shrink: 0; border-radius: 3px;
+  border: 1px solid var(--brd2); background: var(--papel-000);
+}
+.choicePreview[data-preview="dark"] { background: var(--navy); }
+.choicePreview[data-preview="system"] { background: linear-gradient(135deg, var(--papel-000) 50%, var(--navy) 50%); }
+@media (prefers-reduced-motion: reduce) { .choice { transition: none; } }

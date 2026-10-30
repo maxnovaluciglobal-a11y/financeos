@@ -108,8 +108,15 @@ export default function Goals() {
     setSavingId(null); setAddAmt('')
   }
 
+  // Un solo primario Latón por pantalla (sistema-visual, regla 4; V2): "+ Nueva
+  // meta" lo es mientras no haya un panel abierto con su propio primario (alta,
+  // sugerencias, edición o aporte); ahí pasa a secundario. `data-screen-primary`
+  // avisa al demo que esta pantalla ya tiene primario: sus CTA pasan a
+  // secundarios (globals.css).
+  const panelOpen = show || showSuggest || editingId != null || savingId != null
+
   return (
-    <div className="stack">
+    <div className="stack" data-screen-primary="">
       {/* Un solo subtítulo (UI-Q11): "goals.sub" repetía lo mismo que la intro. */}
       <PageHeader title={t('goals.title')} sub={t('goals.intro')} />
       {/* Sin metas, cuatro ceros no dicen nada: la pregunta guiada va primero. */}
@@ -135,7 +142,7 @@ export default function Goals() {
         )
       })()}
       <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
-        <Btn variant="primary" onClick={() => setShow(s=>!s)} aria-expanded={show}>{show ? t('goals.toggle.close') : t('goals.toggle.new')}</Btn>
+        <Btn variant={panelOpen ? 'ghost' : 'primary'} onClick={() => setShow(s=>!s)} aria-expanded={show}>{show ? t('goals.toggle.close') : t('goals.toggle.new')}</Btn>
         <Btn variant="ghost"   onClick={openSuggestions}>{t('goals.suggestBtn')}</Btn>
       </div>
 

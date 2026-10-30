@@ -27,6 +27,7 @@ import { extraCsvRows } from '../utils/csvExtraRows.js'
 import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
+import { applyTheme, watchSystemTheme } from '../utils/theme.js'
 
 export const AppContext = createContext(null)
 
@@ -85,6 +86,15 @@ export function AppProvider({ children }) {
   const langRef = useRef(state.settings?.language || 'es')
   langRef.current = state.settings?.language || 'es'
   useEffect(() => { loadLang(langRef.current) }, [state.settings?.language])
+  // N4: con el tema "Sistema", seguir a prefers-color-scheme en vivo. Aplicar
+  // al guardar o hidratar ya lo hacen rehydrate/updateSettings; acá solo se
+  // escucha (aplicar en el montaje pintaría el tema del estado inicial antes de
+  // leer los ajustes guardados).
+  const themeSetting = state.settings?.theme
+  useEffect(() => {
+    if (themeSetting !== 'system') return undefined
+    return watchSystemTheme(() => applyTheme('system'))
+  }, [themeSetting])
   const tr = useCallback((key, vars) => translate(langRef.current, key, vars), [])
 
   // ── Toast helper ─────────────────────────────────────────────────────────────
@@ -121,7 +131,7 @@ export function AppProvider({ children }) {
     const payload = { incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings }
     if (opts?.notLocalChange) quietRef.current = payload
     dispatch({ type: 'HYDRATE', payload })
-    document.documentElement.setAttribute('data-theme', settings.theme || 'light')
+    applyTheme(settings.theme)
     // Sin esto un lector de pantalla pronuncia toda la app con reglas fonéticas
     // españolas aunque el idioma elegido sea inglés, portugués o alemán.
     document.documentElement.setAttribute('lang', settings.language || 'es')
@@ -431,7 +441,7 @@ export function AppProvider({ children }) {
     try {
       await saveSettings(settings)
       dispatch({ type: 'SAVE_SETTINGS', settings })
-      document.documentElement.setAttribute('data-theme', settings.theme || 'light')
+      applyTheme(settings.theme)
       document.documentElement.setAttribute('lang', settings.language || 'es')
     } catch (e) {
       showToast(tr('toast.settingsError'), 'error')

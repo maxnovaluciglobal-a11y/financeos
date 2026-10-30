@@ -433,9 +433,12 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                     flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 12, minHeight: 44,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                     fontWeight: 600, cursor: isActive ? 'default' : 'pointer',
-                    border: 'none', fontFamily: 'var(--sans)',
-                    background: isActive ? 'var(--sur2)' : 'var(--laton)',
-                    color: isActive ? 'var(--th)' : 'var(--navy)',
+                    fontFamily: 'var(--sans)',
+                    // V2: "Aplicar" es secundario en cada tarjeta (un solo primario
+                    // Latón por pantalla); el primario queda en el modal de confirmar.
+                    border: isActive ? '1px solid transparent' : '1px solid var(--brd2)',
+                    background: isActive ? 'var(--sur2)' : 'transparent',
+                    color: isActive ? 'var(--th)' : 'var(--tx)',
                   }}
                 >
                   {isJustApplied ? <><Check size={14} strokeWidth={2} aria-hidden="true" />{tr('tplsel.applied')}</> : isActive ? tr('tplsel.active') : tr('tplsel.applyShort')}

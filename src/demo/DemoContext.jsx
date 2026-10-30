@@ -13,6 +13,7 @@ import { planConfirmations } from '../utils/recurringConfirm.js'
 import { ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
+import { applyTheme, watchSystemTheme } from '../utils/theme.js'
 
 export const DemoContext = createContext(null)
 
@@ -126,6 +127,12 @@ export function DemoProvider({ children }) {
   const langRef = useRef(state.settings?.language || 'es')
   langRef.current = state.settings?.language || 'es'
   useEffect(() => { loadLang(langRef.current) }, [state.settings?.language])
+  // N4: con "Sistema", el demo también sigue a prefers-color-scheme en vivo.
+  const themeSetting = state.settings?.theme
+  useEffect(() => {
+    if (themeSetting !== 'system') return undefined
+    return watchSystemTheme(() => applyTheme('system'))
+  }, [themeSetting])
   const tr = useCallback((key, vars) => translate(langRef.current, key, vars), [])
 
   const showToast = useCallback((msg, type = 'ok', action = null) => {
@@ -196,7 +203,7 @@ export function DemoProvider({ children }) {
 
   const updateSettings = useCallback((settings) => {
     dispatch({ type: 'SAVE_SETTINGS', settings })
-    document.documentElement.setAttribute('data-theme', settings.theme || 'light')
+    applyTheme(settings.theme)
     document.documentElement.setAttribute('lang', settings.language || 'es')
     // El demo también debe respetar el formato de miles de la moneda elegida
     // (AppContext lo hace en un efecto; aquí el provider es independiente).

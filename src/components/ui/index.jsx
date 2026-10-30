@@ -1,7 +1,7 @@
 // src/components/ui/index.jsx
 // Shared UI primitives
 
-import { useId, Children, cloneElement, isValidElement } from 'react'
+import { useId, useRef, Children, cloneElement, isValidElement } from 'react'
 import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
 import Money, { MONEY_MASK } from '../Money.jsx'
@@ -9,7 +9,7 @@ import Amount from '../Amount.jsx'
 import CategoryIcon from '../CategoryIcon.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
-import { Pencil } from 'lucide-react'
+import { Pencil, Check } from 'lucide-react'
 import { MINUS } from '../../utils/index.js'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
@@ -277,6 +277,48 @@ export function SegmentedControl({ value, onChange, options }) {
             background: active ? 'var(--grn-bg)' : 'var(--sur2)',
             color: active ? 'var(--grn)' : 'var(--tx)',
           }}>{opt.label}</button>
+        )
+      })}
+    </div>
+  )
+}
+
+// Elección única entre pocas opciones (tema Sistema · Claro · Oscuro, N4).
+// radiogroup del patrón APG: una sola parada de Tab (la opción elegida) y
+// flechas, Inicio y Fin para moverse; cada flecha elige, como un radio nativo.
+// Elegida = borde Navy/Papel + ✓ + peso 600 (estado = ícono + palabra), sin
+// Latón: el Latón es para la acción primaria de la pantalla. 44 px de alto.
+// `preview` (opcional) dibuja una miniatura decorativa antes de la palabra.
+export function ChoiceGroup({ value, onChange, options, labelledBy, label, className }) {
+  const refs = useRef([])
+  const selected = options.findIndex(o => o.value === value)
+  const focusable = selected >= 0 ? selected : 0
+  function onKeyDown(e, i) {
+    const n = options.length
+    let next = null
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % n
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + n) % n
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = n - 1
+    if (next === null) return
+    e.preventDefault()
+    refs.current[next]?.focus()
+    if (options[next].value !== value) onChange(options[next].value)
+  }
+  return (
+    <div role="radiogroup" aria-labelledby={labelledBy} aria-label={labelledBy ? undefined : label}
+      className={[styles.choiceGroup, className].filter(Boolean).join(' ')}>
+      {options.map((o, i) => {
+        const on = i === selected
+        return (
+          <button key={o.value} ref={el => { refs.current[i] = el }} type="button" role="radio"
+            aria-checked={on} tabIndex={i === focusable ? 0 : -1}
+            className={[styles.choice, on ? styles.choiceOn : ''].join(' ')}
+            onClick={() => { if (!on) onChange(o.value) }} onKeyDown={e => onKeyDown(e, i)}>
+            {o.preview && <span className={styles.choicePreview} data-preview={o.preview} aria-hidden="true" />}
+            <span>{o.label}</span>
+            {on && <Check size={14} strokeWidth={2.2} aria-hidden="true" className={styles.choiceCheck} />}
+          </button>
         )
       })}
     </div>

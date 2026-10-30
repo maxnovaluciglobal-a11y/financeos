@@ -232,7 +232,9 @@
 :global([data-theme="dark"]) .tabActive { color: var(--papel-000); }
 :global([data-theme="dark"]) .tab:focus-visible { outline-color: var(--laton-300); }
 
-/* ── "+" (R02) — botón propio Latón con ícono Navy, encima de la barra ── */
+/* ── "+" (R02) — botón propio Latón con ícono Navy, encima de la barra ──
+   W2: cuadrado de 56 con radio de 12 (--rxl), no círculo: la marca usa radios
+   chicos y nunca píldora (branding/CLAUDE.md). */
 .fab {
   display: none;
   position: fixed;
@@ -241,7 +243,7 @@
   z-index: 151;
   width: var(--fab-size); height: var(--fab-size);
   align-items: center; justify-content: center;
-  border: none; border-radius: 50%;
+  border: none; border-radius: var(--rxl);
   background: var(--laton); color: var(--navy);
   box-shadow: var(--sh-2);
   cursor: pointer;

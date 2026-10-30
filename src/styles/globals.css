@@ -254,6 +254,18 @@ button { cursor: pointer; font-family: var(--sans); }
   font-family: var(--sans); font-size: 13px; font-weight: 500; line-height: 1.2;
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
+/* Área táctil de 44 px (V2) sin cambiar el dibujo: el chip puede medir 36 o
+   40 de alto (fila de Movimientos) y el ::before transparente agranda la zona
+   que recibe el toque. Arranca 2 px arriba y baja hasta 44: entra en el
+   relleno de la fila deslizable de Movimientos (2 px arriba, 8 abajo), que
+   recorta lo que se sale. Con 44 o más no se agranda. `isolation` + z-index
+   −1 lo dejan debajo del contenido: un <input> dentro del chip (fecha a
+   elección del alta rápida) sigue recibiendo su toque. */
+.fos-chip { min-width: 44px; isolation: isolate; }
+.fos-chip::before {
+  content: ''; position: absolute; z-index: -1; left: 0; right: 0;
+  top: max(-2px, calc(50% - 22px)); height: max(100%, 44px);
+}
 .fos-chip:hover { border-color: var(--tm); color: var(--tx); }
 .fos-chip[aria-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
 .fos-chip--tall { min-height: 44px; }
@@ -390,6 +402,20 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 @media (min-width: 701px) {
   .demo-bottom-cta { left: auto; right: 20px; bottom: 20px; width: min(440px, calc(100vw - 40px)); }
+}
+
+/* Un primario por pantalla (regla 4, V2): si la pantalla declara su propio
+   primario (`data-screen-primary`, hoy Metas), "Empezar con mis datos" de la
+   franja y de la tarjeta inferior pasa a secundario sobre Navy: contorno Papel,
+   sin relleno Latón. La acción y el destino no cambian. */
+:root:has([data-screen-primary]) .demo-banner__cta,
+:root:has([data-screen-primary]) .demo-bottom-cta .fos-btn-primary {
+  background: transparent; color: var(--papel-000); box-shadow: none;
+  border: 1px solid color-mix(in srgb, var(--papel-000) 55%, transparent);
+}
+:root:has([data-screen-primary]) .demo-banner__cta:hover,
+:root:has([data-screen-primary]) .demo-bottom-cta .fos-btn-primary:hover {
+  background: color-mix(in srgb, var(--papel-000) 10%, transparent); box-shadow: none;
 }
 
 /* Recorrido: el hueco del spotlight y la tarjeta se mueven juntos */

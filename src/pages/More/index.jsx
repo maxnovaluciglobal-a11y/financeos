@@ -18,6 +18,7 @@ import FeedbackSheet from '../../components/FeedbackSheet.jsx'
 import { STRIPE_PORTAL_URL } from '../legal/legalMeta.js'
 import s from './more.module.css'
 import { logRejection } from '../../utils/errorLog.js'
+import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 
 const SHOW_FIRMA = true
 
@@ -65,7 +66,8 @@ function AccountHeader({ setPage }) {
 export default function More({ setPage }) {
   const { settings, updateSettings } = useApp()
   const { t } = useT()
-  const isDark = settings.theme === 'dark'
+  // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
+  const isDark = useResolvedTheme(settings.theme) === 'dark'
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const plan = getLicensePlan()
   const isPro = plan === 'pro'

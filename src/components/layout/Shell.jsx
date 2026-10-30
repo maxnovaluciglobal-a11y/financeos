@@ -25,6 +25,7 @@ import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
 import { pushSupported, isPushEnabled } from '../../core/push.js'
 import { getLicenseKey, getLicensePlan } from '../../utils/licenseValidator.js'
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut, ChevronLeft } from 'lucide-react'
+import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
 const SHOW_FIRMA = true
@@ -32,7 +33,8 @@ const SHOW_FIRMA = true
 export default function Shell({ page, setPage, onBack, backTo, children }) {
   const { settings, updateSettings, incomes, expenses, showToast } = useApp()
   const { t } = useT()
-  const isDark = settings.theme === 'dark'
+  // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
+  const isDark = useResolvedTheme(settings.theme) === 'dark'
 
   const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income'
   // Otras pantallas (Primeros pasos del Inicio) piden abrir el Registro rápido.

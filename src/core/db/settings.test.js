@@ -46,4 +46,19 @@ describe('getSettings en el primer arranque', () => {
     await db.saveSettings({ language: 'es', currency: 'CLP' })
     expect((await db.getSettings()).country).toBe('CL')
   })
+
+  it('una cuenta nueva sigue al tema del sistema (N4)', async () => {
+    setNavigator(['es-CL'])
+    expect((await db.getSettings()).theme).toBe('system')
+  })
+
+  it('un registro guardado sin tema sigue en claro, como siempre se vio', async () => {
+    await db.saveSettings({ language: 'es', currency: 'CLP' })
+    expect((await db.getSettings()).theme).toBe('light')
+  })
+
+  it('un tema guardado no cambia', async () => {
+    await db.saveSettings({ ...db.DEFAULT_SETTINGS, theme: 'dark' })
+    expect((await db.getSettings()).theme).toBe('dark')
+  })
 })
