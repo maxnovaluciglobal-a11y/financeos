@@ -154,3 +154,70 @@ describe('B1: una sola tasa, descrita igual en todos lados', () => {
     expect(ratePatch({ source: 'bcv', rate: 0, at: 7 })).toBe(null)
   })
 })
+
+describe('rial #20: euro como moneda de referencia', () => {
+  const fixer = (ts = 5 * DAY) => ({ [CACHE_KEYS.FIXER]: { source: 'fixer', ts, rates: { USD: 1, EUR: 0.8, CLP: 950, VES: 36 } } })
+
+  it('sin refCurrency todo sigue en US$ (compatibilidad)', async () => {
+    const { lensCurrency, resolveLensRate } = await import('./refRate.js')
+    const settings = { country: 'VE', currency: 'VES', usdRate: 885.4, usdRateAt: 10 * DAY, usdRateSource: 'bcv' }
+    expect(lensCurrency(settings)).toBe('USD')
+    expect(lensCurrency({ ...settings, refCurrency: 'XYZ' })).toBe('USD')
+    // resolveRefRate no cambia con la lente: la tasa guardada sigue siendo por 1 US$.
+    expect(resolveRefRate({ ...settings, refCurrency: 'EUR' })).toEqual({ rate: 885.4, at: 10 * DAY, source: 'bcv' })
+    expect(resolveLensRate(settings, store(fixer()))).toEqual({ rate: 885.4, at: 10 * DAY, source: 'bcv', ref: 'USD' })
+    expect(refEligible({ ...settings, refCurrency: 'EUR' })).toBe(true)
+  })
+
+  it('una cuenta en euros no puede mirarse en euros', async () => {
+    const { lensCurrency, eurSelectable } = await import('./refRate.js')
+    expect(lensCurrency({ country: 'DE', currency: 'EUR', refCurrency: 'EUR' })).toBe('USD')
+    expect(eurSelectable({ country: 'DE', currency: 'EUR', showDualCurrency: true })).toBe(false)
+    expect(eurSelectable({ country: 'VE', currency: 'VES' })).toBe(true)
+    expect(eurSelectable({ country: 'CL', currency: 'CLP' })).toBe(false) // sin lente activada
+  })
+
+  it('VE: Bs por 1 € = BCV ÷ (€ por 1 US$ de Fixer), con la fecha más vieja', async () => {
+    const { resolveLensRate, lensLabelParts } = await import('./refRate.js')
+    const settings = { country: 'VE', currency: 'VES', refCurrency: 'EUR', usdRate: 880, usdRateAt: 10 * DAY, usdRateSource: 'bcv' }
+    const r = resolveLensRate(settings, store(fixer(5 * DAY)))
+    expect(r.ref).toBe('EUR')
+    expect(r.rate).toBeCloseTo(1100, 6) // 880 / 0,8
+    expect(r.at).toBe(5 * DAY)
+    expect(r.via.base).toEqual({ rate: 880, at: 10 * DAY, source: 'bcv' })
+    expect(r.via.eurUsd).toEqual({ rate: 0.8, at: 5 * DAY })
+    expect(lensLabelParts(r)).toEqual({ sourceKey: 'refcur.source.crossEur', baseKey: 'refcur.source.bcv', at: 5 * DAY })
+  })
+
+  it('AR cruza su dólar con Fixer igual; una tasa base sin fecha deja el cruce sin fecha', async () => {
+    const { resolveLensRate } = await import('./refRate.js')
+    const r = resolveLensRate({ country: 'AR', currency: 'ARS', refCurrency: 'EUR', usdRate: 1200 }, store(fixer()))
+    expect(r.rate).toBeCloseTo(1500, 6)
+    expect(r.at).toBe(null)
+    expect(r.via.base.source).toBe('legacy')
+  })
+
+  it('el resto: moneda local por 1 € directo de Fixer', async () => {
+    const { resolveLensRate, lensLabelParts } = await import('./refRate.js')
+    const r = resolveLensRate({ country: 'CL', currency: 'CLP', showDualCurrency: true, refCurrency: 'EUR', usdRate: 900, usdRateAt: DAY }, store(fixer(3 * DAY)))
+    expect(r).toEqual({ rate: 950 / 0.8, at: 3 * DAY, source: 'fixer', ref: 'EUR' })
+    expect(lensLabelParts(r)).toEqual({ sourceKey: 'refcur.source.fixer', at: 3 * DAY })
+  })
+
+  it('sin Fixer en caché (o con su respaldo sin red) la lente vuelve a US$ y lo marca', async () => {
+    const { resolveLensRate } = await import('./refRate.js')
+    const settings = { country: 'VE', currency: 'VES', refCurrency: 'EUR', usdRate: 880, usdRateAt: DAY, usdRateSource: 'bcv' }
+    expect(resolveLensRate(settings, store({}))).toEqual({ rate: 880, at: DAY, source: 'bcv', ref: 'USD', wanted: 'EUR' })
+    const fallback = { [CACHE_KEYS.FIXER]: { source: 'fallback', ts: DAY, rates: { EUR: 0.92 } } }
+    expect(resolveLensRate(settings, store(fallback)).ref).toBe('USD')
+    // Sin tasa en US$ (ni guardada ni en caché), no hay lente.
+    expect(resolveLensRate({ country: 'VE', currency: 'VES', refCurrency: 'EUR' }, store({}))).toBe(null)
+  })
+
+  it('crossToEur descarta tasas inválidas', async () => {
+    const { crossToEur } = await import('./refRate.js')
+    expect(crossToEur({ rate: 0, at: 1 }, { rate: 0.8, at: 1 })).toBe(null)
+    expect(crossToEur({ rate: 10, at: 1 }, { rate: 0, at: 1 })).toBe(null)
+    expect(crossToEur(null, { rate: 0.8, at: 1 })).toBe(null)
+  })
+})
