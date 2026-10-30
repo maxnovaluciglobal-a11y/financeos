@@ -21,6 +21,8 @@ import AppLock from './AppLock.jsx'
 import { getLockConfig } from '../../core/appLockStore.js'
 import { isLockEnabled, shouldLockOnResume } from '../../core/appLock.js'
 import { getSettings } from '../../core/db/index.js'
+import { applyTheme, watchSystemTheme } from '../../utils/theme.js'
+import { logRejection } from '../../utils/errorLog.js'
 
 const AppLockContext = createContext(null)
 
@@ -57,7 +59,7 @@ export default function AppLockGate({ children }) {
     Promise.all([getLockConfig().catch(() => null), getSettings().catch(() => null)]).then(([c, st]) => {
       if (cancelled) return
       if (st) {
-        document.documentElement.setAttribute('data-theme', st.theme || 'light')
+        applyTheme(st.theme)
         document.documentElement.setAttribute('lang', st.language || 'es')
       }
       const cfg = applyConfig(c)
@@ -66,6 +68,16 @@ export default function AppLockGate({ children }) {
     })
     return () => { cancelled = true }
   }, [applyConfig, setLockedBoth])
+
+  // N4: mientras la pantalla de bloqueo está sola (AppProvider desmontado), el
+  // tema "Sistema" la sigue igual. Se relee el ajuste guardado en cada cambio
+  // porque pudo cambiar en Ajustes después del arranque.
+  useEffect(() => {
+    if (!locked) return undefined
+    return watchSystemTheme(() => {
+      getSettings().then(st => { if (st?.theme === 'system') applyTheme('system') }).catch(logRejection('AppLockGate:theme'))
+    })
+  }, [locked])
 
   useEffect(() => {
     const root = document.documentElement

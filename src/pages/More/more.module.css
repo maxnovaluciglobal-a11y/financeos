@@ -64,13 +64,20 @@ a.row { text-decoration: none; box-sizing: border-box; }
   font-family: var(--sans); font-size: 14px; color: var(--tm); cursor: pointer;
 }
 .action:hover { color: var(--tx); }
-.legal { display: flex; flex-wrap: wrap; gap: 0 14px; margin-top: 14px; padding-top: 6px; border-top: 0.5px solid var(--brd); }
+/* Enlaces legales con área de 44×44 (V2): antes medían 27 a 42 de ancho. El
+   relleno lateral reemplaza al hueco de 14 px; el primero se corre 8 px para
+   que el texto siga alineado con el borde de la columna. */
+.legal { display: flex; flex-wrap: wrap; gap: 0; margin-top: 14px; padding-top: 6px; border-top: 0.5px solid var(--brd); }
+.legal > :first-child { margin-left: -8px; }
 .legalLink {
-  display: inline-flex; align-items: center; min-height: 44px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 8px;
+  border-radius: var(--r);
   background: none; border: 0; cursor: pointer; text-decoration: none;
   font-family: var(--sans); font-size: 13px; color: var(--tm);
 }
 .legalLink:hover { color: var(--tx); text-decoration: underline; }
+.legalLink:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
+:global([data-theme="dark"]) .legalLink:focus-visible { outline-color: var(--laton-300); }
 .version { font-size: 12px; font-family: var(--sans); color: var(--th); margin-top: 6px; line-height: 1.6; }
 .versionLock { display: inline-flex; align-items: center; gap: 5px; }
 

@@ -4,7 +4,8 @@ import CountrySelect from '../../components/ui/CountrySelect.jsx'
 import { COUNTRIES, countryKey } from '../../data/countries.js'
 import { Lock } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Card, CardHeader, Btn, PageHeader } from '../../components/ui/index.jsx'
+import { Card, CardHeader, Btn, PageHeader, ChoiceGroup } from '../../components/ui/index.jsx'
+import { THEME_SETTINGS } from '../../utils/theme.js'
 import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
 import BackupManager from '../../components/backup/BackupManager.jsx'
 import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
@@ -162,12 +163,13 @@ export default function Settings() {
           />
         </div>
         <TaxIdField country={settings.country} taxId={settings.taxId} updateSettings={updateSettings} settings={settings} />
-        <div style={srow}>
-          <div><div style={slbl}>{t('settings.theme.label')}</div><div style={ssub}>{t('settings.theme.sub')}</div></div>
-          <div style={{display:'flex',gap:6}}>
-            <Btn variant={settings.theme==='light'?'primary':'ghost'} size="sm" onClick={()=>updateSettings({...settings,theme:'light'})}>{t('settings.theme.light')}</Btn>
-            <Btn variant={settings.theme==='dark' ?'primary':'ghost'} size="sm" onClick={()=>updateSettings({...settings,theme:'dark' })}>{t('settings.theme.dark')}</Btn>
-          </div>
+        {/* N4: Sistema · Claro · Oscuro como radiogroup (antes, dos botones
+            Latón que competían con el primario de la pantalla). */}
+        <div style={{...srow, flexWrap:'wrap', gap:10}}>
+          <div><div style={slbl} id="settings-theme-label">{t('settings.theme.label')}</div><div style={ssub}>{t('settings.theme.sub')}</div></div>
+          <ChoiceGroup labelledBy="settings-theme-label" value={settings.theme || 'light'}
+            onChange={theme => updateSettings({ ...settings, theme })}
+            options={THEME_SETTINGS.map(v => ({ value: v, label: t(`settings.theme.${v}`), preview: v }))} />
         </div>
 
         {/* Emoji en las categorías (QuickAdd) — apagado por defecto */}
@@ -500,7 +502,7 @@ function PushSection() {
               <div style={lbl}>{on ? t('settings.push.on') : t('settings.push.off')}</div>
               <div style={sub}>{t('settings.push.desc')}</div>
             </div>
-            <Btn variant={on ? 'ghost' : 'primary'} onClick={toggle} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')} · ${t('settings.push.title')}`}>
+            <Btn variant="ghost" onClick={toggle} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')} · ${t('settings.push.title')}`}>
               {busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')}
             </Btn>
           </div>

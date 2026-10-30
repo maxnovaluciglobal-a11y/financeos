@@ -131,7 +131,7 @@ const SETTINGS_KEY = 'main'
 export const DEFAULT_SETTINGS = {
   currency: 'CLP',
   language: 'es',
-  theme: 'light',
+  theme: 'system', // N4: las cuentas nuevas siguen al sistema (config.defaults.theme)
   savingGoalPct: 25,
   emergencyFundMonths: 5,
   activeMonth: currentMonth(),
@@ -152,7 +152,9 @@ export async function getSettings() {
   if (!db) { try { saved = JSON.parse(localStorage.getItem('fos_settings')) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
   else      { saved = await db.get('settings', SETTINGS_KEY) }
   if (!saved) return firstRunSettings()
-  return { ...DEFAULT_SETTINGS, ...saved }
+  // Un registro viejo sin `theme` siempre se vio en claro: sigue en claro.
+  // 'system' es solo para quien todavía no guardó nada.
+  return { ...DEFAULT_SETTINGS, theme: 'light', ...saved }
 }
 
 export async function saveSettings(settings) {

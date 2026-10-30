@@ -28,7 +28,7 @@ const config = {
   defaults: {
     currency:            'CLP',   // 'CLP' | 'USD' | 'EUR' | 'VES' | 'MXN' | 'ARS' | 'COP'
     language:            'es',    // 'es' | 'en'
-    theme:               'light', // 'light' | 'dark'
+    theme:               'system', // 'system' | 'light' | 'dark' (N4: sigue a prefers-color-scheme)
     savingGoalPct:       25,      // % de ingreso como meta de ahorro (1-100)
     emergencyFundMonths: 5,       // Meses de gastos como fondo de emergencia
   },
