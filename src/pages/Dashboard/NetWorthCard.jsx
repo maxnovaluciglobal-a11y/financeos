@@ -56,7 +56,7 @@ export default function NetWorthCard({ goals, debts, incomes, expenses, settings
           <div className={`num ${s.nwValue}`} style={{ color: value < 0 ? 'var(--neg)' : 'var(--tx)' }}>
             <span style={{ whiteSpace: 'nowrap' }}>{value < 0 ? '−' : ''}<Money>{fmtMoney(Math.abs(value), sym)}</Money></span>
           </div>
-          {delta && <DeltaLine delta={delta} prevMonth={prev.m} />}
+          {delta && <DeltaLine delta={delta} prevMonth={prev.m} sym={sym} />}
           <div className={s.nwSplit}>
             {t('networth.formula', { a: m(fmtMoney(nw.totalActivos, sym)), p: m(fmtMoney(nw.totalPasivos, sym)) })}
           </div>

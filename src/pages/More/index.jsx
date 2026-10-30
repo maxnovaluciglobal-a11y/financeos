@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
-import { menuSections } from '../../components/layout/navConfig.js'
+import { menuSections, showProChip } from '../../components/layout/navConfig.js'
 import { NAV_ICONS } from '../../components/icons/Icons.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
 import { BackupStatusBadge } from '../../components/backup/BackupManager.jsx'
@@ -67,7 +67,8 @@ export default function More({ setPage }) {
   const { t } = useT()
   const isDark = settings.theme === 'dark'
   const [feedbackOpen, setFeedbackOpen] = useState(false)
-  const isPro = getLicensePlan() === 'pro'
+  const plan = getLicensePlan()
+  const isPro = plan === 'pro'
 
   function toggleTheme() {
     updateSettings({ ...settings, theme: isDark ? 'light' : 'dark' })
@@ -95,7 +96,7 @@ export default function More({ setPage }) {
                       : it.ic}
                 </span>
                 <span className={s.rowLabel}>{t(it.lb)}</span>
-                {it.proOnly && <span className={s.pro}>PRO</span>}
+                {showProChip(it, plan) && <span className={s.pro}>PRO</span>}
                 <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.chev} />
               </button>
             ))}

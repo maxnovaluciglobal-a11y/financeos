@@ -11,16 +11,31 @@ import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
 // null = no hay base para comparar (el mes anterior no tiene datos o su valor es
 // 0) → la línea no se muestra. |Δ| < 0.5 % cuenta como "igual".
 // `invert`: en Gastos bajar es lo bueno.
-export function monthDelta(cur, prev, { invert = false, hasPrev = true } = {}) {
+// R5a (ola A1, 30-oct-2026): `abs` es la diferencia en dinero y `usePct` dice
+// si el porcentaje informa. No informa cuando cambia el signo, cuando el mes
+// anterior es chico frente al actual (< 10 %) o cuando |Δ| > 200 % ("+1.247 %
+// vs. sep." no dice nada): ahí se muestra el monto. `preferAmount` fuerza el
+// monto (VE y AR: con inflación alta el porcentaje nominal engaña).
+export const DELTA_SMALL_BASE = 0.1
+export const DELTA_MAX_PCT = 200
+export function monthDelta(cur, prev, { invert = false, hasPrev = true, preferAmount = false } = {}) {
   const c = Number(cur) || 0
   const p = Number(prev) || 0
   if (!hasPrev || p === 0) return null
   const pct = ((c - p) / Math.abs(p)) * 100
-  if (Math.abs(pct) < 0.5) return { dir: 'flat', pct: 0, good: null }
+  const abs = c - p
+  if (Math.abs(pct) < 0.5) return { dir: 'flat', pct: 0, good: null, abs: 0, usePct: true }
   const dir = pct > 0 ? 'up' : 'down'
   const good = invert ? dir === 'down' : dir === 'up'
-  return { dir, pct, good }
+  const signFlip = (c < 0 && p > 0) || (c > 0 && p < 0)
+  const smallBase = Math.abs(p) < DELTA_SMALL_BASE * Math.abs(c)
+  const usePct = !preferAmount && !signFlip && !smallBase && Math.abs(pct) <= DELTA_MAX_PCT
+  return { dir, pct, good, abs, usePct }
 }
+
+// Países donde la variación siempre va en monto (W5, plan consolidado §1).
+export const DELTA_AMOUNT_COUNTRIES = ['VE', 'AR']
+export const prefersAmountDelta = (country) => DELTA_AMOUNT_COUNTRIES.includes(String(country || '').toUpperCase())
 
 export function prevMonthOf(month) {
   const [y, m] = String(month).split('-').map(Number)

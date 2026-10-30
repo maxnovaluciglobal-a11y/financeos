@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  monthDelta, prevMonthOf, monthName, fmtSignedPct,
+  monthDelta, prevMonthOf, monthName, fmtSignedPct, prefersAmountDelta,
   budgetState, budgetRows, nextOccurrence, upcomingPayments,
   weekToMonth, prevMonthScore, upsertMonthly, lastValueBefore, homeMonthTotals,
 } from './dashboardModel.js'
@@ -11,7 +11,7 @@ describe('monthDelta', () => {
     expect(monthDelta(100, 50, { hasPrev: false })).toBeNull()
   })
   it('|Δ| < 0.5 % es "igual"', () => {
-    expect(monthDelta(1004, 1000)).toEqual({ dir: 'flat', pct: 0, good: null })
+    expect(monthDelta(1004, 1000)).toEqual({ dir: 'flat', pct: 0, good: null, abs: 0, usePct: true })
   })
   it('subir es bueno salvo en gastos (invert)', () => {
     expect(monthDelta(110, 100)).toMatchObject({ dir: 'up', good: true })
@@ -21,6 +21,33 @@ describe('monthDelta', () => {
   it('con base negativa compara contra el valor absoluto', () => {
     // de −100 a +50: mejoró 150 %
     expect(monthDelta(50, -100)).toMatchObject({ dir: 'up', good: true, pct: 150 })
+  })
+  // R5a (ola A1): cuándo el porcentaje no informa y se muestra el monto.
+  it('variación normal: porcentaje', () => {
+    expect(monthDelta(130, 100)).toMatchObject({ usePct: true, abs: 30 })
+  })
+  it('|Δ| > 200 %: monto (el "+1.247 %" del demo VE)', () => {
+    expect(monthDelta(57391, 4250)).toMatchObject({ dir: 'up', usePct: false, abs: 53141 })
+  })
+  it('base chica (< 10 % del actual): monto', () => {
+    expect(monthDelta(1000, 90)).toMatchObject({ usePct: false })
+  })
+  it('límite de 200 %: hasta 200 % porcentaje, después monto', () => {
+    expect(monthDelta(300, 100)).toMatchObject({ usePct: true })
+    expect(monthDelta(310, 100)).toMatchObject({ usePct: false })
+  })
+  it('cambio de signo: monto', () => {
+    expect(monthDelta(50, -100)).toMatchObject({ usePct: false, abs: 150 })
+    expect(monthDelta(-50, 100)).toMatchObject({ dir: 'down', usePct: false, abs: -150 })
+  })
+  it('preferAmount fuerza el monto', () => {
+    expect(monthDelta(110, 100, { preferAmount: true })).toMatchObject({ usePct: false, abs: 10 })
+  })
+  it('VE y AR prefieren el monto; el resto no', () => {
+    expect(prefersAmountDelta('VE')).toBe(true)
+    expect(prefersAmountDelta('ar')).toBe(true)
+    expect(prefersAmountDelta('CL')).toBe(false)
+    expect(prefersAmountDelta(undefined)).toBe(false)
   })
 })
 

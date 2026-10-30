@@ -12,7 +12,7 @@ import Logo, { Monogram } from '../Logo.jsx'
 import { NAV_ICONS } from '../icons/Icons.jsx'
 import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
-import { NAV, pageLabel } from './navConfig.js'
+import { NAV, pageLabel, showProChip } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
 import { chromeFor } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
@@ -21,7 +21,7 @@ import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
 import PushAsk from '../PushAsk.jsx'
 import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
 import { pushSupported, isPushEnabled } from '../../core/push.js'
-import { getLicenseKey } from '../../utils/licenseValidator.js'
+import { getLicenseKey, getLicensePlan } from '../../utils/licenseValidator.js'
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut, ChevronLeft } from 'lucide-react'
 
 // Firma del producto (Sello + badges de país) — visible por defecto.
@@ -110,6 +110,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   // expone su estado con aria-pressed, pero el cambio de toda la pantalla
   // (cifras → "Monto oculto") merece decirse en voz alta una vez.
   const amountsHidden = !!settings.hideAmounts
+  const licensePlan = getLicensePlan()
   const [amountsAnnounce, setAmountsAnnounce] = useState('')
   function toggleAmounts() {
     const next = !amountsHidden
@@ -164,7 +165,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
                       : it.ic}
                 </span>
                 {t(it.lb)}
-                {it.proOnly && (
+                {showProChip(it, licensePlan) && (
                   // Contraste: un color-mix(var(--warn) 18%) diluye el mismo tono que el
                   // texto (--warn === --amb) y queda en ~4.17:1 en claro (bajo AA 4.5:1) —
                   // subir el % empeora el contraste porque converge hacia el color del

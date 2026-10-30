@@ -11,6 +11,7 @@ import SignalIcon from './icons/SignalIcon.jsx'
 import { Calendar } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
+import { useMoney } from './Money.jsx'
 import { parseTransactionText } from '../utils/smsParser.js'
 import { hapticTap } from '../utils/haptics.js'
 import { orderQuickChips, hasProfileTemplate } from '../utils/quickChips.js'
@@ -107,6 +108,8 @@ function DateSegment({ date, setDate, t }) {
 export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false }) {
   const { addExpense, addIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
+  // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
+  const { m: maskMoney } = useMoney()
   const [type, setType] = useState(defaultType)
   const [amount, setAmount] = useState('')
   const [desc, setDesc] = useState('')
@@ -383,7 +386,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
               style={{ fontSize: 13, maxWidth: '100%', overflow: 'hidden' }}>
               <SignalIcon kind="subs" size={14} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {t('qa.repeat', { desc: lastDesc, amount: fmtMoney(last.amount, sym) })}
+                {t('qa.repeat', { desc: lastDesc, amount: maskMoney(fmtMoney(last.amount, sym)) })}
               </span>
             </button>
           </div>

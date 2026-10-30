@@ -13,7 +13,7 @@ import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtSignedMoney, fmtPctPoints } from '../../utils/index.js'
-import { monthDelta, prevMonthOf } from './dashboardModel.js'
+import { monthDelta, prevMonthOf, prefersAmountDelta } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
 import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
 import { toRef } from '../../utils/refRate.js'
@@ -29,6 +29,8 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const cutDay = kpis.prevCutDay ?? null
   const hasData = cur.incCount > 0 || cur.expCount > 0
   const prevHasData = prev.incCount > 0 || prev.expCount > 0
+  // A1/W5: en VE y AR la variación va siempre en monto (inflación alta).
+  const preferAmount = prefersAmountDelta(refc?.country)
 
   const free = cur.freeFlow
   // R12: la cifra de "Te queda" en US$ si el usuario lo eligió y hay tasa.
@@ -40,9 +42,9 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
 
   const tiles = [
     { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'income',
-      delta: monthDelta(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0 }) },
+      delta: monthDelta(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0, preferAmount }) },
     { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, page: 'movements',
-      delta: monthDelta(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0 }) },
+      delta: monthDelta(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0, preferAmount }) },
   ]
 
   const subParts = [t('home.kpi.leftSub')]
@@ -70,7 +72,8 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
               )}
-              {hasData && <DeltaLine delta={monthDelta(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} untilDay={cutDay} />}
+              {hasData && <DeltaLine delta={monthDelta(free, prev.freeFlow, { hasPrev: prevHasData, preferAmount })} prevMonth={prevMonth} untilDay={cutDay} sym={sym}
+                formatAmount={showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined} />}
               {hasData && <div className={s.kpiSub}>{subParts.join(' · ')}</div>}
               {pending && pending.count > 0 && (
                 <div className={r.pending}>
@@ -125,7 +128,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
                 <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
               </div>
-              <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} />
+              <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} sym={sym} />
               {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
             </Tag>
           )

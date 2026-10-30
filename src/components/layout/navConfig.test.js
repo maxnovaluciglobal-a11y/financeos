@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { activeTabFor, TAB_IDS, NAV, ALL_ITEMS } from './navConfig.js'
+import { activeTabFor, TAB_IDS, NAV, ALL_ITEMS, showProChip } from './navConfig.js'
 
 describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas', () => {
   it('Inicio', () => {
@@ -73,5 +73,21 @@ describe('menuSections (R13): calculadora de tasa a un toque en VE/AR', () => {
   })
   it('el resto de países no tiene sección Herramientas', () => {
     for (const cc of ['CL', 'DE', 'MX']) expect(menuSections(cc).some(g => g.sec === 'nav.sec.tools')).toBe(false)
+  })
+})
+
+describe('showProChip (ola A3, H22)', () => {
+  const pro = { id: 'cashflow', proOnly: true }
+  const free = { id: 'income' }
+  it('se muestra a Starter y sin licencia', () => {
+    expect(showProChip(pro, 'starter')).toBe(true)
+    expect(showProChip(pro, undefined)).toBe(true)
+  })
+  it('se oculta a Pro y Enterprise', () => {
+    expect(showProChip(pro, 'pro')).toBe(false)
+    expect(showProChip(pro, 'enterprise')).toBe(false)
+  })
+  it('nunca en ítems gratuitos', () => {
+    expect(showProChip(free, 'starter')).toBe(false)
   })
 })

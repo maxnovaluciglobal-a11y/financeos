@@ -119,3 +119,11 @@ export function menuSections(country) {
   const base = ALL_ITEMS.find(it => it.id === tool)
   return [{ sec: 'nav.sec.tools', items: [{ ...base, lb: 'refcur.tool', tool: true }] }, ...secs]
 }
+
+// H22 (ola A3, 30-oct-2026): la etiqueta PRO solo se muestra a quien no tiene
+// Pro. Recibe el plan de la LICENCIA (getLicensePlan()), no el de usePlan():
+// en la demo usePlan() dice 'pro' y los chips son parte de lo que se muestra.
+export const PAID_PLANS = ['pro', 'enterprise']
+export function showProChip(item, plan) {
+  return !!item?.proOnly && !PAID_PLANS.includes(String(plan || '').toLowerCase())
+}
