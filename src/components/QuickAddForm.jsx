@@ -6,9 +6,12 @@
 //   resetKey       al cambiar, vuelve el formulario a cero
 //   amountRef      ref opcional al campo del monto (Sheet lo usa para el foco inicial)
 //   autoFocus      enfoca el monto al montarse
+//   stickySave     "Guardar" fijo al pie (dentro de Sheet; decisión W3, B4a)
+//   allowMoreDetails  muestra "Más detalles" (abre el gasto detallado con lo escrito;
+//                  necesita Shell montado, así que el onboarding no lo usa)
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
-import { Calendar } from 'lucide-react'
+import { Calendar, Check } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { useMoney } from './Money.jsx'
@@ -19,18 +22,23 @@ import config from '../config.js'
 import {
   localDateStr, dateLocale, moneyLocale, catName, catLabel, methodLabel,
   getCategoriesExpense, getCategoriesIncome, CATS_EXPENSE, CATS_INCOME,
-  currencySymbol, fmtMoney,
+  currencySymbol, fmtMoney, fmtMoneyFor, localeForCurrency,
 } from '../utils/index.js'
 import {
   pressKey, keypadToNumber, currencyDecimals, amountToKeypad, formatKeypadDisplay, decimalSeparator,
   KEY_BACKSPACE, KEY_DECIMAL, KEY_THOUSAND,
 } from '../utils/keypad.js'
 import { FREQS, monthPlan, findPendingMatch, detectRecurring, ruleFromRecord } from '../utils/recurring.js'
-import rs from './recurring/recurring.module.css'
 import { logClientError } from '../utils/errorLog.js'
+import { refEligible, resolveRefRate, toRef, SOURCE_LABEL } from '../utils/refRate.js'
+import {
+  ruleKey, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, keyToKeypad, isTextEntryTarget,
+  buildDetailedPrefill, DETAILED_PREFILL_KEY,
+} from '../utils/quickAdd.js'
+import { navigateTo } from './quickAddBus.js'
+import css from './QuickAddForm.module.css'
 
-// Normaliza un comercio para usarlo como llave de regla (minúsculas, sin acentos ni espacios extra)
-const ruleKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()
+const readStorage = (k) => { try { return localStorage.getItem(k) } catch { return null } }
 
 const todayStr = () => localDateStr()
 const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return localDateStr(d) }
@@ -46,30 +54,28 @@ const DEFAULT_METHOD = config.paymentMethods[0]
 
 // Teclado numérico propio — evita el teclado del sistema (y su zoom) en el campo
 // más usado de la app. Con una moneda sin decimales, la coma pasa a ser "000".
-function NumericKeypad({ setAmount, decimals, t }) {
+// B4a (W3): 4.ª columna con ⌫ arriba y ✓ (guardar) a la altura del pulgar; el
+// ✓ se activa solo con monto y categoría.
+function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm }) {
   const decimalKey = decimals > 0 ? KEY_DECIMAL : KEY_THOUSAND
-  const sep = decimalSeparator(moneyLocale())
-  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', decimalKey, '0', KEY_BACKSPACE]
+  const sep = decimalSeparator(locale || moneyLocale())
+  const label = (k) => (k === KEY_BACKSPACE ? t('qa.keypadBackspace') : k === KEY_DECIMAL ? t('qa.keypadDecimal') : k === KEY_THOUSAND ? t('qa.keypadThousand') : k)
+  const key = (k, extra = '') => (
+    <button key={k} type="button" className={`${css.key} ${extra}`}
+      onClick={() => setAmount(a => pressKey(a, k, decimals))} aria-label={label(k)}>
+      {k === KEY_DECIMAL ? sep : k}
+    </button>
+  )
   return (
-    <div
-      role="group" aria-label={t('qa.amount')}
-      style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}
-    >
-      {keys.map(k => (
-        <button
-          key={k}
-          type="button"
-          onClick={() => setAmount(a => pressKey(a, k, decimals))}
-          aria-label={k === KEY_BACKSPACE ? t('qa.keypadBackspace') : k === KEY_DECIMAL ? t('qa.keypadDecimal') : k === KEY_THOUSAND ? t('qa.keypadThousand') : k}
-          style={{
-            minHeight: 48, borderRadius: 'var(--r)', border: 'none', cursor: 'pointer',
-            background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--num)',
-            fontSize: 18, fontWeight: 600,
-          }}
-        >
-          {k === KEY_DECIMAL ? sep : k}
-        </button>
-      ))}
+    <div role="group" aria-label={t('qa.amount')} className={css.keypad}>
+      {key('1')}{key('2')}{key('3')}{key(KEY_BACKSPACE)}
+      {key('4')}{key('5')}{key('6')}
+      <button type="button" className={`${css.key} ${css.keyOk}`} onClick={onConfirm} disabled={!canConfirm} aria-label={t('qa.keypadSave')}>
+        <Check size={22} strokeWidth={2.2} aria-hidden="true" />
+        <span aria-hidden="true">{t('qa.keypadSave')}</span>
+      </button>
+      {key('7')}{key('8')}{key('9')}
+      {key(decimalKey)}{key('0', css.keyZero)}
     </div>
   )
 }
@@ -105,7 +111,7 @@ function DateSegment({ date, setDate, t }) {
   )
 }
 
-export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false }) {
+export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false }) {
   const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
@@ -123,6 +129,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const [pasteText, setPasteText] = useState('')
   const [detected, setDetected] = useState(false)    // feedback "detectado"
   const [pastedDate, setPastedDate] = useState(null) // fecha que trae el SMS (YYYY-MM-DD), si la hay
+  const [usdMode, setUsdMode] = useState(false)      // B4b · "Escribir en US$"
+  const [suggestedMsg, setSuggestedMsg] = useState('') // anuncio de la categoría sugerida
+  // ¿El usuario eligió la categoría a mano en esta apertura? La sugerencia
+  // mientras escribe (B4a) nunca la pisa.
+  const catManual = useRef(false)
   const ownAmountRef = useRef(null)
   const amountRef = externalAmountRef || ownAmountRef
 
@@ -135,6 +146,22 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const sym = currencySymbol(currency, settings?.language)
   const decimals = currencyDecimals(currency)
 
+  // Tasa de referencia (R12): la del usuario o la última consultada, con su
+  // fecha. Sin tasa, no hay equivalente ni "Escribir en US$": nunca se inventa.
+  const refOn = refEligible(settings || {})
+  const rateInfo = useMemo(() => (refOn ? resolveRefRate(settings || {}, readStorage) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [refOn, settings?.usdRate, settings?.usdRateAt, settings?.usdRateSource, settings?.country, settings?.currency])
+  const rate = rateInfo?.rate || 0
+  const usdOn = usdMode && rate > 0
+  const usdSym = currencySymbol('USD', lang)
+  const usdDecimals = currencyDecimals('USD')
+  const entryDecimals = usdOn ? usdDecimals : decimals
+  const rateSource = rateInfo ? t(SOURCE_LABEL[rateInfo.source] || SOURCE_LABEL.manual) : ''
+  const rateDate = rateInfo?.at
+    ? new Date(rateInfo.at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })
+    : t('refcur.noDate')
+
   // Al abrir (o al cambiar resetKey): resetea el formulario. Dentro de una hoja,
   // la accesibilidad de diálogo (Esc, focus-trap, foco inicial en el monto,
   // retorno de foco al cerrar) la maneja Sheet.jsx.
@@ -142,6 +169,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
     setDate(todayStr()); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
+    setUsdMode(false); setSuggestedMsg(''); catManual.current = false
     // lastMethod se lee al abrir; cambiarlo mientras el formulario está abierto no lo resetea
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey, defaultType])
@@ -157,36 +185,54 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // Categorías más usadas del historial + las efectivas de la cuenta (canónicas
   // + las de la plantilla activa). Antes salían de config.categoriesExpense, que
   // no coincide con CATS_EXPENSE y no pasaba por catLabel (B3).
+  const effectiveCats = useMemo(() => (type === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)), [type, settings])
   const chips = useMemo(() => {
     const counts = {}
     ownOfType.slice(-120).forEach(r => { if (r.category) counts[r.category] = (counts[r.category] || 0) + 1 })
     const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(e => e[0])
-    const effective = type === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)
     // Plantilla de perfil activa (ej. freelancer): sus categorías primero (M5)
     const templateCats = (type === 'expense' ? settings?.categoriesExpense : settings?.categoriesIncome) || []
-    return orderQuickChips({ ranked, effective, templateCats, canonical: type === 'expense' ? CATS_EXPENSE : CATS_INCOME, templateActive: hasProfileTemplate(settings) })
-  }, [type, ownOfType, settings])
+    return orderQuickChips({ ranked, effective: effectiveCats, templateCats, canonical: type === 'expense' ? CATS_EXPENSE : CATS_INCOME, templateActive: hasProfileTemplate(settings) })
+  }, [type, ownOfType, settings, effectiveCats])
+  // Categorías válidas para una sugerencia: las del tipo activo (el mapa de
+  // reglas es compartido entre gastos e ingresos).
+  const allowedCats = useMemo(() => [...new Set([...chips, ...effectiveCats, ...(type === 'expense' ? CATS_EXPENSE : CATS_INCOME)])], [chips, effectiveCats, type])
 
   // Fija la primera categoría al abrir / cambiar de tipo
   useEffect(() => { setCat(c => (chips.includes(c) ? c : chips[0] || '')) }, [chips, resetKey])
 
-  // "Repetir": el último movimiento del mismo tipo (por fecha, y por creación a igual fecha)
-  const last = useMemo(() => {
-    let best = null
-    for (const r of ownOfType) {
-      if (!(Number(r.amount) > 0)) continue
-      if (!best || (r.date || '') > (best.date || '') ||
-        ((r.date || '') === (best.date || '') && (r.createdAt || '') > (best.createdAt || ''))) best = r
-    }
-    return best
-  }, [ownOfType])
-  const lastDesc = last ? (last.description || last.source || catName(last.category, lang) || '') : ''
+  // "Repetir" (B4b): los 3 movimientos más frecuentes de los últimos 90 días
+  // (si no hay, el último de todos, como antes).
+  const repeats = useMemo(() => topRepeats(ownOfType, { today: todayStr() }), [ownOfType])
 
-  function repeatLast() {
-    if (!last) return
-    setAmount(amountToKeypad(last.amount, decimals))
-    setDesc(last.description || last.source || '')
-    if (last.category) setCat(last.category)
+  function changeType(k) {
+    if (k === type) return
+    setType(k); catManual.current = false; setSuggestedMsg('')
+  }
+
+  function pickCategory(c) {
+    catManual.current = true
+    setSuggestedMsg('')
+    setCat(c)
+  }
+
+  // B4a: categoría sugerida mientras se escribe, con lo aprendido al guardar.
+  function changeDesc(value) {
+    setDesc(value)
+    const next = nextAutoCategory({ desc: value, rules: merchantRules, allowed: allowedCats, manual: catManual.current, current: cat })
+    if (next) {
+      setCat(next)
+      setSuggestedMsg(t('qa.suggested', { cat: catName(next, lang) }))
+    }
+  }
+
+  function applyRepeat(r) {
+    if (!r) return
+    setUsdMode(false)
+    setAmount(amountToKeypad(r.amount, decimals))
+    setDesc(r.description || '')
+    if (r.category) { setCat(r.category); catManual.current = true }
+    setSuggestedMsg('')
     hapticTap()
   }
 
@@ -196,6 +242,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setPasteText(text)
     const r = parseTransactionText(text)
     if (!r || r.confidence !== 'high') { setDetected(false); setPastedDate(null); return }
+    // El SMS trae el monto en la moneda principal: se sale de "Escribir en US$".
+    setUsdMode(false)
     if (r.amount != null) setAmount(amountToKeypad(r.amount, decimals))
     // Fecha del SMS: solo si no es futura (un dd/mm mal interpretado, o un SMS
     // con formato mm/dd, no debe dejar un gasto en el futuro). Pasa al selector
@@ -224,11 +272,31 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     try { await updateSettings?.({ ...settings, ...patch }) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'quickadd.updateSettings' }) }
   }
 
-  const amt = keypadToNumber(amount)
+  const typed = keypadToNumber(amount)
+  // Monto que se guarda, siempre en la moneda principal (B4b: US$ → local).
+  const amt = usdOn ? fromUsd(typed, rate, decimals) : typed
   const canSave = amt > 0 && !saving
+  const canConfirm = canSave && !!cat
   const accent = type === 'expense' ? 'var(--neg)' : 'var(--pos)'
-  const display = formatKeypadDisplay(amount, moneyLocale())
+  const entryLocale = usdOn ? localeForCurrency('USD', lang) : moneyLocale()
+  const display = formatKeypadDisplay(amount, entryLocale)
   const amountSize = display.length > 11 ? 32 : display.length > 8 ? 38 : 44
+
+  // Equivalente en vivo bajo el monto (B4a): en US$ si se escribe en la moneda
+  // principal, o en la moneda principal si se escribe en US$. Pasa por
+  // "ocultar montos".
+  const equivText = rate > 0 && typed > 0
+    ? (usdOn ? maskMoney(fmtMoney(amt, sym)) : maskMoney(fmtMoneyFor(toRef(typed, rate), 'USD', lang)))
+    : ''
+  const rateChip = rate > 0 ? `1 US$ = ${fmtMoney(rate, sym)} · ${rateSource} · ${rateDate}` : ''
+
+  function toggleUsd() {
+    if (!(rate > 0)) return
+    // Convierte lo ya escrito para no perderlo al cambiar de moneda.
+    if (usdOn) setAmount(typed > 0 ? amountToKeypad(fromUsd(typed, rate, decimals), decimals) : '')
+    else setAmount(typed > 0 ? amountToKeypad(toRef(typed, rate), usdDecimals) : '')
+    setUsdMode(!usdOn)
+  }
 
   // El campo del monto mide exactamente su texto (espejo invisible): con un
   // ancho fijo en `ch` quedaba un hueco entre el símbolo y la cifra.
@@ -243,10 +311,17 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (!canSave) return
     setSaving(true)
     const finalDesc = desc.trim() || catName(cat, lang)
+    // B4b: lo escrito en US$ queda en la nota ("US$ X → Bs Y (fuente, fecha)");
+    // la descripción no se toca y no hay campos nuevos.
+    const usdNote = usdOn
+      ? buildUsdNote({ usdText: fmtMoneyFor(typed, 'USD', lang), localText: fmtMoney(amt, sym), source: rateSource, date: rateDate })
+      : ''
     const base = { description: finalDesc, amount: amt, date: date || todayStr(), category: cat || FALLBACK_CAT[type] }
     // Los ingresos llevan el nombre en `source` (lo que muestra Ingresos); se
     // conserva también `description` como antes.
-    const data = type === 'expense' ? { ...base, subcategory: '', method, type: 'Necesidad', notes: '', project: '' } : { ...base, source: finalDesc }
+    const data = type === 'expense'
+      ? { ...base, subcategory: '', method, type: 'Necesidad', notes: usdNote, project: '' }
+      : { ...base, source: finalDesc, ...(usdNote ? { notes: usdNote } : {}) }
     let savedItem = null
     try {
       if (repeat && addWithRule) {
@@ -287,14 +362,49 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     }
   }
 
+  // "Más detalles" (B4a): el gasto detallado de Movimientos (subcategoría,
+  // tipo, notas, inversión, proyecto) con lo ya escrito. Contrato:
+  // sessionStorage[DETAILED_PREFILL_KEY]; Shell cierra la hoja y navega.
+  function openDetailed() {
+    const prefill = buildDetailedPrefill({ description: desc, amount: amt, date, category: cat, method })
+    try { sessionStorage.setItem(DETAILED_PREFILL_KEY, JSON.stringify(prefill)) } catch { /* almacenamiento no disponible: se abre el formulario vacío */ }
+    navigateTo('movements')
+  }
+
+  // Teclado físico en escritorio (B4a): dígitos, coma/punto, Backspace y
+  // Enter, mientras el foco no esté en un campo de texto. El monto sigue
+  // readOnly con inputMode="none": en el celular no aparece el teclado del sistema.
+  const keyHandler = useRef(null)
+  keyHandler.current = (e) => {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return
+    const k = keyToKeypad(e.key, entryDecimals)
+    if (!k) return
+    if (isTextEntryTarget(e.target, { forEnter: k === 'save' })) return
+    e.preventDefault()
+    if (k === 'save') { save(); return }
+    setAmount(a => pressKey(a, k, entryDecimals))
+  }
+  useEffect(() => {
+    const onKey = (e) => keyHandler.current?.(e)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
+  const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
+
+  const saveButton = (
+    <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave} style={{ minHeight: 48 }}>
+      {saving ? '…' : t('qa.save')}
+    </button>
+  )
 
   return (
     <>
         {/* Toggle tipo — único lugar, junto al monto, con color semántico */}
-        <div style={{ display: 'flex', gap: 4, background: 'var(--sur3)', borderRadius: 'var(--r)', padding: 3, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 4, background: 'var(--sur3)', borderRadius: 'var(--r)', padding: 3, marginBottom: 12 }}>
           {[['expense', t('qa.expense')], ['income', t('qa.income')]].map(([k, lb]) => (
-            <button key={k} type="button" aria-pressed={type === k} onClick={() => setType(k)}
+            <button key={k} type="button" aria-pressed={type === k} onClick={() => changeType(k)}
               style={{ flex: 1, minHeight: 40, borderRadius: 'var(--rs)', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)',
                 background: type === k ? 'var(--sur)' : 'transparent', color: type === k ? (k === 'expense' ? 'var(--neg)' : 'var(--pos)') : 'var(--tm)',
                 boxShadow: type === k ? 'var(--sh-1)' : 'none' }}>
@@ -303,16 +413,58 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           ))}
         </div>
 
-        {/* 1.1 · Pegar SMS/notificación bancaria — se interpreta 100% local, nada sale del equipo */}
-        {!pasteOpen ? (
-          <button type="button" onClick={() => setPasteOpen(true)}
-            style={{ width: '100%', minHeight: 44, marginBottom: 14, padding: '8px 12px', borderRadius: 'var(--r)', cursor: 'pointer',
-              border: '1px dashed var(--brd2)', background: 'var(--sur2)', color: 'var(--tm)',
-              fontSize: 13, fontFamily: 'var(--sans)', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
-            <span aria-hidden>⎘</span> {t('qa.pasteCta')}
-          </button>
-        ) : (
-          <div style={{ marginBottom: 14 }}>
+        {/* Monto grande — readOnly + inputMode="none": evita el teclado del sistema
+            (y su zoom) porque el teclado numérico propio de abajo escribe acá.
+            Se muestra con separador de miles del locale de la moneda. */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 4, minHeight: 56 }}>
+          <span style={{ fontFamily: 'var(--num)', fontSize: 26, fontWeight: 600, color: 'var(--th)' }}>{usdOn ? usdSym : sym}</span>
+          <span ref={mirrorRef} aria-hidden="true" className="num"
+            style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'pre', fontSize: amountSize, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            {display || '0'}
+          </span>
+          <input
+            ref={amountRef} type="text" inputMode="none" readOnly value={display}
+            placeholder="0"
+            aria-label={usdOn ? `${t('qa.amount')} (US$)` : t('qa.amount')}
+            className="num"
+            style={{ width: amountWidth, maxWidth: rate > 0 ? '64%' : '82%', border: 'none', background: 'transparent', textAlign: 'center', caretColor: accent,
+              fontSize: amountSize, fontWeight: 700, color: accent, padding: 0, letterSpacing: '-0.02em' }}
+          />
+          {/* B4b · "Escribir en US$": solo con una tasa de referencia real */}
+          {rate > 0 && (
+            <button type="button" className={css.usdToggle} aria-pressed={usdOn} onClick={toggleUsd} aria-label={t('qa.usdMode')} title={t('qa.usdMode')}>
+              US$
+            </button>
+          )}
+        </div>
+
+        {/* Equivalente en vivo + chip de la tasa usada (fuente y fecha) */}
+        {rate > 0 && (
+          <div className={css.equiv}>
+            {equivText && (
+              <span>
+                <span className="num" aria-hidden="true">≈ {equivText}</span>
+                <span className="sr-only">{t('qa.equivAria', { amount: equivText })}</span>
+              </span>
+            )}
+            <span className={css.rateChip} title={rateChip}>
+              <span aria-hidden="true">{rateChip}</span>
+              <span className="sr-only">{t('qa.rateUsed', { rate: rateChip })}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Fecha + 1.1 · Pegar SMS/notificación bancaria (se interpreta 100% local) */}
+        <div className={css.dateRow}>
+          <DateSegment date={date} setDate={setDate} t={t} />
+          {!pasteOpen && (
+            <button type="button" className={css.pasteBtn} onClick={() => setPasteOpen(true)} aria-label={t('qa.pasteCta')} title={t('qa.pasteCta')}>
+              <span aria-hidden>⎘</span> {t('qa.pasteShort')}
+            </button>
+          )}
+        </div>
+        {pasteOpen && (
+          <div style={{ marginBottom: 12 }}>
             <textarea
               value={pasteText}
               onChange={e => handlePaste(e.target.value)}
@@ -337,36 +489,12 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           </div>
         )}
 
-        {/* Monto grande — readOnly + inputMode="none": evita el teclado del sistema
-            (y su zoom) porque el teclado numérico propio de abajo escribe acá.
-            Se muestra con separador de miles del locale de la moneda. */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 12, minHeight: 56 }}>
-          <span style={{ fontFamily: 'var(--num)', fontSize: 26, fontWeight: 600, color: 'var(--th)' }}>{sym}</span>
-          <span ref={mirrorRef} aria-hidden="true" className="num"
-            style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'pre', fontSize: amountSize, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            {display || '0'}
-          </span>
-          <input
-            ref={amountRef} type="text" inputMode="none" readOnly value={display}
-            placeholder="0"
-            aria-label={t('qa.amount')}
-            className="num"
-            style={{ width: amountWidth, maxWidth: '82%', border: 'none', background: 'transparent', textAlign: 'center', caretColor: accent,
-              fontSize: amountSize, fontWeight: 700, color: accent, padding: 0, letterSpacing: '-0.02em' }}
-          />
-        </div>
-
-        {/* Fecha */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-          <DateSegment date={date} setDate={setDate} t={t} />
-        </div>
-
-        <NumericKeypad setAmount={setAmount} decimals={decimals} t={t} />
+        <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} />
 
         {/* Descripción + método de pago (solo gastos) */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           <input
-            type="text" value={desc} onChange={e => setDesc(e.target.value)}
+            type="text" value={desc} onChange={e => changeDesc(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && save()}
             placeholder={t('qa.descPh')}
             aria-label={t('qa.desc')}
@@ -383,32 +511,37 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             </select>
           )}
         </div>
+        <span className="sr-only" aria-live="polite">{suggestedMsg}</span>
 
-        {/* Repetir el último movimiento del mismo tipo */}
-        {last && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
-            <button type="button" className="fos-link" onClick={repeatLast}
-              style={{ fontSize: 13, maxWidth: '100%', overflow: 'hidden' }}>
-              <SignalIcon kind="subs" size={14} />
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {t('qa.repeat', { desc: lastDesc, amount: maskMoney(fmtMoney(last.amount, sym)) })}
-              </span>
-            </button>
+        {/* Repetir (B4b): los 3 más frecuentes, de un toque; rellena sin guardar */}
+        {repeats.length > 0 && (
+          <div role="group" aria-label={t('qa.repeatGroup')} className={css.repeats}>
+            {repeats.map(r => {
+              const money = maskMoney(fmtMoney(r.amount, sym))
+              return (
+                <button key={r.key} type="button" className={`fos-chip ${css.repeatChip}`} onClick={() => applyRepeat(r)}
+                  aria-label={t('qa.repeat', { desc: repeatLabel(r), amount: money })}>
+                  <SignalIcon kind="subs" size={14} />
+                  <span aria-hidden="true" className={css.repeatDesc}>{repeatLabel(r)}</span>
+                  <span aria-hidden="true" className={`num ${css.repeatAmt}`}>{money}</span>
+                </button>
+              )
+            })}
           </div>
         )}
 
         {/* Chips de categoría */}
-        <div role="group" aria-label={t('qa.category')} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 18 }}>
+        <div role="group" aria-label={t('qa.category')} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
           {(chips.includes(cat) || !cat ? chips : [...chips, cat]).map(c => (
-            <button key={c} type="button" className="fos-chip" aria-pressed={cat === c} onClick={() => setCat(c)}>
+            <button key={c} type="button" className="fos-chip" aria-pressed={cat === c} onClick={() => pickCategory(c)}>
               {chipLabel(c)}
             </button>
           ))}
         </div>
 
-        {/* Se repite → movimiento fijo (con frecuencia) */}
-        <div className={rs.repeat}>
-          <label className={rs.check}>
+        {/* Se repite → movimiento fijo (con frecuencia). Toda la fila es el objetivo táctil. */}
+        <div className={css.repeatRow}>
+          <label className={css.repeatLabel}>
             <input type="checkbox" checked={repeat} onChange={e => setRepeat(e.target.checked)} />
             {t('rec.repeat.toggle')}
           </label>
@@ -419,10 +552,17 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           )}
         </div>
 
-        {/* Guardar — Latón con texto Navy en los dos tipos */}
-        <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave} style={{ minHeight: 48 }}>
-          {saving ? '…' : t('qa.save')}
-        </button>
+        {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
+        {allowMoreDetails && type === 'expense' && (
+          <div className={css.moreRow}>
+            <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 13 }}>
+              {t('qa.moreDetails')}
+            </button>
+          </div>
+        )}
+
+        {/* Guardar — Latón con texto Navy en los dos tipos. En la hoja, fijo al pie (W3). */}
+        {stickySave ? <div className={css.footer}>{saveButton}</div> : <div style={{ marginTop: 8 }}>{saveButton}</div>}
     </>
   )
 }

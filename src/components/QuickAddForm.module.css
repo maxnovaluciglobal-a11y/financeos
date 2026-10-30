@@ -1,0 +1,90 @@
+/* src/components/QuickAddForm.module.css — alta rápida v2 (B4a/B4b, nov-2026) */
+
+/* Teclado: 4 columnas. ⌫ arriba a la derecha, ✓ ocupa las filas 2 a 4 de la
+   última columna (a la altura del pulgar); el 0 ocupa dos columnas. */
+.keypad {
+  display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 48px;
+  gap: 8px; margin-bottom: 12px;
+}
+.key {
+  min-height: 48px; border-radius: var(--r); border: none; cursor: pointer;
+  background: var(--sur2); color: var(--tx); font-family: var(--num);
+  font-size: 18px; font-weight: 600;
+}
+.key:active { background: var(--sur3); }
+.keyZero { grid-column: span 2; }
+/* ✓: tinte Latón, no un segundo primario (el primario es "Guardar" al pie). */
+.keyOk {
+  grid-column: 4; grid-row: 2 / span 3;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border: 1px solid var(--laton); background: rgba(184, 134, 59, 0.16); color: var(--tx);
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+}
+.keyOk:disabled { border-color: transparent; background: var(--sur2); color: var(--th); cursor: not-allowed; }
+.keyOk:focus-visible, .key:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+
+/* Fecha + "Pegar SMS" en una sola fila */
+.dateRow { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.pasteBtn {
+  min-height: 44px; padding: 0 12px; border-radius: var(--r); cursor: pointer;
+  border: 1px dashed var(--brd2); background: var(--sur2); color: var(--tm);
+  font-size: 13px; font-family: var(--sans); font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+/* Monto + interruptor US$ */
+.usdToggle {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  min-width: 44px; min-height: 44px; padding: 0 8px; border-radius: var(--rs);
+  border: 1px solid var(--brd2); background: var(--sur); color: var(--tm); cursor: pointer;
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+}
+.usdToggle[aria-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); }
+
+/* "≈ US$X" y el chip de la tasa usada, en una línea bajo el monto */
+.equiv {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px;
+  min-height: 22px; margin: -2px 0 8px; font-size: 13px; color: var(--tm); font-family: var(--sans);
+}
+.rateChip {
+  display: inline-flex; align-items: center; padding: 1px 6px; max-width: 100%;
+  border: 0.5px solid var(--brd2); border-radius: var(--rs);
+  font-size: 11px; color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* "Repetir": hasta 3 chips de un toque, en una fila que se desliza */
+.repeats {
+  display: flex; gap: 6px; overflow-x: auto; margin: 0 -2px 8px; padding: 2px;
+  scrollbar-width: none;
+}
+.repeats::-webkit-scrollbar { display: none; }
+.repeatChip { flex: 0 0 auto; max-width: 78%; }
+.repeatDesc { min-width: 0; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.repeatAmt { flex-shrink: 0; white-space: nowrap; color: var(--tx); }
+
+/* "Se repite": toda la fila es el objetivo táctil (≥ 44 px) */
+.repeatRow { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; }
+.repeatLabel {
+  flex: 1; display: flex; align-items: center; gap: 10px; min-height: 44px;
+  padding: 0 4px; font-size: 14px; color: var(--tm); cursor: pointer; border-radius: var(--rs);
+}
+.repeatLabel input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; }
+.repeatLabel:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.repeatRow select { width: auto; min-height: 44px; padding: 6px 10px; }
+
+.moreRow { display: flex; justify-content: center; }
+
+/* "Guardar" fijo al pie de la hoja: siempre visible, también con scroll.
+   Los márgenes negativos absorben el padding de Sheet (20 px y el área segura)
+   para que la franja llegue de borde a borde; `bottom` negativo porque sticky
+   se mide desde el borde del contenido (descontado el padding de la hoja). */
+.footer {
+  position: sticky; bottom: calc(-20px - env(safe-area-inset-bottom)); z-index: 1;
+  margin: 8px -20px calc(-20px - env(safe-area-inset-bottom));
+  padding: 10px 20px calc(10px + env(safe-area-inset-bottom));
+  background: var(--sur); border-top: 1px solid var(--brd);
+}
+.footer :global(.fos-btn-primary) { min-height: 48px; }
+
+
+@media (prefers-reduced-motion: reduce) { .key, .keyOk { transition: none; } }
