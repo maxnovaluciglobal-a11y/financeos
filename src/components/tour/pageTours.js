@@ -35,6 +35,12 @@ export const PAGE_TOURS = {
   recurring: [
     { id: 'rec-month', title: 'tour.rec.month.title', body: 'tour.rec.month.body' },
   ],
+  // R9 Metas (patrón rial): bolsas fijas, alta corta y avance de cada meta.
+  goals: [
+    { id: 'goals-buckets', title: 'tour.goals.buckets.title', body: 'tour.goals.buckets.body' },
+    { id: 'goals-new',     title: 'tour.goals.new.title',     body: 'tour.goals.new.body' },
+    { id: 'goals-list',    title: 'tour.goals.list.title',    body: 'tour.goals.list.body' },
+  ],
 }
 
 export const TOURS_SEEN_KEY = 'fos_tours_seen'

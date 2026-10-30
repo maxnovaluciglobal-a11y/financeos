@@ -13,6 +13,9 @@ import {
   Laptop, PawPrint, Building2, TrendingUp, Package, Dumbbell, Plane, Briefcase, Code,
   KeyRound, Gift, Landmark, Store, PiggyBank, Wallet, Tv, Music, AppWindow, Shield, Cloud,
   Bike, Repeat, ListChecks,
+  // V3: 10 íconos nuevos; el resto de las claves reusa los de arriba (el
+  // componente va en la carga inicial y el presupuesto es de 300 kB gzip).
+  CreditCard, Receipt, Truck, Megaphone, HeartHandshake, Utensils, Coins, HandCoins, Scissors, Smartphone,
 } from 'lucide-react'
 import { AppContext } from '../context/AppContext.jsx'
 import { catEmoji } from '../utils/index.js'
@@ -32,13 +35,88 @@ export const CATEGORY_ICONS = {
 }
 const FREE_SLOTS = [1, 2, 3, 4, 5, 7, 8]
 
-// Categoría libre (escrita por el usuario): índice estable por su nombre.
+// V3 (30-oct-2026): las categorías de las plantillas y las que escribe el
+// usuario ("Mascotas", "Educación hijos", "Proveedores", "Pago tarjeta
+// crédito"…) caían todas en Wallet. Ahora, si no hay coincidencia exacta, se
+// busca por palabra clave (sin tildes ni mayúsculas, es/pt/en/de). Cada clave
+// tiene que empezar una palabra; con "=" adelante tiene que ser la palabra
+// entera ("=bus" no matchea "business", "=tax" no matchea "taxi"). El
+// orden importa: lo más específico primero ("tarjeta" antes que "crédito",
+// "impuesto" antes que "negocio"). Wallet queda solo para lo genérico.
+export const CATEGORY_KEYWORDS = [
+  [CreditCard, ['tarjeta', 'credit card', 'cartao', 'kreditkarte']],
+  [House, ['hipotec', 'mortgage', 'vivienda', 'moradia', '=casa', 'casas', 'hogar', 'home', 'housing', 'wohn', 'miete', 'mueble', 'furniture', 'decoraci', 'movel', 'mobel', 'mantenci', 'mantenimiento', 'reparaci', 'repair', 'manutencao', 'reparatur']],
+  [KeyRound, ['arriendo', 'alquiler', 'aluguel', '=rent', 'rental']],
+  [Receipt, ['impuesto', '=tax', 'taxes', 'imposto', 'tribut', 'steuer', '=iva', '=sii', 'seniat']],
+  [Truck, ['proveedor', 'supplier', 'fornecedor', 'lieferant', 'insumo', 'inventario', 'mercaderia']],
+  [Megaphone, ['marketing', 'publicidad', 'publicidade', 'advertis', '=ads', 'werbung']],
+  [Briefcase, ['consultor', 'consulting', 'asesoria', 'beratung', 'proyecto', 'project', 'projeto', 'projekt', 'cliente', 'client', 'kunde', 'retainer', 'iguala']],
+  [AppWindow, ['plataforma', 'platform', 'digital', 'online', '=web']],
+  [Laptop, ['tecnolog', 'technolog', 'technik', 'computador', 'computer', 'laptop', 'notebook']],
+  [Smartphone, ['telefono', 'celular', '=movil', 'phone', 'handy', 'mobile']],
+  [GraduationCap, ['educa', 'estudi', 'curso', 'colegio', 'escuela', 'universi', 'school', 'tuition', 'course', 'escola', 'bildung', 'schule', 'kurs']],
+  [PawPrint, ['mascota', '=pet', 'pets', 'perro', 'gato', 'veterin', 'haustier', 'tierarzt']],
+  [HeartPulse, ['salud', 'saude', 'health', 'medic', 'doctor', 'clinica', 'dentist', 'gesundheit', 'arzt', 'farmacia', 'pharmacy', 'remedio', 'apotheke']],
+  [Shield, ['seguro', 'insurance', 'versicherung']],
+  [PiggyBank, ['ahorro', 'saving', 'poupanca', 'spar', 'reserva', 'colchon']],
+  [TrendingUp, ['inversi', 'invest', 'utilidad', 'profit', 'lucro', 'gewinn', 'dividend', 'interes', 'interest', 'zins']],
+  [HandCoins, ['credito', 'prestamo', 'loan', 'emprestimo', 'kredit', 'darlehen', 'deuda', 'debt', 'divida', 'cuota', 'schulden']],
+  [Landmark, ['banco', 'bank', 'comision', '=fee', 'fees', 'gebuhr']],
+  [Briefcase, ['salario', 'sueldo', 'salary', 'wage', 'payroll', 'nomina', 'gehalt', 'lohn', 'profesional', 'professional', 'honorario']],
+  [Scissors, ['belleza', 'beauty', 'peluquer', 'barber', 'cuidado personal', 'servicios personales', 'beleza', 'friseur']],
+  [Lightbulb, ['servicio', 'servico', 'utilit', 'basico', 'internet', 'wifi', 'fibra', 'luz', 'electric', 'energia', 'strom', 'agua', 'water', 'wasser']],
+  [Store, ['emprend', 'startup', 'empreend', 'venta', 'sales', 'venda', 'verkauf', 'umsatz', 'negocio', 'business', 'empresa', 'company', 'comercio', 'tienda', 'loja', 'geschaft', 'operativ', 'oficina', 'office']],
+  [HeartHandshake, ['ayuda', 'familia', 'family', 'apoyo', 'remesa', 'donaci', 'doacao', 'charity', 'spende', 'diezmo', 'ofrenda', 'bebe', 'baby', 'guarderia', 'panal', '=kita']],
+  [Gift, ['regalo', 'gift', 'presente', 'geschenk', 'bono', 'bonus', 'aguinaldo']],
+  [Coins, ['ingreso', 'income', 'renda', 'receita', 'extra', 'einkommen', 'einnahme']],
+  [Utensils, ['comida', 'restaurant', 'almuerzo', 'cena', 'food', 'meal', 'refeicao', 'essen', 'cafe', 'coffee', 'kaffee', 'snack']],
+  [ShoppingCart, ['aliment', 'supermerc', 'mercado', 'grocer', 'compras', 'lebensmittel']],
+  [Car, ['transport', '=auto', 'autos', 'automovil', 'automovel', 'carro', 'coche', 'vehic', '=car', 'cars', '=moto', 'estacionamiento', 'parking', 'gasolina', 'combustible', 'fuel', 'nafta', 'benzin', 'tanken', '=bus', 'metro', 'pasaje', 'onibus', 'taxi', 'uber', 'peaje']],
+  [Plane, ['viaje', 'travel', 'viagem', 'vacacion', 'ferias', 'reise', 'urlaub', 'vuelo', 'flight', 'hotel']],
+  [Tv, ['streaming', 'netflix', 'disney', '=hbo', 'youtube']],
+  [Music, ['musica', 'music', 'spotify']],
+  [Clapperboard, ['entreten', 'ocio', 'diversion', 'lazer', 'entertain', 'leisure', 'freizeit', 'unterhaltung', 'salida', 'juego', 'game', 'jogo', 'spiel', 'cine', 'cinema', 'concierto', 'evento', 'kino']],
+  [Dumbbell, ['deporte', 'gimnasio', 'gym', 'sport', 'esporte', 'fitness']],
+  [Shirt, ['ropa', 'roupa', 'cloth', 'vestuario', 'calzado', 'zapato', 'kleidung']],
+  [Repeat, ['suscrip', 'subscription', 'assinatura', '=abo', 'abonnement', 'mensualidad']],
+  [Package, ['otro', 'otros', 'other', 'outro', 'outros', 'sonstig', 'varios', 'misc']],
+]
+
+export function normalizeCategory(s) {
+  return String(s || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+}
+
+// Ícono por palabra clave, o null si nada coincide (pura, testeable).
+export function iconByKeyword(category) {
+  const n = normalizeCategory(category)
+  if (!n.trim()) return null
+  for (const [Icon, keys] of CATEGORY_KEYWORDS) {
+    for (const raw of keys) {
+      const whole = raw.startsWith('=')
+      const k = whole ? raw.slice(1) : raw
+      for (let at = n.indexOf(k); at >= 0; at = n.indexOf(k, at + 1)) {
+        const startsWord = at === 0 || !/[a-z0-9]/.test(n[at - 1])
+        const endsWord = !whole || at + k.length === n.length || !/[a-z0-9]/.test(n[at + k.length])
+        if (startsWord && endsWord) return Icon
+      }
+    }
+  }
+  return null
+}
+
+// Tinte estable por nombre (no cambia con el ícono: una categoría libre
+// conserva el color que ya tenía).
+function stableSlot(category) {
+  let h = 0
+  for (const ch of String(category || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0
+  return FREE_SLOTS[h % FREE_SLOTS.length]
+}
+
+// Exacta → palabra clave → Wallet (solo lo genérico).
 export function categoryVisual(category) {
   const hit = CATEGORY_ICONS[category]
   if (hit) return { Icon: hit[0], slot: hit[1] }
-  let h = 0
-  for (const ch of String(category || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0
-  return { Icon: Wallet, slot: FREE_SLOTS[h % FREE_SLOTS.length] }
+  return { Icon: iconByKeyword(category) || Wallet, slot: stableSlot(category) }
 }
 
 export default function CategoryIcon({ category, size = 28 }) {

@@ -1,13 +1,16 @@
-// src/pages/Goals/index.jsx — v1.5
-import { useState, useMemo } from 'react'
+// src/pages/Goals/index.jsx — v1.6 (R9: bolsas fijas, alta corta en hoja, aporte en hoja)
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState, EmptyChoices, EmptyChoice } from '../../components/ui/index.jsx'
 import { monthsAheadFirstDay } from '../../utils/monthMath.js'
-import { Flag, ShieldCheck, Plane, ShoppingBag, GraduationCap, Pencil, X } from 'lucide-react'
-import { firstGoalPresets } from './firstGoal.js'
-import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, prioLabel, currencySymbol, monthYearLabel, fmtPctPoints } from '../../utils/index.js'
+import { Flag, Pencil, X } from 'lucide-react'
+import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, localDateStr, prioLabel, currencySymbol, monthYearLabel, fmtPctPoints } from '../../utils/index.js'
+import config from '../../config.js'
+import { logRejection } from '../../utils/errorLog.js'
+import { fixedBuckets, draftFromTemplate, buildGoal, applyContribution, toFullFormDate, isEmergencyGoal as isEmergencyFlagged, isGeneralGoal } from './goalFlow.js'
+import { FixedBuckets, TemplateGrid, GoalFlowSheet, ContributionSheet, GOAL_ICONS } from './GoalSheets.jsx'
 import { goalStatuses } from './goalStatus.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
@@ -15,15 +18,19 @@ import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 
 export default function Goals() {
-  const { goals, addGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo } = useApp()
+  const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo, showToast } = useApp()
   const { t, lang } = useT()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // "disponible para ahorrar" personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const [show, setShow]               = useState(false)
   const [f, setF]                     = useState({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#14213D' })
   const [err, setErr]                 = useState('')
-  const [savingId, setSavingId]       = useState(null)
-  const [addAmt, setAddAmt]           = useState('')
+  const [flow, setFlow]               = useState(null)   // alta corta (R9): { step, draft }
+  const [contribGoal, setContribGoal] = useState(null)   // aporte en hoja (R9)
+  // Deshacer el alta: addGoal no devuelve el id, así que se busca por createdAt
+  // en la lista vigente cuando se toca "Deshacer" (segundos después).
+  const goalsRef = useRef(goals)
+  useEffect(() => { goalsRef.current = goals }, [goals])
   const [showSuggest, setShowSuggest] = useState(false)
   const [suggestions, setSuggestions] = useState([])
   const [editingId, setEditingId]     = useState(null)
@@ -50,6 +57,7 @@ export default function Goals() {
     return avgExp > 0 ? avgExp : (gastoMensualGoals > 0 ? gastoMensualGoals : ingresoNetoGoals)
   }, [incomes, expenses, activeMonth, gastoMensualGoals, ingresoNetoGoals])
   const isEmergencyGoal = (g) => isEmergencyGoalName(g.name)
+  const buckets = useMemo(() => fixedBuckets(goals, { emergencyBase }), [goals, emergencyBase])
 
   const totalTarget = useMemo(() => goals.reduce((s,g) => s+g.target, 0), [goals])
   const totalSaved  = useMemo(() => goals.reduce((s,g) => s+g.saved, 0), [goals])
@@ -84,28 +92,68 @@ export default function Goals() {
     setShow(false)
   }
 
-  // Primera meta (pulido 09-oct): "¿Para qué quieres ahorrar?" con opciones
-  // comunes que prellenan el formulario de nueva meta. El usuario completa o
-  // corrige el monto y guarda; no se crea nada sin su confirmación.
-  const presets = useMemo(() => firstGoalPresets({ emergencyBase, t }), [emergencyBase, t])
-  function startGoal(preset) {
-    setErr('')
-    setF({ name: preset?.name || '', target: preset?.target ? String(preset.target) : '', saved: '', targetDate: '', priority: preset?.priority || 'Media', color: '#14213D' })
+  // ── R9: alta corta, bolsas fijas y aporte (patrones rial #40–#44) ─────────
+  const fmtPlain = (n) => fmtMoney(n, sym)
+  function openFlow(step = 0, draft = {}) { setFlow({ step, draft }) }
+  // Estables: useDialogA11y re-corre (y mueve el foco) si cambia onClose.
+  const closeFlow = useCallback(() => setFlow(null), [])
+  const closeContrib = useCallback(() => setContribGoal(null), [])
+  function pickTemplate(id) { setFlow({ step: 1, draft: draftFromTemplate(id, t, { emergencyBase }) }) }
+
+  async function createGoal(draft) {
+    const goal = buildGoal(draft)
+    try { await addGoal(goal) } catch { return }   // addGoal ya avisó el error
+    setFlow(null)
+    showToast(t('goals.r9.toast.created', { name: goal.name }), 'ok', {
+      label: t('common.undo'),
+      onAction: () => {
+        const g = (goalsRef.current || []).find(x => x.createdAt === goal.createdAt && x.name === goal.name)
+        if (g) delGoal(g.id).catch(logRejection('Goals:undoCreate'))
+      },
+    })
+  }
+
+  // Bolsa fija: si existe, aporte (o ir a la tarjeta si ya está completa); si
+  // no, el fondo de emergencia con monto calculable se crea de un toque y lo
+  // demás abre el alta corta en el paso del monto.
+  function onBucket(b) {
+    if (b.goal) {
+      if (b.goal.target > 0 && b.goal.saved >= b.goal.target) {
+        const el = document.getElementById(`goal-card-${b.goal.id}`)
+        el?.scrollIntoView?.({ block: 'center', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+        el?.focus?.({ preventScroll: true })
+        return
+      }
+      setContribGoal(b.goal); return
+    }
+    const draft = draftFromTemplate(b.id, t, { emergencyBase })
+    if (b.id === 'emergency' && b.suggested) { createGoal(draft); return }
+    openFlow(1, draft)
+  }
+
+  // "Más opciones": el formulario completo de siempre, con lo ya escrito.
+  function openFullForm(draft = {}) {
+    setFlow(null); setErr('')
+    setF({ name: draft.name || '', target: draft.target ? String(draft.target) : '', saved: '', targetDate: toFullFormDate(draft.targetDate), priority: draft.priority || 'Media', color: '#14213D', ...(draft.icon ? { icon: draft.icon } : {}), ...(draft.kind ? { kind: draft.kind } : {}) })
     setShow(true)
-    // Al campo que falta: el monto si ya hay nombre, si no el nombre.
     setTimeout(() => {
-      const el = document.getElementById(preset?.name ? (preset?.target ? 'goal-new-submit' : 'goal-new-target') : 'goal-new-name')
+      const el = document.getElementById(draft.name ? (draft.target ? 'goal-new-submit' : 'goal-new-target') : 'goal-new-name')
       el?.scrollIntoView?.({ block: 'center', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
       el?.focus?.({ preventScroll: true })
     }, 0)
   }
-  const PRESET_ICONS = { emergency: ShieldCheck, trip: Plane, purchase: ShoppingBag, education: GraduationCap }
+  function openSuggestFromFlow() { setFlow(null); openSuggestions() }
 
-  async function confirmAddSaving(goal) {
-    const n = Number(addAmt)
-    if (!addAmt || isNaN(n) || n <= 0) return
-    await updateGoal({ ...goal, saved:Math.min(goal.saved+n, goal.target) })
-    setSavingId(null); setAddAmt('')
+  async function confirmContribution(amount, method) {
+    const prev = contribGoal
+    const r = applyContribution(prev, amount, { method, date: localDateStr() })
+    if (!r) return
+    try { await updateGoal(r.goal) } catch { return }
+    setContribGoal(null)
+    const msg = r.done
+      ? t('goals.r9.toast.addedDone', { v: fmtPlain(r.added) })
+      : t('goals.r9.toast.added', { v: fmtPlain(r.added), r: fmtPlain(r.remaining) })
+    showToast(msg, 'ok', { label: t('common.undo'), onAction: () => { updateGoal(prev).catch(logRejection('Goals:undoContribution')) } })
   }
 
   // Un solo primario Latón por pantalla (sistema-visual, regla 4; V2): "+ Nueva
@@ -113,12 +161,15 @@ export default function Goals() {
   // sugerencias, edición o aporte); ahí pasa a secundario. `data-screen-primary`
   // avisa al demo que esta pantalla ya tiene primario: sus CTA pasan a
   // secundarios (globals.css).
-  const panelOpen = show || showSuggest || editingId != null || savingId != null
+  const panelOpen = show || showSuggest || editingId != null
+  const goalIcon = (g) => GOAL_ICONS[g.icon] || (isEmergencyFlagged(g) ? GOAL_ICONS.emergency : isGeneralGoal(g) ? GOAL_ICONS.general : null)
 
   return (
     <div className="stack" data-screen-primary="">
       {/* Un solo subtítulo (UI-Q11): "goals.sub" repetía lo mismo que la intro. */}
       <PageHeader title={t('goals.title')} sub={t('goals.intro')} />
+      {/* R9 (#41): las dos bolsas fijas, siempre visibles, como filas livianas. */}
+      <FixedBuckets buckets={buckets} t={t} fmt={fmtPlain} onSelect={onBucket} />
       {/* Sin metas, cuatro ceros no dicen nada: la pregunta guiada va primero. */}
       {goals.length > 0 && <div className="kpi-row">
         <KPI label={t('goals.kpi.active')}  value={goals.length} />
@@ -141,10 +192,14 @@ export default function Goals() {
           </div>
         )
       })()}
-      <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
-        <Btn variant={panelOpen ? 'ghost' : 'primary'} onClick={() => setShow(s=>!s)} aria-expanded={show}>{show ? t('goals.toggle.close') : t('goals.toggle.new')}</Btn>
-        <Btn variant="ghost"   onClick={openSuggestions}>{t('goals.suggestBtn')}</Btn>
-      </div>
+      {/* "+ Nueva meta" abre la hoja con la cuadrícula (R9 #40). "Sugerir metas
+          básicas" y el formulario completo siguen dentro de esa hoja. Sin metas,
+          la cuadrícula va en el estado vacío y este botón no se repite. */}
+      {goals.length > 0 && (
+        <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}} data-tour="goals-new">
+          <Btn variant={panelOpen ? 'ghost' : 'primary'} onClick={() => openFlow(0)} aria-haspopup="dialog">{t('goals.toggle.new')}</Btn>
+        </div>
+      )}
 
       {show && (
         <Card>
@@ -222,19 +277,15 @@ export default function Goals() {
       )}
 
       {goals.length === 0 && !show && (
-        <EmptyState icon={Flag} title={t('goals.first.title')} text={t('goals.first.text')}
-          secondary={{ label: t('goals.first.other'), onClick: () => startGoal(null) }}>
-          <EmptyChoices label={t('goals.first.title')}>
-            {presets.map(p => (
-              <EmptyChoice key={p.id} icon={PRESET_ICONS[p.id]} label={t(`goals.first.${p.id}`)}
-                sub={p.id === 'emergency' && p.target ? t('goals.first.emergencySub', { v: fmtMoney(p.target, sym) }) : undefined}
-                onClick={() => startGoal(p)} />
-            ))}
-          </EmptyChoices>
-        </EmptyState>
+        <div data-tour="goals-new">
+          <EmptyState icon={Flag} title={t('goals.first.title')} text={t('goals.first.text')}
+            secondary={{ label: t('goals.r9.suggestLink'), onClick: openSuggestions }}>
+            <TemplateGrid t={t} onPick={pickTemplate} />
+          </EmptyState>
+        </div>
       )}
 
-      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+      <div style={{display:'flex',flexDirection:'column',gap:10}} data-tour={goals.length > 0 ? 'goals-list' : undefined}>
         {goals.map(g => {
           const p    = g.target > 0 ? Math.min(g.saved/g.target, 1) : 0
           const done = g.saved >= g.target
@@ -243,8 +294,9 @@ export default function Goals() {
           const clr  = done ? 'var(--pos)' : 'var(--grn)'
           const st   = statuses[g.id]
           const isEditing = editingId === g.id
+          const GIcon = goalIcon(g)
           return (
-            <div key={g.id} style={{background:'var(--sur2)',borderRadius:10,padding:'14px 16px',border:`0.5px solid ${isEditing?'rgba(10,92,62,.4)':done?'rgba(10,92,62,.25)':'var(--brd)'}`}}>
+            <div key={g.id} id={`goal-card-${g.id}`} tabIndex={-1} style={{outline:'none',background:'var(--sur2)',borderRadius:10,padding:'14px 16px',border:`0.5px solid ${isEditing?'rgba(10,92,62,.4)':done?'rgba(10,92,62,.25)':'var(--brd)'}`}}>
               {isEditing ? (
                 <div style={{display:'flex',flexDirection:'column',gap:10}}>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
@@ -280,7 +332,7 @@ export default function Goals() {
                 <>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
                     <div style={{flex:1,paddingRight:8}}>
-                      <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{g.name}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2,display:'flex',alignItems:'center',gap:6}}>{GIcon && <GIcon size={14} strokeWidth={1.7} aria-hidden="true" style={{color:'var(--tm)',flexShrink:0}} />}{g.name}</div>
                       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
                         {g.priority && <span className="fos-tag">{t('goals.card.priority', { p: prioLabel(g.priority, lang) })}</span>}
                         {g.targetDate && <span style={{fontSize:12,fontFamily:'var(--sans)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: monthYearLabel(g.targetDate.slice(0,7)) })}</span>}
@@ -322,19 +374,7 @@ export default function Goals() {
                       <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
                       <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
                     </div>
-                    {!done && (
-                      savingId === g.id
-                        ? <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                            {/* eslint-disable-next-line jsx-a11y/no-autofocus -- the user just tapped add-savings on this goal; focus moves into the amount input that appeared */}
-                            <input type="number" inputMode="decimal" min="0" step="any" value={addAmt} placeholder={t('goals.card.amountPh')} autoFocus
-                              style={{width:90,padding:'4px 7px',fontSize:11,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)'}}
-                              onChange={e=>setAddAmt(e.target.value)}
-                              onKeyDown={e=>e.key==='Enter'&&confirmAddSaving(g)} />
-                            <Btn variant="primary" size="xs" onClick={()=>confirmAddSaving(g)}>OK</Btn>
-                            <Btn variant="ghost"   size="xs" onClick={()=>{setSavingId(null);setAddAmt('')}} aria-label={t('common.cancel')}>×</Btn>
-                          </div>
-                        : <Btn variant="ghost" size="xs" onClick={()=>{setSavingId(g.id);setAddAmt('')}}>{t('goals.card.addSaving')}</Btn>
-                    )}
+                    {!done && <Btn variant="ghost" size="xs" onClick={()=>setContribGoal(g)} aria-haspopup="dialog" style={{minHeight:44}}>{t('goals.card.addSaving')}</Btn>}
                   </div>
                 </>
               )}
@@ -342,6 +382,15 @@ export default function Goals() {
           )
         })}
       </div>
+
+      <GoalFlowSheet flow={flow} setFlow={setFlow} onClose={closeFlow} onPickTemplate={pickTemplate}
+        onCreate={createGoal} onMore={openFullForm} onSuggest={openSuggestFromFlow}
+        t={t} fmt={fmtPlain} currency={settings.currency || 'CLP'} activeMonth={activeMonth} />
+      {contribGoal && (
+        <ContributionSheet key={contribGoal.id} goal={contribGoal} onClose={closeContrib} onConfirm={confirmContribution}
+          t={t} lang={lang} fmt={fmtPlain} currency={settings.currency || 'CLP'}
+          methods={config.paymentMethods} lastPaymentMethod={settings.lastPaymentMethod} />
+      )}
     </div>
   )
 }
