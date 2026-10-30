@@ -20,6 +20,7 @@ import { QUICK_ADD_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
 import PushAsk from '../PushAsk.jsx'
 import UpdateNotice from '../UpdateNotice.jsx'
+import WhatsNew from '../WhatsNew.jsx'
 import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
 import { pushSupported, isPushEnabled } from '../../core/push.js'
 import { getLicenseKey, getLicensePlan } from '../../utils/licenseValidator.js'
@@ -285,6 +286,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
       <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => setPushCheck(true)} />
       <PushAsk open={pushAskOpen} onClose={() => setPushAskOpen(false)} onResult={onPushResult} />
       <UpdateNotice />
+      <WhatsNew />
     </div>
   )
 }

@@ -6,6 +6,8 @@ export const es = {
     'common.confirmDelete': "¿Eliminar este registro? No se puede deshacer.",
     'common.deleted': "Eliminado",
     'common.undo': "Deshacer",
+    'whatsnew.title': "Novedades",
+    'whatsnew.ok': "Entendido",
     'app.update.ready': "Hay una versión nueva de MOY IQ.",
     'app.update.action': "Actualizar",
     'qa.title': "Registro rápido",

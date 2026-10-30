@@ -6,6 +6,8 @@ export const pt = {
     'common.confirmDelete': "Excluir este registro? Não pode ser desfeito.",
     'common.deleted': "Excluído",
     'common.undo': "Desfazer",
+    'whatsnew.title': "Novidades",
+    'whatsnew.ok': "Entendi",
     'app.update.ready': "Há uma nova versão do MOY IQ.",
     'app.update.action': "Atualizar",
     'qa.title': "Registro rápido",

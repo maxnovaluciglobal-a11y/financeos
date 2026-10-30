@@ -6,6 +6,8 @@ export const en = {
     'common.confirmDelete': "Delete this record? This can't be undone.",
     'common.deleted': "Deleted",
     'common.undo': "Undo",
+    'whatsnew.title': "What's new",
+    'whatsnew.ok': "Got it",
     'app.update.ready': "A new version of MOY IQ is available.",
     'app.update.action': "Update",
     'qa.title': "Quick add",

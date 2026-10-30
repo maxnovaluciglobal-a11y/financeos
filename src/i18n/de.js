@@ -6,6 +6,8 @@ export const de = {
     'common.confirmDelete': "Diesen Eintrag löschen? Kann nicht rückgängig gemacht werden.",
     'common.deleted': "Gelöscht",
     'common.undo': "Rückgängig",
+    'whatsnew.title': "Neuigkeiten",
+    'whatsnew.ok': "Verstanden",
     'app.update.ready': "Eine neue Version von MOY IQ ist verfügbar.",
     'app.update.action': "Aktualisieren",
     'qa.title': "Schnellerfassung",
