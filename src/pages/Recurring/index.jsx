@@ -246,7 +246,7 @@ export default function Recurring({ setPage }) {
     <div className="stack">
       <PageHeader title={t('rec.title')} sub={t('rec.sub')} />
 
-      <Card>
+      <Card data-tour="rec-month">
         <CardHeader title={t('rec.page.thisMonth', { month: monthYearLabel(activeMonth) })} />
         {plan.length === 0 ? (
           <p className={s.empty} style={{ marginTop: 0 }}>{rules.length ? t('rec.page.noneThisMonth') : t('rec.page.empty')}</p>

@@ -285,13 +285,13 @@ export default function Debts() {
     <div className="stack">
       <PageHeader title={t('debts.title')} sub={t('debts.sub')} />
       <p style={{fontSize:12.5,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginBottom:12,marginTop:-4}}>{t('debts.intro')}</p>
-      <div className="kpi-row">
+      <div className="kpi-row" data-tour="debt-kpis">
         <KPI label={t('debts.kpi.total')}       value={fmtMoney(totalBalance,sym)} color="red" />
         <KPI label={t('debts.kpi.minPay')} value={fmtMoney(totalMin,sym)} />
         <KPI label={t('debts.kpi.active')}    value={debts.length} />
         <KPI label={t('debts.kpi.paid')}      value={fmtMoney(totalPaid,sym)} color="green" />
       </div>
-      <div><Btn variant="primary" onClick={() => setShow(s => !s)} aria-expanded={show}>{show ? t('debts.toggle.close') : t('debts.toggle.new')}</Btn></div>
+      <div data-tour="debt-new"><Btn variant="primary" onClick={() => setShow(s => !s)} aria-expanded={show}>{show ? t('debts.toggle.close') : t('debts.toggle.new')}</Btn></div>
       {show && (
         <Card>
           <CardHeader title={t('debts.new')} />

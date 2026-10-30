@@ -23,6 +23,16 @@ export const PAGE_TOURS = {
     { id: 'bud-new',     title: 'tour.bud.new.title',     body: 'tour.bud.new.body' },
     { id: 'bud-model',   title: 'tour.bud.model.title',   body: 'tour.bud.model.body' },
     { id: 'bud-summary', title: 'tour.bud.summary.title', body: 'tour.bud.summary.body' },
+    // R8a: reparto del ingreso (patrón rial).
+    { id: 'bud-split',   title: 'tour.bud.split.title',   body: 'tour.bud.split.body' },
+  ],
+  // N9 (ola C, patrón rial: "?" en cada pantalla de sección), 30-oct-2026.
+  debts: [
+    { id: 'debt-kpis', title: 'tour.debt.kpis.title', body: 'tour.debt.kpis.body' },
+    { id: 'debt-new',  title: 'tour.debt.new.title',  body: 'tour.debt.new.body' },
+  ],
+  recurring: [
+    { id: 'rec-month', title: 'tour.rec.month.title', body: 'tour.rec.month.body' },
   ],
 }
 

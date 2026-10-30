@@ -24,7 +24,7 @@ export default function BudgetSplit({ income, budgeted, savingsPct = 0, unbudget
   if (!(split.income > 0)) return null
   const commit = () => { const v = clampSavingsPct(draft); setDraft(v ? String(v) : ''); if (v !== (Number(savingsPct) || 0)) onSavingsPct?.(v) }
   return (
-    <section className={s.split} aria-labelledby="bud-split-title">
+    <section className={s.split} aria-labelledby="bud-split-title" data-tour="bud-split">
       <div className={s.splitHead}>
         <h2 id="bud-split-title" className={s.sectionTitle}>{t('budgets.split.title')}</h2>
         <label className={s.splitPct}>
