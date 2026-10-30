@@ -511,8 +511,10 @@ export default function BackupManager() {
 
         {/* Proteger el archivo con contraseña (opcional) */}
         <div style={{ ...srow, flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, ...slbl, cursor: 'pointer' }}>
-            <input type="checkbox" checked={encOn} onChange={e => setEncOn(e.target.checked)} />
+          {/* width:auto: el `input { width: 100% }` global estiraba la casilla y
+              empujaba el texto a la derecha (R10). Fila de 44 px tocable entera. */}
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, ...slbl, cursor: 'pointer' }}>
+            <input type="checkbox" checked={encOn} onChange={e => setEncOn(e.target.checked)} style={{ width: 18, height: 18, margin: 0, padding: 0, flexShrink: 0 }} />
             {t('backup.enc.toggle')}
           </label>
           <div style={ssub}>{t('backup.enc.hint')}</div>

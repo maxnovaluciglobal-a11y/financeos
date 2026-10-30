@@ -39,7 +39,8 @@ export default function SnapshotRestore() {
       {confirming ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 12, color: 'var(--tx)', flex: '1 1 220px' }}>{t('rec.restore.confirm')}</span>
-          <Btn variant="primary" size="sm" onClick={restore}>{t('rec.restore.btn')}</Btn>
+          {/* Reemplaza los datos: confirmación en rojo, no Latón (R10). */}
+          <Btn variant="danger" size="sm" onClick={restore}>{t('rec.restore.btn')}</Btn>
           <Btn variant="ghost" size="sm" onClick={() => setConfirming(false)}>{t('common.cancel')}</Btn>
         </div>
       ) : (

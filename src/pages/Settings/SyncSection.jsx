@@ -164,7 +164,7 @@ export default function SyncSection() {
         </div>
         {on
           ? <Btn variant="ghost" onClick={toggleOff} disabled={busy} aria-label={`${t('settings.sync.disable')} · ${t('settings.sync.title')}`}>{t('settings.sync.disable')}</Btn>
-          : !need && <Btn variant="primary" onClick={() => start()} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : t('settings.sync.enable')} · ${t('settings.sync.title')}`}>{busy ? t('settings.sync.busy') : t('settings.sync.enable')}</Btn>}
+          : !need && <Btn variant="ghost" onClick={() => start()} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : t('settings.sync.enable')} · ${t('settings.sync.title')}`}>{busy ? t('settings.sync.busy') : t('settings.sync.enable')}</Btn>}
       </div>
 
       {!on && need === 'new_passphrase' && (
@@ -213,12 +213,12 @@ export default function SyncSection() {
           <p style={sub}>{t('syncPass.migrateBody')}</p>
           {!migrating ? (
             <div style={{ marginTop: 8 }}>
-              <Btn variant="primary" size="sm" onClick={() => { setMigrating(true); setError('') }} aria-expanded={false} aria-controls="sync-migrate">{t('syncPass.migrateStart')}</Btn>
+              <Btn variant="ghost" size="sm" onClick={() => { setMigrating(true); setError('') }} aria-expanded={false} aria-controls="sync-migrate">{t('syncPass.migrateStart')}</Btn>
             </div>
           ) : (
             <div id="sync-migrate">
               <p style={{ ...sub, color: 'var(--tx)' }}>{t('syncPass.migrateStep1')}</p>
-              <Btn variant={backupDone ? 'ghost' : 'primary'} size="sm" onClick={backup}>{backupDone ? t('syncPass.backupDone') : t('syncPass.backupBtn')}</Btn>
+              <Btn variant="ghost" size="sm" onClick={backup}>{backupDone ? t('syncPass.backupDone') : t('syncPass.backupBtn')}</Btn>
               {backupDone && (
                 <>
                   <p style={{ ...sub, color: 'var(--tx)', marginTop: 12 }}>{t('syncPass.migrateStep2')}</p>

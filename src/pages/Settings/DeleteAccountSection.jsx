@@ -2,7 +2,7 @@
 // se ofrece el respaldo, después hay que escribir la palabra de confirmación
 // del idioma; recién ahí se habilita el botón. Lo hace core/deleteAccount.js.
 import { useEffect, useRef, useState } from 'react'
-import { Card, CardHeader, Btn } from '../../components/ui/index.jsx'
+import { Btn } from '../../components/ui/index.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
@@ -67,9 +67,9 @@ export default function DeleteAccountSection({ autoOpen = false }) {
 
   const p = { fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, margin: '0 0 10px' }
   return (
-    <div id="delete-account" ref={cardRef}>
-    <Card>
-      <CardHeader title={t('deleteAccount.title')} />
+    // R10: vive en Ajustes › Zona de riesgo, separado por una línea (sin caja).
+    <div id="delete-account" ref={cardRef} style={{ borderTop: '1px solid var(--brd2)', paddingTop: 14 }}>
+      <h3 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 600, color: 'var(--red)' }}>{t('deleteAccount.title')}</h3>
       <p style={p}>{t('deleteAccount.what')}</p>
       <p style={p}>{t('deleteAccount.kept')}</p>
       {isPro && (
@@ -115,7 +115,6 @@ export default function DeleteAccountSection({ autoOpen = false }) {
           </div>
         </div>
       )}
-    </Card>
     </div>
   )
 }

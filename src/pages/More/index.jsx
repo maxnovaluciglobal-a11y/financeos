@@ -9,6 +9,7 @@ import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, Credi
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { menuSections, showProChip } from '../../components/layout/navConfig.js'
+import { requestSettingsSub } from '../Settings/settingsIndex.js'
 import { NAV_ICONS } from '../../components/icons/Icons.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
 import { BackupStatusBadge } from '../../components/backup/BackupManager.jsx'
@@ -51,7 +52,7 @@ function AccountHeader({ setPage }) {
         </div>
       </div>
       {!isDemo && !isPro && (
-        <button type="button" className={s.upgrade} onClick={() => setPage('settings')}>
+        <button type="button" className={s.upgrade} onClick={() => { requestSettingsSub('plan'); setPage('settings') }}>
           <span>
             <span className={s.upgradeTitle}>{t('menu.upgrade.title')}</span>
             <span className={s.upgradeSub}>{t('settings.upgrade.sub')}</span>

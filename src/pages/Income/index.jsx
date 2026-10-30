@@ -95,13 +95,13 @@ export default function Income({ setPage }) {
           }}>{t('movl.seeInMovements')} →</button>
         )}
       </div>
-      <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+      <div className="kpi-row" data-tour="inc-kpis" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         <KPI label={t('income.kpi.totalMonth')} value={fmtMoney(total, sym)} color="green" sub={investment > 0 ? t('income.kpi.invOfWhich', { v: fmtMoney(investment, sym) }) : undefined} />
         <KPI label={t('income.kpi.fixed')}      value={fmtMoney(fixed, sym)} sub={total > 0 ? t('income.kpi.pctOfTotal', { pct: fmtPct(fixed/total) }) : '—'} />
         <KPI label={t('income.kpi.variable')}  value={fmtMoney(total - fixed, sym)} sub={total > 0 ? t('income.kpi.pctOfTotal', { pct: fmtPct((total-fixed)/total) }) : '—'} />
       </div>
       <div className="grid2">
-        <Card>
+        <Card data-tour="inc-form">
           <CardHeader title={t('income.new')} />
           {err && <Alert type="danger">{err}</Alert>}
 

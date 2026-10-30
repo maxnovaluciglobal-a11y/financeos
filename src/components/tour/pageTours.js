@@ -44,6 +44,16 @@ export const PAGE_TOURS = {
     { id: 'goals-new',     title: 'tour.goals.new.title',     body: 'tour.goals.new.body' },
     { id: 'goals-list',    title: 'tour.goals.list.title',    body: 'tour.goals.list.body' },
   ],
+  // N9: Ingresos (patrón rial).
+  income: [
+    { id: 'inc-kpis', title: 'tour.inc.kpis.title', body: 'tour.inc.kpis.body' },
+    { id: 'inc-form', title: 'tour.inc.form.title', body: 'tour.inc.form.body' },
+  ],
+  // R10 (ola C): Ajustes por subpantallas — el buscador y las filas agrupadas.
+  settings: [
+    { id: 'set-search', title: 'tour.settings.search.title', body: 'tour.settings.search.body' },
+    { id: 'set-groups', title: 'tour.settings.groups.title', body: 'tour.settings.groups.body' },
+  ],
 }
 
 export const TOURS_SEEN_KEY = 'fos_tours_seen'
