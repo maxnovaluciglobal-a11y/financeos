@@ -2,7 +2,8 @@
 // Captura en un toque: hoja inferior global con monto grande primero, chips de
 // las categorías más usadas, y toggle Ingreso/Egreso. Reemplaza el flujo de
 // 5 taps (FAB → navegar → Agregar → tipo → formulario de 10 campos).
-// El formulario vive en QuickAddForm.jsx (también lo usa el onboarding).
+// El formulario vive en QuickAddForm.jsx (también lo usa el onboarding). En la
+// hoja, "Guardar" queda fijo al pie (W3) y aparece "Más detalles" (B4a).
 import { useRef } from 'react'
 import { useT } from '../i18n/useT.js'
 import Sheet from './ui/Sheet.jsx'
@@ -14,7 +15,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
   if (!open) return null
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={t('qa.title')} initialFocusRef={amountRef}>
-      <QuickAddForm defaultType={defaultType} amountRef={amountRef} onSaved={(type) => { onSaved?.(type); onClose?.() }} />
+      <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails onSaved={(type) => { onSaved?.(type); onClose?.() }} />
     </Sheet>
   )
 }

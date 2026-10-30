@@ -16,7 +16,7 @@ import { NAV, pageLabel, showProChip } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
 import { chromeFor } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
-import { QUICK_ADD_EVENT } from '../quickAddBus.js'
+import { QUICK_ADD_EVENT, NAVIGATE_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
 import PushAsk from '../PushAsk.jsx'
 import UpdateNotice from '../UpdateNotice.jsx'
@@ -43,6 +43,17 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
     window.addEventListener(QUICK_ADD_EVENT, onOpen)
     return () => window.removeEventListener(QUICK_ADD_EVENT, onOpen)
   }, [])
+  // "Más detalles" del Registro rápido (B4a): cierra la hoja y navega.
+  useEffect(() => {
+    const onNav = (e) => {
+      const id = e.detail?.page
+      if (typeof id !== 'string' || !id) return
+      setQuickAdd(null)
+      navigate(id)
+    }
+    window.addEventListener(NAVIGATE_EVENT, onNav)
+    return () => window.removeEventListener(NAVIGATE_EVENT, onNav)
+  })
 
   // Con el teclado virtual abierto, el TabBar queda flotando arriba de él o lo
   // tapa — se oculta mientras se escribe (ver useKeyboardOpen).
