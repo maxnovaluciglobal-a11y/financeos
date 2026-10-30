@@ -17,6 +17,31 @@ import s from './movements.module.css'
 
 const PAGE = 40
 
+// Una fila de la lista (también la usa la hoja del día del calendario, B3b).
+export function MovementRow({ e, type = 'all', sym, lens, onOpen }) {
+  const { t, lang } = useT()
+  const catNameOf = (c) => catName(c, lang)
+  const amt = (n) => inLens(n, lens)
+  const income = e.kind === 'income'
+  const name = e.name || catNameOf(e.category)
+  return (
+    <button type="button" className={s.row} aria-haspopup="dialog" onClick={() => onOpen(e)}>
+      <CategoryIcon category={e.category} />
+      <span className={s.rowText}>
+        <span className={s.rowName}>{e.inv && <InlineIcon kind="investment" size={12} />}{name}</span>
+        <span className={s.rowMeta}>
+          {income && type === 'all' && <><ArrowDownLeft size={12} strokeWidth={1.8} aria-hidden="true" />{t('movl.kind.income')}<span aria-hidden="true">·</span></>}
+          {catNameOf(e.category)}{e.subcategory ? ` › ${expSubcatLabel(e.subcategory, lang)}` : ''}
+          {isFixed(e) && <><span aria-hidden="true">·</span><Repeat size={12} strokeWidth={1.7} aria-hidden="true" />{t('movl.filter.fixed')}</>}
+          <span className="sr-only">{`, ${fmtDayMonth(e.date)}`}</span>
+        </span>
+      </span>
+      <Amount className={income ? `${s.rowAmt} ${s.rowAmtIn}` : s.rowAmt}
+        value={income ? amt(e.amount) : -amt(e.amount)} sym={sym} plus={income} />
+    </button>
+  )
+}
+
 export default function MovementsList({ items, type = 'all', sym, lens, category, onCategory, onOpen, toolbarEnd, empty }) {
   const { t, lang } = useT()
   const [query, setQuery] = useState('')
@@ -98,28 +123,9 @@ export default function MovementsList({ items, type = 'all', sym, lens, category
                 </span>
               </div>
               <ul className={s.rows}>
-                {g.items.map((e) => {
-                  const income = e.kind === 'income'
-                  const name = e.name || catNameOf(e.category)
-                  return (
-                    <li key={e.key || e.id}>
-                      <button type="button" className={s.row} aria-haspopup="dialog" onClick={() => onOpen(e)}>
-                        <CategoryIcon category={e.category} />
-                        <span className={s.rowText}>
-                          <span className={s.rowName}>{e.inv && <InlineIcon kind="investment" size={12} />}{name}</span>
-                          <span className={s.rowMeta}>
-                            {income && type === 'all' && <><ArrowDownLeft size={12} strokeWidth={1.8} aria-hidden="true" />{t('movl.kind.income')}<span aria-hidden="true">·</span></>}
-                            {catNameOf(e.category)}{e.subcategory ? ` › ${expSubcatLabel(e.subcategory, lang)}` : ''}
-                            {isFixed(e) && <><span aria-hidden="true">·</span><Repeat size={12} strokeWidth={1.7} aria-hidden="true" />{t('movl.filter.fixed')}</>}
-                            <span className="sr-only">{`, ${fmtDayMonth(e.date)}`}</span>
-                          </span>
-                        </span>
-                        <Amount className={income ? `${s.rowAmt} ${s.rowAmtIn}` : s.rowAmt}
-                          value={income ? amt(e.amount) : -amt(e.amount)} sym={sym} plus={income} />
-                      </button>
-                    </li>
-                  )
-                })}
+                {g.items.map((e) => (
+                  <li key={e.key || e.id}><MovementRow e={e} type={type} sym={sym} lens={lens} onOpen={onOpen} /></li>
+                ))}
               </ul>
             </div>
           ))}
