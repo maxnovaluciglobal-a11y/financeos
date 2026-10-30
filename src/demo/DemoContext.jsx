@@ -4,11 +4,12 @@
 // Se activa cuando la URL contiene ?demo=true
 
 import { encryptBackupFile } from '../utils/backupFile.js'
-import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
 import { buildDemoState, pickDemoPersonaId, demoPersona } from './demoData.js'
 import { detectLanguage } from '../i18n/translate.js'
 import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel, localDateStr } from '../utils/index.js'
 import { reconcileRules } from '../utils/recurringSources.js'
+import { splitDebts } from '../utils/debtDirection.js'
 import { planConfirmations } from '../utils/recurringConfirm.js'
 import { ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { translate } from '../i18n/translate.js'
@@ -286,8 +287,11 @@ export function DemoProvider({ children }) {
     showToast(tr(scenario === 'exitoso' ? 'demo.toast.scenarioGood' : 'demo.toast.scenarioHard', { amount: fmtMoney(total, sym) }), 'ok')
   }, [showToast, tr, state.personaId, state.settings?.activeMonth, state.settings?.currency, state.settings?.language])
 
+  // Mismo reparto "Debo" / "Me deben" que AppContext (utils/debtDirection.js).
+  const { owe: oweDebts, owed: receivables } = useMemo(() => splitDebts(state.debts), [state.debts])
   const value = {
     ...state,
+    debts: oweDebts, receivables,
     addIncome,  delIncome,  updateIncome,
     addExpense, delExpense, updateExpense,
     addBudget,  delBudget,  updateBudget,

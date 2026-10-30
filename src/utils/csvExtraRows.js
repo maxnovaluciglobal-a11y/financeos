@@ -8,6 +8,11 @@ export function extraCsvRows(state, tr) {
   for (const b of state.budgets || [])
     rows.push([tr('csv.type.budget'), '', b.category, b.category, money(b.limit), '', '', ''])
   for (const d of state.debts || []) {
+    // "Me deben" (D2): fila propia, monto positivo (es un activo).
+    if (d?.direction === 'owed') {
+      rows.push([tr('csv.type.receivable'), d.dueDate || '', d.creditor, '', money(d.balance), '', '', d.notes || ''])
+      continue
+    }
     const notes = [d.rate ? `${d.rate} %` : '', d.minPayment ? `min ${money(d.minPayment)}` : ''].filter(Boolean).join(' · ')
     rows.push([tr('csv.type.debt'), d.dueDate || '', d.creditor, d.debtType || '', -money(d.balance), '', '', notes])
   }

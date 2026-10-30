@@ -11,17 +11,21 @@ import { IconAhorro } from '../../components/icons/Icons.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, currentMonth } from '../../utils/index.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
+import { useApp } from '../../context/AppContext.jsx'
 import { lastValueBefore, monthDelta, upsertMonthly } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
 import s from './Home.module.css'
 
 const NW_KEY = 'fos_networth_history'
 
-export default function NetWorthCard({ goals, debts, incomes, expenses, settings, sym, setPage }) {
+export default function NetWorthCard({ goals, debts, receivables: receivablesProp, incomes, expenses, settings, sym, setPage }) {
   const { t } = useT()
   const { m } = useMoney()
-  const nw = useMemo(() => calcNetWorth({ goals, debts, incomes, expenses, settings }),
-    [goals, debts, incomes, expenses, settings])
+  // "Por cobrar" (D2) es un activo: sale del contexto para no tocar el Inicio.
+  const ctxReceivables = useApp()?.receivables
+  const receivables = receivablesProp ?? ctxReceivables
+  const nw = useMemo(() => calcNetWorth({ goals, debts, receivables, incomes, expenses, settings }),
+    [goals, debts, receivables, incomes, expenses, settings])
   const month = currentMonth()
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem(NW_KEY) || '[]') } catch { return [] }

@@ -4,6 +4,8 @@
 // de inversión (ej. propiedad en arriendo, hipoteca de esa propiedad) y NO debe
 // distorsionar el presupuesto ni la tasa de ahorro personal.
 
+import { isOwed } from './debtDirection.js'
+
 export const isInvestment = (r) => !!(r && r.inv)
 
 // Devuelve solo los movimientos personales (excluye los marcados como inversión).
@@ -19,7 +21,9 @@ export const excludeInvestment = (arr) => (arr || []).filter((r) => !r?.inv)
 //       crea un gasto con categoría 'Deudas') — restarlo otra vez lo duplicaba.
 
 // Deudas del ámbito personal: excluye las vinculadas a una propiedad/proyecto.
-export const personalDebts = (debts) => (debts || []).filter((d) => !(d?.project || '').trim())
+// "Me deben" (D2, direction 'owed') es un activo: nunca entra en la carga de
+// deuda del IQ Score, del Asesor ni del Coach (utils/debtDirection.js).
+export const personalDebts = (debts) => (debts || []).filter((d) => !isOwed(d) && !(d?.project || '').trim())
 
 // Cuota mensual de deuda personal AÚN NO reflejada como gasto del mes activo:
 // suma de pagos mínimos (solo deudas personales) menos los pagos ya registrados

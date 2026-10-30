@@ -28,7 +28,9 @@ export const PAGE_TOURS = {
     { id: 'bud-split',   title: 'tour.bud.split.title',   body: 'tour.bud.split.body' },
   ],
   // N9 (ola C, patrón rial: "?" en cada pantalla de sección), 30-oct-2026.
+  // D2: "Debo · Me deben" va primero; KPIs y alta usan el mismo ancla en las dos pestañas.
   debts: [
+    { id: 'debt-direction', title: 'tour.debt.direction.title', body: 'tour.debt.direction.body' },
     { id: 'debt-kpis', title: 'tour.debt.kpis.title', body: 'tour.debt.kpis.body' },
     { id: 'debt-new',  title: 'tour.debt.new.title',  body: 'tour.debt.new.body' },
   ],

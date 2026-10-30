@@ -363,8 +363,10 @@ export const prioLabel = (p, lang) => (lang ? translateOrRaw('prio.', p, lang) :
 
 // Tipos de deuda con emoji. Los valores se guardan en español (como la prioridad);
 // el emoji es solo presentación. Fallback 💳 para deudas antiguas sin tipo.
-export const DEBT_TYPES  = ['Tarjeta', 'Hipoteca', 'Auto', 'Crédito', 'Préstamo', 'Estudiantil', 'Otro']
-export const DEBT_EMOJIS = { Tarjeta: '💳', Hipoteca: '🏠', Auto: '🚗', Crédito: '📄', Préstamo: '🤝', Estudiantil: '🎓', Otro: '💰' }
+// 'MePrestaron' y 'Financiamiento' (D2, rial #48): tipos nuevos al final; los
+// valores ya guardados no cambian.
+export const DEBT_TYPES  = ['Tarjeta', 'Hipoteca', 'Auto', 'Crédito', 'Préstamo', 'Estudiantil', 'MePrestaron', 'Financiamiento', 'Otro']
+export const DEBT_EMOJIS = { Tarjeta: '💳', Hipoteca: '🏠', Auto: '🚗', Crédito: '📄', Préstamo: '🤝', Estudiantil: '🎓', MePrestaron: '👥', Financiamiento: '🧾', Otro: '💰' }
 export const debtEmoji = (tp) => DEBT_EMOJIS[tp] || '💳'
 
 export const CATS_INCOME  = ['Salario', 'Freelance', 'Inversión', 'Arriendo', 'Bono', 'Otro']

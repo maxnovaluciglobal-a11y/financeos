@@ -24,6 +24,7 @@ import { loadLang } from '../i18n/langCache.js'
 import { requestPersistentStorage } from '../utils/storagePersist.js'
 import { toCsv } from '../utils/csvSafe.js'
 import { extraCsvRows } from '../utils/csvExtraRows.js'
+import { splitDebts } from '../utils/debtDirection.js'
 import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
@@ -693,8 +694,14 @@ export function AppProvider({ children }) {
     return rule
   }, [saveRule, addIncome, addExpense])
 
+  // "Debo" / "Me deben" (D2): la store `debts` guarda los dos; la app ve
+  // `debts` = solo lo que debo y `receivables` = lo que me deben, para que
+  // ningún consumidor viejo cuente un cobro como deuda (utils/debtDirection.js).
+  const debtSplit = useMemo(() => splitDebts(state.debts), [state.debts])
+
   const value = useMemo(() => ({
     ...state,
+    debts: debtSplit.owe, receivables: debtSplit.owed,
     addIncome,  delIncome,  updateIncome,
     addExpense, delExpense,   updateExpense,
     addBudget,  delBudget,  updateBudget,
@@ -709,7 +716,7 @@ export function AppProvider({ children }) {
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
   }), [
-    state,
+    state, debtSplit,
     addIncome, delIncome, updateIncome,
     addExpense, delExpense, updateExpense,
     addBudget, delBudget, updateBudget,

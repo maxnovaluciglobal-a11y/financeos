@@ -29,7 +29,7 @@ import { totalForMonth, cumulativeByDay, prevMonthKey } from '../../utils/chartS
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, goals: allGoals, settings } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, receivables, subscriptions: allSubs, goals: allGoals, settings } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = currencySymbol(settings.currency, settings.language)
@@ -44,8 +44,8 @@ export default function Reports({ setPage }) {
   const activeMonth = settings.activeMonth || currentMonth()
 
   // Patrimonio neto (stock a HOY) — cálculo compartido con la página Patrimonio
-  const nw = useMemo(() => calcNetWorth({ goals: allGoals, debts: allDebts, incomes: _incAll, expenses: _expAll, settings }),
-    [allGoals, allDebts, _incAll, _expAll, settings])
+  const nw = useMemo(() => calcNetWorth({ goals: allGoals, debts: allDebts, receivables, incomes: _incAll, expenses: _expAll, settings }),
+    [allGoals, allDebts, receivables, _incAll, _expAll, settings])
 
   async function downloadPDF() {
     setPdfLoading(true)

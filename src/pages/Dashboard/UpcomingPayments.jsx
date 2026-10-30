@@ -3,13 +3,17 @@
 // salen de los movimientos fijos: cuotas de Deudas, Suscripciones y gastos
 // fijos manuales, solo los PREVISTOS (lo ya confirmado no vuelve a aparecer).
 // Fechas en hora local (dashboardModel.js).
+// "Me deben" con fecha esperada (D2) entra como "Cobro": monto con "+", en el
+// color de ingreso y con ícono + palabra (utils/debtDirection.js).
 import { useMemo } from 'react'
 import Money from '../../components/Money.jsx'
 import { IconTarjetas, NAV_ICONS } from '../../components/icons/Icons.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, localDateStr } from '../../utils/index.js'
 import { upcomingFromRules } from './dashboardModel.js'
-import { CalendarClock } from 'lucide-react'
+import { upcomingCollections, mergeUpcoming } from '../../utils/debtDirection.js'
+import { useApp } from '../../context/AppContext.jsx'
+import { CalendarClock, HandCoins } from 'lucide-react'
 import s from './Home.module.css'
 
 const SubIcon = NAV_ICONS.subscriptions
@@ -25,28 +29,34 @@ function parts(dateStr, lang) {
 }
 
 const ManualIcon = ({ size }) => <CalendarClock size={size} strokeWidth={1.7} aria-hidden="true" />
-const KIND_ICON = { debt: IconTarjetas, sub: SubIcon, manual: ManualIcon }
-const KIND_LABEL = { debt: 'home.upcoming.kind.debt', sub: 'home.upcoming.kind.sub', manual: 'rec.source.manual' }
+const CollectIcon = ({ size }) => <HandCoins size={size} strokeWidth={1.7} aria-hidden="true" />
+const KIND_ICON = { debt: IconTarjetas, sub: SubIcon, manual: ManualIcon, collect: CollectIcon }
+const KIND_LABEL = { debt: 'home.upcoming.kind.debt', sub: 'home.upcoming.kind.sub', manual: 'rec.source.manual', collect: 'home.upcoming.kind.collect' }
 
-export default function UpcomingPayments({ rules, incomes, expenses, debts, subscriptions, sym, setPage }) {
+export default function UpcomingPayments({ rules, incomes, expenses, debts, receivables: receivablesProp, subscriptions, sym, setPage }) {
   const { t, lang } = useT()
+  const ctxReceivables = useApp()?.receivables
+  const receivables = receivablesProp ?? ctxReceivables
   const todayStr = localDateStr()
-  const { items, total } = useMemo(
-    () => upcomingFromRules(rules || [], { incomes, expenses, today: todayStr }),
+  const { items, total, hasCollect } = useMemo(() => {
+    const payments = upcomingFromRules(rules || [], { incomes, expenses, today: todayStr, limit: Infinity }).items
+    const collections = upcomingCollections(receivables || [], { today: todayStr })
+    return { ...mergeUpcoming(payments, collections, { limit: 5 }), hasCollect: collections.length > 0 }
+  },
     // la fecha de hoy entra en la clave: al pasar la medianoche se recalcula
-    [rules, incomes, expenses, todayStr],
+    [rules, incomes, expenses, receivables, todayStr],
   )
   const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return localDateStr(d) })()
   const hiddenCount = total - items.length
   // Enlaces a donde se cargan las fechas: siempre que haya datos de ese tipo
   // (aunque ninguno caiga en los 5 primeros) y, sin pagos, a los dos.
-  const hasDebts = (debts || []).length > 0
+  const hasDebts = (debts || []).length > 0 || (receivables || []).length > 0
   const hasSubs = (subscriptions || []).length > 0
 
   return (
     <section className={`${s.card} rise`} aria-labelledby="home-upcoming-title">
       <div className={s.cardHead}>
-        <h2 id="home-upcoming-title" className={s.cardTitle}>{t('home.upcoming.title')}</h2>
+        <h2 id="home-upcoming-title" className={s.cardTitle}>{t(hasCollect ? 'home.upcoming.titleBoth' : 'home.upcoming.title')}</h2>
         <span className={s.cardHint}>{t('home.upcoming.hint')}</span>
       </div>
 
@@ -73,7 +83,9 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, subs
                     {when && <span className={s.payWhen}>· {when}</span>}
                   </div>
                 </div>
-                <div className={s.payAmt}><Money>{fmtMoney(it.amount, sym)}</Money></div>
+                {it.incoming
+                  ? <div className={s.payAmt} style={{ color: 'var(--pos)' }}>+<Money>{fmtMoney(it.amount, sym)}</Money></div>
+                  : <div className={s.payAmt}><Money>{fmtMoney(it.amount, sym)}</Money></div>}
               </li>
             )
           })}
