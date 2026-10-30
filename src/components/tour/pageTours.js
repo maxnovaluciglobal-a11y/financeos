@@ -35,6 +35,11 @@ export const PAGE_TOURS = {
   recurring: [
     { id: 'rec-month', title: 'tour.rec.month.title', body: 'tour.rec.month.body' },
   ],
+  // R10 (ola C): Ajustes por subpantallas — el buscador y las filas agrupadas.
+  settings: [
+    { id: 'set-search', title: 'tour.settings.search.title', body: 'tour.settings.search.body' },
+    { id: 'set-groups', title: 'tour.settings.groups.title', body: 'tour.settings.groups.body' },
+  ],
 }
 
 export const TOURS_SEEN_KEY = 'fos_tours_seen'

@@ -163,7 +163,7 @@ Tokens en `src/styles/tokens.css` (único origen; `globals.css` lo importa, `tok
 **Agregar un idioma nuevo requiere** (lugares verificados con `grep` el 19-oct-2026; los diccionarios viven en `src/i18n/<code>.js`, `translations.js` solo los agrega):
 1. `src/i18n/<code>.js` exportando `<code>` con paridad completa de claves (`translate.test.js` lo exige) y su loader en `src/i18n/langCache.js`
 2. `src/i18n/translations.js` (el objeto `translations` y `SUPPORTED_LANGUAGES`) y `SUPPORTED_LANGS` en `src/i18n/translate.js`
-3. `<option>` en `pages/Settings/index.jsx` y el array `LANGUAGES` en `components/Onboarding.jsx`
+3. `LANGUAGE_OPTIONS` en `pages/Settings/CurrencyScreen.jsx` (hoja de selección de Ajustes › Moneda e idioma, desde R10) y el array `LANGUAGES` en `components/Onboarding.jsx`
 4. Listas fijas de los 4 idiomas: `core/auth.js` (`syncUserLang`), `utils/index.js` (`LANG_DATE_LOCALE`), `utils/leadsLang.js`, `utils/pricing.js` (`LANG_NUMBER_LOCALE` y `withCheckoutLang`), `components/lock/AppLock.jsx`, `pages/legal/legalMeta.js` (`LEGAL_LANGS`, más el contenido legal en cada idioma)
 5. Edge Functions de correo: `supabase/functions/_shared/emailLang.ts` y las plantillas de cada función
 

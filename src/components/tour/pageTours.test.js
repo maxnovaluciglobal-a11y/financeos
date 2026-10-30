@@ -15,7 +15,11 @@ describe('pageTours (R08)', () => {
       expect(PAGE_TOURS[p].length).toBeGreaterThanOrEqual(3)
       expect(PAGE_TOURS[p].length).toBeLessThanOrEqual(5)
     }
-    expect(hasTour('settings')).toBe(false)
+  })
+
+  it('Ajustes tiene recorrido de 2 pasos: buscador y filas (R10)', () => {
+    expect(hasTour('settings')).toBe(true)
+    expect(PAGE_TOURS.settings.map(s => s.id)).toEqual(['set-search', 'set-groups'])
   })
 
   it('primera visita arranca sola; la segunda no', () => {

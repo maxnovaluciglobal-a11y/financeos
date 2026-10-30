@@ -1,64 +1,72 @@
-// src/pages/Settings/index.jsx — v1.5
-import { useState, useEffect } from 'react'
-import CountrySelect from '../../components/ui/CountrySelect.jsx'
-import { COUNTRIES, countryKey } from '../../data/countries.js'
-import { Lock } from 'lucide-react'
-import { useApp } from '../../context/AppContext.jsx'
-import { Card, CardHeader, Btn, PageHeader, ChoiceGroup } from '../../components/ui/index.jsx'
-import { THEME_SETTINGS } from '../../utils/theme.js'
-import { BackupWarning } from '../../components/legal/MicroCopy.jsx'
-import BackupManager from '../../components/backup/BackupManager.jsx'
-import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
+// src/pages/Settings/index.jsx — v1.6 (R10, ola C, 30-oct-2026)
+// Ajustes ya no es una pantalla de ~15 alturas: la raíz es una lista corta de
+// filas agrupadas (ícono, título, una línea, chevron) con un buscador arriba.
+// Cada fila abre una subpantalla dentro de la misma página, con "‹ Ajustes"
+// para volver; la subpantalla queda en history.state (settingsIndex.js:
+// SUB_KEY), así el atrás del navegador, de Android y el gesto de iOS vuelven a
+// la raíz de Ajustes antes de salir. Dónde quedó cada control de antes:
+// CONTROL_MAP en settingsIndex.js (verificado por settingsIndex.test.js).
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  UserRound, Coins, Palette, LayoutTemplate, DatabaseBackup, ShieldCheck, Bell,
+  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X,
+} from 'lucide-react'
+import { PageHeader } from '../../components/ui/index.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
-import UpgradeCard from './UpgradeCard.jsx'
-import DeleteAccountSection from './DeleteAccountSection.jsx'
-import SyncSection from './SyncSection.jsx'
-import DiagnosticsRow from './DiagnosticsRow.jsx'
+import ProfileScreen from './ProfileScreen.jsx'
+import CurrencyScreen from './CurrencyScreen.jsx'
+import AppearanceScreen from './AppearanceScreen.jsx'
+import DataScreen from './DataScreen.jsx'
+import NotificationsScreen from './NotificationsScreen.jsx'
+import PlanScreen from './PlanScreen.jsx'
+import AdvancedScreen from './AdvancedScreen.jsx'
+import DangerScreen from './DangerScreen.jsx'
+import { Setting } from './settingsUi.jsx'
+// Mismas filas que el Menú (patrón rial ya aprobado): grupo con título, lista
+// en una superficie, fila de ≥ 52 px con ícono, texto y chevron.
+import m from '../More/more.module.css'
+import { SETTINGS_SECTIONS, groupById, searchSettings, subFromState, withSub, takePendingSub } from './settingsIndex.js'
 import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
-import { CURRENCY_OPTIONS, currencyOptionLabel } from '../shared/constants.js'
-import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseKey } from '../../utils/licenseValidator.js'
-import { getSession, signOutAuth } from '../../core/auth.js'
-import { pushSupported, isPushEnabled, enablePush, disablePush } from '../../core/push.js'
+import { getSession } from '../../core/auth.js'
+import { getLicensePlan } from '../../utils/licenseValidator.js'
+import config from '../../config.js'
 import { useT } from '../../i18n/useT.js'
-import { moneyLocale } from '../../utils/index.js'
-import { validateTaxId, TAX_ID_COUNTRIES, TAX_ID_LABEL } from '../../utils/taxIdValidation.js'
-import { loadFixerRates } from '../../utils/tasaFixer.js'
-import { savedRate } from '../../utils/refRate.js'
-import { rateSourceText, fmtDay } from '../Dashboard/RefCurrency.jsx'
-import { cancelUrl } from '../../utils/cancelUrl.js'
+
+const ICONS = {
+  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate,
+  data: DatabaseBackup, security: ShieldCheck, notifications: Bell, plan: CreditCard,
+  advanced: SlidersHorizontal, danger: TriangleAlert,
+}
+
+const scrollRoot = () => document.querySelector('[data-scroll-root]')
+const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 export default function Settings() {
-  const { settings, updateSettings, clearAll, loadDemo, exportCSV } = useApp()
-  const { t, lang } = useT()
-  const [installPrompt, setInstallPrompt] = useState(null)
+  const { t } = useT()
+  const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
+  const [autoOpenDelete] = useState(() => typeof window !== 'undefined' && wantsDeleteAccount(initialSearch(window.location.search)))
+  // Subpantalla abierta: la de history.state (recarga, o volver desde otra
+  // página) o "Zona de riesgo" si se llegó por ?open=delete-account.
+  const [sub, setSub] = useState(() => subFromState(typeof history !== 'undefined' ? history.state : null) || (autoOpenDelete ? 'danger' : null))
+  const subRef = useRef(sub)
+  subRef.current = sub
+  const [focusItem, setFocusItem] = useState(null)
+  const [query, setQuery] = useState('')
+  const lastRow = useRef(null)
+  const rootScroll = useRef(0)
+  const headingRef = useRef(null)
+
   const [accountEmail, setAccountEmail] = useState(null)
   const [accountUserId, setAccountUserId] = useState(null)
   useEffect(() => { getSession().then(s => { setAccountEmail(s?.user?.email || null); setAccountUserId(s?.user?.id || null) }) }, [])
-  const [installed, setInstalled] = useState(false)
-  const [fx, setFx] = useState(null) // { rates, source: 'fixer'|'fallback' } — null mientras carga
-  // Confirmación inline para acciones destructivas — reemplaza window.confirm() nativo
-  // (no respetaba idioma/tema). { type: 'clearAll'|'loadDemo'|'deactivate'|'currency', payload? } | null
-  const [confirmAction, setConfirmAction] = useState(null)
 
-  useEffect(() => { loadFixerRates().then(setFx) }, [])
-  // Tasa a usar: la de Fixer si ya cargó, si no el hardcodeado de siempre —
-  // nunca deja al usuario esperando un fetch para ver/editar el campo.
-  // FIN-17: solo una tasa consultada de verdad (Fixer). El respaldo fijo
-  // DEFAULT_USD_RATES (VES 36 frente a ~880 reales) ya no se guarda como
-  // usdRate: sin tasa, el campo queda vacío y el Inicio pide agregarla.
-  const liveRate = (currency) => (fx?.source === 'fixer' ? fx?.rates?.[currency] : undefined)
-  // R12: la tasa guarda su fecha y fuente (el Inicio nunca muestra una tasa sin
-  // fecha). Solo una tasa consultada de verdad (Fixer) lleva fecha de consulta;
-  // el valor fijo de respaldo queda "sin fecha" para que el Inicio lo diga.
-  const rateMeta = (currency, rate) => {
-    if (!(rate > 0)) return { usdRateAt: null, usdRateSource: null }
-    const live = fx?.source === 'fixer' && Number(fx?.rates?.[currency]) === Number(rate)
-    return live ? { usdRateAt: fx.ts, usdRateSource: 'fixer' } : { usdRateAt: null, usdRateSource: null }
-  }
+  // Instalar como app: el evento llega una vez, se escucha mientras Ajustes
+  // está montado (igual que antes) y se pasa a Avanzado.
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [installed, setInstalled] = useState(false)
   const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
-
   useEffect(() => {
     function onBeforeInstall(e) { e.preventDefault(); setInstallPrompt(e) }
     function onAppInstalled() { setInstalled(true); setInstallPrompt(null) }
@@ -70,7 +78,6 @@ export default function Settings() {
       window.removeEventListener('appinstalled', onAppInstalled)
     }
   }, [isStandalone])
-
   async function handleInstall() {
     if (!installPrompt) return
     installPrompt.prompt()
@@ -79,327 +86,178 @@ export default function Settings() {
     setInstallPrompt(null)
   }
 
-  async function handleClear() {
-    setConfirmAction(null)
-    await clearAll()
+  // Atrás del navegador / Android / gesto de iOS: la entrada de la
+  // subpantalla sale y queda la de la raíz (sin SUB_KEY).
+  useEffect(() => {
+    function onPop(e) {
+      const next = subFromState(e.state)
+      if (subRef.current && !next) restoreRoot()
+      setSub(next)
+      setFocusItem(null)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  function restoreRoot() {
+    const top = rootScroll.current
+    const id = lastRow.current
+    requestAnimationFrame(() => {
+      const el = scrollRoot(); if (el) el.scrollTop = top
+      if (id) document.querySelector(`[data-group-row="${id}"]`)?.focus({ preventScroll: true })
+    })
   }
 
-  async function handleLoadDemo() {
-    setConfirmAction(null)
-    await loadDemo()
+  const openSub = useCallback((id, item = null) => {
+    if (!groupById(id)) return
+    const el = scrollRoot()
+    rootScroll.current = el ? el.scrollTop : 0
+    lastRow.current = id
+    try { history.pushState(withSub(history.state, id), '') } catch { /* history no disponible: queda solo el estado de React */ }
+    setSub(id)
+    setFocusItem(item)
+  }, [])
+
+  // Pedido desde otra página (requestSettingsSub): se abre como si se tocara
+  // la fila, así "atrás" vuelve a la raíz de Ajustes.
+  useEffect(() => {
+    const pending = takePendingSub()
+    if (pending && !subFromState(history.state)) openSub(pending)
+  }, [openSub])
+
+  function closeSub() {
+    if (subFromState(history.state)) { history.back(); return }
+    setSub(null)
+    setFocusItem(null)
+    restoreRoot()
   }
 
-  const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
-  async function handleDeactivate() {
-    setConfirmAction(null)
-    clearLicense()
-    clearStarterAck()
-    // Sin esto, el useEffect de sincronización de App.jsx repone el plan
-    // desde user_entitlements apenas recarga — "Desactivar" quedaba sin
-    // efecto real mientras la cuenta siguiera teniendo un entitlement.
-    if (accountUserId) await clearServerEntitlement(accountUserId)
-    window.location.reload()
+  // Al abrir: arriba de todo y foco en el título; si se llegó desde el
+  // buscador a un ajuste de adentro, se lo trae a la vista y se marca un momento.
+  useEffect(() => {
+    if (!sub) return
+    if (!focusItem) {
+      const el = scrollRoot(); if (el) el.scrollTop = 0
+      if (!autoOpenDelete || sub !== 'danger') headingRef.current?.focus({ preventScroll: true })
+      return
+    }
+    const id = setTimeout(() => {
+      const target = document.querySelector(`[data-settings-sub] [data-setting="${focusItem}"]`)
+      if (!target) { headingRef.current?.focus({ preventScroll: true }); return }
+      target.scrollIntoView?.({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' })
+      target.setAttribute('tabindex', '-1')
+      target.focus({ preventScroll: true })
+      target.style.transition = 'background-color .6s ease'
+      target.style.backgroundColor = 'var(--sur2)'
+      setTimeout(() => { target.style.backgroundColor = '' }, 1400)
+    }, 80)
+    return () => clearTimeout(id)
+  }, [sub, focusItem, autoOpenDelete])
+
+  if (sub) {
+    const g = groupById(sub)
+    return (
+      <div className="stack" data-settings-sub={sub}>
+        <div>
+          <button type="button" onClick={closeSub} aria-label={t('settings.backTo')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 2, minHeight: 44, padding: '0 8px 0 0', background: 'none', border: 'none', color: 'var(--blu)', fontSize: 14, fontFamily: 'var(--sans)', cursor: 'pointer' }}>
+            <ChevronLeft size={20} strokeWidth={1.7} aria-hidden="true" />{t('settings.title')}
+          </button>
+          <h2 ref={headingRef} tabIndex={-1}
+            style={{ margin: '4px 0 2px', fontSize: 22, fontWeight: 700, color: sub === 'danger' ? 'var(--red)' : 'var(--tx)', fontFamily: 'var(--display)', outline: 'none' }}>
+            {t(g.title)}
+          </h2>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--tm)', lineHeight: 1.5 }}>{t(g.desc)}</p>
+        </div>
+        <div style={{ borderTop: '1px solid var(--brd2)', paddingTop: 4 }}>
+          {sub === 'profile'       && <ProfileScreen isDemo={isDemo} accountEmail={accountEmail} />}
+          {sub === 'currency'      && <CurrencyScreen />}
+          {sub === 'appearance'    && <AppearanceScreen />}
+          {sub === 'templates'     && (
+            <Setting id="templates" style={{ paddingTop: 10 }}>
+              <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>
+                {t('settings.templates.sub')}
+              </div>
+              <TemplateSelector />
+            </Setting>
+          )}
+          {sub === 'data'          && <DataScreen />}
+          {sub === 'security'      && <SecuritySection />}
+          {sub === 'notifications' && <NotificationsScreen />}
+          {sub === 'plan'          && <PlanScreen isDemo={isDemo} accountUserId={accountUserId} />}
+          {sub === 'advanced'      && <AdvancedScreen install={{ prompt: installPrompt, installed, isIOS, isStandalone, onInstall: handleInstall }} />}
+          {sub === 'danger'        && <DangerScreen isDemo={isDemo} accountEmail={accountEmail} autoOpenDelete={autoOpenDelete} />}
+        </div>
+      </div>
+    )
   }
 
-  function handleConfirmChangeCurrency() {
-    if (!confirmAction || confirmAction.type !== 'currency') return
-    const { nextCurrency, nextRate } = confirmAction.payload
-    setConfirmAction(null)
-    updateSettings({ ...settings, currency: nextCurrency, usdRate: nextRate, ...rateMeta(nextCurrency, nextRate) })
-  }
-
-  const srow = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 0', borderBottom:'0.5px solid var(--brd)' }
-  const slbl = { fontSize:13, fontWeight:500, color:'var(--tx)' }
-  const ssub = { fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:1 }
+  const results = searchSettings(query, t)
+  const showUpgradeHint = !isDemo && getLicensePlan() !== 'pro'
 
   return (
     <div className="stack">
       <PageHeader title={t('settings.title')} sub={t('settings.sub')} />
-      <Card>
-        <CardHeader title={t('settings.preferences')} />
-        <div style={srow}>
-          <div><div style={slbl}>{t('settings.currency.label')}</div><div style={ssub}>{t('settings.currency.sub')}</div></div>
-          <select aria-label={t('settings.currency.label')} style={{width:'auto'}} value={settings.currency||'CLP'} onChange={e=>{
-            const nextCurrency = e.target.value
-            if (nextCurrency === settings.currency) return
-            // La tasa vieja no sirve para la moneda nueva (bug ya arreglado una vez:
-            // "usdRate carried over numerically across currency changes"). Pero
-            // resetear a 0 sin más apaga la moneda dual en el Dashboard en silencio
-            // (dualOn exige usdRate > 0) — recomputamos ya mismo si el toggle está
-            // activo, en vez de dejar un 0 a la espera de que el usuario vuelva acá.
-            const nextRate = settings.showDualCurrency ? (liveRate(nextCurrency) || 0) : 0
-            setConfirmAction({ type: 'currency', payload: { nextCurrency, nextRate } })
-          }}>
-            {CURRENCY_OPTIONS.map(c=><option key={c.code} value={c.code}>{currencyOptionLabel(c.code, lang)}</option>)}
-          </select>
-        </div>
-        {confirmAction?.type === 'currency' && (
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
-              {t('settings.confirmChangeCurrency', { currency: confirmAction.payload.nextCurrency })}
-            </span>
-            <div style={{display:'flex',gap:6}}>
-              <Btn variant="primary" size="xs" onClick={handleConfirmChangeCurrency}>{t('debts.card.confirm')}</Btn>
-              <Btn variant="ghost"   size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
-            </div>
-          </div>
-        )}
-        <div style={srow}>
-          <div><div style={slbl}>{t('settings.language.label')}</div><div style={ssub}>{t('settings.language.sub')}</div></div>
-          <select aria-label={t('settings.language.label')} style={{width:'auto'}} value={settings.language||'es'} onChange={e=>updateSettings({...settings,language:e.target.value,languageExplicit:true})}>
-            <option value="es">Español</option>
-            <option value="en">English</option>
-            <option value="pt">Português</option>
-            <option value="de">Deutsch</option>
-          </select>
-        </div>
-        <div style={srow}>
-          <div><div style={slbl} id="settings-country-label">{t('settings.country.label')}</div><div style={ssub}>{t('settings.country.sub')}</div></div>
-          {/* D5: CountryBadge en vez de banderas emoji. Un <option> nativo no dibuja
-              SVG, por eso es un listbox propio (CountrySelect, patrón APG). */}
-          <CountrySelect
-            labelId="settings-country-label"
-            value={settings.country || 'CL'}
-            onChange={(code) => updateSettings({ ...settings, country: code })}
-            options={COUNTRIES.map(c => ({ code: c.code, label: t(countryKey(c.code)) }))}
-          />
-        </div>
-        <TaxIdField country={settings.country} taxId={settings.taxId} updateSettings={updateSettings} settings={settings} />
-        {/* N4: Sistema · Claro · Oscuro como radiogroup (antes, dos botones
-            Latón que competían con el primario de la pantalla). */}
-        <div style={{...srow, flexWrap:'wrap', gap:10}}>
-          <div><div style={slbl} id="settings-theme-label">{t('settings.theme.label')}</div><div style={ssub}>{t('settings.theme.sub')}</div></div>
-          <ChoiceGroup labelledBy="settings-theme-label" value={settings.theme || 'light'}
-            onChange={theme => updateSettings({ ...settings, theme })}
-            options={THEME_SETTINGS.map(v => ({ value: v, label: t(`settings.theme.${v}`), preview: v }))} />
-        </div>
 
-        {/* Emoji en las categorías (QuickAdd) — apagado por defecto */}
-        <div style={srow}>
-          <div>
-            <div style={slbl}>{t('settings.categoryEmoji.label')}</div>
-            <div style={ssub}>{t('settings.categoryEmoji.sub')}</div>
-          </div>
-          <button
-            role="switch"
-            aria-checked={settings.showCategoryEmoji === true}
-            aria-label={t('settings.categoryEmoji.label')}
-            onClick={() => updateSettings({ ...settings, showCategoryEmoji: settings.showCategoryEmoji !== true })}
-            style={{
-              width:44, height:24, borderRadius:12, position:'relative', flexShrink:0, cursor:'pointer',
-              background: settings.showCategoryEmoji === true ? 'var(--grn)' : 'var(--brd2)',
-              border: 'none', transition:'background .2s', padding:0,
-            }}
-          >
-            <span style={{
-              position:'absolute', top:3, left:3,
-              width:18, height:18, borderRadius:'50%', background:'#fff',
-              transform: settings.showCategoryEmoji === true ? 'translateX(20px)' : 'translateX(0)',
-              transition:'transform .2s', display:'block',
-            }}/>
+      <div data-tour="set-search" role="search" style={{ position: 'relative' }}>
+        <label htmlFor="settings-search" className="sr-only">{t('settings.search.label')}</label>
+        <Search size={16} strokeWidth={1.7} aria-hidden="true" style={{ position: 'absolute', left: 12, top: 14, color: 'var(--th)', pointerEvents: 'none' }} />
+        <input
+          id="settings-search"
+          type="text"
+          enterKeyHint="search"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder={t('settings.search.placeholder')}
+          autoComplete="off"
+          aria-describedby={results ? 'settings-search-status' : undefined}
+          style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 40px 10px 36px', fontSize: 16, borderRadius: 10, border: '0.5px solid var(--brd2)', background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--sans)' }}
+        />
+        {query && (
+          <button type="button" onClick={() => setQuery('')} aria-label={t('settings.search.clear')}
+            style={{ position: 'absolute', right: 0, top: 0, width: 44, height: 44, display: 'grid', placeItems: 'center', background: 'none', border: 'none', color: 'var(--th)', cursor: 'pointer' }}>
+            <X size={16} strokeWidth={1.7} aria-hidden="true" />
           </button>
-        </div>
+        )}
+      </div>
 
-        {/* Moneda secundaria */}
-        <div style={srow}>
-          <div>
-            <div style={slbl}>{t('settings.dualCurrency.label')}</div>
-            <div style={ssub}>{t('settings.dualCurrency.sub')}</div>
-          </div>
-          <button
-            role="switch"
-            aria-checked={!!settings.showDualCurrency}
-            aria-label={t('settings.dualCurrency.label')}
-            onClick={() => {
-              const next = !settings.showDualCurrency
-              const rate = settings.usdRate || liveRate(settings.currency || 'CLP') || 0
-              const meta = settings.usdRate ? {} : rateMeta(settings.currency || 'CLP', rate)
-              updateSettings({ ...settings, showDualCurrency: next, usdRate: rate, ...meta })
-            }}
-            style={{
-              width:44, height:24, borderRadius:12, position:'relative', flexShrink:0, cursor:'pointer',
-              background: settings.showDualCurrency ? 'var(--grn)' : 'var(--brd2)',
-              border: 'none', transition:'background .2s', padding:0,
-            }}
-          >
-            <span style={{
-              position:'absolute', top:3, left:3,
-              width:18, height:18, borderRadius:'50%', background:'#fff',
-              transform: settings.showDualCurrency ? 'translateX(20px)' : 'translateX(0)',
-              transition:'transform .2s', display:'block',
-            }}/>
-          </button>
+      {results ? (
+        <div>
+          <p id="settings-search-status" role="status" style={{ margin: '0 0 6px', fontSize: 12, color: 'var(--tm)' }}>
+            {results.length ? t('settings.search.count', { n: results.length }) : t('settings.search.none', { q: query.trim() })}
+          </p>
+          {results.length > 0 && (
+            <div className={m.list}>
+              {results.map(r => (
+                <GroupRow
+                  key={`${r.groupId}-${r.itemId || ''}`}
+                  id={r.groupId}
+                  title={r.label}
+                  desc={r.kind === 'item' ? r.context : t(groupById(r.groupId).desc)}
+                  onClick={() => openSub(r.groupId, r.itemId || null)}
+                  danger={r.groupId === 'danger'}
+                />
+              ))}
+            </div>
+          )}
         </div>
-
-        {settings.showDualCurrency && settings.currency !== 'USD' && (
-          <div style={{...srow, borderBottom:'none', flexDirection:'column', alignItems:'flex-start', gap:10}}>
-            <div>
-              <div style={slbl}>{t('settings.exchangeRate.label', { currency: settings.currency || 'CLP' })}</div>
-              <div style={ssub}>{t('settings.exchangeRate.sub')}</div>
-            </div>
-            <div style={{display:'flex', alignItems:'center', gap:8, width:'100%'}}>
-              <input
-                type="number" inputMode="decimal" min="0" step="any"
-                aria-label={t('settings.exchangeRate.label', { currency: settings.currency || 'CLP' })}
-                value={settings.usdRate || liveRate(settings.currency) || ''}
-                placeholder={String(liveRate(settings.currency) || '')}
-                onChange={e => { const v = parseFloat(e.target.value) || 0; updateSettings({...settings, usdRate: v, usdRateAt: v > 0 ? Date.now() : null, usdRateSource: v > 0 ? 'manual' : null}) }}
-                style={{flex:1, padding:'7px 10px', borderRadius:6, border:'.5px solid var(--brd2)',
-                  background:'var(--sur2)', color:'var(--tx)', fontSize:13, fontFamily: 'var(--sans)'}}
-              />
-              <span style={{fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', whiteSpace:'nowrap'}}>
-                {t('settings.exchangeRate.perUsd', { currency: settings.currency || 'CLP' })}
-              </span>
-              <Btn variant="ghost" size="sm"
-                onClick={() => { const r = liveRate(settings.currency) || 0; updateSettings({...settings, usdRate: r, ...rateMeta(settings.currency, r)}) }}>
-                {t('settings.exchangeRate.reset')}
-              </Btn>
-            </div>
-            {/* B1: la misma descripción de la tasa que el Inicio (fuente · fecha o "sin fecha"). */}
-            {savedRate(settings) && (
-              <div style={{fontSize:11, color:'var(--tm)', fontFamily: 'var(--sans)'}}>
-                ● {t('refcur.inUse', { desc: rateSourceText(savedRate(settings), t) })}
+      ) : (
+        <div data-tour="set-groups">
+          {SETTINGS_SECTIONS.map(sec => (
+            <section key={sec.id} className={m.group} aria-labelledby={`settings-sec-${sec.id}`}>
+              <h2 id={`settings-sec-${sec.id}`} className={m.groupTitle}>{t(sec.title)}</h2>
+              <div className={m.list}>
+                {sec.groups.map(id => {
+                  const g = groupById(id)
+                  const desc = id === 'plan' && showUpgradeHint ? t('settings.upgrade.title', { days: config.pricing.trialDays }) : t(g.desc)
+                  return <GroupRow key={id} id={id} title={t(g.title)} desc={desc} onClick={() => openSub(id)} danger={id === 'danger'} />
+                })}
               </div>
-            )}
-            {fx && fx.source === 'fixer' && liveRate(settings.currency) > 0 && Number(liveRate(settings.currency)) !== Number(settings.usdRate) && (
-              <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
-                ○ {t('refcur.fixerToday', { rate: Number(liveRate(settings.currency)).toLocaleString(moneyLocale()), date: fmtDay(fx.ts) })}
-              </div>
-            )}
-            {fx && fx.source !== 'fixer' && (
-              <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
-                ○ {t('settings.exchangeRate.offline')}
-              </div>
-            )}
-            {settings.usdRate > 0 && (
-              <div style={{fontSize:11, color:'var(--accent)', fontFamily: 'var(--sans)'}}>
-                → US$1 = {Number(settings.usdRate).toLocaleString(moneyLocale())} {settings.currency} · US$100 = {(settings.usdRate * 100).toLocaleString(moneyLocale())} {settings.currency}
-              </div>
-            )}
-          </div>
-        )}
-        {settings.showDualCurrency && settings.currency === 'USD' && (
-          <div style={{...srow, borderBottom:'none'}}>
-            <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
-              {t('settings.dualCurrency.alreadyUsd')}
-            </div>
-          </div>
-        )}
-      </Card>
-      <Card>
-        <CardHeader title={t('settings.templates.title')} />
-        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>
-          {t('settings.templates.sub')}
+            </section>
+          ))}
         </div>
-        <TemplateSelector />
-      </Card>
-      <Card>
-        <CardHeader title={t('settings.backup.title')} />
-        <BackupManager />
-        <SnapshotRestore />
-      </Card>
-      <SecuritySection />
-      <Card>
-        <CardHeader title={t('settings.sync.title')} />
-        <SyncSection />
-      </Card>
-      <Card>
-        <CardHeader title={t('settings.push.title')} />
-        <PushSection />
-      </Card>
-      <Card>
-        <CardHeader title={t('settings.otherActions.title')} />
-        <div style={srow}>
-          <div><div style={slbl}>{t('settings.exportCsv.label')}</div><div style={ssub}>{t('settings.exportCsv.sub')}</div></div>
-          <Btn variant="ghost" size="sm" onClick={exportCSV}>{t('settings.exportCsv.btn')}</Btn>
-        </div>
-        {confirmAction?.type === 'loadDemo' ? (
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmLoadDemo')}</span>
-            <div style={{display:'flex',gap:6}}>
-              <Btn variant="danger" size="xs" onClick={handleLoadDemo}>{t('debts.card.confirm')}</Btn>
-              <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
-            </div>
-          </div>
-        ) : (
-          <div style={srow}>
-            <div><div style={slbl}>{t('settings.loadDemo.label')}</div><div style={ssub}>{t('settings.loadDemo.sub')}</div></div>
-            <Btn variant="danger" size="sm" onClick={()=>setConfirmAction({type:'loadDemo'})}>{t('settings.loadDemo.btn')}</Btn>
-          </div>
-        )}
-        <DiagnosticsRow rowStyle={srow} labelStyle={slbl} subStyle={ssub} />
-        <div style={srow}>
-          <div><div style={slbl}>{t('settings.resetOnboarding.label')}</div><div style={ssub}>{t('settings.resetOnboarding.sub')}</div></div>
-          <Btn variant="ghost" size="sm" onClick={()=>updateSettings({...settings,onboardingDone:false})}>{t('settings.resetOnboarding.btn')}</Btn>
-        </div>
-        {!isDemo && accountEmail && (
-          <div style={srow}>
-            <div><div style={slbl}>{t('settings.account.label')}</div><div style={ssub}>{accountEmail}</div></div>
-            <Btn variant="ghost" size="sm" onClick={() => signOutAuth()}>{t('settings.account.logoutBtn')}</Btn>
-          </div>
-        )}
-        {!isDemo && (confirmAction?.type === 'deactivate' ? (
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeactivateLicense')}</span>
-            <div style={{display:'flex',gap:6}}>
-              <Btn variant="primary" size="xs" onClick={handleDeactivate}>{t('debts.card.confirm')}</Btn>
-              <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
-            </div>
-          </div>
-        ) : (
-          <div style={srow}>
-            <div><div style={slbl}>{t('settings.license.label', { plan: getLicensePlan() === 'pro' ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
-            <Btn variant="ghost" size="sm" onClick={()=>setConfirmAction({type:'deactivate'})}>{t('settings.license.btn')}</Btn>
-          </div>
-        ))}
-        {!isDemo && (
-          <div style={srow}>
-            <div><div style={slbl}>{t('settings.cancelSub.label')}</div><div style={ssub}>{t('settings.cancelSub.sub')}</div></div>
-            <Btn variant="ghost" size="sm" onClick={() => window.open(cancelUrl(lang), '_blank', 'noopener,noreferrer')}>{t('settings.cancelSub.btn')}</Btn>
-          </div>
-        )}
-        {!isDemo && getLicensePlan() !== 'pro' && <UpgradeCard subStyle={ssub} />}
-        {confirmAction?.type === 'clearAll' ? (
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',background:'rgba(184,134,59,0.08)',borderRadius:6,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeleteAll')}</span>
-            <div style={{display:'flex',gap:6}}>
-              <Btn variant="danger" size="xs" onClick={handleClear}>{t('debts.card.confirm')}</Btn>
-              <Btn variant="ghost" size="xs" onClick={()=>setConfirmAction(null)}>{t('common.cancel')}</Btn>
-            </div>
-          </div>
-        ) : (
-          <div style={{...srow,borderBottom:'none'}}>
-            <div><div style={slbl}>{t('settings.clearAll.label')}</div><div style={ssub}>{t('settings.clearAll.sub')}</div></div>
-            <Btn variant="danger" size="sm" onClick={()=>setConfirmAction({type:'clearAll'})}>{t('settings.clearAll.btn')}</Btn>
-          </div>
-        )}
-      </Card>
-      <Card>
-        <CardHeader title={t('settings.dataStorage.title')} />
-        <div style={{fontSize:12,color:'var(--tm)',lineHeight:1.8,display:'flex',flexDirection:'column',gap:8}}>
-          <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.indexeddbLabel')}</span> — {t('settings.dataStorage.indexeddbDesc')}</div>
-          <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.serverLabel')}</span> — {t('settings.dataStorage.serverDesc')}</div>
-          <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.backupLabel')}</span> — {t('settings.dataStorage.backupDesc')}</div>
-          <div style={{fontSize:12,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
-        </div>
-      </Card>
-      {!isDemo && accountEmail && <DeleteAccountSection autoOpen={wantsDeleteAccount(initialSearch(window.location.search))} />}
-      {(installPrompt || installed || (isIOS && !isStandalone)) && (
-        <Card>
-          <CardHeader title={t('settings.install.title')} />
-          <div style={{...srow, borderBottom:'none'}}>
-            <div>
-              <div style={slbl}>{installed ? t('settings.install.installed.label') : t('settings.install.pending.label')}</div>
-              <div style={ssub}>
-                {installed ? t('settings.install.installed.sub')
-                  : isIOS ? t('settings.install.iosInstructions')
-                  : t('settings.install.pending.sub')}
-              </div>
-            </div>
-            {!installed && !isIOS && <Btn variant="ghost" size="sm" onClick={handleInstall}>{t('settings.install.btn')}</Btn>}
-          </div>
-        </Card>
       )}
+
       {/* UXP-6: mismo tiempo de respuesta que publica moyiq.app/ayuda. */}
       <p style={{fontSize:13,color:'var(--tm)',lineHeight:1.6,margin:'12px 2px 0'}}>
         {t('settings.support.line')}{' '}
@@ -414,114 +272,20 @@ export default function Settings() {
   )
 }
 
-// ── Identificador fiscal (RUT/RFC/CUIT/RIF/NIF/USt-IdNr/EIN según país) ────────
-// Validación 100 % local (dígito verificador real para CL/MX/AR/VE/ES/PT;
-// solo formato para DE/US — ver src/utils/taxIdValidation.js para el porqué).
-// No se llama a VIES desde acá: el endpoint REST de VIES no manda cabeceras
-// CORS, así que un fetch() desde el navegador de la app fallaría siempre.
-function TaxIdField({ country, taxId, updateSettings, settings }) {
-  const { t } = useT()
-  const cc = (country || '').toUpperCase()
-  if (!TAX_ID_COUNTRIES.includes(cc)) return null
-
-  const label = TAX_ID_LABEL[cc]
-  const result = taxId ? validateTaxId(cc, taxId) : null
-
-  const srow = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '0.5px solid var(--brd)' }
-  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }
-  const lbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
-
-  let feedback = null
-  if (result) {
-    if (result.valid === true) {
-      feedback = { text: t('settings.taxId.valid', { label }), color: 'var(--pos)' }
-    } else if (result.reason === 'checkDigit') {
-      feedback = { text: t('settings.taxId.invalidCheckDigit'), color: 'var(--neg)' }
-    } else if (result.reason === 'format') {
-      feedback = { text: t('settings.taxId.invalidFormat', { label }), color: 'var(--neg)' }
-    }
-  }
-
+// Fila de la raíz (patrón rial): ícono, título, una línea y chevron. Zona de
+// riesgo en rojo (nunca Latón). Toda la fila es el botón (≥ 56 px de alto).
+function GroupRow({ id, title, desc, onClick, danger }) {
+  const Icon = ICONS[id] || ChevronRight
   return (
-    <div style={{ ...srow, flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-      <div>
-        <div style={lbl}>{t('settings.taxId.title', { label })}</div>
-        <div style={sub}>{t('settings.taxId.sub')}</div>
-      </div>
-      <input
-        type="text"
-        aria-label={t('settings.taxId.title', { label })}
-        value={taxId || ''}
-        placeholder={t('settings.taxId.placeholder', { label })}
-        onChange={e => updateSettings({ ...settings, taxId: e.target.value })}
-        style={{
-          width: '100%', padding: '7px 10px', borderRadius: 6, border: '.5px solid var(--brd2)',
-          background: 'var(--sur2)', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)',
-          textTransform: 'uppercase',
-        }}
-      />
-      {feedback && (
-        <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: feedback.color }}>{feedback.text}</div>
-      )}
-      {result?.checkedVia === 'format-only' && (
-        <div style={{ ...sub, lineHeight: 1.5 }}>{t('settings.taxId.formatOnly', { label })}</div>
-      )}
-    </div>
-  )
-}
-
-// ── Sincronización entre dispositivos (opt-in, ligada a la licencia, cifrada) ──
-// ── Notificaciones push (opt-in, ligadas a la licencia) ────────────────────────
-function PushSection() {
-  const { t } = useT()
-  const [on, setOn]     = useState(isPushEnabled())
-  const [busy, setBusy] = useState(false)
-  const [msg, setMsg]   = useState('')
-  const hasKey    = !!getLicenseKey()
-  const supported = pushSupported()
-
-  const lbl = { fontSize: 13, color: 'var(--tx)', fontWeight: 500 }
-  const sub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 4 }
-
-  async function toggle() {
-    if (busy) return
-    setBusy(true); setMsg('')
-    try {
-      if (on) {
-        await disablePush()
-        setOn(false)
-      } else {
-        const r = await enablePush()
-        if (r.ok) { setOn(true) }
-        else {
-          setMsg(r.error === 'permission_denied'
-            ? t('settings.push.permissionDenied')
-            : t('settings.push.genericError'))
-        }
-      }
-    } finally { setBusy(false) }
-  }
-
-  return (
-    <div>
-      {!hasKey ? (
-        <div style={sub}>{t('settings.push.noLicense')}</div>
-      ) : !supported ? (
-        <div style={sub}>{t('settings.push.unsupported')}</div>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div>
-              <div style={lbl}>{on ? t('settings.push.on') : t('settings.push.off')}</div>
-              <div style={sub}>{t('settings.push.desc')}</div>
-            </div>
-            <Btn variant="ghost" onClick={toggle} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')} · ${t('settings.push.title')}`}>
-              {busy ? t('settings.sync.busy') : on ? t('settings.sync.disable') : t('settings.sync.enable')}
-            </Btn>
-          </div>
-          {msg && <div style={{ ...sub, color: 'var(--neg)', marginTop: 8 }}>{msg}</div>}
-        </>
-      )}
-    </div>
+    <button type="button" data-group-row={id} onClick={onClick} className={m.row} style={danger ? { color: 'var(--red)' } : undefined}>
+      <span className={m.rowIc} aria-hidden="true" style={{ color: danger ? 'var(--red)' : 'var(--tm)' }}>
+        <Icon size={18} strokeWidth={1.7} />
+      </span>
+      <span className={m.rowLabel}>
+        <span style={{ display: 'block' }}>{title}</span>
+        <span style={{ display: 'block', fontSize: 12, color: 'var(--th)', marginTop: 2, lineHeight: 1.4 }}>{desc}</span>
+      </span>
+      <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={m.chev} />
+    </button>
   )
 }

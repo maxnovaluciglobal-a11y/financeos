@@ -6,7 +6,7 @@
 // (useAppLock() es null fuera de AppLockGate).
 import { useEffect, useId, useRef, useState } from 'react'
 import { Fingerprint } from 'lucide-react'
-import { Card, CardHeader, Btn } from '../../components/ui/index.jsx'
+import { Btn } from '../../components/ui/index.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { useAppLock } from '../../components/lock/AppLockGate.jsx'
@@ -22,8 +22,10 @@ const sub = { fontSize: 12, color: 'var(--tm)', lineHeight: 1.55, marginTop: 3 }
 
 export default function SecuritySection() {
   const lock = useAppLock()
+  const { t } = useT()
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
-  if (!lock || isDemo) return null
+  // R10: la subpantalla Seguridad no queda vacía en el demo: dice por qué.
+  if (!lock || isDemo) return <p style={{ ...sub, margin: 0 }}>{t('settings.group.security.unavailable')}</p>
   return <SecurityCard lock={lock} />
 }
 
@@ -63,10 +65,10 @@ function SecurityCard({ lock }) {
   }
 
   return (
-    <Card>
-      <CardHeader title={t('lock.settings.title')} />
+    // R10: es el contenido de Ajustes › Seguridad (el título lo pone la subpantalla).
+    <div>
 
-      <div style={{ ...row, borderBottom: enabled || flow ? row.borderBottom : 'none', alignItems: 'flex-start' }}>
+      <div data-setting="lock" style={{ ...row, borderBottom: enabled || flow ? row.borderBottom : 'none', alignItems: 'flex-start' }}>
         <div style={{ minWidth: 0 }}>
           <div style={lbl} id="lock-toggle-label">{t('lock.settings.toggle')}</div>
           <div style={sub}>{t('lock.settings.desc')}</div>
@@ -114,7 +116,7 @@ function SecurityCard({ lock }) {
             </div>
           </div>
 
-          <div style={{ ...row, alignItems: 'flex-start' }}>
+          <div data-setting="bio" style={{ ...row, alignItems: 'flex-start' }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ ...lbl, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Fingerprint size={16} strokeWidth={1.7} aria-hidden="true" />{t('lock.settings.bio')}
@@ -123,7 +125,7 @@ function SecurityCard({ lock }) {
             </div>
             {cfg.biometric
               ? <Btn variant="ghost" size="sm" onClick={disableBio} disabled={busy} style={{ flexShrink: 0 }}>{t('lock.settings.disableBio')}</Btn>
-              : bioAvail && <Btn variant="primary" size="sm" onClick={() => setFlow('bio')} disabled={busy} style={{ flexShrink: 0 }}>{t('lock.settings.enable')}</Btn>}
+              : bioAvail && <Btn variant="ghost" size="sm" onClick={() => setFlow('bio')} disabled={busy} style={{ flexShrink: 0 }}>{t('lock.settings.enable')}</Btn>}
           </div>
 
           <div style={{ ...row, borderBottom: 'none', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 8 }}>
@@ -154,7 +156,7 @@ function SecurityCard({ lock }) {
           }}
         />
       )}
-    </Card>
+    </div>
   )
 }
 
