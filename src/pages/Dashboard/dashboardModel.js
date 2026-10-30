@@ -33,6 +33,26 @@ export function monthDelta(cur, prev, { invert = false, hasPrev = true, preferAm
   return { dir, pct, good, abs, usePct }
 }
 
+// B5 (R5b): fechas cuya tasa representa cada período de la comparación. Mes
+// en curso: hoy, contra el mes anterior hasta el mismo día (FIN-14). Mes
+// cerrado: último día de cada mes.
+export function deltaRateDates({ activeMonth, cutDay = null, now = new Date() }) {
+  const pad = (n) => String(n).padStart(2, '0')
+  const lastDay = (ym) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).getDate() }
+  const prev = prevMonthOf(activeMonth)
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  const isCurrent = today.startsWith(activeMonth)
+  const curDate = isCurrent ? today : `${activeMonth}-${pad(lastDay(activeMonth))}`
+  const prevDay = cutDay != null ? Math.min(cutDay, lastDay(prev)) : lastDay(prev)
+  return { curDate, prevDate: `${prev}-${pad(prevDay)}` }
+}
+
+// B5: variación en US$ con la tasa de CADA período. null si falta una tasa.
+export function usdMonthDelta(cur, prev, { curRate, prevRate, invert = false, hasPrev = true } = {}) {
+  if (!(curRate > 0) || !(prevRate > 0)) return null
+  return monthDelta((Number(cur) || 0) / curRate, (Number(prev) || 0) / prevRate, { invert, hasPrev, preferAmount: true })
+}
+
 // Países donde la variación siempre va en monto (W5, plan consolidado §1).
 export const DELTA_AMOUNT_COUNTRIES = ['VE', 'AR']
 export const prefersAmountDelta = (country) => DELTA_AMOUNT_COUNTRIES.includes(String(country || '').toUpperCase())

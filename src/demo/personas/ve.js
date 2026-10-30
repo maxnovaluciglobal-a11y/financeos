@@ -169,7 +169,9 @@ export const VE_SUBSCRIPTIONS = [
 
 // Ajustes propios de la persona: la tasa BCV del mes guardada como tasa de
 // referencia, para que el Inicio muestre "Te queda" también en US$.
-export const veSettings = () => ({ usdRate: VE_RATES[M0].bcv, usdRateAt: Date.now(), usdRateSource: 'bcv' })
+// B5: foto mensual de la tasa (BCV) para la variación del mes en US$.
+export const veMonthlyRefRates = () => Object.fromEntries(Object.entries(VE_RATES).map(([ym, r]) => [ym, r.bcv]))
+export const veSettings = () => ({ usdRate: VE_RATES[M0].bcv, usdRateAt: Date.now(), usdRateSource: 'bcv', monthlyRefRates: veMonthlyRefRates() })
 
 export const VE_PERSONA = {
   ...VE_PERSONA_META,

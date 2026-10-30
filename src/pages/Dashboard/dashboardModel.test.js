@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  monthDelta, prevMonthOf, monthName, fmtSignedPct, prefersAmountDelta,
+  monthDelta, prevMonthOf, monthName, fmtSignedPct, prefersAmountDelta, deltaRateDates, usdMonthDelta,
   budgetState, budgetRows, nextOccurrence, upcomingPayments,
   weekToMonth, prevMonthScore, upsertMonthly, lastValueBefore, homeMonthTotals,
 } from './dashboardModel.js'
@@ -237,5 +237,26 @@ describe('homeMonthTotals (FIN-14)', () => {
   it('registros sin fecha válida no rompen ni suman', () => {
     const r = homeMonthTotals({ incomes: [null, { amount: 5 }, { date: 20261001, amount: 5 }], expenses: [], activeMonth: '2026-10', now: new Date(2026, 9, 2) })
     expect(r.cur.totalInc).toBe(0)
+  })
+})
+
+describe('B5: variación en US$ con la tasa de cada mes', () => {
+  it('fechas: mes en curso contra el anterior al mismo día', () => {
+    expect(deltaRateDates({ activeMonth: '2026-10', cutDay: 29, now: new Date(2026, 9, 29) }))
+      .toEqual({ curDate: '2026-10-29', prevDate: '2026-09-29' })
+  })
+  it('fechas: mes cerrado usa el último día de cada mes (y no se pasa del mes corto)', () => {
+    expect(deltaRateDates({ activeMonth: '2026-03', now: new Date(2026, 9, 29) }))
+      .toEqual({ curDate: '2026-03-31', prevDate: '2026-02-28' })
+    expect(deltaRateDates({ activeMonth: '2026-03', cutDay: 31, now: new Date(2026, 2, 31) }).prevDate).toBe('2026-02-28')
+  })
+  it('corrige la inflación: +10 % nominal con el bolívar 10 % más débil es ~0 en US$', () => {
+    const d = usdMonthDelta(110000, 100000, { curRate: 110, prevRate: 100 })
+    expect(d).toMatchObject({ dir: 'flat' })
+  })
+  it('en US$ siempre es monto; sin tasa de un mes, null', () => {
+    const d = usdMonthDelta(200000, 100000, { curRate: 100, prevRate: 100 })
+    expect(d).toMatchObject({ usePct: false, abs: 1000 })
+    expect(usdMonthDelta(1, 1, { curRate: 0, prevRate: 100 })).toBeNull()
   })
 })

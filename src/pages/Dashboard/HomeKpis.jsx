@@ -13,7 +13,10 @@ import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtSignedMoney, fmtPctPoints } from '../../utils/index.js'
-import { monthDelta, prevMonthOf, prefersAmountDelta } from './dashboardModel.js'
+import { monthDelta, prevMonthOf, prefersAmountDelta, deltaRateDates, usdMonthDelta } from './dashboardModel.js'
+import { useApp } from '../../context/AppContext.jsx'
+import { useRefHistory } from '../../hooks/useRefHistory.js'
+import { rateOnOrBefore } from '../../utils/refHistory.js'
 import DeltaLine from './DeltaLine.jsx'
 import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
 import { toRef } from '../../utils/refRate.js'
@@ -31,6 +34,19 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const prevHasData = prev.incCount > 0 || prev.expCount > 0
   // A1/W5: en VE y AR la variación va siempre en monto (inflación alta).
   const preferAmount = prefersAmountDelta(refc?.country)
+  // B5 (D-D, W5): en Venezuela la variación va en US$ con la tasa de CADA
+  // período (histórico BCV o foto mensual). Sin una de las dos tasas, queda en
+  // bolívares como en A1.
+  const ctx = useApp() || {}
+  const hist = useRefHistory(ctx.settings || {})
+  const { curDate, prevDate } = deltaRateDates({ activeMonth, cutDay })
+  const curRate = hist ? rateOnOrBefore(hist, curDate) : null
+  const prevRate = hist ? rateOnOrBefore(hist, prevDate) : null
+  const usdOn = !!(curRate && prevRate)
+  const usdFmt = (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(Math.abs(d), lang)
+  const deltaOf = (c, p, opts) => (usdOn
+    ? usdMonthDelta(c, p, { ...opts, curRate, prevRate })
+    : monthDelta(c, p, { ...opts, preferAmount }))
 
   const free = cur.freeFlow
   // R12: la cifra de "Te queda" en US$ si el usuario lo eligió y hay tasa.
@@ -42,9 +58,9 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
 
   const tiles = [
     { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'income',
-      delta: monthDelta(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0, preferAmount }) },
+      delta: deltaOf(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0 }) },
     { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, page: 'movements',
-      delta: monthDelta(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0, preferAmount }) },
+      delta: deltaOf(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0 }) },
   ]
 
   const subParts = [t('home.kpi.leftSub')]
@@ -72,8 +88,8 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
               )}
-              {hasData && <DeltaLine delta={monthDelta(free, prev.freeFlow, { hasPrev: prevHasData, preferAmount })} prevMonth={prevMonth} untilDay={cutDay} sym={sym}
-                formatAmount={showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined} />}
+              {hasData && <DeltaLine delta={deltaOf(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} untilDay={cutDay} sym={sym}
+                formatAmount={usdOn ? usdFmt : showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined} />}
               {hasData && <div className={s.kpiSub}>{subParts.join(' · ')}</div>}
               {pending && pending.count > 0 && (
                 <div className={r.pending}>
@@ -128,7 +144,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
                 <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
               </div>
-              <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} sym={sym} />
+              <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} sym={sym} formatAmount={usdOn ? usdFmt : undefined} />
               {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
             </Tag>
           )
