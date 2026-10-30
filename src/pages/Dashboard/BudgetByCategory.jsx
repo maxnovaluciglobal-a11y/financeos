@@ -12,7 +12,6 @@ import { effectiveBudgetLimits } from '../../utils/budgets.js'
 import { budgetRows } from './dashboardModel.js'
 import s from './Home.module.css'
 
-const MAX_ROWS = 5
 const STATE = {
   ok:   { level: 'ok',        color: 'var(--pos)',  key: 'budgets.cat.ok' },
   near: { level: 'attention', color: 'var(--warn)', key: 'budgets.cat.warn' },
@@ -21,21 +20,23 @@ const STATE = {
   idle: { level: 'idle',      color: 'var(--th)',   key: 'budgets.cat.idle' },
 }
 
-export default function BudgetByCategory({ budgets, expenses, monthExpenses, activeMonth, settings, sym, setPage }) {
+// Poda P1: el Inicio muestra las 3 categorías más en riesgo (budgetRows ya
+// las ordena por riesgo); el detalle completo vive en Presupuestos.
+export default function BudgetByCategory({ budgets, expenses, monthExpenses, activeMonth, settings, sym, setPage, maxRows = 3, short = false }) {
   const { t, lang } = useT()
   const rows = useMemo(() => budgetRows({
     budgets, monthExpenses,
     limits: effectiveBudgetLimits({ budgets, expenses, activeMonth, settings }),
   }), [budgets, expenses, monthExpenses, activeMonth, settings])
 
-  const shown = rows.slice(0, MAX_ROWS)
+  const shown = rows.slice(0, maxRows)
   const hiddenCount = rows.length - shown.length
 
   return (
     <section className={`${s.card} rise`} aria-labelledby="home-budget-title">
       <div className={s.cardHead}>
         <h2 id="home-budget-title" className={s.cardTitle}>{t('home.budget.title')}</h2>
-        {rows.length > 0 && <span className={s.cardHint}>{t('home.budget.hint')}</span>}
+        {rows.length > 0 && <span className={s.cardHint}>{t(short ? 'home.budget.hintRisk' : 'home.budget.hint')}</span>}
       </div>
 
       {rows.length === 0 ? (
@@ -53,9 +54,12 @@ export default function BudgetByCategory({ budgets, expenses, monthExpenses, act
                 <li key={r.id} className={s.row}>
                   <div className={s.budgetTop}>
                     <span className={s.budgetCat}>{catName(r.category, lang)}</span>
-                    <span className={s.budgetAmt}>
-                      <b><Money>{fmtMoney(r.spent, sym)}</Money></b> / <Money>{fmtMoney(r.limit, sym)}</Money>
-                    </span>
+                    {/* Inicio (short): nombre, barra y estado; los montos están en Presupuestos. */}
+                    {!short && (
+                      <span className={s.budgetAmt}>
+                        <b><Money>{fmtMoney(r.spent, sym)}</Money></b> / <Money>{fmtMoney(r.limit, sym)}</Money>
+                      </span>
+                    )}
                   </div>
                   <div className={s.budgetBottom}>
                     <div className={s.bar} aria-hidden="true">
@@ -70,7 +74,7 @@ export default function BudgetByCategory({ budgets, expenses, monthExpenses, act
               )
             })}
           </ul>
-          {hiddenCount > 0 && <div className={s.more}>{t(`home.budget.more.${hiddenCount === 1 ? 'one' : 'many'}`, { n: hiddenCount })}</div>}
+          {hiddenCount > 0 && !short && <div className={s.more}>{t(`home.budget.more.${hiddenCount === 1 ? 'one' : 'many'}`, { n: hiddenCount })}</div>}
           {setPage && (
             <div className={s.footLinks}>
               <button type="button" className={s.cardLink} onClick={() => setPage('budgets')}>{t('home.budget.viewAll')} →</button>

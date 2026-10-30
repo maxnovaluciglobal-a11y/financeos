@@ -7,10 +7,17 @@
 export const PAGE_TOURS = {
   dashboard: [
     { id: 'kpi-free',     title: 'tour.home.left.title',   body: 'tour.home.left.body' },
-    { id: 'kpi-income',   title: 'tour.home.pair.title',   body: 'tour.home.pair.body' },
+    // Poda P1: sin vista detallada; su contenido es Panorama (fila del IQ).
+    { id: 'home-quick',   title: 'tour.home.quick.title',  body: 'tour.home.quick.body' },
     { id: 'first-steps',  title: 'tour.home.steps.title',  body: 'tour.home.steps.body' },
-    { id: 'tab-add',      title: 'tour.home.add.title',    body: 'tour.home.add.body' },
-    { id: 'view-toggle',  title: 'tour.home.detail.title', body: 'tour.home.detail.body' },
+    { id: 'iq-score',     title: 'tour.home.panorama.title', body: 'tour.home.panorama.body' },
+    { id: 'home-edit',    title: 'tour.home.edit.title',   body: 'tour.home.edit.body' },
+  ],
+  // Poda P1: hub del análisis.
+  panorama: [
+    { id: 'iq-score',     title: 'tour.pano.score.title',  body: 'tour.pano.score.body' },
+    { id: 'pano-month',   title: 'tour.pano.month.title',  body: 'tour.pano.month.body' },
+    { id: 'pano-detail',  title: 'tour.pano.detail.title', body: 'tour.pano.detail.body' },
   ],
   movements: [
     { id: 'mov-type',  title: 'tour.mov.type.title',  body: 'movl.cal.tour.typeBody' }, // B3b: menciona el calendario

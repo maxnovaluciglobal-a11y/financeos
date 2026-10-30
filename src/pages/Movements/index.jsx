@@ -1,11 +1,16 @@
-// src/pages/Movements/index.jsx — v1.6 (B3a)
+// src/pages/Movements/index.jsx — v1.7 (B3a + poda P2)
 // "Movimientos": ingresos y gastos del mes en una sola lista (decisión D-B),
 // con Todos · Gastos · Ingresos, el mes ‹ › (global), totales, lente en US$ y
-// los fijos del mes. "+ Gasto detallado o suscripción" sigue siendo la única
-// entrada al gasto largo (subcategoría, tipo, notas, inversión, proyecto) y al
-// alta de suscripción: pasó a secundario, no desapareció (lista de protección).
+// los fijos del mes. El gasto detallado (subcategoría, tipo, notas, inversión,
+// proyecto) y el alta de suscripción siguen siendo una entrada propia: viven en
+// el menú ⋯ junto con "Exportar" y la moneda (lista de protección).
+// Poda P2 (30-oct-2026, "¿Qué pasó este mes?"): dos filas antes de la lista.
+//   1) Tipo · lupa · calendario · ⋯      2) ‹ mes › con los totales · Filtrar
+// Los chips de origen y categoría pasaron a la hoja "Filtrar"; el filtro activo
+// queda a la vista como chip quitable. El donut "Por categoría" (que deja el
+// Inicio) abre con el resumen, y tocar una porción filtra la lista.
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -20,7 +25,9 @@ import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
 import { FormGroup, KPI, Alert, Empty, EmptyState, PageHeader } from '../../components/ui/index.jsx'
-import { ArrowLeftRight, CalendarDays, ChevronDown, Download } from 'lucide-react'
+import { ArrowLeftRight, CalendarDays, ChevronDown, Download, Ellipsis, Search, SlidersHorizontal, X } from 'lucide-react'
+import Sheet from '../../components/ui/Sheet.jsx'
+import CategoryIcon from '../../components/CategoryIcon.jsx'
 import Amount from '../../components/Amount.jsx'
 import MovementsList from './MovementsList.jsx'
 import MovementSheet from './MovementSheet.jsx'
@@ -34,7 +41,8 @@ import Money, { useMoney } from '../../components/Money.jsx'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import { closeKeyToDismiss, shiftMonth } from '../shared/monthNav.js'
 import { refEligible, resolveRefRate, SOURCE_LABEL, REF_CURRENCY } from '../../utils/refRate.js'
-import { mergeMovements, monthTotals, lensState, inLens, parseExpensePrefill, PREFILL_KEY, normType } from './movementsList.js'
+import { mergeMovements, monthTotals, lensState, inLens, parseExpensePrefill, PREFILL_KEY, normType, filterMovements, categoriesByAmount } from './movementsList.js'
+import { ORIGIN_KINDS, toggleKind, toggleCategory, activeFilters, clearFilter, searchVisible, toggleSearch, donutPick, donutRecords } from './movementsFilters.js'
 
 // Filtro de tipo preseleccionado desde otra pantalla (Ingresos, Inicio, Menú):
 // sessionStorage['fos_mov_filter'] = 'income' | 'expense' | 'all', igual que
@@ -357,11 +365,18 @@ export default function Movements({ setPage }) {
   }))
   useEffect(() => { dropSession(PREFILL_KEY) }, [])
 
-  const [showAdd,   setShowAdd]   = useState(false)
   const [showGasto, setShowGasto] = useState(() => !!prefill)
   const [showSub,   setShowSub]   = useState(false)
   const [openExp,   setOpenExp]   = useState(null)     // detalle en hoja (UI-M3): ítem { kind, rec }
   const [showSummary, setShowSummary] = useState(false) // resumen plegado: la lista primero
+  // Poda P2: menú ⋯, hoja "Filtrar", lupa y filtros que antes vivían en la lista.
+  const [moreOpen, setMoreOpen]     = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery]           = useState('')
+  const [kind, setKind]             = useState('all') // origen: 'all' | 'oneoff' | 'fixed'
+  const formsRef  = useRef(null)
+  const searchRef = useRef(null)
 
   // Filtro de categoría por drilldown desde el Dashboard (donut clicable)
   // NB: no se borra en el initializer (StrictMode monta 2× en dev y perdería el valor)
@@ -380,6 +395,9 @@ export default function Movements({ setPage }) {
   })
   useEffect(() => { dropSession(MOV_FILTER_KEY) }, [])
   const pickType = (v) => { setType(v); setDrillCat(null) }
+  const filterState = { kind, category: drillCat }
+  const applyFilters = (next) => { setKind(next.kind); setDrillCat(next.category) }
+  const clearAllFilters = () => { applyFilters(clearFilter(filterState, 'all')); setQuery('') }
 
   // Mes ‹ ›: cambia el mes GLOBAL. Elegir un mes pasado marca su cierre como
   // visto para que el Inicio no abra la hoja de cierre sin motivo.
@@ -419,6 +437,14 @@ export default function Movements({ setPage }) {
   const items = useMemo(() => mergeMovements(monthExp, monthInc), [monthExp, monthInc])
   const totals = useMemo(() => monthTotals(items), [items])
   const categoriesIncome = useMemo(() => getCategoriesIncome(settings), [settings])
+  // Categorías del tipo elegido, de mayor a menor (los chips de la hoja "Filtrar").
+  const ofType = useMemo(() => filterMovements(items, { type }), [items, type])
+  const filterCats = useMemo(() => categoriesByAmount(ofType), [ofType])
+  const resultCount = useMemo(
+    () => filterMovements(ofType, { query, category: drillCat, kind, catNameOf: (c) => catName(c, lang) }).length,
+    [ofType, query, drillCat, kind, lang])
+  const active = activeFilters(filterState)
+  const searchShown = view === 'list' && searchVisible({ open: searchOpen, query })
 
   const activeSubs = useMemo(() =>
     subscriptions.filter(s => s?.status === 'active')
@@ -491,14 +517,8 @@ export default function Movements({ setPage }) {
   // Datos para gráficos — solo gastos REGISTRADOS del mes. Antes se sumaban
   // además las suscripciones activas: una suscripción también registrada como
   // gasto (el gimnasio, Netflix) aparecía dos veces y el total quedaba inflado.
-  const chartRecords = useMemo(() => {
-    const map = {}
-    monthExp.forEach(e => { map[e.category] = (map[e.category]||0) + (Number(e.amount)||0) })
-    return Object.entries(map)
-      .sort((a,b) => b[1]-a[1])
-      .slice(0,8)
-      .map(([category, amount]) => ({ category, amount: inLens(amount, lens) }))
-  }, [monthExp, lens])
+  // Donut "Por categoría" (poda P2: el que deja el Inicio, con la lente).
+  const catRecords = useMemo(() => donutRecords(monthExp, (n) => inLens(n, lens)), [monthExp, lens])
 
   const topBarRecords = useMemo(() => {
     const items = [
@@ -530,41 +550,47 @@ export default function Movements({ setPage }) {
   // ── Handlers ─────────────────────────────────────────────────────────────────
   async function handleSaveGasto(item) {
     if (addExpense) await addExpense(item)
-    setShowGasto(false); setShowAdd(false)
+    setShowGasto(false)
   }
   async function handleSaveSub(item) {
     if (addSubscription) await addSubscription(item)
-    setShowSub(false); setShowAdd(false)
+    setShowSub(false)
   }
 
-  // Acciones de la barra: las mismas en la lista y en el calendario (el gasto
-  // detallado no desaparece en ninguna vista, lista de protección).
-  const toolActions = (
-    <div className={ms.toolActions}>
-      {/* Secundario, no Latón (un primario por pantalla: el + global). Abre el
-          mismo menú de gasto detallado o suscripción de siempre. En una sola
-          fila con "Exportar" (ícono de 44 px) para que la lista empiece antes. */}
-      {!showAdd && !showGasto && !showSub && (
-        <button type="button" data-tour="mov-add" className={`fos-btn-secondary ${ms.addSecondary}`} onClick={() => setShowAdd(true)}>
-          {t('mov.addBtn')}
-        </button>
-      )}
-      {exportCSV && (
-        <button type="button" className={ms.exportIcon} onClick={exportCSV} aria-label={t('movl.export')} title={t('movl.export')}>
-          <Download size={18} strokeWidth={1.7} aria-hidden="true" />
-        </button>
-      )}
-    </div>
-  )
+  // Menú ⋯ → formulario: se cierra la hoja y se lleva la vista al formulario
+  // (después de que la hoja devuelve el foco al botón ⋯).
+  function openForm(which) {
+    setMoreOpen(false)
+    setShowGasto(which === 'gasto'); setShowSub(which === 'sub')
+    setTimeout(() => {
+      const el = formsRef.current
+      el?.scrollIntoView?.({ block: 'start', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+      el?.focus?.({ preventScroll: true })
+    }, 60)
+  }
+  function onSearchBtn() {
+    const next = toggleSearch({ open: searchShown, query })
+    setSearchOpen(next)
+    if (next) setTimeout(() => searchRef.current?.focus?.(), 0)
+  }
+  // Porción del donut → filtra la lista por esa categoría.
+  function onDonutCategory(cat) {
+    const next = donutPick({ type, view }, cat)
+    setType(next.type)
+    if (next.view !== view) { setView(next.view); setOpenDay(null) }
+    setDrillCat(next.category)
+  }
+  const filterLabel = (f) => (f.id === 'kind' ? t(`movl.filter.${f.value}`) : catName(f.value, lang))
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div>
 
-      {/* Encabezado único (UI-M3/M8): "Movimientos", como la pestaña; el subtítulo dice el filtro. */}
-      <PageHeader title={t('mov.title')} sub={t(`movl.sub.${type}`, { month: monthYearLabel(activeMonth) })} />
+      {/* Encabezado único (UI-M3/M8): "Movimientos", como la pestaña. Sin
+          subtítulo desde la poda P2: el mes y el tipo ya están en las filas 1 y 2. */}
+      <PageHeader title={t('mov.title')} />
 
-      {/* Tipo y mes (B3a). El mes es el GLOBAL: también mueve el Inicio y Presupuestos. */}
+      {/* Fila 1 (poda P2): tipo · lupa · calendario · ⋯. El tipo es de la lista y del calendario. */}
       <div className={ms.controls} data-tour="mov-type">
         <div className={ms.seg} role="group" aria-label={t('movl.type.label')}>
           {['all', 'expense', 'income'].map(v => (
@@ -573,45 +599,94 @@ export default function Movements({ setPage }) {
             </button>
           ))}
         </div>
-        {/* Lista | Calendario (B3b): un solo botón de 44 px junto al tipo, en la misma fila (no suma filas en el celular). */}
-        <button type="button" className={ms.viewBtn} aria-pressed={view === 'cal'}
-          aria-label={t('movl.cal.toggle')} title={t('movl.cal.toggleHint')}
-          onClick={() => { setView(view === 'cal' ? 'list' : 'cal'); setOpenDay(null) }}>
-          <CalendarDays size={18} strokeWidth={1.7} aria-hidden="true" />
-          <span className={ms.viewBtnWord} aria-hidden="true">{t('movl.cal.toggle')}</span>
-        </button>
-        <div className={ms.controlsEnd}>
-          <MonthSelector variant="stepper" incomes={incomes} expenses={navExpenses} onBeforeChange={beforeMonthChange} />
-          {/* Lente de moneda (R12): el mismo VES | USD del Inicio, solo si hay tasa con fecha. */}
-          {lens.available && (
-            <span className={ms.lensSwitch} role="group" aria-label={t('movl.lens.switchAria')}>
-              {[['local', String(settings.currency || '').toUpperCase()], ['ref', REF_CURRENCY]].map(([v, code]) => (
-                <button key={v} type="button" className={ms.lensOpt} aria-pressed={refMode === v} onClick={() => setRefMode(v)}>{code}</button>
-              ))}
-            </span>
+        <div className={ms.ctrlIcons}>
+          {/* Lupa: abre el buscador; con una búsqueda escrita queda visible. Solo en la lista. */}
+          {view === 'list' && (
+            <button type="button" className={ms.iconBtn} aria-label={t('movl.search.label')} title={t('movl.search.label')}
+              aria-expanded={searchShown} aria-controls="mov-search" onClick={onSearchBtn}>
+              <Search size={18} strokeWidth={1.7} aria-hidden="true" />
+            </button>
           )}
+          {/* Lista | Calendario (B3b): un botón de 44 px; la palabra solo con ancho de sobra. */}
+          <button type="button" className={ms.viewBtn} aria-pressed={view === 'cal'}
+            aria-label={t('movl.cal.toggle')} title={t('movl.cal.toggleHint')}
+            onClick={() => { setView(view === 'cal' ? 'list' : 'cal'); setOpenDay(null) }}>
+            <CalendarDays size={18} strokeWidth={1.7} aria-hidden="true" />
+            <span className={ms.viewBtnWord} aria-hidden="true">{t('movl.cal.toggle')}</span>
+          </button>
+          {/* ⋯: gasto detallado, suscripción, exportar y la moneda (antes en la barra de la lista). */}
+          <button type="button" className={ms.iconBtn} data-tour="mov-add" aria-label={t('mov.more')} title={t('mov.more')}
+            aria-haspopup="dialog" aria-expanded={moreOpen} onClick={() => setMoreOpen(true)}>
+            <Ellipsis size={18} strokeWidth={1.7} aria-hidden="true" />
+          </button>
         </div>
       </div>
 
-      {/* Resumen en una línea, plegable: la lista va primero (UI-M3). */}
-      <button type="button" className={ms.summary} aria-expanded={showSummary} aria-controls="mov-summary"
-        onClick={() => setShowSummary(v => !v)} data-tour="mov-kpis">
-        <span className={ms.summaryMain}>
-          <span className={ms.summaryItem}>
-            <span className={ms.summaryLbl}>{t('movl.type.income')}</span>
-            <Amount className={`${ms.summaryTotal} ${ms.summaryIn}`} value={inLens(totals.income, lens)} sym={lsym} plus />
+      {/* Fila 2: ‹ mes › (GLOBAL: también mueve el Inicio y Presupuestos) con los
+          totales del mes; tocarlos abre el resumen y el donut. Luego "Filtrar". */}
+      <div className={ms.monthRow}>
+        <MonthSelector variant="stepper" incomes={incomes} expenses={navExpenses} onBeforeChange={beforeMonthChange} />
+        <button type="button" className={ms.totals} aria-expanded={showSummary} aria-controls="mov-summary"
+          onClick={() => setShowSummary(v => !v)} data-tour="mov-kpis">
+          <span className={ms.totalsMain}>
+            <span className={ms.summaryItem}>
+              <span className="sr-only">{t('movl.type.income')}</span>
+              <Amount className={`${ms.summaryTotal} ${ms.summaryIn}`} value={inLens(totals.income, lens)} sym={lsym} plus />
+            </span>
+            <span aria-hidden="true" className={ms.totalsSep}>·</span>
+            <span className={ms.summaryItem}>
+              <span className="sr-only">{t('movl.type.expense')}</span>
+              <Amount className={ms.summaryTotal} value={-inLens(totals.expense, lens)} sym={lsym} />
+            </span>
           </span>
-          <span aria-hidden="true">·</span>
-          <span className={ms.summaryItem}>
-            <span className={ms.summaryLbl}>{t('movl.type.expense')}</span>
-            <Amount className={ms.summaryTotal} value={-inLens(totals.expense, lens)} sym={lsym} />
-          </span>
-          {/* H17 (ola A7): el Inicio excluye la inversión de Gastos; aquí se dice cuánta incluye. */}
-          {invExp > 0 && <span className={ms.summaryInv}>{t('mov.summary.invIncl', { v: fmtL(invExp) })}</span>}
-        </span>
-        <span className={ms.summaryToggle}>{showSummary ? t('movl.summary.hide') : t('movl.summary.show')}<ChevronDown size={16} strokeWidth={1.7} aria-hidden="true" /></span>
-      </button>
+          <span className="sr-only">{showSummary ? t('movl.summary.hide') : t('movl.summary.show')}</span>
+          <ChevronDown className={ms.totalsChevron} size={16} strokeWidth={1.7} aria-hidden="true" />
+        </button>
+        {view === 'list' && (
+          <button type="button" className={ms.viewBtn} aria-label={t('mov.filter.btn')} title={t('mov.filter.btn')}
+            aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}>
+            <SlidersHorizontal size={18} strokeWidth={1.7} aria-hidden="true" />
+            <span className={ms.viewBtnWord} aria-hidden="true">{t('mov.filter.btn')}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Buscador (la lupa lo abre; con texto escrito no se esconde). */}
+      {searchShown && (
+        <div className={ms.search} role="search" id="mov-search">
+          <Search size={16} strokeWidth={1.7} aria-hidden="true" />
+          <input ref={searchRef} type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('movl.search.ph')} aria-label={t('movl.search.label')} />
+        </div>
+      )}
+
+      {/* Filtro activo como chip quitable: un toque lo quita. */}
+      {view === 'list' && active.length > 0 && (
+        <div className={ms.chips} role="group" aria-label={t('mov.filter.active')}>
+          {active.map(f => (
+            <button key={f.id} type="button" className={`fos-chip ${ms.chipOn}`} onClick={() => applyFilters(clearFilter(filterState, f.id))}>
+              {f.id === 'category' && <CategoryIcon category={f.value} size={20} />}
+              <span className="sr-only">{t('mov.filter.remove')} </span>{filterLabel(f)}
+              <X size={14} strokeWidth={1.8} aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Resumen plegado (UI-M3): la lista primero. Arriba, "Por categoría". */}
       <div id="mov-summary" className={ms.summaryBody} hidden={!showSummary}>
+        <div style={{ marginBottom: 16 }}>
+          <ChartCard title={t('mov.byCat.title')} subtitle={monthYearLabel(activeMonth)} minHeight={160}>
+            {catRecords.length > 0
+              ? <CategoryDonut records={catRecords} sym={lsym} maxCategories={6} onCategoryClick={onDonutCategory} />
+              : <Empty text={t('mov.byCat.empty')} />}
+          </ChartCard>
+          {catRecords.length > 0 && <p className={ms.lens} style={{ marginTop: -12 }}>{t('mov.byCat.hint')}</p>}
+        </div>
+
+        {/* H17 (ola A7): el Inicio excluye la inversión de Gastos; aquí se dice cuánta incluye. */}
+        {invExp > 0 && <p className={ms.summaryInv} style={{ margin: '0 0 12px' }}>{t('mov.summary.invNote', { v: fmtL(invExp) })}</p>}
+
         {/* KPIs */}
         <div className="kpi-row" style={{ marginBottom:20 }}>
           <KPI label={t('mov.kpi.income')} value={fmtL(totalInc)} color="green"
@@ -643,14 +718,11 @@ export default function Movements({ setPage }) {
           </div>
         )}
 
-        {/* Gráficos unificados */}
-        {(monthExp.length > 0 || activeSubs.length > 0) && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
+        {/* Top gastos (el donut por categoría está arriba, en "Por categoría"). */}
+        {monthExp.length > 0 && (
+          <div style={{ marginBottom:16 }}>
             <ChartCard title={t('mov.chart.top')} minHeight={180}>
               <HorizontalBars records={topBarRecords} sym={lsym} maxItems={8}/>
-            </ChartCard>
-            <ChartCard title={t('mov.chart.byCat')} minHeight={180}>
-              <CategoryDonut records={chartRecords} sym={lsym}/>
             </ChartCard>
           </div>
         )}
@@ -677,66 +749,98 @@ export default function Movements({ setPage }) {
         </p>
       )}
 
-      {/* Formularios de alta (gasto / suscripción); el botón vive en la barra de la lista */}
-      <div style={{ marginTop: (showAdd || showGasto || showSub) ? 12 : 0 }}>
-
-        {showAdd && !showGasto && !showSub && (
-          <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
-            borderRadius:'var(--r)', padding:'16px', marginBottom:4 }}>
-            <div style={{ fontSize:13, color:'var(--tx)', fontWeight:600, marginBottom:12 }}>
-              {t('mov.addWhich')}
-            </div>
-            <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-              <button onClick={() => { setShowAdd(false); setShowGasto(true) }}
-                style={{ background:'var(--sur)', border:'.5px solid var(--brd2)', borderRadius:8,
-                  padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--tx)',
-                  cursor:'pointer', flex:1, minWidth:140, textAlign:'left' }}>
-                {t('mov.addExpense')}
-                <div style={{ fontSize:11, fontWeight:400, color:'var(--th)', marginTop:3 }}>
-                  {t('mov.addExpenseDesc')}
-                </div>
-              </button>
-              <button onClick={() => { setShowAdd(false); setShowSub(true) }}
-                style={{ background:'var(--sur)', border:'.5px solid var(--amb)', borderRadius:8,
-                  padding:'10px 18px', fontSize:12, fontWeight:600, color:'var(--amb)',
-                  cursor:'pointer', flex:1, minWidth:140, textAlign:'left' }}>
-                {t('mov.addSub')}
-                <div style={{ fontSize:11, fontWeight:400, color:'var(--th)', marginTop:3 }}>
-                  {t('mov.addSubDesc')}
-                </div>
-              </button>
-              <button onClick={() => setShowAdd(false)}
-                style={{ background:'none', border:'.5px solid var(--brd)', borderRadius:8,
-                  padding:'10px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        )}
-
+      {/* Formularios de alta (gasto detallado / suscripción); se abren desde el menú ⋯ */}
+      <div ref={formsRef} tabIndex={-1} style={{ marginTop: (showGasto || showSub) ? 12 : 0, outline: 'none' }}>
         {showGasto && <FormGasto sym={sym} projects={projectOptions} settings={settings} initial={prefill} onSave={handleSaveGasto} onCancel={() => setShowGasto(false)} onImport={setPage ? () => setPage('import') : undefined}/>}
         {showSub   && <FormSub              onSave={handleSaveSub}   onCancel={() => setShowSub(false)}/>}
       </div>
 
       {view === 'list' ? (
-        <MovementsList items={items} type={type} sym={lsym} lens={lens} category={drillCat} onCategory={setDrillCat}
+        <MovementsList items={items} type={type} sym={lsym} lens={lens}
+          query={query} kind={kind} category={drillCat} onClearFilters={clearAllFilters}
           onOpen={setOpenExp}
-          toolbarEnd={toolActions}
           empty={type === 'income'
             ? <EmptyState compact icon={ArrowLeftRight} title={t('movl.emptyInc.title')} text={t('movl.emptyInc.text')}
                 cta={t('movl.emptyInc.cta')} onCta={() => openQuickAdd('income')} />
             : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
                 cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />} />
       ) : calendar && (
-        <section aria-labelledby="movc-title" data-tour="mov-list">
+        <section aria-labelledby="movc-title" data-tour="mov-list" className={ms.listSection}>
           <h2 id="movc-title" className="sr-only">{t('movl.cal.title', { month: monthYearLabel(activeMonth) })}</h2>
-          <div className={ms.calToolbar}>{toolActions}</div>
           <MonthCalendar ym={activeMonth} weeks={calendar.weeks} weekStart={weekStart} today={todayStr2} locale={calLocale}
             labelledBy="movc-title" fmtFull={(n) => m(fmtSignedMoney(n, lsym))}
             onOpenDay={(cell) => setOpenDay(cell.date)} />
           <UndatedPlanned items={calendar.undated} sym={sym} />
         </section>
       )}
+
+      {/* Menú ⋯ (poda P2): lo que antes estaba en la barra de la lista y junto al mes. */}
+      <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} ariaLabel={t('mov.more')}>
+        <h2 className={ms.sheetTitle}>{t('mov.more')}</h2>
+        <ul className={ms.menu}>
+          <li>
+            <button type="button" className={ms.menuItem} onClick={() => openForm('gasto')}>
+              <span className={ms.menuLabel}>{t('mov.more.detailed')}</span>
+              <span className={ms.menuDesc}>{t('mov.more.detailedDesc')}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" className={ms.menuItem} onClick={() => openForm('sub')}>
+              <span className={ms.menuLabel}>{t('mov.more.sub')}</span>
+              <span className={ms.menuDesc}>{t('mov.addSubDesc')}</span>
+            </button>
+          </li>
+          {exportCSV && (
+            <li>
+              <button type="button" className={ms.menuItem} onClick={() => { setMoreOpen(false); exportCSV() }}>
+                <span className={ms.menuLabel}><Download size={16} strokeWidth={1.7} aria-hidden="true" />{t('movl.export')}</span>
+              </button>
+            </li>
+          )}
+        </ul>
+        {/* Lente de moneda (R12): el mismo VES | USD del Inicio, solo si hay tasa con fecha. */}
+        {lens.available && (
+          <div className={ms.menuGroup}>
+            <h3 id="mov-lens-title" className={ms.sheetSub}>{t('movl.lens.switchAria')}</h3>
+            <span className={ms.lensSwitch} role="group" aria-labelledby="mov-lens-title">
+              {[['local', String(settings.currency || '').toUpperCase()], ['ref', REF_CURRENCY]].map(([v, code]) => (
+                <button key={v} type="button" className={ms.lensOpt} aria-pressed={refMode === v} onClick={() => setRefMode(v)}>{code}</button>
+              ))}
+            </span>
+          </div>
+        )}
+      </Sheet>
+
+      {/* Hoja "Filtrar" (poda P2): los chips de origen y categoría que estaban sobre la lista. */}
+      <Sheet open={filterOpen} onClose={() => setFilterOpen(false)} ariaLabel={t('mov.filter.title')}>
+        <h2 className={ms.sheetTitle}>{t('mov.filter.title')}</h2>
+        <h3 id="mov-f-origin" className={ms.sheetSub}>{t('movl.sheet.origin')}</h3>
+        <div className={ms.chipWrap} role="group" aria-labelledby="mov-f-origin">
+          {ORIGIN_KINDS.map(k => (
+            <button key={k} type="button" className="fos-chip" aria-pressed={kind === k} onClick={() => setKind(toggleKind(kind, k))}>
+              {t(`movl.filter.${k}`)}
+            </button>
+          ))}
+        </div>
+        {(filterCats.length > 0 || drillCat) && (
+          <>
+            <h3 id="mov-f-cat" className={ms.sheetSub}>{t('movl.sheet.category')}</h3>
+            <div className={ms.chipWrap} role="group" aria-labelledby="mov-f-cat">
+              {(drillCat && !filterCats.includes(drillCat) ? [drillCat, ...filterCats] : filterCats).map(c => (
+                <button key={c} type="button" className="fos-chip" aria-pressed={drillCat === c} onClick={() => setDrillCat(toggleCategory(drillCat, c))}>
+                  <CategoryIcon category={c} size={20} />{catName(c, lang)}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <div className={ms.sheetActions}>
+          {active.length > 0 && (
+            <button type="button" className="fos-link" onClick={() => applyFilters(clearFilter(filterState, 'all'))}>{t('movl.clear')}</button>
+          )}
+          <button type="button" className="fos-btn-secondary" onClick={() => setFilterOpen(false)}>{t('mov.filter.show', { n: resultCount })}</button>
+        </div>
+      </Sheet>
       {dayCell && (
         <DaySheet cell={dayCell} type={type} sym={lsym} lens={lens} localSym={sym}
           onClose={() => setOpenDay(null)}

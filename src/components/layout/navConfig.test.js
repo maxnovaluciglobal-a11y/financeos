@@ -19,8 +19,8 @@ describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas',
     expect(TAB_IDS).toEqual(['dashboard', 'movements', 'budgets', 'goals', 'more'])
   })
 
-  it('el resto (Menú, Ajustes, deudas, legales, herramientas de país) enciende Menú', () => {
-    for (const id of ['more', 'settings', 'debts', 'coach', 'privacy', 'terms', 'apv', 'steuer']) {
+  it('el resto (Más, Ajustes, deudas, Panorama, legales, herramientas de país) enciende Más', () => {
+    for (const id of ['more', 'settings', 'debts', 'coach', 'panorama', 'privacy', 'terms', 'apv', 'steuer']) {
       expect(activeTabFor(id), id).toBe('more')
     }
   })
@@ -34,45 +34,80 @@ describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas',
   })
 })
 
-import { menuSections } from './navConfig.js'
+import { moreSections, PANORAMA_PAGES, navItemVisible } from './navConfig.js'
 
-describe('menuSections (R11, L2): ningún ítem del NAV queda inalcanzable', () => {
-  it('cada ítem sin país es pestaña o está en el Menú, sin repetir las pestañas; Cuenta al final', () => {
-    const secs = menuSections('CL')
-    expect(secs[0].sec).toBe('nav.sec.planning')
-    expect(secs[0].items[0].id).toBe('debts')
-    expect(secs[secs.length - 1].sec).toBe('nav.sec.account')
-    const ids = secs.flatMap(g => g.items.map(i => i.id))
-    for (const it_ of ALL_ITEMS.filter(i => !i.countries)) {
-      expect(TAB_IDS.includes(it_.id) || ids.includes(it_.id), it_.id).toBe(true)
-    }
-    for (const tab of TAB_IDS) expect(ids, tab).not.toContain(tab)
-    expect(secs.some(g => g.sec === 'nav.sec.main')).toBe(false)
+const COUNTRIES = ['CL', 'VE', 'AR', 'MX', 'CO', 'PE', 'EC', 'ES', 'PT', 'DE', 'US']
+const flat = (secs) => secs.flatMap(g => g.items.flatMap(i => [i.id, ...(i.items || []).map(x => x.id)]))
+
+describe('"Más" (poda P1): 4 grupos, ≤ 10 filas, nada inalcanzable', () => {
+  it('4 grupos en orden: Mi dinero · Análisis · Herramientas · Cuenta', () => {
+    expect(moreSections('CL').map(g => g.sec)).toEqual(['more.sec.money', 'more.sec.panorama', 'nav.sec.tools', 'nav.sec.account'])
+    expect(moreSections('CL')[0].items.map(i => i.id)).toEqual(['debts', 'recurring', 'income', 'import'])
   })
 
-  it('las herramientas de país dependen del país', () => {
-    const de = menuSections('DE').flatMap(g => g.items.map(i => i.id))
+  it('como mucho 10 filas en cualquier país, con todos los módulos encendidos', () => {
+    for (const cc of COUNTRIES) {
+      const rows = moreSections(cc, {}).reduce((n, g) => n + g.items.length, 0)
+      expect(rows, cc).toBeLessThanOrEqual(10)
+    }
+  })
+
+  it('cada ítem del NAV de cada país es pestaña, fila, hoja del país, Panorama o Fijos › Suscripciones', () => {
+    for (const cc of COUNTRIES) {
+      const ids = flat(moreSections(cc, {}))
+      const reach = new Set([...TAB_IDS, ...ids, ...PANORAMA_PAGES, 'dashboard'])
+      for (const it_ of ALL_ITEMS.filter(i => navItemVisible(i, cc, {}))) {
+        expect(reach.has(it_.id), `${cc}:${it_.id}`).toBe(true)
+      }
+      for (const tab of TAB_IDS) expect(moreSections(cc).flatMap(g => g.items.map(i => i.id)), tab).not.toContain(tab)
+    }
+  })
+
+  it('varias herramientas del país van en una sola fila con hoja; una sola, directa', () => {
+    const cl = moreSections('CL').find(g => g.sec === 'nav.sec.tools').items
+    const sheet = cl.find(i => i.id === 'countryTools')
+    expect(sheet.sheet).toBe(true)
+    expect(sheet.items.map(i => i.id)).toEqual(['hipoteca', 'apv'])
+    const de = moreSections('DE').find(g => g.sec === 'nav.sec.tools').items.map(i => i.id)
     expect(de).toContain('steuer')
-    expect(de).not.toContain('apv')
+    expect(de).not.toContain('countryTools')
+  })
+
+  it('Cuenta al final: Ajustes', () => {
+    const secs = moreSections('CL')
+    expect(secs[secs.length - 1].items.map(i => i.id)).toEqual(['settings'])
   })
 })
 
-describe('menuSections (R13): calculadora de tasa a un toque en VE/AR', () => {
-  it('VE: "Herramientas" primero con Multimoneda, sin repetirla en "Tu país"', () => {
-    const secs = menuSections('VE')
-    expect(secs[0].sec).toBe('nav.sec.tools')
-    expect(secs[0].items).toHaveLength(1)
-    expect(secs[0].items[0]).toMatchObject({ id: 'multimoneda', lb: 'refcur.tool', tool: true, proOnly: true })
-    const ids = secs.flatMap(g => g.items.map(i => i.id))
-    expect(ids.filter(id => id === 'multimoneda')).toHaveLength(1)
+describe('"Más" (R13): calculadora de tasa a un toque en VE/AR', () => {
+  it('VE: Multimoneda primera en Herramientas, una sola vez', () => {
+    const tools = moreSections('VE').find(g => g.sec === 'nav.sec.tools').items
+    expect(tools[0]).toMatchObject({ id: 'multimoneda', lb: 'refcur.tool', tool: true, proOnly: true })
+    expect(flat(moreSections('VE')).filter(id => id === 'multimoneda')).toHaveLength(1)
   })
-  it('AR: Dólar y rendimientos en Herramientas; Inflación sigue en "Tu país"', () => {
-    const secs = menuSections('AR')
-    expect(secs[0].items[0].id).toBe('multidolar')
-    expect(secs.find(g => g.sec === 'nav.sec.country').items.map(i => i.id)).toEqual(['inflacion'])
+  it('AR: Dólar y rendimientos primero; Inflación directa', () => {
+    const tools = moreSections('AR').find(g => g.sec === 'nav.sec.tools').items.map(i => i.id)
+    expect(tools.slice(0, 2)).toEqual(['multidolar', 'inflacion'])
   })
-  it('el resto de países no tiene sección Herramientas', () => {
-    for (const cc of ['CL', 'DE', 'MX']) expect(menuSections(cc).some(g => g.sec === 'nav.sec.tools')).toBe(false)
+  it('fuera de VE/AR no hay calculadora de tasa', () => {
+    for (const cc of ['CL', 'DE', 'MX']) expect(flat(moreSections(cc)).some(id => id === 'multimoneda' || id === 'multidolar')).toBe(false)
+  })
+})
+
+describe('módulos que se activan (poda P3) en "Más" y el riel', () => {
+  const fresh = { modules: { properties: false, advisor: false } }
+  it('apagados: no ocupan fila y aparece "Activar más funciones"', () => {
+    const ids = flat(moreSections('CL', fresh))
+    expect(ids).not.toContain('projects')
+    expect(ids).not.toContain('advisor')
+    expect(ids).toContain('modules')
+    expect(navItemVisible(ALL_ITEMS.find(i => i.id === 'projects'), 'CL', fresh)).toBe(false)
+  })
+  it('una cuenta existente (sin `modules`) los ve sin la fila de activar', () => {
+    const ids = flat(moreSections('CL', {}))
+    expect(ids).toContain('projects')
+    expect(ids).toContain('advisor')
+    expect(ids).not.toContain('modules')
   })
 })
 

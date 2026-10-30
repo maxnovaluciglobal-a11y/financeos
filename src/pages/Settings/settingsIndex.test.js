@@ -19,8 +19,8 @@ const tEs = tFor(es)
 const tEn = tFor(en)
 
 describe('Ajustes: grupos (R10)', () => {
-  it('las 10 filas pedidas, en orden, y cada una en una sola sección', () => {
-    expect(GROUP_IDS).toEqual(['profile', 'currency', 'appearance', 'templates', 'data', 'security', 'notifications', 'plan', 'advanced', 'danger'])
+  it('las 11 filas (10 de R10 + Funciones de la poda P3), en orden, y cada una en una sola sección', () => {
+    expect(GROUP_IDS).toEqual(['profile', 'currency', 'appearance', 'templates', 'features', 'data', 'security', 'notifications', 'plan', 'advanced', 'danger'])
     const inSections = SETTINGS_SECTIONS.flatMap(s => s.groups)
     expect(inSections).toEqual(GROUP_IDS)
   })

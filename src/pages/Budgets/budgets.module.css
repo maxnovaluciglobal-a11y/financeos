@@ -1,7 +1,8 @@
 /* src/pages/Budgets/budgets.module.css — Presupuestos legible de un vistazo (UI-M5).
    Titular en lenguaje natural + línea de ritmo, y una lista de categorías con
-   la tríada Presupuesto / Gastado / Restante, el estado en palabras y un
-   medidor. Estructura por líneas (Honest Ledger), sin tarjetas por categoría. */
+   "Gastado X de Y", el estado en palabras y un medidor (poda P2: la tríada
+   Presupuesto / Gastado / Restante pasó a la hoja de la categoría).
+   Estructura por líneas (Honest Ledger), sin tarjetas por categoría. */
 
 .head { display: flex; align-items: center; gap: 20px; padding: 2px 0 16px; }
 .headBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -14,43 +15,99 @@
 .ring { flex-shrink: 0; display: block; }
 @media (max-width: 520px) { .ring { display: none; } }
 
-.kpis { margin-bottom: 4px; }
+.kpis { margin-bottom: 12px; }
 
-/* Lista por categoría */
+/* Poda P2: los KPIs en una línea bajo el titular (abre la hoja con el detalle). */
+.kpiLine {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  min-height: 44px; margin: -4px 0 -8px -6px; padding: 0 6px; box-sizing: border-box;
+  background: none; border: 0; border-radius: var(--r); cursor: pointer; text-align: left;
+  font: 500 13px/1.35 var(--sans); color: var(--tm);
+}
+.kpiLine:hover { background: var(--sur2); }
+.kpiLine:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.kpiLine > svg:last-child { flex-shrink: 0; color: var(--th); }
+
+/* Lista por categoría: una fila-botón por categoría + su medidor (poda P2). */
+.rowItem { padding: 6px 0 12px; border-bottom: 1px solid var(--brd); }
+.rowItem:last-child { border-bottom: 0; }
+.rowBtn {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) 16px; align-items: center; column-gap: 12px;
+  width: 100%; min-height: 52px; padding: 4px 2px; box-sizing: border-box;
+  background: none; border: 0; border-radius: var(--rs); text-align: left; cursor: pointer; color: var(--tx); font-family: var(--sans);
+}
+.rowBtn::after { content: ''; width: 8px; height: 8px; border-right: 1.5px solid var(--th); border-top: 1.5px solid var(--th); transform: rotate(45deg); justify-self: center; }
+.rowBtn:hover { background: var(--sur2); }
+.rowBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.rowMain { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rowTop { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.rowLine { font-size: 13px; color: var(--tm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rowNum { color: var(--tx); font-weight: 600; }
+.rowItem .meter { margin: 4px 0 0 42px; }
+
+/* Acciones: un primario (asistente) + ⋯ */
+.actions { display: flex; align-items: center; gap: 8px; }
+.actionMain { flex: 1; width: auto; min-width: 0; }
+.moreBtn {
+  flex-shrink: 0; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tx); cursor: pointer;
+}
+.moreBtn:hover { background: var(--sur2); }
+.moreBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.actions:not(:has(.actionMain)) { justify-content: flex-end; }
+
+/* Reparto del ingreso plegado */
+.disclosure {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+  min-height: 48px; padding: 0 2px; box-sizing: border-box;
+  background: none; border: 0; border-top: 1px solid var(--brd2); cursor: pointer;
+  font: 600 14px/1.3 var(--sans); color: var(--tx); text-align: left;
+}
+.disclosure svg { flex-shrink: 0; color: var(--tm); transition: transform var(--dur) var(--ease); }
+.disclosure[aria-expanded="true"] svg { transform: rotate(180deg); }
+.disclosure:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.splitBare { border-top: 0; padding-top: 0; margin-top: 0; }
+
+/* Hojas (menú ⋯, KPIs, nuevo límite, 50/30/20, categoría) */
+.sheetTitle { margin: 0 0 10px; font-family: var(--display); font-size: 20px; font-weight: 600; color: var(--tx); overflow-wrap: anywhere; }
+.sheetHead { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sheetMeter { margin: 12px 0 4px; }
+.facts { margin: 12px 0 8px; padding: 0; border-top: 1px solid var(--brd); }
+.facts > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--brd); font: 400 14px/1.3 var(--sans); }
+.facts dt { color: var(--tm); }
+.facts dd { margin: 0; color: var(--tx); font-weight: 600; text-align: right; }
+.facts .neg { color: var(--neg); }
+.sheetActions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.sheetActions > * { flex: 1 1 140px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.editForm { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.editForm label { font: 600 12px/1.3 var(--sans); color: var(--tm); }
+.editForm input { min-height: 44px; box-sizing: border-box; font-size: 16px; }
+.menu { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--brd); }
+.menu li { border-bottom: 1px solid var(--brd); }
+.menuItem {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 52px;
+  padding: 10px 4px; box-sizing: border-box; background: none; border: 0; border-radius: var(--rs);
+  text-align: left; cursor: pointer; color: var(--tx); font-family: var(--sans);
+}
+.menuItem:hover:not(:disabled) { background: var(--sur2); }
+.menuItem:disabled { cursor: default; color: var(--th); }
+.menuItem:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.menuLabel { font-size: 15px; font-weight: 600; }
+.menuDesc { font-size: 12px; color: var(--th); }
+
+/* Lista por categoría (estructura base) */
 .section { border-top: 1px solid var(--brd2); padding-top: 14px; min-width: 0; }
 .sectionTitle { margin: 0 0 4px; font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--tx); }
 .list { list-style: none; margin: 0; padding: 0; }
-.item { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; row-gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--brd); }
-.item:last-child { border-bottom: 0; }
-.itemTop { grid-column: 2; display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 28px; }
 .icon { grid-row: 1; grid-column: 1; }
 .name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meter { grid-column: 2; }
-.triad { grid-column: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
-.triad div { min-width: 0; }
-.triad dt { font-size: 12px; color: var(--th); line-height: 1.3; }
-.triad dd { margin: 2px 0 0; font-size: 14px; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.triad .neg { color: var(--neg); }
 .carry { grid-column: 2; font-size: 12px; color: var(--th); }
 
-.iconBtn {
-  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-  width: 44px; height: 44px; margin: -8px -12px -8px 0;
-  background: none; border: 0; border-radius: var(--r); color: var(--th); cursor: pointer;
-  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.iconBtn:hover { color: var(--neg); background: var(--sur2); }
-.linkBtn {
-  min-height: 44px; margin: -8px 0; padding: 0 4px; flex-shrink: 0;
-  background: none; border: 0; cursor: pointer;
-  font: 600 13px/1 var(--sans); color: var(--navy);
-  text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
-}
-:global([data-theme="dark"]) .linkBtn { color: var(--laton-300); }
 
 /* Modelo 50/30/20 como tabla de hairlines */
 .model th[scope="row"] { font-weight: 500; }
-@media (prefers-reduced-motion: reduce) { .iconBtn { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .disclosure svg { transition: none; } }
 
 /* R8a (ola C): reparto del ingreso — barra de tres tramos, sin caja (regla 1). */
 .split { border-top: 1px solid var(--brd2); padding-top: 14px; margin: 4px 0 8px; }

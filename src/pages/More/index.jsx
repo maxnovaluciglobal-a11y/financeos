@@ -1,18 +1,19 @@
-// src/pages/More/index.jsx — pestaña "Menú" del TabBar (R11).
-// Arriba, la cabecera de cuenta: email, plan (Starter/Pro) y estado del
-// respaldo. Después, el árbol completo de NAV (navConfig.js, sin duplicarlo)
-// en el orden de menuSections(): Planificación primero — Presupuestos salió de
-// la barra — y Cuenta (Ajustes), tema y cerrar sesión al final.
+// src/pages/More/index.jsx — pestaña "Más" del TabBar (antes "Menú", R11).
+// Poda P1 (30-oct-2026): 4 grupos con nombre y ≤ 10 filas (moreSections() en
+// navConfig.js): Mi dinero · Panorama · Herramientas · Cuenta. Arriba, la
+// cabecera de cuenta (email y plan; el estado del respaldo vive en Ajustes ›
+// Datos y en "Para hacer" del Inicio cuando está vencido). Al final, tema,
+// cerrar sesión, legales y versión.
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink } from 'lucide-react'
+import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader } from '../../components/ui/index.jsx'
-import { menuSections, showProChip } from '../../components/layout/navConfig.js'
+import { moreSections, showProChip } from '../../components/layout/navConfig.js'
 import { requestSettingsSub } from '../Settings/settingsIndex.js'
 import { NAV_ICONS } from '../../components/icons/Icons.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
-import { BackupStatusBadge } from '../../components/backup/BackupManager.jsx'
+import Sheet from '../../components/ui/Sheet.jsx'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import FeedbackSheet from '../../components/FeedbackSheet.jsx'
@@ -47,7 +48,13 @@ function AccountHeader({ setPage }) {
           <div className={s.accountName}>{name}</div>
           <div className={s.accountMeta}>
             {!isDemo && <span className={isPro ? s.planPro : s.plan}>{t(isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
-            {!isDemo && <BackupStatusBadge compact />}
+            {!isDemo && isPro && STRIPE_PORTAL_URL && (
+              <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className={s.manage}>
+                <CreditCard size={14} strokeWidth={1.7} aria-hidden="true" />{t('menu.manageSub')}
+                <ExternalLink size={12} strokeWidth={1.8} aria-hidden="true" />
+                <span className="sr-only">{t('menu.manageSubHint')}</span>
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -64,17 +71,32 @@ function AccountHeader({ setPage }) {
   )
 }
 
+function RowIcon({ it }) {
+  if (it.tool) return <Calculator size={18} strokeWidth={1.7} />
+  if (it.id === 'countryTools') return <Wrench size={18} strokeWidth={1.7} />
+  if (it.id === 'modules') return <Sparkles size={18} strokeWidth={1.7} />
+  if (SHOW_FIRMA && it.cc) return <CountryBadge code={it.cc} />
+  const Ic = NAV_ICONS[it.id]
+  return Ic ? <Ic size={18} /> : (it.ic || null)
+}
+
 export default function More({ setPage }) {
   const { settings, updateSettings } = useApp()
   const { t } = useT()
   // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
   const isDark = useResolvedTheme(settings.theme) === 'dark'
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [countrySheet, setCountrySheet] = useState(null)
   const plan = getLicensePlan()
-  const isPro = plan === 'pro'
 
   function toggleTheme() {
     updateSettings({ ...settings, theme: isDark ? 'light' : 'dark' })
+  }
+
+  function open(it) {
+    if (it.sheet) return setCountrySheet(it)
+    if (it.action === 'features') { requestSettingsSub('features'); return setPage('settings') }
+    setPage(it.id)
   }
 
   return (
@@ -83,21 +105,14 @@ export default function More({ setPage }) {
 
       <AccountHeader setPage={setPage} />
 
-      {menuSections(settings.country).map(g => (
+      {moreSections(settings.country, settings).map(g => (
         <div key={g.sec} className={s.group}>
           <h2 className={s.groupTitle}>{t(g.sec)}</h2>
           <div className={s.list}>
             {g.items.map(it => (
-              <button key={it.id} type="button" className={s.row} onClick={() => setPage(it.id)}>
-                <span className={s.rowIc} aria-hidden="true">
-                  {it.tool
-                    ? <Calculator size={18} strokeWidth={1.7} />
-                    : SHOW_FIRMA && it.cc
-                    ? <CountryBadge code={it.cc} />
-                    : NAV_ICONS[it.id]
-                      ? (() => { const Ic = NAV_ICONS[it.id]; return <Ic size={18} /> })()
-                      : it.ic}
-                </span>
+              <button key={it.id} type="button" className={s.row} onClick={() => open(it)}
+                aria-haspopup={it.sheet ? 'dialog' : undefined}>
+                <span className={s.rowIc} aria-hidden="true"><RowIcon it={it} /></span>
                 <span className={s.rowLabel}>{t(it.lb)}</span>
                 {showProChip(it, plan) && <span className={s.pro}>PRO</span>}
                 <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.chev} />
@@ -107,29 +122,29 @@ export default function More({ setPage }) {
         </div>
       ))}
 
-      {!settings.isDemo && (
-        <div className={s.group}>
-          <h2 className={s.groupTitle}>{t('feedback.section')}</h2>
-          <div className={s.list}>
-            {isPro && STRIPE_PORTAL_URL && (
-              <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className={s.row} aria-describedby="menu-manage-sub-hint">
-                <span className={s.rowIc} aria-hidden="true"><CreditCard size={18} strokeWidth={1.7} /></span>
-                <span className={s.rowLabel}>{t('menu.manageSub')}</span>
-                <span id="menu-manage-sub-hint" className="sr-only">{t('menu.manageSubHint')}</span>
-                <ExternalLink size={16} strokeWidth={1.8} aria-hidden="true" className={s.chev} />
-              </a>
-            )}
-            <button type="button" className={s.row} onClick={() => setFeedbackOpen(true)} aria-haspopup="dialog">
-              <span className={s.rowIc} aria-hidden="true"><MessageSquare size={18} strokeWidth={1.7} /></span>
-              <span className={s.rowLabel}>{t('feedback.title')}</span>
+      {!settings.isDemo && <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />}
+
+      {/* Herramientas de mi país: una hoja con todas (CL, MX, ES, PT…). */}
+      <Sheet open={!!countrySheet} onClose={() => setCountrySheet(null)} ariaLabel={t('more.countryTools')} maxWidth={420}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: 'var(--tx)' }}>{t('more.countryTools')}</h2>
+        <div className={s.list}>
+          {(countrySheet?.items || []).map(it => (
+            <button key={it.id} type="button" className={s.row} onClick={() => { setCountrySheet(null); setPage(it.id) }}>
+              <span className={s.rowIc} aria-hidden="true"><RowIcon it={it} /></span>
+              <span className={s.rowLabel}>{t(it.lb)}</span>
+              {showProChip(it, plan) && <span className={s.pro}>PRO</span>}
               <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.chev} />
             </button>
-          </div>
-          <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+          ))}
         </div>
-      )}
+      </Sheet>
 
       <div className={s.actions}>
+        {!settings.isDemo && (
+          <button type="button" onClick={() => setFeedbackOpen(true)} className={s.action} aria-haspopup="dialog">
+            <MessageSquare size={16} strokeWidth={1.7} aria-hidden="true" />{t('more.help')}
+          </button>
+        )}
         <button type="button" onClick={toggleTheme} className={s.action}>
           {isDark
             ? <><Sun size={16} strokeWidth={1.7} aria-hidden="true" />{t('settings.theme.light')}</>

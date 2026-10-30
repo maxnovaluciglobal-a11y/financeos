@@ -28,6 +28,7 @@ import { dbAdd } from '../core/db/index.js'
 import { Wordmark } from './Logo.jsx'
 import CountUp from './CountUp.jsx'
 import QuickAddForm from './QuickAddForm.jsx'
+import { newAccountModules, setModule } from '../utils/modules.js'
 
 const TOTAL = 3
 // Autónimos: el nombre de cada idioma en su propio idioma, igual en las 4 interfaces.
@@ -147,6 +148,8 @@ export default function Onboarding({ onComplete }) {
     return {
       country, currency: saved?.answers?.currency || settings.currency || suggestedCurrency(country),
       selfEmployed: saved?.answers?.selfEmployed ?? (settings.activeTemplateId === 'freelancer'),
+      // Poda P3: Propiedades es un módulo que se activa. "No" por defecto.
+      hasProperties: saved?.answers?.hasProperties ?? false,
     }
   })
   const [allCountries, setAllCountries] = useState(() => !PRIMARY_COUNTRIES.includes(answers.country))
@@ -178,6 +181,16 @@ export default function Onboarding({ onComplete }) {
   // Escribe la configuración que antes salía de los 9 pasos. Va ANTES del paso
   // del primer movimiento: QuickAddForm necesita la moneda (decimales, formato)
   // y las categorías de la plantilla, y el IQ Score el activeMonth.
+  // Módulos (poda P3, utils/modules.js): una cuenta NUEVA (sin datos y sin
+  // `modules`) arranca con Propiedades según la respuesta y Modo asesor
+  // apagado. Quien rehace el onboarding con datos no pierde nada: solo se
+  // enciende Propiedades si respondió que sí.
+  function modulesPatch() {
+    const isNew = ![incomes, expenses, debts, goals].some(a => Array.isArray(a) && a.length > 0)
+    if (settings.modules) return answers.hasProperties ? setModule(settings, 'properties', true) : {}
+    return isNew ? { modules: newAccountModules({ hasProperties: !!answers.hasProperties }) } : {}
+  }
+
   async function applySetup(extra = {}) {
     await updateSettings({
       ...settings,
@@ -189,6 +202,7 @@ export default function Onboarding({ onComplete }) {
       estimatedMonthlyIncome: Number(settings.estimatedMonthlyIncome) || 0,
       activeMonth: currentMonth(),
       ...profileTemplateSettings({ selfEmployed: !!answers.selfEmployed }),
+      ...modulesPatch(),
       ...extra,
     })
   }
@@ -352,6 +366,21 @@ export default function Onboarding({ onComplete }) {
       </div>
       <p id="onb-self-hint" style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
         {t('onboarding.v2.selfEmployed.hint')}
+      </p>
+
+      {/* Poda P3: Propiedades es un módulo que se activa (Ajustes › Funciones). */}
+      <span style={fieldLabel} id="onb-props">{t('onboarding.v2.properties')}</span>
+      <div role="group" aria-labelledby="onb-props" aria-describedby="onb-props-hint" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6, marginBottom: 6 }}>
+        {[false, true].map(v => (
+          <button key={String(v)} type="button" className="fos-chip fos-chip--tall"
+            aria-pressed={!!answers.hasProperties === v}
+            onClick={() => setAnswers(a => ({ ...a, hasProperties: v }))}>
+            {t(v ? 'onboarding.v2.selfEmployed.yes' : 'onboarding.v2.selfEmployed.no')}
+          </button>
+        ))}
+      </div>
+      <p id="onb-props-hint" style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
+        {t('onboarding.v2.properties.hint')}
       </p>
 
       <p style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 18px' }}>

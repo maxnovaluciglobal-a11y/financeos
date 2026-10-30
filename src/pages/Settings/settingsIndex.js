@@ -11,7 +11,7 @@ import { normalize } from '../../components/ui/listboxKeys.js'
 
 // Secciones de la raíz, en orden. Cada una agrupa filas (ids de SETTINGS_GROUPS).
 export const SETTINGS_SECTIONS = [
-  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates'] },
+  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'features'] },
   { id: 'dataSec', title: 'settings.section.dataSec', groups: ['data', 'security', 'notifications'] },
   { id: 'more',    title: 'settings.section.more',    groups: ['plan', 'advanced', 'danger'] },
 ]
@@ -37,6 +37,11 @@ export const SETTINGS_GROUPS = [
   ] },
   { id: 'templates', items: [
     { id: 'templates', label: 'settings.templates.title' },
+  ] },
+  // Poda P3 (30-oct-2026): módulos que se activan (utils/modules.js).
+  { id: 'features', items: [
+    { id: 'properties', label: 'settings.features.properties' },
+    { id: 'advisor',    label: 'settings.features.advisor' },
   ] },
   { id: 'data', items: [
     { id: 'backup',  label: 'settings.backup.title', kw: 'backup.restore.title' },

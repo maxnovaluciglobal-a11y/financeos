@@ -1,30 +1,40 @@
 /* src/pages/Movements/movements.module.css — lista primero (UI-M3)
    Ledger: filas con hairline, sin tarjetas; la cifra a la derecha en .num. */
 
-/* Resumen plegable en una línea */
-.summary {
-  display: flex; align-items: center; gap: 12px; width: 100%;
-  min-height: 48px; padding: 8px 0; margin: 0 0 4px;
-  background: none; border: 0; border-top: 0.5px solid var(--brd2); border-bottom: 0.5px solid var(--brd2);
+/* Totales del mes (fila 2, poda P2): "+X · −Y" junto al mes; abre el resumen. */
+.totals {
+  flex: 1 1 auto; min-width: 0; min-height: 44px; display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; background: none; border: 0; border-radius: var(--r);
   font-family: var(--sans); font-size: 14px; color: var(--tx); text-align: left; cursor: pointer;
 }
-.summaryMain { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
-.summaryCount { font-weight: 600; }
+.totals:hover { background: var(--sur2); }
+.totals:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.totalsMain { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 6px; row-gap: 0; line-height: 1.3; }
+.totalsSep { color: var(--th); }
+.totalsChevron { flex-shrink: 0; color: var(--tm); transition: transform var(--dur) var(--ease); }
+.totals[aria-expanded="true"] .totalsChevron { transform: rotate(180deg); }
 .summaryTotal { font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; }
-/* B3a: Ingresos y Gastos del mes, cada uno con su etiqueta. */
 .summaryItem { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-.summaryLbl { font-size: 13px; font-weight: 500; color: var(--tm); }
 .summaryIn { color: var(--pos); }
 /* H17 (ola A7): nota de inversión, subordinada al total. */
 .summaryInv { font-size: 12px; color: var(--th); font-weight: 400; }
-.summaryToggle { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 13px; font-weight: 500; color: var(--tm); }
-.summaryToggle svg { transition: transform var(--dur) var(--ease); }
-.summary[aria-expanded="true"] .summaryToggle svg { transform: rotate(180deg); }
-.summary:hover .summaryToggle { color: var(--tx); }
 .summaryBody { padding-top: 12px; }
 
 /* B3a: tipo (Todos · Gastos · Ingresos) y mes ‹ › en una fila que se parte en el celular */
-.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; margin: 0 0 8px; }
+/* Poda P2: lupa, calendario y ⋯ juntos a la derecha del tipo. */
+.ctrlIcons { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
+.iconBtn {
+  flex-shrink: 0; width: 44px; height: 44px; padding: 0; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tm); cursor: pointer;
+}
+.iconBtn:hover { color: var(--tx); background: var(--sur2); }
+.iconBtn[aria-expanded="true"] { color: var(--tx); background: var(--sur2); box-shadow: inset 0 0 0 1.5px var(--tx); }
+.iconBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+/* Fila 2: ‹ mes › · totales · Filtrar */
+.monthRow { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; min-width: 0; }
+
 .seg {
   display: inline-flex; padding: 2px; gap: 2px; flex: 0 1 auto; min-width: 0;
   border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
@@ -40,9 +50,18 @@
 .segOpt:hover:not([aria-pressed="true"]) { color: var(--tx); }
 .segOpt:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
 /* El grupo mide 44 px con su borde y relleno: cada opción cumple el área táctil. */
-
+/* Celular: la fila 1 entra en un solo renglón (tipo a lo ancho + 3 íconos de
+   44 px) y los totales van uno sobre otro, sin el punto, para que la lista
+   empiece en el primer 40 % de la pantalla (meta de la poda P2). */
+@media (max-width: 599px) {
+  /* El texto nunca se corta: si el tipo no entra junto a los íconos (pt/de
+     en 390 px), los íconos bajan a un segundo renglón. */
+  .seg { flex: 1 1 auto; min-width: max-content; }
+  .segOpt { flex: 1 1 auto; padding: 0 6px; font-size: 13px; white-space: nowrap; }
+  .totalsMain { flex-direction: column; align-items: flex-start; }
+  .totalsSep { display: none; }
+}
 /* Lente de moneda: interruptor VES | USD y la leyenda de la tasa */
-.controlsEnd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .lens { margin: 8px 0 0; font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--tm); }
 .lensSwitch { display: inline-flex; flex-shrink: 0; padding: 2px; gap: 2px; border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2); }
 .lensOpt {
@@ -57,7 +76,7 @@
 /* Lista | Calendario (B3b): un botón de 44 px en la fila de controles; la
    palabra solo aparece cuando sobra ancho (en el celular, ícono + nombre accesible). */
 .viewBtn {
-  flex-shrink: 0; margin-right: auto; min-width: 44px; height: 44px; padding: 0 12px; box-sizing: border-box;
+  flex-shrink: 0; min-width: 44px; height: 44px; padding: 0 12px; box-sizing: border-box;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tm); cursor: pointer;
   font-family: var(--sans); font-size: 14px; font-weight: 500;
@@ -68,19 +87,8 @@
 .viewBtnWord { display: none; }
 @media (min-width: 600px) { .viewBtnWord { display: inline; } }
 @media (max-width: 599px) { .viewBtn { padding: 0; width: 44px; } }
-.calToolbar { margin: 12px 0 0; }
-
-/* Secundario "+ Gasto detallado o suscripción" y enlace "Exportar" */
-.addSecondary { width: auto; flex-shrink: 1; min-width: 0; }
-.toolActions { display: flex; align-items: center; gap: 8px; width: 100%; }
-.toolActions .addSecondary { flex: 1; }
-.exportIcon { flex-shrink: 0; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tx); cursor: pointer; }
-.exportIcon:hover { background: var(--sur2); }
-.exportIcon:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
-
-/* Barra de herramientas: búsqueda + agregar */
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 8px; }
-.search { position: relative; flex: 1 1 240px; min-width: 0; }
+/* Buscador (se abre con la lupa) */
+.search { position: relative; margin: 0 0 8px; }
 .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--th); pointer-events: none; }
 .search input {
   width: 100%; min-height: 44px; padding: 8px 12px 8px 36px; box-sizing: border-box;
@@ -97,7 +105,27 @@
 .chips::-webkit-scrollbar { display: none; }
 .chips > * { flex-shrink: 0; scroll-snap-align: start; }
 .chips :global(.fos-chip) { min-height: 44px; padding: 6px 10px; font-size: 13px; } /* 44 px de área táctil (kit móvil) */
-.chipSep { width: 0.5px; height: 24px; background: var(--brd2); margin: 0 4px; }
+.chipOn { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
+.listSection { margin-top: 4px; }
+
+/* Hojas ⋯ y "Filtrar" (poda P2) */
+.sheetTitle { margin: 0 0 8px; font-family: var(--display); font-size: 20px; font-weight: 600; color: var(--tx); }
+.sheetSub { margin: 16px 0 8px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--tm); }
+.menu { list-style: none; margin: 0; padding: 0; border-top: 0.5px solid var(--brd); }
+.menu li { border-bottom: 0.5px solid var(--brd); }
+.menuItem {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 52px;
+  padding: 10px 4px; box-sizing: border-box; background: none; border: 0; border-radius: var(--rs);
+  text-align: left; cursor: pointer; color: var(--tx); font-family: var(--sans);
+}
+.menuItem:hover { background: var(--sur2); }
+.menuItem:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.menuLabel { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+.menuDesc { font-size: 12px; color: var(--th); }
+.menuGroup { margin-top: 4px; }
+.chipWrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.chipWrap :global(.fos-chip) { min-height: 44px; }
+.sheetActions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
 
 /* Grupos por día */
 .day { margin-top: 12px; }
@@ -147,5 +175,5 @@
 .editGrid input, .editGrid select { min-height: 44px; box-sizing: border-box; font-size: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .summaryToggle svg, .row, .segOpt { transition: none; }
+  .totalsChevron, .row, .segOpt { transition: none; }
 }

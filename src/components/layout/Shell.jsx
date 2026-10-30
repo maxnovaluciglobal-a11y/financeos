@@ -12,7 +12,7 @@ import Logo, { Monogram } from '../Logo.jsx'
 import { NAV_ICONS } from '../icons/Icons.jsx'
 import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
-import { NAV, pageLabel, showProChip } from './navConfig.js'
+import { NAV, pageLabel, showProChip, navItemVisible } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
 import { chromeFor } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
@@ -160,7 +160,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
     return (
       <>
         {NAV.map(g => {
-          const items = g.items.filter(it => !it.countries || it.countries.includes(navCountry))
+          const items = g.items.filter(it => navItemVisible(it, navCountry, settings))
           if (items.length === 0) return null   // no mostrar cabecera de sección vacía
           return (
           <div key={g.sec} data-tour={g.sec === 'nav.sec.country' ? 'nav-country' : undefined}>

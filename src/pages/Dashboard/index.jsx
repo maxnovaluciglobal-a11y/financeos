@@ -1,23 +1,23 @@
-// src/pages/Dashboard/index.jsx
-// Dashboard Visual Polish — FinanceOS v1.1.1
+// src/pages/Dashboard/index.jsx — Inicio.
+// Poda P1 (aprobada por Walter el 30-oct-2026, propuesta en
+// investigacion-ui-2026-10/segunda-ronda/2026-10-30-propuesta-poda.md): el
+// Inicio responde UNA pregunta, "¿cuánto me queda y qué tengo que hacer?".
+// Orden: Te queda (con Ingresos · Gastos en una línea) → 4 acciones rápidas →
+// "Para hacer" (un aviso por vez) → pagos y cobros de 7 días → las 3
+// categorías más en riesgo → IQ Score en una línea → tarjetas que la persona
+// sumó en "Editar Inicio". La vista detallada de antes es Panorama (en "Más"):
+// nada se borró, se movió.
 
-import { useMemo, useState, useCallback, useEffect } from 'react'
-import { useApp } from '../../context/AppContext.jsx'
+import { useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useT } from '../../i18n/useT.js'
 import Sheet from '../../components/ui/Sheet.jsx'
 import ChartCard from '../../components/charts/ChartCard.jsx'
-import IncomeExpenseBar from '../../components/charts/IncomeExpenseBar.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import DonutEmpty from './DonutEmpty.jsx'
-import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
-import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
-import { calcFinancialScore, SCORE_LEVELS } from '../../utils/financialScore.js'
-import { isSyncEnabled, syncAvailable, syncMeta } from '../../core/sync.js'
+import { SCORE_LEVELS } from '../../utils/financialScore.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
-import CountUp from '../../components/CountUp.jsx'
-import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
-import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
-import CountryTool from './CountryTool.jsx'
+import { isSyncEnabled, syncAvailable } from '../../core/sync.js'
+import { ScoreState } from '../../components/ScoreState.jsx'
 import HomeKpis from './HomeKpis.jsx'
 import FirstSteps from './FirstSteps.jsx'
 import { firstStepsProgress } from './firstSteps.js'
@@ -26,258 +26,101 @@ import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
 import ScoreCard from './ScoreCard.jsx'
 import NetWorthCard from './NetWorthCard.jsx'
-import DeltaLine from './DeltaLine.jsx'
+import ProjectionCard from './ProjectionCard.jsx'
+import { useHomeData } from './useHomeData.jsx'
+import { HOME_CARDS, homeCardOn, toggleHomeCard } from './homeCards.js'
 import { RateSheet, fetchRateOptions, setLensCurrency } from './RefCurrency.jsx'
 import { useLensRate } from '../../hooks/useLensRate.js'
 import ConverterSheet from '../../components/ConverterSheet.jsx'
+import { openQuickAdd } from '../../components/quickAddBus.js'
 import { logRejection } from '../../utils/errorLog.js'
-import { refEligible, resolveRefRate, rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
-import { prevMonthOf, homeMonthTotals } from './dashboardModel.js'
+import { rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
+import { prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
-import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, currencySymbol, fmtPctPoints } from '../../utils/index.js'
-import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
-import { BackupReminderBanner, isBackupStale } from '../../components/backup/BackupManager.jsx'
+import { currentMonth, fmtPct } from '../../utils/index.js'
+import { monthLabel } from '../shared/constants.js'
+import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
-import { Card, CardHeader, PageHeader } from '../../components/ui/index.jsx'
-import Money, { useMoney } from '../../components/Money.jsx'
+import { PageHeader } from '../../components/ui/index.jsx'
+import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
-import { monthPlan, pendingTotals } from '../../utils/recurring.js'
-import { localDateStr } from '../../utils/index.js'
-import { ChevronDown } from 'lucide-react'
+import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal } from 'lucide-react'
 
-const pct  = (n) => fmtPct(n)
+const pct = (n) => fmtPct(n)
+
+// "Para hacer": muestra el primer aviso que tenga algo que decir, en el orden
+// de prioridad de los hijos (guía → respaldo → almacenamiento de Safari), y un
+// "N más" que despliega el resto. Cada aviso decide solo si se muestra (sus
+// reglas ya existían); acá solo se cuentan los que quedaron con contenido.
+function TodoStrip({ children }) {
+  const { t } = useT()
+  const ref = useRef(null)
+  const [count, setCount] = useState(0)
+  const [open, setOpen] = useState(false)
+  // Los avisos cambian solos (se descartan, se completa un paso): se cuentan
+  // al montar y cada vez que cambia el DOM de adentro.
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const recount = () => setCount(el.querySelectorAll(`:scope > .${hs.todoSlot}:not(:empty)`).length)
+    recount()
+    if (typeof MutationObserver === 'undefined') return
+    const mo = new MutationObserver(recount)
+    mo.observe(el, { childList: true, subtree: true })
+    return () => mo.disconnect()
+  }, [])
+  const extra = Math.max(0, count - 1)
+  return (
+    <div className={hs.oTodo}>
+      <div ref={ref} className={`${hs.todo} ${open ? '' : hs.todoCollapsed}`}>
+        {children}
+      </div>
+      {extra > 0 && (
+        <button type="button" className={hs.todoMore} aria-expanded={open} onClick={() => setOpen(o => !o)}>
+          {open ? t('home.todo.less') : t(`home.todo.more.${extra === 1 ? 'one' : 'many'}`, { n: extra })}
+        </button>
+      )}
+    </div>
+  )
+}
+const Slot = ({ children }) => <div className={hs.todoSlot}>{children}</div>
 
 export default function Dashboard({ setPage }) {
-  const ctx      = useApp() || {}
-  const { t, lang } = useT()
-  // Panorama PERSONAL: excluye movimientos marcados como inversión (r.inv) de todos
-  // los cálculos del dashboard (ingresos, gastos, balance, tasa de ahorro, score, señales).
-  const incomes  = useMemo(() => (Array.isArray(ctx.incomes)  ? ctx.incomes.filter(r => !r?.inv)  : []), [ctx.incomes])
-  const expenses = useMemo(() => (Array.isArray(ctx.expenses) ? ctx.expenses.filter(r => !r?.inv) : []), [ctx.expenses])
-  const budgets  = useMemo(() => (Array.isArray(ctx.budgets) ? ctx.budgets : []), [ctx.budgets])
+  const { t } = useT()
+  const {
+    ctx, settings, incomes, expenses, budgets, goals, subs, debts, sym, activeMonth,
+    refOn, refRate, bumpRate, dualOn, toUSD, money,
+    kpis, rules, plan, pendingSum, todayStr, monthExpenses, healthScore,
+  } = useHomeData()
+  const updateSettings = ctx.updateSettings
 
-  const goals    = useMemo(() => (Array.isArray(ctx.goals) ? ctx.goals : []), [ctx.goals])
-  const settings = useMemo(() => ((ctx.settings && typeof ctx.settings === 'object') ? ctx.settings : {}), [ctx.settings])
-
-  // R7/A8 (30-oct-2026): un solo aviso a la vez en el Inicio.
-  //  · Una sola fila de guía: "Primeros pasos" mientras esté incompleta;
-  //    "Tres cosas para probar en Pro" recién cuando termina.
-  //  · El respaldo se avisa una vez: si "Primeros pasos" ya lo pide, no sale la
-  //    franja; la tarjeta fija "Respaldo recomendado" solo cuando el respaldo
-  //    está al día (si está viejo, ya avisa la franja con los días).
+  // R7/A8: un solo aviso de respaldo. Si "Primeros pasos" ya lo pide, no sale
+  // la franja.
   const guide = firstStepsProgress({
     incomes: ctx.incomes, expenses: ctx.expenses, budgets: ctx.budgets,
     lastBackupAt: settings.lastBackupAt, syncOn: isSyncEnabled() && syncAvailable(),
   })
   const firstStepsShown = !settings.isDemo && !guide.complete && !!setPage
   const backupStepPending = firstStepsShown && !guide.steps.find(st => st.id === 'backup')?.done
-  const hasRealData = [ctx.incomes, ctx.expenses, ctx.debts, ctx.goals].some(a => Array.isArray(a) && a.length > 0)
-  const backupStale = isBackupStale({ settings, hasRealData })
-  const subs     = useMemo(() => (Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []), [ctx.subscriptions])
-  const debts    = useMemo(() => (Array.isArray(ctx.debts) ? ctx.debts : []), [ctx.debts])
 
-  const sym         = currencySymbol(settings.currency, settings.language)
-  const activeMonth = settings.activeMonth || currentMonth()
-  // Defensa extra contra usdRate quedando en 0 (bug ya arreglado en el origen —
-  // Settings ahora recomputa al cambiar de moneda — pero esto cubre a quien ya
-  // tenía un 0 guardado en IndexedDB de antes del fix): si el usuario activó la
-  // moneda dual, mostrarla igual con la tasa por defecto en vez de apagarla.
-  //
-  // R12: quien califica para la moneda de referencia (VE/AR o moneda dual
-  // activada) usa la tasa resuelta con fecha (utils/refRate.js) y NUNCA el
-  // DEFAULT_USD_RATES fijo (sin fecha; en VES está muy desactualizado). Sin
-  // tasa, el Inicio pide agregarla en vez de mostrar un ≈ inventado.
-  const refOn = refEligible(settings)
-  const [rateTick, setRateTick] = useState(0)
-  const refRate = useMemo(() => (refOn
-    ? resolveRefRate(settings, (k) => { try { return localStorage.getItem(k) } catch { return null } })
-    : null),
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  [refOn, settings.usdRate, settings.usdRateAt, settings.usdRateSource, settings.country, settings.currency, rateTick])
-  // Rial #20: la lente del héroe en US$ o € (settings.refCurrency, se elige en
-  // el conversor). El euro se deriva de refRate; sin Fixer queda en US$.
+  // Rial #20: la lente del héroe en US$ o € (settings.refCurrency).
   const lensRate = useLensRate(settings, refRate, refOn)
   setLensCurrency(refOn ? lensRate?.ref : 'USD')
-  const effectiveUsdRate = refOn ? (refRate?.rate || 0) : (Number(settings.usdRate) || DEFAULT_USD_RATES[settings.currency] || 0)
-  const dualOn      = !!settings.showDualCurrency && settings.currency !== 'USD' && effectiveUsdRate > 0
-  const usdRate     = effectiveUsdRate || 1
-  // Ocultar montos (T13): toda cifra de dinero de esta pantalla pasa por money()
-  // (strings: frases i18n, KPIs) o por <Money> (cifras sueltas en JSX).
-  const { m } = useMoney()
-  const money       = useCallback((n) => m(fmtSignedMoney(n, sym)), [m, sym])
-  const toUSD       = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
-
-  const kpis = useMemo(() => {
-    const { cur, prev, prevToDate, prevCutDay } = homeMonthTotals({ incomes, expenses, activeMonth })
-    return { ...cur, cur, prev, prevToDate, prevCutDay }
-  }, [incomes, expenses, activeMonth])
-
-  // ── Movimientos fijos del mes activo ─────────────────────────────────────
-  const todayStr = localDateStr()
-  const rules = useMemo(() => (Array.isArray(ctx.recurring) ? ctx.recurring : []), [ctx.recurring])
-  const plan = useMemo(() => monthPlan(rules, activeMonth, { incomes: ctx.incomes || [], expenses: ctx.expenses || [], today: todayStr }),
-    [rules, activeMonth, ctx.incomes, ctx.expenses, todayStr])
-  const pendingSum = useMemo(() => pendingTotals(plan), [plan])
-
-  const monthExpenses = useMemo(() =>
-    expenses.filter(r => r?.date?.startsWith(activeMonth)),
-    [expenses, activeMonth]
-  )
-
-  const monthIncomes = useMemo(() =>
-    incomes.filter(r => r?.date?.startsWith(activeMonth)),
-    [incomes, activeMonth]
-  )
-
-  // Gasto mensual equivalente de suscripciones ACTIVAS (weekly×4.33, quarterly/3,
-  // annual/12). Debe coincidir con la página Suscripciones, Coach y Reports.
-  const subMonthly = useMemo(() => subs.filter(s => s?.status === 'active').reduce((s, sub) => {
-    const amt  = Number(sub.amount) || 0
-    const freq = sub.frequency || 'monthly'
-    if (freq === 'annual' || freq === 'anual') return s + amt / 12
-    if (freq === 'quarterly') return s + amt / 3
-    if (freq === 'weekly') return s + amt * 4.33
-    return s + amt
-  }, 0), [subs])
-
-  // ── Insight cards ─────────────────────────────────────────────────────────
-  const insights = useMemo(() => {
-    const cards = []
-
-    // Suscripciones anuales
-    if (subMonthly > 0) {
-      cards.push({
-        icon: <SignalIcon kind="subs" size={13} />,
-        color: 'var(--amb)',
-        bg: 'color-mix(in srgb, var(--warn) 9%, transparent)',
-        border: 'color-mix(in srgb, var(--warn) 24%, transparent)',
-        text: t('dash.insight.subs.text', { v: money(subMonthly * 12) }),
-        sub: t('dash.insight.subs.sub'),
-        page: 'subscriptions',
-      })
-    }
-
-    // Categoría principal de gasto
-    if (monthExpenses.length > 0) {
-      const catMap = {}
-      monthExpenses.forEach(e => {
-        const cat = e.category || 'Sin categoría' // valor canónico; catName lo traduce
-        catMap[cat] = (catMap[cat] || 0) + (Number(e.amount) || 0)
-      })
-      const totalExp = monthExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
-      const topCat = Object.entries(catMap).sort((a, b) => b[1] - a[1])[0]
-      if (topCat && totalExp > 0) {
-        const catPct = ((topCat[1] / totalExp) * 100).toFixed(0)
-        cards.push({
-          icon: <SignalIcon kind="category" size={13} />,
-          color: 'var(--accent2)',
-          bg: 'color-mix(in srgb, var(--accent2) 9%, transparent)',
-          border: 'color-mix(in srgb, var(--accent2) 22%, transparent)',
-          text: t('dash.insight.topCat.text', { cat: catName(topCat[0], lang), pct: fmtPctPoints(catPct) }),
-          sub: t('dash.insight.topCat.sub'),
-          page: 'movements',
-        })
-      }
-    }
-
-    // Presupuesto más usado
-    if (budgets.length > 0 && monthExpenses.length > 0) {
-      const expByCat = {}
-      monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + (Number(e.amount) || 0) })
-      const totalBudget = budgets.reduce((s, b) => s + (Number(b.limit) || 0), 0)
-      const totalUsed   = budgets.reduce((s, b) => s + Math.min(expByCat[b.category] || 0, Number(b.limit) || 0), 0)
-      if (totalBudget > 0) {
-        const budgetPct = ((totalUsed / totalBudget) * 100).toFixed(0)
-        const pctN = Number(budgetPct)
-        const color = pctN > 90 ? 'var(--red)' : pctN > 80 ? 'var(--amb)' : 'var(--accent)'
-        cards.push({
-          icon: <ScoreStateIcon level={pctN > 90 ? 'risk' : pctN > 80 ? 'attention' : 'ok'} size={13} color="currentColor" />,
-          color,
-          bg: pctN > 90 ? 'color-mix(in srgb, var(--neg) 8%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 9%, transparent)' : 'color-mix(in srgb, var(--pos) 8%, transparent)',
-          border: pctN > 90 ? 'color-mix(in srgb, var(--neg) 24%, transparent)' : pctN > 80 ? 'color-mix(in srgb, var(--warn) 24%, transparent)' : 'color-mix(in srgb, var(--pos) 22%, transparent)',
-          text: t('dash.insight.budget.text', { pct: fmtPctPoints(budgetPct) }),
-          sub: pctN > 90 ? t('dash.insight.budget.danger') : pctN > 80 ? t('dash.insight.budget.warn') : t('dash.insight.budget.ok'),
-          page: 'budgets',
-        })
-      }
-    }
-
-    // Meta principal
-    if (goals.length > 0) {
-      const top = [...goals].sort((a, b) => {
-        const pa = Number(a.target) > 0 ? Number(a.saved) / Number(a.target) : 0
-        const pb = Number(b.target) > 0 ? Number(b.saved) / Number(b.target) : 0
-        return pb - pa
-      })[0]
-      if (top && Number(top.target) > 0) {
-        const goalPct = Math.min((Number(top.saved) / Number(top.target)) * 100, 100).toFixed(0)
-        cards.push({
-          icon: <SignalIcon kind="goal" size={13} />,
-          color: 'var(--accent)',
-          bg: 'color-mix(in srgb, var(--pos) 8%, transparent)',
-          border: 'color-mix(in srgb, var(--pos) 22%, transparent)',
-          text: t('dash.insight.goal.text', { name: top.name, pct: fmtPctPoints(goalPct) }),
-          sub: t('dash.insight.goal.sub', { v: money(Number(top.target) - Number(top.saved)) }),
-          page: 'goals',
-        })
-      }
-    }
-
-    return cards.slice(0, 4)
-  }, [subMonthly, monthExpenses, budgets, goals, money, t, lang])
-
-  // ── Coach signals para Dashboard ──────────────────────────────────────────
-  const topSignals = useMemo(() => {
-    if (kpis.incCount === 0 && kpis.expCount === 0) return []
-    const metrics = calcCoachMetrics({ incomes, expenses, budgets, debts, goals, subs, settings })
-    return evaluateCoach(metrics, t).slice(0, 2)
-  }, [incomes, expenses, budgets, debts, goals, subs, settings, kpis.incCount, kpis.expCount, t])
-
-  // ── IQ Score — 5 factores del brand book MOY IQ (ver utils/financialScore.js) ──
-  const healthScore = useMemo(() => {
-    if (kpis.incCount === 0 && kpis.expCount === 0) return null
-    const meta = syncMeta()
-    return calcFinancialScore({
-      savingRate: kpis.savingRate,
-      expenses, debts, goals, incomes, activeMonth,
-      syncEnabled: isSyncEnabled() && syncAvailable(),
-      lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
-      pending: pendingSum,
-    }, t)
-  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, pendingSum, t])
-
-  // ── Vista compacta (progressive disclosure) ───────────────────────────────
-  // Vista esencial por defecto (calma): la primera pantalla muestra lo esencial y
-  // el resto (acciones, proyección, gráficos, ingreso esperado) vive en "detallado".
-  // Respeta la preferencia previa del usuario si ya la fijó.
-  const [compact, setCompact] = useState(() => {
-    try { return localStorage.getItem('fos_dash_compact') !== '0' } catch { return true }
-  })
-  function toggleCompact() {
-    setCompact(c => {
-      const next = !c
-      try { localStorage.setItem('fos_dash_compact', next ? '1' : '0') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
-      return next
-    })
-  }
 
   // ── Modal cierre de mes ───────────────────────────────────────────────────
-  const updateSettings = useApp()?.updateSettings
   const [closeDismissed, setCloseDismissed] = useState(() => {
     try { return localStorage.getItem(`fos_close_${activeMonth}`) === '1' } catch { return false }
   })
-
   const isMonthClosed = (() => {
     const now = new Date()
     const [y, mo] = activeMonth.split('-').map(Number)
     return now.getFullYear() > y || (now.getFullYear() === y && now.getMonth() + 1 > mo)
   })()
-
   const showCloseModal = isMonthClosed && !closeDismissed && (kpis.incCount > 0 || kpis.expCount > 0)
 
-  // Hoja de inicio de mes (fusionada con el cierre): con el mes activo en el
-  // mes en curso, la primera vez que se abre el Inicio en ese mes muestra cómo
-  // cerró el anterior y los fijos previstos. "Revisar" la reabre cuando sea.
+  // Hoja de inicio de mes (fusionada con el cierre): la primera vez que se
+  // abre el Inicio en el mes en curso muestra cómo cerró el anterior y los
+  // fijos previstos. "Revisar" la reabre cuando sea.
   const isCurrent = activeMonth === currentMonth()
   const prevMonthKey = prevMonthOf(activeMonth)
   const prevHasData = kpis.prev.incCount > 0 || kpis.prev.expCount > 0
@@ -304,9 +147,7 @@ export default function Dashboard({ setPage }) {
 
   function goNextMonth() {
     const [y, mo] = activeMonth.split('-').map(Number)
-    const next = mo === 12
-      ? `${y + 1}-01`
-      : `${y}-${String(mo + 1).padStart(2, '0')}`
+    const next = mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, '0')}`
     updateSettings?.({ ...settings, activeMonth: next })
     dismissClose()
   }
@@ -368,80 +209,10 @@ export default function Dashboard({ setPage }) {
     )
   }
 
-  const SEV_ICON  = { info: <SignalIcon kind="info" size={13} />, attention: <SignalIcon kind="attention" size={13} />, warning: <SignalIcon kind="warning" size={13} /> }
-  const SEV_COLOR = { info: 'var(--accent)', attention: 'var(--amb)', warning: 'var(--red)' }
-
-  // CTA contextual reutilizable (señales, proyección, metas)
-  function InlineCTA({ label, page, tone = 'accent' }) {
-    if (!setPage) return null
-    const color = tone === 'red' ? 'var(--red)' : tone === 'amb' ? 'var(--amb)' : 'var(--accent)'
-    return (
-      <button
-        onClick={() => setPage(page)}
-        style={{
-          marginTop:6, background:'none', border:`.5px solid ${color}`, borderRadius:6,
-          padding:'5px 11px', fontSize:11, fontWeight:600, color, cursor:'pointer',
-          fontFamily:'var(--sans)', whiteSpace:'nowrap',
-        }}
-      >
-        {label} →
-      </button>
-    )
-  }
-
-  // Mapea una señal del diagnóstico a una acción concreta
-  function signalAction(s) {
-    // Por la categoría de la regla (no por el texto, que ya viene traducido y
-    // en inglés/portugués/alemán no contiene 'ahorro', 'deuda', etc.).
-    const byCat = {
-      'ccat.savings':   { label:t('dash.action.createBudget'), page:'budgets',       tone:'amb' },
-      'ccat.subs':      { label:t('dash.action.viewSubs'),     page:'subscriptions', tone:'amb' },
-      'ccat.debts':     { label:t('dash.action.viewDebts'),    page:'debts',         tone:'red' },
-      'ccat.budgets':   { label:t('dash.action.adjustBudget'), page:'budgets',       tone:'amb' },
-      'ccat.goals':     { label:t('dash.action.viewGoals'),    page:'goals',         tone:'accent' },
-      'ccat.emergency': { label:t('dash.action.viewGoals'),    page:'goals',         tone:'accent' },
-    }
-    if (s.categoryKey && byCat[s.categoryKey]) return byCat[s.categoryKey]
-    const txt = `${s.title || ''} ${s.msg || ''}`.toLowerCase()
-    if (txt.includes('ahorro'))     return { label:t('dash.action.createBudget'), page:'budgets', tone:'amb' }
-    if (txt.includes('suscrip'))    return { label:t('dash.action.viewSubs'), page:'subscriptions', tone:'amb' }
-    if (txt.includes('deuda'))      return { label:t('dash.action.viewDebts'),        page:'debts',   tone:'red' }
-    if (txt.includes('presupuesto'))return { label:t('dash.action.adjustBudget'),page:'budgets', tone:'amb' }
-    if (txt.includes('meta'))       return { label:t('dash.action.viewGoals'),         page:'goals',   tone:'accent' }
-    return { label:t('dash.action.viewCoach'), page:'coach', tone:'accent' }
-  }
-
-  // ── "Para hacer hoy" (Fase 05) — unifica señales del Diagnóstico + insights
-  // en una sola lista priorizada en vez de dos secciones separadas contando
-  // cosas distintas. Señales primero (ya vienen ordenadas por severidad desde
-  // evaluateCoach), después insights; tope de 3 para no repetir el ruido que
-  // esto vino a resolver.
-  const todoItems = [
-    ...topSignals.map(s => ({
-      icon: SEV_ICON[s.severity], color: SEV_COLOR[s.severity],
-      title: s.title, sub: s.msg, ...signalAction(s),
-    })),
-    ...insights.map(ins => ({
-      icon: ins.icon, color: ins.color, title: ins.text, sub: ins.sub, page: ins.page,
-    })),
-  ].slice(0, 3)
-
-  // Flujo de inversión/propiedades (💼) del mes activo — para el "flujo total real"
-  const propFlow = useMemo(() => {
-    const raw = (arr) => (Array.isArray(arr) ? arr : [])
-    const inMonth = (r) => r?.inv && r?.date?.startsWith(activeMonth)
-    const inc = raw(ctx.incomes).filter(inMonth).reduce((s, r) => s + (Number(r.amount) || 0), 0)
-    const exp = raw(ctx.expenses).filter(inMonth).reduce((s, r) => s + (Number(r.amount) || 0), 0)
-    return { net: inc - exp, has: inc > 0 || exp > 0 }
-  }, [ctx.incomes, ctx.expenses, activeMonth])
-  const flujoTotal = kpis.balance + propFlow.net
-
-  // ── El Anillo Vivo (Pulso) — firma del producto, visible por defecto.
-  //    Solo se muestra cuando hay datos del mes. Usa motores ya existentes.
+  // ── El Anillo Vivo (Pulso) — firma del producto, visible con datos del mes.
   const pulse = useMemo(() => {
     const { today, daysInMonth, daysLeft } = projectEndOfMonth({ incomes, expenses, activeMonth })
-    // Referencia = ingreso del mes (mejor proxy de "¿voy bien para esta altura?"
-    // → ritmo de gasto vs ritmo del tiempo). Fallback a gasto si no hay ingreso.
+    // Referencia = ingreso del mes (ritmo de gasto vs ritmo del tiempo).
     const reference = kpis.totalInc > 0 ? kpis.totalInc : (kpis.totalExp || 1)
     const spent = kpis.totalExp
     const elapsedRatio = daysInMonth > 0 ? today / daysInMonth : 0
@@ -455,25 +226,16 @@ export default function Dashboard({ setPage }) {
              refIsIncome: kpis.totalInc > 0 }
   }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, money])
 
-  // KPIs secundarios (debajo de Ingresos/Gastos/Te queda). El balance neto
-  // salió de acá: desde los fijos, "Te queda" ES ingresos − gastos y se repetía.
-  const KPIS_SECONDARY = [
-    ...(propFlow.has ? [{ label:t('dash.kpi.totalFlow'), color: flujoTotal >= 0 ? 'var(--pos)' : 'var(--neg)', sub:t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), raw: flujoTotal, count: true }] : []),
-    { label:t('dash.kpi.savingRate'), value:pct(kpis.savingRate), color:kpis.savingRate >= 0.2 ? 'var(--pos)' : kpis.savingRate >= 0 ? 'var(--warn)' : 'var(--neg)', sub:t('dash.kpi.ofIncome') },
-    { label:t('dash.kpi.subs'), value:t('dash.kpi.perMonth', { v: money(subMonthly) }), color:'var(--tx)', sub:t('dash.kpi.perYear', { v: money(subMonthly * 12) }) },
-  ]
-
   // R12/R13: moneda de referencia del hero + calculadora del país.
   const [refMode, setRefModeState] = useState(() => { try { return localStorage.getItem('fos_home_refcur') === 'ref' ? 'ref' : 'local' } catch { return 'local' } })
   const setRefMode = (m) => { setRefModeState(m); try { localStorage.setItem('fos_home_refcur', m) } catch { /* modo privado */ } }
   const [rateSheetOpen, setRateSheetOpen] = useState(false)
   // B2: la fila de tasa abre el conversor GRATIS; el panel PRO del país queda
-  // como enlace dentro de la hoja (y en el Menú, sin cambios).
+  // como enlace dentro de la hoja (y en "Más" › Herramientas).
   const [convOpen, setConvOpen] = useState(false)
   const rateTool = rateToolFor(settings.country)
-  // B1: con la tasa vieja o sin fecha, se consulta en segundo plano (mismos
-  // loaders y caché; sin red no se intenta) y se ofrece la más reciente con
-  // "Usar". Nada se reemplaza solo.
+  // B1: con la tasa vieja o sin fecha, se consulta en segundo plano y se
+  // ofrece la más reciente con "Usar". Nada se reemplaza solo.
   const [freshRate, setFreshRate] = useState(null)
   useEffect(() => {
     if (!refOn || (refRate?.at && !isStale(refRate.at, settings.country))) { setFreshRate(null); return }
@@ -483,7 +245,7 @@ export default function Dashboard({ setPage }) {
       if (!alive) return
       setFreshRate(fresherRate(refRate, options, settings.country))
       // Sin tasa guardada, el Inicio usa la caché: releerla tras la consulta.
-      if (!savedRate(settings)) setRateTick(n => n + 1)
+      if (!savedRate(settings)) bumpRate()
     }).catch(logRejection('home.freshRate'))
     return () => { alive = false }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- solo cuando cambia la tasa en uso o la moneda
@@ -492,17 +254,35 @@ export default function Dashboard({ setPage }) {
     rate: lensRate, mode: lensRate ? refMode : 'local', setMode: setRefMode,
     localCode: String(settings.currency || '').toUpperCase(), country: settings.country,
     onEdit: () => setRateSheetOpen(true),
-    tool: true, onTool: () => setConvOpen(true),
+    // Poda P1: "Convertir" vive en las acciones rápidas; la fila de tasa
+    // queda con la tasa, su fecha y "Editar tasa".
+    tool: !setPage, onTool: () => setConvOpen(true),
     fresh: freshRate, onUseFresh: () => saveRate(ratePatch(freshRate)),
   } : null
   function saveRate(patch) {
     if (!patch) return
     updateSettings?.({ ...settings, ...patch })
-    setRateTick(n => n + 1)
+    bumpRate()
     setRateSheetOpen(false)
     setFreshRate(null)
     ctx.showToast?.(t('refcur.saved'))
   }
+
+  // Acciones rápidas (patrón rial #19): + Gasto · + Ingreso · Convertir ·
+  // Importar. Sin moneda de referencia (fuera de VE/AR y sin moneda dual) no
+  // hay nada que convertir: el tercer atajo es Presupuestos.
+  const quick = setPage ? [
+    { key: 'exp', label: t('home.quick.expense'), Ic: Minus, run: () => openQuickAdd('expense') },
+    { key: 'inc', label: t('home.quick.income'),  Ic: Plus,  run: () => openQuickAdd('income') },
+    refOn
+      ? { key: 'conv', label: t('home.quick.convert'), Ic: ArrowLeftRight, run: () => setConvOpen(true) }
+      : { key: 'bud',  label: t('nav.budgets'),        Ic: PiggyBank,      run: () => setPage('budgets') },
+    { key: 'imp', label: t('home.quick.import'),  Ic: Upload, run: () => setPage('import') },
+  ] : []
+
+  // P3: "Editar Inicio" — tarjetas opcionales, apagadas por defecto.
+  const [editOpen, setEditOpen] = useState(false)
+  const cardOn = (id) => homeCardOn(settings, id)
 
   return (
     <div>
@@ -522,260 +302,88 @@ export default function Dashboard({ setPage }) {
       {/* Encabezado único (UI-M8): "Inicio" y el mes que se está mirando. */}
       <PageHeader title={t('home.title')} sub={monthLabel(activeMonth)} />
 
-      {/* Inicio M5 — responde en orden ¿cuánto me queda?, ¿en qué me estoy
-          pasando? y ¿qué viene? Escritorio a dos columnas, móvil en una sola
-          (orden en Home.module.css). */}
       <div className={hs.home}>
         <div className={hs.stack}>
-          <div className={hs.oBackup}><SafariStorageNotice /><BackupReminderBanner suppress={backupStepPending} /></div>
-          <div className={hs.oKpis}>
-            <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
-              pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
-              pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
-              daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
-              onOpen={setPage} refc={refc}>
-              {/* KPIs secundarios: en móvil solo en vista detallada */}
-              <div className={hs.secondary + (compact ? ' ' + hs.secondaryCompact : '')}>
-                {KPIS_SECONDARY.map((k, i) => (
-                  <div key={i} className={`${hs.card} ${hs.kpi}`}>
-                    <div className={hs.kpiLabel}>{k.label}</div>
-                    <div className={`num ${hs.kpiValue}`} style={{ color: k.color }}>
-                      {k.count ? <Money><CountUp value={k.raw} format={(v) => `${k.raw < 0 ? '−' : ''}${fmtMoney(v, sym)}`} /></Money> : k.value}
-                    </div>
-                    {k.delta && <DeltaLine delta={k.delta} prevMonth={prevMonthOf(activeMonth)} />}
-                    <div className={hs.kpiSub}>{k.sub}</div>
-                  </div>
-                ))}
-              </div>
-            </HomeKpis>
+          <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
+            pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
+            pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
+            daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
+            onOpen={setPage} refc={refc} />
+
+          {quick.length > 0 && (
+            <nav className={hs.quick} aria-label={t('dash.quick.title')} data-tour="home-quick">
+              {quick.map(a => (
+                <button key={a.key} type="button" className={hs.quickBtn} onClick={a.run}>
+                  <a.Ic size={18} strokeWidth={1.7} aria-hidden="true" />
+                  <span>{a.label}</span>
+                </button>
+              ))}
+            </nav>
+          )}
+
+          {/* "Para hacer": un aviso por vez, en orden de prioridad. Los pagos
+              por confirmar ya están en el héroe ("Previsto pendiente · Revisar")
+              y la tasa más reciente en su fila ("Usar"). */}
+          <div data-tour="first-steps">
+            <TodoStrip>
+              <Slot><FirstSteps setPage={setPage} /></Slot>
+              <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>
+              <Slot><BackupReminderBanner suppress={backupStepPending} /></Slot>
+              <Slot><SafariStorageNotice /></Slot>
+            </TodoStrip>
           </div>
-          <div className={hs.oSteps} data-tour="first-steps"><ProChecklist setPage={setPage} suppressed={firstStepsShown} /><FirstSteps setPage={setPage} /></div>
-          {/* Gasto por categoría (pulido 09-oct, pedido de Walter): vuelve a la
-              vista esencial, visible por defecto, después de Ingresos/Gastos y
-              Primeros pasos. Es el único gráfico del Inicio esencial.
-              Siempre visible (feedback 09-oct): sin gastos en el mes, la misma
-              tarjeta con un estado vacío y el atajo a "Registrar un gasto". */}
-          <div className={hs.oDonut}>
-            <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
-              {monthExpenses.some(r => Number(r?.amount) > 0)
-                ? <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
-                    onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; setPage('movements') } : undefined}/>
-                : <DonutEmpty />}
-            </ChartCard>
+
+          <div className={hs.pair}>
+            <UpcomingPayments rules={rules} incomes={ctx.incomes} expenses={ctx.expenses} debts={debts} subscriptions={subs} sym={sym} setPage={setPage}
+              days={7} limit={3} short />
+            <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
+              activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} maxRows={3} short />
           </div>
-          <div className={`${hs.pair} ${hs.pairA}`}>
-            <div className={hs.oBudget}>
-              <BudgetByCategory budgets={budgets} expenses={expenses} monthExpenses={monthExpenses}
-                activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
-            </div>
-            <div className={hs.oUpcoming}>
-              <UpcomingPayments rules={rules} incomes={ctx.incomes} expenses={ctx.expenses} debts={debts} subscriptions={subs} sym={sym} setPage={setPage} />
-            </div>
-          </div>
-          <div className={`${hs.pair} ${hs.pairB}`}>
-            {/* IQ Score: fila compacta en la vista esencial, tarjeta completa
-                (siguiente paso + factores) en la detallada. ScoreCard sigue
-                montado en las dos para no cortar el historial semanal. */}
-            <div className={hs.oScore}>
-              <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact={compact}
-                isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
-            </div>
-            {!compact && (
-              <div className={hs.oNetWorth}>
-                <NetWorthCard goals={goals} debts={debts} incomes={ctx.incomes} expenses={ctx.expenses}
-                  settings={settings} sym={sym} setPage={setPage} />
-              </div>
+
+          {/* IQ Score en una línea; su detalle vive en Panorama. */}
+          <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact
+            isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
+
+          <div className={hs.oExtra}>
+            {cardOn('donut') && (
+              <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
+                {monthExpenses.some(r => Number(r?.amount) > 0)
+                  ? <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
+                      onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; setPage('movements') } : undefined}/>
+                  : <DonutEmpty />}
+              </ChartCard>
+            )}
+            {cardOn('networth') && (
+              <NetWorthCard goals={goals} debts={debts} incomes={ctx.incomes} expenses={ctx.expenses}
+                settings={settings} sym={sym} setPage={setPage} />
+            )}
+            {cardOn('projection') && (
+              <ProjectionCard incomes={incomes} expenses={expenses} activeMonth={activeMonth} pending={pendingSum}
+                kpis={kpis} money={money} dualOn={dualOn} toUSD={toUSD} setPage={setPage} />
             )}
           </div>
         </div>
       </div>
 
-      {/* Vista detallada (R05): todo lo que no responde "¿cuánto me queda?"
-          queda detrás de este botón. La elección se guarda en el dispositivo
-          (fos_dash_compact). Nada se borró: solo se movió. */}
-      <button type="button" className={hs.viewToggle} data-tour="view-toggle" onClick={toggleCompact} aria-expanded={!compact} aria-controls="home-detailed">
-        <span>{compact ? t('home.view.showDetailed') : t('home.view.hideDetailed')}</span>
-        <ChevronDown size={18} strokeWidth={1.8} aria-hidden="true" style={{ transform: compact ? 'none' : 'rotate(180deg)' }} />
-      </button>
-
-      <div id="home-detailed" hidden={compact}>
-      {/* Para hacer hoy — fusión de señales del Diagnóstico + insights (Fase 05).
-          Cada fila navega a la página donde se resuelve. */}
-      {!compact && todoItems.length > 0 && (
-        <Card className="rise" style={{ padding:'16px 18px', marginBottom:20 }}>
-          <CardHeader
-            title={<><InlineIcon kind="diagnosis" size={13} />{t('dash.signals.title')}</>}
-            right={setPage && (
-              <button type="button" onClick={() => setPage('coach')}
-                style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0 }}>
-                {t('dash.signals.viewAll')}
-              </button>
-            )}
-          />
-          {todoItems.map((item, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => item.page && setPage?.(item.page)}
-              style={{
-                display:'flex', alignItems:'flex-start', gap:10, width:'100%', textAlign:'left',
-                background:'none', border:'none', cursor: item.page ? 'pointer' : 'default',
-                marginBottom: i < todoItems.length - 1 ? 12 : 0,
-              }}
-            >
-              <span style={{
-                width:22, height:22, borderRadius:'50%', flexShrink:0, marginTop:1,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                fontSize:12, color:item.color, background:`color-mix(in srgb, ${item.color} 14%, transparent)`,
-              }}>{item.icon}</span>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:2 }}>{item.title}</div>
-                <div style={{ fontSize:12, color:'var(--tm)', lineHeight:1.5 }}>{item.sub}</div>
-              </div>
-              {item.page && <span style={{ fontSize:13, color:item.color, flexShrink:0 }}>→</span>}
-            </button>
-          ))}
-        </Card>
-      )}
-
-      {/* #03 — Herramienta fiscal del país como protagonista (el foso competitivo). */}
-      {!compact && <CountryTool country={settings.country} setPage={setPage} />}
-
-      {/* Acciones rápidas — solo en vista detallada (reduce ruido inicial) */}
-      {setPage && !compact && (
-        <div style={{ marginBottom:20 }}>
-          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:10 }}>{t('dash.quick.title')}</div>
-          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-            {[
-              { label:t('dash.quick.income'),     page:'income',     color:'var(--accent)', icon:'plus' },
-              { label:t('dash.quick.expense'),      page:'movements',  color:'var(--tx)', icon:'plus' },
-              { label:t('dash.quick.import'),page:'import',     color:'var(--accent2)', icon:'upload' },
-              { label:t('dash.quick.budget'), page:'budgets',    color:'var(--amb)', icon:'budget' },
-              { label:t('dash.quick.goal'),        page:'goals',      color:'var(--accent)', icon:'goal' },
-            ].map((a,i) => (
-              <button key={i} onClick={() => setPage(a.page)} style={{
-                background:'none', border:`.5px solid ${a.color}`, borderRadius:8,
-                padding:'7px 14px', fontSize:12, fontWeight:600, color:a.color,
-                cursor:'pointer', fontFamily:'var(--sans)', transition:'.15s',
-                whiteSpace:'nowrap',
-              }}>
-                <InlineIcon kind={a.icon} size={13} />{a.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ingreso esperado vs recibido — vista detallada */}
-      {!compact && (() => {
-        const expected = Number(settings.estimatedMonthlyIncome) || 0
-        if (expected <= 0 || kpis.totalInc <= 0) return null
-        const diff = kpis.totalInc - expected
-        const pctDiff = fmtPct(diff / expected, { signed: true })
-        const over = diff >= 0
-        return (
-          <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: `.5px solid ${over ? 'color-mix(in srgb, var(--pos) 28%, transparent)' : 'color-mix(in srgb, var(--neg) 28%, transparent)'}`, borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>{t('dash.expected.title')}</div>
-              <div style={{ fontSize: 13, color: 'var(--tx)' }}>
-                {t('dash.expected.expected')} <strong><Money>{fmtMoney(expected, sym)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{fmtMoney(kpis.totalInc, sym)}</Money></strong>
-              </div>
-            </div>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
-              {pctDiff}
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* Proyección fin de mes */}
-      {!compact && (kpis.totalInc > 0 || kpis.totalExp > 0) && (() => {
-        // Cálculo compartido con la página Proyección — mismos números en ambas vistas
-        const { today, daysInMonth, daysLeft, dailyExp, medianDaily, projExp, projBal, avgExp, avgExpMonths, pendingExp, pendingInc } =
-          projectEndOfMonth({ incomes, expenses, activeMonth, pending: pendingSum })
-        const pctMonth = (today / daysInMonth * 100).toFixed(0)
-        const over     = projBal < 0
-        return (
-          <Card style={{ border: over ? '.5px solid color-mix(in srgb, var(--neg) 32%, transparent)' : undefined, padding:'14px 16px', marginBottom:16 }}>
-            <CardHeader
-              title={t('dash.proj.title')}
-              right={<span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', textTransform:'none', letterSpacing:'normal' }}>{t('dash.proj.day', { d: today, n: daysInMonth, left: daysLeft })}</span>}
-            />
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:10 }}>
-              {[
-                { label:t('dash.proj.exp'),   value:money(projExp),            color:'var(--tx)',                                  rawVal: projExp },
-                { label:t('dash.proj.bal'), value:money(Math.abs(projBal)),  color: over ? 'var(--red)' : 'var(--accent)', prefix: over ? '−' : '+', rawVal: projBal },
-                { label:t('dash.proj.daily'),       value:t('dash.proj.perDay', { v: money(dailyExp) }),       color:'var(--th)',                                   rawVal: null },
-              ].map(k => (
-                <div key={k.label}>
-                  <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)', marginBottom:3 }}>{k.label}</div>
-                  <div style={{ fontSize:13, fontWeight:700, fontFamily: 'var(--num)', color:k.color }}>{k.prefix || ''}{k.value}</div>
-                  {dualOn && k.rawVal != null && (
-                    <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', opacity:.7, marginTop:2 }}>{toUSD(k.rawVal)}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div style={{ height:4, borderRadius:2, background:'var(--brd2)', overflow:'hidden', marginBottom:4 }}>
-              <div style={{ height:'100%', width:'100%', transform:`scaleX(${pctMonth / 100})`, transformOrigin:'left', background: over ? 'var(--red)' : 'var(--accent)', borderRadius:2, transition:'transform .3s' }} />
-            </div>
-            {avgExp > 0 && avgExpMonths > 0 && (
-              <div style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
-                {t('dash.proj.basis', { cur: money(kpis.totalExp), med: money(medianDaily), left: daysLeft, avg: money(avgExp) })}
-              </div>
-            )}
-            {(pendingExp > 0 || pendingInc > 0) && (
-              <div style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)', marginBottom:4, opacity:.8 }}>
-                {t('dash.proj.pendingBasis', { exp: money(pendingExp), inc: money(pendingInc) })}
-              </div>
-            )}
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontFamily: 'var(--sans)', color:'var(--th)' }}>
-              <span>{t('dash.proj.elapsed', { pct: fmtPctPoints(pctMonth) })}</span>
-              {setPage && <button type="button" onClick={() => setPage('cashflow')} style={{ color:'var(--accent)', cursor:'pointer', background:'none', border:0, padding:0, font:'inherit' }}>{t('dash.proj.viewFull')}</button>}
-            </div>
-            {over && <InlineCTA label={t('dash.proj.reviewExpenses')} page="movements" tone="red" />}
-          </Card>
-        )
-      })()}
-
-      {/* Flujo del mes (solo escritorio, vista detallada). El donut de
-          categorías vive arriba, en la vista esencial. */}
-      {!compact && monthExpenses.length > 0 && (
-        <div className="fos-hide-mobile" style={{ marginBottom:16 }}>
-          <ChartCard title={t('dash.chart.flow.title')} subtitle={t('dash.chart.flow.sub')} minHeight={220}>
-            <MoneyFlow incomes={monthIncomes} expenses={monthExpenses} subscriptions={subs} debts={debts} sym={sym}/>
-          </ChartCard>
-        </div>
-      )}
-      {!compact && (
-        <ChartCard title={t('dash.chart.bar.title')} subtitle={t('dash.chart.bar.sub')} minHeight={180}>
-          <IncomeExpenseBar incomes={incomes} expenses={expenses} sym={sym} months={6}/>
-        </ChartCard>
-      )}
-
-
-
-      {/* Link a Diagnóstico — vista detallada */}
-      {setPage && !compact && (
-        <div style={{ padding:'10px 14px', background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-          <span style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}><InlineIcon kind="diagnosis" size={13} />{t('dash.coachLink.text')}</span>
-          <button onClick={() => setPage('coach')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:6, padding:'4px 12px', fontSize:11, color:'var(--accent)', cursor:'pointer', fontFamily: 'var(--sans)' }}>
-            {t('dash.coachLink.btn')}
+      {setPage && (
+        <div className={hs.homeFoot}>
+          <button type="button" className={hs.homeFootBtn} onClick={() => setEditOpen(true)} aria-haspopup="dialog" data-tour="home-edit">
+            <SlidersHorizontal size={16} strokeWidth={1.7} aria-hidden="true" />{t('home.edit.cta')}
           </button>
         </div>
       )}
-
-
-      {/* Backup recomendado — nota general en la vista detallada; el aviso con
-          días y botón de un clic es la franja de la primera vista (M5) */}
-      {!compact && !backupStale && <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
-        <div>
-          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:3 }}>{t('dash.backup.title')}</div>
-          <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>{t('dash.backup.text')}</div>
-        </div>
-        {setPage && <button onClick={() => setPage?.('settings')} style={{ background:'none', border:'.5px solid var(--brd2)', borderRadius:7, padding:'5px 12px', fontSize:11, color:'var(--tx)', cursor:'pointer', fontFamily: 'var(--sans)', whiteSpace:'nowrap', flexShrink:0 }}>{t('dash.backup.btn')}</button>}
-      </div>}
-      </div>
+      <Sheet open={editOpen} onClose={() => setEditOpen(false)} ariaLabel={t('home.edit.title')} maxWidth={420}>
+        <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: 'var(--tx)' }}>{t('home.edit.title')}</h2>
+        <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--tm)', lineHeight: 1.5 }}>{t('home.edit.sub')}</p>
+        {HOME_CARDS.map(id => (
+          <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 52, borderBottom: '0.5px solid var(--brd)' }}>
+            <span id={`home-edit-${id}`} style={{ fontSize: 14, color: 'var(--tx)' }}>{t(`home.edit.card.${id}`)}</span>
+            <Switch checked={cardOn(id)} labelledBy={`home-edit-${id}`}
+              onChange={() => updateSettings?.({ ...settings, ...toggleHomeCard(settings, id) })} />
+          </div>
+        ))}
+        <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--th)', lineHeight: 1.5 }}>{t('home.edit.note')}</p>
+      </Sheet>
 
       <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.6, marginTop:16 }}>
         {t('dash.disclaimer')}

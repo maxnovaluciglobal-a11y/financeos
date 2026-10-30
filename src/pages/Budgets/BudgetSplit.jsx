@@ -43,16 +43,18 @@ export function SplitBar({ split, sym }) {
   )
 }
 
-export default function BudgetSplit({ income, budgeted, savingsPct = 0, unbudgeted = 0, sym, onSavingsPct }) {
+// headless (poda P2): la página la muestra plegada bajo un botón con el mismo
+// título, así que el título queda solo para lectores de pantalla y sin línea arriba.
+export default function BudgetSplit({ income, budgeted, savingsPct = 0, unbudgeted = 0, sym, onSavingsPct, headless = false }) {
   const { t } = useT()
   const [draft, setDraft] = useState(String(savingsPct || ''))
   const split = budgetSplit({ income, budgeted, savingsPct })
   if (!(split.income > 0)) return null
   const commit = () => { const v = clampSavingsPct(draft); setDraft(v ? String(v) : ''); if (v !== (Number(savingsPct) || 0)) onSavingsPct?.(v) }
   return (
-    <section className={s.split} aria-labelledby="bud-split-title" data-tour="bud-split">
+    <section className={headless ? `${s.split} ${s.splitBare}` : s.split} aria-labelledby="bud-split-title">
       <div className={s.splitHead}>
-        <h2 id="bud-split-title" className={s.sectionTitle}>{t('budgets.split.title')}</h2>
+        <h2 id="bud-split-title" className={headless ? 'sr-only' : s.sectionTitle}>{t('budgets.split.title')}</h2>
         <label className={s.splitPct}>
           <span>{t('budgets.split.savingsLabel')}</span>
           <input type="text" inputMode="numeric" value={draft} placeholder="0" aria-label={t('budgets.split.savingsAria', { max: SAVINGS_PCT_MAX })}

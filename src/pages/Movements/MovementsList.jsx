@@ -1,18 +1,18 @@
 // src/pages/Movements/MovementsList.jsx — la lista primero (UI-M3, B3a)
-// Búsqueda, chips de filtro (origen fijo/único y categoría), grupos por día con
+// Búsqueda y filtros (origen fijo/único y categoría, que llegan de la página), grupos por día con
 // lo que entró y lo que salió, y filas que abren el detalle en una hoja.
 // Ingresos y gastos en la misma lista (D-B): el tipo lo elige el control
 // "Todos · Gastos · Ingresos" de la página. Modelo: Copilot (agrupado por día),
 // Revolut (fila), Flowbite/shadcn (detalle en hoja).
 
 import { useMemo, useState } from 'react'
-import { Search, Repeat, ArrowDownLeft } from 'lucide-react'
+import { Repeat, ArrowDownLeft } from 'lucide-react'
 import Amount from '../../components/Amount.jsx'
 import CategoryIcon from '../../components/CategoryIcon.jsx'
 import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { catName, expSubcatLabel, dateLocale, localDateStr, fmtDayMonth } from '../../utils/index.js'
-import { filterMovements, groupByDay, categoriesByAmount, dayLabel, isFixed, inLens } from './movementsList.js'
+import { filterMovements, groupByDay, dayLabel, isFixed, inLens } from './movementsList.js'
 import s from './movements.module.css'
 
 const PAGE = 40
@@ -42,64 +42,36 @@ export function MovementRow({ e, type = 'all', sym, lens, onOpen }) {
   )
 }
 
-export default function MovementsList({ items, type = 'all', sym, lens, category, onCategory, onOpen, toolbarEnd, empty }) {
+// Poda P2 (30-oct-2026): la búsqueda, el origen y la categoría los maneja la
+// página (lupa en la fila de controles, hoja "Filtrar" y chips quitables); la
+// lista solo filtra y agrupa con lo que recibe.
+export default function MovementsList({ items, type = 'all', sym, lens, query = '', kind = 'all', category, onClearFilters, onOpen, empty }) {
   const { t, lang } = useT()
-  const [query, setQuery] = useState('')
-  const [kind, setKind] = useState('all') // origen: 'all' | 'oneoff' | 'fixed'
-  const [limit, setLimit] = useState(PAGE)
-
-  const catNameOf = (c) => catName(c, lang)
   const ofType = useMemo(() => filterMovements(items, { type }), [items, type])
-  const cats = useMemo(() => categoriesByAmount(ofType), [ofType])
   const filtered = useMemo(
     () => filterMovements(ofType, { query, category, kind, catNameOf: (c) => catName(c, lang) }),
     [ofType, query, category, kind, lang],
   )
+  // "Ver más" vuelve a 40 cuando cambia un filtro (sin efecto: se guarda con la clave del filtro).
+  const filterKey = `${type}|${query}|${kind}|${category || ''}`
+  const [page, setPage] = useState({ key: filterKey, limit: PAGE })
+  const limit = page.key === filterKey ? page.limit : PAGE
   const shown = filtered.slice(0, limit)
   const groups = useMemo(() => groupByDay(shown), [shown])
   const today = localDateStr()
   const filteredOn = !!(query.trim() || category || kind !== 'all')
   const amt = (n) => inLens(n, lens)
 
-  // Origen como dos interruptores (sin un segundo "Todos": el "Todos" de la
-  // página es el del tipo). Tocar el activo lo apaga.
-  const kinds = [['oneoff', t('movl.filter.oneoff')], ['fixed', t('movl.filter.fixed')]]
-  const reset = () => setLimit(PAGE)
-
   return (
-    <section aria-labelledby="movl-title" data-tour="mov-list">
+    <section aria-labelledby="movl-title" data-tour="mov-list" className={s.listSection}>
       <h2 id="movl-title" className="sr-only">{t('movl.title')}</h2>
-      <div className={s.toolbar}>
-        <div className={s.search} role="search">
-          <Search size={16} strokeWidth={1.7} aria-hidden="true" />
-          <input type="search" value={query} onChange={(e) => { setQuery(e.target.value); reset() }}
-            placeholder={t('movl.search.ph')} aria-label={t('movl.search.label')} />
-        </div>
-        {toolbarEnd}
-      </div>
-
-      {ofType.length > 0 && (
-        <div className={s.chips} role="group" aria-label={t('movl.filter.label')}>
-          {kinds.map(([k, label]) => (
-            <button key={k} type="button" className="fos-chip" aria-pressed={kind === k}
-              onClick={() => { setKind(kind === k ? 'all' : k); reset() }}>{label}</button>
-          ))}
-          {(cats.length > 1 || category) && <span className={s.chipSep} aria-hidden="true" />}
-          {(cats.length > 1 || category) && cats.map((c) => (
-            <button key={c} type="button" className="fos-chip" aria-pressed={category === c}
-              onClick={() => { onCategory(category === c ? null : c); reset() }}>
-              <CategoryIcon category={c} size={20} />{catNameOf(c)}
-            </button>
-          ))}
-        </div>
-      )}
 
       <p className="sr-only" role="status" aria-live="polite">{filteredOn ? t('movl.count', { n: filtered.length }) : ''}</p>
 
       {ofType.length === 0 ? empty : filtered.length === 0 ? (
         <div className={s.empty}>
           <p style={{ margin: '0 0 8px' }}>{t('movl.empty.filtered')}</p>
-          <button type="button" className="fos-link" onClick={() => { setQuery(''); setKind('all'); onCategory(null) }}>{t('movl.clear')}</button>
+          <button type="button" className="fos-link" onClick={onClearFilters}>{t('movl.clear')}</button>
         </div>
       ) : (
         <>
@@ -131,7 +103,7 @@ export default function MovementsList({ items, type = 'all', sym, lens, category
           ))}
           {filtered.length > limit && (
             <div className={s.more}>
-              <button type="button" className="fos-link" onClick={() => setLimit((l) => l + PAGE)}>
+              <button type="button" className="fos-link" onClick={() => setPage({ key: filterKey, limit: limit + PAGE })}>
                 {t('mov.list.showMore', { n: Math.min(PAGE, filtered.length - limit) })}
               </button>
             </div>

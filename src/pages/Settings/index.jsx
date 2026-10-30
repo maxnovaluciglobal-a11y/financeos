@@ -9,14 +9,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   UserRound, Coins, Palette, LayoutTemplate, DatabaseBackup, ShieldCheck, Bell,
-  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X,
-} from 'lucide-react'
+  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles } from 'lucide-react'
 import { PageHeader } from '../../components/ui/index.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
 import ProfileScreen from './ProfileScreen.jsx'
 import CurrencyScreen from './CurrencyScreen.jsx'
 import AppearanceScreen from './AppearanceScreen.jsx'
+import FeaturesScreen from './FeaturesScreen.jsx'
 import DataScreen from './DataScreen.jsx'
 import NotificationsScreen from './NotificationsScreen.jsx'
 import PlanScreen from './PlanScreen.jsx'
@@ -34,7 +34,7 @@ import config from '../../config.js'
 import { useT } from '../../i18n/useT.js'
 
 const ICONS = {
-  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate,
+  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles,
   data: DatabaseBackup, security: ShieldCheck, notifications: Bell, plan: CreditCard,
   advanced: SlidersHorizontal, danger: TriangleAlert,
 }
@@ -173,6 +173,7 @@ export default function Settings() {
           {sub === 'profile'       && <ProfileScreen isDemo={isDemo} accountEmail={accountEmail} />}
           {sub === 'currency'      && <CurrencyScreen />}
           {sub === 'appearance'    && <AppearanceScreen />}
+          {sub === 'features'      && <FeaturesScreen />}
           {sub === 'templates'     && (
             <Setting id="templates" style={{ paddingTop: 10 }}>
               <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>

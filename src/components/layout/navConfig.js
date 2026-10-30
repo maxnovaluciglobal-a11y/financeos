@@ -1,3 +1,5 @@
+import { moduleOn, modulesOff } from '../../utils/modules.js'
+
 // src/components/layout/navConfig.js
 // Extraído de Shell.jsx para que la página "more" (src/pages/More/index.jsx)
 // reuse el mismo árbol de navegación en vez de duplicarlo — un id/label nuevo
@@ -39,16 +41,20 @@ export const NAV = [
     { id: 'budgets', lb: 'nav.budgets' },
     { id: 'debts',   lb: 'nav.debts' },
     { id: 'goals',   lb: 'nav.goals' },
-    { id: 'projects', lb: 'nav.properties', proOnly: true },
+    { id: 'projects', lb: 'nav.properties', proOnly: true, module: 'properties' },
   ] },
   { sec: 'nav.sec.analysis', items: [
+    // Poda P1 (30-oct-2026): Panorama es el hub del análisis (reemplaza la
+    // vista detallada del Inicio). Las demás filas siguen en el riel de
+    // escritorio; en "Más" del móvil viven dentro de Panorama.
+    { id: 'panorama', lb: 'nav.panorama' },
     { id: 'networth', lb: 'nav.netWorth' },
     { id: 'coach',    lb: 'nav.diagnosis' },
     { id: 'reports',  lb: 'nav.reports' },
     { id: 'cashflow', lb: 'nav.projection', proOnly: true },
   ] },
   { sec: 'nav.sec.pro', items: [
-    { id: 'advisor',  lb: 'nav.advisorMode', proOnly: true },
+    { id: 'advisor',  lb: 'nav.advisorMode', proOnly: true, module: 'advisor' },
   ] },
   { sec: 'nav.sec.account', items: [
     { id: 'settings', lb: 'nav.settings' },
@@ -57,6 +63,15 @@ export const NAV = [
 
 // Todas las secciones planas para historial / búsqueda de label
 export const ALL_ITEMS = NAV.flatMap(g => g.items)
+
+// Un ítem se muestra si es de este país (o no tiene país) y, si es un módulo
+// que se activa (utils/modules.js), está encendido. Lo usan el riel y "Más".
+export function navItemVisible(it, country, settings) {
+  const cc = (country || 'CL').toUpperCase()
+  if (it.countries && !it.countries.includes(cc)) return false
+  if (it.module && !moduleOn(settings, it.module)) return false
+  return true
+}
 
 // Key de traducción para la topbar (pageLabel devuelve una KEY, no texto — se traduce con t() al usarla)
 // 'more' no vive en NAV (es la página del TabBar que lista todo NAV agrupado, no un destino del árbol).
@@ -96,31 +111,56 @@ export function activeTabFor(page) {
   return TAB_MENU
 }
 
-// ── Orden de secciones en la página Menú (R11, L2) ─────────────────────────
-// El Menú lista lo que NO es pestaña (Inicio, Movimientos/Gastos, Presupuestos
-// y Metas ya están en la barra: repetirlos solo agrega ruido). Planificación
-// (Deudas, Propiedades) primero; Ajustes (Cuenta) siempre al final. Ningún
-// ítem del NAV queda inalcanzable: o es pestaña o está en el Menú.
-export const MENU_SECTION_ORDER = [
-  'nav.sec.planning', 'nav.sec.movements', 'nav.sec.analysis', 'nav.sec.country', 'nav.sec.pro', 'nav.sec.main', 'nav.sec.account',
-]
-
+// ── "Más" (antes "Menú"): 4 grupos con nombre, ≤ 10 filas (poda P1) ───────
+// Evidencia en investigacion-ui-2026-10/segunda-ronda/2026-10-30-propuesta-poda.md
+// (NN/g: lo frecuente visible y lo demás en un destino con nombre; Apple HIG y
+// Material: barra de 3–5 destinos). Ningún ítem del NAV queda inalcanzable:
+// o es pestaña, o es fila de "Más", o vive dentro de una fila (Panorama, la
+// hoja "Herramientas de mi país" o Fijos › Suscripciones). navConfig.test.js
+// lo verifica para cada país.
+//  · Mi dinero: Deudas y cobros · Fijos y suscripciones · Ingresos · Importar
+//  · Panorama: el hub del análisis (Diagnóstico, Patrimonio, Proyección, Reportes…)
+//  · Herramientas: calculadora de tasa (VE/AR) · herramientas del país ·
+//    Propiedades y Modo asesor si están encendidos · "Activar más funciones"
+//  · Cuenta: Ajustes (Ayuda y comentarios va en la barra del pie, junto a
+//    tema y cerrar sesión, para no pasar de 10 filas en AR con todo encendido)
 // R13: en VE/AR la calculadora de tasa del país (Multimoneda / Dólar y
-// rendimientos) va primero, en "Herramientas", a un toque. Sale de "Tu país"
-// para no aparecer dos veces; el sidebar de escritorio no cambia.
+// rendimientos) va primera en Herramientas, a un toque.
 export const RATE_TOOL_BY_COUNTRY = { VE: 'multimoneda', AR: 'multidolar' }
 
-export function menuSections(country) {
+// Lo que vive dentro de Panorama (hub) en el móvil.
+export const PANORAMA_PAGES = ['coach', 'networth', 'cashflow', 'reports', 'subscriptions']
+
+const item = (id) => ALL_ITEMS.find(it => it.id === id)
+
+export function moreSections(country, settings = {}) {
   const cc = (country || 'CL').toUpperCase()
   const tool = RATE_TOOL_BY_COUNTRY[cc]
-  const rank = (sec) => { const i = MENU_SECTION_ORDER.indexOf(sec); return i === -1 ? MENU_SECTION_ORDER.length - 1.5 : i }
-  const secs = [...NAV]
-    .sort((a, b) => rank(a.sec) - rank(b.sec))
-    .map(g => ({ sec: g.sec, items: g.items.filter(it => (!it.countries || it.countries.includes(cc)) && it.id !== tool && !TAB_IDS.includes(it.id)) }))
-    .filter(g => g.items.length > 0)
-  if (!tool) return secs
-  const base = ALL_ITEMS.find(it => it.id === tool)
-  return [{ sec: 'nav.sec.tools', items: [{ ...base, lb: 'refcur.tool', tool: true }] }, ...secs]
+  const countryItems = (NAV.find(g => g.sec === 'nav.sec.country')?.items || [])
+    .filter(it => navItemVisible(it, cc, settings) && it.id !== tool)
+
+  const money = [
+    { ...item('debts'), lb: 'more.debts' },
+    { ...item('recurring'), lb: 'more.recurringSubs' },
+    item('income'),
+    item('import'),
+  ]
+  const tools = []
+  if (tool) tools.push({ ...item(tool), lb: 'refcur.tool', tool: true })
+  if (countryItems.length === 1) tools.push(countryItems[0])
+  else if (countryItems.length > 1) tools.push({ id: 'countryTools', lb: 'more.countryTools', sheet: true, items: countryItems, proOnly: countryItems.every(it => it.proOnly) })
+  for (const id of ['projects', 'advisor']) {
+    const it = item(id)
+    if (navItemVisible(it, cc, settings)) tools.push(it)
+  }
+  if (modulesOff(settings).length > 0) tools.push({ id: 'modules', lb: 'more.enableModules', action: 'features' })
+
+  return [
+    { sec: 'more.sec.money', items: money },
+    { sec: 'more.sec.panorama', items: [item('panorama')] },
+    { sec: 'nav.sec.tools', items: tools },
+    { sec: 'nav.sec.account', items: [item('settings')] },
+  ].filter(g => g.items.length > 0)
 }
 
 // H22 (ola A3, 30-oct-2026): la etiqueta PRO solo se muestra a quien no tiene

@@ -24,16 +24,15 @@ import s from './Home.module.css'
 import r from '../../components/recurring/recurring.module.css'
 
 
-export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
-  const { t, lang } = useT()
+// Variación de cada cifra vs. el mes anterior, con las reglas por país (A1/W5,
+// B5). La usan el héroe del Inicio y las tarjetas Ingresos/Gastos de Panorama.
+export function useKpiDeltas({ kpis, activeMonth, country }) {
+  const { lang } = useT()
   const prevMonth = prevMonthOf(activeMonth)
-  const { cur } = kpis
   const prev = kpis.prevToDate || kpis.prev
   const cutDay = kpis.prevCutDay ?? null
-  const hasData = cur.incCount > 0 || cur.expCount > 0
-  const prevHasData = prev.incCount > 0 || prev.expCount > 0
   // A1/W5: en VE y AR la variación va siempre en monto (inflación alta).
-  const preferAmount = prefersAmountDelta(refc?.country)
+  const preferAmount = prefersAmountDelta(country)
   // B5 (D-D, W5): en Venezuela la variación va en US$ con la tasa de CADA
   // período (histórico BCV o foto mensual). Sin una de las dos tasas, queda en
   // bolívares como en A1.
@@ -47,6 +46,58 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const deltaOf = (c, p, opts) => (usdOn
     ? usdMonthDelta(c, p, { ...opts, curRate, prevRate })
     : monthDelta(c, p, { ...opts, preferAmount }))
+  return { prevMonth, prev, cutDay, usdOn, usdFmt, deltaOf }
+}
+
+// Ingresos | Gastos como tarjetas con su variación (antes en el Inicio; desde
+// la poda P1 viven en Panorama). Tocables: llevan a su lista del mes.
+export function IncExpTiles({ kpis, activeMonth, sym, dualOn, toUSD, onOpen, country }) {
+  const { t } = useT()
+  const { cur } = kpis
+  const { prevMonth, prev, cutDay, usdOn, usdFmt, deltaOf } = useKpiDeltas({ kpis, activeMonth, country })
+  const tiles = [
+    // B3a: la tarjeta abre Movimientos con el filtro Ingresos.
+    { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'movements', filter: 'income',
+      delta: deltaOf(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0 }) },
+    { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, page: 'movements', filter: 'expense',
+      delta: deltaOf(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0 }) },
+  ]
+  return (
+    <div className={s.kpis}>
+      {tiles.map((k, i) => {
+        const Tag = onOpen ? 'button' : 'div'
+        return (
+          <Tag key={k.key} type={onOpen ? 'button' : undefined}
+            className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''}`}
+            style={{ animationDelay: `${40 + i * 40}ms` }}
+            onClick={onOpen ? () => openMovements(onOpen, k.filter) : undefined}>
+            <div className={s.kpiLabel}>
+              {k.label}
+              {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
+            </div>
+            <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
+              <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
+            </div>
+            <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} sym={sym} formatAmount={usdOn ? usdFmt : undefined} />
+            {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
+          </Tag>
+        )
+      })}
+    </div>
+  )
+}
+
+function openMovements(onOpen, filter) {
+  if (filter) { try { sessionStorage.setItem('fos_mov_filter', filter) } catch { /* modo privado: abre sin filtro */ } }
+  onOpen('movements')
+}
+
+export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
+  const { t, lang } = useT()
+  const { cur } = kpis
+  const hasData = cur.incCount > 0 || cur.expCount > 0
+  const { prevMonth, prev, cutDay, usdOn, usdFmt, deltaOf } = useKpiDeltas({ kpis, activeMonth, country: refc?.country })
+  const prevHasData = prev.incCount > 0 || prev.expCount > 0
 
   const free = cur.freeFlow
   // R12: la cifra de "Te queda" en US$ si el usuario lo eligió y hay tasa.
@@ -55,14 +106,6 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const heroText = (free < 0 ? '−' : free > 0 ? '+' : '') + (showRef ? fmtRef(toRef(Math.abs(free), refc.rate.rate), lang) : fmtMoney(Math.abs(free), sym))
   const heroLong = heroText.length > 11
   const freeColor = !hasData ? 'var(--th)' : free > 0 ? 'var(--pos)' : free === 0 ? 'var(--warn)' : 'var(--neg)'
-
-  const tiles = [
-    // B3a: la tarjeta abre Movimientos con el filtro Ingresos (la página Ingresos sigue en el Menú).
-    { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, page: 'movements', filter: 'income',
-      delta: deltaOf(cur.totalInc, prev.totalInc, { hasPrev: prev.incCount > 0 }) },
-    { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, page: 'movements',
-      delta: deltaOf(cur.totalExp, prev.totalExp, { invert: true, hasPrev: prev.expCount > 0 }) },
-  ]
 
   const subParts = [t('home.kpi.leftSub')]
   if (daysLeft != null) subParts.push(t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }))
@@ -130,27 +173,26 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
           )}
         </div>
 
-        {/* Ingresos | Gastos (R05/G6): tocables, llevan a su lista del mes. */}
-        {tiles.map((k, i) => {
+      </div>
+
+      {/* Poda P1: Ingresos y Gastos en una línea bajo el héroe (antes, dos
+          tarjetas con variación; esas tarjetas viven ahora en Panorama).
+          Cada mitad abre Movimientos con su filtro. */}
+      <div className={s.pairLine}>
+        {[
+          { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, filter: 'income', sign: '+' },
+          { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, filter: 'expense', sign: '\u2212' },
+        ].map(k => {
           const Tag = onOpen ? 'button' : 'div'
           return (
             <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
-              className={`${s.card} ${s.kpi} ${onOpen ? s.kpiTap : ''}`}
-              style={{ animationDelay: `${40 + i * 40}ms` }}
-              onClick={onOpen ? () => { if (k.filter) { try { sessionStorage.setItem('fos_mov_filter', k.filter) } catch { /* modo privado: abre sin filtro */ } } onOpen(k.page) } : undefined}>
-              <div className={s.kpiLabel}>
-                {k.label}
-                {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
-              </div>
-              <div className={`num ${s.kpiValue}`} style={{ '--chars': fmtSignedMoney(k.raw, sym).length }}>
-                <Money><CountUp value={k.raw} format={(v) => fmtSignedMoney(v, sym)} /></Money>
-              </div>
-              <DeltaLine delta={k.delta} prevMonth={prevMonth} untilDay={cutDay} sym={sym} formatAmount={usdOn ? usdFmt : undefined} />
-              {dualOn && <div className={s.kpiDual}>{toUSD(k.raw)}</div>}
+              className={s.pairItem} onClick={onOpen ? () => openMovements(onOpen, k.filter) : undefined}>
+              <span className={s.pairLabel}>{k.label}</span>
+              <span className={`num ${s.pairValue}`} style={{ '--chars': fmtMoney(k.raw, sym).length + 1 }}>{k.raw > 0 ? k.sign : ''}<Money>{fmtMoney(k.raw, sym)}</Money></span>
+              {onOpen && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.kpiChevron} />}
             </Tag>
           )
         })}
-
       </div>
       {children}
     </section>

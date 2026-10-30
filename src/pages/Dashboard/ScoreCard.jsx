@@ -80,13 +80,13 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
     valueText = t('home.score.pts', { n: `${diff > 0 ? '+' : '−'}${Math.abs(diff)}` })
   }
 
-  // Vista esencial del Inicio (R05): una fila — número, estado y "›" al
-  // Diagnóstico. La tarjeta completa queda en la vista detallada.
+  // Inicio (R05, poda P1): una fila — número, estado y "Ver panorama ›". La
+  // tarjeta completa (siguiente paso + factores) vive en Panorama.
   if (compact) {
     const Tag = setPage ? 'button' : 'div'
     return (
       <Tag type={setPage ? 'button' : undefined} className={`${s.card} ${s.scoreRow} rise`} data-tour="iq-score"
-        onClick={setPage ? () => setPage('coach') : undefined}>
+        onClick={setPage ? () => setPage('panorama') : undefined}>
         <span className={`num ${s.scoreRowNum}`} style={{ color: healthScore.color }}>
           <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
         </span>
@@ -94,6 +94,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
           <span className={s.scoreLabel}><IconIQScore size={14} />{t('dash.health.title')}</span>
           <ScoreState level={healthScore.level} label={healthScore.label} size={14} style={{ fontSize: 14, fontWeight: 600 }} />
         </span>
+        {setPage && <span className={s.scoreRowLink}>{t('home.score.viewPanorama')}</span>}
         {setPage && <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true" style={{ color: 'var(--th)' }} />}
       </Tag>
     )

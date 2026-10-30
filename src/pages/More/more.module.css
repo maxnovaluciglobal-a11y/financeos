@@ -1,4 +1,4 @@
-/* src/pages/More/more.module.css — pestaña Menú (R11) */
+/* src/pages/More/more.module.css — pestaña "Más" (R11, poda P1). Panorama reusa .list/.row. */
 
 /* Cabecera de cuenta */
 .account {
@@ -23,6 +23,7 @@
 }
 .planPro { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-700); border-color: color-mix(in srgb, var(--laton) 45%, transparent); }
 :global([data-theme="dark"]) .planPro { color: var(--laton-300); }
+.manage { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--accent); font-family: var(--sans); font-size: 12px; font-weight: 600; text-decoration: none; }
 
 .upgrade {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;

@@ -33,18 +33,20 @@ const CollectIcon = ({ size }) => <HandCoins size={size} strokeWidth={1.7} aria-
 const KIND_ICON = { debt: IconTarjetas, sub: SubIcon, manual: ManualIcon, collect: CollectIcon }
 const KIND_LABEL = { debt: 'home.upcoming.kind.debt', sub: 'home.upcoming.kind.sub', manual: 'rec.source.manual', collect: 'home.upcoming.kind.collect' }
 
-export default function UpcomingPayments({ rules, incomes, expenses, debts, receivables: receivablesProp, subscriptions, sym, setPage }) {
+// Poda P1: el Inicio la pide corta (days 7, limit 3, un solo "Ver todos");
+// Panorama y el escritorio pueden pedir el plazo largo de antes (30 días, 5).
+export default function UpcomingPayments({ rules, incomes, expenses, debts, receivables: receivablesProp, subscriptions, sym, setPage, days = 30, limit = 5, short = false }) {
   const { t, lang } = useT()
   const ctxReceivables = useApp()?.receivables
   const receivables = receivablesProp ?? ctxReceivables
   const todayStr = localDateStr()
   const { items, total, hasCollect } = useMemo(() => {
-    const payments = upcomingFromRules(rules || [], { incomes, expenses, today: todayStr, limit: Infinity }).items
-    const collections = upcomingCollections(receivables || [], { today: todayStr })
-    return { ...mergeUpcoming(payments, collections, { limit: 5 }), hasCollect: collections.length > 0 }
+    const payments = upcomingFromRules(rules || [], { incomes, expenses, today: todayStr, days, limit: Infinity }).items
+    const collections = upcomingCollections(receivables || [], { today: todayStr, days })
+    return { ...mergeUpcoming(payments, collections, { limit }), hasCollect: collections.length > 0 }
   },
     // la fecha de hoy entra en la clave: al pasar la medianoche se recalcula
-    [rules, incomes, expenses, receivables, todayStr],
+    [rules, incomes, expenses, receivables, todayStr, days, limit],
   )
   const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return localDateStr(d) })()
   const hiddenCount = total - items.length
@@ -57,7 +59,7 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
     <section className={`${s.card} rise`} aria-labelledby="home-upcoming-title">
       <div className={s.cardHead}>
         <h2 id="home-upcoming-title" className={s.cardTitle}>{t(hasCollect ? 'home.upcoming.titleBoth' : 'home.upcoming.title')}</h2>
-        <span className={s.cardHint}>{t('home.upcoming.hint')}</span>
+        <span className={s.cardHint}>{t(short ? 'home.upcoming.hint7' : 'home.upcoming.hint')}</span>
       </div>
 
       {items.length === 0 ? (
@@ -92,8 +94,16 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
         </ul>
       )}
 
-      {hiddenCount > 0 && <div className={s.more}>{t(`home.upcoming.more.${hiddenCount === 1 ? 'one' : 'many'}`, { n: hiddenCount })}</div>}
-      {setPage && (
+      {hiddenCount > 0 && !short && <div className={s.more}>{t(`home.upcoming.more.${hiddenCount === 1 ? 'one' : 'many'}`, { n: hiddenCount })}</div>}
+      {setPage && short && (
+        <div className={s.footLinks}>
+          <button type="button" className={s.cardLink} onClick={() => setPage('recurring')}>
+            {hiddenCount > 0 ? t('home.upcoming.viewAllN', { n: total }) : t('home.upcoming.viewAll')} →
+          </button>
+          {hasCollect && <button type="button" className={s.cardLink} onClick={() => setPage('debts')}>{t('dash.action.viewDebts')} →</button>}
+        </div>
+      )}
+      {setPage && !short && (
         <div className={s.footLinks}>
           {(hasDebts || items.length === 0) && <button type="button" className={s.cardLink} onClick={() => setPage('debts')}>{t('dash.action.viewDebts')} →</button>}
           {(hasSubs || items.length === 0) && <button type="button" className={s.cardLink} onClick={() => setPage('subscriptions')}>{t('dash.action.viewSubs')} →</button>}

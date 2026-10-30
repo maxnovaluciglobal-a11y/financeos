@@ -4,6 +4,35 @@
 // Voz de producto: seca, sin exclamaciones, sin voseo.
 export const RELEASE_NOTES = [
   {
+    id: '2026-10-30c',
+    items: {
+      es: [
+        'Inicio más corto: lo que te queda, atajos, un aviso a la vez, los pagos de la semana y el presupuesto en riesgo.',
+        'La vista detallada ahora es Panorama, en «Más»: IQ Score, proyección, patrimonio, diagnóstico y gráficos. También se abre desde la fila del IQ.',
+        '«Menú» se llama «Más» y tiene 4 grupos. Movimientos y Presupuestos muestran menos cifras a la vez; el resto está a un toque.',
+        'Puedes sumar tarjetas al Inicio con «Editar Inicio» y encender o apagar funciones en Ajustes › Funciones.',
+      ],
+      en: [
+        'A shorter Home: what you have left, shortcuts, one notice at a time, this week’s payments and the budgets at risk.',
+        'The detailed view is now Overview, under “More”: IQ Score, projection, net worth, diagnosis and charts. The IQ row opens it too.',
+        '“Menu” is now “More”, in 4 groups. Transactions and Budgets show fewer numbers at once; the rest is one tap away.',
+        'Add cards to Home with “Edit Home” and turn features on or off in Settings › Features.',
+      ],
+      pt: [
+        'Início mais curto: o que sobra, atalhos, um aviso por vez, os pagamentos da semana e o orçamento em risco.',
+        'A visão detalhada agora é o Panorama, em «Mais»: IQ Score, projeção, patrimônio, diagnóstico e gráficos. A linha do IQ também o abre.',
+        '«Menu» agora se chama «Mais» e tem 4 grupos. Movimentos e Orçamentos mostram menos números de uma vez; o resto está a um toque.',
+        'Adicione cartões ao Início com «Editar Início» e ative ou desative funções em Ajustes › Funções.',
+      ],
+      de: [
+        'Ein kürzerer Start: was übrig bleibt, Schnellzugriffe, ein Hinweis nach dem anderen, die Zahlungen der Woche und gefährdete Budgets.',
+        'Die Detailansicht heißt jetzt Überblick und liegt unter „Mehr“: IQ Score, Prognose, Vermögen, Diagnose und Diagramme. Die IQ-Zeile öffnet sie auch.',
+        '„Menü“ heißt jetzt „Mehr“, in 4 Gruppen. Buchungen und Budgets zeigen weniger Zahlen auf einmal; der Rest ist einen Tipp entfernt.',
+        'Mit „Start bearbeiten“ fügen Sie Karten hinzu; unter Einstellungen › Funktionen schalten Sie Funktionen ein oder aus.',
+      ],
+    },
+  },
+  {
     id: '2026-10-30b',
     items: {
       es: [

@@ -277,8 +277,11 @@ export default function Recurring({ setPage }) {
       {form ? (
         <RuleForm initial={form === 'new' ? null : form} settings={settings} onSave={save} onCancel={() => setForm(null)} />
       ) : (
-        <div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           <Btn variant="primary" onClick={() => setForm('new')}><Plus size={16} strokeWidth={2} aria-hidden="true" style={{ marginRight: 6, verticalAlign: '-3px' }} />{t('rec.page.new')}</Btn>
+          {/* Poda P1: "Fijos y suscripciones" es una sola fila en "Más"; la
+              página Suscripciones se abre desde acá (y desde Panorama). */}
+          {setPage && <Btn variant="ghost" onClick={() => setPage('subscriptions')}>{t('rec.page.viewSubs')} →</Btn>}
         </div>
       )}
 

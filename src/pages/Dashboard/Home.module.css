@@ -1,9 +1,6 @@
-/* src/pages/Dashboard/Home.module.css — Inicio M5.
-   Escritorio (contenedor ≥ 760px): respaldo → KPIs → presupuesto | próximos
-   pagos → IQ Score | patrimonio. Móvil, una columna en el orden de M5:
-   KPIs → respaldo → IQ Score → presupuesto → próximos pagos → patrimonio.
-   Se ordena con `order` sobre un flex en columna; los pares de escritorio usan
-   display: contents en móvil para que sus hijos entren al mismo orden. */
+/* src/pages/Dashboard/Home.module.css — Inicio (M5, podado en P1 el 30-oct-2026).
+   Una columna en el orden del DOM; en escritorio (contenedor ≥ 760px) los
+   pares (pagos | presupuesto) van a dos columnas. Panorama reusa estas clases. */
 
 .home { container-type: inline-size; margin-bottom: 16px; }
 
@@ -11,29 +8,17 @@
 
 .pair { display: contents; }
 
-.oBackup:empty, .oNetWorth:empty, .oScore:empty, .oSteps:empty { display: none; }
-/* Orden móvil (R05): Te queda + Ingresos|Gastos → primeros pasos → gasto por
-   categoría → respaldo → presupuesto → próximos pagos → IQ Score → patrimonio
-   (solo detallada). */
-.oKpis     { order: 1; }
-.oSteps    { order: 2; }
-.oSteps:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-3); }
-.oDonut    { order: 3; }
-.oBackup   { order: 4; }
-.oBudget   { order: 5; }
-.oUpcoming { order: 6; }
-.oScore    { order: 7; }
-.oNetWorth { order: 8; }
+.oTodo:empty, .oExtra:empty { display: none; }
+/* Poda P1 (30-oct-2026): el Inicio responde "¿cuánto me queda y qué tengo que
+   hacer?" en el orden del DOM: Te queda (con Ingresos · Gastos) → acciones
+   rápidas → Para hacer (un aviso) → pagos y cobros de 7 días → presupuesto en
+   riesgo (3) → IQ en una línea → tarjetas opcionales de "Editar Inicio". */
+.oTodo:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-3); }
+.oExtra:not(:empty) { display: flex; flex-direction: column; gap: 16px; }
 
 @container (min-width: 760px) {
   .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
   .pair > :only-child, .pair > :has(+ :empty), .pair > :empty + * { grid-column: 1 / -1; }
-  .oBackup { order: 1; }
-  .oKpis   { order: 2; }
-  .oSteps  { order: 3; }
-  .oDonut  { order: 4; }
-  .pairA   { order: 5; }
-  .pairB   { order: 6; }
 }
 
 /* ── Secciones del Inicio (UI-M7) ─────────────────────────────────────────
@@ -107,6 +92,38 @@
 .kpiValue { font-size: clamp(13px, calc(100cqi * 1.65 / var(--chars, 8)), 24px); line-height: 1.1; color: var(--tx); white-space: nowrap; }
 .kpiSub { font-size: 12px; color: var(--th); line-height: 1.4; }
 .kpiDual { font-family: var(--num); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
+
+/* Poda P1: Ingresos · Gastos en una línea bajo "Te queda" (dos mitades
+   tocables de 44 px; la cifra se achica antes de partirse). */
+.pairLine { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 8px; }
+.pairItem { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: 4px; row-gap: 2px;
+  min-height: 52px; min-width: 0; padding: 8px 10px; container-type: inline-size;
+  border: 0.5px solid var(--brd); border-radius: var(--r); background: var(--sur); color: inherit; font: inherit; text-align: left; }
+button.pairItem { cursor: pointer; transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
+button.pairItem:hover { border-color: var(--navy-400); }
+button.pairItem:active { transform: scale(.99); }
+.pairLabel { grid-column: 1; grid-row: 1; font-size: 12px; font-weight: 500; color: var(--tm); }
+.pairItem .kpiChevron { grid-column: 2; grid-row: 1; }
+/* La cifra entra entera en una línea: se achica con el largo (--chars). */
+.pairValue { grid-column: 1 / -1; grid-row: 2; min-width: 0; white-space: nowrap; color: var(--tx);
+  font-size: clamp(12px, calc(100cqi * 1.65 / var(--chars, 10)), 16px); line-height: 1.2; }
+
+/* Poda P1: acciones rápidas (4) y "Para hacer" (un aviso por vez). */
+.quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.quickBtn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 6px 4px;
+  border: 0.5px solid var(--brd); border-radius: var(--r); background: var(--sur); color: var(--tx); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; text-align: center;
+  transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
+.quickBtn:hover { border-color: var(--navy-400); }
+.quickBtn:active { transform: scale(.98); }
+.quickBtn svg { color: var(--tm); }
+.todo { display: flex; flex-direction: column; gap: var(--sp-3); }
+.todoSlot:empty { display: none; }
+/* Plegado: solo el primer aviso con contenido; los demás, con "N más". */
+.todoCollapsed > .todoSlot:not(:empty) ~ .todoSlot { display: none; }
+.todoMore { align-self: flex-start; min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.homeFoot { display: flex; justify-content: center; margin-top: 4px; }
+.homeFootBtn { min-height: 44px; padding: 0 14px; background: none; border: 0.5px solid var(--brd2); border-radius: var(--r); color: var(--tm); font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.homeFootBtn:hover { color: var(--tx); border-color: var(--navy-400); }
 
 .left { display: flex; align-items: center; gap: 14px; }
 .leftBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
@@ -250,7 +267,7 @@
 
 /* ── IQ Score compacto (vista esencial) ─────────────────────────────────── */
 .scoreRow {
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px 14px;
   width: 100%; min-height: 64px; padding: 12px 0; text-align: left;
   font: inherit; color: var(--tx); cursor: pointer;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
@@ -259,6 +276,7 @@
 .scoreRow:active { transform: scale(.99); }
 .scoreRowNum { font-size: 28px; line-height: 1; font-weight: 600; }
 .scoreRowMeta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.scoreRowLink { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   .kpiTap, .scoreRow, .viewToggle, .viewToggle svg { transition: none; }

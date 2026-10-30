@@ -5,7 +5,7 @@
 // useMoney().m (ocultar montos), así que las frases con cifras no van en <Money>.
 import { useEffect, useRef, useState } from 'react'
 import {
-  Plane, Car, House, Smartphone, Laptop, GraduationCap, Store, PencilLine, ShieldCheck, PiggyBank, Plus, ChevronRight,
+  Plane, Car, House, Smartphone, Laptop, GraduationCap, Store, PencilLine, ShieldCheck, PiggyBank, Plus, ChevronRight, Ellipsis,
 } from 'lucide-react'
 import Sheet from '../../components/ui/Sheet.jsx'
 import { EmptyChoices, EmptyChoice } from '../../components/ui/index.jsx'
@@ -26,7 +26,9 @@ const primaryFull = { width: '100%', minHeight: 48, marginTop: 16 }
 const linksRow = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }
 
 // ── Bolsas fijas (#41) ───────────────────────────────────────────────────────
-export function FixedBuckets({ buckets, t, fmt, onSelect }) {
+// Poda P2: con la meta creada, la bolsa reemplaza su tarjeta de la lista; el
+// botón ⋯ abre esa tarjeta (editar, borrar, ajuste del fondo) en una hoja.
+export function FixedBuckets({ buckets, t, fmt, onSelect, onDetails }) {
   return (
     <section data-tour="goals-buckets" aria-label={t('goals.r9.buckets')}>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, borderTop: '1px solid var(--brd2)' }}>
@@ -36,11 +38,11 @@ export function FixedBuckets({ buckets, t, fmt, onSelect }) {
           const done = g && g.target > 0 && g.saved >= g.target
           const Icon = GOAL_ICONS[b.id]
           return (
-            <li key={b.id} style={{ borderBottom: '1px solid var(--brd)' }}>
+            <li key={b.id} style={{ borderBottom: '1px solid var(--brd)', display: 'flex', alignItems: 'center', gap: 4 }}>
               {/* El nombre accesible sale del texto visible (nombre, avance y acción): axe
                   label-content-name-mismatch pide que el texto visible esté en el nombre. */}
               <button type="button" onClick={() => onSelect(b)}
-                style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr) auto', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '8px 2px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
+                style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr) auto', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, width: '100%', minHeight: 56, padding: '8px 2px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
                 <span aria-hidden="true" className="cat-icon" style={{ width: 28, height: 28, background: `color-mix(in srgb, var(--cat-${b.id === 'emergency' ? 1 : 3}) 12%, transparent)` }}>
                   <Icon size={16} strokeWidth={1.7} />
                 </span>
@@ -58,6 +60,13 @@ export function FixedBuckets({ buckets, t, fmt, onSelect }) {
                     : <><Plus size={14} strokeWidth={1.7} />{g ? t('goals.r9.bucket.add') : t('goals.r9.bucket.create')}<ChevronRight size={14} strokeWidth={1.7} /></>}
                 </span>
               </button>
+              {g && onDetails && (
+                <button type="button" onClick={() => onDetails(b)} aria-haspopup="dialog"
+                  aria-label={t('goals.p2.bucketMore', { name: g.name })} title={t('goals.p2.bucketMore', { name: g.name })}
+                  style={{ flexShrink: 0, width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: '1px solid var(--brd2)', borderRadius: 'var(--r)', color: 'var(--tm)', cursor: 'pointer' }}>
+                  <Ellipsis size={18} strokeWidth={1.7} aria-hidden="true" />
+                </button>
+              )}
             </li>
           )
         })}
