@@ -87,6 +87,13 @@ export default function Income({ setPage }) {
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         <PageHeader title={t('income.title')} sub={t('income.sub', { month: monthLabel(activeMonth), n: filtered.length })} />
         <MonthSelector incomes={incomes} expenses={[]} />
+        {/* B3a: los ingresos también están en Movimientos, junto a los gastos (D-B). */}
+        {setPage && (
+          <button type="button" className="fos-link" style={{ fontSize: 13 }} onClick={() => {
+            try { sessionStorage.setItem('fos_mov_filter', 'income') } catch { /* almacenamiento no disponible */ }
+            setPage('movements')
+          }}>{t('movl.seeInMovements')} →</button>
+        )}
       </div>
       <div className="kpi-row" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         <KPI label={t('income.kpi.totalMonth')} value={fmtMoney(total, sym)} color="green" sub={investment > 0 ? t('income.kpi.invOfWhich', { v: fmtMoney(investment, sym) }) : undefined} />

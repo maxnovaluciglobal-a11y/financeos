@@ -13,6 +13,7 @@ export const PAGE_TOURS = {
     { id: 'view-toggle',  title: 'tour.home.detail.title', body: 'tour.home.detail.body' },
   ],
   movements: [
+    { id: 'mov-type',  title: 'tour.mov.type.title',  body: 'tour.mov.type.body' },
     { id: 'mov-kpis',  title: 'tour.mov.kpis.title',  body: 'tour.mov.kpis.body' },
     { id: 'mov-add',   title: 'tour.mov.add.title',   body: 'tour.mov.add.body' },
     { id: 'mov-list',  title: 'tour.mov.list.title',  body: 'tour.mov.list.body' },

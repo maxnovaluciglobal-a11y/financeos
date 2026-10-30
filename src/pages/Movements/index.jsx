@@ -1,5 +1,9 @@
-// src/pages/Movements/index.jsx — v1.5
-// Hub "Egresos del mes" — vista unificada Gastos + Recurrentes
+// src/pages/Movements/index.jsx — v1.6 (B3a)
+// "Movimientos": ingresos y gastos del mes en una sola lista (decisión D-B),
+// con Todos · Gastos · Ingresos, el mes ‹ › (global), totales, lente en US$ y
+// los fijos del mes. "+ Gasto detallado o suscripción" sigue siendo la única
+// entrada al gasto largo (subcategoría, tipo, notas, inversión, proyecto) y al
+// alta de suscripción: pasó a secundario, no desapareció (lista de protección).
 
 import { useState, useMemo, useEffect } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
@@ -10,19 +14,31 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { parseTransactionText } from '../../utils/smsParser.js'
-import { catLabel, catName, subLabel, expSubcatLabel, dateLocale, getCategoriesExpense, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney, fmtPct, monthYearLabel } from '../../utils/index.js'
+import { catLabel, catName, subLabel, expSubcatLabel, dateLocale, getCategoriesExpense, getCategoriesIncome, currentMonth, localDateStr, METHODS, methodLabel, currencySymbol, fmtSignedMoney, fmtMoney, fmtPct, monthYearLabel } from '../../utils/index.js'
 import { monthPlan, pendingTotals, toLocal } from '../../utils/recurring.js'
 import OccurrenceRow from '../../components/recurring/OccurrenceRow.jsx'
 import { useOccurrenceActions } from '../../components/recurring/useOccurrenceActions.js'
 import rs from '../../components/recurring/recurring.module.css'
 import { FormGroup, KPI, Alert, Empty, EmptyState, PageHeader } from '../../components/ui/index.jsx'
-import { ArrowLeftRight, ChevronDown } from 'lucide-react'
+import { ArrowLeftRight, ChevronDown, Download } from 'lucide-react'
 import Amount from '../../components/Amount.jsx'
 import MovementsList from './MovementsList.jsx'
 import MovementSheet from './MovementSheet.jsx'
 import ms from './movements.module.css'
 import { openQuickAdd } from '../../components/quickAddBus.js'
 import Money, { useMoney } from '../../components/Money.jsx'
+import MonthSelector from '../shared/MonthSelector.jsx'
+import { closeKeyToDismiss } from '../shared/monthNav.js'
+import { refEligible, resolveRefRate, SOURCE_LABEL, REF_CURRENCY } from '../../utils/refRate.js'
+import { mergeMovements, monthTotals, lensState, inLens, parseExpensePrefill, PREFILL_KEY, normType } from './movementsList.js'
+
+// Filtro de tipo preseleccionado desde otra pantalla (Ingresos, Inicio, Menú):
+// sessionStorage['fos_mov_filter'] = 'income' | 'expense' | 'all', igual que
+// fos_drill_category. Se lee al montar y se borra.
+export const MOV_FILTER_KEY = 'fos_mov_filter'
+const readSession = (k) => { try { return sessionStorage.getItem(k) } catch { return null } }
+const dropSession = (k) => { try { sessionStorage.removeItem(k) } catch { /* almacenamiento no disponible */ } }
+const readLocal = (k) => { try { return localStorage.getItem(k) } catch { return null } }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -45,6 +61,11 @@ function toAnnual(amount, frequency) {
     case 'anual':     return amount
     default:          return amount * 12
   }
+}
+
+// Fecha corta de la tasa ("29 oct") en el idioma de la interfaz.
+function fmtRateDay(at) {
+  try { return new Date(at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' }) } catch { return '' }
 }
 
 // Con los decimales de la moneda y signo "−" si el saldo queda negativo.
@@ -77,12 +98,14 @@ const FREQS    = [
   { value:'weekly',    label:'mov.freq.weekly' },
 ]
 // ── Formulario Gasto ──────────────────────────────────────────────────────────
-function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings }) {
+function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, initial }) {
   const { t, lang } = useT()
-  const [f, setF] = useState({
+  // initial: prellenado del alta rápida ("Más detalles", B4a), ya validado.
+  const [f, setF] = useState(() => ({
     description:'', amount:'', date:todayStr(),
-    category:'Alimentación', subcategory:'', method:'Débito', type:'Necesidad', notes:'', project:''
-  })
+    category:'Alimentación', subcategory:'', method:'Débito', type:'Necesidad', notes:'', project:'',
+    ...(initial || {}),
+  }))
   const set = (k,v) => setF(p => ({ ...p, [k]:v }))
   const categoriesExpense = getCategoriesExpense(settings)
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
@@ -309,18 +332,27 @@ export default function Movements({ setPage }) {
   const updateExpense   = ctx.updateExpense
   const addSubscription    = ctx.addSubscription
   const deleteWithUndo     = ctx.deleteWithUndo
+  const updateIncome       = ctx.updateIncome
+  const exportCSV          = ctx.exportCSV
 
   const sym         = currencySymbol(settings.currency, settings.language)
-  // Ocultar montos (T13): toda cifra de esta pantalla pasa por fmtM → m().
+  // Ocultar montos (T13): toda cifra de esta pantalla pasa por fmtL → m().
   const { m } = useMoney()
-  const fmtM = (n, s) => m(fmtMRaw(n, s))
   const activeMonth = settings.activeMonth || currentMonth()
   const categoriesExpense = useMemo(() => getCategoriesExpense(settings), [settings])
 
+  // Prellenado del gasto detallado desde el alta rápida (contrato B4a): si
+  // existe, abre FormGasto con esos datos. Se lee en el initializer y se borra
+  // en un efecto (StrictMode monta 2× en dev, como fos_drill_category).
+  const [prefill] = useState(() => parseExpensePrefill(readSession(PREFILL_KEY), {
+    categories: getCategoriesExpense(ctx.settings || {}), methods: METHODS, today: todayStr(),
+  }))
+  useEffect(() => { dropSession(PREFILL_KEY) }, [])
+
   const [showAdd,   setShowAdd]   = useState(false)
-  const [showGasto, setShowGasto] = useState(false)
+  const [showGasto, setShowGasto] = useState(() => !!prefill)
   const [showSub,   setShowSub]   = useState(false)
-  const [openExp,   setOpenExp]   = useState(null)     // detalle en hoja (UI-M3)
+  const [openExp,   setOpenExp]   = useState(null)     // detalle en hoja (UI-M3): ítem { kind, rec }
   const [showSummary, setShowSummary] = useState(false) // resumen plegado: la lista primero
 
   // Filtro de categoría por drilldown desde el Dashboard (donut clicable)
@@ -332,11 +364,49 @@ export default function Movements({ setPage }) {
     try { sessionStorage.removeItem('fos_drill_category') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   }, [])
 
+  // Todos · Gastos · Ingresos (B3a). El drilldown del donut es de gastos.
+  const [type, setType] = useState(() => {
+    const preset = readSession(MOV_FILTER_KEY)
+    if (preset) return normType(preset)
+    return drillCat ? 'expense' : 'all'
+  })
+  useEffect(() => { dropSession(MOV_FILTER_KEY) }, [])
+  const pickType = (v) => { setType(v); setDrillCat(null) }
+
+  // Mes ‹ ›: cambia el mes GLOBAL. Elegir un mes pasado marca su cierre como
+  // visto para que el Inicio no abra la hoja de cierre sin motivo.
+  const beforeMonthChange = (next) => {
+    const key = closeKeyToDismiss(next, currentMonth())
+    if (key) { try { localStorage.setItem(key, '1') } catch { /* modo privado */ } }
+  }
+
+  // Lente de moneda (R12): el mismo interruptor VES/USD del Inicio.
+  const [refMode, setRefModeState] = useState(() => (readLocal('fos_home_refcur') === 'ref' ? 'ref' : 'local'))
+  const setRefMode = (v) => { setRefModeState(v); try { localStorage.setItem('fos_home_refcur', v) } catch { /* modo privado */ } }
+  const eligible = refEligible(settings)
+  const refRate = useMemo(() => (eligible ? resolveRefRate(settings, readLocal) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [eligible, settings.usdRate, settings.usdRateAt, settings.usdRateSource, settings.country, settings.currency])
+  const lens = useMemo(() => lensState({ eligible, rate: refRate, mode: refMode }), [eligible, refRate, refMode])
+  const usdSym = currencySymbol(REF_CURRENCY, settings.language)
+  const lsym = lens.on ? usdSym : sym
+  // Cifra en la lente activa, con "ocultar montos".
+  const fmtL = (n) => m(fmtMRaw(inLens(n, lens), lsym))
+
   // ── Cálculos ─────────────────────────────────────────────────────────────────
   const monthExp   = useMemo(() =>
     expenses.filter(e => e?.date?.startsWith(activeMonth))
       .sort((a,b) => new Date(b.date) - new Date(a.date))
   , [expenses, activeMonth])
+
+  const monthInc   = useMemo(() =>
+    incomes.filter(r => r?.date?.startsWith(activeMonth))
+  , [incomes, activeMonth])
+
+  // Lista unificada (D-B): ingresos y gastos del mes, más reciente primero.
+  const items = useMemo(() => mergeMovements(monthExp, monthInc), [monthExp, monthInc])
+  const totals = useMemo(() => monthTotals(items), [items])
+  const categoriesIncome = useMemo(() => getCategoriesIncome(settings), [settings])
 
   const activeSubs = useMemo(() =>
     subscriptions.filter(s => s?.status === 'active')
@@ -397,16 +467,16 @@ export default function Movements({ setPage }) {
     return Object.entries(map)
       .sort((a,b) => b[1]-a[1])
       .slice(0,8)
-      .map(([category, amount]) => ({ category, amount }))
-  }, [monthExp])
+      .map(([category, amount]) => ({ category, amount: inLens(amount, lens) }))
+  }, [monthExp, lens])
 
   const topBarRecords = useMemo(() => {
     const items = [
       // La barra muestra la descripción del gasto (sin emoji: un solo sistema de ícono, UI-M4).
-      ...monthExp.map(e => ({ category: e.description || catName(e.category, lang), amount: Number(e.amount)||0 })),
+      ...monthExp.map(e => ({ category: e.description || catName(e.category, lang), amount: inLens(Number(e.amount)||0, lens) })),
     ]
     return items.sort((a,b) => b.amount-a.amount).slice(0,8)
-  }, [monthExp, lang])
+  }, [monthExp, lang, lens])
 
   // Alertas de suscripciones
   const alerts = useMemo(() => {
@@ -441,30 +511,58 @@ export default function Movements({ setPage }) {
   return (
     <div>
 
-      {/* Encabezado único (UI-M3/M8): sin eyebrow mono ni subtítulo "// ". */}
-      <PageHeader title={t('mov.title')} sub={t('mov.sub', { month: monthYearLabel(activeMonth) })} />
+      {/* Encabezado único (UI-M3/M8): "Movimientos", como la pestaña; el subtítulo dice el filtro. */}
+      <PageHeader title={t('mov.title')} sub={t(`movl.sub.${type}`, { month: monthYearLabel(activeMonth) })} />
+
+      {/* Tipo y mes (B3a). El mes es el GLOBAL: también mueve el Inicio y Presupuestos. */}
+      <div className={ms.controls} data-tour="mov-type">
+        <div className={ms.seg} role="group" aria-label={t('movl.type.label')}>
+          {['all', 'expense', 'income'].map(v => (
+            <button key={v} type="button" className={ms.segOpt} aria-pressed={type === v} onClick={() => pickType(v)}>
+              {t(`movl.type.${v}`)}
+            </button>
+          ))}
+        </div>
+        <div className={ms.controlsEnd}>
+          <MonthSelector variant="stepper" incomes={incomes} expenses={expenses} onBeforeChange={beforeMonthChange} />
+          {/* Lente de moneda (R12): el mismo VES | USD del Inicio, solo si hay tasa con fecha. */}
+          {lens.available && (
+            <span className={ms.lensSwitch} role="group" aria-label={t('movl.lens.switchAria')}>
+              {[['local', String(settings.currency || '').toUpperCase()], ['ref', REF_CURRENCY]].map(([v, code]) => (
+                <button key={v} type="button" className={ms.lensOpt} aria-pressed={refMode === v} onClick={() => setRefMode(v)}>{code}</button>
+              ))}
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Resumen en una línea, plegable: la lista va primero (UI-M3). */}
       <button type="button" className={ms.summary} aria-expanded={showSummary} aria-controls="mov-summary"
         onClick={() => setShowSummary(v => !v)} data-tour="mov-kpis">
         <span className={ms.summaryMain}>
-          <span className={ms.summaryCount}>{t(monthExp.length === 1 ? 'movl.summary.one' : 'movl.summary.many', { n: monthExp.length })}</span>
+          <span className={ms.summaryItem}>
+            <span className={ms.summaryLbl}>{t('movl.type.income')}</span>
+            <Amount className={`${ms.summaryTotal} ${ms.summaryIn}`} value={inLens(totals.income, lens)} sym={lsym} plus />
+          </span>
           <span aria-hidden="true">·</span>
-          <Amount className={ms.summaryTotal} value={totalExp} sym={sym} signed={false} />
+          <span className={ms.summaryItem}>
+            <span className={ms.summaryLbl}>{t('movl.type.expense')}</span>
+            <Amount className={ms.summaryTotal} value={-inLens(totals.expense, lens)} sym={lsym} />
+          </span>
           {/* H17 (ola A7): el Inicio excluye la inversión de Gastos; aquí se dice cuánta incluye. */}
-          {invExp > 0 && <span className={ms.summaryInv}>{t('mov.summary.invIncl', { v: fmtM(invExp, sym) })}</span>}
+          {invExp > 0 && <span className={ms.summaryInv}>{t('mov.summary.invIncl', { v: fmtL(invExp) })}</span>}
         </span>
         <span className={ms.summaryToggle}>{showSummary ? t('movl.summary.hide') : t('movl.summary.show')}<ChevronDown size={16} strokeWidth={1.7} aria-hidden="true" /></span>
       </button>
       <div id="mov-summary" className={ms.summaryBody} hidden={!showSummary}>
         {/* KPIs */}
         <div className="kpi-row" style={{ marginBottom:20 }}>
-          <KPI label={t('mov.kpi.income')} value={fmtM(totalInc, sym)} color="green"
-            sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtM(invInc, sym) }) : undefined} />
-          <KPI label={t('mov.kpi.totalOut')} value={fmtM(totalExp, sym)}
-            sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtM(invExp, sym) }) : undefined} />
-          <KPI label={t('rec.mov.pendingKpi')} value={fmtM(pendingFixed, sym)} color="amber" sub={t('rec.mov.pendingSub')} />
-          <KPI label={t('mov.kpi.available')} value={fmtM(balance, sym)} color={balance >= 0 ? 'green' : 'red'}
+          <KPI label={t('mov.kpi.income')} value={fmtL(totalInc)} color="green"
+            sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtL(invInc) }) : undefined} />
+          <KPI label={t('mov.kpi.totalOut')} value={fmtL(totalExp)}
+            sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtL(invExp) }) : undefined} />
+          <KPI label={t('rec.mov.pendingKpi')} value={fmtL(pendingFixed)} color="amber" sub={t('rec.mov.pendingSub')} />
+          <KPI label={t('mov.kpi.available')} value={fmtL(balance)} color={balance >= 0 ? 'green' : 'red'}
             alert={balance < 0 ? t('ui.state.overdrawn') : undefined}
             sub={(invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
         </div>
@@ -478,9 +576,9 @@ export default function Movements({ setPage }) {
                   {t('mov.banner.title')}
                 </div>
                 <div style={{ fontSize:13, color:'var(--tx)', fontFamily: 'var(--sans)' }}>
-                  <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtM(totalSubs, sym) })}</strong>
+                  <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtL(totalSubs) })}</strong>
                   {' → '}
-                  <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtM(totalAnnual, sym) })}</strong>
+                  <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtL(totalAnnual) })}</strong>
                   {t('mov.banner.inServices', { n: activeSubs.length })}
                 </div>
               </div>
@@ -492,10 +590,10 @@ export default function Movements({ setPage }) {
         {(monthExp.length > 0 || activeSubs.length > 0) && (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:16, marginBottom:16 }}>
             <ChartCard title={t('mov.chart.top')} minHeight={180}>
-              <HorizontalBars records={topBarRecords} sym={sym} maxItems={8}/>
+              <HorizontalBars records={topBarRecords} sym={lsym} maxItems={8}/>
             </ChartCard>
             <ChartCard title={t('mov.chart.byCat')} minHeight={180}>
-              <CategoryDonut records={chartRecords} sym={sym}/>
+              <CategoryDonut records={chartRecords} sym={lsym}/>
             </ChartCard>
           </div>
         )}
@@ -509,6 +607,18 @@ export default function Movements({ setPage }) {
           </div>
         )}
       </div>
+
+      {/* Leyenda de la lente: con qué tasa se convirtió, su fuente y su fecha. */}
+      {lens.on && (
+        <p className={ms.lens}>
+          {t('movl.lens.legend', {
+            usd: usdSym,
+            rate: fmtMoney(lens.rate.rate, sym),
+            source: t(SOURCE_LABEL[lens.rate.source] || SOURCE_LABEL.manual),
+            date: lens.rate.at ? fmtRateDay(lens.rate.at) : t('refcur.noDate'),
+          })}
+        </p>
+      )}
 
       {/* Formularios de alta (gasto / suscripción); el botón vive en la barra de la lista */}
       <div style={{ marginTop: (showAdd || showGasto || showSub) ? 12 : 0 }}>
@@ -547,24 +657,40 @@ export default function Movements({ setPage }) {
           </div>
         )}
 
-        {showGasto && <FormGasto sym={sym} projects={projectOptions} settings={settings} onSave={handleSaveGasto} onCancel={() => setShowGasto(false)} onImport={setPage ? () => setPage('import') : undefined}/>}
+        {showGasto && <FormGasto sym={sym} projects={projectOptions} settings={settings} initial={prefill} onSave={handleSaveGasto} onCancel={() => setShowGasto(false)} onImport={setPage ? () => setPage('import') : undefined}/>}
         {showSub   && <FormSub              onSave={handleSaveSub}   onCancel={() => setShowSub(false)}/>}
       </div>
 
-      <MovementsList expenses={monthExp} sym={sym} category={drillCat} onCategory={setDrillCat}
+      <MovementsList items={items} type={type} sym={lsym} lens={lens} category={drillCat} onCategory={setDrillCat}
         onOpen={setOpenExp}
-        toolbarEnd={!showAdd && !showGasto && !showSub && (
-          <button type="button" data-tour="mov-add" onClick={() => setShowAdd(true)} style={{
-            background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:'var(--r)',
-            padding:'8px 18px', minHeight:44, fontSize:14, fontWeight:600, fontFamily:'var(--sans)', cursor:'pointer', flexShrink:0 }}>
-            {t('mov.addBtn')}
-          </button>
-        )}
-        empty={<EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
-          cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />} />
+        toolbarEnd={<>
+          {/* Secundario, no Latón (un primario por pantalla: el + global). Abre el
+              mismo menú de gasto detallado o suscripción de siempre. */}
+          {!showAdd && !showGasto && !showSub && (
+            <button type="button" data-tour="mov-add" className={`fos-btn-secondary ${ms.addSecondary}`} onClick={() => setShowAdd(true)}>
+              {t('mov.addBtn')}
+            </button>
+          )}
+          {exportCSV && (
+            <button type="button" className="fos-link" onClick={exportCSV}>
+              <Download size={16} strokeWidth={1.7} aria-hidden="true" />{t('movl.export')}
+            </button>
+          )}
+        </>}
+        empty={type === 'income'
+          ? <EmptyState compact icon={ArrowLeftRight} title={t('movl.emptyInc.title')} text={t('movl.emptyInc.text')}
+              cta={t('movl.emptyInc.cta')} onCta={() => openQuickAdd('income')} />
+          : <EmptyState compact icon={ArrowLeftRight} title={t('empty.mov.title')} text={t('empty.mov.text')}
+              cta={t('empty.mov.cta')} onCta={() => openQuickAdd('expense')} />} />
 
-      {openExp && (
-        <MovementSheet expense={openExp} sym={sym} categories={categoriesExpense} subcats={SUBCATS}
+      {openExp && openExp.kind === 'income' && (
+        <MovementSheet kind="income" expense={openExp.rec} sym={sym} categories={categoriesIncome}
+          onClose={() => setOpenExp(null)}
+          onSave={updateIncome ? (r) => updateIncome(r) : undefined}
+          onDelete={deleteWithUndo ? (r) => deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo')) : undefined} />
+      )}
+      {openExp && openExp.kind !== 'income' && (
+        <MovementSheet expense={openExp.rec || openExp} sym={sym} categories={categoriesExpense} subcats={SUBCATS}
           onClose={() => setOpenExp(null)}
           onSave={updateExpense ? (e) => updateExpense(e) : undefined}
           onDelete={delExpense ? (e) => deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo')) : undefined} />
