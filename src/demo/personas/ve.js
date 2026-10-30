@@ -172,7 +172,13 @@ export const VE_SUBSCRIPTIONS = [
 // B1: la fecha es la de ESA tasa (la del mes, día 1 a mediodía), no la de
 // carga del demo: guardar Date.now() decía "hoy" para una cifra de otro día.
 // Si la consulta en vivo trae una más reciente, el Inicio la ofrece con "Usar".
-export const VE_RATE_AT = (ym = M0) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1, 12).getTime() }
+// El mes en curso se fecha HOY a la 1:00 (hora de publicación del BCV): en el
+// demo es "la tasa de hoy" de la persona y no debe verse como vieja (antes salía
+// "hace 28 días" en naranja en la primera pantalla del demo).
+export const VE_RATE_AT = (ym = M0, now = new Date()) => {
+  if (ym === M0) return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 1).getTime()
+  const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1, 12).getTime()
+}
 // B5: foto mensual de la tasa (BCV) para la variación del mes en US$.
 export const veMonthlyRefRates = () => Object.fromEntries(Object.entries(VE_RATES).map(([ym, r]) => [ym, r.bcv]))
 export const veSettings = () => ({ usdRate: VE_RATES[M0].bcv, usdRateAt: VE_RATE_AT(M0), usdRateSource: 'bcv', monthlyRefRates: veMonthlyRefRates() })
