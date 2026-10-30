@@ -7,14 +7,18 @@
 // - RateSheet: hoja para escribir la tasa o consultar la de hoy con los
 //   mismos loaders que ya usa la app (tasaVE/tasaAR/tasaFixer). Lo consultado
 //   sin red (fallback) no se ofrece: esos números no son de hoy.
+// - FreshRate (B1): "Hay una tasa más reciente: X (fuente, fecha). Usar".
+// - El botón de la fila abre el conversor rápido GRATIS (B2,
+//   components/ConverterSheet.jsx); el panel multimoneda PRO queda en el Menú
+//   y como enlace dentro del conversor.
 // Ninguna tasa se muestra sin su fecha (o sin decir "sin fecha").
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Calculator, ChevronRight } from 'lucide-react'
+import { ArrowLeftRight } from 'lucide-react'
 import Sheet from '../../components/ui/Sheet.jsx'
 import Money from '../../components/Money.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtAmount, moneyLocale, currencySymbol, dateLocale } from '../../utils/index.js'
-import { SOURCE_LABEL, REF_CURRENCY, toRef, isStale, rateAgeDays, rateOptions, loadersFor, defaultRateOption } from '../../utils/refRate.js'
+import { SOURCE_LABEL, REF_CURRENCY, toRef, isStale, rateAgeDays, rateOptions, loadersFor, defaultRateOption, rateLabelParts } from '../../utils/refRate.js'
 import { loadTasaVE } from '../../utils/tasaVE.js'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { loadFixerRates } from '../../utils/tasaFixer.js'
@@ -26,6 +30,42 @@ const LOADERS = { ve: loadTasaVE, ar: loadTasaAR, fixer: loadFixerRates }
 // US$ con los separadores de la moneda principal (es-VE "US$1.234,56").
 export function fmtRef(n, lang) {
   return currencySymbol(REF_CURRENCY, lang) + fmtAmount(Math.abs(Number(n) || 0), 2, moneyLocale())
+}
+
+// Consulta las tasas de hoy con los loaders existentes (mismos hosts que la
+// CSP ya permite). Devuelve las opciones con fecha y las respuestas crudas
+// (el conversor usa la de VE para la brecha BCV/paralelo). Sin red, los
+// loaders devuelven su respaldo y rateOptions() lo descarta.
+export async function fetchRateOptions(settings) {
+  const raw = {}
+  for (const k of loadersFor(settings)) { try { raw[k] = await LOADERS[k]() } catch { /* sin red */ } }
+  return { options: rateOptions(settings, raw), raw }
+}
+
+// "Tasa BCV · 28 oct" o "Tasa guardada · sin fecha": la misma frase en el
+// Inicio, Ajustes, el conversor y los paneles (rateLabelParts en refRate.js).
+export function rateSourceText(r, t) {
+  const p = rateLabelParts(r)
+  if (!p) return ''
+  return `${t(p.sourceKey)} · ${p.at ? fmtDay(p.at) : t('refcur.noDate')}`
+}
+
+// B1: aviso en línea con la tasa más reciente; un toque la guarda con su
+// fuente y su fecha. Nada se reemplaza sin ese toque.
+export function FreshRate({ fresh, sym, onUse, className }) {
+  const { t } = useT()
+  if (!fresh) return null
+  return (
+    <div className={`${s.freshRow} ${className || ''}`} role="status">
+      <span className={s.freshText}>
+        {t('refcur.fresh.text', { rate: fmtMoney(fresh.rate, sym), source: t(SOURCE_LABEL[fresh.source] || SOURCE_LABEL.manual), date: fmtDay(fresh.at) })}
+      </span>
+      <button type="button" className={s.refLink} onClick={onUse}
+        aria-label={t('refcur.fresh.useAria', { rate: fmtMoney(fresh.rate, sym) })}>
+        {t('refcur.fresh.use')}
+      </button>
+    </div>
+  )
 }
 
 export function fmtDay(at, withTime = false) {
@@ -42,14 +82,14 @@ export function RefSwitch({ mode, onChange, localCode }) {
     <span className={s.refSwitch} role="group" aria-label={t('refcur.switchAria')}>
       {[['local', localCode], ['ref', REF_CURRENCY]].map(([m, code]) => (
         <button key={m} type="button" className={s.refOpt} aria-pressed={mode === m} onClick={() => onChange(m)}>
-          {code}
+          <span className={s.refOptFace}>{code}</span>
         </button>
       ))}
     </span>
   )
 }
 
-export function RefRow({ refRate, mode, free, sym, country, showAmount, onEdit, tool, onTool, switcher }) {
+export function RefRow({ refRate, mode, free, sym, country, showAmount, onEdit, tool, onTool, switcher, fresh, onUseFresh }) {
   const { t, lang } = useT()
   const stale = refRate && isStale(refRate.at, country)
   const days = refRate ? rateAgeDays(refRate.at) : null
@@ -72,13 +112,14 @@ export function RefRow({ refRate, mode, free, sym, country, showAmount, onEdit, 
           <div className={s.refMeta}>
             <span className="num">1 {currencySymbol(REF_CURRENCY, lang)} = {fmtMoney(refRate.rate, sym)}</span>
             <span aria-hidden="true"> · </span>
-            <span>{t(SOURCE_LABEL[refRate.source] || SOURCE_LABEL.manual)}</span>
+            <span>{t(rateLabelParts(refRate).sourceKey)}</span>
             <span aria-hidden="true"> · </span>
             <span className={stale ? s.refStale : undefined}>
               {refRate.at ? fmtDay(refRate.at) : t('refcur.noDate')}
               {refRate.at && stale && days >= 2 ? ` (${t('refcur.old', { n: days })})` : ''}
             </span>
           </div>
+          <FreshRate fresh={fresh} sym={sym} onUse={onUseFresh} />
         </>
       ) : (
         <div className={s.refMeta}>{t('refcur.addHint')}</div>
@@ -88,10 +129,9 @@ export function RefRow({ refRate, mode, free, sym, country, showAmount, onEdit, 
           {t(refRate ? 'refcur.edit' : 'refcur.add')}
         </button>
         {tool && (
-          <button type="button" className={s.refTool} onClick={onTool}>
-            <Calculator size={16} strokeWidth={1.7} aria-hidden="true" />
-            <span>{t('refcur.tool')}</span>
-            <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" />
+          <button type="button" className={s.refTool} onClick={onTool} aria-haspopup="dialog">
+            <ArrowLeftRight size={16} strokeWidth={1.7} aria-hidden="true" />
+            <span>{t('conv.open')}</span>
           </button>
         )}
       </div>
@@ -116,9 +156,7 @@ export function RateSheet({ open, onClose, settings, sym, current, onSave }) {
 
   async function fetchToday() {
     setState('loading')
-    const res = {}
-    for (const k of loaders) { try { res[k] = await LOADERS[k]() } catch { /* sin red */ } }
-    const opts = rateOptions(settings, res)
+    const { options: opts } = await fetchRateOptions(settings)
     setOptions(opts)
     // VE: queda elegida la oficial del BCV (con su fecha); el paralelo sigue a un toque.
     const def = defaultRateOption(opts)

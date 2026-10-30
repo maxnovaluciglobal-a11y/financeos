@@ -267,22 +267,32 @@
 
 /* ── Moneda de referencia (R12) y calculadora de tasa (R13) ──
    Selector de dos códigos en la fila de la etiqueta: segmentado técnico
-   (--r, nunca pill), mono porque son códigos ISO. Área táctil de 44px con un
-   ::after invisible, sin agrandar la fila. */
+   (--r, nunca pill), mono porque son códigos ISO. Cada botón mide 44px de
+   alto (V2/B1: objetivo táctil real, no un ::after); el dibujo sigue compacto:
+   la pista de 30px es un ::before y la cara de 26px un span. El margen
+   negativo evita que la fila crezca. */
 .refSwitch {
-  display: inline-flex; flex-shrink: 0; padding: 2px; gap: 2px;
+  position: relative; display: inline-flex; flex-shrink: 0; gap: 2px; padding: 0 2px; margin: -7px 0;
+}
+.refSwitch::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 7px; bottom: 7px;
   border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
 }
 .refOpt {
-  position: relative; min-width: 44px; height: 26px; padding: 0 8px;
-  border: 0; border-radius: calc(var(--r) - 2px); background: transparent;
-  font: 600 11px/1 var(--mono);  /* código ISO de moneda: identificador */ letter-spacing: .04em; color: var(--tm); cursor: pointer;
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; height: 44px; padding: 0;
+  border: 0; background: transparent; cursor: pointer;
+  font: 600 11px/1 var(--mono);  /* código ISO de moneda: identificador */ letter-spacing: .04em; color: var(--tm);
+}
+.refOptFace {
+  display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 26px; padding: 0 8px;
+  border-radius: calc(var(--r) - 2px);
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.refOpt::after { content: ''; position: absolute; inset: -9px -2px; }
-.refOpt[aria-pressed="true"] { background: var(--sur); color: var(--navy); box-shadow: 0 1px 2px rgba(20,33,61,.12); }
-:global([data-theme="dark"]) .refOpt[aria-pressed="true"] { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-300); box-shadow: none; }
-.refOpt:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+.refOpt[aria-pressed="true"] .refOptFace { background: var(--sur); color: var(--navy); box-shadow: 0 1px 2px rgba(20,33,61,.12); }
+:global([data-theme="dark"]) .refOpt[aria-pressed="true"] .refOptFace { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-300); box-shadow: none; }
+.refOpt:focus-visible { outline: none; }
+.refOpt:focus-visible .refOptFace { outline: 2px solid var(--navy); outline-offset: 1px; }
 
 .refRow {
   display: flex; flex-direction: column; gap: 4px;
@@ -309,7 +319,11 @@
 .refTool:hover { border-color: var(--navy); }
 .refTool:active { transform: scale(.98); }
 .refTool svg:last-child { color: var(--th); }
-@media (prefers-reduced-motion: reduce) { .refOpt, .refTool { transition: none; } .refTool:active { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .refOptFace, .refTool { transition: none; } .refTool:active { transform: none; } }
+
+/* B1: "Hay una tasa más reciente: X. Usar" — texto y enlace, sin caja. */
+.freshRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; line-height: 1.45; color: var(--tm); }
+.freshText { flex: 1 1 180px; overflow-wrap: anywhere; }
 
 /* Hoja "Tasa de referencia" */
 .rateField { display: flex; flex-direction: column; gap: 6px; }

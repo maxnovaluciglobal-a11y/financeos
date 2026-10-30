@@ -3,6 +3,9 @@
 // ajuste por IPC como tarjeta protagonista (el pain real no es "cuánto vale
 // mi plata de hace 6 meses", es "a qué dólar la paso hoy y en qué la dejo
 // mientras tanto"). Solo visible si settings.country === 'AR'.
+// B1 (una sola tasa): arriba de las cotizaciones se muestra la tasa de
+// referencia del usuario (la misma del Inicio, con fuente y fecha); si la
+// consulta trae una más reciente, se ofrece con "Usar" y nunca la reemplaza sola.
 
 import { useState, useMemo, useEffect } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
@@ -12,8 +15,9 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../c
 import ProGate from '../../components/ui/ProGate.jsx'
 import { loadTasaAR } from '../../utils/tasaAR.js'
 import { calcRendimiento, TNA_DEFAULTS } from '../../utils/rendimientosAR.js'
-import { fmtFixed, fmtPctPoints } from '../../utils/index.js'
-import { fmtDay } from '../Dashboard/RefCurrency.jsx'
+import { fmtFixed, fmtPctPoints, fmtMoney, currencySymbol } from '../../utils/index.js'
+import { fmtDay, rateSourceText, FreshRate } from '../Dashboard/RefCurrency.jsx'
+import { resolveRefRate, rateOptions, fresherRate, ratePatch } from '../../utils/refRate.js'
 
 const fmtARS = (n) => fmtFixed(n, 'es-AR')
 const fmtUSD = (n) => `US$${(Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
@@ -46,10 +50,24 @@ export default function MultiDolarAR() {
 }
 
 function MultiDolarARBody() {
-  const { t } = useT()
+  const { t, lang } = useT()
+  const { settings, updateSettings, showToast } = useApp()
+  const ref = useMemo(() => resolveRefRate(settings, (k) => { try { return localStorage.getItem(k) } catch { return null } }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo los campos de la tasa
+    [settings.usdRate, settings.usdRateAt, settings.usdRateSource, settings.country, settings.currency])
 
   const [live, setLive] = useState(null)
   useEffect(() => { loadTasaAR().then(setLive) }, [])
+  const sym = currencySymbol('ARS', lang)
+  const fresh = useMemo(() => (live ? fresherRate(ref, rateOptions(settings, { ar: live }), 'AR') : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [live, ref])
+  function usarFresh() {
+    const patch = ratePatch(fresh)
+    if (!patch) return
+    updateSettings?.({ ...settings, ...patch })
+    showToast?.(t('refcur.saved'))
+  }
 
   return (
     <ProGate feature={t('multidolarar.proFeature')}>
@@ -66,6 +84,12 @@ function MultiDolarARBody() {
               </span>
             )
           } />
+          <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, marginBottom: 10 }}>
+            {ref
+              ? <><span className="num">1 {currencySymbol('USD', lang)} = {fmtMoney(ref.rate, sym)}</span> · {t('refcur.inUse', { desc: rateSourceText(ref, t) })}</>
+              : t('refcur.noRefPanel')}
+            <FreshRate fresh={fresh} sym={sym} onUse={usarFresh} />
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
             {DOLARES.map(d => (
               <div key={d.key} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '10px 12px', textAlign: 'center' }}>
