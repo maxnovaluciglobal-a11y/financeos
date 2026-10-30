@@ -10,8 +10,11 @@
 export const NAV = [
   { sec: 'nav.sec.main',    items: [{ id: 'dashboard', lb: 'nav.dashboard' }] },
   { sec: 'nav.sec.movements',  items: [
+    // B3a: la página muestra ingresos y gastos; en el riel se llama como la
+    // pestaña ("Movimientos") y va primero en su sección. "Ingresos" sigue
+    // como atajo propio (Menú y riel).
+    { id: 'movements', lb: 'nav.movements' },
     { id: 'income',    lb: 'nav.income' },
-    { id: 'movements', lb: 'nav.expenses' },
     { id: 'recurring', lb: 'nav.recurring' },
     { id: 'import',    lb: 'nav.import' },
     { id: 'subscriptions', lb: 'nav.subscriptions' },

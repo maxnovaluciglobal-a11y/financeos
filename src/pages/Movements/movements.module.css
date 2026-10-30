@@ -11,6 +11,10 @@
 .summaryMain { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
 .summaryCount { font-weight: 600; }
 .summaryTotal { font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; }
+/* B3a: Ingresos y Gastos del mes, cada uno con su etiqueta. */
+.summaryItem { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.summaryLbl { font-size: 13px; font-weight: 500; color: var(--tm); }
+.summaryIn { color: var(--pos); }
 /* H17 (ola A7): nota de inversión, subordinada al total. */
 .summaryInv { font-size: 12px; color: var(--th); font-weight: 400; }
 .summaryToggle { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 13px; font-weight: 500; color: var(--tm); }
@@ -18,6 +22,40 @@
 .summary[aria-expanded="true"] .summaryToggle svg { transform: rotate(180deg); }
 .summary:hover .summaryToggle { color: var(--tx); }
 .summaryBody { padding-top: 12px; }
+
+/* B3a: tipo (Todos · Gastos · Ingresos) y mes ‹ › en una fila que se parte en el celular */
+.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; }
+.seg {
+  display: inline-flex; padding: 2px; gap: 2px; flex: 0 1 auto; min-width: 0;
+  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
+}
+.segOpt {
+  min-height: 40px; min-width: 44px; padding: 0 14px; margin: 0;
+  border: 0; border-radius: calc(var(--r) - 2px); background: transparent;
+  font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--tm); cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.segOpt[aria-pressed="true"] { background: var(--sur); color: var(--tx); font-weight: 600; box-shadow: 0 1px 2px rgba(20,33,61,.12); }
+:global([data-theme="dark"]) .segOpt[aria-pressed="true"] { background: var(--sur3); box-shadow: none; }
+.segOpt:hover:not([aria-pressed="true"]) { color: var(--tx); }
+.segOpt:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+/* El grupo mide 44 px con su borde y relleno: cada opción cumple el área táctil. */
+
+/* Lente de moneda: interruptor VES | USD y la leyenda de la tasa */
+.controlsEnd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lens { margin: 8px 0 0; font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--tm); }
+.lensSwitch { display: inline-flex; flex-shrink: 0; padding: 2px; gap: 2px; border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2); }
+.lensOpt {
+  min-width: 52px; min-height: 40px; padding: 0 10px;
+  border: 0; border-radius: calc(var(--r) - 2px); background: transparent;
+  font: 600 12px/1 var(--mono); letter-spacing: .04em; color: var(--tm); cursor: pointer;
+}
+.lensOpt[aria-pressed="true"] { background: var(--sur); color: var(--tx); box-shadow: 0 1px 2px rgba(20,33,61,.12); }
+:global([data-theme="dark"]) .lensOpt[aria-pressed="true"] { background: var(--sur3); box-shadow: none; }
+.lensOpt:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+
+/* Secundario "+ Gasto detallado o suscripción" y enlace "Exportar" */
+.addSecondary { width: auto; flex-shrink: 0; }
 
 /* Barra de herramientas: búsqueda + agregar */
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 8px; }
@@ -37,7 +75,7 @@
 }
 .chips::-webkit-scrollbar { display: none; }
 .chips > * { flex-shrink: 0; scroll-snap-align: start; }
-.chips :global(.fos-chip) { min-height: 36px; padding: 6px 10px; font-size: 13px; }
+.chips :global(.fos-chip) { min-height: 44px; padding: 6px 10px; font-size: 13px; } /* 44 px de área táctil (kit móvil) */
 .chipSep { width: 0.5px; height: 24px; background: var(--brd2); margin: 0 4px; }
 
 /* Grupos por día */
@@ -49,7 +87,8 @@
 }
 .dayHd h3 { margin: 0; font: inherit; color: inherit; text-transform: none; }
 .dayHd h3::first-letter { text-transform: uppercase; }
-.dayTotal { font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; white-space: nowrap; }
+.dayTotal { display: inline-flex; gap: 10px; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; white-space: nowrap; }
+.dayIn { color: var(--pos); }
 .rows { list-style: none; margin: 0; padding: 0; }
 .rows li { border-bottom: 0.5px solid var(--brd); }
 
@@ -67,6 +106,7 @@
 .rowName { font-size: 14px; font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rowMeta { font-size: 12px; line-height: 1.3; color: var(--th); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 .rowAmt { font-size: 14px; font-weight: 600; color: var(--tx); text-align: right; }
+.rowAmtIn { color: var(--pos); }
 
 .more { display: flex; justify-content: center; padding: 4px 0; }
 .empty { padding: 24px 0; text-align: center; font-family: var(--sans); font-size: 14px; color: var(--tm); }
@@ -86,5 +126,5 @@
 .editGrid input, .editGrid select { min-height: 44px; box-sizing: border-box; font-size: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .summaryToggle svg, .row { transition: none; }
+  .summaryToggle svg, .row, .segOpt { transition: none; }
 }
