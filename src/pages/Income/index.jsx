@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader } from '../../components/ui/index.jsx'
+import { KPI, Card, CardHeader, TxRow, FormGroup, FormRow, Btn, Alert, PageHeader, EmptyState } from '../../components/ui/index.jsx'
 import { fmtMoney as fmtMoneyRaw, CAT_COLORS, getCategoriesIncome, RECURRENCES, today, catLabel, recurrenceLabel, currentMonth, currencySymbol, fmtPct, fmtDayMonth, catName } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
@@ -171,10 +171,10 @@ export default function Income({ setPage }) {
         <Card>
           <CardHeader title={t('income.history', { n: filtered.length })} />
           {filtered.length === 0
-            ? <div style={{textAlign:'center',padding:'24px 0'}}>
-                <div style={{fontSize:13,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12}}>{t('income.emptyText')}</div>
-                <button onClick={() => setRepeat(true)} style={{background:'var(--laton)',color:'var(--navy)',border:'none',borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>{t('income.emptyBtn')}</button>
-              </div>
+            ? /* A9/V2: vacío con el patrón común y la acción como enlace (el
+                 primario de la pantalla es "Guardar" del formulario). */
+              <EmptyState compact title={t('income.emptyText')}
+                secondary={{ label: t('income.emptyBtn'), onClick: () => setRepeat(true) }} />
             : <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                 {filtered.map(r => editingId === r.id ? (
                   <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.04)',marginBottom:6}}>

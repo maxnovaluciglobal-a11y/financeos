@@ -13,7 +13,8 @@ import Sheet from '../../components/ui/Sheet.jsx'
 import { PRO_STEPS, readChecklist, startChecklist, dismissChecklist, isChecklistVisible } from '../../utils/proChecklist.js'
 import s from './Home.module.css'
 
-export default function ProChecklist({ setPage }) {
+// `suppressed` (A8): el Inicio lo calla mientras "Primeros pasos" esté a medias.
+export default function ProChecklist({ setPage, suppressed = false }) {
   const ctx = useApp() || {}
   const { t } = useT()
   const { isPro } = usePlan()
@@ -25,7 +26,7 @@ export default function ProChecklist({ setPage }) {
     if (isPro && !isDemo) setState(startChecklist())
   }, [isPro, isDemo])
 
-  if (!isPro || isDemo || !setPage || !isChecklistVisible(state)) return null
+  if (suppressed || !isPro || isDemo || !setPage || !isChecklistVisible(state)) return null
 
   const done = PRO_STEPS.filter(st => state.done[st.id]).length
   const nextId = PRO_STEPS.find(st => !state.done[st.id])?.id

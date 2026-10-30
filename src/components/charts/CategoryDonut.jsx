@@ -19,11 +19,26 @@ const COLORS = ['var(--cat-1)','var(--cat-2)','var(--cat-3)','var(--cat-4)','var
 // movimiento reducido aparece directo.
 const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false } }
 
+// H9 (ola A5, 30-oct-2026): agrupa el resto en UNA sola entrada "Otros". Si el
+// usuario ya tiene una categoría real "Otros", se suma al grupo en lugar de
+// aparecer dos veces en la leyenda. `group: true` marca el grupo (no se toca
+// para ver movimientos: no es una categoría). Testeado en categoryDonut.test.js.
+export function groupDonutSlices(sorted, maxCategories = 6) {
+  if (!Array.isArray(sorted) || sorted.length <= maxCategories) return sorted
+  const realOther = sorted.find(d => d.name === 'Otros')
+  const rest = sorted.filter(d => d.name !== 'Otros')
+  const top = rest.slice(0, maxCategories - 1)
+  const tail = rest.slice(maxCategories - 1).reduce((s, d) => s + d.value, 0) + (realOther ? realOther.value : 0)
+  if (tail > 0) top.push({ name: 'Otros', value: round2(tail), group: true })
+  return top
+}
+
 export default function CategoryDonut({ records, sym = '$', maxCategories = 6, onCategoryClick }) {
   const { t, lang } = useT()
   const { m } = useMoney()
   const safeRecords = useMemo(() => (Array.isArray(records) ? records : []), [records])
-  const clickable = (name) => typeof onCategoryClick === 'function' && name !== 'Otros'
+  // H9 (ola A5): solo el GRUPO "Otros" deja de ser tocable; la categoría real sí lo es.
+  const clickable = (d) => typeof onCategoryClick === 'function' && !d?.group
 
   const { data, total } = useMemo(() => {
     const map = {}
@@ -41,12 +56,7 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
     const total = sorted.reduce((s, d) => s + d.value, 0)
     if (total === 0) return { data: [], total: 0 }
 
-    if (sorted.length > maxCategories) {
-      const top   = sorted.slice(0, maxCategories - 1)
-      const otros = sorted.slice(maxCategories - 1).reduce((s, d) => s + d.value, 0)
-      if (otros > 0) top.push({ name:'Otros', value: round2(otros) })
-      sorted = top
-    }
+    sorted = groupDonutSlices(sorted, maxCategories)
 
     const withPct = sorted.map(d => ({ ...d, pct: fmtPct(d.value / total) }))
     return { data: withPct, total: round2(total) }
@@ -68,8 +78,8 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
           <PieChart accessibilityLayer={false}>
             <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="66%" outerRadius="98%" strokeWidth={0} paddingAngle={2} rootTabIndex={-1}
               isAnimationActive={!reducedMotion()} animationBegin={120} animationDuration={900} animationEasing="ease-out"
-              onClick={(d) => { if (d && clickable(d.name)) onCategoryClick(d.name) }}>
-              {data.map((d, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} style={{ outline:'none', cursor: clickable(d.name) ? 'pointer' : 'default' }}/>)}
+              onClick={(d) => { if (d && clickable(d.payload || d)) onCategoryClick(d.name) }}>
+              {data.map((d, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} style={{ outline:'none', cursor: clickable(d) ? 'pointer' : 'default' }}/>)}
             </Pie>
             <Tooltip content={({ active, payload }) => (
               <ChartTooltip active={active} payload={payload?.map(p => ({ ...p, name: t('chart.donut.amount') }))}
@@ -90,18 +100,18 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
         {data.map((d, i) => (
           <div
             key={i}
-            {...(clickable(d.name) ? {
+            {...(clickable(d) ? {
               role: 'button', tabIndex: 0,
               onClick: () => onCategoryClick(d.name),
               onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCategoryClick(d.name) } },
               // A11Y-10: el nombre empieza por lo que se ve ("Vivienda 40,0 %").
               'aria-label': `${catName(d.name, lang)} ${d.pct}, ${t('chart.donut.viewAction')}`,
             } : {})}
-            title={clickable(d.name) ? t('chart.donut.viewMovements', { cat: catName(d.name, lang) }) : undefined}
-            style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d.name) ? 'pointer' : 'default', padding:'2px 0', minHeight: clickable(d.name) ? 44 : undefined }}
+            title={clickable(d) ? t('chart.donut.viewMovements', { cat: catName(d.name, lang) }) : undefined}
+            style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d) ? 'pointer' : 'default', padding:'2px 0', minHeight: clickable(d) ? 44 : undefined }}
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>
-            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catName(d.name, lang)}{clickable(d.name) ? <span aria-hidden="true"> ›</span> : ''}</div>
+            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catName(d.name, lang)}{clickable(d) ? <span aria-hidden="true"> ›</span> : ''}</div>
             <div className="num" style={{ fontSize:12, fontWeight:500, color:'var(--th)' }}>{d.pct}</div>
           </div>
         ))}

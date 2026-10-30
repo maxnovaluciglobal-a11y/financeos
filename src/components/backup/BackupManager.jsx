@@ -19,9 +19,9 @@ import { MIN_PASSPHRASE_LENGTH, isEncryptedBackupText, passphraseOk, decryptBack
 // "hace N días" con .one/.many (mismo precedente que projects.totalNet.*)
 const plural = (t, base, n, vars) => t(`${base}.${n === 1 ? 'one' : 'many'}`, { n, ...vars })
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-function daysSince(isoDate) {
+function daysSince(isoDate, now = Date.now()) {
   if (!isoDate) return null
-  return Math.floor((Date.now() - new Date(isoDate).getTime()) / (1000 * 60 * 60 * 24))
+  return Math.floor((now - new Date(isoDate).getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function formatDate(isoDate) {
@@ -188,7 +188,18 @@ export function BackupStatusBadge({ compact = false }) {
 const REMINDER_DISMISS_KEY = 'fos_backup_reminder_dismissed'
 export const BACKUP_STALE_DAYS = 14
 
-export function BackupReminderBanner() {
+// A8 (30-oct-2026): la misma regla la usa el Inicio para no avisar el
+// respaldo dos veces (este aviso con días + la tarjeta "Respaldo recomendado").
+export function isBackupStale({ settings = {}, hasRealData = false, now = Date.now() } = {}) {
+  if (settings?.isDemo || !hasRealData) return false
+  const last = settings.lastBackupAt
+  if (last === null || last === undefined) return true
+  return daysSince(last, now) > BACKUP_STALE_DAYS
+}
+
+// `suppress`: el Inicio lo apaga mientras "Primeros pasos" ya pide el primer
+// respaldo (un solo aviso a la vez, R7/A8).
+export function BackupReminderBanner({ suppress = false } = {}) {
   const { settings, updateSettings, exportData, incomes, expenses, debts, goals } = useApp()
   const { t } = useT()
   const [dismissed, setDismissed] = useState(() => {
@@ -200,8 +211,8 @@ export function BackupReminderBanner() {
   const hasRealData = incomes.length > 0 || expenses.length > 0 || debts.length > 0 || goals.length > 0
 
   // Datos ficticios de demo no necesitan respaldo — nunca mostrar acá.
-  const stale = !settings?.isDemo && hasRealData && (lastBackup === null || lastBackup === undefined || days > BACKUP_STALE_DAYS)
-  if (!stale || dismissed) return null
+  const stale = isBackupStale({ settings, hasRealData })
+  if (!stale || dismissed || suppress) return null
 
   function dismiss() {
     try { sessionStorage.setItem(REMINDER_DISMISS_KEY, '1') } catch { /* modo privado: solo en memoria */ }

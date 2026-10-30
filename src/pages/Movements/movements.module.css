@@ -11,6 +11,8 @@
 .summaryMain { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
 .summaryCount { font-weight: 600; }
 .summaryTotal { font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; }
+/* H17 (ola A7): nota de inversión, subordinada al total. */
+.summaryInv { font-size: 12px; color: var(--th); font-weight: 400; }
 .summaryToggle { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 13px; font-weight: 500; color: var(--tm); }
 .summaryToggle svg { transition: transform var(--dur) var(--ease); }
 .summary[aria-expanded="true"] .summaryToggle svg { transform: rotate(180deg); }

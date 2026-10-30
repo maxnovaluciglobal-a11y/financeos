@@ -87,12 +87,24 @@ export function countBudgetsExceeded({ budgets, expenses, activeMonth, settings 
 // Estado por categoría en palabras: A tiempo · Cerca del límite · Excedido ·
 // Sin asignar (gasto en una categoría sin presupuesto). Misma regla de umbral
 // que budgetStatus (80 %, excedido solo si supera).
-export const CATEGORY_STATE_TONE = { ok: 'ok', near: 'warn', over: 'risk', unassigned: 'muted' }
+// H19 (ola A6, 30-oct-2026): 'idle' = presupuesto sin ningún gasto en el mes.
+// Antes salía "A tiempo"/"En rango" con check verde, que no informa nada.
+export const CATEGORY_STATE_TONE = { ok: 'ok', near: 'warn', over: 'risk', unassigned: 'muted', idle: 'muted' }
 
 export function categoryState(spent, limit) {
   if (!(Number(limit) > 0)) return 'unassigned'
+  if (!(Number(spent) > 0)) return 'idle'
   const { over, warn } = budgetStatus(spent, limit)
   return over ? 'over' : warn ? 'near' : 'ok'
+}
+
+// H18 (ola A6): "supera" solo si la diferencia es real. Tolerancia: 0,5 % del
+// valor de referencia y nunca menos de 1 unidad de la moneda (un peso no es
+// un déficit). Sirve en los dos sentidos: déficit y "ingreso sin asignar".
+export const BUDGET_TOLERANCE = 0.005
+export function exceedsWithTolerance(value, reference) {
+  const v = Number(value) || 0, ref = Number(reference) || 0
+  return v - ref > Math.max(Math.abs(ref) * BUDGET_TOLERANCE, 1)
 }
 
 // Cuánto del mes pasó. Un mes ya cerrado cuenta entero; uno futuro, nada.

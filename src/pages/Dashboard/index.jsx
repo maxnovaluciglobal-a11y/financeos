@@ -20,6 +20,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import CountryTool from './CountryTool.jsx'
 import HomeKpis from './HomeKpis.jsx'
 import FirstSteps from './FirstSteps.jsx'
+import { firstStepsProgress } from './firstSteps.js'
 import ProChecklist from './ProChecklist.jsx'
 import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
@@ -32,7 +33,7 @@ import { prevMonthOf, homeMonthTotals } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { moneyLocale, currentMonth, catName, fmtMoney, fmtSignedMoney, fmtPct, currencySymbol, fmtPctPoints } from '../../utils/index.js'
 import { DEFAULT_USD_RATES, monthLabel } from '../shared/constants.js'
-import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
+import { BackupReminderBanner, isBackupStale } from '../../components/backup/BackupManager.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
 import { Card, CardHeader, PageHeader } from '../../components/ui/index.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
@@ -51,8 +52,24 @@ export default function Dashboard({ setPage }) {
   const incomes  = useMemo(() => (Array.isArray(ctx.incomes)  ? ctx.incomes.filter(r => !r?.inv)  : []), [ctx.incomes])
   const expenses = useMemo(() => (Array.isArray(ctx.expenses) ? ctx.expenses.filter(r => !r?.inv) : []), [ctx.expenses])
   const budgets  = useMemo(() => (Array.isArray(ctx.budgets) ? ctx.budgets : []), [ctx.budgets])
+
   const goals    = useMemo(() => (Array.isArray(ctx.goals) ? ctx.goals : []), [ctx.goals])
   const settings = useMemo(() => ((ctx.settings && typeof ctx.settings === 'object') ? ctx.settings : {}), [ctx.settings])
+
+  // R7/A8 (30-oct-2026): un solo aviso a la vez en el Inicio.
+  //  · Una sola fila de guía: "Primeros pasos" mientras esté incompleta;
+  //    "Tres cosas para probar en Pro" recién cuando termina.
+  //  · El respaldo se avisa una vez: si "Primeros pasos" ya lo pide, no sale la
+  //    franja; la tarjeta fija "Respaldo recomendado" solo cuando el respaldo
+  //    está al día (si está viejo, ya avisa la franja con los días).
+  const guide = firstStepsProgress({
+    incomes: ctx.incomes, expenses: ctx.expenses, budgets: ctx.budgets,
+    lastBackupAt: settings.lastBackupAt, syncOn: isSyncEnabled() && syncAvailable(),
+  })
+  const firstStepsShown = !settings.isDemo && !guide.complete && !!setPage
+  const backupStepPending = firstStepsShown && !guide.steps.find(st => st.id === 'backup')?.done
+  const hasRealData = [ctx.incomes, ctx.expenses, ctx.debts, ctx.goals].some(a => Array.isArray(a) && a.length > 0)
+  const backupStale = isBackupStale({ settings, hasRealData })
   const subs     = useMemo(() => (Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []), [ctx.subscriptions])
   const debts    = useMemo(() => (Array.isArray(ctx.debts) ? ctx.debts : []), [ctx.debts])
 
@@ -474,7 +491,7 @@ export default function Dashboard({ setPage }) {
           (orden en Home.module.css). */}
       <div className={hs.home}>
         <div className={hs.stack}>
-          <div className={hs.oBackup}><SafariStorageNotice /><BackupReminderBanner /></div>
+          <div className={hs.oBackup}><SafariStorageNotice /><BackupReminderBanner suppress={backupStepPending} /></div>
           <div className={hs.oKpis}>
             <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
               pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
@@ -496,7 +513,7 @@ export default function Dashboard({ setPage }) {
               </div>
             </HomeKpis>
           </div>
-          <div className={hs.oSteps} data-tour="first-steps"><ProChecklist setPage={setPage} /><FirstSteps setPage={setPage} /></div>
+          <div className={hs.oSteps} data-tour="first-steps"><ProChecklist setPage={setPage} suppressed={firstStepsShown} /><FirstSteps setPage={setPage} /></div>
           {/* Gasto por categoría (pulido 09-oct, pedido de Walter): vuelve a la
               vista esencial, visible por defecto, después de Ingresos/Gastos y
               Primeros pasos. Es el único gráfico del Inicio esencial.
@@ -715,7 +732,7 @@ export default function Dashboard({ setPage }) {
 
       {/* Backup recomendado — nota general en la vista detallada; el aviso con
           días y botón de un clic es la franja de la primera vista (M5) */}
-      {!compact && <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+      {!compact && !backupStale && <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--r)', padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:3 }}>{t('dash.backup.title')}</div>
           <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>{t('dash.backup.text')}</div>

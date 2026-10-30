@@ -3,6 +3,7 @@
 // palabra además del color: En rango (check) · Atención (!) desde el 85 % ·
 // Excedido (✕) sobre el 100 %. Mismo vocabulario de íconos que ScoreState.
 import { useMemo } from 'react'
+import { Minus } from 'lucide-react'
 import Money from '../../components/Money.jsx'
 import { ScoreStateIcon } from '../../components/ScoreState.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -16,6 +17,8 @@ const STATE = {
   ok:   { level: 'ok',        color: 'var(--pos)',  key: 'budgets.cat.ok' },
   near: { level: 'attention', color: 'var(--warn)', key: 'budgets.cat.warn' },
   over: { level: 'risk',      color: 'var(--neg)',  key: 'budgets.cat.over' },
+  // H19 (ola A6): presupuesto sin gasto en el mes, sin check verde.
+  idle: { level: 'idle',      color: 'var(--th)',   key: 'budgets.cat.idle' },
 }
 
 export default function BudgetByCategory({ budgets, expenses, monthExpenses, activeMonth, settings, sym, setPage }) {
@@ -44,7 +47,7 @@ export default function BudgetByCategory({ budgets, expenses, monthExpenses, act
         <>
           <ul className={s.rows}>
             {shown.map(r => {
-              const st = STATE[r.state]
+              const st = STATE[r.spent > 0 ? r.state : 'idle']
               const fill = r.limit > 0 ? Math.min(r.spent / r.limit, 1) : 1
               return (
                 <li key={r.id} className={s.row}>
@@ -59,7 +62,7 @@ export default function BudgetByCategory({ budgets, expenses, monthExpenses, act
                       <div className={s.barFill} style={{ transform: `scaleX(${fill})`, background: st.color }} />
                     </div>
                     <span className={s.state} style={{ color: st.color }}>
-                      <ScoreStateIcon level={st.level} size={14} color={st.color} />
+                      {st.level === 'idle' ? <Minus size={14} strokeWidth={1.7} color={st.color} aria-hidden="true" style={{ flexShrink: 0 }} /> : <ScoreStateIcon level={st.level} size={14} color={st.color} />}
                       {t(st.key)}
                     </span>
                   </div>

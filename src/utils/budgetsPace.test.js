@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { categoryState, monthElapsed, budgetPace } from './budgets.js'
+import { categoryState, monthElapsed, budgetPace, exceedsWithTolerance, CATEGORY_STATE_TONE } from './budgets.js'
 
 describe('categoryState (UI-M5): estado en palabras por categoría', () => {
   it('sin límite = sin asignar', () => {
@@ -43,5 +43,21 @@ describe('budgetPace', () => {
   })
   it('sin presupuesto no hay ritmo', () => {
     expect(budgetPace({ spent: 10, total: 0, activeMonth: '2026-10', today }).pace).toBe(null)
+  })
+})
+
+describe('ola A6 (H18, H19)', () => {
+  it('presupuesto sin gasto: idle (no "en rango")', () => {
+    expect(categoryState(0, 100)).toBe('idle')
+    expect(CATEGORY_STATE_TONE.idle).toBe('muted')
+  })
+  it('déficit de $1 no cuenta; uno real sí', () => {
+    expect(exceedsWithTolerance(5031837, 5031836)).toBe(false)
+    expect(exceedsWithTolerance(1010, 1000)).toBe(true)
+    expect(exceedsWithTolerance(1004, 1000)).toBe(false)
+  })
+  it('nunca menos de una unidad de tolerancia', () => {
+    expect(exceedsWithTolerance(101, 100)).toBe(false)
+    expect(exceedsWithTolerance(102, 100)).toBe(true)
   })
 })

@@ -55,6 +55,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // H14 (ola A11): un solo registro del SW, el de src/main.jsx (antes el
+      // plugin inyectaba además registerSW.js y quedaba registrado dos veces).
+      injectRegister: false,
       includeAssets: ['favicon.svg'],
       manifest: {
         // Sin `lang`: el manifest solo localiza name/short_name, que son la marca

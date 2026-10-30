@@ -14,6 +14,7 @@ import { AppContext } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
 import { usePageStack } from '../hooks/usePageStack.js'
+import { prefetchTabs } from '../utils/prefetchTabs.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -125,6 +126,8 @@ function DemoInner() {
   const [page, setPageState] = useState('dashboard')
   const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
   const { t } = useT()
+  // H20 (ola A10): pestañas precargadas tras el primer pintado.
+  useEffect(() => { prefetchTabs() }, [])
   // Recorrido: arranca solo en la primera visita; el "?" del banner lo repite
   // (vuelve al Dashboard, donde están los objetivos).
   const [tourOpen, setTourOpen] = useState(() => !hasSeenDemoTour())

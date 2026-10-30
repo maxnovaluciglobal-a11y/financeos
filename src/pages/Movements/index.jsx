@@ -451,6 +451,8 @@ export default function Movements({ setPage }) {
           <span className={ms.summaryCount}>{t(monthExp.length === 1 ? 'movl.summary.one' : 'movl.summary.many', { n: monthExp.length })}</span>
           <span aria-hidden="true">·</span>
           <Amount className={ms.summaryTotal} value={totalExp} sym={sym} signed={false} />
+          {/* H17 (ola A7): el Inicio excluye la inversión de Gastos; aquí se dice cuánta incluye. */}
+          {invExp > 0 && <span className={ms.summaryInv}>{t('mov.summary.invIncl', { v: fmtM(invExp, sym) })}</span>}
         </span>
         <span className={ms.summaryToggle}>{showSummary ? t('movl.summary.hide') : t('movl.summary.show')}<ChevronDown size={16} strokeWidth={1.7} aria-hidden="true" /></span>
       </button>

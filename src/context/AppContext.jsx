@@ -267,6 +267,7 @@ export function AppProvider({ children }) {
       await dbAdd('incomes', item)          // DB primero
       dispatch({ type: 'ADD_INCOME', item }) // UI después de confirmar
       requestPersistentStorage()
+      return item // A9: el alta rápida lo usa para "Deshacer"
     } catch (e) {
       showToast(tr('toast.save.income'), 'error')
       throw e
@@ -301,6 +302,7 @@ export function AppProvider({ children }) {
       await dbAdd('expenses', item)
       dispatch({ type: 'ADD_EXPENSE', item })
       requestPersistentStorage()
+      return item // A9: el alta rápida lo usa para "Deshacer"
     } catch (e) {
       showToast(tr('toast.save.expense'), 'error')
       throw e

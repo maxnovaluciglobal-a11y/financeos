@@ -106,7 +106,7 @@ function DateSegment({ date, setDate, t }) {
 }
 
 export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false }) {
-  const { addExpense, addIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
+  const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
   const { m: maskMoney } = useMoney()
@@ -247,6 +247,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     // Los ingresos llevan el nombre en `source` (lo que muestra Ingresos); se
     // conserva también `description` como antes.
     const data = type === 'expense' ? { ...base, subcategory: '', method, type: 'Necesidad', notes: '', project: '' } : { ...base, source: finalDesc }
+    let savedItem = null
     try {
       if (repeat && addWithRule) {
         // "Se repite": el movimiento y su regla, con este registro como primera ocurrencia.
@@ -256,8 +257,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         const plan = monthPlan(recurring || [], data.date.slice(0, 7), { incomes, expenses })
         const match = findPendingMatch(data, plan, type)
         const linked = match ? { ...data, recurringId: match.ruleId, occurrenceDate: match.date } : data
-        if (type === 'expense') await addExpense?.(linked)
-        else await addIncome?.(linked)
+        if (type === 'expense') savedItem = await addExpense?.(linked)
+        else savedItem = await addIncome?.(linked)
         // "¿Lo marcamos como fijo?": mismo comercio 2 de los últimos 3 meses.
         const hit = !match && saveRule && detectRecurring(data,
           type === 'expense' ? expenses : incomes, recurring, { kind: type })
@@ -274,7 +275,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
       // aprende comercio→categoría (usa la descripción como comercio) y el método usado
       rememberChoices(finalDesc, cat, type === 'expense' ? method : null)
       hapticTap()
-      showToast?.(type === 'expense' ? t('qa.savedExpense') : t('qa.savedIncome'), 'ok')
+      // A9 (30-oct-2026): "Deshacer" en el toast de guardado (solo altas simples:
+      // un "Se repite" crea además la regla, que se deshace desde Fijos).
+      const undoDel = type === 'expense' ? delExpense : delIncome
+      showToast?.(type === 'expense' ? t('qa.savedExpense') : t('qa.savedIncome'), 'ok',
+        savedItem?.id && undoDel ? { label: t('common.undo'), onAction: () => undoDel(savedItem.id) } : null)
       setSaving(false)
       onSaved?.(type)
     } catch {

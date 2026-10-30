@@ -19,6 +19,7 @@ import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
 import { QUICK_ADD_EVENT } from '../quickAddBus.js'
 import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
 import PushAsk from '../PushAsk.jsx'
+import UpdateNotice from '../UpdateNotice.jsx'
 import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
 import { pushSupported, isPushEnabled } from '../../core/push.js'
 import { getLicenseKey, getLicensePlan } from '../../utils/licenseValidator.js'
@@ -283,6 +284,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
       <PageTour page={page} open={tour.open} onClose={tour.close} />
       <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => setPushCheck(true)} />
       <PushAsk open={pushAskOpen} onClose={() => setPushAskOpen(false)} onResult={onPushResult} />
+      <UpdateNotice />
     </div>
   )
 }

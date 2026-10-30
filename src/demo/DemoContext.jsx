@@ -144,10 +144,10 @@ export function DemoProvider({ children }) {
   }, [showToast, tr])
 
   // Todas las operaciones son en memoria — sin await, sin IndexedDB
-  const addIncome    = useCallback((item) => { dispatch({ type: 'ADD_INCOME',  item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.income'), 'ok') }, [showToast, tr])
+  const addIncome    = useCallback((item) => { const it = { ...item, id: uid() }; dispatch({ type: 'ADD_INCOME',  item: it }); showToast(tr('demo.toast.added.income'), 'ok'); return it }, [showToast, tr])
   const updateIncome = useCallback((item) => { dispatch({ type: 'UPDATE_INCOME', item }) }, [])
   const delIncome   = useCallback((id)   => { dispatch({ type: 'DEL_INCOME',  id }) }, [])
-  const addExpense  = useCallback((item) => { dispatch({ type: 'ADD_EXPENSE', item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.expense'), 'ok') }, [showToast, tr])
+  const addExpense  = useCallback((item) => { const it = { ...item, id: uid() }; dispatch({ type: 'ADD_EXPENSE', item: it }); showToast(tr('demo.toast.added.expense'), 'ok'); return it }, [showToast, tr])
   const delExpense    = useCallback((id)   => { dispatch({ type: 'DEL_EXPENSE', id }) }, [])
   const updateExpense = useCallback((item) => { dispatch({ type: 'UPDATE_EXPENSE', item }) }, [])
   const addBudget   = useCallback((item) => { dispatch({ type: 'ADD_BUDGET',  item: { ...item, id: uid() } }); showToast(tr('demo.toast.added.budget'), 'ok') }, [showToast, tr])

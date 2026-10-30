@@ -11,7 +11,7 @@ import Amount from '../../components/Amount.jsx'
 import { interpolateParts } from '../../i18n/translate.js'
 import s from './budgets.module.css'
 import { budgetsFromPreviousMonth } from './budgetCopy.js'
-import { budgetRollover, budgetStatus, budgetPace, categoryState, CATEGORY_STATE_TONE } from '../../utils/budgets.js'
+import { budgetRollover, budgetStatus, budgetPace, categoryState, CATEGORY_STATE_TONE, exceedsWithTolerance } from '../../utils/budgets.js'
 import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
@@ -59,6 +59,8 @@ export default function Budgets() {
   }, [budgets, rolloverByCat])
 
   const totalBudget   = useMemo(() => budgets.reduce((s, b) => s + (effectiveLimitByCat[b.category] || b.limit), 0), [budgets, effectiveLimitByCat])
+  // H18 (ola A6): el presupuesto "supera" el ingreso solo por una diferencia real.
+  const overIncome = exceedsWithTolerance(totalBudget, ingresoNeto)
   const budgetedCats  = useMemo(() => new Set(budgets.map(b => b.category)), [budgets])
   const totalBudgeted = useMemo(() => mExpenses.filter(e => budgetedCats.has(e.category)).reduce((s, r) => s + r.amount, 0), [mExpenses, budgetedCats])
   const overBudget    = useMemo(() => budgets.filter(b => budgetStatus(expByCat[b.category] || 0, effectiveLimitByCat[b.category] || b.limit).over), [budgets, expByCat, effectiveLimitByCat])
@@ -202,10 +204,13 @@ export default function Budgets() {
             <p className={s.headline}>{headline}</p>
             <div className={s.paceRow}>
               <span>{paceText}</span>
-              {!pace.closed && (
+              {!pace.closed && (pace.used > 0 ? (
                 <StateTag tone={pace.pace === 'ok' ? 'ok' : pace.pace === 'fast' ? 'warn' : 'risk'}
                   label={pace.pace === 'ok' ? t('budgets.pace.ok') : pace.pace === 'fast' ? t('budgets.pace.fast') : t('budgets.state.over')} />
-              )}
+              ) : (
+                /* W1/H19 (ola A6): sin gasto, estado neutro en vez de "A buen ritmo". */
+                <StateTag tone="muted" label={t('budgets.state.idle')} />
+              ))}
             </div>
             {pace.perDay > 0 && <div className={s.perDay}>{t('budgets.pace.perDay', { v: fmtMoney(pace.perDay, sym) })}</div>}
           </div>
@@ -222,11 +227,11 @@ export default function Budgets() {
       {totalBudget > 0 && (
         <div className={`kpi-row ${s.kpis}`}>
           <KPI label={t('budgets.kpi.over')} value={overBudget.length} alert={overBudget.length > 0 ? t('ui.state.overBudget') : undefined} sub={overBudget.length > 0 ? t('budgets.kpi.review') : t('budgets.kpi.allOk')} />
-          <KPI label={t('budgets.kpi.coverage')} value={ingresoNeto > 0 ? fmtPct(totalBudget/ingresoNeto) : '—'} color={ingresoNeto > 0 && totalBudget > ingresoNeto ? 'red' : 'default'} alert={ingresoNeto > 0 && totalBudget > ingresoNeto ? t('budgets.kpi.exceedsIncome') : undefined} sub={ingresoNeto > 0 ? (totalBudget > ingresoNeto ? undefined : totalBudget/ingresoNeto > 0.8 ? t('budgets.kpi.noMargin') : t('budgets.kpi.healthy')) : t('budgets.kpi.noIncome')} />
+          <KPI label={t('budgets.kpi.coverage')} value={ingresoNeto > 0 ? fmtPct(totalBudget/ingresoNeto) : '—'} color={ingresoNeto > 0 && overIncome ? 'red' : 'default'} alert={ingresoNeto > 0 && overIncome ? t('budgets.kpi.exceedsIncome') : undefined} sub={ingresoNeto > 0 ? (overIncome ? undefined : totalBudget/ingresoNeto > 0.8 ? t('budgets.kpi.noMargin') : t('budgets.kpi.healthy')) : t('budgets.kpi.noIncome')} />
           <KPI label={t('budgets.kpi.total')} value={fmtMoney(totalBudget, sym)} />
         </div>
       )}
-      {ingresoNeto > totalBudget && (
+      {exceedsWithTolerance(ingresoNeto, totalBudget) && (
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',background:'var(--accent-bg)',borderRadius:8}}>
           <div>
             <div style={{fontSize: 12,color:'var(--accent)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('budgets.unassigned.label')}</div>
@@ -236,8 +241,8 @@ export default function Budgets() {
         </div>
       )}
       {overBudget.length > 0 && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') })}</Alert>}
-      {ingresoNeto > 0 && totalBudget > ingresoNeto && <Alert type="danger">{t('budgets.alert.deficit', { total: fmtMoney(totalBudget,sym), inc: fmtMoney(ingresoNeto,sym), def: fmtMoney(totalBudget-ingresoNeto,sym) })}</Alert>}
-      {ingresoNeto > 0 && totalBudget > 0 && totalBudget <= ingresoNeto && totalBudget/ingresoNeto > 0.8 && <Alert type="warning">{t('budgets.alert.tight', { pct: fmtPct(totalBudget/ingresoNeto) })}</Alert>}
+      {ingresoNeto > 0 && overIncome && <Alert type="danger">{t('budgets.alert.deficit', { total: fmtMoney(totalBudget,sym), inc: fmtMoney(ingresoNeto,sym), def: fmtMoney(totalBudget-ingresoNeto,sym) })}</Alert>}
+      {ingresoNeto > 0 && totalBudget > 0 && !overIncome && totalBudget/ingresoNeto > 0.8 && <Alert type="warning">{t('budgets.alert.tight', { pct: fmtPct(totalBudget/ingresoNeto) })}</Alert>}
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:24,marginBottom:16,alignItems:'start'}}>
         {/* Por categoría primero: es lo que se viene a mirar. */}

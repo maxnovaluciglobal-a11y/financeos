@@ -1,5 +1,6 @@
 // src/App.jsx
 import { lazy, Suspense } from 'react'
+import { prefetchTabs } from './utils/prefetchTabs.js'
 import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
 import ResetPassword from './components/ResetPassword.jsx'
@@ -130,6 +131,9 @@ function Inner() {
 
   // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
+
+  // H20 (ola A10): las pestañas se precargan tras el primer pintado.
+  useEffect(() => { prefetchTabs() }, [])
 
   // Analítica (C-14): las cuentas internas no se miden.
   useEffect(() => { if (session?.user?.email) markInternalUser(session.user.email) }, [session?.user?.email])

@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { installGlobalErrorLog } from './utils/errorLog.js'
 import { detectLanguage } from './i18n/translate.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
+import { watchServiceWorkerUpdates } from './core/swUpdate.js'
 
 // Skew Protection (C-49): fija este deploy para los chunks lazy que se pidan
 // después (cookie técnica de Vercel, sin seguimiento). Vacío en local.
@@ -57,7 +58,9 @@ createRoot(document.getElementById('root')).render(
 // Register service worker for PWA (only in production)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/app/sw.js')
+    // H14 (ola A11): aviso de versión nueva cuando el SW nuevo toma control.
+    watchServiceWorkerUpdates(navigator.serviceWorker)
+    navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' })
       .then(reg => {
         // Buscar versión nueva al volver a la app (pestaña visible de nuevo)
         document.addEventListener('visibilitychange', () => {
