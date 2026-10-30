@@ -8,14 +8,22 @@ import { installGlobalErrorLog } from './utils/errorLog.js'
 import { detectLanguage } from './i18n/translate.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
 import { watchServiceWorkerUpdates } from './core/swUpdate.js'
-import { skewCookieStrings } from './utils/skewCookie.js'
+import { skewCookieStrings, clearSkewCookieStrings } from './utils/skewCookie.js'
 
 // Skew Protection (C-49): fija este deploy SOLO para los chunks lazy de
 // /app/assets (cookie técnica de Vercel, sin seguimiento). Vacío en local.
 // Con path=/app también se fijaban el HTML y sw.js y el usuario quedaba en la
 // versión anterior toda la sesión: ver utils/skewCookie.js.
 /* global __VERCEL_DPL__ */
-try { for (const c of skewCookieStrings(typeof __VERCEL_DPL__ === 'string' ? __VERCEL_DPL__ : '')) document.cookie = c } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
+// Con un SW al mando (o cuando toma el mando) la cookie se borra: los chunks
+// salen de su precache y la cookie ataba la actualización del SW al despliegue
+// viejo (ver utils/skewCookie.js).
+try {
+  const sw = typeof navigator !== 'undefined' ? navigator.serviceWorker : null
+  const dpl = typeof __VERCEL_DPL__ === 'string' ? __VERCEL_DPL__ : ''
+  for (const c of skewCookieStrings(dpl, { controlled: !!sw?.controller })) document.cookie = c
+  if (dpl) sw?.addEventListener?.('controllerchange', () => { for (const c of clearSkewCookieStrings()) document.cookie = c })
+} catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 
 installGlobalErrorLog()
 installWebAnalytics()
