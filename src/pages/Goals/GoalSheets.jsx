@@ -35,10 +35,11 @@ export function FixedBuckets({ buckets, t, fmt, onSelect }) {
           const g = b.goal
           const done = g && g.target > 0 && g.saved >= g.target
           const Icon = GOAL_ICONS[b.id]
-          const aria = g ? (done ? `${g.name} · ${t('goals.status.done')}` : t('goals.r9.bucket.addAria', { name: g.name })) : t('goals.r9.bucket.createAria', { name })
           return (
             <li key={b.id} style={{ borderBottom: '1px solid var(--brd)' }}>
-              <button type="button" onClick={() => onSelect(b)} aria-label={aria}
+              {/* El nombre accesible sale del texto visible (nombre, avance y acción): axe
+                  label-content-name-mismatch pide que el texto visible esté en el nombre. */}
+              <button type="button" onClick={() => onSelect(b)}
                 style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr) auto', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '8px 2px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
                 <span aria-hidden="true" className="cat-icon" style={{ width: 28, height: 28, background: `color-mix(in srgb, var(--cat-${b.id === 'emergency' ? 1 : 3}) 12%, transparent)` }}>
                   <Icon size={16} strokeWidth={1.7} />
@@ -51,7 +52,7 @@ export function FixedBuckets({ buckets, t, fmt, onSelect }) {
                       : b.suggested ? t('goals.r9.bucket.suggested', { v: fmt(b.suggested) }) : t('goals.r9.bucket.empty')}
                   </span>
                 </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: done ? 'var(--pos)' : 'var(--tm)' }} aria-hidden="true">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: done ? 'var(--pos)' : 'var(--tm)' }}>
                   {done
                     ? <><SignalIcon kind="ok" size={13} />{t('goals.status.done')}</>
                     : <><Plus size={14} strokeWidth={1.7} />{g ? t('goals.r9.bucket.add') : t('goals.r9.bucket.create')}<ChevronRight size={14} strokeWidth={1.7} /></>}

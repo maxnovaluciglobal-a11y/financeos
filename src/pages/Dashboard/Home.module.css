@@ -305,6 +305,8 @@
 .refActions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
 /* B2: "Convertir" a la izquierda: a la derecha lo tapaba el "+" en pantallas bajas (667 px). */
 .refActions .refTool { order: -1; }
+/* Las dos acciones a la izquierda: la esquina derecha la ocupa el "+" en 667 px. */
+.refActions { justify-content: flex-start; gap: 16px; }
 .refLink {
   min-height: 44px; margin: -10px 0 -10px -2px; padding: 0 2px;
   background: none; border: 0; cursor: pointer;
