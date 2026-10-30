@@ -13,6 +13,8 @@ import s from './budgets.module.css'
 import { budgetsFromPreviousMonth } from './budgetCopy.js'
 import { budgetRollover, budgetStatus, budgetPace, categoryState, CATEGORY_STATE_TONE, exceedsWithTolerance, unbudgetedSpent } from '../../utils/budgets.js'
 import BudgetSplit from './BudgetSplit.jsx'
+import BudgetWizard from './BudgetWizard.jsx'
+import w from './budgetWizard.module.css'
 import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, currentMonth, catName, currencySymbol } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
@@ -23,6 +25,8 @@ export default function Budgets() {
   const { t, lang } = useT()
   const [f, setF]     = useState({ category: 'Vivienda', limit: '' })
   const [err, setErr] = useState('')
+  // R8b: asistente de 3 pasos en una hoja (se monta solo al abrirlo).
+  const [wizOpen, setWizOpen] = useState(false)
   const sym           = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
   const { m } = useMoney()
@@ -186,11 +190,17 @@ export default function Budgets() {
           }))} />
         </EmptyState>
       )}
+      {budgets.length === 0 && copyCandidates.length > 0 && (
+        <div className={w.entry}>
+          <button type="button" className="fos-link" onClick={() => setWizOpen(true)}>{t('budgets.wiz.open')}</button>
+        </div>
+      )}
       {budgets.length === 0 && copyCandidates.length === 0 && (
         <EmptyState icon={Target}
           title={t('empty.budgets.title')}
           text={t('empty.budgets.text')}
-          cta={t('empty.budgets.cta')} onCta={focusNewBudget} />
+          cta={t('budgets.wiz.open')} onCta={() => setWizOpen(true)}
+          secondary={{ label: t('budgets.first.manual'), onClick: focusNewBudget }} />
       )}
       {rolloverOn && (
         <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 12, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.6 }}>
@@ -235,7 +245,7 @@ export default function Budgets() {
       {/* R8a (ola C, patrón rial): reparto del ingreso; reemplaza el recuadro
           "Ingreso sin asignar" (el dato sigue: es el tramo "Sin asignar"). */}
       {totalBudget > 0 && (
-        <BudgetSplit income={ingresoNeto} budgeted={totalBudget} sym={sym}
+        <BudgetSplit key={settings.savingsTargetPct || 0} income={ingresoNeto} budgeted={totalBudget} sym={sym}
           savingsPct={settings.savingsTargetPct || 0}
           unbudgeted={unbudgetedSpent(expByCat, budgetedCats)}
           onSavingsPct={(v) => updateSettings({ ...settings, savingsTargetPct: v })} />
@@ -344,12 +354,18 @@ export default function Budgets() {
                     <div style={{fontSize:12,color:'var(--th)',fontFamily: 'var(--sans)',margin:'10px 0 8px'}}>{t('budgets.model.onlyNew')}</div>
                     <Btn variant="primary" onClick={aplicar}>{t('budgets.model.apply')}</Btn>
                   </>}
+                  {budgets.length > 0 && (
+                    <div className={w.entry}>
+                      <button type="button" className="fos-link" onClick={() => setWizOpen(true)}>{t('budgets.wiz.open')}</button>
+                    </div>
+                  )}
                 </div>
               )
             })()}
           </section>
         </div>
       </div>
+      {wizOpen && <BudgetWizard onClose={() => setWizOpen(false)} />}
     </div>
   )
 }
