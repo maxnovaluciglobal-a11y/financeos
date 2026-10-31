@@ -3,7 +3,7 @@
 /* Cabecera de cuenta */
 .account {
   margin-bottom: 22px; padding: 16px; border-radius: var(--rl);
-  background: var(--sur); border: 0.5px solid var(--brd); box-shadow: var(--sh-1);
+  background: var(--box-bg); border: 0; box-shadow: var(--box-sh);
 }
 .accountTop { display: flex; align-items: center; gap: 14px; }
 .avatar {
@@ -17,11 +17,11 @@
 .accountName { font-size: 16px; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .accountMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; }
 .plan, .planPro {
-  display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border-radius: var(--rs);
+  display: inline-flex; align-items: center; min-height: 22px; padding: 0 10px; border-radius: var(--r-pill);
   font-family: var(--sans); font-size: 12px; font-weight: 600;
-  background: var(--sur2); color: var(--tm); border: 0.5px solid var(--brd2);
+  background: var(--fill); color: var(--tm); border: 0;
 }
-.planPro { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-700); border-color: color-mix(in srgb, var(--laton) 45%, transparent); }
+.planPro { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-700); }
 :global([data-theme="dark"]) .planPro { color: var(--laton-300); }
 .manage { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--accent); font-family: var(--sans); font-size: 12px; font-weight: 600; text-decoration: none; }
 
@@ -42,7 +42,7 @@
   margin: 0; padding: 0 2px 6px; font: 500 12px/1.3 var(--sans);
   color: var(--tm); letter-spacing: 0; text-transform: none;
 }
-.list { background: var(--sur); border: 0.5px solid var(--brd); border-radius: var(--rl); overflow: hidden; }
+.list { background: var(--box-bg); border: 0; border-radius: var(--rl); box-shadow: var(--box-sh); overflow: hidden; }
 .row {
   display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 10px 12px 10px 14px;
   background: none; border: 0; border-top: 0.5px solid var(--brd); text-align: left; cursor: pointer;
@@ -51,20 +51,20 @@
 }
 .row:first-child { border-top: 0; }
 a.row { text-decoration: none; box-sizing: border-box; }
-.row:hover, .row:active { background: var(--sur2); }
+.row:hover, .row:active { background: var(--fill); }
 .rowIc { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .rowLabel { flex: 1; min-width: 0; }
-.pro { font-size: 11px; font-family: var(--sans); background: var(--amb-bg); color: var(--amb); border-radius: var(--rs); padding: 1px 5px; letter-spacing: .5px; font-weight: 700; }
+.pro { font-size: 11px; font-family: var(--sans); background: var(--amb-bg); color: var(--amb); border-radius: var(--r-pill); padding: 1px 7px; letter-spacing: .5px; font-weight: 700; }
 .chev { color: var(--th); flex-shrink: 0; }
 
 /* Al final: tema, cerrar sesión, legales y versión */
 .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 6px; }
 .action {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 12px;
-  background: var(--sur2); border: 0.5px solid var(--brd); border-radius: var(--r);
-  font-family: var(--sans); font-size: 14px; color: var(--tm); cursor: pointer;
+  background: var(--fill); border: 0; border-radius: var(--r);
+  font-family: var(--sans); font-size: 14px; color: var(--tx); cursor: pointer;
 }
-.action:hover { color: var(--tx); }
+.action:hover, .action:active { background: var(--fill-2); }
 /* Enlaces legales con área de 44×44 (V2): antes medían 27 a 42 de ancho. El
    relleno lateral reemplaza al hueco de 14 px; el primero se corre 8 px para
    que el texto siga alineado con el borde de la columna. */

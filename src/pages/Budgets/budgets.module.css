@@ -50,9 +50,9 @@
 .actionMain { flex: 1; width: auto; min-width: 0; }
 .moreBtn {
   flex-shrink: 0; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tx); cursor: pointer;
+  border: 0; border-radius: var(--r); background: var(--fill); color: var(--tx); cursor: pointer;
 }
-.moreBtn:hover { background: var(--sur2); }
+.moreBtn:hover { background: var(--fill-2); }
 .moreBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
 .actions:not(:has(.actionMain)) { justify-content: flex-end; }
 

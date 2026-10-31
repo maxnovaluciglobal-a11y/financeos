@@ -81,7 +81,7 @@
 }
 .body { font-size: 14px; line-height: 1.55; color: var(--tm); margin: 0; }
 .option {
-  background: var(--sur); border: 0.5px solid var(--brd2); border-radius: var(--rl);
+  background: var(--box-bg); border: 0; box-shadow: var(--box-sh); border-radius: var(--rl);
   padding: 14px; display: flex; flex-direction: column; gap: 10px;
 }
 .optionTitle { font-size: 15px; font-weight: 600; color: var(--tx); margin: 0; }

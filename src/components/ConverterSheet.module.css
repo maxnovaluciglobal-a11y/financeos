@@ -23,26 +23,26 @@
 .fieldLabel { font-size: 13px; font-weight: 500; color: var(--tm); }
 .input, .output {
   width: 100%; min-height: 52px; padding: 10px 12px; box-sizing: border-box;
-  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
+  border: 1px solid var(--field-brd); border-radius: var(--r); background: var(--sur2);
   font-size: 22px; font-weight: 600; color: var(--tx);
 }
 .input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy); }
-.output { display: flex; align-items: center; background: transparent; overflow-wrap: anywhere; }
+.output { display: flex; align-items: center; background: var(--fill); border: 0; overflow-wrap: anywhere; }
 .help { margin-top: 6px; min-height: 18px; font-size: 12px; line-height: 1.45; color: var(--th); }
 .error { margin-top: 6px; min-height: 18px; font-size: 12px; line-height: 1.45; color: var(--neg); }
 
 .ops { display: flex; align-items: center; gap: 6px; margin: 8px 0 12px; }
 .op {
   width: 44px; height: 44px; flex-shrink: 0;
-  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur);
+  border: 0; border-radius: var(--r); background: var(--fill);
   font: 500 18px/1 var(--sans); color: var(--tx); cursor: pointer;
 }
 .swap {
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-left: auto; padding: 0 12px;
-  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur);
+  border: 0; border-radius: var(--r); background: var(--fill);
   font: 500 13px/1 var(--sans); color: var(--tx); cursor: pointer;
 }
-.op:hover, .swap:hover { border-color: var(--navy); }
+.op:hover, .swap:hover { background: var(--fill-2); }
 .op:focus-visible, .swap:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
 
 .gap { margin-top: 10px; font-size: 12px; line-height: 1.45; color: var(--tm); }
@@ -60,11 +60,11 @@
 .panel:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 
 /* Control segmentado compacto (US$ | €, 7 | 30 | 90 días): botón de 44 px con
-   una cara de 28 px, como RefSwitch del Inicio. Radios 8 / 6, nunca pill. */
+   una cara de 28 px, como RefSwitch del Inicio. Segmentado en píldora. */
 .seg { position: relative; display: inline-flex; flex-shrink: 0; gap: 2px; padding: 0 2px; margin: -8px 0; }
 .seg::before {
   content: ''; position: absolute; left: 0; right: 0; top: 8px; bottom: 8px;
-  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
+  border: 0; border-radius: var(--r-pill); background: var(--fill);
 }
 .segOpt {
   position: relative; display: inline-flex; align-items: center; justify-content: center;

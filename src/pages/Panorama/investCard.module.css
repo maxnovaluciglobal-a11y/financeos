@@ -12,9 +12,9 @@
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .aporte {
   display: flex; align-items: center; width: 100%; min-height: 44px; margin-top: 6px; padding: 8px 12px;
-  border: 0.5px solid var(--brd); border-radius: var(--r); background: var(--sur2);
+  border: 0; border-radius: var(--r); background: var(--fill);
   font: inherit; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--tx); text-align: left; text-decoration: none; cursor: pointer;
 }
-.aporte:hover { background: var(--sur3); }
+.aporte:hover { background: var(--fill-2); }
 .aporte:disabled { cursor: progress; opacity: .7; }
 .legal { margin: 10px 0 0; font-size: 11px; line-height: 1.6; color: var(--th); }

@@ -27,7 +27,7 @@
 .dateRow { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .pasteBtn {
   min-height: 44px; padding: 0 12px; border-radius: var(--r); cursor: pointer;
-  border: 1px dashed var(--brd2); background: var(--sur2); color: var(--tm);
+  border: 0; background: var(--fill); color: var(--tx);
   font-size: 13px; font-family: var(--sans); font-weight: 500;
   display: inline-flex; align-items: center; gap: 6px;
 }
@@ -35,11 +35,11 @@
 /* Monto + interruptor US$ */
 .usdToggle {
   position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-  min-width: 44px; min-height: 44px; padding: 0 8px; border-radius: var(--rs);
-  border: 1px solid var(--brd2); background: var(--sur); color: var(--tm); cursor: pointer;
+  min-width: 44px; min-height: 44px; padding: 0 10px; border-radius: var(--r-pill);
+  border: 0; background: var(--fill); color: var(--tx); cursor: pointer;
   font-family: var(--sans); font-size: 12px; font-weight: 600;
 }
-.usdToggle[aria-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); }
+.usdToggle[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-tx); }
 
 /* "≈ US$X" y el chip de la tasa usada, en una línea bajo el monto */
 .equiv {
@@ -47,8 +47,8 @@
   min-height: 22px; margin: -2px 0 8px; font-size: 13px; color: var(--tm); font-family: var(--sans);
 }
 .rateChip {
-  display: inline-flex; align-items: center; padding: 1px 6px; max-width: 100%;
-  border: 0.5px solid var(--brd2); border-radius: var(--rs);
+  display: inline-flex; align-items: center; padding: 1px 8px; max-width: 100%;
+  border: 0; border-radius: var(--r-pill); background: var(--fill);
   font-size: 11px; color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 

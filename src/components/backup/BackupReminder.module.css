@@ -6,7 +6,7 @@
   padding: 8px 8px 8px 16px;
   border-radius: var(--rl);
   background: var(--warn-bg);
-  border: 0.5px solid color-mix(in srgb, var(--warn) 32%, transparent);
+  border: 0;
 }
 .msg { display: flex; align-items: center; gap: 10px; flex: 1 1 280px; min-width: 0; padding: 4px 0; font-size: 13px; line-height: 1.45; color: var(--tx); }
 .msg svg { color: var(--warn); flex-shrink: 0; }
