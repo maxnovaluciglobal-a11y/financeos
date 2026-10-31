@@ -89,7 +89,6 @@ export default function SwipeRow({ actions, children }) {
 
   if (!width) return children
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- atajo táctil; cada acción tiene su equivalente visible
     <div ref={rootRef} className={s.root} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd} onClickCapture={onClickCapture}>
       {revealed && (
         <div className={s.actions} style={{ width }}>

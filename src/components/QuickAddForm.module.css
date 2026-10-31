@@ -9,7 +9,7 @@
 .key {
   min-height: 48px; border-radius: var(--r); border: none; cursor: pointer;
   background: var(--sur2); color: var(--tx); font-family: var(--num);
-  font-size: 18px; font-weight: 600;
+  font-size: 1.125rem; font-weight: 600;
 }
 .key:active { background: var(--sur3); }
 .keyZero { grid-column: span 2; }
@@ -18,7 +18,7 @@
   grid-column: 4; grid-row: 2 / span 3;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   border: 1px solid var(--laton); background: rgba(184, 134, 59, 0.16); color: var(--tx);
-  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  font-family: var(--sans); font-size: .8125rem; font-weight: 600;
 }
 .keyOk:disabled { border-color: transparent; background: var(--sur2); color: var(--th); cursor: not-allowed; }
 .keyOk:focus-visible, .key:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
@@ -28,7 +28,7 @@
 .pasteBtn {
   min-height: 44px; padding: 0 12px; border-radius: var(--r); cursor: pointer;
   border: 0; background: var(--fill); color: var(--tx);
-  font-size: 13px; font-family: var(--sans); font-weight: 500;
+  font-size: .8125rem; font-family: var(--sans); font-weight: 500;
   display: inline-flex; align-items: center; gap: 6px;
 }
 
@@ -37,19 +37,19 @@
   position: absolute; right: 0; top: 50%; transform: translateY(-50%);
   min-width: 44px; min-height: 44px; padding: 0 10px; border-radius: var(--r-pill);
   border: 0; background: var(--fill); color: var(--tx); cursor: pointer;
-  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  font-family: var(--sans); font-size: .75rem; font-weight: 600;
 }
 .usdToggle[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-tx); }
 
 /* "≈ US$X" y el chip de la tasa usada, en una línea bajo el monto */
 .equiv {
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px;
-  min-height: 22px; margin: -2px 0 8px; font-size: 13px; color: var(--tm); font-family: var(--sans);
+  min-height: 22px; margin: -2px 0 8px; font-size: .8125rem; color: var(--tm); font-family: var(--sans);
 }
 .rateChip {
   display: inline-flex; align-items: center; padding: 1px 8px; max-width: 100%;
   border: 0; border-radius: var(--r-pill); background: var(--fill);
-  font-size: 11px; color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: .6875rem; color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 /* "Repetir": hasta 3 chips de un toque, en una fila que se desliza */
@@ -66,7 +66,7 @@
 .repeatRow { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; }
 .repeatLabel {
   flex: 1; display: flex; align-items: center; gap: 10px; min-height: 44px;
-  padding: 0 4px; font-size: 14px; color: var(--tm); cursor: pointer; border-radius: var(--rs);
+  padding: 0 4px; font-size: .875rem; color: var(--tm); cursor: pointer; border-radius: var(--rs);
 }
 .repeatLabel input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; }
 .repeatLabel:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }

@@ -8,7 +8,7 @@
   background: var(--warn-bg);
   border: 0;
 }
-.msg { display: flex; align-items: center; gap: 10px; flex: 1 1 280px; min-width: 0; padding: 4px 0; font-size: 13px; line-height: 1.45; color: var(--tx); }
+.msg { display: flex; align-items: center; gap: 10px; flex: 1 1 280px; min-width: 0; padding: 4px 0; font-size: .8125rem; line-height: 1.45; color: var(--tx); }
 .msg svg { color: var(--warn); flex-shrink: 0; }
 .local { color: var(--tm); }
 .actions { display: flex; align-items: center; gap: 2px; margin-left: auto; flex-shrink: 0; }
@@ -17,7 +17,7 @@
   min-height: 44px; padding: 0 16px;
   border: 0; border-radius: var(--r);
   background: var(--laton); color: var(--navy);
-  font-family: var(--sans); font-size: 14px; font-weight: 600; white-space: nowrap;
+  font-family: var(--sans); font-size: .875rem; font-weight: 600; white-space: nowrap;
   box-shadow: var(--sh-1);
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }

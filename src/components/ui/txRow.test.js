@@ -37,10 +37,11 @@ describe('TxRow (REC-N5)', () => {
     const inc = readFileSync(join(SRC, 'pages/Income/index.jsx'), 'utf8')
     expect(inc).toMatch(/<TxRow key=\{r\.id\}/)
     expect(inc).not.toContain('💼')
-    // fila = botón que abre el detalle; sin lápiz ni ✕ a la vista
+    // fila = botón que abre el detalle; sin lápiz ni ✕ a la vista (los íconos
+    // de las acciones al deslizar solo existen mientras el dedo las revela)
     expect(list).toMatch(/<button type="button" className=\{s\.row\} aria-haspopup="dialog"/)
     expect(list).not.toContain('✕')
-    expect(list).not.toContain('Pencil')
+    expect(list).not.toMatch(/<Pencil/)
   })
 
   it('con value + sym el monto usa <Amount> (U+2212) y la categoría su ícono', () => {

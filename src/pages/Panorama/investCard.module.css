@@ -2,19 +2,19 @@
    tokens, objetivos de 44 px y sin Latón: el primario de la pantalla es otro. */
 .wrap { display: flex; flex-direction: column; gap: 6px; }
 .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 24px; }
-.sub { font-size: 12px; color: var(--th); }
+.sub { font-size: .75rem; color: var(--th); }
 .changes { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.meta { margin: 0; font-size: 12px; line-height: 1.5; color: var(--th); }
+.meta { margin: 0; font-size: .75rem; line-height: 1.5; color: var(--th); }
 .links { display: flex; flex-wrap: wrap; gap: 0 16px; margin: -6px 0; }
-.links a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: var(--th); text-decoration: underline; text-underline-offset: 2px; }
-.note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--tm); }
-.notice { margin: 0; font-size: 12px; line-height: 1.5; color: var(--tm); }
+.links a { display: inline-flex; align-items: center; min-height: 44px; font-size: .75rem; color: var(--th); text-decoration: underline; text-underline-offset: 2px; }
+.note { margin: 0; font-size: .8125rem; line-height: 1.5; color: var(--tm); }
+.notice { margin: 0; font-size: .75rem; line-height: 1.5; color: var(--tm); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .aporte {
   display: flex; align-items: center; width: 100%; min-height: 44px; margin-top: 6px; padding: 8px 12px;
   border: 0; border-radius: var(--r); background: var(--fill);
-  font: inherit; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--tx); text-align: left; text-decoration: none; cursor: pointer;
+  font: inherit; font-size: .8125rem; font-weight: 500; line-height: 1.4; color: var(--tx); text-align: left; text-decoration: none; cursor: pointer;
 }
 .aporte:hover { background: var(--fill-2); }
 .aporte:disabled { cursor: progress; opacity: .7; }
-.legal { margin: 10px 0 0; font-size: 11px; line-height: 1.6; color: var(--th); }
+.legal { margin: 10px 0 0; font-size: .6875rem; line-height: 1.6; color: var(--th); }

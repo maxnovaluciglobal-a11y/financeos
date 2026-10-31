@@ -1,5 +1,5 @@
 /* Tooltip único de los gráficos (UI-M6). Capa flotante: la única que lleva sombra. */
-.tip { min-width: 168px; max-width: 280px; padding: 8px 10px; background: var(--sur); border: 1px solid var(--brd2); border-radius: var(--r); box-shadow: var(--sh-3); font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--tx); }
+.tip { min-width: 168px; max-width: 280px; padding: 8px 10px; background: var(--sur); border: 1px solid var(--brd2); border-radius: var(--r); box-shadow: var(--sh-3); font-family: var(--sans); font-size: .75rem; line-height: 1.4; color: var(--tx); }
 .head { margin-bottom: 6px; font-weight: 600; color: var(--tx); text-transform: capitalize; }
 .row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 1px 0; }
 .dot { width: 10px; height: 10px; border-radius: 2px; }

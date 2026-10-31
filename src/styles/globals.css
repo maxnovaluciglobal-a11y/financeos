@@ -95,7 +95,7 @@ input, select, textarea {
   border: 1px solid var(--field-brd);
   border-radius: var(--r);
   padding: 9px 11px;
-  font-size: 16px;
+  font-size: 1rem;
   font-family: var(--sans);
   color: var(--tx);
   outline: none;
@@ -236,7 +236,7 @@ button { cursor: pointer; font-family: var(--sans); }
   width: 100%; min-height: 44px; padding: 10px 16px;
   border: none; border-radius: var(--r);
   background: var(--laton); color: var(--navy);
-  font-family: var(--sans); font-size: 15px; font-weight: 600; line-height: 1.2;
+  font-family: var(--sans); font-size: .9375rem; font-weight: 600; line-height: 1.2;
   box-shadow: var(--sh-1);
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
@@ -249,7 +249,7 @@ button { cursor: pointer; font-family: var(--sans); }
   width: 100%; min-height: 44px; padding: 10px 14px;
   border: 0; border-radius: var(--r);
   background: var(--fill); color: var(--tx);
-  font-family: var(--sans); font-size: 14px; font-weight: 500; line-height: 1.2;
+  font-family: var(--sans); font-size: .875rem; font-weight: 500; line-height: 1.2;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .fos-btn-secondary:hover:not(:disabled), .fos-btn-secondary:active:not(:disabled) { background: var(--fill-2); color: var(--tx); }
@@ -259,7 +259,7 @@ button { cursor: pointer; font-family: var(--sans); }
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 44px; padding: 0 4px;
   background: none; border: none;
-  color: var(--tm); font-family: var(--sans); font-size: 14px; font-weight: 500;
+  color: var(--tm); font-family: var(--sans); font-size: .875rem; font-weight: 500;
   text-decoration: underline; text-decoration-color: var(--brd2); text-underline-offset: 3px;
   transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
 }
@@ -274,7 +274,7 @@ button { cursor: pointer; font-family: var(--sans); }
   min-height: 40px; padding: 8px 14px;
   border: 0; border-radius: var(--r-pill);
   background: var(--fill); color: var(--tx);
-  font-family: var(--sans); font-size: 13px; font-weight: 500; line-height: 1.2;
+  font-family: var(--sans); font-size: .8125rem; font-weight: 500; line-height: 1.2;
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 /* Área táctil de 44 px (V2) sin cambiar el dibujo: el chip puede medir 36 o
@@ -298,12 +298,12 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-tag {
   display: inline-flex; align-items: center; padding: 1px 8px;
   border: 0; border-radius: var(--r-pill); background: var(--fill);
-  font-family: var(--sans); font-size: 12px; font-weight: 500; line-height: 1.5; color: var(--tm);
+  font-family: var(--sans); font-size: .75rem; font-weight: 500; line-height: 1.5; color: var(--tm);
 }
 /* Estado = ícono + palabra en el color del estado (nunca solo color). */
 .fos-state {
   display: inline-flex; align-items: center; gap: 4px;
-  font-family: var(--sans); font-size: 12px; font-weight: 600; line-height: 1.5;
+  font-family: var(--sans); font-size: .75rem; font-weight: 600; line-height: 1.5;
 }
 /* Un <input> transparente encima del chip (ej. el selector de fecha nativo)
    oculta su propio outline: el anillo de foco se dibuja en el chip. */
@@ -363,17 +363,17 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 .demo-banner__short {
   grid-area: short; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--papel-000);
+  font-family: var(--sans); font-size: .875rem; font-weight: 600; color: var(--papel-000);
 }
 .demo-banner__badge {
   grid-area: badge;
   padding: 3px 7px; border-radius: var(--rs);
   border: 1px solid color-mix(in srgb, var(--papel-000) 35%, transparent);
-  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  font-family: var(--sans); font-size: .75rem; font-weight: 600;
 }
 .demo-banner__label {
   grid-area: label; min-width: 0;
-  font-family: var(--sans); font-size: 12px; line-height: 1.35;
+  font-family: var(--sans); font-size: .75rem; line-height: 1.35;
   color: color-mix(in srgb, var(--papel-000) 82%, transparent);
 }
 .demo-banner__scenario {
@@ -382,13 +382,13 @@ button { cursor: pointer; font-family: var(--sans); }
   border-radius: var(--r); cursor: pointer; text-align: left;
   border: 1px solid color-mix(in srgb, var(--papel-000) 28%, transparent);
   background: color-mix(in srgb, var(--papel-000) 8%, transparent);
-  color: var(--papel-000); font-family: var(--sans); font-size: 12px; font-weight: 500; line-height: 1.25;
+  color: var(--papel-000); font-family: var(--sans); font-size: .75rem; font-weight: 500; line-height: 1.25;
 }
 .demo-banner__scenario:hover { background: color-mix(in srgb, var(--papel-000) 14%, transparent); }
 .demo-banner__plans {
   grid-area: plans; min-height: 44px; padding: 0 4px;
   align-items: center;
-  font-family: var(--sans); font-size: 12px; font-weight: 500; white-space: nowrap;
+  font-family: var(--sans); font-size: .75rem; font-weight: 500; white-space: nowrap;
   color: var(--papel-000); text-decoration: underline; text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, var(--papel-000) 40%, transparent);
 }
@@ -398,13 +398,13 @@ button { cursor: pointer; font-family: var(--sans); }
   border-radius: var(--r); cursor: pointer;
   border: 1px solid color-mix(in srgb, var(--papel-000) 28%, transparent);
   background: transparent; color: var(--papel-000);
-  font-family: var(--sans); font-size: 15px; font-weight: 600;
+  font-family: var(--sans); font-size: .9375rem; font-weight: 600;
 }
 .demo-banner__help { grid-area: help; }
 .demo-banner__more { grid-area: more; display: inline-flex; border-color: transparent; }
 .demo-banner__more[aria-expanded="true"] { background: color-mix(in srgb, var(--papel-000) 12%, transparent); }
 .demo-banner__help:hover, .demo-banner__more:hover { background: color-mix(in srgb, var(--papel-000) 10%, transparent); }
-.demo-banner__cta { grid-area: cta; width: auto; min-height: 44px; padding: 0 16px; font-size: 14px; white-space: nowrap; text-decoration: none; }
+.demo-banner__cta { grid-area: cta; width: auto; min-height: 44px; padding: 0 16px; font-size: .875rem; white-space: nowrap; text-decoration: none; }
 .demo-banner :focus-visible { outline-color: var(--laton); }
 
 /* Menú ⋯ del celular: capa flotante bajo la franja, Papel con texto Navy. */
@@ -415,16 +415,16 @@ button { cursor: pointer; font-family: var(--sans); }
   background: var(--sur); color: var(--tx); border: 0; border-radius: var(--rxl);
   box-shadow: var(--sh-3);
 }
-.demo-banner__menuLabel { margin: 0; padding: 8px 10px 6px; font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--th); }
+.demo-banner__menuLabel { margin: 0; padding: 8px 10px 6px; font-family: var(--sans); font-size: .75rem; line-height: 1.4; color: var(--th); }
 .demo-banner__menuItem {
   display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px;
   min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r);
   background: none; color: var(--tx); cursor: pointer; text-align: left; text-decoration: none;
-  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  font-family: var(--sans); font-size: .875rem; font-weight: 500;
 }
 .demo-banner__menuItem:hover { background: var(--sur2); }
 .demo-banner__menuItem + .demo-banner__menuItem { border-top: 1px solid var(--brd); border-radius: 0; }
-.demo-banner__menuHint { font-size: 12px; font-weight: 400; color: var(--th); }
+.demo-banner__menuHint { font-size: .75rem; font-weight: 400; color: var(--th); }
 .demo-banner__menu :focus-visible { outline-color: var(--laton-700); }
 
 /* CTA inferior del demo: tarjeta encima de la barra y del botón "+" (no los tapa) */
@@ -488,7 +488,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-cselect__list[hidden] { display: none; }
 .fos-cselect__opt {
   display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 10px;
-  border-radius: var(--rs); color: var(--tx); font: 400 14px/1.25 var(--sans); cursor: pointer;
+  border-radius: var(--rs); color: var(--tx); font: 400 .875rem/1.25 var(--sans); cursor: pointer;
 }
 .fos-cselect__opt[data-active] { background: var(--grn-bg); }
 .fos-cselect__opt[aria-selected="true"] { font-weight: 600; }

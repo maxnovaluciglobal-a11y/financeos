@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { monthsBetween, describe, it, expect } from 'vitest'
 import { shiftMonth, monthRange, stepState, closeKeyToDismiss } from './monthNav.js'
 
 describe('shiftMonth (B3a)', () => {
@@ -39,5 +39,14 @@ describe('closeKeyToDismiss (la hoja de cierre no aparece sola)', () => {
     expect(closeKeyToDismiss('2026-10', '2026-10')).toBeNull()
     expect(closeKeyToDismiss('2026-11', '2026-10')).toBeNull()
     expect(closeKeyToDismiss('x', '2026-10')).toBeNull()
+  })
+})
+
+describe('monthsBetween', () => {
+  it('lista del más nuevo al más viejo, cruzando el año', () => {
+    expect(monthsBetween({ min: '2025-11', max: '2026-02' })).toEqual(['2026-02', '2026-01', '2025-12', '2025-11'])
+  })
+  it('sin rango, lista vacía', () => {
+    expect(monthsBetween({ min: null, max: null })).toEqual([])
   })
 })

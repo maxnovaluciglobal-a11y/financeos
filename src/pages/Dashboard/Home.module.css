@@ -43,10 +43,10 @@
   min-width: 0;
 }
 .cardHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.cardTitle { margin: 0; font-family: var(--display); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--tx); }
-.cardHint { font-size: 12px; color: var(--th); }
+.cardTitle { margin: 0; font-family: var(--display); font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; color: var(--tx); }
+.cardHint { font-size: .75rem; color: var(--th); }
 /* Inicio (poda): el plazo va junto al título y "Ver todos" a la derecha. */
-.cardHintInline { font-family: var(--sans); font-size: 12px; font-weight: 400; letter-spacing: 0; color: var(--th); }
+.cardHintInline { font-family: var(--sans); font-size: .75rem; font-weight: 400; letter-spacing: 0; color: var(--th); }
 .cardHead .cardLink { flex-shrink: 0; }
 .cardHead:has(> .cardLink) { align-items: center; margin-bottom: 4px; }
 
@@ -55,7 +55,7 @@
   display: inline-flex; align-items: center; gap: 4px;
   min-height: 44px; margin: -12px 0; padding: 0 2px;
   background: none; border: 0; cursor: pointer;
-  font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--blu); /* enlace = Slate Blue (Latón solo para la acción primaria y "dónde estás", UI-L1) */
+  font-family: var(--sans); font-size: .8125rem; font-weight: 600; color: var(--blu); /* enlace = Slate Blue (Latón solo para la acción primaria y "dónde estás", UI-L1) */
   text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
   transition: text-decoration-color var(--dur) var(--ease);
   white-space: nowrap;
@@ -63,10 +63,10 @@
 .cardLink:hover { text-decoration-color: currentColor; }
 
 
-.empty { font-size: 13px; line-height: 1.55; color: var(--tm); margin: 0 0 12px; }
+.empty { font-size: .8125rem; line-height: 1.55; color: var(--tm); margin: 0 0 12px; }
 
 /* ── Variación vs. mes anterior ───────────────────────────────────────────── */
-.delta { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; line-height: 1.3; }
+.delta { display: inline-flex; align-items: center; gap: 4px; font-size: .75rem; font-weight: 500; line-height: 1.3; }
 .delta svg { flex-shrink: 0; }
 
 /* ── KPIs ──────────────────────────────────────────────────────────────── */
@@ -92,7 +92,7 @@
 }
 .kpi { display: flex; flex-direction: column; gap: 6px; padding: 12px 0 0; min-width: 0; container-type: inline-size; }
 .hero.kpi { padding: 16px; }
-.kpiLabel { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
+.kpiLabel { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: .75rem; font-weight: 500; color: var(--tm); }
 .kpiTap { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
 .kpiTap { background: none; border: 0; border-top: 1px solid var(--brd2); }
@@ -103,8 +103,8 @@
    línea (Bs. con millones), nunca se parte en dos. 1.65 ≈ 1 / ancho medio de
    un dígito en em; 32px = padding de la tarjeta. cqi = ancho de esta tarjeta. */
 .kpiValue { font-size: clamp(13px, calc(100cqi * 1.65 / var(--chars, 8)), 24px); line-height: 1.1; color: var(--tx); white-space: nowrap; }
-.kpiSub { font-size: 12px; color: var(--th); line-height: 1.4; }
-.kpiDual { font-family: var(--num); font-size: 12px; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
+.kpiSub { font-size: .75rem; color: var(--th); line-height: 1.4; }
+.kpiDual { font-family: var(--num); font-size: .75rem; color: var(--th); border-top: 0.5px solid var(--brd); padding-top: 4px; }
 
 /* Poda P1: Ingresos · Gastos en una línea bajo "Te queda" (dos mitades
    tocables de 44 px; la cifra se achica antes de partirse). */
@@ -116,7 +116,7 @@
 .pairItem + .pairItem::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 0.5px; background: var(--brd2); }
 button.pairItem { cursor: pointer; transition: background-color var(--dur) var(--ease); -webkit-tap-highlight-color: transparent; }
 button.pairItem:hover, button.pairItem:active { background: var(--fill); }
-.pairLabel { grid-column: 1; grid-row: 1; font-size: 12px; font-weight: 500; color: var(--tm); }
+.pairLabel { grid-column: 1; grid-row: 1; font-size: .75rem; font-weight: 500; color: var(--tm); }
 .pairItem .kpiChevron { grid-column: 2; grid-row: 1; }
 /* La cifra entra entera en una línea: se achica con el largo (--chars). */
 .pairValue { grid-column: 1 / -1; grid-row: 2; min-width: 0; white-space: nowrap; color: var(--tx);
@@ -125,7 +125,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 /* Poda P1: acciones rápidas (4) y "Para hacer" (un aviso por vez). */
 .quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .quickBtn { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-height: 64px; padding: 2px;
-  border: 0; border-radius: var(--r); background: none; color: var(--tx); font: inherit; font-size: 12px; font-weight: 500; line-height: 1.25; cursor: pointer; text-align: center;
+  border: 0; border-radius: var(--r); background: none; color: var(--tx); font: inherit; font-size: .75rem; font-weight: 500; line-height: 1.25; cursor: pointer; text-align: center;
   -webkit-tap-highlight-color: transparent; transition: transform var(--dur-press) var(--ease-out); }
 .quickIc { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--rxl); background: var(--fill); color: var(--tx); transition: background-color var(--dur) var(--ease); }
 .quickBtn:hover .quickIc, .quickBtn:active .quickIc { background: var(--fill-2); }
@@ -134,9 +134,9 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .todoSlot:empty { display: none; }
 /* Plegado: solo el primer aviso con contenido; los demás, con "N más". */
 .todoCollapsed > .todoSlot:not(:empty) ~ .todoSlot { display: none; }
-.todoMore { align-self: flex-start; min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.todoMore { align-self: flex-start; min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--accent); font: inherit; font-size: .8125rem; font-weight: 600; cursor: pointer; }
 .homeFoot { display: flex; justify-content: center; }
-.homeFootBtn { min-height: 44px; padding: 0 14px; background: none; border: 0; border-radius: var(--r); color: var(--tm); font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.homeFootBtn { min-height: 44px; padding: 0 14px; background: none; border: 0; border-radius: var(--r); color: var(--tm); font: inherit; font-size: .8125rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .homeFootBtn:hover { color: var(--tx); background: var(--fill); }
 
 .left { display: flex; align-items: center; gap: 14px; }
@@ -144,25 +144,25 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .leftValue { font-size: clamp(32px, 11cqi, 40px); line-height: 1.05; }
 /* Montos largos en una tarjeta angosta (móvil): la cifra usa todo el ancho y
    el anillo pasa abajo, en fila. */
-.leftLong { position: relative; flex-direction: column; align-items: stretch; }
+.leftLong { flex-direction: column; align-items: stretch; gap: 6px; }
 .leftLong .leftValue { font-size: clamp(22px, calc((100cqi - 32px) * 1.65 / var(--chars, 12)), 40px); }
-.leftLong .leftBody { min-height: 92px; padding-right: 0; }
-.leftLong .ring { position: absolute; right: 0; bottom: 0; flex-direction: row; gap: 8px; }
-.leftLong .ring svg:first-child { width: 36px; height: 36px; }
+.leftLong .ring { flex-direction: row; align-self: flex-end; gap: 8px; }
+/* Con la línea de días, el ritmo comparte su renglón. */
+.leftLong .leftBody:has(> .kpiSub) + .ring { margin-top: -30px; }
+.leftLong .ring > svg { width: 36px; height: 36px; }
 /* Tarjeta ancha (cqi = ancho de "Te queda"): el anillo vuelve al costado y la
    cifra se mide con lo que queda (134px = padding 32 + anillo 88 + gap 14). */
 @container (min-width: 480px) {
   .leftLong { flex-direction: row; align-items: center; }
-  .leftLong .leftBody { min-height: 0; }
   .leftLong .leftValue { font-size: clamp(22px, calc((100cqi - 134px) * 1.65 / var(--chars, 12)), 40px); }
-  .leftLong .ring { position: static; flex-direction: column; align-self: center; gap: 4px; }
-  .leftLong .ring svg:first-child { width: 72px; height: 72px; }
+  .leftLong .ring, .leftLong .leftBody:has(> .kpiSub) + .ring { flex-direction: column; align-self: center; gap: 4px; margin-top: 0; }
+  .leftLong .ring > svg { width: 72px; height: 72px; }
 }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
-.ringLegend { font-family: var(--sans); font-size: 11px; line-height: 1.3; color: var(--th); text-align: center; max-width: 120px; }
+.ringLegend { font-family: var(--sans); font-size: .6875rem; line-height: 1.3; color: var(--th); text-align: center; max-width: 120px; }
 
 .secondary { display: grid; gap: 4px 24px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 12px; }
-.secondary .kpiValue { font-size: 18px; }
+.secondary .kpiValue { font-size: 1.125rem; }
 /* Vista compacta en móvil: solo los tres KPIs principales (antes .fos-kpi-secondary) */
 @media (max-width: 700px) { .secondaryCompact { display: none; } }
 
@@ -178,51 +178,51 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .budgetBottom { display: flex; align-items: center; gap: 10px; }
 .bar { flex: 1; height: 6px; border-radius: var(--rs); background: var(--sur3); overflow: hidden; }
 .barFill { height: 100%; width: 100%; transform-origin: left; border-radius: var(--rs); transition: transform var(--dur-value-update) var(--ease-instrument); }
-.state { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; min-width: 92px; justify-content: flex-end; }
+.state { display: inline-flex; align-items: center; gap: 4px; font-size: .75rem; font-weight: 600; white-space: nowrap; min-width: 92px; justify-content: flex-end; }
 
 .payRow { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
 .payDate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--r); background: var(--fill); border: 0; line-height: 1.05; }
-.payDay { font-family: var(--num); font-size: 18px; font-weight: 600; color: var(--tx); font-variant-numeric: tabular-nums; }
-.payMon { font-size: 12px; color: var(--th); text-transform: lowercase; }
+.payDay { font-family: var(--num); font-size: 1.125rem; font-weight: 600; color: var(--tx); font-variant-numeric: tabular-nums; }
+.payMon { font-size: .75rem; color: var(--th); text-transform: lowercase; }
 .payName { font-size: .9375rem; font-weight: 500; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .payKind { display: inline-flex; align-items: center; gap: 5px; font-size: .8125rem; color: var(--th); margin-top: 2px; }
 .payAmt { font-family: var(--num); font-size: .9375rem; font-weight: 600; color: var(--tx); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.payWhen { font-size: 12px; color: var(--warn); font-weight: 600; }
+.payWhen { font-size: .75rem; color: var(--warn); font-weight: 600; }
 
 .footLinks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
-.more { font-size: 12px; color: var(--th); margin-top: 8px; }
+.more { font-size: .75rem; color: var(--th); margin-top: 8px; }
 
 /* ── IQ Score ──────────────────────────────────────────────────────────── */
 .scoreTop { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.scoreNum { font-size: 44px; line-height: 1; }
-.scoreOf { font-family: var(--num); font-size: 12px; color: var(--th); margin-top: 2px; text-align: center; }
+.scoreNum { font-size: 2.75rem; line-height: 1; }
+.scoreOf { font-family: var(--num); font-size: .75rem; color: var(--th); margin-top: 2px; text-align: center; }
 .scoreMeta { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
-.scoreLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
+.scoreLabel { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; font-weight: 500; color: var(--tm); }
 .next {
   margin-top: 14px; padding: 12px 14px;
   border-radius: var(--r); background: var(--fill); border: 0;
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 .nextText { flex: 1 1 220px; min-width: 0; }
-.nextTitle { font-size: 13px; font-weight: 600; color: var(--tx); margin-bottom: 2px; }
-.nextSub { font-size: 12px; line-height: 1.5; color: var(--tm); }
+.nextTitle { font-size: .8125rem; font-weight: 600; color: var(--tx); margin-bottom: 2px; }
+.nextSub { font-size: .75rem; line-height: 1.5; color: var(--tm); }
 .factors { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px 12px; margin-top: 14px; }
 .factor { display: flex; flex-direction: column; gap: 2px; }
-.factorPts { display: inline-flex; align-items: center; gap: 4px; font-family: var(--num); font-size: 13px; font-weight: 600; }
-.factorPts small { font-weight: 400; color: var(--th); font-size: 12px; }
-.factorLabel { font-size: 12px; color: var(--th); line-height: 1.3; }
+.factorPts { display: inline-flex; align-items: center; gap: 4px; font-family: var(--num); font-size: .8125rem; font-weight: 600; }
+.factorPts small { font-weight: 400; color: var(--th); font-size: .75rem; }
+.factorLabel { font-size: .75rem; color: var(--th); line-height: 1.3; }
 
 /* ── Patrimonio ────────────────────────────────────────────────────────── */
 .nw { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .nwBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-.nwValue { font-size: 28px; line-height: 1.1; color: var(--tx); overflow-wrap: anywhere; }
-.nwSplit { font-size: 12px; color: var(--th); }
+.nwValue { font-size: 1.75rem; line-height: 1.1; color: var(--tx); overflow-wrap: anywhere; }
+.nwSplit { font-size: .75rem; color: var(--th); }
 .btnSecondary {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 44px; padding: 0 16px;
   border: 0; border-radius: var(--r);
   background: var(--fill); color: var(--tx);
-  font-family: var(--sans); font-size: 14px; font-weight: 500; white-space: nowrap;
+  font-family: var(--sans); font-size: .875rem; font-weight: 500; white-space: nowrap;
   transition: background var(--dur) var(--ease);
 }
 .btnSecondary:hover { background: var(--fill-2); }
@@ -244,27 +244,27 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .stepsBar { display: inline-grid; grid-template-columns: repeat(3, 10px); gap: 3px; }
 .stepsSeg, .stepsSegOn { height: 6px; border-radius: 1px; background: var(--sur3); }
 .stepsSegOn { background: var(--laton); }
-.stepsText { font-size: 14px; font-weight: 600; line-height: 1.3; min-width: 0; }
-.stepsCount { font-family: var(--num); font-size: 12px; color: var(--tm); white-space: nowrap; }
+.stepsText { font-size: .875rem; font-weight: 600; line-height: 1.3; min-width: 0; }
+.stepsCount { font-family: var(--num); font-size: .75rem; color: var(--tm); white-space: nowrap; }
 .stepsChevron { color: var(--th); }
 
-.sheetTitle { margin: 4px 0 6px; font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); }
-.sheetSub { margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: var(--tm); }
+.sheetTitle { margin: 4px 0 6px; font-family: var(--display); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); }
+.sheetSub { margin: 0 0 16px; font-size: .875rem; line-height: 1.5; color: var(--tm); }
 .stepList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .stepItem { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 0.5px solid var(--brd); }
 .stepItem:first-child { border-top: 0; padding-top: 4px; }
 .stepMark, .stepMarkDone {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; border-radius: var(--r);
-  font-family: var(--num); font-size: 13px; font-weight: 600;
+  font-family: var(--num); font-size: .8125rem; font-weight: 600;
   border: 0; background: var(--fill); color: var(--tm);
 }
 .stepMarkDone { background: color-mix(in srgb, var(--pos) 14%, transparent); color: var(--pos); }
 .stepBody { min-width: 0; }
-.stepTitle { font-size: 15px; font-weight: 600; color: var(--tx); line-height: 1.35; }
-.stepDesc { margin-top: 2px; font-size: 13px; line-height: 1.5; color: var(--tm); }
+.stepTitle { font-size: .9375rem; font-weight: 600; color: var(--tx); line-height: 1.35; }
+.stepDesc { margin-top: 2px; font-size: .8125rem; line-height: 1.5; color: var(--tm); }
 .stepActions { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; }
-.stepDone { margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--tm); }
+.stepDone { margin-top: 4px; font-size: .75rem; font-weight: 600; color: var(--tm); }
 
 @media (prefers-reduced-motion: reduce) {
   .steps { transition: none; }
@@ -277,7 +277,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   width: 100%; min-height: 48px; margin: 0 0 16px; padding: 0 16px;
   border: 0; border-radius: var(--rl);
   background: var(--fill); color: var(--tx); cursor: pointer;
-  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  font-family: var(--sans); font-size: .875rem; font-weight: 500;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .viewToggle:hover { background: var(--fill-2); color: var(--tx); }
@@ -292,9 +292,9 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 }
 .scoreRow:hover { border-top-color: var(--navy-400); }
 .scoreRow:active { transform: scale(.99); }
-.scoreRowNum { font-size: 28px; line-height: 1; font-weight: 600; }
+.scoreRowNum { font-size: 1.75rem; line-height: 1; font-weight: 600; }
 .scoreRowMeta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.scoreRowLink { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.scoreRowLink { margin-left: auto; font-size: .8125rem; font-weight: 600; color: var(--accent); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   .kpiTap, .scoreRow, .viewToggle, .viewToggle svg { transition: none; }
@@ -317,7 +317,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   position: relative; display: inline-flex; align-items: center; justify-content: center;
   min-width: 44px; height: 44px; padding: 0;
   border: 0; background: transparent; cursor: pointer;
-  font: 600 11px/1 var(--mono);  /* código ISO de moneda: identificador */ letter-spacing: .04em; color: var(--tm);
+  font: 600 .6875rem/1 var(--mono);  /* código ISO de moneda: identificador */ letter-spacing: .04em; color: var(--tm);
 }
 .refOptFace {
   display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 26px; padding: 0 8px;
@@ -333,8 +333,8 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--brd);
 }
 .refTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; }
-.refEquiv { font-size: 15px; font-weight: 600; color: var(--tx); }
-.refMeta { font-size: 12px; line-height: 1.45; color: var(--th); overflow-wrap: anywhere; }
+.refEquiv { font-size: .9375rem; font-weight: 600; color: var(--tx); }
+.refMeta { font-size: .75rem; line-height: 1.45; color: var(--th); overflow-wrap: anywhere; }
 .refStale { color: var(--warn); font-weight: 500; }
 .refActions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
 /* B2: "Convertir" a la izquierda: a la derecha lo tapaba el "+" en pantallas bajas (667 px). */
@@ -344,14 +344,14 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .refLink {
   min-height: 44px; margin: -10px 0 -10px -2px; padding: 0 2px;
   background: none; border: 0; cursor: pointer;
-  font: 500 13px/1.2 var(--sans); color: var(--navy);
+  font: 500 .8125rem/1.2 var(--sans); color: var(--navy);
   text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
 }
 :global([data-theme="dark"]) .refLink { color: var(--laton-300); }
 .refTool {
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px 0 10px;
   border: 0; border-radius: var(--r); background: var(--fill);
-  font: 500 13px/1 var(--sans); color: var(--tx); cursor: pointer;
+  font: 500 .8125rem/1 var(--sans); color: var(--tx); cursor: pointer;
   transition: background-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
 .refTool:hover { background: var(--fill-2); }
@@ -372,24 +372,24 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .detailLink:hover, .detailLink:active { background: var(--fill-2); }
 
 /* B1: "Hay una tasa más reciente: X. Usar" — texto y enlace, sin caja. */
-.freshRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; line-height: 1.45; color: var(--tm); }
+.freshRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: .75rem; line-height: 1.45; color: var(--tm); }
 .freshText { flex: 1 1 180px; overflow-wrap: anywhere; }
 
 /* Hoja "Tasa de referencia" */
 .rateField { display: flex; flex-direction: column; gap: 6px; }
-.rateLabel { font-size: 13px; font-weight: 500; color: var(--tm); }
+.rateLabel { font-size: .8125rem; font-weight: 500; color: var(--tm); }
 .rateInputWrap {
   display: flex; align-items: center; gap: 8px; padding: 0 12px;
   border: 1px solid var(--field-brd); border-radius: var(--r); background: var(--sur2);
 }
 .rateInputWrap:focus-within { border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy); }
-.ratePrefix { font-size: 15px; color: var(--th); white-space: nowrap; }
+.ratePrefix { font-size: .9375rem; color: var(--th); white-space: nowrap; }
 .rateInput {
   flex: 1; min-width: 0; height: 48px; padding: 0 !important; border: 0 !important; background: transparent !important;
-  font-size: 22px !important; font-weight: 600; color: var(--tx); box-shadow: none !important; outline: none;
+  font-size: 1.375rem !important; font-weight: 600; color: var(--tx); box-shadow: none !important; outline: none;
 }
-.rateHelp { margin-top: 6px; font-size: 12px; line-height: 1.45; color: var(--th); }
-.rateError { margin-top: 6px; font-size: 12px; line-height: 1.45; color: var(--neg); }
+.rateHelp { margin-top: 6px; font-size: .75rem; line-height: 1.45; color: var(--th); }
+.rateError { margin-top: 6px; font-size: .75rem; line-height: 1.45; color: var(--neg); }
 .rateOptions { display: grid; gap: 8px; margin-top: 12px; }
 .rateOption {
   display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px;
@@ -398,9 +398,9 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   font-family: var(--sans); color: var(--tx);
 }
 .rateOption[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--tx); background: var(--fill-2); }
-.rateOptName { font-size: 14px; font-weight: 500; }
-.rateOptVal { font-size: 15px; font-weight: 600; text-align: right; }
-.rateOptAt { grid-column: 1 / -1; font-size: 12px; color: var(--th); }
+.rateOptName { font-size: .875rem; font-weight: 500; }
+.rateOptVal { font-size: .9375rem; font-weight: 600; text-align: right; }
+.rateOptAt { grid-column: 1 / -1; font-size: .75rem; color: var(--th); }
 
 /* ── Gastos por categoría sin gastos (09-oct-2026) ───────────────────────────
    Anillo vacío del mismo tamaño que el donut (CategoryDonut.module.css) para
@@ -408,7 +408,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .donutEmpty { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .donutEmptyRing { width: min(140px, 46%); height: auto; display: block; }
 .donutEmptyBody { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; max-width: 340px; }
-.donutEmptyText { margin: 0; font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--tm); }
+.donutEmptyText { margin: 0; font-family: var(--sans); font-size: .875rem; line-height: 1.5; color: var(--tm); }
 .donutEmptyBtn { width: auto; color: var(--tx); }
 @media (min-width: 560px) {
   .donutEmpty { flex-direction: row; justify-content: center; gap: 28px; }

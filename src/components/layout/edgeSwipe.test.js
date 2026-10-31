@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isEdgeSwipeBack } from './edgeSwipe.js'
+import { edgeDragCommits, isEdgeSwipeBack } from './edgeSwipe.js'
 
 describe('isEdgeSwipeBack (R14, iOS instalada)', () => {
   const s = (x, y = 300, at = 0) => ({ x, y, at })
@@ -13,5 +13,13 @@ describe('isEdgeSwipeBack (R14, iOS instalada)', () => {
     expect(isEdgeSwipeBack(s(8), s(50, 300, 100))).toBe(false)
     expect(isEdgeSwipeBack(s(8), s(110, 420, 200))).toBe(false)
     expect(isEdgeSwipeBack(s(8), s(150, 300, 1200))).toBe(false)
+  })
+})
+
+describe('edgeDragCommits', () => {
+  it('vuelve atrás pasado un tercio del ancho o con un gesto rápido', () => {
+    expect(edgeDragCommits(140, 390)).toBe(true)
+    expect(edgeDragCommits(90, 390)).toBe(false)
+    expect(edgeDragCommits(60, 390, 0.8)).toBe(true)
   })
 })

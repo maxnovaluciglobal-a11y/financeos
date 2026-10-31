@@ -22,7 +22,7 @@
   letter-spacing: -0.01em; line-height: 1.2; text-align: center; margin: 0;
   outline: none;
 }
-.sub { margin-top: 6px; font-size: 13px; color: var(--tm); text-align: center; line-height: 1.5; }
+.sub { margin-top: 6px; font-size: .8125rem; color: var(--tm); text-align: center; line-height: 1.5; }
 
 /* Puntos del PIN: se llenan como una escala. Lleno = --tx (Navy en claro,
    Papel en oscuro); vacío = solo borde. Rojo semántico solo en el error. */
@@ -46,7 +46,7 @@
 
 .status {
   min-height: 40px; /* reserva el alto del mensaje: sin saltos de layout */
-  font-size: 13px; line-height: 1.45; text-align: center; color: var(--tm);
+  font-size: .8125rem; line-height: 1.45; text-align: center; color: var(--tm);
   display: flex; align-items: center; justify-content: center; padding: 0 8px;
 }
 .statusError { color: var(--neg); }
@@ -59,7 +59,7 @@
 .key {
   min-height: 56px; border-radius: var(--r); border: none; cursor: pointer;
   background: var(--sur2); color: var(--tx);
-  font-family: var(--num); font-size: 22px; font-weight: 600;
+  font-family: var(--num); font-size: 1.375rem; font-weight: 600;
   display: inline-flex; align-items: center; justify-content: center;
   touch-action: manipulation;
   transition: background var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
@@ -79,23 +79,23 @@
 .panelTitle {
   font-family: var(--display); font-size: var(--fs-xl); font-weight: 600; line-height: 1.25; margin: 0; outline: none;
 }
-.body { font-size: 14px; line-height: 1.55; color: var(--tm); margin: 0; }
+.body { font-size: .875rem; line-height: 1.55; color: var(--tm); margin: 0; }
 .option {
   background: var(--box-bg); border: 0; box-shadow: var(--box-sh); border-radius: var(--rl);
   padding: 14px; display: flex; flex-direction: column; gap: 10px;
 }
-.optionTitle { font-size: 15px; font-weight: 600; color: var(--tx); margin: 0; }
+.optionTitle { font-size: .9375rem; font-weight: 600; color: var(--tx); margin: 0; }
 .note {
-  font-size: 13px; line-height: 1.55; color: var(--tm);
+  font-size: .8125rem; line-height: 1.55; color: var(--tm);
   background: var(--sur2); border-radius: var(--r); padding: 10px 12px;
 }
 .alert {
-  font-size: 13px; line-height: 1.5; color: var(--neg);
+  font-size: .8125rem; line-height: 1.5; color: var(--neg);
   background: var(--neg-bg); border-radius: var(--r); padding: 10px 12px;
 }
 .ack {
   display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 10px 0;
-  font-size: 14px; line-height: 1.45; color: var(--tx); cursor: pointer;
+  font-size: .875rem; line-height: 1.45; color: var(--tx); cursor: pointer;
 }
 .ack input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: var(--neg); padding: 0; }
 .actions { display: flex; flex-direction: column; gap: 8px; }
@@ -105,7 +105,7 @@
   width: 100%; min-height: 48px; padding: 10px 16px;
   border: 1px solid var(--neg); border-radius: var(--r);
   background: var(--neg); color: var(--papel-000);
-  font-family: var(--sans); font-size: 15px; font-weight: 600; cursor: pointer;
+  font-family: var(--sans); font-size: .9375rem; font-weight: 600; cursor: pointer;
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
 /* En oscuro, texto --bg (#0E1628) sobre --error-dark #E59580: 7,7:1. */

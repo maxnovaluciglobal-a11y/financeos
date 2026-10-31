@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { tabPress, describe, it, expect } from 'vitest'
 import { chromeFor, navAction, bootEntries, backAction, backTarget, isRootPage, isStackState } from './pageStack.js'
 import { ALL_ITEMS, TAB_IDS } from './navConfig.js'
 
@@ -106,5 +106,12 @@ describe('backAction / backTarget', () => {
     expect(isStackState({ fosPage: 'goals' })).toBe(true)
     expect(isStackState({ usr: 1 })).toBe(false)
     expect(isStackState(null)).toBe(false)
+  })
+})
+
+describe('tabPress (causa 11)', () => {
+  it('la pestaña activa sube al inicio; otra, navega', () => {
+    expect(tabPress('movements', 'movements')).toBe('top')
+    expect(tabPress('dashboard', 'movements')).toBe('go')
   })
 })
