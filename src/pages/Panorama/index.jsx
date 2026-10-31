@@ -22,11 +22,13 @@ import { useHomeData } from '../Dashboard/useHomeData.jsx'
 import { IncExpTiles } from '../Dashboard/HomeKpis.jsx'
 import ScoreCard from '../Dashboard/ScoreCard.jsx'
 import NetWorthCard from '../Dashboard/NetWorthCard.jsx'
+import InvestCard from './InvestCard.jsx'
 import ProjectionCard from '../Dashboard/ProjectionCard.jsx'
 import CountryTool from '../Dashboard/CountryTool.jsx'
 import DonutEmpty from '../Dashboard/DonutEmpty.jsx'
 import { PANORAMA_PAGES, showProChip, ALL_ITEMS } from '../../components/layout/navConfig.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
+import { moduleOn } from '../../utils/modules.js'
 import { currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import hs from '../Dashboard/Home.module.css'
@@ -129,6 +131,9 @@ export default function Panorama({ setPage }) {
 
           <ProjectionCard incomes={d.incomes} expenses={d.expenses} activeMonth={activeMonth} pending={d.pendingSum}
             kpis={kpis} money={money} dualOn={dualOn} toUSD={toUSD} setPage={setPage} />
+
+          {/* Módulo Inversiones (apagado por defecto): lee el portafolio de Invest. */}
+          {moduleOn(settings, 'investments') && <InvestCard />}
 
           <NetWorthCard goals={d.goals} debts={d.debts} incomes={d.ctx.incomes} expenses={d.ctx.expenses}
             settings={settings} sym={sym} setPage={setPage} />

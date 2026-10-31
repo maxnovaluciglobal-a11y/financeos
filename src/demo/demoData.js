@@ -30,6 +30,8 @@ export const DEMO_SETTINGS = {
   onboardingDone: true,
   activeMonth: M0,
   isDemo: true,
+  // El demo muestra todo, también Inversiones (apagado por defecto en una cuenta real).
+  modules: { properties: true, advisor: true, investments: true },
 }
 
 // ── INGRESOS ──────────────────────────────────────────────────────────────────

@@ -111,6 +111,39 @@ describe('módulos que se activan (poda P3) en "Más" y el riel', () => {
   })
 })
 
+describe('módulo Inversiones en "Más"', () => {
+  const on = { modules: { properties: true, advisor: true, investments: true } }
+  const rowsOf = (cc, settings) => moreSections(cc, settings).reduce((n, g) => n + g.items.length, 0)
+  const STATES = [true, false].flatMap(p => [true, false].flatMap(a => [true, false].map(i => ({ modules: { properties: p, advisor: a, investments: i } }))))
+
+  it('apagado por defecto: nadie tiene una fila nueva, ni siquiera "Activar más funciones"', () => {
+    for (const cc of COUNTRIES) {
+      expect(flat(moreSections(cc, {}))).not.toContain('investments')
+      expect(flat(moreSections(cc, {}))).not.toContain('modules')
+    }
+  })
+  it('encendido: fila en Herramientas, sin etiqueta PRO', () => {
+    const it_ = moreSections('CL', on).find(g => g.sec === 'nav.sec.tools').items.find(i => i.id === 'investments')
+    expect(it_).toBeDefined()
+    expect(showProChip(it_, 'starter')).toBe(false)
+  })
+  it('≤ 10 filas en todo país y toda combinación de módulos', () => {
+    for (const cc of COUNTRIES) for (const st of STATES) expect(rowsOf(cc, st), `${cc} ${JSON.stringify(st)}`).toBeLessThanOrEqual(10)
+  })
+  it('solo Argentina se pasa, y ahí Inversiones queda en Panorama', () => {
+    const dropped = COUNTRIES.filter(cc => STATES.some(st => st.modules.investments && !flat(moreSections(cc, st)).includes('investments')))
+    expect(dropped).toEqual(['AR'])
+    expect(flat(moreSections('AR', on))).not.toContain('investments')
+    expect(flat(moreSections('AR', on))).toContain('panorama')
+    expect(flat(moreSections('AR', { modules: { properties: false, advisor: false, investments: true } }))).toContain('investments')
+  })
+  it('el riel de escritorio lo muestra solo encendido', () => {
+    const it_ = ALL_ITEMS.find(i => i.id === 'investments')
+    expect(navItemVisible(it_, 'AR', on)).toBe(true)
+    expect(navItemVisible(it_, 'AR', {})).toBe(false)
+  })
+})
+
 describe('showProChip (ola A3, H22)', () => {
   const pro = { id: 'cashflow', proOnly: true }
   const free = { id: 'income' }
