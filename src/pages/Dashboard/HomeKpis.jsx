@@ -94,7 +94,7 @@ function openMovements(onOpen, filter) {
   onOpen('movements')
 }
 
-export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
+export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, pending, onReviewPending, onOpen, refc, children }) {
   const { t, lang } = useT()
   const { cur } = kpis
   const hasData = cur.incCount > 0 || cur.expCount > 0
@@ -108,9 +108,6 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const heroText = (free < 0 ? '−' : free > 0 ? '+' : '') + (showRef ? fmtRef(toRef(Math.abs(free), refc.rate.rate), lang) : fmtMoney(Math.abs(free), sym))
   const heroLong = heroText.length > 11
   const freeColor = !hasData ? 'var(--th)' : free > 0 ? 'var(--pos)' : free === 0 ? 'var(--warn)' : 'var(--neg)'
-
-  const subParts = [t('home.kpi.leftSub')]
-  if (daysLeft != null) subParts.push(t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }))
 
   return (
     <section aria-label={t('home.kpis.aria')}>
@@ -136,7 +133,6 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               )}
               {hasData && <DeltaLine delta={deltaOf(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} untilDay={cutDay} sym={sym}
                 formatAmount={usdOn ? usdFmt : showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined} />}
-              {hasData && <div className={s.kpiSub}>{subParts.join(' · ')}</div>}
               {pending && pending.count > 0 && (
                 <div className={r.pending}>
                   <span className={r.pendingLabel}>{t('rec.pending.line')}</span>

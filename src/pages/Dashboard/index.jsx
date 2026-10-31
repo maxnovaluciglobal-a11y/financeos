@@ -18,6 +18,7 @@ import { projectEndOfMonth } from '../../utils/projection.js'
 import { isSyncEnabled, syncAvailable } from '../../core/sync.js'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import HomeKpis from './HomeKpis.jsx'
+import MonthReading from './MonthReading.jsx'
 import FirstSteps from './FirstSteps.jsx'
 import { firstStepsProgress } from './firstSteps.js'
 import ProChecklist from './ProChecklist.jsx'
@@ -311,8 +312,8 @@ export default function Dashboard({ setPage }) {
           <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
             pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
             pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
-            daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
             onOpen={setPage} refc={refc} />
+          <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
 
           {quick.length > 0 && (
             <nav className={hs.quick} aria-label={t('dash.quick.title')} data-tour="home-quick">

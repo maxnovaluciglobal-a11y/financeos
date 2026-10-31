@@ -20,6 +20,10 @@ import { interpolateParts } from '../../i18n/translate.js'
 import s from './budgets.module.css'
 import { budgetsFromPreviousMonth } from './budgetCopy.js'
 import { kpiLine, rowLine, rowDetail, parseLimit } from './budgetsView.js'
+import { budgetRows } from '../Dashboard/dashboardModel.js'
+import { budgetsConclusion } from '../../utils/monthReading.js'
+import { useReadingText } from '../Dashboard/useMonthReading.js'
+import reading from '../Dashboard/MonthReading.module.css'
 import { budgetRollover, budgetStatus, budgetPace, categoryState, CATEGORY_STATE_TONE, exceedsWithTolerance, unbudgetedSpent } from '../../utils/budgets.js'
 import BudgetSplit from './BudgetSplit.jsx'
 import BudgetWizard from './BudgetWizard.jsx'
@@ -131,6 +135,9 @@ export default function Budgets() {
     : interpolateParts(t('budgets.head.left'), {
         left: <span key="l" className={s.big}>{amt(Math.max(0, pace.left), { hero: true })}</span>,
         total: <span key="t" className={s.of}>{amt(totalBudget)}</span> })
+  // #9: el titular ya es la conclusión; el rótulo queda para lectores de pantalla.
+  const readingText = useReadingText(sym)
+  const conclusion = readingText(budgetsConclusion(budgetRows({ budgets, monthExpenses: mExpenses, limits: effectiveLimitByCat }), { closed: pace.closed }))
   const usedPct = fmtPct(pace.used, { decimals: 0 })
   const paceText = pace.closed
     ? t('budgets.pace.lineClosed', { used: usedPct })
@@ -266,6 +273,7 @@ export default function Budgets() {
       {totalBudget > 0 && (
         <section className={`${s.head} ${overTotal ? s.headOver : ''}`} aria-label={t('budgets.head.aria')} data-tour="bud-kpis">
           <div className={s.headBody}>
+            {conclusion && <h2 className={reading.conclusion}><span className="sr-only">{t('budgets.head.aria')}: </span>{conclusion}</h2>}
             <p className={s.headline}>{headline}</p>
             <div className={s.paceRow}>
               <span>{paceText}</span>

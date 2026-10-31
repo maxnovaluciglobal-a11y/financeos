@@ -7,6 +7,7 @@
 // propuesta). Se llega desde "Más" › Panorama y desde la línea del IQ en el
 // Inicio. Las páginas completas (Diagnóstico, Patrimonio, Proyección,
 // Reportes, Suscripciones) siguen igual y se abren desde el pie.
+import { useMemo } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader, Card, CardHeader } from '../../components/ui/index.jsx'
@@ -23,6 +24,11 @@ import { IncExpTiles } from '../Dashboard/HomeKpis.jsx'
 import ScoreCard from '../Dashboard/ScoreCard.jsx'
 import NetWorthCard from '../Dashboard/NetWorthCard.jsx'
 import InvestCard from './InvestCard.jsx'
+import PaceCard from './PaceCard.jsx'
+import { MonthReadingLong, ConclusionTitle } from '../Dashboard/MonthReading.jsx'
+import { useReadingText } from '../Dashboard/useMonthReading.js'
+import { barConclusion, categoryConclusion } from '../../utils/monthReading.js'
+import { monthKeys, totalForMonth } from '../../utils/chartSeries.js'
 import ProjectionCard from '../Dashboard/ProjectionCard.jsx'
 import CountryTool from '../Dashboard/CountryTool.jsx'
 import DonutEmpty from '../Dashboard/DonutEmpty.jsx'
@@ -50,11 +56,21 @@ export default function Panorama({ setPage }) {
   const expected = Number(settings.estimatedMonthlyIncome) || 0
   const links = PANORAMA_PAGES.map(id => ALL_ITEMS.find(it => it.id === id)).filter(Boolean)
 
+  // Títulos que ya son la conclusión (#9), con las mismas cifras del gráfico.
+  const text = useReadingText(sym)
+  const catTitle = text(categoryConclusion(d.monthExpenses))
+  const barTitle = useMemo(() => barConclusion(monthKeys(6).map(key => ({
+    income: totalForMonth(d.incomes, key), expense: totalForMonth(d.expenses, key),
+  }))), [d.incomes, d.expenses])
+
   return (
     <div>
       <PageHeader title={t('nav.panorama')} sub={monthLabel(activeMonth)} />
       <div className={hs.home}>
         <div className={hs.stack}>
+          {/* El mes en palabras: lo primero que se lee. */}
+          <MonthReadingLong kpis={kpis} expenses={d.expenses} budgets={d.budgets} pending={d.pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} />
+
           {/* IQ Score completo: número, estado, siguiente paso y factores. */}
           <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact={false}
             isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
@@ -138,7 +154,9 @@ export default function Panorama({ setPage }) {
           <NetWorthCard goals={d.goals} debts={d.debts} incomes={d.ctx.incomes} expenses={d.ctx.expenses}
             settings={settings} sym={sym} setPage={setPage} />
 
-          <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
+          <PaceCard expenses={d.expenses} kpis={kpis} activeMonth={activeMonth} sym={sym} />
+
+          <ChartCard title={<ConclusionTitle plain={t('dash.chart.cat.title')} conclusion={catTitle} />} subtitle={monthLabel(activeMonth)} minHeight={160}>
             {d.monthExpenses.some(r => Number(r?.amount) > 0)
               ? <CategoryDonut records={d.monthExpenses} sym={sym} maxCategories={6}
                   onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; setPage('movements') } : undefined}/>
@@ -146,7 +164,7 @@ export default function Panorama({ setPage }) {
           </ChartCard>
 
           {hasData && (
-            <ChartCard title={t('dash.chart.bar.title')} subtitle={t('dash.chart.bar.sub')} minHeight={180}>
+            <ChartCard title={<ConclusionTitle plain={t('dash.chart.bar.title')} conclusion={text(barTitle)} />} subtitle={t('dash.chart.bar.sub')} minHeight={180}>
               <IncomeExpenseBar incomes={d.incomes} expenses={d.expenses} sym={sym} months={6}/>
             </ChartCard>
           )}
