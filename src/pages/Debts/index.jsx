@@ -391,8 +391,8 @@ export default function Debts() {
           : null
         return (
           <Card key={d.id}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
-              <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',display:'flex',alignItems:'center',gap:6,minWidth:0}}>
+            <div style={{display:'flex',flexWrap:'wrap',justifyContent:'space-between',alignItems:'center',gap:'4px 8px',marginBottom:6}}>
+              <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',display:'flex',alignItems:'center',gap:6,minWidth:0,flex:'1 1 220px'}}>
                 {/* Selector de tipo editable in-situ para deudas existentes */}
                 <SheetSelect
                   value={d.debtType || 'Tarjeta'}
@@ -405,13 +405,13 @@ export default function Debts() {
                 </SheetSelect>
                 <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.creditor}</span>
               </div>
-              <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}}>
+              <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end',marginLeft:'auto'}}>
                 {d.rate > 0 && <Badge color="red">{d.rate}% TAE</Badge>}
                 {Number(d.ufBalance) > 0 && <Badge color="amber">UF</Badge>}
                 {(d.project||'').trim() && <Badge color="green"><Building2 size={11} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-1px', marginRight: 3 }} />{d.project}</Badge>}
                 {d.balance > 0 && d.minPayment > 0 && confirmPay !== d.id && (
                   <button onClick={() => setConfirmPay(d.id)}
-                    style={{fontSize:12,padding:'2px 10px',minHeight:44,borderRadius:4,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.08)',color:'var(--grn)',cursor:'pointer',fontFamily:'var(--sans)',fontWeight:600}}>
+                    style={{fontSize:12,padding:'2px 12px',minHeight:44,borderRadius:8,border:0,whiteSpace:'nowrap',background:'rgba(10,92,62,.08)',color:'var(--grn)',cursor:'pointer',fontFamily:'var(--sans)',fontWeight:600}}>
                     {t('debts.card.payBtn')}
                   </button>
                 )}

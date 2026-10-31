@@ -4,7 +4,7 @@
 // Mismos hijos y mismo contrato que <select> (value, onChange(e) con
 // e.target.value como texto): cambiar la etiqueta alcanza. En escritorio sigue
 // siendo el <select> nativo, con su teclado y su búsqueda por letra.
-import { useId, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ChevronsUpDown } from 'lucide-react'
 import { useMediaQuery } from '../../hooks/useMediaQuery.js'
 import { parseOptions } from './selectOptions.js'
@@ -22,20 +22,21 @@ export default function SheetSelect({ value, onChange, children, id, className, 
   const narrow = useMediaQuery('(max-width: 700px)')
   const [open, setOpen] = useState(false)
   const btnRef = useRef(null)
-  const valueId = useId()
   const options = useMemo(() => parseOptions(children), [children])
   if (!narrow) {
     return <select value={value} onChange={onChange} id={id} className={className} style={style} disabled={disabled} name={name} title={title} aria-label={ariaLabel} {...rest}>{children}</select>
   }
   const current = options.find(o => o.value === String(value ?? ''))
   const label = ariaLabel || labelText(btnRef.current)
+  // WCAG 2.5.3: el nombre accesible incluye el valor visible del botón.
+  const spoken = ariaLabel ? `${ariaLabel}: ${current?.label ?? ''}` : undefined
   return (
     <>
       <button ref={btnRef} type="button" id={id} name={name} disabled={disabled} title={title}
         className={['fos-select', className].filter(Boolean).join(' ')} style={style}
-        aria-haspopup="dialog" aria-expanded={open} aria-label={ariaLabel} aria-describedby={ariaLabel ? valueId : undefined}
+        aria-haspopup="dialog" aria-expanded={open} aria-label={spoken}
         onClick={() => setOpen(true)}>
-        <span id={valueId} className="fos-select__value">{current?.label ?? ''}</span>
+        <span className="fos-select__value">{current?.label ?? ''}</span>
         <ChevronsUpDown size={16} strokeWidth={1.8} aria-hidden="true" className="fos-select__chev" />
       </button>
       <OptionSheet open={open} onClose={() => setOpen(false)} title={label} options={options} value={value ?? ''}
