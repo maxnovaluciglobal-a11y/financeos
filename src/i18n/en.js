@@ -24,7 +24,7 @@ export const en = {
     'qa.pasteLocal': "Read on your device · nothing is sent",
     'qa.pasteDetected': "Detected · review and save",
     'qa.line.label': "Write the transaction in one line",
-    'qa.line.ph': "bread 12 · uber 8.50 yesterday",
+    'qa.line.ph': "uber 8.50 yesterday",
     'qa.line.local': "Interpreted on your device",
     'qa.line.ask': "Which is the amount?",
     'qa.line.unreadable': "That amount can't be read. Enter it with the keypad.",

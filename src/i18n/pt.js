@@ -24,7 +24,7 @@ export const pt = {
     'qa.pasteLocal': "Interpretado no seu aparelho · nada é enviado",
     'qa.pasteDetected': "Detectado · revise e salve",
     'qa.line.label': "Escrever o movimento em uma linha",
-    'qa.line.ph': "pão 12 · uber 8,50 ontem",
+    'qa.line.ph': "uber 8,50 ontem",
     'qa.line.local': "Interpretado no seu dispositivo",
     'qa.line.ask': "Qual é o valor?",
     'qa.line.unreadable': "Não foi possível ler esse valor. Digite no teclado.",

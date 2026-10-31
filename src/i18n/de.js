@@ -24,7 +24,7 @@ export const de = {
     'qa.pasteLocal': "Wird lokal auf Ihrem Gerät ausgewertet · nichts wird gesendet",
     'qa.pasteDetected': "Erkannt · prüfen und speichern",
     'qa.line.label': "Buchung in einer Zeile schreiben",
-    'qa.line.ph': "Brot 3 · Uber 8,50 gestern",
+    'qa.line.ph': "uber 8,50 gestern",
     'qa.line.local': "Wird auf Ihrem Gerät ausgewertet",
     'qa.line.ask': "Welcher Betrag ist gemeint?",
     'qa.line.unreadable': "Dieser Betrag ist nicht lesbar. Bitte über die Tastatur eingeben.",
