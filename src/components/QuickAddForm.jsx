@@ -35,6 +35,8 @@ import {
   ruleKey, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, keyToKeypad, isTextEntryTarget,
   buildDetailedPrefill, DETAILED_PREFILL_KEY,
 } from '../utils/quickAdd.js'
+import { parseQuickLine, lineFormPatch } from '../utils/quickLine.js'
+import QuickLineField from './QuickLineField.jsx'
 import { navigateTo } from './quickAddBus.js'
 import css from './QuickAddForm.module.css'
 
@@ -95,7 +97,7 @@ function DateSegment({ date, setDate, t }) {
       <button type="button" className="fos-chip fos-chip--tall" aria-pressed={date === yesterday} onClick={() => setDate(yesterday)}>
         {t('qa.yesterday')}
       </button>
-      <span className="fos-chip fos-chip--tall" aria-pressed={isCustom} style={{ minWidth: 44, padding: isCustom ? '8px 10px' : '8px 12px' }}>
+      <span className="fos-chip fos-chip--tall" data-pressed={isCustom} style={{ minWidth: 44, padding: isCustom ? '8px 10px' : '8px 12px' }}>
         <Calendar size={16} strokeWidth={1.7} aria-hidden="true" />
         {isCustom && <span className="num" aria-hidden="true" style={{ fontSize: 13 }}>{fmtShortDate(date)}</span>}
         <input
@@ -131,6 +133,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const [pastedDate, setPastedDate] = useState(null) // fecha que trae el SMS (YYYY-MM-DD), si la hay
   const [usdMode, setUsdMode] = useState(false)      // B4b · "Escribir en US$"
   const [suggestedMsg, setSuggestedMsg] = useState('') // anuncio de la categoría sugerida
+  const [line, setLine] = useState('')               // #2 · el movimiento en una línea
+  const [lineResult, setLineResult] = useState(null)
+  const lineFill = useRef({})                        // lo último que la línea escribió en cada campo
   // ¿El usuario eligió la categoría a mano en esta apertura? La sugerencia
   // mientras escribe (B4a) nunca la pisa.
   const catManual = useRef(false)
@@ -170,6 +175,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setDate(todayStr()); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
     setUsdMode(false); setSuggestedMsg(''); catManual.current = false
+    setLine(''); setLineResult(null); lineFill.current = {}
     // lastMethod se lee al abrir; cambiarlo mientras el formulario está abierto no lo resetea
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey, defaultType])
@@ -199,7 +205,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const allowedCats = useMemo(() => [...new Set([...chips, ...effectiveCats, ...(type === 'expense' ? CATS_EXPENSE : CATS_INCOME)])], [chips, effectiveCats, type])
 
   // Fija la primera categoría al abrir / cambiar de tipo
-  useEffect(() => { setCat(c => (chips.includes(c) ? c : chips[0] || '')) }, [chips, resetKey])
+  // (la que acaba de escribir la línea se respeta aunque no esté entre los chips)
+  useEffect(() => { setCat(c => (chips.includes(c) || (c && c === lineFill.current.cat) ? c : chips[0] || '')) }, [chips, resetKey])
 
   // "Repetir" (B4b): los 3 movimientos más frecuentes de los últimos 90 días
   // (si no hay, el último de todos, como antes).
@@ -258,6 +265,28 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
       if (learned) setCat(learned)   // 2ª vez que aparece este comercio, ya tiene categoría
     }
     setDetected(true)
+  }
+
+  // #2 · Interpreta la línea en cada tecla (100 % local, utils/quickLine.js) y
+  // rellena los campos que sigan libres; nunca guarda. `choice` es la opción
+  // tocada cuando el monto se puede leer de dos formas.
+  function applyLine(text, choice = null) {
+    setLine(text)
+    const r = parseQuickLine(text, {
+      currency, lang, rate, rules: merchantRules, defaultType, today: todayStr(), choice,
+      monthFirst: settings?.country === 'US',
+      allowedFor: (k) => (k === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)),
+    })
+    setLineResult(r)
+    const { patch, filled } = lineFormPatch(r, { type, amount, desc, date, usd: usdOn, cat }, lineFill.current,
+      { type: defaultType, date: todayStr() }, { manualCat: catManual.current, decimals })
+    lineFill.current = filled
+    if ('type' in patch) setType(patch.type)
+    if ('amount' in patch) setAmount(patch.amount)
+    if ('desc' in patch) setDesc(patch.desc)
+    if ('date' in patch) setDate(patch.date)
+    if ('usd' in patch) setUsdMode(patch.usd)
+    if ('cat' in patch) { setCat(patch.cat); setSuggestedMsg(t('qa.suggested', { cat: catName(patch.cat, lang) })) }
   }
 
   // Guarda en UNA escritura de settings la regla comercio→categoría (1.2) y el
@@ -413,6 +442,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           ))}
         </div>
 
+        {/* #2 · Opcional: escribir como en un mensaje; lo de abajo se rellena y sigue editable */}
+        <QuickLineField value={line} result={lineResult} sym={sym} onChange={applyLine}
+          onPick={(i) => applyLine(line, i)} onEnter={() => { if (canConfirm) save() }}
+          summary={lineResult?.status === 'ok' && amt > 0 ? { type: type === 'expense' ? t('qa.expense') : t('qa.income'), amount: maskMoney(fmtMoney(amt, sym)), cat: catName(cat, lang) } : null} />
+
         {/* Monto grande — readOnly + inputMode="none": evita el teclado del sistema
             (y su zoom) porque el teclado numérico propio de abajo escribe acá.
             Se muestra con separador de miles del locale de la moneda. */}
@@ -522,7 +556,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
                 <button key={r.key} type="button" className={`fos-chip ${css.repeatChip}`} onClick={() => applyRepeat(r)}
                   aria-label={t('qa.repeat', { desc: repeatLabel(r), amount: money })}>
                   <SignalIcon kind="subs" size={14} />
-                  <span aria-hidden="true" className={css.repeatDesc}>{repeatLabel(r)}</span>
+                  <span aria-hidden="true" className={css.repeatDesc}>{repeatLabel(r)}</span>{' '}
                   <span aria-hidden="true" className={`num ${css.repeatAmt}`}>{money}</span>
                 </button>
               )

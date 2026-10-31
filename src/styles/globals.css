@@ -267,7 +267,7 @@ button { cursor: pointer; font-family: var(--sans); }
   top: max(-2px, calc(50% - 22px)); height: max(100%, 44px);
 }
 .fos-chip:hover { border-color: var(--tm); color: var(--tx); }
-.fos-chip[aria-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
+.fos-chip[aria-pressed="true"], .fos-chip[data-pressed="true"] { border-color: var(--tx); background: var(--grn-bg); color: var(--tx); font-weight: 600; }
 .fos-chip--tall { min-height: 44px; }
 
 /* Etiqueta de texto no interactiva (prioridad de una meta, UI-Q5): hairline y
