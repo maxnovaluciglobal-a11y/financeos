@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { translate, interpolate, detectLanguage } from './translate.js'
-import { loadLang } from './langCache.js'
+import { loadLang, waitForLang } from './langCache.js'
 import { es } from './es.js'
 import { en } from './en.js'
 import { pt } from './pt.js'
@@ -598,5 +598,27 @@ describe('paridad de las claves de "Debo · Me deben" (D2, es/en/pt/de)', () => 
     }
     for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/[¡!]/)
     for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+})
+
+describe('waitForLang (V4): primer pintado sin español en otros idiomas', () => {
+  it('resuelve al instante si el idioma ya está cargado', async () => {
+    let called = false
+    await waitForLang('es', 10, () => { called = true; return Promise.resolve() })
+    expect(called).toBe(false)
+  })
+  it('espera a que llegue el diccionario', async () => {
+    let release
+    const pending = new Promise((r) => { release = r })
+    let done = false
+    const wait = waitForLang('xx', 1000, () => pending).then(() => { done = true })
+    await Promise.resolve()
+    expect(done).toBe(false)
+    release()
+    await wait
+    expect(done).toBe(true)
+  })
+  it('con el chunk colgado se rinde tras el tope, no deja la app en el splash', async () => {
+    await expect(waitForLang('xx', 5, () => new Promise(() => {}))).resolves.toBeUndefined()
   })
 })

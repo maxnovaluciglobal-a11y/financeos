@@ -3,20 +3,15 @@ import { lazy, Suspense } from 'react'
 import { prefetchTabs } from './utils/prefetchTabs.js'
 import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
-import ResetPassword from './components/ResetPassword.jsx'
 import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter, getLicenseKey } from './utils/licenseValidator.js'
 import { readDeviceOwner, readLegacyUid, planAccountSwitch, applyAccountSwitch, hasVault, legacyBagLicenseKey } from './core/deviceOwner.js'
 import { disablePush, isPushEnabled } from './core/push.js'
-import DeviceSwitch from './components/DeviceSwitch.jsx'
 import { getSession, onAuthChange, syncUserLang } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
 import Toast from './components/ui/Toast.jsx'
 import PageSkeleton from './components/ui/PageSkeleton.jsx'
 import BootSplash from './components/ui/BootSplash.jsx'
-import DemoShell from './demo/DemoShell.jsx'
-import AdminCRM from './admin/AdminCRM.jsx'
-import TrialUnsubscribe from './components/TrialUnsubscribe.jsx'
 import { trialUnsubscribeTarget } from './utils/trialUnsubscribe.js'
 import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
@@ -29,6 +24,7 @@ import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
 import { useState, useEffect } from 'react'
 import { logClientError, logRejection } from './utils/errorLog.js'
+import { useLangReady } from './i18n/useT.js'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -68,8 +64,19 @@ const Panorama      = lazy(() => import('./pages/Panorama/index.jsx'))
 const NpsPrompt     = lazy(() => import('./components/NpsPrompt.jsx'))
 // V4 (30-oct-2026): el onboarding solo lo ve una cuenta nueva: fuera del JS inicial.
 const Onboarding    = lazy(() => import('./components/Onboarding.jsx'))
+// V4: caminos que casi nadie recorre al abrir la app. El demo trae los datos de
+// las 4 personas y el CRM es interno: nada de eso va en el JS inicial de una
+// cuenta real. LicenseGate y AppLock quedan estáticos a propósito: LicenseGate
+// es el respaldo reintentable cuando la red falla al arrancar, y AppLock tiene
+// que montarse síncrono (flushSync) antes de quitar el velo al volver de 2.º plano.
+const DemoShell        = lazy(() => import('./demo/DemoShell.jsx'))
+const AdminCRM         = lazy(() => import('./admin/AdminCRM.jsx'))
+const TrialUnsubscribe = lazy(() => import('./components/TrialUnsubscribe.jsx'))
+const ResetPassword    = lazy(() => import('./components/ResetPassword.jsx'))
+const DeviceSwitch     = lazy(() => import('./components/DeviceSwitch.jsx'))
 
 const PageLoader = () => <PageSkeleton />
+const BootFallback = ({ children }) => <Suspense fallback={<BootSplash />}>{children}</Suspense>
 
 // ── Detectar modo demo ────────────────────────────────────────────────────────
 function isDemoMode() {
@@ -130,6 +137,7 @@ function Inner() {
   // eso pasó desapercibido — pero es un bug real, no cosmético. Mismo motivo
   // por el que este useEffect va acá arriba, antes de cualquier return.
   const { settings, loading, dbError } = useApp()
+  const langReady = useLangReady(settings?.language || 'es', !loading)
 
   // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
@@ -238,6 +246,8 @@ function Inner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, licensed])
 
+  if (!loading && !langReady) return <BootSplash />
+
   if (!isDemo) {
     if (session === undefined) {
       // Verificando sesión (evita flash del gate). Si bootTimedOut ya se
@@ -247,9 +257,9 @@ function Inner() {
       return <BootSplash />
     }
     if (!session) return <main><AuthGate onAuthenticated={() => {}} /></main>
-    if (passwordRecovery) return <main><ResetPassword onDone={() => setPasswordRecovery(false)} /></main>
+    if (passwordRecovery) return <main><BootFallback><ResetPassword onDone={() => setPasswordRecovery(false)} /></BootFallback></main>
     const ownerStatus = owner.uid === session.user.id ? owner.status : 'checking'
-    if (ownerStatus === 'failed') return <main><DeviceSwitch previousEmail={readDeviceOwner()?.email} /></main>
+    if (ownerStatus === 'failed') return <main><BootFallback><DeviceSwitch previousEmail={readDeviceOwner()?.email} /></BootFallback></main>
     if (ownerStatus === 'checking') return <BootSplash />
     if (!licensed && !entitlementChecked) {
       // Mismo criterio mientras se verifica el entitlement de la cuenta.
@@ -326,16 +336,16 @@ function Inner() {
 export default function App() {
   // C-35: baja de los correos de la prueba (?unsub=trial&id=), sin sesión.
   const trialUnsubId = typeof window !== 'undefined' ? trialUnsubscribeTarget(window.location.search) : null
-  if (trialUnsubId) return <TrialUnsubscribe id={trialUnsubId} />
+  if (trialUnsubId) return <BootFallback><TrialUnsubscribe id={trialUnsubId} /></BootFallback>
   // Si URL tiene ?admin=crm, cargar el panel CRM interno (sin AppProvider, sin
   // IndexedDB, sin onboarding/licencia) — solo Walter puede leer datos reales,
   // la policy RLS de crm_contacts hace el gate real, no esta condición.
   if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('admin') === 'crm') {
-    return <AdminCRM />
+    return <BootFallback><AdminCRM /></BootFallback>
   }
   // Si URL tiene ?demo=true, cargar DemoShell (sin AppProvider, sin IndexedDB)
   if (isDemoMode()) {
-    return <DemoShell />
+    return <BootFallback><DemoShell /></BootFallback>
   }
 
   // T14: el bloqueo va POR FUERA de AppProvider — mientras está bloqueada no

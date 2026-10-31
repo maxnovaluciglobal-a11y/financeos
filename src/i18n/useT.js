@@ -15,7 +15,7 @@ import { translate } from './translate.js'
 // langCache.js) — antes vivía solo acá, pero utils/index.js (catLabel/
 // recurrenceLabel) necesitaba el mismo diccionario del idioma activo y no
 // puede usar este hook (se llama fuera de componentes React).
-import { langCache, loadLang } from './langCache.js'
+import { langCache, loadLang, waitForLang } from './langCache.js'
 
 export function useT() {
   // Sin provider (panel ?admin=crm → AuthGate) no hay ajustes: español.
@@ -45,4 +45,21 @@ export function useTFor(lang = 'es') {
   }
 
   return { t, lang }
+}
+
+// V4: true cuando ya se puede pintar sin mostrar español a quien usa otro idioma
+// (ver waitForLang). Vale solo para el primer pintado: una vez en true no vuelve
+// a false, así cambiar de idioma en Ajustes no desmonta la app. `settled` en
+// false mientras el idioma guardado todavía no se conoce.
+export function useLangReady(lang = 'es', settled = true) {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    if (!settled || ready) return
+    let cancelled = false
+    waitForLang(lang).then(() => { if (!cancelled) setReady(true) })
+    return () => { cancelled = true }
+  }, [lang, settled, ready])
+
+  return ready || (settled && !!langCache[lang])
 }

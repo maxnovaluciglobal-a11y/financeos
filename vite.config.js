@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { fileURLToPath } from 'node:url'
 
 // Skew Protection de Vercel (C-49): con la protección activa en el proyecto,
 // Vercel expone VERCEL_DEPLOYMENT_ID al build. El index.html pide el CSS y las
@@ -12,6 +13,16 @@ const DPL = process.env.VERCEL_SKEW_PROTECTION_ENABLED === '1' ? (process.env.VE
 export default defineConfig({
   base: '/app/',
   define: { __VERCEL_DPL__: JSON.stringify(DPL) },
+  resolve: {
+    // V4: la app no usa Realtime ni Storage de Supabase, pero supabase-js los
+    // importa siempre (~87 kB minificados, ~23 kB gzip, con phoenix e iceberg-js)
+    // y no se pueden eliminar por tree-shaking porque los crea en su constructor.
+    // Verificado por src/core/supabaseStubs/supabaseStubs.test.js.
+    alias: [
+      { find: /^@supabase\/realtime-js$/, replacement: fileURLToPath(new URL('./src/core/supabaseStubs/realtime.js', import.meta.url)) },
+      { find: /^@supabase\/storage-js$/, replacement: fileURLToPath(new URL('./src/core/supabaseStubs/storage.js', import.meta.url)) },
+    ],
+  },
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
       // Nunca en JS: la entrada con ?dpl y los chunks importándola sin query

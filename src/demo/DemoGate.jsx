@@ -19,10 +19,11 @@
 import { useRef, useState } from 'react'
 import { registerDemoLead } from '../utils/licenseValidator.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
-import { useTFor } from '../i18n/useT.js'
+import { useTFor, useLangReady } from '../i18n/useT.js'
 import { detectLanguage } from '../i18n/translate.js'
 import { Btn } from '../components/ui/index.jsx'
 import Logo from '../components/Logo.jsx'
+import BootSplash from '../components/ui/BootSplash.jsx'
 import Turnstile from '../components/Turnstile.jsx'
 
 const LS_KEY = 'fnos_demo_gate_passed'
@@ -40,6 +41,7 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 export default function DemoGate({ onPass }) {
   const [lang] = useState(() => detectLanguage())
   const { t } = useTFor(lang)
+  const langReady = useLangReady(lang)
   const [email, setEmail]     = useState('')
   const [nombre, setNombre]   = useState('')
   const [consent, setConsent] = useState(false)
@@ -65,6 +67,8 @@ export default function DemoGate({ onPass }) {
         onPass()
       })
   }
+
+  if (!langReady) return <BootSplash />
 
   const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }
   const inputStyle = {

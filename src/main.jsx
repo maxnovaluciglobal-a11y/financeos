@@ -6,6 +6,7 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { installGlobalErrorLog } from './utils/errorLog.js'
 import { detectLanguage } from './i18n/translate.js'
+import { loadLang } from './i18n/langCache.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
 import { watchServiceWorkerUpdates } from './core/swUpdate.js'
 import { skewCookieStrings, clearSkewCookieStrings } from './utils/skewCookie.js'
@@ -31,7 +32,13 @@ installWebAnalytics()
 // index.html trae lang="es" fijo; hasta que AppContext/DemoContext lean los
 // ajustes, el primer pintado usa el idioma del navegador (mismo criterio que el
 // primer arranque). Después lo actualiza rehydrate()/updateSettings().
-try { document.documentElement.lang = detectLanguage() } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
+// V4: el diccionario de ese idioma se pide ya, junto con el resto del arranque,
+// para que el primer pintado no tenga que esperarlo (no-op en español).
+try {
+  const lang = detectLanguage()
+  document.documentElement.lang = lang
+  loadLang(lang)
+} catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 
 // REVERTIDO 2026-08-27: se probó Object.freeze(Object.prototype) acá como mitigación
 // de la vulnerabilidad de prototype pollution de xlsx@0.18.5 (GHSA-4r6h-8v6p-xvw6).
