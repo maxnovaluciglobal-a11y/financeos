@@ -9,7 +9,7 @@ import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
 
-export const MAX_INITIAL_GZIP = 256 * 1024
+export const MAX_INITIAL_GZIP = 246 * 1024
 const HEAVY = /^assets\/(pdf|charts|exceljs)-/
 const LANG_CHUNK = /^(en|pt|de)-[\w-]+\.js$/
 
