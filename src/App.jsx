@@ -24,6 +24,7 @@ import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
 import { useState, useEffect } from 'react'
 import { logClientError, logRejection } from './utils/errorLog.js'
+import { useLangReady } from './i18n/useT.js'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -136,6 +137,7 @@ function Inner() {
   // eso pasó desapercibido — pero es un bug real, no cosmético. Mismo motivo
   // por el que este useEffect va acá arriba, antes de cualquier return.
   const { settings, loading, dbError } = useApp()
+  const langReady = useLangReady(settings?.language || 'es', !loading)
 
   // Demo bypass: si URL tiene ?demo=true no se pide login ni licencia
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
@@ -243,6 +245,8 @@ function Inner() {
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, licensed])
+
+  if (!loading && !langReady) return <BootSplash />
 
   if (!isDemo) {
     if (session === undefined) {

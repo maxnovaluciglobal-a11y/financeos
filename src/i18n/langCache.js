@@ -43,3 +43,16 @@ export function loadLang(lang) {
   }
   return langPromises[lang]
 }
+
+// V4: el primer pintado espera el diccionario del idioma activo para no mostrar
+// español a quien usa la app en otro idioma. Con tope: si el chunk no llega (red
+// colgada) se sigue en el fallback español, como antes, en vez de quedar en el splash.
+export const LANG_WAIT_MS = 4000
+
+export function waitForLang(lang, ms = LANG_WAIT_MS, load = loadLang) {
+  if (langCache[lang]) return Promise.resolve()
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms)
+    load(lang).then(() => { clearTimeout(timer); resolve() })
+  })
+}

@@ -10,8 +10,9 @@ import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import PageSkeleton from '../components/ui/PageSkeleton.jsx'
+import BootSplash from '../components/ui/BootSplash.jsx'
 import { AppContext } from '../context/AppContext.jsx'
-import { useT } from '../i18n/useT.js'
+import { useT, useLangReady } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
 import { usePageStack } from '../hooks/usePageStack.js'
 import { prefetchTabs } from '../utils/prefetchTabs.js'
@@ -126,7 +127,8 @@ function DemoBottomCTA({ hidden }) {
 function DemoInner() {
   const [page, setPageState] = useState('dashboard')
   const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
-  const { t } = useT()
+  const { t, lang } = useT()
+  const langReady = useLangReady(lang)
   // H20 (ola A10): pestañas precargadas tras el primer pintado.
   useEffect(() => { prefetchTabs() }, [])
   // Recorrido: arranca solo en la primera visita; el "?" del banner lo repite
@@ -195,6 +197,8 @@ function DemoInner() {
       default:              return <Dashboard setPage={setPage}/>
     }
   }
+
+  if (!langReady) return <BootSplash />
 
   return (
     <div className="demo-frame">
