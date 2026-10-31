@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { initialScripts, checkBudget, staticImports, MAX_INITIAL_GZIP } from './bundleBudget.js'
+import { initialScripts, checkBudget, staticImports, staticLangImports, MAX_INITIAL_GZIP } from './bundleBudget.js'
 
 const html = (extra = '') => `<script type="module" crossorigin src="/app/assets/index-A.js"></script>
 <link rel="modulepreload" crossorigin href="/app/assets/vendor-B.js">${extra}`
@@ -22,5 +22,13 @@ describe('presupuesto de carga inicial (C-32)', () => {
     const r = checkBudget(h, () => 10, (f) => f === 'assets/index-A.js' ? 'import"./charts-Y.js"' : '')
     expect(r.files).toEqual(['assets/index-A.js', 'assets/charts-Y.js'])
     expect(r.errors[0]).toMatch(/charts-Y/)
+  })
+  it('detecta un diccionario importado estáticamente, no el import() de langCache (V4)', () => {
+    const chunks = {
+      'index-A.js': 'const a=()=>import("./en-Aa1.js")',
+      'goals-B.js': 'import{e as x}from"./en-Aa1.js";import"./pt-Bb_2.js";import"./Dashboard-C.js"',
+      'en-Aa1.js': 'export const en={}',
+    }
+    expect(staticLangImports(Object.keys(chunks), f => chunks[f])).toEqual(['goals-B.js -> en-Aa1.js', 'goals-B.js -> pt-Bb_2.js'])
   })
 })

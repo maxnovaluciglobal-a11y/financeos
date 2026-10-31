@@ -1,13 +1,17 @@
 // scripts/bundleBudget.js — presupuesto de carga inicial (auditoría 360, ING-1/C-32).
 // Lo corre build.js después de `vite build`: falla si la entrada precarga el
 // motor de PDF, los gráficos o exceljs, o si el JS inicial (entrada + preloads)
-// pasa de MAX_INITIAL_GZIP. Antes eran ~790 kB gzip; tras C-32, ~250 kB.
+// pasa de MAX_INITIAL_GZIP. Antes eran ~790 kB gzip; tras C-32, ~286 kB; tras V4,
+// ver el valor de abajo. También falla si un chunk importa estáticamente un
+// diccionario entero: Metas traía en y pt (115 kB gzip) y, como prefetchTabs la
+// precarga, se bajaban en cada arranque en frío sin que esta línea lo mostrara.
 import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
 
-export const MAX_INITIAL_GZIP = 300 * 1024
+export const MAX_INITIAL_GZIP = 256 * 1024
 const HEAVY = /^assets\/(pdf|charts|exceljs)-/
+const LANG_CHUNK = /^(en|pt|de)-[\w-]+\.js$/
 
 // JS que el index.html carga de entrada: el <script type=module>, los modulepreload
 // y (con readChunk) los imports estáticos de esos chunks.
@@ -41,8 +45,20 @@ export function checkBudget(html, sizeOf, readChunk = null) {
   return { files, total, errors }
 }
 
+// Chunks que importan estáticamente un diccionario: solo langCache.js debe
+// llegar a ellos, con import() dinámico. Formato "<chunk> -> <diccionario>".
+export function staticLangImports(chunkNames, readChunk) {
+  return chunkNames.flatMap(name => staticImports(readChunk(name))
+    .filter(dep => LANG_CHUNK.test(dep))
+    .map(dep => `${name} -> ${dep}`))
+}
+
 export function checkDist(distApp) {
   const html = fs.readFileSync(path.join(distApp, 'index.html'), 'utf8')
-  return checkBudget(html, (f) => zlib.gzipSync(fs.readFileSync(path.join(distApp, f))).length,
-    (f) => fs.readFileSync(path.join(distApp, f), 'utf8'))
+  const read = (f) => fs.readFileSync(path.join(distApp, f), 'utf8')
+  const result = checkBudget(html, (f) => zlib.gzipSync(fs.readFileSync(path.join(distApp, f))).length, read)
+  const chunks = fs.readdirSync(path.join(distApp, 'assets')).filter(f => f.endsWith('.js'))
+  const langs = staticLangImports(chunks, (f) => read(`assets/${f}`))
+  if (langs.length) result.errors.push(`diccionarios importados estáticamente: ${langs.join(', ')}`)
+  return result
 }
