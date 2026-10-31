@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { aporteHandoff, investValueForUser, monthContributions, resolveUserRate, withInvest } from './investNetWorth.js'
+import { aporteHandoff, fmtUsd, investValueForUser, monthContributions, resolveUserRate, withInvest } from './investNetWorth.js'
 import { calcNetWorth } from './netWorth.js'
 
 const snap = { valueUsd: 1000, at: 111, pricesAt: 222, status: 'live', fx: { rates: { CLP: 950 }, at: 333 } }
@@ -94,5 +94,12 @@ describe('aporteHandoff', () => {
   })
   it('sin aportes no hay nada que pasar', () => {
     expect(aporteHandoff({ count: 0, sum: 0 }, {}, null)).toBeNull()
+  })
+})
+
+describe('fmtUsd', () => {
+  it('junto a otra moneda siempre dice US$, también en inglés', () => {
+    expect(fmtUsd(12.5, 'COP')).toMatch(/^US\$12[.,]50$/)
+    expect(fmtUsd(-3, 'CLP')).toMatch(/^US\$3/)
   })
 })

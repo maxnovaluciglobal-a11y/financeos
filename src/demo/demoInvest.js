@@ -20,7 +20,7 @@ export function demoInvestSnapshot(now = Date.now()) {
     totalUsd: 1500,
     totalPct: 0.1364,
     pricesAt: now,
-    yahoo: true,
+    yahoo: false, // cifras inventadas: no se atribuyen a ninguna fuente
     coingecko: false,
     fx: { rates: DEFAULT_USD_RATES, at: now },
   }

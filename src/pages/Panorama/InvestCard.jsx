@@ -13,18 +13,18 @@ import { useT } from '../../i18n/useT.js'
 import { INVEST_ORIGIN } from '../../core/investBridge.js'
 import { openInvest } from '../../core/investHandoff.js'
 import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
-import { aporteHandoff, fmtInvestAt, monthContributions } from '../../utils/investNetWorth.js'
-import { currencySymbol, currentMonth, fmtMoney, fmtMoneyFor, fmtPct } from '../../utils/index.js'
+import { aporteHandoff, fmtInvestAt, fmtUsd, monthContributions } from '../../utils/investNetWorth.js'
+import { currencySymbol, currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import hs from '../Dashboard/Home.module.css'
 import s from './investCard.module.css'
 
-function Change({ label, usd, pct, lang }) {
+function Change({ label, usd, pct, currency }) {
   const { m } = useMoney()
   if (usd == null) return null
   const dir = usd > 0 ? 'up' : usd < 0 ? 'down' : 'flat'
   return (
     <Delta dir={dir} good={usd >= 0}>
-      {label} {usd < 0 ? '−' : usd > 0 ? '+' : ''}{m(fmtMoneyFor(Math.abs(usd), 'USD', lang))} ({fmtPct(pct, { signed: true })})
+      {label} {usd < 0 ? '−' : usd > 0 ? '+' : ''}{m(fmtUsd(usd, currency))} ({fmtPct(pct, { signed: true })})
     </Delta>
   )
 }
@@ -32,17 +32,19 @@ function Change({ label, usd, pct, lang }) {
 function Sources({ snapshot, t }) {
   const names = [snapshot.yahoo && 'Yahoo Finance', snapshot.coingecko && 'CoinGecko'].filter(Boolean)
   return (
-    <p className={s.meta}>
-      {names.length > 0 && <>{t('invest.card.source', { source: names.join(', ') })} · </>}
-      <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer">{t('invest.card.sourcesLink')}</a>
-      {/* CoinGecko pide su atribución junto a sus datos (C-33). */}
-      {snapshot.coingecko && <> · <a href="https://www.coingecko.com/en/api" target="_blank" rel="noopener noreferrer">Powered by CoinGecko API</a></>}
-    </p>
+    <>
+      {names.length > 0 && <p className={s.meta}>{t('invest.card.source', { source: names.join(', ') })}</p>}
+      <div className={s.links}>
+        <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer">{t('invest.card.sourcesLink')}</a>
+        {/* CoinGecko pide su atribución junto a sus datos (C-33). */}
+        {snapshot.coingecko && <a href="https://www.coingecko.com/en/api" target="_blank" rel="noopener noreferrer">Powered by CoinGecko API</a>}
+      </div>
+    </>
   )
 }
 
 export default function InvestCard() {
-  const { t, lang } = useT()
+  const { t } = useT()
   const app = useApp() || {}
   const settings = app.settings || {}
   const { demo, phase, snapshot, inv, rate, refresh, offline } = useInvestPortfolio()
@@ -116,14 +118,14 @@ export default function InvestCard() {
         {heading(tag)}
         {inv && (
           <div className={`num ${hs.nwValue}`}>
-            <Money>{inUserCcy ? fmtMoney(inv.amount, sym) : fmtMoneyFor(inv.usd, 'USD', lang)}</Money>
+            <Money>{inUserCcy ? fmtMoney(inv.amount, sym) : fmtUsd(inv.usd, settings.currency)}</Money>
           </div>
         )}
-        {inUserCcy && <div className={s.sub}>≈ <Money>{fmtMoneyFor(inv.usd, 'USD', lang)}</Money></div>}
+        {inUserCcy && <div className={s.sub}>≈ <Money>{fmtUsd(inv.usd, settings.currency)}</Money></div>}
         {snapshot.status === 'live' && (
           <div className={s.changes}>
-            <Change label={t('invest.card.day')} usd={snapshot.dayUsd} pct={snapshot.dayPct} lang={lang} />
-            <Change label={t('invest.card.total')} usd={snapshot.totalUsd} pct={snapshot.totalPct} lang={lang} />
+            <Change label={t('invest.card.day')} usd={snapshot.dayUsd} pct={snapshot.dayPct} currency={settings.currency} />
+            <Change label={t('invest.card.total')} usd={snapshot.totalUsd} pct={snapshot.totalPct} currency={settings.currency} />
           </div>
         )}
         <p className={s.meta}>

@@ -85,7 +85,7 @@ export default function NetWorth() {
           </div>
 
           <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, padding: '0 4px' }}>
-            {t('networth.disclaimer')}{propsValueTotal > 0 ? ' ' + t('networth.propsValueNote') : ''}
+            {t(inv ? 'networth.investments.disclaimer' : 'networth.disclaimer')}{propsValueTotal > 0 ? ' ' + t('networth.propsValueNote') : ''}
           </div>
         </>
       )}

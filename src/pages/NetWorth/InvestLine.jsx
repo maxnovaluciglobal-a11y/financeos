@@ -3,14 +3,16 @@
 // tasa. Sin tasa con fecha va en US$, aparte, y no entra al total.
 import Money from '../../components/Money.jsx'
 import { StateTag } from '../../components/ledger/index.js'
+import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { fmtMoney, fmtMoneyFor } from '../../utils/index.js'
-import { fmtInvestAt } from '../../utils/investNetWorth.js'
+import { fmtMoney } from '../../utils/index.js'
+import { fmtInvestAt, fmtUsd } from '../../utils/investNetWorth.js'
 
 export default function InvestLine({ inv, sym }) {
-  const { t, lang } = useT()
+  const { t } = useT()
+  const { settings } = useApp()
   const inTotal = inv.amount != null
-  const usd = fmtMoneyFor(inv.usd, 'USD', lang)
+  const usd = fmtUsd(inv.usd, settings?.currency)
   const at = fmtInvestAt(inv.at)
   return (
     <div style={{ padding: '5px 0' }}>

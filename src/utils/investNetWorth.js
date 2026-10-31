@@ -4,7 +4,7 @@
 // La línea "Inversiones" es una estimación con fecha y va aparte de Metas: no
 // toca `calcNetWorth`, así Reportes y el PDF siguen con lo que la persona
 // registró y una meta de ahorro nunca se mezcla con el portafolio.
-import { dateLocale } from './index.js'
+import { currencySymbol, dateLocale, fmtAmount } from './index.js'
 import { refEligible, savedRate, cachedRate } from './refRate.js'
 
 const valid = (n) => Number.isFinite(Number(n)) && Number(n) > 0
@@ -73,4 +73,12 @@ export function aporteHandoff({ count, sum }, settings, rate) {
 // "30 oct, 14:32" en el idioma de la interfaz: toda cifra de Invest lleva su fecha.
 export function fmtInvestAt(ms) {
   try { return new Date(ms).toLocaleString(dateLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) } catch { return '' }
+}
+
+// US$ con los separadores de la moneda de la persona: "US$1.526,32" junto a
+// "$1.450.000" no se confunde, "US$1,526.32" sí. El "$" pelado queda para quien
+// lleva sus cuentas en dólares: al lado de pesos, se lee como pesos.
+export function fmtUsd(n, currency) {
+  const sym = currency === 'USD' ? currencySymbol('USD') : 'US$'
+  return sym + fmtAmount(Math.abs(Number(n) || 0), 2)
 }

@@ -5,7 +5,8 @@
 .sub { font-size: 12px; color: var(--th); }
 .changes { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .meta { margin: 0; font-size: 12px; line-height: 1.5; color: var(--th); }
-.meta a { color: inherit; text-decoration: underline; text-underline-offset: 2px; display: inline-block; padding: 2px 0; }
+.links { display: flex; flex-wrap: wrap; gap: 0 16px; margin: -6px 0; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: var(--th); text-decoration: underline; text-underline-offset: 2px; }
 .note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--tm); }
 .notice { margin: 0; font-size: 12px; line-height: 1.5; color: var(--tm); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
