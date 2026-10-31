@@ -3323,4 +3323,5 @@ export const es = {
     "home.upcoming.viewAllN": "Ver los {n}",
     "debts.owed.deletedWithIncome.one": "Eliminado junto con el ingreso de su cobro",
     "debts.owed.deletedWithIncome.many": "Eliminado junto con los {n} ingresos de sus cobros",
+    "home.upcoming.empty7": "No hay pagos en los próximos 7 días. Las fechas salen del vencimiento de tus deudas y del próximo cobro de tus suscripciones.",
 }

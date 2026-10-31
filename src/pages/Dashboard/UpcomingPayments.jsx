@@ -70,7 +70,7 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
       </div>
 
       {items.length === 0 ? (
-        <p className={s.empty}>{t('home.upcoming.empty')}</p>
+        <p className={s.empty}>{t(short ? 'home.upcoming.empty7' : 'home.upcoming.empty')}</p>
       ) : (
         <ul className={s.rows}>
           {items.map(it => {

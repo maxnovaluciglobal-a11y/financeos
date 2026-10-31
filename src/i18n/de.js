@@ -3322,4 +3322,5 @@ export const de = {
     "home.upcoming.viewAllN": "Alle {n} ansehen",
     "debts.owed.deletedWithIncome.one": "Zusammen mit der Einnahme aus dem Eingang gelöscht",
     "debts.owed.deletedWithIncome.many": "Zusammen mit den {n} Einnahmen aus den Eingängen gelöscht",
+    "home.upcoming.empty7": "Keine Zahlungen in den nächsten 7 Tagen. Die Termine stammen aus den Fälligkeiten Ihrer Schulden und der nächsten Abbuchung Ihrer Abos.",
 }
