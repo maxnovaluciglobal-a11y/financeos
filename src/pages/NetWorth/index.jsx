@@ -2,6 +2,8 @@
 // Patrimonio neto — vista consolidada de lo que ya registras en la app:
 // activos (ahorro en metas + flujo neto de propiedades) menos pasivos (deudas).
 // No agrega datos nuevos: reutiliza Goals, Debts y Projects tal cual existen.
+// Con el módulo Inversiones encendido suma aparte la estimación de Invest
+// (InvestLine); calcNetWorth no cambia y Reportes sigue sin ella.
 
 import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
@@ -9,6 +11,9 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, PageHeader, Empty } from '../../components/ui/index.jsx'
 import { fmtMoney as fmtMoneyRaw, currencySymbol } from '../../utils/index.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
+import { withInvest } from '../../utils/investNetWorth.js'
+import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
+import InvestLine from './InvestLine.jsx'
 import CountUp from '../../components/CountUp.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 
@@ -21,9 +26,11 @@ export default function NetWorth() {
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
 
   // Cálculo compartido (mismo que usa el resumen en Reportes/PDF)
+  const base = useMemo(() => calcNetWorth({ goals, debts, receivables, incomes, expenses, settings }),
+    [goals, debts, receivables, incomes, expenses, settings])
+  const { inv } = useInvestPortfolio()
   const { savedInGoals, propsValueTotal, propertiesNet, pendingDebt, receivablesPending, totalActivos, totalPasivos, netWorth, hasData } =
-    useMemo(() => calcNetWorth({ goals, debts, receivables, incomes, expenses, settings }),
-      [goals, debts, receivables, incomes, expenses, settings])
+    useMemo(() => withInvest(base, inv), [base, inv])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -59,6 +66,7 @@ export default function NetWorth() {
               <Row label={t('networth.propsValue')} value={propsValueTotal} sym={sym} color="var(--grn)" />
               <Row label={t('networth.propsPositive')} value={Math.max(0, propertiesNet)} sym={sym} color="var(--grn)" />
               <Row label={t('networth.receivables')} value={receivablesPending} sym={sym} color="var(--grn)" />
+              {inv && <InvestLine inv={inv} sym={sym} />}
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalAssets')}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--grn)' }}><Money>{fmtMoney(totalActivos, sym)}</Money></span>

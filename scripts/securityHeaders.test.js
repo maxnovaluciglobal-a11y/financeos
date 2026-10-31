@@ -34,7 +34,7 @@ describe('cabeceras de seguridad (vercel.json)', () => {
 
   it('connect-src incluye Supabase y las fuentes de tasas que usa la app', () => {
     const c = dir('connect-src')
-    for (const h of ['https://nelwgbcddwiaimzbcuas.supabase.co', 'https://dolarapi.com', 'https://ve.dolarapi.com', 'https://mindicador.cl']) expect(c).toContain(h)
+    for (const h of ['https://nelwgbcddwiaimzbcuas.supabase.co', 'https://dolarapi.com', 'https://ve.dolarapi.com', 'https://mindicador.cl', 'https://invest.moyiq.app']) expect(c).toContain(h)
     const src = ['utils/tasaVE.js', 'utils/tasaAR.js', 'utils/indicadores.js'].map(f => readFileSync(new URL('../src/' + f, import.meta.url), 'utf8')).join('\n')
     for (const host of new Set([...src.matchAll(/https:\/\/([a-z0-9.-]+)/g)].map(m => m[1]))) expect(c, host).toContain('https://' + host)
   })

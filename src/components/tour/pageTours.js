@@ -17,6 +17,8 @@ export const PAGE_TOURS = {
   panorama: [
     { id: 'iq-score',     title: 'tour.pano.score.title',  body: 'tour.pano.score.body' },
     { id: 'pano-month',   title: 'tour.pano.month.title',  body: 'tour.pano.month.body' },
+    // Solo si el módulo está encendido: sin la tarjeta, Tour.jsx salta el paso.
+    { id: 'pano-invest',  title: 'tour.pano.invest.title', body: 'tour.pano.invest.body' },
     { id: 'pano-detail',  title: 'tour.pano.detail.title', body: 'tour.pano.detail.body' },
   ],
   movements: [

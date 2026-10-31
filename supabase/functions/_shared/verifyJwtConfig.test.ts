@@ -11,11 +11,13 @@ import { fileURLToPath } from 'node:url';
 const FUNCTIONS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG_PATH = join(FUNCTIONS_DIR, '..', 'config.toml');
 
-// Valores de producción al 19-oct-2026 (`supabase functions list -o json`).
+// Valores de producción al 19-oct-2026 (`supabase functions list -o json`), más
+// invest-handoff (30-oct-2026), que se despliega con --no-verify-jwt.
 const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'auth-email-hook': false,
   'cron-health-alert': false,
   'delete-account': false,
+  'invest-handoff': false,
   'lead-submit': false,
   'lead-unsubscribe': false,
   'newsletter-sync': false,

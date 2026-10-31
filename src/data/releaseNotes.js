@@ -4,6 +4,27 @@
 // Voz de producto: seca, sin exclamaciones, sin voseo.
 export const RELEASE_NOTES = [
   {
+    id: '2026-10-30d',
+    items: {
+      es: [
+        'Nuevo módulo Inversiones, gratis y opcional: enciéndelo en Ajustes › Funciones para ver tu portafolio de Invest en Panorama y en Patrimonio.',
+        '«Abrir Invest» entra con tu sesión, sin volver a iniciarla. Es información, no asesoría de inversión.',
+      ],
+      en: [
+        'New optional Investments module, free: turn it on in Settings › Features to see your Invest portfolio in Overview and Net worth.',
+        '“Open Invest” keeps you signed in. This is information, not investment advice.',
+      ],
+      pt: [
+        'Novo módulo Investimentos, grátis e opcional: ative em Ajustes › Funções para ver seu portfólio do Invest no Panorama e no Patrimônio.',
+        '«Abrir o Invest» entra com a sua sessão, sem novo login. É informação, não consultoria de investimentos.',
+      ],
+      de: [
+        'Neues optionales Modul Investments, kostenlos: Schalten Sie es unter Einstellungen › Funktionen ein, um Ihr Invest-Portfolio im Überblick und im Vermögen zu sehen.',
+        '„Invest öffnen“ meldet Sie direkt an. Das ist eine Information, keine Anlageberatung.',
+      ],
+    },
+  },
+  {
     id: '2026-10-30c',
     items: {
       es: [

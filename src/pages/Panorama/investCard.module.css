@@ -1,0 +1,19 @@
+/* Tarjeta de Inversiones (Panorama, página Inversiones). Radios 8–12 px por
+   tokens, objetivos de 44 px y sin Latón: el primario de la pantalla es otro. */
+.wrap { display: flex; flex-direction: column; gap: 6px; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 24px; }
+.sub { font-size: 12px; color: var(--th); }
+.changes { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.meta { margin: 0; font-size: 12px; line-height: 1.5; color: var(--th); }
+.meta a { color: inherit; text-decoration: underline; text-underline-offset: 2px; display: inline-block; padding: 2px 0; }
+.note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--tm); }
+.notice { margin: 0; font-size: 12px; line-height: 1.5; color: var(--tm); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.aporte {
+  display: flex; align-items: center; width: 100%; min-height: 44px; margin-top: 6px; padding: 8px 12px;
+  border: 0.5px solid var(--brd); border-radius: var(--r); background: var(--sur2);
+  font: inherit; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--tx); text-align: left; text-decoration: none; cursor: pointer;
+}
+.aporte:hover { background: var(--sur3); }
+.aporte:disabled { cursor: progress; opacity: .7; }
+.legal { margin: 10px 0 0; font-size: 11px; line-height: 1.6; color: var(--th); }

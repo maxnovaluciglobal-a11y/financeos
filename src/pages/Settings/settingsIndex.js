@@ -42,6 +42,7 @@ export const SETTINGS_GROUPS = [
   { id: 'features', items: [
     { id: 'properties', label: 'settings.features.properties' },
     { id: 'advisor',    label: 'settings.features.advisor' },
+    { id: 'investments', label: 'settings.features.investments' },
   ] },
   { id: 'data', items: [
     { id: 'backup',  label: 'settings.backup.title', kw: 'backup.restore.title' },

@@ -29,6 +29,11 @@ verify_jwt = false
 verify_jwt = false
 
 # Trigger SQL (pg_net) o cliente anon; autentica con el header x-internal-secret.
+# Módulo Inversiones: el JWT se verifica en la función, contra Auth, para que el
+# preflight y un token vencido reciban una respuesta con CORS.
+[functions.invest-handoff]
+verify_jwt = false
+
 [functions.lead-submit]
 verify_jwt = false
 # SEG-1: puerta con Turnstile de los formularios públicos (sin sesión).

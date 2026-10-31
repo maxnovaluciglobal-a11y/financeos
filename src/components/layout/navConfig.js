@@ -1,4 +1,4 @@
-import { moduleOn, modulesOff } from '../../utils/modules.js'
+import { moduleOn, promptableModulesOff } from '../../utils/modules.js'
 
 // src/components/layout/navConfig.js
 // Extraído de Shell.jsx para que la página "more" (src/pages/More/index.jsx)
@@ -52,6 +52,8 @@ export const NAV = [
     { id: 'coach',    lb: 'nav.diagnosis' },
     { id: 'reports',  lb: 'nav.reports' },
     { id: 'cashflow', lb: 'nav.projection', proOnly: true },
+    // Sin proOnly a propósito: los datos de mercado no tienen licencia comercial (INV-1).
+    { id: 'investments', lb: 'nav.investments', module: 'investments' },
   ] },
   { sec: 'nav.sec.pro', items: [
     { id: 'advisor',  lb: 'nav.advisorMode', proOnly: true, module: 'advisor' },
@@ -121,7 +123,8 @@ export function activeTabFor(page) {
 //  · Mi dinero: Deudas y cobros · Fijos y suscripciones · Ingresos · Importar
 //  · Panorama: el hub del análisis (Diagnóstico, Patrimonio, Proyección, Reportes…)
 //  · Herramientas: calculadora de tasa (VE/AR) · herramientas del país ·
-//    Propiedades y Modo asesor si están encendidos · "Activar más funciones"
+//    Propiedades, Modo asesor e Inversiones si están encendidos ·
+//    "Activar más funciones"
 //  · Cuenta: Ajustes (Ayuda y comentarios va en la barra del pie, junto a
 //    tema y cerrar sesión, para no pasar de 10 filas en AR con todo encendido)
 // R13: en VE/AR la calculadora de tasa del país (Multimoneda / Dólar y
@@ -132,6 +135,9 @@ export const RATE_TOOL_BY_COUNTRY = { VE: 'multimoneda', AR: 'multidolar' }
 export const PANORAMA_PAGES = ['coach', 'networth', 'cashflow', 'reports', 'subscriptions']
 
 const item = (id) => ALL_ITEMS.find(it => it.id === id)
+
+// Tope de filas de "Más" (navConfig.test.js lo exige en cada país).
+export const MORE_MAX_ROWS = 10
 
 export function moreSections(country, settings = {}) {
   const cc = (country || 'CL').toUpperCase()
@@ -149,11 +155,20 @@ export function moreSections(country, settings = {}) {
   if (tool) tools.push({ ...item(tool), lb: 'refcur.tool', tool: true })
   if (countryItems.length === 1) tools.push(countryItems[0])
   else if (countryItems.length > 1) tools.push({ id: 'countryTools', lb: 'more.countryTools', sheet: true, items: countryItems, proOnly: countryItems.every(it => it.proOnly) })
-  for (const id of ['projects', 'advisor']) {
+  for (const id of ['projects', 'advisor', 'investments']) {
     const it = item(id)
     if (navItemVisible(it, cc, settings)) tools.push(it)
   }
-  if (modulesOff(settings).length > 0) tools.push({ id: 'modules', lb: 'more.enableModules', action: 'features' })
+  if (promptableModulesOff(settings).length > 0) tools.push({ id: 'modules', lb: 'more.enableModules', action: 'features' })
+
+  // Argentina es el único país con calculadora de tasa Y herramienta propia:
+  // con Inversiones sumado puede pasar de 10 filas. Ahí Inversiones queda solo
+  // en Panorama, que tiene la misma tarjeta (y el riel de escritorio la conserva).
+  const rows = money.length + tools.length + 2 // Panorama + Ajustes
+  if (rows > MORE_MAX_ROWS) {
+    const i = tools.findIndex(it => it.id === 'investments')
+    if (i >= 0) tools.splice(i, 1)
+  }
 
   return [
     { sec: 'more.sec.money', items: money },

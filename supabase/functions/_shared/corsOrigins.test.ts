@@ -12,10 +12,11 @@ import * as report from '../send-report-email/cors.ts'
 import * as deleteAccount from '../delete-account/cors.ts'
 import * as feedback from '../send-feedback/cors.ts'
 import * as leadSubmit from '../lead-submit/cors.ts'
+import * as investHandoff from '../invest-handoff/cors.ts'
 
 const LEGACY = 'financeos' + 'pro'
 
-const ALL = { cancellation, diagnostico, invest, starter, optin, report, deleteAccount, feedback, leadSubmit }
+const ALL = { cancellation, diagnostico, invest, starter, optin, report, deleteAccount, feedback, leadSubmit, investHandoff }
 const VALID = /^(https:\/\/([a-z0-9-]+\.)*moyiq\.app|http:\/\/localhost:\d+)$/
 
 describe('orígenes CORS de las Edge Functions', () => {
