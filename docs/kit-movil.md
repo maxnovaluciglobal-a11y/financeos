@@ -2,11 +2,23 @@
 
 **Fecha:** 29/30-oct-2026 · **Segunda ronda** · Propuesta para `financeos-app/docs/kit-movil.md` (extiende `docs/sistema-visual.md`). **No se tocó código.** Cuando Walter lo apruebe, se copia al repo dentro del worktree de V2.
 
+## Reglas vigentes (31-oct-2026, decisiones de Walter sobre la tercera ronda)
+
+Mandan sobre lo que dicen las tablas de abajo, que son la medición de V1:
+- **Radios:** 8–12 en tarjetas, botones y campos. **Píldora permitida** en segmentados, chips y etiquetas de monto o estado (`--r-pill`). Las hojas llevan 20 arriba (`--r-sheet`).
+- **Trazos:** sin borde en lo que no se edita. Claro: sombra suave (`--box-sh`). Oscuro: escalón de superficie. El borde queda en los campos editables (WCAG 1.4.11).
+- **Barra de pestañas:** ícono relleno y tinta en la activa, 82 % de opacidad con desenfoque, y el "+" de 44 × 44 dentro de la barra, a la derecha. El "+" flotante queda solo en Ingresos, que no tiene barra.
+- **Barra superior:** sin fila propia; los botones flotan en la línea del título, y el título compacto se liga al scroll. El título arranca en la misma Y en las 5 raíces.
+- **Hoja:** salida animada, arrastre desde el contenido, velocidad, dos alturas (56 % y entera) y resorte con `linear()`. Abre entera por defecto; las listas largas pueden abrir a media altura (`initialDetent`).
+- **Selectores:** `SheetSelect` en el teléfono; un solo control de mes ‹ ›, y tocar el mes abre la lista.
+- **Tipografía:** fila 15, metadato 13, 12 solo para rótulos. CSS en `rem`; los tamaños en JSX siguen en px (próxima etapa).
+- **Gestos:** todo gesto tiene un equivalente visible. No hay "tirar para actualizar".
+
 ## Cómo se midió
 
 - **MOY IQ:** demo de producción (`demo.moyiq.app/app/?demo=true&persona=ve`) en el navegador integrado, emulando 390×844 y 375×667. Se leyó con un script la caja (`getBoundingClientRect`) y el estilo calculado de cada elemento interactivo de las 5 pestañas, del alta rápida y de la hoja de tasa. En iOS, 1 px CSS = 1 pt, así que se comparan directo con rial. Se contrastó con la cuenta real en el iPhone de Walter por el espejo, sin guardar capturas.
 - **rial:** 46 capturas de la primera ronda. La pantalla ocupa 338×734 px y equivale a un iPhone de 393×852 pt (1 px ≈ 1,16 pt), con un margen de ±5 %. Hoy se revisaron en vivo Menú, Configuración, Apariencia, Seguridad, Notificaciones, Novedades y la lista de compras.
-- **Reglas fijas de MOY IQ que no se negocian:** objetivo táctil de 44 px (plan §5b), radios de 8 a 12 px y nunca pill (`branding/CLAUDE.md:46`), un primario Latón por pantalla (`sistema-visual.md`, regla 4), estado con ícono más palabra, y axe en 0.
+- **Reglas fijas de MOY IQ que no se negocian:** objetivo táctil de 44 px (plan §5b), radios de 8 a 12 px (la regla de píldoras cambió, ver arriba), un primario Latón por pantalla (`sistema-visual.md`, regla 4), estado con ícono más palabra, y axe en 0.
 
 ## 1. Medidas
 

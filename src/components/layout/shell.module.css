@@ -85,7 +85,7 @@
 }
 :global(:root[data-title-compact="1"]) .navBg,
 :global(:root[data-title-compact="1"]) .navTitle { opacity: 1; }
-@supports (animation-timeline: scroll()) {
+@supports (animation-timeline: scroll()) and (timeline-scope: none) {
   .content { scroll-timeline: --page-scroll block; }
   .navBg, .navTitle { transition: none; animation-name: navReveal; animation-duration: 1ms; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: --page-scroll; }
   .navBg { animation-range: 0px 24px; }

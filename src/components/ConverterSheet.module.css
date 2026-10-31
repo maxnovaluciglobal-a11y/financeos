@@ -1,5 +1,5 @@
 /* Conversor rápido (B2). Líneas, no cajas: los campos llevan su borde de
-   formulario; nada más tiene caja. Radios --r (8–12), nunca pill. Un solo
+   formulario; nada más tiene caja. Radios --r (8–12), píldora solo en el segmentado. Un solo
    primario Latón ("Copiar"). Todo control mide ≥ 44 px. */
 .titleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 6px; }
 .titleRow .title { margin: 0; }

@@ -16,6 +16,7 @@
 1. Copiar `src/styles/tokens.css` tal cual al repo destino (p. ej. `financeos-landing/css/tokens.css`, `invest-web/src/styles/tokens.css`) e importarlo antes de cualquier hoja que use `var(--…)`.
 2. Borrar del repo destino las definiciones duplicadas de esas variables (`--navy`, `--laton`, `--papel`…): si quedan, la última gana y vuelve la deriva.
 3. Copiar `src/styles/tokens.test.js` adaptando `SRC` al árbol del repo, para que un hex nuevo fuera de la paleta rompa su CI.
+   **Pendiente del 31-oct-2026:** `tokens.css` sumó superficies, píldora y resorte. Copiarlo a `invest-web` y correr su `brd4-shared-tokens.test.js` al integrar `feat/nativo-visual`.
 4. Ante un cambio de color: editar `tokens.css` + `tokens.js` aquí, correr `npm test`, y volver a copiar a los otros repos (y a `EMAIL_BRAND` en `emailLayout.ts` y `moyiq-newsletter-proxy/lib/brand.js` si cambia un color de correo).
 
 Un script que copie el archivo en el build de cada repo (origen único en `financeos-workspace`) queda como mejora: hoy los tres repos se despliegan por separado y `financeos-workspace/branding/` tiene cambios sin commitear que no son de esta tanda.

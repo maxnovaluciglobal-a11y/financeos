@@ -95,7 +95,7 @@
   --num:       'IBM Plex Sans', sans-serif;
   /* Mono: solo identificadores y códigos (claves de licencia, IBAN, ISO). */
   --mono:      'IBM Plex Mono', monospace;
-  /* Radios — chicos y técnicos a propósito (nunca pill / rounded-lg grande). */
+  /* Radios — chicos y técnicos en tarjetas, botones y campos (8–12). */
   --r:         8px;    /* botones */
   --rl:        10px;   /* cards */
   --rs:        4px;    /* elementos chicos (progress bar, chips) */
