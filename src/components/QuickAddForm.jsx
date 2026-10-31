@@ -11,13 +11,14 @@
 //                  necesita Shell montado, así que el onboarding no lo usa)
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
-import { Calendar, Check } from 'lucide-react'
+import { Calendar, Check, ChevronDown, LayoutGrid } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { useMoney } from './Money.jsx'
 import { parseTransactionText } from '../utils/smsParser.js'
 import { hapticTap } from '../utils/haptics.js'
-import { orderQuickChips, hasProfileTemplate } from '../utils/quickChips.js'
+import { orderQuickChips, hasProfileTemplate, rankByRecency } from '../utils/quickChips.js'
+import { UI_FLAGS } from '../utils/uiFlags.js'
 import config from '../config.js'
 import {
   localDateStr, dateLocale, moneyLocale, catName, catLabel, methodLabel,
@@ -33,15 +34,18 @@ import { logClientError } from '../utils/errorLog.js'
 import { refEligible, resolveRefRate, toRef, SOURCE_LABEL } from '../utils/refRate.js'
 import {
   ruleKey, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, keyToKeypad, isTextEntryTarget,
-  buildDetailedPrefill, DETAILED_PREFILL_KEY,
+  buildDetailedPrefill, DETAILED_PREFILL_KEY, ENTRY_MEMORY_KEY, entryMemoryValue, readEntryDate,
 } from '../utils/quickAdd.js'
 import { parseQuickLine, lineFormPatch } from '../utils/quickLine.js'
 import QuickLineField from './QuickLineField.jsx'
 import { navigateTo } from './quickAddBus.js'
 import css from './QuickAddForm.module.css'
 import SheetSelect from './ui/SheetSelect.jsx'
+import OptionSheet from './ui/OptionSheet.jsx'
 
 const readStorage = (k) => { try { return localStorage.getItem(k) } catch { return null } }
+const writeStorage = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v) } catch { /* almacenamiento no disponible: se sigue sin recordar */ } }
+const MORE_OPEN_KEY = 'fos_qa_more_open'
 
 const todayStr = () => localDateStr()
 const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return localDateStr(d) }
@@ -59,7 +63,7 @@ const DEFAULT_METHOD = config.paymentMethods[0]
 // más usado de la app. Con una moneda sin decimales, la coma pasa a ser "000".
 // B4a (W3): 4.ª columna con ⌫ arriba y ✓ (guardar) a la altura del pulgar; el
 // ✓ se activa solo con monto y categoría.
-function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm }) {
+function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm, primaryOk = false }) {
   const decimalKey = decimals > 0 ? KEY_DECIMAL : KEY_THOUSAND
   const sep = decimalSeparator(locale || moneyLocale())
   const label = (k) => (k === KEY_BACKSPACE ? t('qa.keypadBackspace') : k === KEY_DECIMAL ? t('qa.keypadDecimal') : k === KEY_THOUSAND ? t('qa.keypadThousand') : k)
@@ -73,7 +77,7 @@ function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm }
     <div role="group" aria-label={t('qa.amount')} className={css.keypad}>
       {key('1')}{key('2')}{key('3')}{key(KEY_BACKSPACE)}
       {key('4')}{key('5')}{key('6')}
-      <button type="button" className={`${css.key} ${css.keyOk}`} onClick={onConfirm} disabled={!canConfirm} aria-label={t('qa.keypadSave')}>
+      <button type="button" className={`${css.key} ${css.keyOk} ${primaryOk ? css.keyOkPrimary : ''}`} onClick={onConfirm} disabled={!canConfirm} aria-label={t('qa.keypadSave')}>
         <Check size={22} strokeWidth={2.2} aria-hidden="true" />
         <span aria-hidden="true">{t('qa.keypadSave')}</span>
       </button>
@@ -126,6 +130,13 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const [date, setDate] = useState(todayStr)
   const [method, setMethod] = useState(DEFAULT_METHOD)
   const [saving, setSaving] = useState(false)
+  // Bloque "Ahora": en la hoja, una sola tarea (monto, fecha y categoría). El
+  // onboarding sigue con el formulario entero porque no tiene "Más opciones".
+  const compact = stickySave && UI_FLAGS.quickAddCompact
+  const [moreOpen, setMoreOpen] = useState(() => readStorage(MORE_OPEN_KEY) === '1')
+  const [allCatsOpen, setAllCatsOpen] = useState(false)
+  const showMore = !compact || moreOpen
+  const baseDate = useRef(todayStr())               // la fecha de partida de esta apertura
   const [repeat, setRepeat] = useState(false)       // "Se repite" → crea un fijo
   const [freq, setFreq] = useState('monthly')
   const [pasteOpen, setPasteOpen] = useState(false)  // 1.1 · captura por pegado
@@ -172,8 +183,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // la accesibilidad de diálogo (Esc, focus-trap, foco inicial en el monto,
   // retorno de foco al cerrar) la maneja Sheet.jsx.
   useEffect(() => {
+    baseDate.current = (compact && UI_FLAGS.quickAddEntryMemory && readEntryDate(readStorage(ENTRY_MEMORY_KEY), todayStr(), Date.now())) || todayStr()
     setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
-    setDate(todayStr()); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
+    setDate(baseDate.current); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
     setUsdMode(false); setSuggestedMsg(''); catManual.current = false
     setLine(''); setLineResult(null); lineFill.current = {}
@@ -196,11 +208,13 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const chips = useMemo(() => {
     const counts = {}
     ownOfType.slice(-120).forEach(r => { if (r.category) counts[r.category] = (counts[r.category] || 0) + 1 })
-    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(e => e[0])
+    const ranked = compact && UI_FLAGS.quickAddRecentCats
+      ? rankByRecency(ownOfType)
+      : Object.entries(counts).sort((a, b) => b[1] - a[1]).map(e => e[0])
     // Plantilla de perfil activa (ej. freelancer): sus categorías primero (M5)
     const templateCats = (type === 'expense' ? settings?.categoriesExpense : settings?.categoriesIncome) || []
     return orderQuickChips({ ranked, effective: effectiveCats, templateCats, canonical: type === 'expense' ? CATS_EXPENSE : CATS_INCOME, templateActive: hasProfileTemplate(settings) })
-  }, [type, ownOfType, settings, effectiveCats])
+  }, [type, ownOfType, settings, effectiveCats, compact])
   // Categorías válidas para una sugerencia: las del tipo activo (el mapa de
   // reglas es compartido entre gastos e ingresos).
   const allowedCats = useMemo(() => [...new Set([...chips, ...effectiveCats, ...(type === 'expense' ? CATS_EXPENSE : CATS_INCOME)])], [chips, effectiveCats, type])
@@ -280,7 +294,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     })
     setLineResult(r)
     const { patch, filled } = lineFormPatch(r, { type, amount, desc, date, usd: usdOn, cat }, lineFill.current,
-      { type: defaultType, date: todayStr() }, { manualCat: catManual.current, decimals })
+      { type: defaultType, date: baseDate.current }, { manualCat: catManual.current, decimals })
     lineFill.current = filled
     if ('type' in patch) setType(patch.type)
     if ('amount' in patch) setAmount(patch.amount)
@@ -379,6 +393,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
       }
       // aprende comercio→categoría (usa la descripción como comercio) y el método usado
       rememberChoices(finalDesc, cat, type === 'expense' ? method : null)
+      if (compact && UI_FLAGS.quickAddEntryMemory) writeStorage(ENTRY_MEMORY_KEY, entryMemoryValue(date, todayStr(), Date.now()))
       hapticTap()
       // A9 (30-oct-2026): "Deshacer" en el toast de guardado (solo altas simples:
       // un "Se repite" crea además la regla, que se deshace desde Fijos).
@@ -420,6 +435,10 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  function toggleMore() {
+    setMoreOpen(o => { writeStorage(MORE_OPEN_KEY, o ? null : '1'); return !o })
+  }
+
   const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
   const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
 
@@ -442,11 +461,6 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             </button>
           ))}
         </div>
-
-        {/* #2 · Opcional: escribir como en un mensaje; lo de abajo se rellena y sigue editable */}
-        <QuickLineField value={line} result={lineResult} sym={sym} onChange={applyLine}
-          onPick={(i) => applyLine(line, i)} onEnter={() => { if (canConfirm) save() }}
-          summary={lineResult?.status === 'ok' && amt > 0 ? { type: type === 'expense' ? t('qa.expense') : t('qa.income'), amount: maskMoney(fmtMoney(amt, sym)), cat: catName(cat, lang) } : null} />
 
         {/* Monto grande — readOnly + inputMode="none": evita el teclado del sistema
             (y su zoom) porque el teclado numérico propio de abajo escribe acá.
@@ -492,112 +506,149 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         {/* Fecha + 1.1 · Pegar SMS/notificación bancaria (se interpreta 100% local) */}
         <div className={css.dateRow}>
           <DateSegment date={date} setDate={setDate} t={t} />
-          {!pasteOpen && (
+          {showMore && !pasteOpen && (
             <button type="button" className={css.pasteBtn} onClick={() => setPasteOpen(true)} aria-label={t('qa.pasteCta')} title={t('qa.pasteCta')}>
               <span aria-hidden>⎘</span> {t('qa.pasteShort')}
             </button>
           )}
         </div>
-        {pasteOpen && (
-          <div style={{ marginBottom: 12 }}>
-            <textarea
-              value={pasteText}
-              onChange={e => handlePaste(e.target.value)}
-              placeholder={t('qa.pastePh')}
-              rows={2}
-              aria-label={t('qa.pasteCta')}
-              style={{ resize: 'none', fontSize: 16, textAlign: 'left', marginBottom: 6 }}
+        {/* Chips de categoría. En la hoja, una fila que se desliza y "Todas". */}
+        {compact ? (
+          <div className={css.catRow}>
+            <div role="group" aria-label={t('qa.category')} className={css.catScroll}>
+              {(chips.includes(cat) || !cat ? chips : [cat, ...chips]).map(c => (
+                <button key={c} type="button" className={`fos-chip ${css.catChip}`} aria-pressed={cat === c} onClick={() => pickCategory(c)}>
+                  {chipLabel(c)}
+                </button>
+              ))}
+            </div>
+            <button type="button" className={css.catAll} onClick={() => setAllCatsOpen(true)} aria-label={t('qa.allCats')} title={t('qa.allCats')}>
+              <LayoutGrid size={18} strokeWidth={1.8} aria-hidden="true" />
+            </button>
+            <OptionSheet open={allCatsOpen} onClose={() => setAllCatsOpen(false)} title={t('qa.category')}
+              options={allowedCats.map(c => ({ value: c, label: chipLabel(c) }))} value={cat} onPick={pickCategory} />
+          </div>
+        ) : (
+          <div role="group" aria-label={t('qa.category')} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
+            {(chips.includes(cat) || !cat ? chips : [...chips, cat]).map(c => (
+              <button key={c} type="button" className="fos-chip" aria-pressed={cat === c} onClick={() => pickCategory(c)}>
+                {chipLabel(c)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} primaryOk={compact} />
+
+        {/* Lo que no hace falta para registrar: a un toque, con el método a la vista */}
+        {compact && (
+          <button type="button" className={css.moreToggle} aria-expanded={moreOpen} onClick={toggleMore}>
+            <span>{t('qa.moreOptions')}</span>
+            {type === 'expense' && <span className={css.moreHint}>{methodLabel(method, lang)}</span>}
+            <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" className={css.moreChev} data-open={moreOpen || undefined} />
+          </button>
+        )}
+        {showMore && (
+          <>
+          {/* #2 · Opcional: escribir como en un mensaje; lo de abajo se rellena y sigue editable */}
+          <QuickLineField value={line} result={lineResult} sym={sym} onChange={applyLine}
+            onPick={(i) => applyLine(line, i)} onEnter={() => { if (canConfirm) save() }}
+            summary={lineResult?.status === 'ok' && amt > 0 ? { type: type === 'expense' ? t('qa.expense') : t('qa.income'), amount: maskMoney(fmtMoney(amt, sym)), cat: catName(cat, lang) } : null} />
+
+          {pasteOpen && (
+            <div style={{ marginBottom: 12 }}>
+              <textarea
+                value={pasteText}
+                onChange={e => handlePaste(e.target.value)}
+                placeholder={t('qa.pastePh')}
+                rows={2}
+                aria-label={t('qa.pasteCta')}
+                style={{ resize: 'none', fontSize: 16, textAlign: 'left', marginBottom: 6 }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span role="status" style={{ fontSize: 12, fontFamily: 'var(--sans)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
+                  {detected
+                    ? `✓ ${pastedDate && pastedDate !== todayStr()
+                        ? t('qa.pasteDetectedDate', { date: fmtShortDate(pastedDate) })
+                        : t('qa.pasteDetected')}`
+                    : t('qa.pasteLocal')}
+                </span>
+                <button type="button" className="fos-link" style={{ fontSize: 13, flexShrink: 0 }}
+                  onClick={() => { setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null) }}>
+                  {t('qa.pasteClose')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Descripción + método de pago (solo gastos) */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+            <input
+              type="text" value={desc} onChange={e => changeDesc(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && save()}
+              placeholder={t('qa.descPh')}
+              aria-label={t('qa.desc')}
+              style={{ flex: 1, minWidth: 0, minHeight: 44, textAlign: type === 'expense' ? 'left' : 'center' }}
             />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <span role="status" style={{ fontSize: 12, fontFamily: 'var(--sans)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
-                {detected
-                  ? `✓ ${pastedDate && pastedDate !== todayStr()
-                      ? t('qa.pasteDetectedDate', { date: fmtShortDate(pastedDate) })
-                      : t('qa.pasteDetected')}`
-                  : t('qa.pasteLocal')}
-              </span>
-              <button type="button" className="fos-link" style={{ fontSize: 13, flexShrink: 0 }}
-                onClick={() => { setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null) }}>
-                {t('qa.pasteClose')}
+            {type === 'expense' && (
+              <SheetSelect
+                value={method}
+                onChange={e => setMethod(e.target.value)}
+                aria-label={t('qa.method')}
+                style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
+              >
+                {config.paymentMethods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
+              </SheetSelect>
+            )}
+          </div>
+          <span className="sr-only" aria-live="polite">{suggestedMsg}</span>
+
+          {/* Repetir (B4b): los 3 más frecuentes, de un toque; rellena sin guardar */}
+          {repeats.length > 0 && (
+            <div role="group" aria-label={t('qa.repeatGroup')} className={css.repeats}>
+              {repeats.map(r => {
+                const money = maskMoney(fmtMoney(r.amount, sym))
+                return (
+                  <button key={r.key} type="button" className={`fos-chip ${css.repeatChip}`} onClick={() => applyRepeat(r)}
+                    aria-label={t('qa.repeat', { desc: repeatLabel(r), amount: money })}>
+                    <SignalIcon kind="subs" size={14} />
+                    <span aria-hidden="true" className={css.repeatDesc}>{repeatLabel(r)}</span>{' '}
+                    <span aria-hidden="true" className={`num ${css.repeatAmt}`}>{money}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Se repite → movimiento fijo (con frecuencia). Toda la fila es el objetivo táctil. */}
+          <div className={css.repeatRow}>
+            <label className={css.repeatLabel}>
+              <input type="checkbox" checked={repeat} onChange={e => setRepeat(e.target.checked)} />
+              {t('rec.repeat.toggle')}
+            </label>
+            {repeat && (
+              <SheetSelect value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
+                {FREQS.map(f => <option key={f} value={f}>{t(`rec.freq.${f}`)}</option>)}
+              </SheetSelect>
+            )}
+          </div>
+
+          {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
+          {allowMoreDetails && type === 'expense' && (
+            <div className={css.moreRow}>
+              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 13 }}>
+                {t('qa.moreDetails')}
               </button>
             </div>
-          </div>
-        )}
-
-        <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} />
-
-        {/* Descripción + método de pago (solo gastos) */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-          <input
-            type="text" value={desc} onChange={e => changeDesc(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && save()}
-            placeholder={t('qa.descPh')}
-            aria-label={t('qa.desc')}
-            style={{ flex: 1, minWidth: 0, minHeight: 44, textAlign: type === 'expense' ? 'left' : 'center' }}
-          />
-          {type === 'expense' && (
-            <SheetSelect
-              value={method}
-              onChange={e => setMethod(e.target.value)}
-              aria-label={t('qa.method')}
-              style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
-            >
-              {config.paymentMethods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
-            </SheetSelect>
           )}
-        </div>
-        <span className="sr-only" aria-live="polite">{suggestedMsg}</span>
-
-        {/* Repetir (B4b): los 3 más frecuentes, de un toque; rellena sin guardar */}
-        {repeats.length > 0 && (
-          <div role="group" aria-label={t('qa.repeatGroup')} className={css.repeats}>
-            {repeats.map(r => {
-              const money = maskMoney(fmtMoney(r.amount, sym))
-              return (
-                <button key={r.key} type="button" className={`fos-chip ${css.repeatChip}`} onClick={() => applyRepeat(r)}
-                  aria-label={t('qa.repeat', { desc: repeatLabel(r), amount: money })}>
-                  <SignalIcon kind="subs" size={14} />
-                  <span aria-hidden="true" className={css.repeatDesc}>{repeatLabel(r)}</span>{' '}
-                  <span aria-hidden="true" className={`num ${css.repeatAmt}`}>{money}</span>
-                </button>
-              )
-            })}
-          </div>
+          </>
         )}
 
-        {/* Chips de categoría */}
-        <div role="group" aria-label={t('qa.category')} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
-          {(chips.includes(cat) || !cat ? chips : [...chips, cat]).map(c => (
-            <button key={c} type="button" className="fos-chip" aria-pressed={cat === c} onClick={() => pickCategory(c)}>
-              {chipLabel(c)}
-            </button>
-          ))}
-        </div>
-
-        {/* Se repite → movimiento fijo (con frecuencia). Toda la fila es el objetivo táctil. */}
-        <div className={css.repeatRow}>
-          <label className={css.repeatLabel}>
-            <input type="checkbox" checked={repeat} onChange={e => setRepeat(e.target.checked)} />
-            {t('rec.repeat.toggle')}
-          </label>
-          {repeat && (
-            <SheetSelect value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
-              {FREQS.map(f => <option key={f} value={f}>{t(`rec.freq.${f}`)}</option>)}
-            </SheetSelect>
-          )}
-        </div>
-
-        {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
-        {allowMoreDetails && type === 'expense' && (
-          <div className={css.moreRow}>
-            <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 13 }}>
-              {t('qa.moreDetails')}
-            </button>
-          </div>
-        )}
 
         {/* Guardar — Latón con texto Navy en los dos tipos. En la hoja, fijo al pie (W3). */}
-        {stickySave ? <div className={css.footer}>{saveButton}</div> : <div style={{ marginTop: 8 }}>{saveButton}</div>}
+        {stickySave
+          ? (showMore && <div className={css.footer}>{saveButton}</div>)
+          : <div style={{ marginTop: 8 }}>{saveButton}</div>}
     </>
   )
 }

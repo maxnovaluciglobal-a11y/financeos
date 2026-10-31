@@ -48,6 +48,21 @@ export function orderQuickChips({ ranked = [], effective = [], templateCats = []
   return uniq([...out, ...ranked, ...effective]).slice(0, max)
 }
 
+// Categorías del historial, de la usada más recientemente a la más antigua.
+// Entre las de una misma fecha gana la última registrada: la lista llega en
+// orden de alta. Con `ranked` de orderQuickChips, lo último usado va primero,
+// salvo los cajones genéricos, que van al final.
+export function rankByRecency(records = [], limit = 120) {
+  const recent = records
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => r?.category)
+    .sort((a, b) => String(b.r.date || '').localeCompare(String(a.r.date || '')) || b.i - a.i)
+    .slice(0, limit)
+  const ranked = [...new Set(recent.map(({ r }) => r.category))]
+  // "Otros" no se sugiere primero: es el cajón, no una elección.
+  return [...ranked.filter(c => !GENERIC.has(c)), ...ranked.filter(c => GENERIC.has(c))]
+}
+
 // ¿Hay una plantilla de perfil activa distinta de la personal?
 export function hasProfileTemplate(settings) {
   return !!settings?.activeTemplateId && settings.activeTemplateId !== 'personal'

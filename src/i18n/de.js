@@ -3435,4 +3435,6 @@ export const de = {
     "debts.owed.deletedWithIncome.many": "Zusammen mit den {n} Einnahmen aus den Eingängen gelöscht",
     "home.upcoming.empty7": "Keine Zahlungen in den nächsten 7 Tagen. Die Termine stammen aus den Fälligkeiten Ihrer Schulden und der nächsten Abbuchung Ihrer Abos.",
     "seal.labelInvest": "Buchungen 100 % lokal",
+    "qa.moreOptions": "Weitere Optionen",
+    "qa.allCats": "Alle Kategorien",
 }

@@ -383,7 +383,7 @@ export default function Goals() {
 
       {goals.length === 0 && !show && (
         <div data-tour="goals-new">
-          <EmptyState icon={Flag} title={t('goals.first.title')} text={t('goals.first.text')}
+          <EmptyState icon={Flag} preview="goals" title={t('goals.first.title')} text={t('goals.first.text')}
             secondary={{ label: t('goals.r9.suggestLink'), onClick: openSuggestions }}>
             <TemplateGrid t={t} onPick={pickTemplate} />
           </EmptyState>

@@ -68,7 +68,7 @@
 
 /* PROGRESS */
 .progBg { background: var(--sur3); border-radius: 3px; overflow: hidden; }
-.progFill { height: 100%; width: 100%; border-radius: 3px; transform-origin: left; transition: transform 0.4s; will-change: transform; }
+.progFill { height: 100%; width: 100%; border-radius: 3px; transform-origin: left; animation: fos-grow 520ms var(--ease-out) both; transition: transform 0.4s; will-change: transform; }
 .prog_green { background: var(--pos); }
 .prog_red   { background: var(--red); }
 .prog_amber { background: var(--amb); }
@@ -173,4 +173,4 @@
 }
 .choicePreview[data-preview="dark"] { background: var(--navy); }
 .choicePreview[data-preview="system"] { background: linear-gradient(135deg, var(--papel-000) 50%, var(--navy) 50%); }
-@media (prefers-reduced-motion: reduce) { .choice { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .choice { transition: none; } .progFill { animation: none; } }

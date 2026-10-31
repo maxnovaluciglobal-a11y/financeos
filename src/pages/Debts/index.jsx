@@ -7,7 +7,7 @@ import { useState, useMemo, useEffect } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader, ChoiceGroup } from '../../components/ui/index.jsx'
+import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader, ChoiceGroup, EmptyState } from '../../components/ui/index.jsx'
 import Receivables from './Receivables.jsx'
 import { fmtMoney as fmtMoneyRaw, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr, currencySymbol } from '../../utils/index.js'
 import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
@@ -361,10 +361,7 @@ export default function Debts() {
         </Card>
       )}
       {debts.length === 0 && !show && (
-        <Card><div style={{textAlign:'center',padding:'24px 0'}}>
-          <div style={{fontSize:13,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12}}>{t('debts.empty')}</div>
-          <Btn variant="ghost" onClick={() => setShow(true)} style={{color:'var(--tx)',fontWeight:600}}>{t('debts.emptyBtn')}</Btn>
-        </div></Card>
+        <EmptyState preview="debts" title={t('debts.empty')} cta={t('debts.emptyBtn')} onCta={() => setShow(true)} />
       )}
       {debts.map(d => {
         const paid      = Math.max(0, d.initial - d.balance)

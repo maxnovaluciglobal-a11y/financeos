@@ -3436,4 +3436,6 @@ export const en = {
     "debts.owed.deletedWithIncome.many": "Deleted along with the {n} incomes from its collections",
     "home.upcoming.empty7": "No payments in the next 7 days. Dates come from your debts' due dates and your subscriptions' next charge.",
     "seal.labelInvest": "Transactions 100% local",
+    "qa.moreOptions": "More options",
+    "qa.allCats": "All categories",
 }

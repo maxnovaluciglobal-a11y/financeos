@@ -164,3 +164,20 @@ export function buildDetailedPrefill({ description, amount, date, category, meth
     method: method || '',
   }
 }
+
+// Memoria corta del alta rápida: quien carga varios gastos de ayer no vuelve a
+// elegir la fecha. Se guarda solo si no es hoy, vence a los 15 minutos y nunca
+// devuelve una fecha futura.
+export const ENTRY_MEMORY_KEY = 'fos_qa_entry'
+export const ENTRY_MEMORY_MS = 15 * 60 * 1000
+export function entryMemoryValue(date, today, now) {
+  return date && date !== today ? JSON.stringify({ date, at: now }) : null
+}
+export function readEntryDate(raw, today, now) {
+  try {
+    const m = JSON.parse(raw)
+    if (typeof m?.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(m.date) || m.date > today) return null
+    const age = now - Number(m.at)
+    return age >= 0 && age <= ENTRY_MEMORY_MS ? m.date : null
+  } catch { return null }
+}

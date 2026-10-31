@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { orderQuickChips, hasProfileTemplate } from './quickChips.js'
+import { orderQuickChips, hasProfileTemplate, rankByRecency } from './quickChips.js'
 
 const effective = ['Alimentación', 'Vivienda', 'Transporte', 'Salud', 'Educación', 'Ropa', 'Tecnología', 'Marketing propio']
 const freelancer = ['Vivienda', 'Alimentación', 'Transporte', 'Tecnología', 'Marketing propio', 'Educación / Cursos', 'Salud']
@@ -40,5 +40,30 @@ describe('hasProfileTemplate', () => {
     expect(hasProfileTemplate({ activeTemplateId: 'personal' })).toBe(false)
     expect(hasProfileTemplate({ activeTemplateId: 'freelancer' })).toBe(true)
     expect(hasProfileTemplate({})).toBe(false)
+  })
+})
+
+describe('rankByRecency', () => {
+  it('pone primero la categoría usada más recientemente', () => {
+    expect(rankByRecency([
+      { category: 'Comida', date: '2026-10-01' },
+      { category: 'Comida', date: '2026-10-02' },
+      { category: 'Transporte', date: '2026-10-30' },
+    ])).toEqual(['Transporte', 'Comida'])
+  })
+  it('en la misma fecha gana la última registrada', () => {
+    expect(rankByRecency([
+      { category: 'A', date: '2026-10-30' },
+      { category: 'B', date: '2026-10-30' },
+    ])).toEqual(['B', 'A'])
+  })
+  it('nunca sugiere primero el cajón genérico', () => {
+    expect(rankByRecency([
+      { category: 'Comida', date: '2026-10-01' },
+      { category: 'Otros', date: '2026-10-30' },
+    ])).toEqual(['Comida', 'Otros'])
+  })
+  it('ignora registros sin categoría y respeta el límite', () => {
+    expect(rankByRecency([{ date: '2026-10-30' }, null, { category: 'A', date: '2026-10-01' }, { category: 'B', date: '2026-10-02' }], 1)).toEqual(['B'])
   })
 })

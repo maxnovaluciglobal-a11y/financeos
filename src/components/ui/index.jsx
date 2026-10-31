@@ -12,6 +12,8 @@ import { useT } from '../../i18n/useT.js'
 import { Pencil, Trash2, Check } from 'lucide-react'
 import SwipeRow from './SwipeRow.jsx'
 import { MINUS } from '../../utils/index.js'
+import { UI_FLAGS } from '../../utils/uiFlags.js'
+import EmptyPreview from './EmptyPreview.jsx'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
   // ...rest: sin esto no había forma de pasarle aria-expanded/aria-pressed a un
@@ -153,12 +155,15 @@ export function Empty({ text, cta, onCta }) {
 // Estado vacío uniforme (R10): ícono, título, una frase y UN botón (Latón,
 // texto Navy). Opcional: una acción secundaria como enlace, con su aclaración.
 // `compact` para usarlo dentro de una tarjeta que ya tiene título.
+// `preview` ('budgets', 'goals', 'debts'): muestra lo que vendrá en lugar del ícono.
 // `children`: la pregunta guiada de la primera entrada (opciones de Metas,
 // sugerencias de Presupuestos), entre el texto y el botón.
-export function EmptyState({ icon: Icon, title, text, cta, onCta, ctaDisabled = false, secondary, compact = false, children }) {
+export function EmptyState({ icon: Icon, preview, title, text, cta, onCta, ctaDisabled = false, secondary, compact = false, children }) {
   return (
     <div className={[styles.emptyState, compact ? styles.emptyStateCompact : ''].join(' ')} data-empty-guided={children ? '' : undefined}>
-      {Icon && <span className={styles.emptyIcon} aria-hidden="true"><Icon size={22} strokeWidth={1.7} /></span>}
+      {preview && UI_FLAGS.emptyPreviews
+        ? <EmptyPreview kind={preview} />
+        : Icon && <span className={styles.emptyIcon} aria-hidden="true"><Icon size={22} strokeWidth={1.7} /></span>}
       <h2 className={styles.emptyTitle}>{title}</h2>
       {text && <p className={styles.emptyText}>{text}</p>}
       {children}

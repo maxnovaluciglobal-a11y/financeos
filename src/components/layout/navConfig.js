@@ -105,6 +105,13 @@ const MOVEMENT_PAGES = new Set(
   (NAV.find(g => g.sec === 'nav.sec.movements')?.items || []).map(it => it.id)
 )
 
+// Dirección del deslizamiento entre pestañas, según su orden en la barra.
+export function tabMotion(from, to, slide = true) {
+  const a = TAB_IDS.indexOf(from), b = TAB_IDS.indexOf(to)
+  if (!slide || a < 0 || b < 0 || a === b) return 'tab'
+  return b > a ? 'tab-next' : 'tab-prev'
+}
+
 export function activeTabFor(page) {
   if (!page || page === TAB_HOME) return TAB_HOME
   if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS

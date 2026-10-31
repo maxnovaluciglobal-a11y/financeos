@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   ruleKey, suggestCategory, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, appendNote,
-  keyToKeypad, isTextEntryTarget, buildDetailedPrefill, DETAILED_PREFILL_KEY,
-} from './quickAdd.js'
+  keyToKeypad, isTextEntryTarget, buildDetailedPrefill, DETAILED_PREFILL_KEY, entryMemoryValue, readEntryDate, ENTRY_MEMORY_MS } from './quickAdd.js'
 import { KEY_BACKSPACE, KEY_DECIMAL } from './keypad.js'
 
 const rules = { jumbo: 'Alimentación', 'farmacia ahumada': 'Salud', 'farmacia cruz verde': 'Salud', uber: 'Transporte', 'uber eats': 'Alimentación', sueldo: 'Salario' }
@@ -184,3 +183,23 @@ describe('buildDetailedPrefill', () => {
     expect(buildDetailedPrefill({ amount: 0 }).amount).toBe('')
   })
 })
+
+describe('memoria de fecha del alta rápida', () => {
+  const now = 1_800_000_000_000
+  const raw = (at) => JSON.stringify({ date: '2026-10-30', at })
+  it('solo guarda una fecha distinta de hoy', () => {
+    expect(entryMemoryValue('2026-10-31', '2026-10-31', now)).toBeNull()
+    expect(JSON.parse(entryMemoryValue('2026-10-30', '2026-10-31', now)).date).toBe('2026-10-30')
+  })
+  it('devuelve la fecha dentro de los 15 minutos y no después', () => {
+    expect(readEntryDate(raw(now - ENTRY_MEMORY_MS), '2026-10-31', now)).toBe('2026-10-30')
+    expect(readEntryDate(raw(now - ENTRY_MEMORY_MS - 1), '2026-10-31', now)).toBeNull()
+  })
+  it('rechaza fechas futuras, relojes adelantados y datos rotos', () => {
+    expect(readEntryDate(raw(now), '2026-10-29', now)).toBeNull()
+    expect(readEntryDate(raw(now + 1), '2026-10-31', now)).toBeNull()
+    expect(readEntryDate('no-json', '2026-10-31', now)).toBeNull()
+    expect(readEntryDate(null, '2026-10-31', now)).toBeNull()
+  })
+})
+

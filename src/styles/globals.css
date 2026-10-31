@@ -186,19 +186,29 @@ button { cursor: pointer; font-family: var(--sans); }
 ::view-transition-old(demo-banner), ::view-transition-new(demo-banner) { animation: none; }
 ::view-transition-old(tabbar), ::view-transition-old(nav-bar) { display: none; }
 /* Cambiar de pestaña no es ir a otro lugar: solo el contenido, muy corto. */
-:root[data-nav-dir="tab"]::view-transition-old(root) { animation: 90ms var(--ease) both fos-vt-fade-out; }
-:root[data-nav-dir="tab"]::view-transition-new(root) { animation: 150ms var(--ease-out) both fos-vt-fade-in; }
+:root[data-nav-dir^="tab"]::view-transition-old(root) { animation: 90ms var(--ease) both fos-vt-fade-out; }
+:root[data-nav-dir^="tab"]::view-transition-new(root) { animation: 150ms var(--ease-out) both fos-vt-fade-in; }
 @keyframes fos-vt-fade-out { to { opacity: 0; } }
 @keyframes fos-vt-fade-in { from { opacity: 0; } }
 /* R14: en móvil, abrir una pantalla la empuja desde la derecha y "‹" la
    devuelve (usePageStack pone data-nav-dir). Corto y con salida exponencial:
    es navegación, no decoración. */
 @media (max-width: 700px) {
+  /* Pestañas en el teléfono: un paso corto hacia el lado de la pestaña tocada. */
+  :root[data-nav-dir="tab-next"]::view-transition-old(root) { animation: 170ms var(--ease) both fos-vt-tab-out-left; }
+  :root[data-nav-dir="tab-next"]::view-transition-new(root) { animation: 240ms var(--ease-out) both fos-vt-tab-in-right; }
+  :root[data-nav-dir="tab-prev"]::view-transition-old(root) { animation: 170ms var(--ease) both fos-vt-tab-out-right; }
+  :root[data-nav-dir="tab-prev"]::view-transition-new(root) { animation: 240ms var(--ease-out) both fos-vt-tab-in-left; }
   :root[data-nav-dir="push"]::view-transition-old(root) { animation: 200ms cubic-bezier(.2,.8,.2,1) both fos-vt-out-left; }
   :root[data-nav-dir="push"]::view-transition-new(root) { animation: 260ms cubic-bezier(.2,.8,.2,1) both fos-vt-in-right; }
   :root[data-nav-dir="pop"]::view-transition-old(root)  { animation: 200ms cubic-bezier(.2,.8,.2,1) both fos-vt-out-right; }
   :root[data-nav-dir="pop"]::view-transition-new(root)  { animation: 260ms cubic-bezier(.2,.8,.2,1) both fos-vt-in-left; }
 }
+@keyframes fos-vt-tab-in-right  { from { transform: translateX(14%); opacity: 0; } }
+@keyframes fos-vt-tab-in-left   { from { transform: translateX(-14%); opacity: 0; } }
+@keyframes fos-vt-tab-out-left  { to   { transform: translateX(-10%); opacity: 0; } }
+@keyframes fos-vt-tab-out-right { to   { transform: translateX(10%); opacity: 0; } }
+@keyframes fos-grow { from { transform: scaleX(0); } }
 @keyframes fos-vt-in-right  { from { transform: translateX(28%); opacity: 0; } }
 @keyframes fos-vt-out-left  { to   { transform: translateX(-12%); opacity: 0; } }
 @keyframes fos-vt-in-left   { from { transform: translateX(-12%); opacity: 0; } }

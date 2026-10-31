@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { activeTabFor, TAB_IDS, NAV, ALL_ITEMS, showProChip } from './navConfig.js'
+import { activeTabFor, TAB_IDS, NAV, ALL_ITEMS, showProChip, tabMotion } from './navConfig.js'
 
 describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas', () => {
   it('Inicio', () => {
@@ -157,5 +157,17 @@ describe('showProChip (ola A3, H22)', () => {
   })
   it('nunca en ítems gratuitos', () => {
     expect(showProChip(free, 'starter')).toBe(false)
+  })
+})
+
+describe('tabMotion', () => {
+  it('desliza hacia el lado de la pestaña tocada', () => {
+    expect(tabMotion('dashboard', 'budgets')).toBe('tab-next')
+    expect(tabMotion('goals', 'movements')).toBe('tab-prev')
+  })
+  it('vuelve al fundido sin interruptor o fuera de las pestañas', () => {
+    expect(tabMotion('dashboard', 'budgets', false)).toBe('tab')
+    expect(tabMotion('dashboard', 'settings')).toBe('tab')
+    expect(tabMotion('budgets', 'budgets')).toBe('tab')
   })
 })

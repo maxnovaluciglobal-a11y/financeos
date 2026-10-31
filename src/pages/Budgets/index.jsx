@@ -256,7 +256,7 @@ export default function Budgets() {
       )}
       {budgets.length === 0 && copyCandidates.length === 0 && (
         <div data-tour="bud-model">
-          <EmptyState icon={Target}
+          <EmptyState icon={Target} preview="budgets"
             title={t('empty.budgets.title')}
             text={t('empty.budgets.text')}
             cta={t('budgets.wiz.open')} onCta={() => setWizOpen(true)}

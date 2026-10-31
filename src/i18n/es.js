@@ -3436,4 +3436,6 @@ export const es = {
     "debts.owed.deletedWithIncome.many": "Eliminado junto con los {n} ingresos de sus cobros",
     "home.upcoming.empty7": "No hay pagos en los próximos 7 días. Las fechas salen del vencimiento de tus deudas y del próximo cobro de tus suscripciones.",
     "seal.labelInvest": "Movimientos 100 % locales",
+    "qa.moreOptions": "Más opciones",
+    "qa.allCats": "Todas las categorías",
 }

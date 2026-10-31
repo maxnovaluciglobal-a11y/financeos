@@ -8,6 +8,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { navAction, bootEntries, backAction, backTarget, isStackState, isRootPage } from '../components/layout/pageStack.js'
 import { runViewTransition } from '../components/layout/viewTransition.js'
+import { tabMotion } from '../components/layout/navConfig.js'
+import { UI_FLAGS } from '../utils/uiFlags.js'
 
 // Contenedor que scrollea (main del Shell). Se guarda su scroll por entrada
 // para que volver no te deje arriba de todo.
@@ -100,7 +102,7 @@ export function usePageStack(page, setPageState) {
       setNavDir('push')
     } else {
       history.replaceState({ fosPage: to, fosDepth: depth }, '')
-      setNavDir('tab')
+      setNavDir(tabMotion(from, to, UI_FLAGS.tabSlide))
     }
     setStackState(history.state)
     // Una pantalla nueva arranca arriba; una pestaña, donde se la dejó.
