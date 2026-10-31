@@ -439,6 +439,18 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setMoreOpen(o => { writeStorage(MORE_OPEN_KEY, o ? null : '1'); return !o })
   }
 
+  // La categoría elegida siempre a la vista: en la fila deslizable puede quedar
+  // fuera, y no ver qué se va a guardar es peor que un salto de la fila.
+  const catRowRef = useRef(null)
+  useLayoutEffect(() => {
+    const row = catRowRef.current
+    const on = row?.querySelector('[aria-pressed="true"]')
+    if (!on) return
+    const r = row.getBoundingClientRect(), c = on.getBoundingClientRect()
+    if (c.left < r.left) row.scrollLeft -= r.left - c.left + 8
+    else if (c.right > r.right) row.scrollLeft += c.right - r.right + 8
+  }, [cat, chips])
+
   const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
   const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
 
@@ -515,7 +527,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         {/* Chips de categoría. En la hoja, una fila que se desliza y "Todas". */}
         {compact ? (
           <div className={css.catRow}>
-            <div role="group" aria-label={t('qa.category')} className={css.catScroll}>
+            <div ref={catRowRef} role="group" aria-label={t('qa.category')} className={css.catScroll}>
               {(chips.includes(cat) || !cat ? chips : [cat, ...chips]).map(c => (
                 <button key={c} type="button" className={`fos-chip ${css.catChip}`} aria-pressed={cat === c} onClick={() => pickCategory(c)}>
                   {chipLabel(c)}
