@@ -96,9 +96,11 @@
 .content  { flex: 1; overflow-y: auto; padding: var(--content-pt) 18px 24px; }
 /* El área de contenido es la que se desplaza (la ventana no): con tabIndex 0
    se puede desplazar con el teclado aunque la pantalla no tenga controles
-   (axe scrollable-region-focusable). Foco por clic o por código: sin anillo. */
-.content:focus { outline: none; }
-.content:focus-visible { outline: 2px solid var(--laton-700); outline-offset: -2px; }
+   (axe scrollable-region-focusable). El Shell la enfoca por código en cada
+   cambio de página y el navegador lo toma como :focus-visible: el anillo solo
+   se dibuja si la persona está usando el teclado (data-keyboard, Shell.jsx). */
+.content:focus, .content:focus-visible { outline: none; }
+:global(:root[data-keyboard]) .content:focus-visible { outline: 2px solid var(--laton-700); outline-offset: -2px; }
 .contentInner { max-width: 1080px; margin: 0 auto; }
 
 /* GRID HELPERS */
@@ -255,7 +257,7 @@
   transition: transform var(--dur-press) var(--ease-out);
 }
 .tab:active .tabIc { transform: scale(.92); }
-.tabLb { max-width: 100%; white-space: nowrap; font-size: .6875rem; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
+.tabLb { white-space: nowrap; font-size: .6875rem; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
 /* 12 px (como Invest) cuando entra "Presupuestos" con aire: desde 420 px de ancho.
    Por debajo, 11 px (piso REC-N6): a 360 px la etiqueta más larga mide 70 px. */
 @media (min-width: 420px) { .tabLb { font-size: .75rem; letter-spacing: 0; } }

@@ -85,6 +85,7 @@
 @container (min-width: 760px) {
   .kpis { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); }
   .kpiLeft { grid-column: auto; }
+  .kpiLeft:only-child { grid-column: 1 / -1; }
   /* Con la fila de tasa (VE/AR) "Te queda" es alta: Ingresos y Gastos se
      apilan a su lado en vez de estirarse con un hueco vacío debajo. */
   .kpisTall { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }

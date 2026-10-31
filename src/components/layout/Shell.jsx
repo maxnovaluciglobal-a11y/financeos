@@ -126,6 +126,16 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
     return () => clearTimeout(id)
   }, [page])
 
+  // El anillo de foco de <main> es para quien navega con teclado (ver CSS).
+  useEffect(() => {
+    const root = document.documentElement
+    const onKey = (e) => { if (e.key === 'Tab') root.dataset.keyboard = '1' }
+    const onPointer = () => { delete root.dataset.keyboard }
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('pointerdown', onPointer, { passive: true })
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('pointerdown', onPointer) }
+  }, [])
+
   function navigate(id) {
     runViewTransition(() => setPage(id))
   }
