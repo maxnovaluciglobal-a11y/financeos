@@ -290,7 +290,7 @@ button { cursor: pointer; font-family: var(--sans); }
   top: max(-2px, calc(50% - 22px)); height: max(100%, 44px);
 }
 .fos-chip:hover { background: var(--fill-2); color: var(--tx); }
-.fos-chip[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-tx); font-weight: 600; }
+.fos-chip[aria-pressed="true"], .fos-chip[data-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-tx); font-weight: 600; }
 .fos-chip--tall { min-height: 44px; }
 
 /* Etiqueta de texto no interactiva (prioridad de una meta, UI-Q5): píldora con

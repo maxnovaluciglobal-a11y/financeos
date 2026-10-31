@@ -52,6 +52,32 @@ describe('paridad de las claves nuevas de fase 1 (es/en/pt/de)', () => {
   })
 })
 
+// El mes en palabras y la línea del alta rápida (#2, #9–#12): la app reporta,
+// no aconseja, y nada de esto habla de inversión.
+describe('paridad y voz de reading.* (es/en/pt/de)', () => {
+  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('reading.') || k.startsWith('chart.pace.')).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves y variables', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(40)
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const d of [en, pt, de]) {
+      expect(pick(d)).toEqual(base)
+      for (const k of base) expect(vars(d[k]), k).toBe(vars(es[k]))
+    }
+  })
+  it('sin voseo ni tuteo alemán, sin exclamaciones', () => {
+    for (const k of pick(es)) {
+      expect(es[k]).not.toMatch(/\b(podés|tenés|querés|vos|andás|gastás|gastaste|llevás)\b/i)
+      for (const d of [es, en, pt, de]) expect(d[k]).not.toMatch(/[¡!]/)
+    }
+    for (const k of pick(de)) expect(de[k]).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+  it('sin consejos ni lenguaje de inversión en ningún idioma', () => {
+    const banned = /deber[ií]as|conviene|recomend|te sugerimos|invert|inversi|should|recommend|invest|deveria|recomend|investi|sollten|empfehl|investier|alerta|cuidado|peligro|warning|danger|gefahr/i
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(banned)
+  })
+})
+
 describe('paridad de las claves de fase 2 (es/en/pt/de)', () => {
   const prefixes = ['qa.', 'method.', 'settings.categoryEmoji.', 'onboarding.v2.', 'country.', 'demo.tour.', 'demo.banner.']
   const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()

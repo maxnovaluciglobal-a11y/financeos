@@ -6,10 +6,10 @@
 // Siempre es orientativo — el usuario revisa y confirma antes de guardar.
 
 // Palabras que indican un ABONO (ingreso) en vez de un cargo (egreso)
-const INCOME_HINTS = /\b(abono|dep[oó]sito|deposito|transferencia recibida|recibiste|te transfiri|pago recibido|ingreso|recebeu|recebido)\b/i
+export const INCOME_HINTS = /\b(abono|dep[oó]sito|deposito|transferencia recibida|recibiste|te transfiri|pago recibido|ingreso|recebeu|recebido)\b/i
 
 // Palabras que indican un CARGO (egreso) — ayuda a confirmar y a cortar el texto del comercio
-const EXPENSE_HINTS = /\b(compra|cargo|pago realizado|retiro|env[ií]o|pagaste|compra por|debito|d[eé]bito)\b/i
+export const EXPENSE_HINTS = /\b(compra|cargo|pago realizado|retiro|env[ií]o|pagaste|compra por|debito|d[eé]bito)\b/i
 
 // Monto: símbolo de moneda + número con separadores de miles/decimales
 // Soporta: $12.990  $12,990.50  MX$350.00  COP 50.000  US$14.99  1.234,56
@@ -61,7 +61,7 @@ function parseAmount(raw) {
   return Number.isFinite(n) ? n : null
 }
 
-function parseDate(text) {
+export function parseDate(text) {
   const m = text.match(DATE_RE)
   if (!m) return null
   let [, d, mo, y] = m
@@ -75,7 +75,7 @@ function parseDate(text) {
   return `${y}-${mo}-${d}`
 }
 
-function parseMerchant(text) {
+export function parseMerchant(text) {
   const m = text.match(MERCHANT_RE)
   if (!m) return ''
   return stripTrailingDateTime(m[1].trim().replace(/\s{2,}/g, ' '))

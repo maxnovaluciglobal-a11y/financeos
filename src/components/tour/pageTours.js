@@ -15,6 +15,8 @@ export const PAGE_TOURS = {
   ],
   // Poda P1: hub del análisis.
   panorama: [
+    // #10: el mes en palabras, arriba de todo.
+    { id: 'pano-reading', title: 'tour.pano.reading.title', body: 'tour.pano.reading.body' },
     { id: 'iq-score',     title: 'tour.pano.score.title',  body: 'tour.pano.score.body' },
     { id: 'pano-month',   title: 'tour.pano.month.title',  body: 'tour.pano.month.body' },
     // Solo si el módulo está encendido: sin la tarjeta, Tour.jsx salta el paso.

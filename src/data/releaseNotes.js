@@ -4,6 +4,31 @@
 // Voz de producto: seca, sin exclamaciones, sin voseo.
 export const RELEASE_NOTES = [
   {
+    id: '2026-10-30e',
+    items: {
+      es: [
+        'Registra un movimiento en una línea: escribe «pan 1200» o «uber 8,50 ayer» en el alta rápida y los campos se llenan solos. Se interpreta en tu dispositivo y nada se guarda hasta que confirmas.',
+        'El mes en palabras: una frase en el Inicio y una lectura más larga en Panorama, con los títulos de Presupuestos y de los gráficos convertidos en conclusiones.',
+        'Nuevo gráfico en Panorama: gasto acumulado contra el ritmo del mes.',
+      ],
+      en: [
+        'Add a transaction in one line: type “bread 12” or “uber 8.50 yesterday” in quick add and the fields fill in. It is interpreted on your device and nothing is saved until you confirm.',
+        'The month in words: one sentence on Home and a longer reading in Overview, and Budgets and chart titles now state the conclusion.',
+        'New Overview chart: cumulative spending against the pace of the month.',
+      ],
+      pt: [
+        'Registre um movimento em uma linha: escreva «pão 12» ou «uber 8,50 ontem» no registro rápido e os campos se preenchem. É interpretado no seu dispositivo e nada é salvo até você confirmar.',
+        'O mês em palavras: uma frase no Início e uma leitura mais longa no Panorama, com os títulos de Orçamentos e dos gráficos trazendo a conclusão.',
+        'Novo gráfico no Panorama: gasto acumulado em relação ao ritmo do mês.',
+      ],
+      de: [
+        'Buchung in einer Zeile: Geben Sie in der Schnellerfassung „Brot 3“ oder „Uber 8,50 gestern“ ein, die Felder füllen sich von selbst. Die Auswertung erfolgt auf Ihrem Gerät, gespeichert wird erst nach Ihrer Bestätigung.',
+        'Der Monat in Worten: ein Satz auf der Startseite und eine längere Auswertung im Überblick; die Titel von Budgets und Diagrammen nennen nun das Ergebnis.',
+        'Neues Diagramm im Überblick: kumulierte Ausgaben im Vergleich zum Monatstempo.',
+      ],
+    },
+  },
+  {
     id: '2026-10-30d',
     items: {
       es: [

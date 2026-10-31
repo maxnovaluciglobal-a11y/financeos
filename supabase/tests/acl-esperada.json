@@ -100,6 +100,7 @@
    "service_role": "arwd",
    "rls": true
   },
+  "public.invest_operations": { "authenticated": "ardw", "service_role": "arwd", "rls": true },
   "public.invest_weekly_active": {
    "authenticated": "",
    "service_role": "r",
