@@ -16,7 +16,7 @@ import {
 import { getAttempts, saveAttempts, resetAttempts, updateLockConfig } from '../../core/appLockStore.js'
 import { wipeLocalDevice, importAllData } from '../../core/db/index.js'
 import { signOutAuth } from '../../core/auth.js'
-import { validateBackupFile } from '../backup/BackupManager.jsx'
+import { validateBackupFile } from '../backup/BackupStatus.jsx'
 import s from './appLock.module.css'
 import { logClientError, logRejection } from '../../utils/errorLog.js'
 

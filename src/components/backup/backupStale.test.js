@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isBackupStale, BACKUP_STALE_DAYS } from './BackupManager.jsx'
+import { isBackupStale, BACKUP_STALE_DAYS } from './BackupStatus.jsx'
 
 const NOW = new Date('2026-10-30T12:00:00Z').getTime()
 const daysAgo = (n) => new Date(NOW - n * 86400000).toISOString()

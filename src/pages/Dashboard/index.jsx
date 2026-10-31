@@ -8,11 +8,10 @@
 // sumó en "Editar Inicio". La vista detallada de antes es Panorama (en "Más"):
 // nada se borró, se movió.
 
-import { useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { lazy, Suspense, useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useT } from '../../i18n/useT.js'
 import Sheet from '../../components/ui/Sheet.jsx'
 import ChartCard from '../../components/charts/ChartCard.jsx'
-import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import DonutEmpty from './DonutEmpty.jsx'
 import { SCORE_LEVELS } from '../../utils/financialScore.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
@@ -39,12 +38,16 @@ import { prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { currentMonth, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
-import { BackupReminderBanner } from '../../components/backup/BackupManager.jsx'
+import { BackupReminderBanner } from '../../components/backup/BackupStatus.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal } from 'lucide-react'
+
+// V4: el anillo es una tarjeta opcional ("Editar Inicio") y es lo único del
+// Inicio que usa recharts (~100 kB gzip). Lazy, el Inicio pinta sin esperarlo.
+const CategoryDonut = lazy(() => import('../../components/charts/CategoryDonut.jsx'))
 
 const pct = (n) => fmtPct(n)
 
@@ -347,8 +350,8 @@ export default function Dashboard({ setPage }) {
             {cardOn('donut') && (
               <ChartCard title={t('dash.chart.cat.title')} subtitle={monthLabel(activeMonth)} minHeight={160}>
                 {monthExpenses.some(r => Number(r?.amount) > 0)
-                  ? <CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
-                      onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; setPage('movements') } : undefined}/>
+                  ? <Suspense fallback={null}><CategoryDonut records={monthExpenses} sym={sym} maxCategories={6}
+                      onCategoryClick={setPage ? (cat) => { try { sessionStorage.setItem('fos_drill_category', cat) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } ; setPage('movements') } : undefined}/></Suspense>
                   : <DonutEmpty />}
               </ChartCard>
             )}
