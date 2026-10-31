@@ -1,7 +1,7 @@
 // src/i18n/translations.js
 // Diccionario de traducción, dividido por idioma en es.js/en.js/pt.js/de.js. Este
-// archivo agrega los 4 en un solo objeto y hoy solo lo usan los tests: ningún
-// módulo de la app debe importarlo, ni importar en.js/pt.js/de.js directamente,
+// archivo agrega los 4 en un solo objeto y hoy nadie lo importa: ningún módulo
+// de la app debe importarlo, ni importar en.js/pt.js/de.js directamente,
 // porque eso mete esos idiomas en el chunk que lo importe (build.js lo rechaza,
 // ver scripts/bundleBudget.js). El idioma activo se carga con import() desde
 // langCache.js; el español es el fallback síncrono de toda la app.
