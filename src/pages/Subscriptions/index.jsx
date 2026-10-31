@@ -12,6 +12,7 @@ import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { PageHeader, Card, CardHeader, KPI, Btn, Badge, Alert, Empty, FormGroup, FormRow } from '../../components/ui/index.jsx'
 import { Pencil, X } from 'lucide-react'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 // ── CONSTANTES ──────────────────────────────────────────────────────────────────
 export const SUB_CATEGORIES = [
@@ -304,14 +305,14 @@ export default function Subscriptions() {
           </FormRow>
           <FormRow>
             <FormGroup label={t('subs.form.category')}>
-              <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
+              <SheetSelect value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
                 {SUB_CATEGORIES.map(c => <option key={c} value={c}>{subLabel(c, lang)}</option>)}
-              </select>
+              </SheetSelect>
             </FormGroup>
             <FormGroup label={t('subs.form.freq')}>
-              <select value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))}>
+              <SheetSelect value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))}>
                 {Object.keys(FREQ_LABELS).map(v => <option key={v} value={v}>{t('mov.freq.' + v)}</option>)}
-              </select>
+              </SheetSelect>
             </FormGroup>
             <FormGroup label={t('subs.form.nextPay')}>
               <input type="date" value={form.nextPaymentDate}

@@ -1,0 +1,13 @@
+/* src/components/ui/swipeRow.module.css — fila deslizable. pan-y: el scroll sigue
+   siendo del navegador; lo horizontal llega a la fila. */
+.root { position: relative; overflow: hidden; touch-action: pan-y; }
+.fg { position: relative; background: var(--bg); }
+.actions { position: absolute; top: 0; right: 0; bottom: 0; display: flex; }
+.action {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0; background: var(--fill-2); color: var(--tx);
+  font-family: var(--sans); font-size: .75rem; font-weight: 600; cursor: pointer;
+}
+.danger { background: var(--error); color: var(--papel-000); }
+:global([data-theme="dark"]) .danger { background: var(--error-dark); color: var(--navy); }
+@media (prefers-reduced-motion: reduce) { .fg { transition: none !important; } }

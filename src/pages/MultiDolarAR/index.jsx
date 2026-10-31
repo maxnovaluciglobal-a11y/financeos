@@ -92,7 +92,7 @@ function MultiDolarARBody() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
             {DOLARES.map(d => (
-              <div key={d.key} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '10px 12px', textAlign: 'center' }}>
+              <div key={d.key} style={{ background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', padding: '10px 12px', textAlign: 'center' }}>
                 <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{d.label}</div>
                 <div style={{ fontFamily: 'var(--num)', fontSize: 16, fontWeight: 700, color: 'var(--tx)' }}>
                   {live ? fmtARS(live[d.key]) : '—'}
@@ -144,7 +144,7 @@ function RendimientosCard({ blue }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 12 }}>
         {instrumentos.map(inst => (
-          <div key={inst.key} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '14px 16px' }}>
+          <div key={inst.key} style={{ background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px' }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{inst.label}</div>
             <FormGroup label={t('multidolarar.rendimientos.tnaLabel')}>
               <input type="number" inputMode="decimal" min="0" step="0.1" value={tnas[inst.key]}
@@ -163,7 +163,7 @@ function RendimientosCard({ blue }) {
         ))}
       </div>
 
-      <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+      <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
         {t('multidolarar.rendimientos.explainer1')}
         <br /><br />
         {t('multidolarar.rendimientos.explainer2')}

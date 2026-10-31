@@ -162,7 +162,7 @@ export default function Multimoneda() {
             <input type="number" inputMode="decimal" min="0" step="0.01" value={tasa} onChange={e => setTasa(e.target.value)} />
           </FormGroup>
           {!tasaValida && (
-            <div style={{ marginTop: 8, background: 'var(--warn-bg)', border: '.5px solid var(--warn)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warn)', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 8, background: 'var(--warn-bg)', border: 0, borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warn)', lineHeight: 1.5 }}>
               {t('multimoneda.tasa.invalidWarn')}
             </div>
           )}

@@ -99,7 +99,7 @@ export default function ResicoMX() {
             </div>
           )}
 
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', padding: '10px 12px', background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 8 }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', padding: '10px 12px', background: 'var(--fill)', border: 0, borderRadius: 8 }}>
             <input type="checkbox" checked={personaMoral} onChange={e => setPersonaMoral(e.target.checked)}
               style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontSize: 12, color: 'var(--tx)', lineHeight: 1.5 }}>
@@ -127,7 +127,7 @@ export default function ResicoMX() {
             </div>
 
             {/* Desglose: causado − retención = a pagar / saldo a favor */}
-            <div style={{ border: '.5px solid var(--brd)', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
+            <div style={{ border: 0, borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 12 }}>
                 <span style={{ color: 'var(--th)' }}>{t('resicomx.result.causado')}</span>
                 <span style={{ fontFamily: 'var(--num)', color: 'var(--tx)', fontWeight: 600 }}>{fmtMXN(result.isrCausado)}</span>
@@ -159,13 +159,13 @@ export default function ResicoMX() {
             )}
 
             {result.siguienteTasa && result.margenEnTramo < result.ingreso * 0.15 && (
-              <div style={{ background: 'var(--warn-bg)', border: '.5px solid var(--warn)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ background: 'var(--warn-bg)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
                 <InlineIcon kind="alert" size={13} />{t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: fmtPctPoints(result.siguienteTasa * 100, 2) })}
               </div>
             )}
 
             {result.superaTope && (
-              <div style={{ background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--red)', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ background: 'var(--red-bg)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--red)', marginBottom: 14, lineHeight: 1.6 }}>
                 {result.topeEsProyeccion
                   ? <><InlineIcon kind="alert" size={13} />{t('resicomx.result.projWarn', { v: fmtMXN(result.ingresoAnualProyectado), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>
                   : <><InlineIcon kind="alert" size={13} />{t('resicomx.result.overTopeWarn', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>}

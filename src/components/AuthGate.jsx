@@ -171,7 +171,7 @@ export default function AuthGate({ onAuthenticated }) {
       alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'var(--sans)',
     },
     box: {
-      background: 'var(--sur)', border: '1px solid var(--brd2)', borderRadius: 18,
+      background: 'var(--box-bg)', border: 0, borderRadius: 18,
       padding: '40px 36px', maxWidth: 400, width: '100%', boxShadow: 'var(--sh-2)',
     },
     input: {
@@ -360,7 +360,7 @@ export default function AuthGate({ onAuthenticated }) {
           onClick={handleGoogle}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            padding: 11, borderRadius: 8, border: '1px solid var(--brd)', background: 'var(--bg)',
+            padding: 11, borderRadius: 8, border: 0, background: 'var(--bg)',
             color: 'var(--tx)', fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 14,
             fontFamily: 'var(--sans)',
           }}

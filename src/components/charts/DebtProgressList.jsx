@@ -65,7 +65,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
           { label:t('chart.debt.totalPaid'), value:fmtV(totalPaid,     sym), color:'var(--accent)' },
           { label:t('chart.debt.overall'), value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.75 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
         ].map((k,i) => (
-          <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
+          <div key={i} style={{ background:'var(--sur)', border: 0, borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
             <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:5 }}>{k.label}</div>
             <div className="num" style={{ fontSize:19, letterSpacing:'-0.01em', color:k.color }}>{k.value}</div>
           </div>
@@ -86,7 +86,7 @@ export default function DebtProgressList({ debts, sym = '$' }) {
       {/* Lista por deuda */}
       <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
         {rows.map((d, i) => (
-          <div key={d.id || i} style={{ background:d.status.bg, border:`.5px solid ${d.status.border}`, borderRadius:10, padding:'12px 14px' }}>
+          <div key={d.id || i} style={{ background:d.status.bg, border: 0, borderRadius:10, padding:'12px 14px' }}>
             {/* Header */}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>

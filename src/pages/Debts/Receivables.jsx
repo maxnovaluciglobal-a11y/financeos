@@ -135,7 +135,7 @@ export default function Receivables({ receivables, incomes, addDebt, updateDebt,
             style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 13, cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
         {collectId === d.id && (
-          <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 8, background: 'var(--sur2)', border: '0.5px solid var(--brd2)' }}>
+          <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 8, background: 'var(--fill)', border: 0 }}>
             <FormRow>
               <FormGroup label={t('debts.owed.collect.amount')}>
                 <input type="number" inputMode="decimal" min="0" step="0.01" max={balance} value={collectAmt} onChange={e => setCollectAmt(e.target.value)} />

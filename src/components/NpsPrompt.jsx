@@ -92,7 +92,7 @@ export default function NpsPrompt({ createdAt }) {
           <label htmlFor="nps-comment" style={label}>{t('nps.commentLabel')}</label>
           <textarea
             id="nps-comment" value={comment} onChange={(e) => setComment(e.target.value)} rows={3} maxLength={2000}
-            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: '1px solid var(--brd)', borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
           />
           <Turnstile ref={captcha} action="nps" errorText={t('authGate.errorCaptcha')} />
           {state === 'error' && <p role="alert" style={{ fontSize: 13, color: 'var(--red)', margin: '0 0 12px' }}>{t('nps.error')}</p>}

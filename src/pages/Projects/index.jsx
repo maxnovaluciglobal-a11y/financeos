@@ -115,7 +115,7 @@ export default function Projects() {
                           onChange={e => setDraft(e.target.value)}
                           style={{ flex: 1, minWidth: 0, padding: '6px 9px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'var(--sur2)', color: 'var(--tx)', fontFamily: 'var(--sans)', fontSize: 12 }} />
                         <button onClick={() => saveValue(g.name)} style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--laton)', color: 'var(--navy)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{t('projects.saveBtn')}</button>
-                        <button onClick={() => setEditing(null)} style={{ padding: '6px 10px', borderRadius: 6, border: '.5px solid var(--brd2)', background: 'transparent', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>{t('projects.cancelBtn')}</button>
+                        <button onClick={() => setEditing(null)} style={{ padding: '6px 10px', borderRadius: 6, border: 0, background: 'var(--fill)', color: 'var(--th)', fontSize: 11, cursor: 'pointer' }}>{t('projects.cancelBtn')}</button>
                       </div>
                     </div>
                   )
@@ -132,7 +132,7 @@ export default function Projects() {
                       </div>
                       {mort > 0 && <Row label={t('projects.linkedMortgage')} value={`−${fmtMoney(mort, sym)}`} color="var(--neg)" />}
                       {val > 0 && mort === 0 && (
-                        <div style={{ fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--sans)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: '.5px solid rgba(245,166,35,.25)', borderRadius: 6 }}>
+                        <div style={{ fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--sans)', lineHeight: 1.5, padding: '6px 8px', background: 'rgba(245,166,35,.08)', border: 0, borderRadius: 6 }}>
                           <InlineIcon kind="alert" size={13} />{t('projects.noMortgageHint')}
                         </div>
                       )}

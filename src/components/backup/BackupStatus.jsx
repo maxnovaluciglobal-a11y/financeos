@@ -77,7 +77,7 @@ export function BackupStatusBadge({ compact = false }) {
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
-        border: '0.5px solid rgba(156,84,25,.25)',
+        border: 0,
         fontSize: 11, color: 'var(--amb)',
         fontFamily: 'var(--sans)',
       }}>
@@ -93,7 +93,7 @@ export function BackupStatusBadge({ compact = false }) {
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--red-bg)', borderRadius: compact ? 'var(--rs)' : 8,
-        border: '0.5px solid rgba(162,62,46,.25)',
+        border: 0,
         fontSize: 11, color: 'var(--red)',
         fontFamily: 'var(--sans)',
       }}>
@@ -109,7 +109,7 @@ export function BackupStatusBadge({ compact = false }) {
         display: 'flex', alignItems: 'center', gap: 7,
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
-        border: '0.5px solid rgba(156,84,25,.25)',
+        border: 0,
         fontSize: 11, color: 'var(--amb)',
         fontFamily: 'var(--sans)',
       }}>
@@ -124,7 +124,7 @@ export function BackupStatusBadge({ compact = false }) {
       display: 'flex', alignItems: 'center', gap: 7,
       padding: compact ? '4px 10px' : '10px 12px',
       background: 'var(--pos-bg)', borderRadius: compact ? 'var(--rs)' : 8,
-      border: '0.5px solid rgba(53,110,87,.25)',
+      border: 0,
       fontSize: 11, color: 'var(--pos)',
       fontFamily: 'var(--sans)',
     }}>

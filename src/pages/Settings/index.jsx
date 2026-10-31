@@ -275,7 +275,7 @@ export default function Settings() {
         {' · '}{t('settings.support.time')}{' · '}
         <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
       </p>
-      <div style={{padding:'10px 12px',background:'var(--sur2)',borderRadius:'var(--r)',border:'0.5px solid var(--brd)',fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.7,marginTop:8}}>
+      <div style={{padding:'10px 12px',background: 'var(--fill)',borderRadius:'var(--r)',border: 0,fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.7,marginTop:8}}>
         {t('settings.footer')}
       </div>
     </div>

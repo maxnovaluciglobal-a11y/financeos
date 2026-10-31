@@ -70,7 +70,7 @@
 }
 .repeatLabel input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; }
 .repeatLabel:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }
-.repeatRow select { width: auto; min-height: 44px; padding: 6px 10px; }
+.repeatRow select, .repeatRow :global(.fos-select) { width: auto; min-height: 44px; padding: 6px 10px; }
 
 .moreRow { display: flex; justify-content: center; }
 

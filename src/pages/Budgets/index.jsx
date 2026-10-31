@@ -28,6 +28,7 @@ import { fmtMoney as fmtMoneyRaw, fmtPct, getCategoriesExpense, catLabel, curren
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function Budgets() {
   const { budgets, addBudget, updateBudget, expenses, incomes, settings, updateSettings, deleteWithUndo, showToast } = useApp()
@@ -196,8 +197,8 @@ export default function Budgets() {
 
   return (
     <div className="stack">
+      <PageHeader title={t('budgets.title')} sub={t('budgets.sub', { month: monthLabel(activeMonth) })} />
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-        <PageHeader title={t('budgets.title')} sub={t('budgets.sub', { month: monthLabel(activeMonth) })} />
         <MonthSelector incomes={[]} expenses={expenses} />
         <button
           onClick={toggleRollover}
@@ -206,16 +207,15 @@ export default function Budgets() {
           aria-checked={rolloverOn}
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
-            background: rolloverOn ? 'var(--accent-bg)' : 'var(--sur2)',
-            border: `.5px solid ${rolloverOn ? 'var(--accent)' : 'var(--brd2)'}`,
-            borderRadius: 'var(--rs)', padding: '5px 12px', cursor: 'pointer', minHeight: 44,
-            fontSize: 12, fontFamily: 'var(--sans)',
-            color: rolloverOn ? 'var(--accent)' : 'var(--th)',
+            background: 'none', border: 0,
+            borderRadius: 'var(--r-pill)', padding: '5px 4px', cursor: 'pointer', minHeight: 44,
+            fontSize: 13, fontFamily: 'var(--sans)',
+            color: rolloverOn ? 'var(--accent)' : 'var(--tm)',
           }}
         >
           <span style={{
             width: 28, height: 14, borderRadius: 7, position: 'relative', flexShrink: 0,
-            background: rolloverOn ? 'var(--accent)' : 'var(--brd2)', transition: '.2s',
+            background: rolloverOn ? 'var(--accent)' : 'var(--fill-2)', transition: '.2s',
             display: 'inline-block',
           }}>
             <span style={{
@@ -257,7 +257,7 @@ export default function Budgets() {
         </div>
       )}
       {rolloverOn && (
-        <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 12, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.6 }}>
+        <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', borderRadius: 'var(--r)', fontSize: 12, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.6 }}>
           <InlineIcon kind="subs" size={13} />{t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
         </div>
       )}
@@ -411,7 +411,7 @@ export default function Budgets() {
         <h2 className={s.sheetTitle}>{t('budgets.p2.newLimit')}</h2>
         {err && <Alert type="danger">{err}</Alert>}
         <FormRow>
-          <FormGroup label={t('budgets.form.category')}><select id="budget-new-category" value={f.category} onChange={e => setF(p => ({...p,category:e.target.value}))}>{categoriesExpense.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</select></FormGroup>
+          <FormGroup label={t('budgets.form.category')}><SheetSelect id="budget-new-category" value={f.category} onChange={e => setF(p => ({...p,category:e.target.value}))}>{categoriesExpense.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</SheetSelect></FormGroup>
           <FormGroup label={t('budgets.form.limit', { currency: settings.currency||'CLP' })}><input type="number" inputMode="decimal" min="0" value={f.limit} placeholder="0" onChange={e => setF(p => ({...p,limit:e.target.value}))} /></FormGroup>
         </FormRow>
         <Btn variant="primary" onClick={submit}>{t('budgets.form.submit')}</Btn>

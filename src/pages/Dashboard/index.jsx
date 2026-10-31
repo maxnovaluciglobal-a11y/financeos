@@ -204,7 +204,7 @@ export default function Dashboard({ setPage }) {
             </button>
             <button
               onClick={dismissClose}
-              style={{ background:'none', color:'var(--th)', border:'.5px solid var(--brd)', borderRadius:9, padding:'9px 18px', fontSize:12, cursor:'pointer', fontFamily: 'var(--sans)' }}
+              style={{ background: 'var(--fill)', color:'var(--th)', border: 0, borderRadius:9, padding:'9px 18px', fontSize:12, cursor:'pointer', fontFamily: 'var(--sans)' }}
             >
               {t('dash.close.stay', { m: activeMonth })}
             </button>
@@ -318,7 +318,7 @@ export default function Dashboard({ setPage }) {
             <nav className={hs.quick} aria-label={t('dash.quick.title')} data-tour="home-quick">
               {quick.map(a => (
                 <button key={a.key} type="button" className={hs.quickBtn} onClick={a.run}>
-                  <a.Ic size={18} strokeWidth={1.7} aria-hidden="true" />
+                  <span className={hs.quickIc}><a.Ic size={20} strokeWidth={1.7} aria-hidden="true" /></span>
                   <span>{a.label}</span>
                 </button>
               ))}
@@ -326,8 +326,8 @@ export default function Dashboard({ setPage }) {
           )}
 
           {/* "Para hacer": un aviso por vez, en orden de prioridad. Los pagos
-              por confirmar ya están en el héroe ("Previsto pendiente · Revisar")
-              y la tasa más reciente en su fila ("Usar"). */}
+              por confirmar y la tasa más reciente ("Usar") están en el detalle
+              del héroe, a un toque. */}
           <TodoStrip>
               <Slot><FirstSteps setPage={setPage} /></Slot>
               <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>

@@ -6,7 +6,8 @@
 // Revolut (fila), Flowbite/shadcn (detalle en hoja).
 
 import { useMemo, useState } from 'react'
-import { Repeat, ArrowDownLeft } from 'lucide-react'
+import { Repeat, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react'
+import SwipeRow from '../../components/ui/SwipeRow.jsx'
 import Amount from '../../components/Amount.jsx'
 import CategoryIcon from '../../components/CategoryIcon.jsx'
 import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
@@ -18,13 +19,20 @@ import s from './movements.module.css'
 const PAGE = 40
 
 // Una fila de la lista (también la usa la hoja del día del calendario, B3b).
-export function MovementRow({ e, type = 'all', sym, lens, onOpen }) {
+export function MovementRow({ e, type = 'all', sym, lens, onOpen, onEdit, onDelete }) {
   const { t, lang } = useT()
   const catNameOf = (c) => catName(c, lang)
   const amt = (n) => inLens(n, lens)
   const income = e.kind === 'income'
   const name = e.name || catNameOf(e.category)
+  // Deslizar es un atajo: tocar la fila abre el detalle con las mismas dos
+  // acciones a la vista (causa 18).
+  const swipe = [
+    onEdit && { key: 'edit', label: t('movl.sheet.edit'), icon: Pencil, onClick: () => onEdit(e) },
+    onDelete && { key: 'delete', label: t('movl.sheet.delete'), icon: Trash2, onClick: () => onDelete(e), danger: true },
+  ].filter(Boolean)
   return (
+    <SwipeRow actions={swipe}>
     <button type="button" className={s.row} aria-haspopup="dialog" onClick={() => onOpen(e)}>
       <CategoryIcon category={e.category} />
       <span className={s.rowText}>
@@ -39,13 +47,14 @@ export function MovementRow({ e, type = 'all', sym, lens, onOpen }) {
       <Amount className={income ? `${s.rowAmt} ${s.rowAmtIn}` : s.rowAmt}
         value={income ? amt(e.amount) : -amt(e.amount)} sym={sym} plus={income} />
     </button>
+    </SwipeRow>
   )
 }
 
 // Poda P2 (30-oct-2026): la búsqueda, el origen y la categoría los maneja la
 // página (lupa en la fila de controles, hoja "Filtrar" y chips quitables); la
 // lista solo filtra y agrupa con lo que recibe.
-export default function MovementsList({ items, type = 'all', sym, lens, query = '', kind = 'all', category, onClearFilters, onOpen, empty }) {
+export default function MovementsList({ items, type = 'all', sym, lens, query = '', kind = 'all', category, onClearFilters, onOpen, onEdit, onDelete, empty }) {
   const { t, lang } = useT()
   const ofType = useMemo(() => filterMovements(items, { type }), [items, type])
   const filtered = useMemo(
@@ -96,7 +105,7 @@ export default function MovementsList({ items, type = 'all', sym, lens, query = 
               </div>
               <ul className={s.rows}>
                 {g.items.map((e) => (
-                  <li key={e.key || e.id}><MovementRow e={e} type={type} sym={sym} lens={lens} onOpen={onOpen} /></li>
+                  <li key={e.key || e.id}><MovementRow e={e} type={type} sym={sym} lens={lens} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} /></li>
                 ))}
               </ul>
             </div>

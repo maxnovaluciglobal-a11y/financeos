@@ -21,6 +21,7 @@ import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/g
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 import Money, { useMoney } from '../../components/Money.jsx'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function Goals() {
   const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo, showToast } = useApp()
@@ -182,7 +183,7 @@ export default function Goals() {
     const isEditing = editingId === g.id
     const GIcon = goalIcon(g)
     return (
-      <div key={g.id} id={inSheet ? undefined : `goal-card-${g.id}`} tabIndex={-1} style={{outline:'none',background:'var(--sur2)',borderRadius:10,padding:'14px 16px',border:`0.5px solid ${isEditing?'rgba(10,92,62,.4)':done?'rgba(10,92,62,.25)':'var(--brd)'}`}}>
+      <div key={g.id} id={inSheet ? undefined : `goal-card-${g.id}`} tabIndex={-1} style={{outline:'none',background: 'var(--fill)',borderRadius:10,padding:'14px 16px',border: 0}}>
         {isEditing ? (
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
@@ -203,10 +204,10 @@ export default function Goals() {
               </div>
               <div>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.priority')}</div>
-                <select value={editForm.priority||'Media'} onChange={e=>setEditForm(f=>({...f,priority:e.target.value}))}
+                <SheetSelect value={editForm.priority||'Media'} onChange={e=>setEditForm(f=>({...f,priority:e.target.value}))}
                   style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                   {['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}
-                </select>
+                </SheetSelect>
               </div>
             </div>
             <div style={{display:'flex',gap:8}}>
@@ -244,7 +245,7 @@ export default function Goals() {
               const recommended = Math.round(emergencyBase * 3)
               if (recommended <= 0 || Math.abs(g.target - recommended) / recommended < 0.15) return null
               return (
-                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',padding:'6px 10px',marginBottom:8,background:'rgba(245,166,35,.07)',border:'.5px solid rgba(245,166,35,.25)',borderRadius:6}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',padding:'6px 10px',marginBottom:8,background:'rgba(245,166,35,.07)',border: 0,borderRadius:6}}>
                   <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--amb)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
                   <button onClick={() => updateGoal({ ...g, target: recommended, saved: Math.min(g.saved, recommended) })}
                     style={{background:'none',border:'.5px solid var(--amb)',borderRadius:6,padding:'3px 10px',fontSize:11,fontWeight:600,color:'var(--amb)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap'}}>
@@ -287,7 +288,7 @@ export default function Goals() {
         if (ingresoNetoGoals <= 0) return null
         const ok = disponible > 0
         return (
-          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: ok ? 'var(--accent-bg)' : 'var(--red-bg)', border:`.5px solid ${ok ? 'var(--accent)' : 'var(--red)'}`, flexWrap:'wrap' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: ok ? 'var(--accent-bg)' : 'var(--red-bg)', border: 0, flexWrap:'wrap' }}>
             <span style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('goals.available')}</span>
             <span style={{ fontSize:15, fontWeight:700, fontFamily: 'var(--num)', color: ok ? 'var(--accent)' : 'var(--red)', marginLeft:'auto' }}>
               {ok ? '' : '−'}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
@@ -316,7 +317,7 @@ export default function Goals() {
           </FormRow>
           <FormRow>
             <FormGroup label={t('goals.form.date')}><input type="date" value={f.targetDate} onChange={e=>setF(p=>({...p,targetDate:e.target.value}))} /></FormGroup>
-            <FormGroup label={t('goals.form.priority')}><select value={f.priority} onChange={e=>setF(p=>({...p,priority:e.target.value}))}>{['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}</select></FormGroup>
+            <FormGroup label={t('goals.form.priority')}><SheetSelect value={f.priority} onChange={e=>setF(p=>({...p,priority:e.target.value}))}>{['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}</SheetSelect></FormGroup>
           </FormRow>
           <div style={{display:'flex',gap:8}}>
             <Btn id="goal-new-submit" variant="primary" onClick={submit}>{t('goals.form.submit')}</Btn>

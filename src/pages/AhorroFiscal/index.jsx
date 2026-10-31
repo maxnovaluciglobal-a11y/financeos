@@ -14,6 +14,7 @@ import {
   compararRothTraditional, calcHSA, tasaMarginalDesdeBruto,
   limite401k, limiteIRA, limiteHSA, LIMITES_2026,
 } from '../../utils/taxCalcUS.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function AhorroFiscal() {
   const { settings, incomes } = useApp()
@@ -289,7 +290,7 @@ function RothHSACard({ fmt, ingresoAnual, edad, t }) {
         <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
           {t(rothVsTrad.convieneTraditional ? 'ahorroFiscal.traditionalWins' : 'ahorroFiscal.rothWins', { diff: fmt(rothVsTrad.diferencia) })}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 12, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 12, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
           {t('ahorroFiscal.assumesReinvest', { amt: fmt(rothVsTrad.ahorroFiscalHoy) })}
         </div>
       </Card>
@@ -304,10 +305,10 @@ function RothHSACard({ fmt, ingresoAnual, edad, t }) {
         </div>
         <FormRow>
           <FormGroup label={t('ahorroFiscal.form.coverage')}>
-            <select value={coverage} onChange={e => setCoverage(e.target.value)}>
+            <SheetSelect value={coverage} onChange={e => setCoverage(e.target.value)}>
               <option value="self">{t('ahorroFiscal.coverage.self')}</option>
               <option value="family">{t('ahorroFiscal.coverage.family')}</option>
-            </select>
+            </SheetSelect>
           </FormGroup>
           <FormGroup label={t('ahorroFiscal.form.plannedAnnualContribUSD')}>
             <input type="number" inputMode="decimal" min="0" value={aporteHsa} placeholder="0" onChange={e => setAporteHsa(e.target.value)} />

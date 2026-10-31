@@ -26,6 +26,7 @@ import {
   validateIncome, validateRows, planWizardWrites, parseAmountInput, maskedInputValue, unmaskTyped,
 } from './budgetWizard.js'
 import w from './budgetWizard.module.css'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const SAVINGS_CHIPS = [0, 5, 10, 15, 20]
 const asInput = (n) => (Number(n) > 0 ? String(Math.round(Number(n))) : '')
@@ -267,10 +268,10 @@ export default function BudgetWizard({ onClose }) {
               {addable.length > 0 && (
                 <div className={w.addRow}>
                   <label htmlFor="bud-wiz-add" className="sr-only">{t('budgets.wiz.cats.add')}</label>
-                  <select id="bud-wiz-add" value={addCat} onChange={e => setAddCat(e.target.value)}>
+                  <SheetSelect id="bud-wiz-add" value={addCat} onChange={e => setAddCat(e.target.value)}>
                     <option value="">{t('budgets.wiz.cats.add')}</option>
                     {addable.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
-                  </select>
+                  </SheetSelect>
                   <button type="button" className="fos-btn-secondary" style={{ width: 'auto' }} disabled={!addCat}
                     onClick={() => { editRows(p => [...p, { category: addCat, amount: '' }]); setAddCat('') }}>
                     <Plus size={16} strokeWidth={1.7} aria-hidden="true" />{t('budgets.wiz.cats.addBtn')}

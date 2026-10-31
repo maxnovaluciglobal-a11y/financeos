@@ -19,10 +19,11 @@ import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
   createImportBatch, buildTransactions, MAX_ROWS,
 } from './fileParser.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const s = {
   page: {},
-  card: { background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
+  card: { background: 'var(--sur)', border: 0, borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
   cardTitle: { fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 12 },
   steps: { display: 'flex', gap: 8, marginBottom: 28 },
   step: (active, done) => ({
@@ -40,13 +41,13 @@ const s = {
   }),
   privacy: {
     display: 'flex', alignItems: 'flex-start', gap: 8,
-    background: 'var(--accent-bg)', border: '.5px solid var(--accent)',
+    background: 'var(--accent-bg)', border: 0,
     borderRadius: 8, padding: '10px 12px', marginTop: 12,
     fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
   hint: {
     display: 'flex', alignItems: 'flex-start', gap: 8,
-    background: 'var(--sur2)', border: '.5px solid var(--brd)',
+    background: 'var(--fill)', border: 0,
     borderRadius: 8, padding: '10px 12px', marginTop: 8,
     fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
@@ -61,15 +62,15 @@ const s = {
     color: status === 'valid' ? 'var(--accent)' : status === 'duplicate' ? 'var(--amb)' : 'var(--red)',
   }),
   summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, marginBottom: 16 },
-  summaryItem: { background: 'var(--sur2)', borderRadius: 8, padding: '10px 12px', border: '.5px solid var(--brd)' },
+  summaryItem: { background: 'var(--fill)', borderRadius: 8, padding: '10px 12px', border: 0 },
   summaryLabel: { fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 3 },
   summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--tx)' },
   btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: '.15s' },
   btnPrimary: { background: 'var(--laton)', color: 'var(--navy)' },
-  btnSecondary: { background: 'var(--sur2)', color: 'var(--tx)', border: '.5px solid var(--brd2)' },
+  btnSecondary: { background: 'var(--fill)', color: 'var(--tx)', border: 0 },
   btnRow: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 },
-  disclaimer: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' },
-  warn: { background: 'rgba(245,166,35,.1)', border: '.5px solid var(--amb)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', marginBottom: 16 },
+  disclaimer: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 },
+  warn: { background: 'rgba(245,166,35,.1)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', marginBottom: 16 },
 }
 
 // keys de traducción
@@ -320,7 +321,7 @@ export default function ImportMovements({ setPage } = {}) {
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {group.banks.map(b => (
-                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--sur2)', border: '.5px solid var(--brd)', fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--fill)', border: 0, fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
                       <span>{b.name}</span>
                     </div>
                   ))}
@@ -370,7 +371,7 @@ export default function ImportMovements({ setPage } = {}) {
         <div style={s.card}>
           {/* Banner detección banco */}
           {detectedBank ? (
-            <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:'rgba(10,92,62,.07)',border:'0.5px solid rgba(10,92,62,.2)',borderRadius:8,marginBottom:16}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:'rgba(10,92,62,.07)',border: 0,borderRadius:8,marginBottom:16}}>
               <div style={{flexShrink:0,lineHeight:0,color:'var(--grn)'}}><CountryBadge code={detectedBank.country} size={22} title={t(`country.${detectedBank.country}`)} /></div>
               <div style={{flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
@@ -379,7 +380,7 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={{fontSize:11,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily: 'var(--sans)',flexShrink:0}}>{t('imp.map.auto')}</div>
             </div>
           ) : (
-            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--sur2)',border:'0.5px solid var(--brd)',borderRadius:8,marginBottom:16}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background: 'var(--fill)',border: 0,borderRadius:8,marginBottom:16}}>
               <div style={{fontSize:18}}>📄</div>
               <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{t('imp.map.notDetected')}</div>
             </div>
@@ -393,10 +394,10 @@ export default function ImportMovements({ setPage } = {}) {
             {[{ key: 'date', label: t('imp.map.date') }, { key: 'description', label: t('imp.map.desc') }].map(({ key, label }) => (
               <div key={key}>
                 <div style={s.label}>{label}</div>
-                <select style={s.select} aria-label={label} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
+                <SheetSelect style={s.select} aria-label={label} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
                   <option value="">{t('imp.map.unassigned')}</option>
                   {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
+                </SheetSelect>
               </div>
             ))}
           </div>
@@ -417,18 +418,18 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <div style={s.label}>{t('imp.map.amountCol')}</div>
-                  <select style={s.select} aria-label={t('imp.map.amountCol')} value={mapping.amount || ''} onChange={e => setMapping(m => ({ ...m, amount: e.target.value }))}>
+                  <SheetSelect style={s.select} aria-label={t('imp.map.amountCol')} value={mapping.amount || ''} onChange={e => setMapping(m => ({ ...m, amount: e.target.value }))}>
                     <option value="">{t('imp.map.unassigned')}</option>
                     {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
+                  </SheetSelect>
                 </div>
                 <div>
                   <div style={s.label}>{t('imp.map.negativeIs')}</div>
-                  <select style={s.select} aria-label={t('imp.map.negativeIs')} value={modeConfig.negativeIsExpense ? 'expense' : 'income'}
+                  <SheetSelect style={s.select} aria-label={t('imp.map.negativeIs')} value={modeConfig.negativeIsExpense ? 'expense' : 'income'}
                     onChange={e => setModeConfig(c => ({ ...c, negativeIsExpense: e.target.value === 'expense' }))}>
                     <option value="expense">{t('imp.map.expense')}</option>
                     <option value="income">{t('imp.map.income')}</option>
-                  </select>
+                  </SheetSelect>
                 </div>
               </div>
             )}
@@ -437,17 +438,17 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <div style={s.label}>{t('imp.map.debitCol')}</div>
-                  <select style={s.select} aria-label={t('imp.map.debitCol')} value={mapping.debit || ''} onChange={e => setMapping(m => ({ ...m, debit: e.target.value }))}>
+                  <SheetSelect style={s.select} aria-label={t('imp.map.debitCol')} value={mapping.debit || ''} onChange={e => setMapping(m => ({ ...m, debit: e.target.value }))}>
                     <option value="">{t('imp.map.unassigned')}</option>
                     {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
+                  </SheetSelect>
                 </div>
                 <div>
                   <div style={s.label}>{t('imp.map.creditCol')}</div>
-                  <select style={s.select} aria-label={t('imp.map.creditCol')} value={mapping.credit || ''} onChange={e => setMapping(m => ({ ...m, credit: e.target.value }))}>
+                  <SheetSelect style={s.select} aria-label={t('imp.map.creditCol')} value={mapping.credit || ''} onChange={e => setMapping(m => ({ ...m, credit: e.target.value }))}>
                     <option value="">{t('imp.map.unassigned')}</option>
                     {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
+                  </SheetSelect>
                 </div>
               </div>
             )}
@@ -457,10 +458,10 @@ export default function ImportMovements({ setPage } = {}) {
             {[{ key: 'category', label: t('imp.map.categoryOpt') }, { key: 'account', label: t('imp.map.accountOpt') }].map(({ key, label }) => (
               <div key={key}>
                 <div style={s.label}>{label}</div>
-                <select style={s.select} aria-label={label} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
+                <SheetSelect style={s.select} aria-label={label} value={mapping[key] || ''} onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}>
                   <option value="">{t('imp.map.noImport')}</option>
                   {parsed.headers.map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
+                </SheetSelect>
               </div>
             ))}
           </div>
@@ -527,14 +528,14 @@ export default function ImportMovements({ setPage } = {}) {
                   <td style={{ ...s.td, color: row.type === 'income' ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{row.type === 'income' ? '+' : '−'}<Money>{fmtMoney(row.amount, sym)}</Money></td>
                   <td style={{ ...s.td, color: 'var(--th)' }}>{row.type === 'income' ? t('imp.review.typeIncome') : t('imp.review.typeExpense')}</td>
                   <td style={s.td}>
-                    <select
+                    <SheetSelect
                       value={row.category || ''}
                       onChange={e => setRows(r => r.map((x, j) => j === i ? { ...x, category: e.target.value, categorySuggested: false } : x))}
                       style={{ ...s.select, width: 'auto', minWidth: 120, padding: '4px 6px', fontSize: 11 }}
                     >
                       <option value="">{t('imp.review.noCategory')}</option>
                       {(row.type === 'income' ? categoriesIncome : categoriesExpense).map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
-                    </select>
+                    </SheetSelect>
                     {row.categorySuggested && <div style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
                   </td>
                   <td style={s.td}>
@@ -546,7 +547,7 @@ export default function ImportMovements({ setPage } = {}) {
             </table>
           </div>
 
-          <div style={{ background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, padding: '12px 14px', fontSize: 12, color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
+          <div style={{ background: 'var(--accent-bg)', border: 0, borderRadius: 8, padding: '12px 14px', fontSize: 12, color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
             {t('imp.review.note')}
           </div>
 

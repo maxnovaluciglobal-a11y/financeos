@@ -82,6 +82,6 @@
 
 /* Toggle "Se repite" (QuickAdd e Ingresos) */
 .repeat { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
-.repeat select { width: auto; min-height: 40px; padding: 6px 10px; }
+.repeat select, .repeat :global(.fos-select) { width: auto; min-height: 40px; padding: 6px 10px; }
 
 @media (prefers-reduced-motion: reduce) { .iconBtn { transition: none; } }

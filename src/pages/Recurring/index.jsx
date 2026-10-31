@@ -19,6 +19,7 @@ import {
 import {
   fmtMoney, currencySymbol, currentMonth, localDateStr, getCategoriesExpense, getCategoriesIncome, catLabel, METHODS, methodLabel, monthYearLabel,
 } from '../../utils/index.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const EMPTY = (today) => ({
   kind: 'expense', description: '', amount: '', category: 'Vivienda', method: METHODS[0] || '',
@@ -84,30 +85,30 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
         {initial && <p style={{ fontSize: 12, color: 'var(--th)', margin: '-4px 0 10px' }}>{t('rec.form.amountNote', { month: monthYearLabel(currentMonth()) })}</p>}
         <FormRow>
           <FormGroup label={t('rec.form.category')}>
-            <select value={f.category} onChange={e => set('category', e.target.value)}>
+            <SheetSelect value={f.category} onChange={e => set('category', e.target.value)}>
               {[...new Set([...(f.category && !cats.includes(f.category) ? [f.category] : []), ...cats])].map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
-            </select>
+            </SheetSelect>
           </FormGroup>
           {f.kind === 'expense' && (
             <FormGroup label={t('rec.form.method')}>
-              <select value={f.method} onChange={e => set('method', e.target.value)}>
+              <SheetSelect value={f.method} onChange={e => set('method', e.target.value)}>
                 {METHODS.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
-              </select>
+              </SheetSelect>
             </FormGroup>
           )}
         </FormRow>
         <FormRow>
           <FormGroup label={t('rec.form.freq')}>
-            <select value={f.freq} onChange={e => set('freq', e.target.value)}>
+            <SheetSelect value={f.freq} onChange={e => set('freq', e.target.value)}>
               {FREQS.map(fr => <option key={fr} value={fr}>{t(`rec.freq.${fr}`)}</option>)}
-            </select>
+            </SheetSelect>
           </FormGroup>
           {needsDay && (
             <FormGroup label={t('rec.form.day')}>
-              <select value={f.day} onChange={e => set('day', e.target.value)}>
+              <SheetSelect value={f.day} onChange={e => set('day', e.target.value)}>
                 {Array.from({ length: 31 }, (_, i) => String(i + 1)).map(d => <option key={d} value={d}>{d}</option>)}
                 <option value="last">{t('rec.day.last')}</option>
-              </select>
+              </SheetSelect>
             </FormGroup>
           )}
         </FormRow>
@@ -120,9 +121,9 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
           </FormGroup>
         </FormRow>
         <FormGroup label={t('rec.form.amountMode')}>
-          <select value={f.amountMode} onChange={e => set('amountMode', e.target.value)}>
+          <SheetSelect value={f.amountMode} onChange={e => set('amountMode', e.target.value)}>
             {['fixed', 'last', 'average'].map(m => <option key={m} value={m}>{t(`rec.form.mode.${m}`)}</option>)}
-          </select>
+          </SheetSelect>
         </FormGroup>
         <label className={s.check} style={{ margin: '4px 0 2px' }}>
           <input type="checkbox" checked={f.autoConfirm} onChange={e => set('autoConfirm', e.target.checked)} />

@@ -13,6 +13,7 @@ import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
 import { currentMonth, fmtPctPoints } from '../../utils/index.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const money = n => '$' + (Number(n) || 0).toLocaleString()
 
@@ -123,7 +124,7 @@ export default function APVPage() {
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
       <Card>
         <CardHeader title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><CountryBadge code="CL" size={16} title={t('country.CL')} />{t('apv.title')}</span>} />
-        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:14,lineHeight:1.6,padding:'8px 10px',background:'rgba(255,165,0,.07)',borderRadius:6,border:'0.5px solid rgba(255,165,0,.2)'}}>
+        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:14,lineHeight:1.6,padding:'8px 10px',background:'rgba(255,165,0,.07)',borderRadius:6,border: 0}}>
           <InlineIcon kind="alert" size={13} />{t('apv.disclaimer')}
           {indInfo && (
             <span style={{display:'block',marginTop:6,opacity:0.85}}>
@@ -138,7 +139,7 @@ export default function APVPage() {
 
         {/* ── PASO 1: Situación actual ── */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:16,marginBottom:16,alignItems:'start'}}>
-          <div style={{padding:'14px',background:'var(--sur2)',borderRadius:8,border:'0.5px solid var(--brd)'}}>
+          <div style={{padding:'14px',background: 'var(--fill)',borderRadius:8,border: 0}}>
             <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:10,fontFamily: 'var(--sans)'}}>{`① ${t('apv.step1.title')}`}</div>
             <FormRow>
               <FormGroup label={t('apv.form.grossMonthly')}><input type="number" inputMode="decimal" min="0" value={apvF.grossMonthly} placeholder={t('apv.eg', {n: '2000000'})} onChange={e => { setGrossTouched(true); setApvF(p => ({...p, grossMonthly: e.target.value})) }} /></FormGroup>
@@ -187,7 +188,7 @@ export default function APVPage() {
           </div>
 
           {/* ── PASO 2: Simulación APV ── */}
-          <div style={{padding:'14px',background:'var(--sur2)',borderRadius:8,border:'0.5px solid var(--brd)'}}>
+          <div style={{padding:'14px',background: 'var(--fill)',borderRadius:8,border: 0}}>
             <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:10,fontFamily: 'var(--sans)'}}>{`② ${t('apv.step2.title')}`}</div>
             <FormRow>
               <FormGroup label={t('apv.form.monthlyContribution')}><input type="number" inputMode="decimal" min="0" value={apvF.monthlyContribution} placeholder={t('apv.eg', {n: '150000'})} onChange={e => setApvF(p => ({...p, monthlyContribution: e.target.value}))} /></FormGroup>
@@ -200,11 +201,11 @@ export default function APVPage() {
             <FormRow>
               <FormGroup label={t('apv.form.expectedReturn')}><input type="number" inputMode="decimal" min="0" max="20" step="0.5" value={apvF.expectedReturn} placeholder="5" onChange={e => setApvF(p => ({...p, expectedReturn: e.target.value}))} /></FormGroup>
               <FormGroup label={t('apv.form.regimeLabel')}>
-                <select value={apvF.regime} onChange={e => setApvF(p => ({...p, regime: e.target.value}))}>
+                <SheetSelect value={apvF.regime} onChange={e => setApvF(p => ({...p, regime: e.target.value}))}>
                   <option value="unsure">{t('apv.regime.unsure')}</option>
                   <option value="A">{t('apv.regime.aLabel')}</option>
                   <option value="B">{t('apv.regime.bLabel')}</option>
-                </select>
+                </SheetSelect>
               </FormGroup>
             </FormRow>
             <Btn variant="primary" onClick={calcular}>{t('apv.calculate')}</Btn>
@@ -218,7 +219,7 @@ export default function APVPage() {
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:16,alignItems:'start'}}>
               {/* Bloque 1: Impacto tributario */}
               {taxResult && (
-                <div style={{background:'var(--sur2)',borderRadius:10,padding:'16px',border:'0.5px solid var(--brd)'}}>
+                <div style={{background: 'var(--fill)',borderRadius:10,padding:'16px',border: 0}}>
                   <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:4,fontFamily: 'var(--sans)'}}>{`① ${t('apv.tax.title')}`}</div>
                   <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:14,lineHeight:1.4}}>{t('apv.tax.contributionLine', { v: money(apvF.monthlyContribution), v2: money(Number(apvF.monthlyContribution)*12) })}</div>
                   <div style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
@@ -249,7 +250,7 @@ export default function APVPage() {
                           <span style={{fontSize:12,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('apv.noAPV')}</span>
                           <span style={{fontSize:12,fontFamily: 'var(--num)',color:'var(--tx)',fontWeight:600}}>{t('apv.perYear', {v: money(taxResult.impuestoSinAPV)})}</span>
                         </div>
-                        <div style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',background:'rgba(10,92,62,.06)',borderRadius:6,border:'0.5px solid rgba(10,92,62,.2)'}}>
+                        <div style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',background:'rgba(10,92,62,.06)',borderRadius:6,border: 0}}>
                           <span style={{fontSize:12,fontFamily: 'var(--sans)',color:'var(--grn)'}}>{t('apv.tax.withRegB')}</span>
                           <span style={{fontSize:12,fontFamily: 'var(--num)',color:'var(--grn)',fontWeight:700}}>{t('apv.perYear', {v: '−'+money(taxResult.ahorroRegB)})}</span>
                         </div>
@@ -268,7 +269,7 @@ export default function APVPage() {
                   {/* El bono del Régimen A NO es rebaja de impuesto: es plata que el
                       Estado deposita en la cuenta APV. Por eso va en bloque aparte y
                       nunca restado del impuesto anual. */}
-                  <div style={{marginTop:12,padding:'10px 12px',background:'var(--bg)',borderRadius:8,border:'0.5px dashed color-mix(in srgb, var(--grn) 45%, transparent)'}}>
+                  <div style={{marginTop:12,padding:'10px 12px',background:'var(--bg)',borderRadius:8,border: 0}}>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('apv.stateContribution.title')}</div>
                     <div style={{fontSize:18,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}>{t('apv.plusPerYear', {v: money(taxResult.bonoEstatalRegA)})}</div>
                     <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:4,lineHeight:1.5}}>
@@ -286,7 +287,7 @@ export default function APVPage() {
               )}
 
               {/* Bloque 2: Proyección al jubilar */}
-              <div style={{background:'var(--sur2)',borderRadius:10,padding:'16px',border:'0.5px solid var(--brd)'}}>
+              <div style={{background: 'var(--fill)',borderRadius:10,padding:'16px',border: 0}}>
                 <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:4,fontFamily: 'var(--sans)'}}>{`② ${t('apv.projection.title')}`}</div>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:14,lineHeight:1.4}}>{t('apv.projection.subtitle', { v: money(apvF.monthlyContribution), r: fmtPctPoints(apvF.expectedReturn) })}</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
@@ -338,11 +339,11 @@ export default function APVPage() {
 
             {/* Fila 2: Estimación tributaria ancho completo */}
             {taxResult && (
-              <div style={{background:'var(--sur2)',borderRadius:10,padding:'16px',border:'0.5px solid var(--brd)'}}>
+              <div style={{background: 'var(--fill)',borderRadius:10,padding:'16px',border: 0}}>
                 <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:4,fontFamily: 'var(--sans)'}}>{t('apv.taxEstimate.title')}</div>
                 <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5,padding:'6px 10px',background:'rgba(0,0,0,.03)',borderRadius:4}}>{t('apv.taxEstimate.subtitle', { v: money(apvF.monthlyContribution), v2: money(Number(apvF.monthlyContribution)*12) })}</div>
-                <div style={{display:'flex',flexDirection:'column',gap:0,border:'0.5px solid var(--brd)',borderRadius:8,overflow:'hidden',marginBottom:12}}>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',background:'var(--sur2)'}}>
+                <div style={{display:'flex',flexDirection:'column',gap:0,border: 0,borderRadius:8,overflow:'hidden',marginBottom:12}}>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',background: 'var(--fill)'}}>
                     <div style={{padding:'8px 12px',fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)'}}>{t('apv.table.situation')}</div>
                     <div style={{padding:'8px 12px',fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',borderLeft:'0.5px solid var(--brd)'}}>{t('apv.table.estTax')}</div>
                     <div style={{padding:'8px 12px',fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--grn)',borderLeft:'0.5px solid var(--brd)'}}>{t('apv.table.estBenefit')}</div>
@@ -397,7 +398,7 @@ export default function APVPage() {
 
             {/* -- APV necesario para bajar un tramo -- */}
             {gapResult && gapResult.tramoActual > 1 && (
-              <div style={{background:'var(--sur2)',borderRadius:10,padding:'16px',border:'0.5px solid var(--brd)'}}>
+              <div style={{background: 'var(--fill)',borderRadius:10,padding:'16px',border: 0}}>
                 <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:12,fontFamily: 'var(--sans)'}}>{t('apv.gap.title')}</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:10}}>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'12px',borderBottom:'2px solid var(--grn)'}}>
@@ -424,7 +425,7 @@ export default function APVPage() {
 
             {/* -- Arbitraje jubilar -- */}
             {arb && arb.tasaMarginalHoy > 0 && (
-              <div style={{background:'var(--sur2)',borderRadius:10,padding:'16px',border:'0.5px solid var(--brd)'}}>
+              <div style={{background: 'var(--fill)',borderRadius:10,padding:'16px',border: 0}}>
                 <div style={{fontSize: 12,fontWeight:600,color:'var(--tx)',marginBottom:12,fontFamily: 'var(--sans)'}}>{t('apv.arb.title')}</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:10}}>
                   <div style={{background:'var(--bg)',borderRadius:8,padding:'12px',borderBottom:'2px solid var(--grn)'}}>

@@ -27,7 +27,7 @@ export default function ResetPassword({ onDone }) {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'var(--sans)' }}>
-      <div style={{ background: 'var(--sur)', border: '1px solid var(--brd2)', borderRadius: 18, padding: '40px 36px', maxWidth: 400, width: '100%', boxShadow: 'var(--sh-2)' }}>
+      <div style={{ background: 'var(--sur)', border: 0, borderRadius: 18, padding: '40px 36px', maxWidth: 400, width: '100%', boxShadow: 'var(--sh-2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
           <Logo size={22} />
         </div>
@@ -51,7 +51,7 @@ export default function ResetPassword({ onDone }) {
           autoComplete="new-password"
           // eslint-disable-next-line jsx-a11y/no-autofocus -- the user arrived from the reset link to set a new password; focus moves into that field
           autoFocus
-          style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box' }}
+          style={{ width: '100%', padding: '12px 14px', border: 0, borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box' }}
         />
 
         {error && (

@@ -142,7 +142,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             <span style={{ fontFamily: 'var(--sans)', background: 'var(--sur3)', padding: '1px 6px', borderRadius: 4 }}>{t('licenseGate.keyFormat')}</span>
           </div>
           <input
-            style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8, fontSize: 16, fontFamily: 'var(--mono)', background: 'var(--bg)', color: 'var(--tx)', letterSpacing: 1, marginBottom: 10, boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '12px 14px', border: 0, borderRadius: 8, fontSize: 16, fontFamily: 'var(--mono)', background: 'var(--bg)', color: 'var(--tx)', letterSpacing: 1, marginBottom: 10, boxSizing: 'border-box' }}
             type="text"
             placeholder={t('licenseGate.keyFormat')}
             value={key}

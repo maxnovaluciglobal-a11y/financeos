@@ -24,7 +24,7 @@ export default function DangerScreen({ isDemo, accountEmail, autoOpenDelete }) {
       <p style={{ ...ssub, fontSize: 12, lineHeight: 1.6, margin: '0 0 6px' }}>{t('settings.group.danger.intro')}</p>
       <Setting id="clearAll" style={{ marginBottom: 16 }}>
         {confirming ? (
-          <div role="group" aria-label={t('settings.clearAll.label')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'var(--red-bg)',borderRadius:8,border:'0.5px solid var(--red)',flexWrap:'wrap'}}>
+          <div role="group" aria-label={t('settings.clearAll.label')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background:'var(--red-bg)',borderRadius:8,border: 0,flexWrap:'wrap'}}>
             <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeleteAll')}</span>
             <div style={{display:'flex',gap:6}}>
               <Btn variant="danger" size="xs" onClick={handleClear}>{t('debts.card.confirm')}</Btn>

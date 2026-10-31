@@ -31,13 +31,19 @@
   --tabbar-h: 0px;
   --fab-size: 56px;
   --fab-clear: 0px;
+  --nav-h: 44px;          /* barra superior flotante (móvil) */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --content-pt: 14px;     /* aire arriba del contenido: fija la Y del título */
 }
 @media (max-width: 700px) {
   :root {
     --tabbar-safe: max(6px, calc(env(safe-area-inset-bottom, 0px) - 22px));
     --tabbar-h: calc(var(--tabbar-content-h) + var(--tabbar-safe));
     --fab-clear: calc(var(--fab-size) + 16px);
+    --content-pt: calc(var(--safe-t) + 8px);
   }
+  /* Pantalla empujada: el título va debajo de "‹ Atrás", en su propia línea. */
+  :root[data-chrome="pushed"] { --content-pt: calc(var(--safe-t) + var(--nav-h) + 2px); }
 }
 /* Pantallas empujadas (R14, Shell.jsx pone data-chrome/data-fab en <html>):
    sin barra, todo lo que la esquivaba baja al borde (--tabbar-safe); sin
@@ -169,10 +175,24 @@ button { cursor: pointer; font-family: var(--sans); }
 .rise { animation: var(--dur-surface-enter) var(--ease) fos-rise both; }
 @media (prefers-reduced-motion: reduce) { .rise { animation: none; } .card-hover { transition: none; } }
 
-/* Fundido entre pantallas (Shell.jsx navigate() usa document.startViewTransition) */
+/* Transición entre pantallas (components/layout/viewTransition.js).
+   Riel, barra superior, barra de pestañas y franja del demo tienen su propio
+   view-transition-name: quedan fijos y no se funden con la página (causa 12). */
+::view-transition-group(tabbar), ::view-transition-group(nav-bar),
+::view-transition-group(sidebar), ::view-transition-group(demo-banner) { animation: none; }
+::view-transition-old(tabbar), ::view-transition-new(tabbar),
+::view-transition-old(nav-bar), ::view-transition-new(nav-bar),
+::view-transition-old(sidebar), ::view-transition-new(sidebar),
+::view-transition-old(demo-banner), ::view-transition-new(demo-banner) { animation: none; }
+::view-transition-old(tabbar), ::view-transition-old(nav-bar) { display: none; }
+/* Cambiar de pestaña no es ir a otro lugar: solo el contenido, muy corto. */
+:root[data-nav-dir="tab"]::view-transition-old(root) { animation: 90ms var(--ease) both fos-vt-fade-out; }
+:root[data-nav-dir="tab"]::view-transition-new(root) { animation: 150ms var(--ease-out) both fos-vt-fade-in; }
+@keyframes fos-vt-fade-out { to { opacity: 0; } }
+@keyframes fos-vt-fade-in { from { opacity: 0; } }
 /* R14: en móvil, abrir una pantalla la empuja desde la derecha y "‹" la
-   devuelve (usePageStack pone data-nav-dir). Cambiar de pestaña sigue en
-   fundido. Corto y con salida exponencial: es navegación, no decoración. */
+   devuelve (usePageStack pone data-nav-dir). Corto y con salida exponencial:
+   es navegación, no decoración. */
 @media (max-width: 700px) {
   :root[data-nav-dir="push"]::view-transition-old(root) { animation: 200ms cubic-bezier(.2,.8,.2,1) both fos-vt-out-left; }
   :root[data-nav-dir="push"]::view-transition-new(root) { animation: 260ms cubic-bezier(.2,.8,.2,1) both fos-vt-in-right; }
@@ -287,6 +307,17 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 /* Un <input> transparente encima del chip (ej. el selector de fecha nativo)
    oculta su propio outline: el anillo de foco se dibuja en el chip. */
+/* Selector que abre una hoja (SheetSelect): por fuera, un campo más. */
+.fos-select {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; min-height: 44px; padding: 9px 11px; box-sizing: border-box;
+  background: var(--sur2); border: 1px solid var(--field-brd); border-radius: var(--r);
+  color: var(--tx); font-family: var(--sans); font-size: 1rem; line-height: 1.25; text-align: left; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.fos-select:disabled { opacity: .6; cursor: not-allowed; }
+.fos-select__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fos-select__chev { flex-shrink: 0; color: var(--th); }
 .fos-chip:focus-within:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -306,6 +337,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .demo-frame { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 .demo-frame > .demo-banner { flex-shrink: 0; }
 .demo-banner {
+  view-transition-name: demo-banner;
   position: sticky; top: 0; z-index: 200;
   background: var(--navy); color: var(--papel-000);
   box-shadow: var(--sh-2);

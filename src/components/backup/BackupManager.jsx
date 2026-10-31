@@ -27,13 +27,13 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = fa
       <div style={{
         background: 'var(--sur)', borderRadius: 12, padding: '24px 24px 20px',
         maxWidth: 400, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,.2)',
-        border: '0.5px solid var(--brd2)',
+        border: 0,
       }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 10 }}>{title}</div>
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.7, marginBottom: 20, whiteSpace: 'pre-line' }}>{message}</div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
-            background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
+            background: 'var(--fill)', border: 0,
             borderRadius: 6, padding: '8px 16px', fontSize: 12,
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>{t('common.cancel')}</button>
@@ -240,8 +240,8 @@ export default function BackupManager() {
     cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
     flexShrink: 0, transition: 'all .15s',
     ...(variant === 'primary' ? { background: 'var(--laton)', color: 'var(--navy)' } : {}),
-    ...(variant === 'default' ? { background: 'var(--sur2)', color: 'var(--tx)', border: '0.5px solid var(--brd2)' } : {}),
-    ...(variant === 'danger'  ? { background: 'transparent', color: 'var(--red)', border: '0.5px solid rgba(162,62,46,.35)' } : {}),
+    ...(variant === 'default' ? { background: 'var(--fill)', color: 'var(--tx)', border: 0 } : {}),
+    ...(variant === 'danger'  ? { background: 'var(--fill)', color: 'var(--red)', border: 0 } : {}),
   })
 
   return (
@@ -264,8 +264,8 @@ export default function BackupManager() {
         {/* Alerta si no hay datos */}
         {!hasRealData && (
           <div style={{
-            padding: '10px 14px', background: 'var(--sur2)',
-            border: '0.5px solid var(--brd)', borderRadius: 8,
+            padding: '10px 14px', background: 'var(--fill)',
+            border: 0, borderRadius: 8,
             fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
           }}>
             {t('backup.noData')}
@@ -274,8 +274,8 @@ export default function BackupManager() {
 
         {/* Explicación educativa */}
         <div style={{
-          padding: '14px 16px', background: 'var(--sur2)',
-          border: '0.5px solid var(--brd)', borderRadius: 8,
+          padding: '14px 16px', background: 'var(--fill)',
+          border: 0, borderRadius: 8,
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }}>
             <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('backup.where.title')}
@@ -331,7 +331,7 @@ export default function BackupManager() {
 
         {/* Abrir un respaldo cifrado */}
         {encText && (
-          <div role="group" aria-label={t('backup.enc.askTitle')} style={{ padding: '14px 16px', background: 'var(--sur2)', border: '0.5px solid var(--brd)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div role="group" aria-label={t('backup.enc.askTitle')} style={{ padding: '14px 16px', background: 'var(--fill)', border: 0, borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={slbl}>{t('backup.enc.askTitle')}</div>
             <div style={ssub}>{t('backup.enc.askBody', { file: encName })}</div>
             <input
@@ -380,7 +380,7 @@ export default function BackupManager() {
 
         {/* ── CLOUD SYNC ── */}
         {CLOUD_ENABLED && (
-          <div style={{ marginTop: 8, padding: '16px', background: 'var(--sur2)', border: '0.5px solid var(--brd)', borderRadius: 10 }}>
+          <div style={{ marginTop: 8, padding: '16px', background: 'var(--fill)', border: 0, borderRadius: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>☁ {t('backup.cloud.title')}</div>
@@ -422,7 +422,7 @@ export default function BackupManager() {
             fontFamily: 'var(--sans)', lineHeight: 1.5,
             background: status.type === 'ok' ? 'var(--pos-bg)' : status.type === 'error' ? 'var(--red-bg)' : 'var(--amb-bg)',
             color: status.type === 'ok' ? 'var(--pos)' : status.type === 'error' ? 'var(--red)' : 'var(--amb)',
-            border: `0.5px solid ${status.type === 'ok' ? 'rgba(53,110,87,.25)' : status.type === 'error' ? 'rgba(162,62,46,.25)' : 'rgba(156,84,25,.25)'}`,
+            border: 0,
           }}>
             <InlineIcon kind={status.type === 'ok' ? 'ok' : 'alert'} size={13} />{status.msg}
           </div>

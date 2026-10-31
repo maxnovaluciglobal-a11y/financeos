@@ -182,7 +182,7 @@ export default function CashFlow({ setPage }) {
                 { label: t('cf.eom.projExp'), value: fmtSignedMoney(projExp, sym), sub: t('cf.eom.atPace'), color: 'var(--red)' },
                 { label: t('cf.eom.projBal'), value: fmtSignedMoney(projBal, sym), sub: projBal >= 0 ? t('cf.eom.positive') : t('cf.eom.deficit'), color: projBal >= 0 ? 'var(--accent)' : 'var(--red)' },
               ].map(k => (
-                <div key={k.label} style={{ background: 'var(--sur2)', borderRadius: 8, padding: '10px 12px', border: '.5px solid var(--brd)' }}>
+                <div key={k.label} style={{ background: 'var(--fill)', borderRadius: 8, padding: '10px 12px', border: 0 }}>
                   <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 4 }}>{k.label}</div>
                   <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--num)', color: k.color, marginBottom: 2 }}>{k.value}</div>
                   <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{k.sub}</div>
@@ -219,12 +219,12 @@ export default function CashFlow({ setPage }) {
 
             {/* Alerta de ritmo */}
             {pace !== null && pace > 0.08 && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: '.5px solid rgba(255,77,106,.25)', borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--sans)' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: 0, borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--sans)' }}>
                 <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: fmtPctPoints(pace * 100, 0), proj: fmtSignedMoney(projExp, sym), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: fmtSignedMoney(projExp - totalBudget, sym) }) : '' })}
               </div>
             )}
             {pace !== null && pace <= 0 && curExp > 0 && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--accent-bg)', border: '.5px solid var(--accent)', borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--accent-bg)', border: 0, borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)' }}>
                 {t('cf.alert.under', { pct: fmtPctPoints(Math.abs((pace * 100).toFixed(0))) })}
               </div>
             )}

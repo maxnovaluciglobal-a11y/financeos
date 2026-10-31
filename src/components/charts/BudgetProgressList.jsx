@@ -53,7 +53,7 @@ export default function BudgetProgressList({ budgets, expByCat, sym = '$' }) {
       {rows.map((r, i) => (
         <div key={r.id || i} style={{
           background: r.status.bg,
-          border: `.5px solid ${r.status.border}`,
+          border: 0,
           borderRadius: 10, padding: '12px 14px',
         }}>
           {/* Fila superior */}

@@ -150,7 +150,7 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
         className="demo-tour__card"
         style={{
           position: 'absolute', top, left, width: cardW,
-          background: 'var(--sur)', color: 'var(--tx)', border: '1px solid var(--brd)',
+          background: 'var(--box-bg)', color: 'var(--tx)', border: 0,
           borderRadius: 'var(--rxl)', boxShadow: 'var(--sh-3)', padding: '14px 16px 12px',
         }}
       >

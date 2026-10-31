@@ -3,8 +3,9 @@
 // anterior (DeltaLine). "Te queda" absorbe la card héroe anterior (veredicto
 // del mes + Anillo Vivo): es el mismo disponible real que mostraba MonthVerdict
 // Desde los movimientos fijos (08-oct-2026) "Te queda" es SOLO lo real
-// (ingresos − gastos registrados); lo previsto que falta va en la línea
-// "Previsto pendiente", con un enlace para revisarlo.
+// (ingresos − gastos registrados); lo previsto que falta va en "Previsto
+// pendiente", dentro del detalle de la tarjeta (HeroDetailSheet.jsx).
+import { useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import CountUp from '../../components/CountUp.jsx'
 import Money from '../../components/Money.jsx'
@@ -18,10 +19,10 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useRefHistory } from '../../hooks/useRefHistory.js'
 import { rateOnOrBefore } from '../../utils/refHistory.js'
 import DeltaLine from './DeltaLine.jsx'
-import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
+import { fmtRef } from './RefCurrency.jsx'
+import HeroDetailSheet from './HeroDetailSheet.jsx'
 import { toRef } from '../../utils/refRate.js'
 import s from './Home.module.css'
-import r from '../../components/recurring/recurring.module.css'
 
 
 // Variación de cada cifra vs. el mes anterior, con las reglas por país (A1/W5,
@@ -96,6 +97,7 @@ function openMovements(onOpen, filter) {
 
 export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
   const { t, lang } = useT()
+  const [detailOpen, setDetailOpen] = useState(false)
   const { cur } = kpis
   const hasData = cur.incCount > 0 || cur.expCount > 0
   const { prevMonth, prev, cutDay, usdOn, usdFmt, deltaOf } = useKpiDeltas({ kpis, activeMonth, country: refc?.country })
@@ -115,15 +117,18 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   return (
     <section aria-label={t('home.kpis.aria')}>
       <div className={`${s.kpis} ${refc ? s.kpisTall : ''}`}>
-        {/* "Te queda" primero también en el DOM (lectores de pantalla). */}
+        {/* "Te queda" primero también en el DOM (lectores de pantalla). Cinco
+            elementos (causa 9): rótulo, cifra, días, anillo y ritmo. Toda la
+            tarjeta abre el detalle: variación, previsto pendiente, tasa, moneda. */}
         <div data-tour="kpi-free" className={`${s.hero} ${s.kpi} ${s.kpiLeft} rise`} style={{
           animationDelay: '0ms',
-          background: hasData ? `color-mix(in srgb, ${freeColor} 7%, var(--sur))` : undefined,
-          borderColor: hasData ? `color-mix(in srgb, ${freeColor} 30%, transparent)` : undefined,
+          background: hasData ? `color-mix(in srgb, ${freeColor} 6%, var(--box-bg))` : undefined,
         }}>
           <div className={`${s.left} ${heroLong ? s.leftLong : ''}`}>
             <div className={s.leftBody}>
-              <div className={s.kpiLabel}>{free < 0 ? t('home.kpi.short') : t('home.kpi.left')}</div>
+              <button type="button" className={s.heroOpen} aria-haspopup="dialog" aria-label={`${free < 0 ? t('home.kpi.short') : t('home.kpi.left')}. ${t('home.detail.open')}`} onClick={() => setDetailOpen(true)}>
+                <span className={s.kpiLabel}>{free < 0 ? t('home.kpi.short') : t('home.kpi.left')}<ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.heroChevron} /></span>
+              </button>
               {hasData ? (
                 <div className={`num-hero ${s.leftValue}`} style={{ color: freeColor, '--chars': heroText.length }}>
                   {/* key: al cambiar de moneda la cifra arranca de cero otra vez (no anima de Bs a US$) */}
@@ -134,21 +139,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
               ) : (
                 <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
               )}
-              {hasData && <DeltaLine delta={deltaOf(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} untilDay={cutDay} sym={sym}
-                formatAmount={usdOn ? usdFmt : showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined} />}
-              {hasData && <div className={s.kpiSub}>{subParts.join(' · ')}</div>}
-              {pending && pending.count > 0 && (
-                <div className={r.pending}>
-                  <span className={r.pendingLabel}>{t('rec.pending.line')}</span>
-                  <span className={r.pendingVals}>
-                    {pending.expense > 0 && <Money>−{fmtMoney(pending.expense, sym)}</Money>}
-                    {pending.expense > 0 && pending.income > 0 && ' · '}
-                    {pending.income > 0 && <Money>+{fmtMoney(pending.income, sym)}</Money>}
-                  </span>
-                  {onReviewPending && <button type="button" className={r.reviewLink} onClick={onReviewPending}>{t('rec.pending.review')} →</button>}
-                </div>
-              )}
-              {!refc && dualOn && hasData && <div className={s.kpiDual}>{toUSD(free)}</div>}
+              {hasData && daysLeft > 0 && <div className={s.kpiSub}>{t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft })}</div>}
             </div>
             {hasData && pulse && (
               <div className={s.ring}>
@@ -157,25 +148,22 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                   elapsedRatio={pulse.elapsedRatio}
                   color={pulse.color}
                   centerValue="" centerLabel="" footLabel=""
-                  size={88}
+                  size={72}
                   ariaLabel={t('pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })}
                 />
                 {/* El ritmo con ícono + palabra, no solo el color del anillo (T15) */}
                 <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize: 12 }} />
-                {/* Antes era texto curvo de ~4 px alrededor del anillo (UI-Q8). */}
-                <span className={s.ringLegend}>{t('ring.legend')}</span>
               </div>
             )}
           </div>
-          {/* R12/R13: a todo el ancho de la tarjeta, debajo de la cifra y el anillo */}
-          {refc && (
-            <RefRow refRate={refc.rate} mode={showRef ? 'ref' : 'local'} free={free} sym={sym} country={refc.country}
-              showAmount={hasData} onEdit={refc.onEdit} tool={refc.tool} onTool={refc.onTool} fresh={refc.fresh} onUseFresh={refc.onUseFresh}
-              switcher={refc.rate && hasData ? <RefSwitch mode={refc.mode} onChange={refc.setMode} localCode={refc.localCode} /> : null} />
-          )}
         </div>
 
       </div>
+      <HeroDetailSheet open={detailOpen} onClose={() => setDetailOpen(false)} free={free} hasData={hasData} sym={sym}
+        showRef={showRef} refc={refc} delta={deltaOf(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} cutDay={cutDay}
+        deltaFormat={usdOn ? usdFmt : showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined}
+        pulse={pulse} pending={pending} onReviewPending={onReviewPending} dual={!refc && dualOn && hasData ? toUSD(free) : null}
+        sub={subParts.join(' · ')} onPanorama={onOpen ? () => onOpen('panorama') : undefined} />
 
       {/* Poda P1: Ingresos y Gastos en una línea bajo el héroe (antes, dos
           tarjetas con variación; esas tarjetas viven ahora en Panorama).

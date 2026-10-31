@@ -20,6 +20,7 @@ import { debtRuleId } from '../../utils/recurringSources.js'
 import { logRejection } from '../../utils/errorLog.js'
 import { Building2 } from 'lucide-react'
 import { monthsAheadFirstDay } from '../../utils/monthMath.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
@@ -127,18 +128,18 @@ function DebtPayoffSimulator({ debts, sym }) {
 
       {/* Resultados */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:12}}>
-        <div style={{padding:'12px 14px',borderRadius:8,background:'var(--sur)',border:'.5px solid var(--brd)'}}>
+        <div style={{padding:'12px 14px',borderRadius:8,background: 'var(--box-bg)', boxShadow: 'var(--box-sh)',border: 0}}>
           <div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:4}}>{t('debts.sim.freeIn')}</div>
           <div style={{fontSize:18,fontWeight:700,color:'var(--tx)',fontFamily: 'var(--num)'}}>{fmtMonths(withExtra.months)}</div>
           {monthsSaved > 0 && <div style={{fontSize:11,color:'var(--grn)',fontFamily: 'var(--sans)',marginTop:3}}>{t('debts.sim.earlier', { t: fmtMonths(monthsSaved) })}</div>}
         </div>
-        <div style={{padding:'12px 14px',borderRadius:8,background:'var(--sur)',border:'.5px solid var(--brd)'}}>
+        <div style={{padding:'12px 14px',borderRadius:8,background: 'var(--box-bg)', boxShadow: 'var(--box-sh)',border: 0}}>
           <div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:4}}>{t('debts.sim.totalInterest')}</div>
           <div style={{fontSize:18,fontWeight:700,color:'var(--red)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(withExtra.totalInterest,sym)}</Money></div>
           {interestSaved > 0 && <div style={{fontSize:11,color:'var(--grn)',fontFamily: 'var(--sans)',marginTop:3}}>{t('debts.sim.saved', { v: fmtMoney(interestSaved,sym) })}</div>}
         </div>
         {(Number(extra)||0) > 0 && monthsSaved > 0 && (
-          <div style={{padding:'12px 14px',borderRadius:8,background:'rgba(10,92,62,.06)',border:'1px solid rgba(10,92,62,.2)'}}>
+          <div style={{padding:'12px 14px',borderRadius:8,background:'rgba(10,92,62,.06)',border: 0}}>
             <div style={{fontSize: 12,color:'var(--grn)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:4}}>{t('debts.sim.withExtra', { v: m(fmtMoneyRaw(Number(extra), sym)) })}</div>
             <div style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}>{t('debts.sim.youSave', { v: fmtMoney(interestSaved,sym) })}</div>
             <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:3}}>{t('debts.sim.inLess', { t: fmtMonths(monthsSaved) })}</div>
@@ -319,7 +320,7 @@ export default function Debts() {
           )}
           <FormRow>
             <FormGroup label={t('debts.form.creditor')}><input type="text" value={f.creditor} placeholder={t('debts.form.creditorPh')} onChange={e => setF(p=>({...p,creditor:e.target.value}))} /></FormGroup>
-            <FormGroup label={t('debts.form.type')}><select value={f.debtType} onChange={e => setF(p=>({...p,debtType:e.target.value}))}>{DEBT_TYPES.map(tp => <option key={tp} value={tp}>{debtEmoji(tp)} {t('debts.type.'+tp)}</option>)}</select></FormGroup>
+            <FormGroup label={t('debts.form.type')}><SheetSelect value={f.debtType} onChange={e => setF(p=>({...p,debtType:e.target.value}))}>{DEBT_TYPES.map(tp => <option key={tp} value={tp}>{debtEmoji(tp)} {t('debts.type.'+tp)}</option>)}</SheetSelect></FormGroup>
           </FormRow>
           <FormRow>
             <FormGroup label={t('debts.form.balance', { currency: f.ufDebt ? 'UF' : (settings.currency||'CLP') })}><input type="number" inputMode="decimal" min="0" step="0.01" value={f.balance} placeholder={f.ufDebt ? 'ej. 2500.50' : '0'} onChange={e => setF(p=>({...p,balance:e.target.value}))} />{ufPreview(f.balance)}</FormGroup>
@@ -393,15 +394,15 @@ export default function Debts() {
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
               <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',display:'flex',alignItems:'center',gap:6,minWidth:0}}>
                 {/* Selector de tipo editable in-situ para deudas existentes */}
-                <select
+                <SheetSelect
                   value={d.debtType || 'Tarjeta'}
                   onChange={e => updateDebt({ ...d, debtType: e.target.value })}
                   aria-label={t('debts.form.type')}
                   title={t('debts.form.type')}
                   style={{ width:'auto', flexShrink:0, padding:'2px 4px', fontSize:13, fontFamily:'var(--sans)', fontWeight:600,
-                           color:'var(--tx)', background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:6, cursor:'pointer' }}>
+                           color:'var(--tx)', background: 'var(--fill)', border: 0, borderRadius:6, cursor:'pointer' }}>
                   {DEBT_TYPES.map(tp => <option key={tp} value={tp}>{debtEmoji(tp)} {t('debts.type.'+tp)}</option>)}
-                </select>
+                </SheetSelect>
                 <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.creditor}</span>
               </div>
               <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}}>
@@ -419,7 +420,7 @@ export default function Debts() {
               </div>
             </div>
             {confirmPay === d.id && (
-              <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(10,92,62,.06)',borderRadius:6,border:'0.5px solid rgba(10,92,62,.2)',flexWrap:'wrap'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',marginBottom:8,background:'rgba(10,92,62,.06)',borderRadius:6,border: 0,flexWrap:'wrap'}}>
                 <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
                   {t('debts.card.confirmPay', { amt: m(fmtMoneyRaw(nextPaymentAmount(d), sym)), creditor: d.creditor })}
                 </span>
@@ -434,7 +435,7 @@ export default function Debts() {
             )}
             {!(d.project||'').trim() && knownProjects.length > 0 && (
               linkingId === d.id ? (
-                <div style={{marginBottom:8,padding:'8px 10px',background:'var(--sur2)',border:'.5px solid var(--brd2)',borderRadius:6}}>
+                <div style={{marginBottom:8,padding:'8px 10px',background: 'var(--fill)',border: 0,borderRadius:6}}>
                   <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:6,lineHeight:1.5}}>{t('debts.linkProjectHint')}</div>
                   <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                     <input type="text" list="fnos-debt-projects" value={linkValue} placeholder={t('debts.projectPlaceholder')}
@@ -446,7 +447,7 @@ export default function Debts() {
                 </div>
               ) : (
                 <button onClick={()=>{setLinkingId(d.id);setLinkValue('')}}
-                  style={{marginBottom:8,background:'none',border:'.5px dashed var(--brd2)',borderRadius:6,padding:'4px 10px',fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',cursor:'pointer'}}>
+                  style={{marginBottom:8,background: 'var(--fill)',border: 0,borderRadius:6,padding:'4px 10px',fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',cursor:'pointer'}}>
                   {t('debts.linkProject')}
                 </button>
               )
@@ -481,7 +482,7 @@ export default function Debts() {
               </div>
             )}
             {monthsLeft > 0 && (
-              <div style={{marginTop:6,padding:'8px 10px',borderRadius:6,background:'var(--accent-bg)',border:'.5px solid var(--accent)',display:'flex',gap:16,flexWrap:'wrap'}}>
+              <div style={{marginTop:6,padding:'8px 10px',borderRadius:6,background:'var(--accent-bg)',border: 0,display:'flex',gap:16,flexWrap:'wrap'}}>
                 <div><div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('debts.card.monthsLeft')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--tx)',fontFamily: 'var(--num)'}}>{monthsLeft}</div></div>
                 {finDate && <div><div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('debts.card.estEnd')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--accent)',fontFamily: 'var(--num)'}}>📅 {finDate}</div></div>}
                 {d.minPayment > 0 && <div><div style={{fontSize: 12,color:'var(--th)',fontFamily: 'var(--sans)', fontWeight: 600,marginBottom:2}}>{t('debts.card.totalLeft')}</div><div style={{fontSize:14,fontWeight:700,color:'var(--red)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(d.balance,sym)}</Money></div></div>}

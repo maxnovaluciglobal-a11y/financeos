@@ -14,7 +14,6 @@ const QuickAddForm = lazy(() => import('./QuickAddForm.jsx'))
 export default function QuickAdd({ open, defaultType = 'expense', onClose, onSaved }) {
   const { t } = useT()
   const amountRef = useRef(null)
-  if (!open) return null
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={t('qa.title')} initialFocusRef={amountRef}>
       <Suspense fallback={<div style={{ minHeight: 420 }} aria-busy="true" />}>

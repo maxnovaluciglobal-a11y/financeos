@@ -125,7 +125,7 @@ function EmpregadoCard({ t }) {
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.rendimentoColetavel)}</span>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
             {t('irsPT.empregadoNote', {
               min: fmtEUR(MINIMO_EXISTENCIA),
               ssNote: result.deducaoPorSS ? t('irsPT.ssNoteYes') : t('irsPT.ssNoteNo'),
@@ -188,7 +188,7 @@ function RecibosVerdesCard({ t }) {
               <span style={{ fontFamily: 'var(--num)', fontWeight: 600 }}>{fmtEUR(result.liquidoMensal)}</span>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
             {t('irsPT.verdesNote')}
           </div>
         </>

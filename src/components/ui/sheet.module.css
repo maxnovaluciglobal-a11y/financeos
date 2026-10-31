@@ -1,0 +1,48 @@
+/* src/components/ui/sheet.module.css — hoja inferior (causa 13, 31-oct-2026).
+   En el teléfono entra y sale con resorte, sigue al dedo desde cualquier punto
+   y tiene dos alturas. Desde 521 px es un diálogo centrado. */
+.root {
+  position: fixed; inset: 0; z-index: 600; overscroll-behavior: contain;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.scrim {
+  position: absolute; inset: 0; background: rgba(0,0,0,.5);
+  animation: sheetFade var(--dur-surface-enter) var(--ease) both;
+}
+.sheet {
+  position: relative; display: flex; flex-direction: column; width: 100%; box-sizing: border-box;
+  max-height: calc(100dvh - max(env(safe-area-inset-top), 16px) - 8px);
+  background: var(--sur); border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: var(--sh-3); outline: none;
+  transform: translateY(100%); will-change: transform; touch-action: pan-y;
+}
+/* El resorte pasa apenas del punto final: esta extensión evita ver el fondo. */
+.sheet::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 40px; background: var(--sur);
+}
+.grip { flex: 0 0 auto; display: flex; justify-content: center; padding: 8px 0 12px; touch-action: none; }
+.gripBar { width: 38px; height: 4px; border-radius: var(--r-pill); background: var(--brd2); }
+.body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 20px calc(20px + env(safe-area-inset-bottom));
+}
+/* A media altura no se desplaza: subir el dedo agranda la hoja, como en iOS. */
+.sheet[data-detent="medium"] .body { overflow-y: hidden; }
+
+.desktop .sheet {
+  margin: auto 0; max-height: 85vh; border-radius: var(--r-sheet);
+  transform: none; will-change: auto; animation: sheetPop var(--dur-surface-enter) var(--ease) both;
+}
+.desktop .sheet::after { display: none; }
+.desktop .grip { visibility: hidden; padding: 4px 0 8px; }
+.closing .scrim { animation: sheetFadeOut var(--dur-spring-exit) var(--ease) both; }
+.closing { pointer-events: none; }
+.desktop.closing .sheet { animation: sheetPopOut var(--dur-surface-exit) var(--ease) both; }
+
+@keyframes sheetFade { from { opacity: 0; } }
+@keyframes sheetFadeOut { to { opacity: 0; } }
+@keyframes sheetPop { from { opacity: 0; transform: translateY(10px) scale(.985); } }
+@keyframes sheetPopOut { to { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .scrim, .closing .scrim, .desktop .sheet, .desktop.closing .sheet { animation: none; }
+}

@@ -54,7 +54,7 @@ export default function ProjectionCard({ incomes, expenses, activeMonth, pending
       </div>
       {over && setPage && (
         <button type="button" onClick={() => setPage('movements')}
-          style={{ marginTop: 6, minHeight: 44, background: 'none', border: '.5px solid var(--red)', borderRadius: 8, padding: '0 12px', fontSize: 12, fontWeight: 600, color: 'var(--red)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+          style={{ marginTop: 6, minHeight: 44, background: 'var(--fill)', border: 0, borderRadius: 8, padding: '0 12px', fontSize: 12, fontWeight: 600, color: 'var(--red)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
           {t('dash.proj.reviewExpenses')} →
         </button>
       )}

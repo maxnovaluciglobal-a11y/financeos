@@ -40,7 +40,7 @@ function Modal({ isOpen, onClose, children, maxWidth = 540, label }) {
         background: 'var(--sur)', borderRadius: 12,
         maxWidth, width: '100%',
         boxShadow: '0 20px 60px rgba(0,0,0,.2)',
-        border: '0.5px solid var(--brd2)',
+        border: 0,
         maxHeight: '90vh', overflowY: 'auto', outline: 'none',
       }} onClick={e => e.stopPropagation()}>
         {children}
@@ -63,7 +63,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
       display: 'inline-block', padding: '2px 8px',
       borderRadius: 'var(--rs)', fontSize: 11, fontFamily: 'var(--sans)',
       background: `${color}18`, color: 'var(--tx)', marginRight: 4, marginBottom: 4,
-      border: `0.5px solid ${color}30`,
+      border: 0,
     }}>{text}</span>
   )
 
@@ -161,7 +161,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
         {isAdvisor && (
           <div style={{
             padding: '10px 12px', background: 'var(--grn-bg)',
-            borderRadius: 8, border: '0.5px solid rgba(26,163,104,.2)',
+            borderRadius: 8, border: 0,
           }}>
             <div style={{ fontSize: 11, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--grn)', marginBottom: 4 }}>
               {tr('tplsel.advisorTip')}
@@ -173,7 +173,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
         {/* Aviso */}
         <div style={{
           padding: '10px 12px', background: 'var(--amb-bg)',
-          borderRadius: 8, border: '0.5px solid rgba(133,79,11,.2)',
+          borderRadius: 8, border: 0,
           fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', lineHeight: 1.5,
         }}>
           <InlineIcon kind="alert" size={13} />{(() => {
@@ -189,7 +189,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
         display: 'flex', gap: 8, justifyContent: 'flex-end',
       }}>
         <button onClick={onClose} style={{
-          background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
+          background: 'var(--fill)', border: 0,
           borderRadius: 6, padding: '8px 16px', fontSize: 12, minHeight: 44,
           cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
         }}>{tr('common.cancel')}</button>
@@ -225,7 +225,7 @@ function ConfirmModal({ template, hasExistingConfig, onConfirm, onCancel }) {
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
-            background: 'var(--sur2)', border: '0.5px solid var(--brd2)',
+            background: 'var(--fill)', border: 0,
             borderRadius: 6, padding: '8px 16px', fontSize: 12, minHeight: 44,
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>{tr('common.cancel')}</button>
@@ -346,7 +346,7 @@ export default function TemplateSelector({ compact = false, onApplied }) {
       {activeTemplateId && (
         <div style={{
           padding: '8px 12px', background: 'var(--grn-bg)',
-          border: '0.5px solid rgba(26,163,104,.2)', borderRadius: 8,
+          border: 0, borderRadius: 8,
           fontSize: 12, color: 'var(--grn)', fontFamily: 'var(--sans)',
           marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6,
         }}>
@@ -421,8 +421,8 @@ export default function TemplateSelector({ compact = false, onApplied }) {
                   onClick={() => setPreview(t)}
                   style={{
                     flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 12, minHeight: 44,
-                    cursor: 'pointer', border: '0.5px solid var(--brd2)',
-                    background: 'var(--sur2)', color: 'var(--tm)',
+                    cursor: 'pointer', border: 0,
+                    background: 'var(--fill)', color: 'var(--tm)',
                     fontFamily: 'var(--sans)',
                   }}
                 >{tr('tplsel.more')}</button>
@@ -451,8 +451,8 @@ export default function TemplateSelector({ compact = false, onApplied }) {
 
       {/* Nota educativa */}
       <div style={{
-        marginTop: 12, padding: '10px 12px', background: 'var(--sur2)',
-        borderRadius: 8, border: '0.5px solid var(--brd)',
+        marginTop: 12, padding: '10px 12px', background: 'var(--fill)',
+        borderRadius: 8, border: 0,
         fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
       }}>
         {tr('tplsel.note')}

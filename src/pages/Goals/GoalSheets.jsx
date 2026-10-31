@@ -12,6 +12,7 @@ import { EmptyChoices, EmptyChoice } from '../../components/ui/index.jsx'
 import SignalIcon from '../../components/icons/SignalIcon.jsx'
 import { methodLabel, monthYearLabel } from '../../utils/index.js'
 import { GOAL_TEMPLATE_IDS, FLOW_STEPS, stepError, monthlyNeeded, parseAmount, defaultMethod } from './goalFlow.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export const GOAL_ICONS = {
   trip: Plane, vehicle: Car, home: House, phone: Smartphone, computer: Laptop, education: GraduationCap,
@@ -63,7 +64,7 @@ export function FixedBuckets({ buckets, t, fmt, onSelect, onDetails }) {
               {g && onDetails && (
                 <button type="button" onClick={() => onDetails(b)} aria-haspopup="dialog"
                   aria-label={t('goals.p2.bucketMore', { name: g.name })} title={t('goals.p2.bucketMore', { name: g.name })}
-                  style={{ flexShrink: 0, width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: '1px solid var(--brd2)', borderRadius: 'var(--r)', color: 'var(--tm)', cursor: 'pointer' }}>
+                  style={{ flexShrink: 0, width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', color: 'var(--tm)', cursor: 'pointer' }}>
                   <Ellipsis size={18} strokeWidth={1.7} aria-hidden="true" />
                 </button>
               )}
@@ -226,9 +227,9 @@ export function ContributionSheet({ goal, onClose, onConfirm, t, lang, fmt, curr
           style={{ ...input, fontSize: 28, fontWeight: 600, padding: '8px 12px' }} />
         {capped && <p id="goal-add-capped" style={{ fontSize: 12, color: 'var(--th)', margin: '6px 0 0' }}>{t('goals.r9.add.capped', { v: fmt(remaining) })}</p>}
         <label htmlFor="goal-add-method" style={{ ...fieldLabel, marginTop: 14 }}>{t('goals.r9.add.from')}</label>
-        <select id="goal-add-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...input, padding: '8px 10px' }}>
+        <SheetSelect id="goal-add-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...input, padding: '8px 10px' }}>
           {methods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
-        </select>
+        </SheetSelect>
         <button type="submit" className="fos-btn-primary" style={primaryFull} disabled={n <= 0 || busy}>{t('goals.r9.add.submit')}</button>
       </form>
     </Sheet>

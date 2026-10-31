@@ -12,6 +12,7 @@ import Money, { useMoney } from '../../components/Money.jsx'
 import { FREQS } from '../../utils/recurring.js'
 import rs from '../../components/recurring/recurring.module.css'
 import { logClientError } from '../../utils/errorLog.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function Income({ setPage }) {
   const { incomes, expenses, addIncome, updateIncome, settings, deleteWithUndo, addWithRule } = useApp()
@@ -114,12 +115,12 @@ export default function Income({ setPage }) {
           <div style={{ marginBottom:12 }}>
             {!showPaste ? (
               <button type="button" onClick={() => { setShowPaste(true); setPasteMsg(null) }}
-                style={{ background:'var(--sur2)', border:'.5px dashed var(--brd2)', borderRadius:6,
+                style={{ background: 'var(--fill)', border: 0, borderRadius:6,
                   padding:'7px 12px', minHeight:44, fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
                 {t('income.paste.btn')}
               </button>
             ) : (
-              <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:10 }}>
+              <div style={{ background: 'var(--fill)', border: 0, borderRadius:8, padding:10 }}>
                 <textarea value={pasteText} onChange={e => setPasteText(e.target.value)} rows={3}
                   placeholder={t('income.paste.placeholder')}
                   style={{ width:'100%', boxSizing:'border-box', padding:'7px 9px', fontSize:12, borderRadius:6, border:'.5px solid var(--brd2)' }} />
@@ -147,7 +148,7 @@ export default function Income({ setPage }) {
             <FormGroup label={t('income.form.date')}><input type="date" value={f.date} onChange={e => setF(p => ({ ...p, date: e.target.value }))} /></FormGroup>
           </FormRow>
           <FormRow>
-            <FormGroup label={t('income.form.category')}><select value={f.category} onChange={e => setF(p => ({ ...p, category: e.target.value }))}>{categoriesIncome.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</select></FormGroup>
+            <FormGroup label={t('income.form.category')}><SheetSelect value={f.category} onChange={e => setF(p => ({ ...p, category: e.target.value }))}>{categoriesIncome.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}</SheetSelect></FormGroup>
           </FormRow>
           <div className={rs.repeat} style={{ justifyContent: 'flex-start' }}>
             <label className={rs.check}>
@@ -155,9 +156,9 @@ export default function Income({ setPage }) {
               {t('rec.repeat.toggle')}
             </label>
             {repeat && (
-              <select value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
+              <SheetSelect value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
                 {FREQS.map(fr => <option key={fr} value={fr}>{t(`rec.freq.${fr}`)}</option>)}
-              </select>
+              </SheetSelect>
             )}
           </div>
           <FormGroup label={t('income.form.notes')}><input type="text" value={f.notes} placeholder={t('income.form.notesPh')} onChange={e => setF(p => ({ ...p, notes: e.target.value }))} /></FormGroup>
@@ -184,7 +185,7 @@ export default function Income({ setPage }) {
                 secondary={{ label: t('income.emptyBtn'), onClick: () => setRepeat(true) }} />
             : <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                 {filtered.map(r => editingId === r.id ? (
-                  <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border:'0.5px solid rgba(10,92,62,.3)',background:'rgba(10,92,62,.04)',marginBottom:6}}>
+                  <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border: 0,background:'rgba(10,92,62,.04)',marginBottom:6}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
                       <div style={{gridColumn:'1/-1'}}>
                         <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.source')}</div>
@@ -203,10 +204,10 @@ export default function Income({ setPage }) {
                       </div>
                       <div>
                         <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.category')}</div>
-                        <select value={editForm.category||''} onChange={e=>setEditForm(f=>({...f,category:e.target.value}))}
+                        <SheetSelect value={editForm.category||''} onChange={e=>setEditForm(f=>({...f,category:e.target.value}))}
                           style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                           {categoriesIncome.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
-                        </select>
+                        </SheetSelect>
                       </div>
                     </div>
                     <div style={{display:'flex',gap:6}}>

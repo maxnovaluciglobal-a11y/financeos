@@ -28,7 +28,7 @@ function SignalCard({ signal }) {
   const color = COACH_CONFIG.severityColors[signal.severity] || 'var(--th)'
   return (
     <div style={{
-      background: 'var(--sur)', border: `.5px solid color-mix(in srgb, ${color} 35%, transparent)`,
+      background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
       borderRadius: 'var(--r)', padding: '12px 14px', marginBottom: 8,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -76,7 +76,7 @@ function CategorySummary({ signals }) {
         return (
           <div key={cat} style={{
             padding: '5px 11px', borderRadius: 'var(--rs)', fontSize: 11,
-            background: 'var(--sur2)', border: `.5px solid ${color}40`,
+            background: 'var(--fill)', border: 0,
             color: 'var(--tm)', fontFamily: 'var(--sans)',
             display: 'flex', alignItems: 'center', gap: 5,
           }}>
@@ -156,7 +156,7 @@ export default function Coach() {
       </div>
 
       {/* Score + KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
         {/* Score circle */}
         <div style={{ textAlign: 'center', padding: '0 12px' }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)'}}>{t('coach.score.label')}</div>
@@ -225,7 +225,7 @@ export default function Coach() {
 
       {/* Señales por prioridad */}
       {signals.length === 0 ? (
-        <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '28px', textAlign: 'center' }}>
+        <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '28px', textAlign: 'center' }}>
           <div style={{ marginBottom: 8, color: 'var(--pos)', display: 'flex', justifyContent: 'center' }}><SignalIcon kind="ok" size={22} /></div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('coach.empty.title')}</div>
           <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
@@ -272,7 +272,7 @@ export default function Coach() {
         ]
         const doneCount = items.filter(i => i.done).length
         return (
-          <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '14px 16px', marginBottom: 16 }}>
+          <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)'}}>{t('coach.check.title')}</div>
               <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: doneCount === items.length ? 'var(--accent)' : 'var(--th)' }}>{doneCount}/{items.length}</span>
@@ -288,7 +288,7 @@ export default function Coach() {
       })()}
 
       {/* Disclaimer completo al pie */}
-      <div style={{ padding: '10px 12px', background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 8 }}>
+      <div style={{ padding: '10px 12px', background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 8 }}>
         {t('coach.disclaimerFull')}
       </div>
     </div>

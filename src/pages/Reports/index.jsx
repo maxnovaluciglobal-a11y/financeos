@@ -334,7 +334,7 @@ export default function Reports({ setPage }) {
               {lb:t('reports.subs.count'),     v:`${subMetrics.count}`},
               ...(subMetrics.monthlyIncome>0?[{lb:t('reports.subs.pctIncome'),v:fmtPct(subMetrics.pct)}]:[]),
             ].map(m=>(
-              <div key={m.lb} style={{flex:'1 1 110px',background:'var(--sur2)',borderRadius:6,padding:'8px 10px',border:'.5px solid var(--brd)'}}>
+              <div key={m.lb} style={{flex:'1 1 110px',background: 'var(--fill)',borderRadius:6,padding:'8px 10px',border: 0}}>
                 <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:2}}>{m.lb}</div>
                 <div style={{fontSize:14,fontWeight:700,fontFamily: 'var(--num)',color:'var(--tx)'}}>{m.v}</div>
               </div>
@@ -357,7 +357,7 @@ export default function Reports({ setPage }) {
       )}
       {/* Resumen de patrimonio (stock a hoy) — el desglose vive en la página Patrimonio */}
       {nw.hasData && (
-        <div style={{padding:'12px 16px',background:'var(--sur)',border:'.5px solid var(--brd)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+        <div style={{padding:'12px 16px',background: 'var(--box-bg)', boxShadow: 'var(--box-sh)',border: 0,borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <div style={{flex:1,minWidth:200}}>
             <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:3}}>{t('reports.networth.title')}</div>
             <div className="num" style={{fontSize:22,fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
@@ -366,7 +366,7 @@ export default function Reports({ setPage }) {
             <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
           </div>
           {setPage && (
-            <button onClick={() => setPage('networth')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
+            <button onClick={() => setPage('networth')} style={{background: 'var(--fill)',border: 0,borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.networth.detail')}
             </button>
           )}
@@ -375,10 +375,10 @@ export default function Reports({ setPage }) {
 
       {/* La lista completa de señales vive en la página Diagnóstico (evita duplicar información) */}
       {coachSignals.length > 0 && (
-        <div style={{padding:'12px 16px',background:'var(--sur)',border:'.5px solid var(--brd)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+        <div style={{padding:'12px 16px',background: 'var(--box-bg)', boxShadow: 'var(--box-sh)',border: 0,borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--sans)',flex:1,minWidth:200,lineHeight:1.5}}><InlineIcon kind="diagnosis" size={13} />{t('reports.diag.linkText')}</span>
           {setPage && (
-            <button onClick={() => setPage('coach')} style={{background:'none',border:'.5px solid var(--brd2)',borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
+            <button onClick={() => setPage('coach')} style={{background: 'var(--fill)',border: 0,borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.diag.linkBtn')}
             </button>
           )}

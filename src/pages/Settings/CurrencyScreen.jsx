@@ -72,7 +72,7 @@ export default function CurrencyScreen() {
           onChange={askChangeCurrency}
         />
         {confirm && (
-          <div role="group" aria-label={t('settings.currency.label')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'8px 0',background:'rgba(184,134,59,0.08)',borderRadius:8,border:'0.5px solid var(--laton)',flexWrap:'wrap'}}>
+          <div role="group" aria-label={t('settings.currency.label')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'8px 0',background:'rgba(184,134,59,0.08)',borderRadius:8,border: 0,flexWrap:'wrap'}}>
             <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
               {t('settings.confirmChangeCurrency', { currency: confirm.nextCurrency })}
             </span>

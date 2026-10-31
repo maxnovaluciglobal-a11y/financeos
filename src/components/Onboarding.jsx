@@ -29,6 +29,7 @@ import { Wordmark } from './Logo.jsx'
 import CountUp from './CountUp.jsx'
 import QuickAddForm from './QuickAddForm.jsx'
 import { newAccountModules, setModule } from '../utils/modules.js'
+import SheetSelect from './ui/SheetSelect.jsx'
 
 const TOTAL = 3
 // Autónimos: el nombre de cada idioma en su propio idioma, igual en las 4 interfaces.
@@ -110,7 +111,7 @@ function OptionCard({ icon, label, desc, onClick, disabled }) {
     }}>
       <span aria-hidden="true" style={{
         width: 36, height: 36, borderRadius: 'var(--r)', flexShrink: 0,
-        background: 'var(--sur)', border: '1px solid var(--brd)', color: 'var(--tm)',
+        background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, color: 'var(--tm)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>{icon}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
@@ -128,7 +129,7 @@ const wrap = {
   overflowY: 'auto',
 }
 const box = {
-  background: 'var(--sur)', border: '1px solid var(--brd)',
+  background: 'var(--box-bg)', border: 0,
   borderRadius: 'var(--rxl)', padding: '20px 20px 22px', maxWidth: 460, width: '100%',
   boxShadow: 'var(--sh-3)', margin: 'auto',
 }
@@ -330,14 +331,14 @@ export default function Onboarding({ onComplete }) {
 
       <label style={fieldLabel} htmlFor="onb-currency">{t('onboarding.v2.currency')}</label>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-        <select id="onb-currency" value={answers.currency}
+        <SheetSelect id="onb-currency" value={answers.currency}
           onChange={e => setAnswers(a => ({ ...a, currency: e.target.value }))}
           style={{ width: 'auto', minWidth: 0, flex: '1 1 200px', minHeight: 44, fontFamily: 'var(--sans)' }}>
           {config.currencies.map(c => {
             const name = currencyName(c.code, currentLang)
             return <option key={c.code} value={c.code}>{name ? `${c.code} · ${name}` : c.code}</option>
           })}
-        </select>
+        </SheetSelect>
         {answers.currency === suggestedCurrency(answers.country) && answers.country !== 'OTHER' && (
           <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('onboarding.v2.currencySuggested', { country: t(countryKey(answers.country)) })}
@@ -346,7 +347,7 @@ export default function Onboarding({ onComplete }) {
       </div>
 
       {/* Vista previa del formato — mono porque es un dato */}
-      <div aria-live="polite" style={{ padding: '12px 14px', borderRadius: 'var(--rl)', background: 'var(--sur2)', border: '1px solid var(--brd)', marginBottom: 14 }}>
+      <div aria-live="polite" style={{ padding: '12px 14px', borderRadius: 'var(--rl)', background: 'var(--fill)', border: 0, marginBottom: 14 }}>
         <div className="num" style={{ fontSize: 24, color: 'var(--tx)', lineHeight: 1.2 }}>
           {previewAmount(answers.currency, lang)} <span style={{ fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
         </div>
@@ -471,7 +472,7 @@ export default function Onboarding({ onComplete }) {
           </ul>
 
           {weakest && (
-            <div style={{ padding: '12px 14px', borderRadius: 'var(--rl)', border: '1px solid var(--brd2)', background: 'var(--sur2)', marginBottom: 18 }}>
+            <div style={{ padding: '12px 14px', borderRadius: 'var(--rl)', border: 0, background: 'var(--fill)', marginBottom: 18 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 4 }}>{t('onboarding.v2.step3.next')}</div>
               <p style={{ fontSize: 14, color: 'var(--tx)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t(`onboarding.v2.next.${weakest.key}`)}</p>
               {nextPage && (

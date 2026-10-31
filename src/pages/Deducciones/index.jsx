@@ -10,6 +10,7 @@ import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } 
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getDeduccionesConfig, autofillGastos, calcDeducciones } from '../../utils/deduccionesEngine.js'
 import { currentMonth, fmtPctPoints } from '../../utils/index.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function Deducciones() {
   const { settings, expenses, incomes } = useApp()
@@ -88,9 +89,9 @@ export default function Deducciones() {
               </FormGroup>
               {config.extraInput && (
                 <FormGroup label={config.extraInput.label}>
-                  <select value={extra} onChange={e => setExtra(e.target.value)}>
+                  <SheetSelect value={extra} onChange={e => setExtra(e.target.value)}>
                     {config.extraInput.options.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
+                  </SheetSelect>
                 </FormGroup>
               )}
             </FormRow>
@@ -99,9 +100,9 @@ export default function Deducciones() {
           {!config.needsIngreso && config.extraInput && (
             <FormRow>
               <FormGroup label={config.extraInput.label}>
-                <select value={extra} onChange={e => setExtra(e.target.value)}>
+                <SheetSelect value={extra} onChange={e => setExtra(e.target.value)}>
                   {config.extraInput.options.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
+                </SheetSelect>
               </FormGroup>
             </FormRow>
           )}
@@ -191,9 +192,9 @@ function EventosCard({ config, fmt }) {
         </FormGroup>
         {ev.extraField && (
           <FormGroup label={ev.extraField.label}>
-            <select value={extra} onChange={e => setExtra(e.target.value)}>
+            <SheetSelect value={extra} onChange={e => setExtra(e.target.value)}>
               {ev.extraField.options.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
+            </SheetSelect>
           </FormGroup>
         )}
       </FormRow>
@@ -201,9 +202,9 @@ function EventosCard({ config, fmt }) {
       {ev.regimenField && (
         <FormRow>
           <FormGroup label={ev.regimenField.label}>
-            <select value={regimen} onChange={e => setRegimen(e.target.value)}>
+            <SheetSelect value={regimen} onChange={e => setRegimen(e.target.value)}>
               {ev.regimenField.options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
-            </select>
+            </SheetSelect>
           </FormGroup>
         </FormRow>
       )}
@@ -212,7 +213,7 @@ function EventosCard({ config, fmt }) {
         {ev.items.map(item => {
           const monto = s > 0 ? item.calc(s, extra, regimen) : 0
           return (
-            <div key={item.key} style={{ background: 'var(--sur2)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '14px 16px' }}>
+            <div key={item.key} style={{ background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px' }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{item.label}</div>
               <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>{item.when}</div>
               <div style={{ fontFamily: 'var(--num)', fontSize: 24, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>

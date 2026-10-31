@@ -19,7 +19,7 @@ export default function UpgradeCard({ subStyle }) {
   const thenKey = period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual'
 
   return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border:'1px solid var(--laton)',borderRadius:'var(--r)'}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'12px 14px',margin:'11px 0',background:'rgba(184,134,59,0.08)',border: 0,borderRadius:'var(--r)'}}>
       <div style={{flex:'1 1 240px',minWidth:0}}>
         <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{trial ? t('settings.upgrade.title', { days: trialDays }) : t('menu.upgrade.title')}</div>
         <div style={subStyle}>{t('settings.upgrade.sub')}</div>

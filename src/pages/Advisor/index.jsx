@@ -23,6 +23,7 @@ import { projectEndOfMonth } from '../../utils/projection.js'
 import { COACH_CONFIG } from '../../data/coachRules.js'
 import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
 import { monthLabel } from '../shared/constants.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 // ── SEMÁFORO — reglas de cálculo ─────────────────────────────────────────────
 // Verde:    condición saludable
@@ -139,7 +140,7 @@ function TrafficLight({ signals }) {
         <div key={s.id} style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '10px 14px', borderRadius: 8,
-          background: bg[s.status], border: `0.5px solid color-mix(in srgb, ${colors[s.status]} 22%, transparent)`,
+          background: bg[s.status], border: 0,
         }}>
           <div style={{
             width: 10, height: 10, borderRadius: '50%',
@@ -176,7 +177,7 @@ function AdvisorKPI({ label, value, sub, color = 'var(--tx)' }) {
   const valSize = len > 13 ? 12 : len > 11 ? 14 : len > 9 ? 16 : 20
   return (
     <div style={{
-      background: 'var(--sur2)', border: '0.5px solid var(--brd)',
+      background: 'var(--fill)', border: 0,
       borderRadius: 8, padding: '12px 14px', minWidth: 0, overflow: 'hidden',
     }}>
       <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
@@ -203,7 +204,7 @@ function AdvisorNotes({ notes, onSave }) {
 
   const ta = {
     width: '100%', minHeight: 80, resize: 'vertical',
-    background: 'var(--sur)', border: '0.5px solid var(--brd2)',
+    background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
     borderRadius: 6, padding: '10px 12px', fontSize: 12,
     color: 'var(--tx)', fontFamily: 'var(--sans)',
     lineHeight: 1.6,
@@ -423,7 +424,7 @@ export default function Advisor() {
             {t('adv.badge')}
           </span>
         </div>
-        <select
+        <SheetSelect
           aria-label={t('common.month')}
           value={activeMonth}
           onChange={e => updateSettings({ ...settings, activeMonth: e.target.value })}
@@ -435,13 +436,13 @@ export default function Advisor() {
           ].filter(Boolean))].sort().reverse().map(m => (
             <option key={m} value={m}>{monthLabel(m)}</option>
           ))}
-        </select>
+        </SheetSelect>
       </div>
 
       {noData && (
         <div style={{
-          padding: '20px 24px', background: 'var(--sur2)',
-          border: '0.5px solid var(--brd)', borderRadius: 8,
+          padding: '20px 24px', background: 'var(--fill)',
+          border: 0, borderRadius: 8,
           fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, textAlign: 'center',
         }}>
           <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><SignalIcon kind="investment" size={24} /></div>
@@ -535,8 +536,8 @@ export default function Advisor() {
                   const pct = d.initial > 0 ? (d.initial - d.balance) / d.initial : 0
                   return (
                     <div key={d.id} style={{
-                      padding: '10px 12px', background: 'var(--sur2)',
-                      borderRadius: 8, border: '0.5px solid var(--brd)',
+                      padding: '10px 12px', background: 'var(--fill)',
+                      borderRadius: 8, border: 0,
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                         <div>
@@ -606,7 +607,7 @@ export default function Advisor() {
       </Card>
 
       {/* Preview PDF + CTA */}
-      <div style={{border:'0.5px solid var(--brd2)',borderRadius:10,overflow:'hidden'}}>
+      <div style={{border: 0,borderRadius:10,overflow:'hidden'}}>
         {/* Preview mini del reporte */}
         <div style={{background:'var(--sur)',padding:'16px 20px',borderBottom:'0.5px solid var(--brd)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
@@ -687,7 +688,7 @@ export default function Advisor() {
 
       {/* ── SECCIÓN SUSCRIPCIONES EN MODO ASESOR ── */}
       {subCount > 0 && (
-        <div style={{ background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '16px', marginBottom: 0 }}>
+        <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '16px', marginBottom: 0 }}>
           <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2 }}>
             {t('adv.subs.title')}
           </div>
@@ -701,7 +702,7 @@ export default function Advisor() {
               { label: t('adv.subs.active'),       value: `${activeSubs.length}` },
               { label: t('adv.subs.pctIncome'), value: mIncome > 0 ? fmtPct(subPct) : '—' },
             ].map(m => (
-              <div key={m.label} style={{ background: 'var(--sur2)', borderRadius: 6, padding: '8px 10px', border: '.5px solid var(--brd)' }}>
+              <div key={m.label} style={{ background: 'var(--fill)', borderRadius: 6, padding: '8px 10px', border: 0 }}>
                 <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2}}>{m.label}</div>
                 <div style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--num)', color: 'var(--tx)' }}>{m.value}</div>
               </div>

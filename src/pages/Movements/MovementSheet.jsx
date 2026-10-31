@@ -13,6 +13,7 @@ import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { catName, expSubcatLabel, methodLabel, dateLocale, recurrenceLabel } from '../../utils/index.js'
 import s from './movements.module.css'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 function fullDate(iso) {
   const [y, m, d] = String(iso || '').split('-').map(Number)
@@ -21,7 +22,11 @@ function fullDate(iso) {
   catch { return iso }
 }
 
-export default function MovementSheet({ expense: e, kind = 'expense', sym, categories, subcats = {}, onClose, onSave, onDelete }) {
+export default function MovementSheet({ expense, open = true, startEditing = false, kind = 'expense', sym, categories, subcats = {}, onClose, onSave, onDelete }) {
+  // El movimiento se conserva mientras la hoja baja: al cerrar, el padre lo vacía.
+  const kept = useRef(expense)
+  if (expense) kept.current = expense
+  const e = kept.current
   const income = kind === 'income'
   const { t, lang } = useT()
   const [editing, setEditing] = useState(false)
@@ -30,13 +35,15 @@ export default function MovementSheet({ expense: e, kind = 'expense', sym, categ
   const editBtn = useRef(null)
 
   useEffect(() => { setEditing(false) }, [e?.id])
+  // Deslizar la fila → "Editar" abre directo el formulario.
+  useEffect(() => { if (startEditing && expense) startEdit() }, [startEditing, expense?.id]) // eslint-disable-line react-hooks/exhaustive-deps -- startEdit lee el movimiento actual
   useEffect(() => { if (editing) setTimeout(() => firstField.current?.focus(), 30) }, [editing])
 
-  if (!e) return null
-  const startEdit = () => {
+  function startEdit() {
     setF({ description: (income ? e.source : e.description) || '', amount: e.amount, date: e.date, category: e.category, subcategory: e.subcategory || '' })
     setEditing(true)
   }
+  if (!e) return null
   const valid = f.description?.trim() && Number(f.amount) > 0
   const save = async () => {
     if (!valid) return
@@ -49,7 +56,7 @@ export default function MovementSheet({ expense: e, kind = 'expense', sym, categ
   }
 
   return (
-    <Sheet open onClose={onClose} ariaLabel={t(income ? 'movl.isheet.title' : 'movl.sheet.title')} initialFocusRef={editBtn}>
+    <Sheet open={open} onClose={onClose} ariaLabel={t(income ? 'movl.isheet.title' : 'movl.sheet.title')} initialFocusRef={editBtn}>
       {!editing ? (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -100,16 +107,16 @@ export default function MovementSheet({ expense: e, kind = 'expense', sym, categ
               <input type="date" value={f.date} onChange={(ev) => setF((p) => ({ ...p, date: ev.target.value }))} />
             </label>
             <label>{t('mov.form.category')}
-              <select value={f.category} onChange={(ev) => setF((p) => ({ ...p, category: ev.target.value, subcategory: '' }))}>
+              <SheetSelect value={f.category} onChange={(ev) => setF((p) => ({ ...p, category: ev.target.value, subcategory: '' }))}>
                 {categories.map((c) => <option key={c} value={c}>{catName(c, lang)}</option>)}
-              </select>
+              </SheetSelect>
             </label>
             {!income && (
               <label>{t('mov.form.subcat')}
-                <select value={f.subcategory} onChange={(ev) => setF((p) => ({ ...p, subcategory: ev.target.value }))}>
+                <SheetSelect value={f.subcategory} onChange={(ev) => setF((p) => ({ ...p, subcategory: ev.target.value }))}>
                   <option value="">{t('mov.edit.subcatNone')}</option>
                   {(subcats[f.category] || []).map((sc) => <option key={sc} value={sc}>{expSubcatLabel(sc, lang)}</option>)}
-                </select>
+                </SheetSelect>
               </label>
             )}
           </div>

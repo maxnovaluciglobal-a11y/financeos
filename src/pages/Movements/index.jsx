@@ -43,6 +43,7 @@ import { closeKeyToDismiss, shiftMonth } from '../shared/monthNav.js'
 import { refEligible, resolveRefRate, SOURCE_LABEL, REF_CURRENCY } from '../../utils/refRate.js'
 import { mergeMovements, monthTotals, lensState, inLens, parseExpensePrefill, PREFILL_KEY, normType, filterMovements, categoriesByAmount } from './movementsList.js'
 import { ORIGIN_KINDS, toggleKind, toggleCategory, activeFilters, clearFilter, searchVisible, toggleSearch, donutPick, donutRecords } from './movementsFilters.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 // Filtro de tipo preseleccionado desde otra pantalla (Ingresos, Inicio, Menú):
 // sessionStorage['fos_mov_filter'] = 'income' | 'expense' | 'all', igual que
@@ -156,7 +157,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
   }
 
   return (
-    <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+    <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
       borderRadius:'var(--r)', padding:'16px', marginBottom:12 }}>
       <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:12 }}>
         {t('mov.form.expTitle')}
@@ -172,12 +173,12 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
       <div style={{ marginBottom:12 }}>
         {!showPaste ? (
           <button type="button" onClick={() => { setShowPaste(true); setPasteMsg(null) }}
-            style={{ background:'var(--sur2)', border:'.5px dashed var(--brd2)', borderRadius:6,
+            style={{ background: 'var(--fill)', border: 0, borderRadius:6,
               padding:'7px 12px', fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
             {t('mov.form.pasteBtn')}
           </button>
         ) : (
-          <div style={{ background:'var(--sur2)', border:'.5px solid var(--brd2)', borderRadius:8, padding:10 }}>
+          <div style={{ background: 'var(--fill)', border: 0, borderRadius:8, padding:10 }}>
             <label style={lbl}>{t('mov.form.pasteLabel')}</label>
             <textarea value={pasteText} onChange={e => setPasteText(e.target.value)} rows={3}
               placeholder={t('mov.form.pastePh')}
@@ -189,7 +190,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
                 {t('mov.form.detect')}
               </button>
               <button type="button" onClick={() => { setShowPaste(false); setPasteText('') }}
-                style={{ background:'none', border:'.5px solid var(--brd)', borderRadius:6,
+                style={{ background: 'var(--fill)', border: 0, borderRadius:6,
                   padding:'6px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
                 {t('common.cancel')}
               </button>
@@ -217,9 +218,9 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
           <input style={inp} type="date" value={f.date}
             onChange={e => set('date', e.target.value)}/></FormGroup>
         <FormGroup label={t('mov.form.category')}>
-          <select style={inp} value={f.category} onChange={handleCatChange}>
+          <SheetSelect style={inp} value={f.category} onChange={handleCatChange}>
             {categoriesExpense.map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
-          </select>
+          </SheetSelect>
         </FormGroup>
         {subcatOptions.length > 0 && (
           <div style={{ gridColumn:'1 / -1' }}>
@@ -245,11 +246,11 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
           </div>
         )}
         <FormGroup label={t('mov.form.method')}>
-          <select style={inp} value={f.method} onChange={e => set('method', e.target.value)}>
-            {METHODS.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}</select></FormGroup>
+          <SheetSelect style={inp} value={f.method} onChange={e => set('method', e.target.value)}>
+            {METHODS.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}</SheetSelect></FormGroup>
         <FormGroup label={t('mov.form.type')}>
-          <select style={inp} value={f.type} onChange={e => set('type', e.target.value)}>
-            <option value="Necesidad">{t('mov.form.typeNeed')}</option><option value="Deseo">{t('mov.form.typeWant')}</option></select></FormGroup>
+          <SheetSelect style={inp} value={f.type} onChange={e => set('type', e.target.value)}>
+            <option value="Necesidad">{t('mov.form.typeNeed')}</option><option value="Deseo">{t('mov.form.typeWant')}</option></SheetSelect></FormGroup>
       </div>
       <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', marginBottom:12, lineHeight:1.4 }}>
         <input type="checkbox" checked={!!f.inv} onChange={e => set('inv', e.target.checked)} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />
@@ -264,7 +265,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
         <datalist id="fnos-projects-exp">{projects.map(p => <option key={p} value={p} />)}</datalist>
       </div>
       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-        <button onClick={onCancel} style={{ background:'none', border:'.5px solid var(--brd)',
+        <button onClick={onCancel} style={{ background: 'var(--fill)', border: 0,
           borderRadius:6, padding:'6px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
           {t('common.cancel')}
         </button>
@@ -294,7 +295,7 @@ function FormSub({ onSave, onCancel }) {
     boxSizing:'border-box', fontFamily: 'var(--sans)' }
 
   return (
-    <div style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+    <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
       borderRadius:'var(--r)', padding:'16px', marginBottom:12 }}>
       <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:12 }}>
         {t('mov.form.subTitle')}
@@ -307,18 +308,18 @@ function FormSub({ onSave, onCancel }) {
           <input style={inp} type="number" inputMode="decimal" value={f.amount} placeholder="0"
             onChange={e => set('amount', e.target.value)}/></FormGroup>
         <FormGroup label={t('mov.form.freq')}>
-          <select style={inp} value={f.frequency} onChange={e => set('frequency', e.target.value)}>
+          <SheetSelect style={inp} value={f.frequency} onChange={e => set('frequency', e.target.value)}>
             {FREQS.map(fr => <option key={fr.value} value={fr.value}>{t(fr.label)}</option>)}
-          </select></FormGroup>
+          </SheetSelect></FormGroup>
         <FormGroup label={t('mov.form.category')}>
-          <select style={inp} value={f.category} onChange={e => set('category', e.target.value)}>
-            {SUB_CATS.map(c => <option key={c} value={c}>{subLabel(c, lang)}</option>)}</select></FormGroup>
+          <SheetSelect style={inp} value={f.category} onChange={e => set('category', e.target.value)}>
+            {SUB_CATS.map(c => <option key={c} value={c}>{subLabel(c, lang)}</option>)}</SheetSelect></FormGroup>
         <FormGroup label={t('mov.form.nextPay')}>
           <input style={inp} type="date" value={f.nextPaymentDate}
             onChange={e => set('nextPaymentDate', e.target.value)}/></FormGroup>
       </div>
       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-        <button onClick={onCancel} style={{ background:'none', border:'.5px solid var(--brd)',
+        <button onClick={onCancel} style={{ background: 'var(--fill)', border: 0,
           borderRadius:6, padding:'6px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
           {t('common.cancel')}
         </button>
@@ -625,7 +626,7 @@ export default function Movements({ setPage }) {
       {/* Fila 2: ‹ mes › (GLOBAL: también mueve el Inicio y Presupuestos) con los
           totales del mes; tocarlos abre el resumen y el donut. Luego "Filtrar". */}
       <div className={ms.monthRow}>
-        <MonthSelector variant="stepper" incomes={incomes} expenses={navExpenses} onBeforeChange={beforeMonthChange} />
+        <MonthSelector incomes={incomes} expenses={navExpenses} onBeforeChange={beforeMonthChange} />
         <button type="button" className={ms.totals} aria-expanded={showSummary} aria-controls="mov-summary"
           onClick={() => setShowSummary(v => !v)} data-tour="mov-kpis">
           <span className={ms.totalsMain}>
@@ -759,6 +760,10 @@ export default function Movements({ setPage }) {
         <MovementsList items={items} type={type} sym={lsym} lens={lens}
           query={query} kind={kind} category={drillCat} onClearFilters={clearAllFilters}
           onOpen={setOpenExp}
+          onEdit={(it) => setOpenExp({ ...it, edit: true })}
+          onDelete={(it) => (it.kind === 'income'
+            ? deleteWithUndo?.('incomes', it.rec, t('common.deleted'), t('common.undo'))
+            : delExpense && deleteWithUndo?.('expenses', it.rec || it, t('common.deleted'), t('common.undo')))}
           empty={type === 'income'
             ? <EmptyState compact icon={ArrowLeftRight} title={t('movl.emptyInc.title')} text={t('movl.emptyInc.text')}
                 cta={t('movl.emptyInc.cta')} onCta={() => openQuickAdd('income')} />
@@ -848,22 +853,20 @@ export default function Movements({ setPage }) {
           onConfirm={confirm} onSkip={skip} onUnskip={unskip} live={live} />
       )}
 
-      {openExp && openExp.kind === 'income' && (
-        <MovementSheet kind="income" expense={openExp.rec} sym={sym} categories={categoriesIncome}
-          onClose={() => setOpenExp(null)}
-          onSave={updateIncome ? (r) => updateIncome(r) : undefined}
-          onDelete={deleteWithUndo ? (r) => deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo')) : undefined} />
-      )}
-      {openExp && openExp.kind !== 'income' && (
-        <MovementSheet expense={openExp.rec || openExp} sym={sym} categories={categoriesExpense} subcats={SUBCATS}
-          onClose={() => setOpenExp(null)}
-          onSave={updateExpense ? (e) => updateExpense(e) : undefined}
-          onDelete={delExpense ? (e) => deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo')) : undefined} />
-      )}
+      <MovementSheet kind="income" open={openExp?.kind === 'income'} expense={openExp?.kind === 'income' ? openExp.rec : null}
+        startEditing={!!openExp?.edit} sym={sym} categories={categoriesIncome}
+        onClose={() => setOpenExp(null)}
+        onSave={updateIncome ? (r) => updateIncome(r) : undefined}
+        onDelete={deleteWithUndo ? (r) => deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo')) : undefined} />
+      <MovementSheet open={!!openExp && openExp.kind !== 'income'} expense={openExp && openExp.kind !== 'income' ? (openExp.rec || openExp) : null}
+        startEditing={!!openExp?.edit} sym={sym} categories={categoriesExpense} subcats={SUBCATS}
+        onClose={() => setOpenExp(null)}
+        onSave={updateExpense ? (e) => updateExpense(e) : undefined}
+        onDelete={delExpense ? (e) => deleteWithUndo('expenses', e, t('common.deleted'), t('common.undo')) : undefined} />
 
       <div style={{ marginTop:24 }}>
       {/* Fijos del mes — suscripciones, cuotas y fijos manuales (reglas) */}
-      <div data-tour="mov-fixed" style={{ background:'var(--sur)', border:'.5px solid var(--brd)',
+      <div data-tour="mov-fixed" style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
         borderRadius:'var(--r)', overflow:'hidden' }}>
         <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
           display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>

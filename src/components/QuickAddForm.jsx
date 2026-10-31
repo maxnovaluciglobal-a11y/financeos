@@ -37,6 +37,7 @@ import {
 } from '../utils/quickAdd.js'
 import { navigateTo } from './quickAddBus.js'
 import css from './QuickAddForm.module.css'
+import SheetSelect from './ui/SheetSelect.jsx'
 
 const readStorage = (k) => { try { return localStorage.getItem(k) } catch { return null } }
 
@@ -501,14 +502,14 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             style={{ flex: 1, minWidth: 0, minHeight: 44, textAlign: type === 'expense' ? 'left' : 'center' }}
           />
           {type === 'expense' && (
-            <select
+            <SheetSelect
               value={method}
               onChange={e => setMethod(e.target.value)}
               aria-label={t('qa.method')}
               style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
             >
               {config.paymentMethods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
-            </select>
+            </SheetSelect>
           )}
         </div>
         <span className="sr-only" aria-live="polite">{suggestedMsg}</span>
@@ -546,9 +547,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             {t('rec.repeat.toggle')}
           </label>
           {repeat && (
-            <select value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
+            <SheetSelect value={freq} onChange={e => setFreq(e.target.value)} aria-label={t('rec.repeat.freq')}>
               {FREQS.map(f => <option key={f} value={f}>{t(`rec.freq.${f}`)}</option>)}
-            </select>
+            </SheetSelect>
           )}
         </div>
 

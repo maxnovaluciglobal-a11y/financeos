@@ -21,7 +21,7 @@ export default function DeviceSwitch({ previousEmail }) {
 
   const s = {
     wrap: { minHeight: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'var(--sans)' },
-    box: { background: 'var(--sur)', border: '1px solid var(--brd2)', borderRadius: 18, padding: '40px 36px', maxWidth: 420, width: '100%', boxShadow: 'var(--sh-2)' },
+    box: { background: 'var(--sur)', border: 0, borderRadius: 18, padding: '40px 36px', maxWidth: 420, width: '100%', boxShadow: 'var(--sh-2)' },
     primary: { width: '100%', padding: '12px 14px', border: 'none', borderRadius: 8, background: 'var(--navy, #14213D)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: busy ? 'default' : 'pointer', fontFamily: 'var(--sans)', opacity: busy ? 0.6 : 1 },
     link: { background: 'none', border: 'none', color: 'var(--th)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--sans)', padding: '10px 0 0', width: '100%' },
   }

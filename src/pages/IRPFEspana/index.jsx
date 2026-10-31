@@ -14,6 +14,7 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedContr
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRPFEmpleado, calcIRPFAutonomo, TRAMOS_IRPF_2026 } from '../../utils/irpfES.js'
 import { fmtFixed, fmtPctPoints } from '../../utils/index.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const fmtEUR = (n) => fmtFixed(n, 'es-ES', '€')
 
@@ -84,9 +85,9 @@ function EmpleadoCard() {
           <input type="number" inputMode="decimal" min="0" value={bruto} placeholder="0" onChange={e => setBruto(e.target.value)} />
         </FormGroup>
         <FormGroup label={t('irpfes.empleado.hijosLabel')}>
-          <select value={hijos} onChange={e => setHijos(e.target.value)}>
+          <SheetSelect value={hijos} onChange={e => setHijos(e.target.value)}>
             {[0, 1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
+          </SheetSelect>
         </FormGroup>
       </FormRow>
 
@@ -122,7 +123,7 @@ function EmpleadoCard() {
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.baseLiquidable)}</span>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
             {t('irpfes.empleado.footnote', { ss: fmtEUR(result.seguridadSocial), minimo: fmtEUR(result.minimoPersonalFamiliar) })}
           </div>
         </>
@@ -167,7 +168,7 @@ function AutonomoCard() {
           <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.gastosDificilJust)}</span>
         </div>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--sur2)', borderRadius: 8, border: '.5px solid var(--brd)' }}>
+      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
         {t('irpfes.autonomo.footnote1')}
         <br /><br />
         {t('irpfes.autonomo.footnote2')}

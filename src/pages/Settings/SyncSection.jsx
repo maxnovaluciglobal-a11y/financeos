@@ -24,9 +24,9 @@ export function passphraseProblem(pass, confirm, isNew) {
 }
 
 const sub = { fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginTop: 4 }
-const input = { width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, border: '1px solid var(--brd)', borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', marginBottom: 8 }
+const input = { width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', marginBottom: 8 }
 const lbl = { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--tx)', marginBottom: 4 }
-const box = { marginTop: 10, padding: '12px', background: 'var(--sur2)', borderRadius: 'var(--r)', border: '0.5px solid var(--brd)' }
+const box = { marginTop: 10, padding: '12px', background: 'var(--fill)', borderRadius: 'var(--r)', border: 0 }
 
 function PassphraseForm({ id, isNew, busy, error, onSubmit, submitLabel, onCancel }) {
   const { t } = useT()
@@ -250,7 +250,7 @@ export default function SyncSection() {
         </div>
       )}
 
-      <div style={{ ...sub, marginTop: 10, padding: '8px 10px', background: 'var(--sur2)', borderRadius: 'var(--r)', border: '0.5px solid var(--brd)' }}>
+      <div style={{ ...sub, marginTop: 10, padding: '8px 10px', background: 'var(--fill)', borderRadius: 'var(--r)', border: 0 }}>
         <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />
         {t(mode === 'v2' ? 'syncPass.e2eV2' : 'settings.sync.e2e')}
       </div>

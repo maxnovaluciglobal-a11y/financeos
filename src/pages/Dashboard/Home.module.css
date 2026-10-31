@@ -73,7 +73,15 @@
 .kpis { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 /* "Te queda" va primero y es la cifra protagonista (R05), en móvil a todo el
    ancho y en escritorio como primera columna, más ancha. */
-.kpiLeft { grid-column: 1 / -1; order: -1; }
+.kpiLeft { grid-column: 1 / -1; order: -1; position: relative; }
+/* Toda la tarjeta abre el detalle: el botón es el rótulo y su ::after la cubre. */
+.heroOpen { display: block; width: 100%; padding: 0; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.heroOpen::after { content: ''; position: absolute; inset: 0; border-radius: var(--rl); }
+.heroOpen:focus-visible { outline: none; }
+.heroOpen:focus-visible::after { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.heroOpen:active::after { background: var(--fill); }
+.heroChevron { color: var(--th); flex-shrink: 0; }
+.kpiLeft .kpiLabel { justify-content: flex-start; gap: 2px; }
 @container (min-width: 760px) {
   .kpis { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); }
   .kpiLeft { grid-column: auto; }
@@ -83,7 +91,7 @@
   .kpisTall .kpiLeft { grid-row: span 2; }
 }
 .kpi { display: flex; flex-direction: column; gap: 6px; padding: 12px 0 0; min-width: 0; container-type: inline-size; }
-.hero.kpi { padding: 14px 16px; }
+.hero.kpi { padding: 16px; }
 .kpiLabel { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; font-weight: 500; color: var(--tm); }
 .kpiTap { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
@@ -100,50 +108,55 @@
 
 /* Poda P1: Ingresos · Gastos en una línea bajo "Te queda" (dos mitades
    tocables de 44 px; la cifra se achica antes de partirse). */
-.pairLine { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 8px; }
+.pairLine { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; margin-top: 6px; }
 .pairItem { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: 4px; row-gap: 2px;
-  min-height: 52px; min-width: 0; padding: 8px 10px; container-type: inline-size;
-  border: 0.5px solid var(--brd); border-radius: var(--r); background: var(--sur); color: inherit; font: inherit; text-align: left; }
-button.pairItem { cursor: pointer; transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
-button.pairItem:hover { border-color: var(--navy-400); }
-button.pairItem:active { transform: scale(.99); }
+  min-height: 52px; min-width: 0; padding: 6px 16px; container-type: inline-size;
+  border: 0; border-radius: var(--r); background: none; color: inherit; font: inherit; text-align: left; }
+.pairItem + .pairItem { position: relative; }
+.pairItem + .pairItem::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 0.5px; background: var(--brd2); }
+button.pairItem { cursor: pointer; transition: background-color var(--dur) var(--ease); -webkit-tap-highlight-color: transparent; }
+button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .pairLabel { grid-column: 1; grid-row: 1; font-size: 12px; font-weight: 500; color: var(--tm); }
 .pairItem .kpiChevron { grid-column: 2; grid-row: 1; }
 /* La cifra entra entera en una línea: se achica con el largo (--chars). */
 .pairValue { grid-column: 1 / -1; grid-row: 2; min-width: 0; white-space: nowrap; color: var(--tx);
-  font-size: clamp(12px, calc(100cqi * 1.65 / var(--chars, 10)), 16px); line-height: 1.2; }
+  font-size: clamp(12px, calc(100cqi * 1.65 / var(--chars, 10)), 17px); line-height: 1.2; }
 
 /* Poda P1: acciones rápidas (4) y "Para hacer" (un aviso por vez). */
 .quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.quickBtn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 6px 4px;
-  border: 0.5px solid var(--brd); border-radius: var(--r); background: var(--sur); color: var(--tx); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; text-align: center;
-  transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
-.quickBtn:hover { border-color: var(--navy-400); }
-.quickBtn:active { transform: scale(.98); }
-.quickBtn svg { color: var(--tm); }
+.quickBtn { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-height: 64px; padding: 2px;
+  border: 0; border-radius: var(--r); background: none; color: var(--tx); font: inherit; font-size: 12px; font-weight: 500; line-height: 1.25; cursor: pointer; text-align: center;
+  -webkit-tap-highlight-color: transparent; transition: transform var(--dur-press) var(--ease-out); }
+.quickIc { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--rxl); background: var(--fill); color: var(--tx); transition: background-color var(--dur) var(--ease); }
+.quickBtn:hover .quickIc, .quickBtn:active .quickIc { background: var(--fill-2); }
+.quickBtn:active { transform: scale(.96); }
 .todo { display: flex; flex-direction: column; gap: var(--sp-3); }
 .todoSlot:empty { display: none; }
 /* Plegado: solo el primer aviso con contenido; los demás, con "N más". */
 .todoCollapsed > .todoSlot:not(:empty) ~ .todoSlot { display: none; }
 .todoMore { align-self: flex-start; min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .homeFoot { display: flex; justify-content: center; }
-.homeFootBtn { min-height: 44px; padding: 0 14px; background: none; border: 0.5px solid var(--brd2); border-radius: var(--r); color: var(--tm); font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.homeFootBtn:hover { color: var(--tx); border-color: var(--navy-400); }
+.homeFootBtn { min-height: 44px; padding: 0 14px; background: none; border: 0; border-radius: var(--r); color: var(--tm); font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.homeFootBtn:hover { color: var(--tx); background: var(--fill); }
 
 .left { display: flex; align-items: center; gap: 14px; }
 .leftBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
-.leftValue { font-size: clamp(32px, 9cqi, 40px); line-height: 1; }
+.leftValue { font-size: clamp(32px, 11cqi, 40px); line-height: 1.05; }
 /* Montos largos en una tarjeta angosta (móvil): la cifra usa todo el ancho y
    el anillo pasa abajo, en fila. */
-.leftLong { flex-direction: column; align-items: stretch; }
+.leftLong { position: relative; flex-direction: column; align-items: stretch; }
 .leftLong .leftValue { font-size: clamp(22px, calc((100cqi - 32px) * 1.65 / var(--chars, 12)), 40px); }
-.leftLong .ring { flex-direction: row; align-self: flex-start; gap: 10px; }
+.leftLong .leftBody { min-height: 92px; padding-right: 0; }
+.leftLong .ring { position: absolute; right: 0; bottom: 0; flex-direction: row; gap: 8px; }
+.leftLong .ring svg:first-child { width: 36px; height: 36px; }
 /* Tarjeta ancha (cqi = ancho de "Te queda"): el anillo vuelve al costado y la
    cifra se mide con lo que queda (134px = padding 32 + anillo 88 + gap 14). */
 @container (min-width: 480px) {
   .leftLong { flex-direction: row; align-items: center; }
+  .leftLong .leftBody { min-height: 0; }
   .leftLong .leftValue { font-size: clamp(22px, calc((100cqi - 134px) * 1.65 / var(--chars, 12)), 40px); }
-  .leftLong .ring { flex-direction: column; align-self: center; gap: 4px; }
+  .leftLong .ring { position: static; flex-direction: column; align-self: center; gap: 4px; }
+  .leftLong .ring svg:first-child { width: 72px; height: 72px; }
 }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 .ringLegend { font-family: var(--sans); font-size: 11px; line-height: 1.3; color: var(--th); text-align: center; max-width: 120px; }
@@ -345,6 +358,18 @@ button.pairItem:active { transform: scale(.99); }
 .refTool:active { transform: scale(.98); }
 .refTool svg:last-child { color: var(--th); }
 @media (prefers-reduced-motion: reduce) { .refOptFace, .refTool { transition: none; } .refTool:active { transform: none; } }
+
+/* Detalle de "Te queda" (HeroDetailSheet.jsx) */
+.detailHead { display: flex; flex-direction: column; gap: 4px; }
+.detailBlock { margin-top: 14px; padding-top: 12px; border-top: 0.5px solid var(--brd); }
+.detailPulse { display: flex; align-items: center; gap: 14px; }
+.detailPulseText { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.detailLegend { font-size: .8125rem; line-height: 1.4; color: var(--tm); }
+.detailLink {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; margin-top: 14px; padding: 0 14px;
+  border: 0; border-radius: var(--r); background: var(--fill); color: var(--tx); font-family: var(--sans); font-size: .9375rem; font-weight: 500; cursor: pointer;
+}
+.detailLink:hover, .detailLink:active { background: var(--fill-2); }
 
 /* B1: "Hay una tasa más reciente: X. Usar" — texto y enlace, sin caja. */
 .freshRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; line-height: 1.45; color: var(--tm); }

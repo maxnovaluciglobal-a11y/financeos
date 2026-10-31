@@ -14,6 +14,7 @@ import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
 import { NAV, pageLabel, showProChip, navItemVisible } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
+import { runViewTransition } from './viewTransition.js'
 import { chromeFor, SUB_BACK_EVENT } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
 import { QUICK_ADD_EVENT, NAVIGATE_EVENT } from '../quickAddBus.js'
@@ -102,8 +103,9 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   useEffect(() => {
     const el = document.documentElement
     el.dataset.chrome = chrome.root ? 'root' : 'pushed'
-    el.dataset.fab = chrome.fab ? 'on' : 'off'
-  }, [chrome.root, chrome.fab])
+    // Con barra, el "+" va dentro de ella y no pide aire encima.
+    el.dataset.fab = chrome.fab && !chrome.tabBar ? 'on' : 'off'
+  }, [chrome.root, chrome.fab, chrome.tabBar])
   // iOS instalada (standalone) no tiene gesto atrás propio: borde izquierdo.
   useEdgeSwipeBack({ enabled: chrome.back, onBack: back })
 
@@ -125,10 +127,13 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   }, [page])
 
   function navigate(id) {
-    // startViewTransition() da el fundido nativo entre pantallas; sin soporte
-    // (Firefox, Safari < 18) cae directo a setPage sin transición — no rompe nada.
-    if (document.startViewTransition) document.startViewTransition(() => setPage(id))
-    else setPage(id)
+    runViewTransition(() => setPage(id))
+  }
+
+  // Tocar la pestaña activa sube al inicio (causa 11).
+  function scrollToTop() {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    contentRef.current?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
   }
 
   // ── Ocultar montos (T13) ─────────────────────────────────────────────────────
@@ -255,10 +260,12 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
       {/* ── ÁREA PRINCIPAL ── */}
       <div className={s.main}>
 
-        {/* Topbar — título de la página + moneda. En móvil el TabBar es la
-            navegación primaria; en las pantallas empujadas (R14) aparece
-            "‹ {de dónde viniste}" en lugar de la barra inferior. */}
+        {/* Barra superior — sin fila propia (causa 6): en el teléfono flota en la
+            línea del título grande. Al hacer scroll se le suma el título compacto
+            (LargeTitle lo manda a #nav-title) y el fondo con desenfoque, ligados al
+            dedo. En las pantallas empujadas (R14) lleva "‹ {de dónde viniste}". */}
         <header className={s.topbar}>
+          <div className={s.navBg} aria-hidden="true" />
           <div className={s.topLeft}>
             {chrome.back && (
               <button type="button" className={s.backBtn} onClick={back}
@@ -268,7 +275,8 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
               </button>
             )}
           </div>
-          {/* Sin miga: el título vive una sola vez, en el PageHead de cada página (UI-M8). */}
+          {/* El título vive en el PageHead de cada página (UI-M8); acá solo su copia compacta. */}
+          <div id="nav-title" className={s.navTitle} aria-hidden="true" />
           <span className={s.topRight}>
             {tour.available && (
               <PageTourButton className={s.amountsBtn} onClick={tour.replay} label={t('tour.replay')} />
@@ -286,7 +294,6 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
                 : <Eye size={16} strokeWidth={1.7} aria-hidden="true" />}
               <span className={s.amountsLbl} aria-hidden="true">{t('money.toggle')}</span>
             </button>
-            <span>MOY IQ · {settings.currency || 'CLP'}</span>
           </span>
           <span className="sr-only" role="status" aria-live="polite">{amountsAnnounce}</span>
         </header>
@@ -299,11 +306,11 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
         </main>
 
         {/* TABBAR móvil — barra anclada de 5 destinos (Inicio · Movimientos ·
-            Presupuestos · Metas · Menú, L2) + el "+" propio encima, abajo a la
-            derecha. Los dos se ocultan con el teclado abierto. */}
+            Presupuestos · Metas · Menú, L2) con el "+" adentro. Se oculta con el
+            teclado abierto. */}
         <div className={keyboardOpen ? s.tabbarHidden : undefined}>
-          {chrome.tabBar && <TabBar page={page} onNavigate={navigate} t={t} />}
-          {chrome.fab && <AddFab onAdd={() => setQuickAdd(page === 'income' ? 'income' : 'expense')} t={t} />}
+          {chrome.tabBar && <TabBar page={page} onNavigate={navigate} onReselect={scrollToTop} onAdd={() => setQuickAdd('expense')} t={t} />}
+          {chrome.fab && !chrome.tabBar && <AddFab onAdd={() => setQuickAdd(page === 'income' ? 'income' : 'expense')} t={t} />}
         </div>
       </div>
 

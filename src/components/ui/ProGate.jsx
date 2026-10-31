@@ -48,7 +48,7 @@ function DemoProStrip({ t, days }) {
   return (
     <div role="note" style={{
       display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', padding: '8px 12px',
-      background: 'var(--amb-bg)', border: '.5px solid var(--brd2)', borderRadius: 'var(--r)',
+      background: 'var(--amb-bg)', border: 0, borderRadius: 'var(--r)',
       fontSize: 13, color: 'var(--tm)', lineHeight: 1.45,
     }}>
       <span style={{ fontFamily: 'var(--num)', fontSize: 11, fontWeight: 700, letterSpacing: '.5px', color: 'var(--amb)', flexShrink: 0 }}>PRO</span>
@@ -82,7 +82,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
   const gate = (
     <div style={{
       maxWidth: 520, margin: '48px auto', padding: '32px 24px',
-      background: 'var(--sur)', border: '.5px solid var(--brd)',
+      background: 'var(--box-bg)', border: 0,
       borderRadius: 'var(--rl)', textAlign: 'center', boxShadow: 'var(--sh-1)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }} aria-hidden="true">

@@ -104,7 +104,7 @@ export default function DeleteAccountSection({ autoOpen = false }) {
             autoCapitalize="characters"
             spellCheck={false}
             aria-describedby={error ? 'delete-account-error' : undefined}
-            style={{ width: '100%', maxWidth: 260, padding: '10px 12px', fontSize: 16, border: '1px solid var(--brd)', borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', boxSizing: 'border-box', marginBottom: 10 }}
+            style={{ width: '100%', maxWidth: 260, padding: '10px 12px', fontSize: 16, border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', boxSizing: 'border-box', marginBottom: 10 }}
           />
           {error && <p id="delete-account-error" role="alert" style={{ ...p, color: 'var(--red)' }}>{error}</p>}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

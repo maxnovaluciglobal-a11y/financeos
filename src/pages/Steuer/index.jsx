@@ -17,6 +17,7 @@ import { calcDescuentosDE, calcZvE, BUNDESLAENDER, ARBEITNEHMER_PAUSCHBETRAG } f
 import { tasaMarginalDE } from '../../config/deducciones/de.js'
 import { getDeduccionesConfig, autofillGastos } from '../../utils/deduccionesEngine.js'
 import { currentMonth, fmtPctPoints } from '../../utils/index.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const fmtEUR = (n) => `€${(Number(n) || 0).toLocaleString('de-DE', { maximumFractionDigits: 0 })}`
 
@@ -82,9 +83,9 @@ function LohnabzuegeCard() {
             onChange={e => setBrutto(e.target.value)} />
         </FormGroup>
         <FormGroup label={t('steuer.lohn.bundesland')}>
-          <select value={bundesland} onChange={e => setBundesland(e.target.value)}>
+          <SheetSelect value={bundesland} onChange={e => setBundesland(e.target.value)}>
             {BUNDESLAENDER.map(bl => <option key={bl.code} value={bl.code}>{bl.label}</option>)}
-          </select>
+          </SheetSelect>
         </FormGroup>
       </FormRow>
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--tx)', margin: '4px 0 12px', cursor: 'pointer' }}>
@@ -312,8 +313,8 @@ function ElsterExport({ desglose, year, t }) {
       {abierto && (
         <div style={{ marginTop: 10 }}>
           <pre style={{
-            fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tx)', background: 'var(--sur2)',
-            border: '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '12px 14px',
+            fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tx)', background: 'var(--fill)',
+            border: 0, borderRadius: 'var(--r)', padding: '12px 14px',
             whiteSpace: 'pre-wrap', lineHeight: 1.6, marginBottom: 8,
           }}>{texto}</pre>
           <div style={{ display: 'flex', gap: 8 }}>

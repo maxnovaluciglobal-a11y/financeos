@@ -24,6 +24,14 @@ export function monthRange(dates, current, active) {
   return { min: months[0], max: months[months.length - 1] }
 }
 
+// Todos los meses del rango, del más nuevo al más viejo (la lista de la hoja).
+export function monthsBetween({ min, max }) {
+  if (!min || !max) return []
+  const out = []
+  for (let m = max; m >= min && out.length < 600; m = shiftMonth(m, -1)) out.push(m)
+  return out
+}
+
 // ¿Se puede ir al mes anterior / siguiente desde `active` dentro del rango?
 export function stepState(active, { min, max }) {
   return {

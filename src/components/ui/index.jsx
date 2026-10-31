@@ -9,7 +9,8 @@ import Amount from '../Amount.jsx'
 import CategoryIcon from '../CategoryIcon.jsx'
 import SignalIcon from '../icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
-import { Pencil, Check } from 'lucide-react'
+import { Pencil, Trash2, Check } from 'lucide-react'
+import SwipeRow from './SwipeRow.jsx'
 import { MINUS } from '../../utils/index.js'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
@@ -89,8 +90,8 @@ export function FormGroup({ label, children }) {
   const autoId = useId()
   let fieldId = null
   const kids = Children.map(children, (child) => {
-    if (!fieldId && isValidElement(child) && typeof child.type === 'string' &&
-        ['input', 'select', 'textarea'].includes(child.type)) {
+    if (!fieldId && isValidElement(child) && (child.type?.isField ||
+        (typeof child.type === 'string' && ['input', 'select', 'textarea'].includes(child.type)))) {
       // Un campo con id propio (p. ej. #budget-new-category) también queda
       // asociado a su etiqueta.
       fieldId = child.props.id || autoId
@@ -212,7 +213,13 @@ export function EmptyPickList({ label, items }) {
 export function TxRow({ dot, category, name, label: labelProp, meta, amount, value, sym, isIncome, onDelete, onEdit }) {
   const { t } = useT()
   const label = labelProp || (typeof name === 'string' && name) || t('ui.transaction')
+  // Deslizar es un atajo: el lápiz y la ✕ siguen a la vista (causa 18).
+  const swipe = [
+    onEdit && { key: 'edit', label: t('ui.edit'), icon: Pencil, onClick: onEdit },
+    onDelete && { key: 'delete', label: t('ui.delete'), icon: Trash2, onClick: onDelete, danger: true },
+  ].filter(Boolean)
   return (
+    <SwipeRow actions={swipe}>
     <div className={styles.txRow}>
       {category != null ? <CategoryIcon category={category} /> : <div className={styles.txDot} style={{ background: dot }} />}
       <div className={styles.txInfo}>
@@ -235,6 +242,7 @@ export function TxRow({ dot, category, name, label: labelProp, meta, amount, val
         </button>
       )}
     </div>
+    </SwipeRow>
   )
 }
 

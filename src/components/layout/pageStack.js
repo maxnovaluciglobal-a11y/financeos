@@ -46,6 +46,11 @@ export function chromeFor(page) {
   }
 }
 
+// Tocar una pestaña (causa 11): si ya estás en esa raíz, sube al inicio; si no, va.
+export function tabPress(page, id) {
+  return page === id ? 'top' : 'go'
+}
+
 // Cómo registrar en el historial una navegación de `from` a `to`:
 // - 'none'    misma página (no se apila nada)
 // - 'replace' cambio de pestaña entre raíces (las pestañas no se apilan, como

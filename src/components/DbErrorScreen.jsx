@@ -13,7 +13,7 @@ export default function DbErrorScreen({ kind }) {
   const mail = `mailto:${config.app?.supportEmail || config.supportEmail || 'support@moyiq.app'}?subject=${encodeURIComponent(t('dbError.mailSubject'))}`
   return (
     <main role="alert" aria-labelledby="dberr-title" style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--bg)' }}>
-      <div style={{ maxWidth: 440, width: '100%', background: 'var(--sur)', border: '.5px solid var(--brd)', borderRadius: 'var(--rxl)', boxShadow: 'var(--sh-2)', padding: '28px 24px' }}>
+      <div style={{ maxWidth: 440, width: '100%', background: 'var(--sur)', border: 0, borderRadius: 'var(--rxl)', boxShadow: 'var(--sh-2)', padding: '28px 24px' }}>
         <div style={{ marginBottom: 18 }}><Logo size={28} /></div>
         <h1 id="dberr-title" className="display" style={{ fontSize: 22, fontWeight: 600, color: 'var(--tx)', margin: '0 0 10px' }}>{t('dbError.title')}</h1>
         <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--tm)', margin: '0 0 10px' }}>{t(newer ? 'dbError.newer.body' : 'dbError.body')}</p>

@@ -63,7 +63,7 @@ export default function FeedbackSheet({ open, onClose }) {
           <textarea
             id="feedback-message" ref={textRef} value={message} onChange={(e) => setMessage(e.target.value)}
             rows={5} maxLength={2000} required
-            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: '1px solid var(--brd)', borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
           />
           <fieldset style={{ border: 'none', padding: 0, margin: '0 0 14px' }}>
             <legend style={{ ...label, padding: 0 }}>{t('feedback.npsLabel')}</legend>

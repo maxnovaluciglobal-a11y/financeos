@@ -10,6 +10,7 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../c
 import ProGate from '../../components/ui/ProGate.jsx'
 import arConfig from '../../config/inflacion/ar.js'
 import { fmtPct } from '../../utils/index.js'
+import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 const CONFIGS = { AR: arConfig }
 
@@ -68,14 +69,14 @@ export default function Inflacion() {
           </FormRow>
           <FormRow>
             <FormGroup label={t('inflacion.form.from')}>
-              <select value={desde} onChange={e => setDesde(e.target.value)}>
+              <SheetSelect value={desde} onChange={e => setDesde(e.target.value)}>
                 {config.meses.map(m => <option key={m} value={m}>{fmtMes(m)}</option>)}
-              </select>
+              </SheetSelect>
             </FormGroup>
             <FormGroup label={t('inflacion.form.to')}>
-              <select value={hasta} onChange={e => setHasta(e.target.value)}>
+              <SheetSelect value={hasta} onChange={e => setHasta(e.target.value)}>
                 {config.meses.map(m => <option key={m} value={m}>{fmtMes(m)}</option>)}
-              </select>
+              </SheetSelect>
             </FormGroup>
           </FormRow>
           {desde > hasta && (

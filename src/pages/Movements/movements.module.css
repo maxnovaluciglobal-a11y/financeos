@@ -170,7 +170,7 @@
 .editGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .editGrid > :first-child { grid-column: 1 / -1; }
 .editGrid label { display: flex; flex-direction: column; gap: 4px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--tm); min-width: 0; }
-.editGrid input, .editGrid select { min-height: 44px; box-sizing: border-box; font-size: 15px; }
+.editGrid input, .editGrid select, .editGrid :global(.fos-select) { min-height: 44px; box-sizing: border-box; font-size: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
   .totalsChevron, .row, .segOpt { transition: none; }

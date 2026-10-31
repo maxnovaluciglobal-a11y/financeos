@@ -37,7 +37,7 @@ export default function CountryTool({ country, setPage }) {
         width: '100%', textAlign: 'left', cursor: 'pointer',
         display: 'flex', alignItems: 'center', gap: 16,
         padding: '16px 18px', marginBottom: 16,
-        background: 'var(--grn-tint)', border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)',
+        background: 'var(--grn-tint)', border: 0,
       }}
     >
       <span style={{ lineHeight: 0, flexShrink: 0, color: 'var(--grn)' }} aria-hidden="true"><CountryBadge code={cc} size={30} /></span>
@@ -55,7 +55,7 @@ export default function CountryTool({ country, setPage }) {
       <span style={{
         flexShrink: 0, fontFamily: 'var(--num)', fontSize: 12, fontWeight: 600,
         color: 'var(--grn)', display: 'inline-flex', alignItems: 'center', gap: 5,
-        border: '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)',
+        border: 0,
         borderRadius: 'var(--r)', padding: '6px 12px', whiteSpace: 'nowrap',
       }}>
         {t('countryTool.cta')} →

@@ -61,7 +61,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
           { label:t('chart.goal.overall'), value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.7 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
           { label:t('chart.goal.completed'), value:`${completedCount}/${rows.length}`, color: completedCount > 0 ? 'var(--accent)' : 'var(--th)' },
         ].map((k,i) => (
-          <div key={i} style={{ background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
+          <div key={i} style={{ background:'var(--sur)', border: 0, borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
             <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:5 }}>{k.label}</div>
             <div className="num" style={{ fontSize:19, letterSpacing:'-0.01em', color:k.color }}>{k.value}</div>
           </div>
@@ -82,7 +82,7 @@ export default function GoalProgressList({ goals, sym = '$' }) {
       {/* Lista por meta — ordenadas de mayor a menor progreso */}
       <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
         {rows.map((g, i) => (
-          <div key={g.id || i} style={{ background:g.status.bg, border:`.5px solid ${g.status.border}`, borderRadius:10, padding:'12px 14px' }}>
+          <div key={g.id || i} style={{ background:g.status.bg, border: 0, borderRadius:10, padding:'12px 14px' }}>
             {/* Header */}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
