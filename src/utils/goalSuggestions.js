@@ -1,15 +1,29 @@
 // src/utils/goalSuggestions.js
-// Import estático de es/en/pt (NO del agregador translations.js completo, que
-// también trae de.js): la detección de metas duplicadas compara el nombre
-// existente contra el nombre traducido en varios idiomas a la vez — no solo el
-// idioma activo — así que necesita acceso simultáneo a más de un diccionario.
-// 'de' queda afuera a propósito (el array localizedNames de abajo nunca lo
-// incluyó, ver comentario ahí) — eso deja el chunk de alemán fuera de este
-// bundle y permite que se cargue por separado vía useT.js cuando corresponda.
+// La detección de metas duplicadas compara el nombre existente contra el nombre
+// traducido en varios idiomas a la vez, no solo el activo. V4: acá van solo esos
+// 5 nombres de en/pt, no los diccionarios enteros: importar en.js y pt.js metía
+// ~115 kB gzip en la página Metas, y como prefetchTabs la precarga, esos dos
+// idiomas se bajaban en cada arranque en frío, aunque el usuario use español.
+// goalSuggestions.test.js exige que sigan iguales a los diccionarios.
+// 'de' queda afuera a propósito (la lista localizedNames de abajo nunca lo incluyó).
 import { es } from '../i18n/es.js'
-import { en } from '../i18n/en.js'
-import { pt } from '../i18n/pt.js'
-const langDicts = { es, en, pt }
+export const GOAL_NAMES_OTHER_LANGS = {
+  en: {
+    'gs.emergency.name': 'Emergency fund',
+    'gs.vacations.name': 'Annual vacation',
+    'gs.yearEnd.name': 'Year-end holidays fund',
+    'gs.education.name': 'Education and development',
+    'gs.opportunity.name': 'Opportunity cushion',
+  },
+  pt: {
+    'gs.emergency.name': 'Fundo de emergência',
+    'gs.vacations.name': 'Férias anuais',
+    'gs.yearEnd.name': 'Fundo festas de fim de ano',
+    'gs.education.name': 'Educação e desenvolvimento',
+    'gs.opportunity.name': 'Colchão de oportunidades',
+  },
+}
+const langDicts = { es, ...GOAL_NAMES_OTHER_LANGS }
 // Sugerencias de metas financieras básicas — v1.4
 // Basadas en principios financieros generales
 // NO constituyen asesoría financiera certificada
