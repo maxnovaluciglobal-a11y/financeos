@@ -275,6 +275,8 @@
   border: 0; border-radius: var(--rxl); background: var(--laton); color: var(--navy); cursor: pointer;
   -webkit-tap-highlight-color: transparent; transition: transform var(--dur-press) var(--ease-out);
 }
+/* 320 px: el "+" cede lo justo para que ninguna etiqueta se corte ni baje de 44. */
+@media (max-width: 339px) { .tabAddSlot { flex-basis: 46px; } }
 .tabAdd:active { transform: scale(.94); }
 .tabAdd:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 :global([data-theme="dark"]) .tabAdd:focus-visible { outline-color: var(--laton-300); }
