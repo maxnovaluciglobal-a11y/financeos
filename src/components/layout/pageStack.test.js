@@ -1,5 +1,5 @@
-import { tabPress, describe, it, expect } from 'vitest'
-import { chromeFor, navAction, bootEntries, backAction, backTarget, isRootPage, isStackState } from './pageStack.js'
+import { describe, it, expect } from 'vitest'
+import { tabPress, chromeFor, navAction, bootEntries, backAction, backTarget, isRootPage, isStackState } from './pageStack.js'
 import { ALL_ITEMS, TAB_IDS } from './navConfig.js'
 
 // Todas las páginas que App.jsx / DemoShell.jsx saben dibujar (renderPage).

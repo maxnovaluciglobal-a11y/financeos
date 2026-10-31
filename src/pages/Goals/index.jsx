@@ -183,7 +183,7 @@ export default function Goals() {
     const isEditing = editingId === g.id
     const GIcon = goalIcon(g)
     return (
-      <div key={g.id} id={inSheet ? undefined : `goal-card-${g.id}`} tabIndex={-1} style={{outline:'none',background: 'var(--fill)',borderRadius:10,padding:'14px 16px',border: 0}}>
+      <div key={g.id} id={inSheet ? undefined : `goal-card-${g.id}`} tabIndex={-1} style={{outline:'none',background:'var(--box-bg)',boxShadow:'var(--box-sh)',borderRadius:10,padding:'14px 16px',border: 0}}>
         {isEditing ? (
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>

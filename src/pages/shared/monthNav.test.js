@@ -1,5 +1,5 @@
-import { monthsBetween, describe, it, expect } from 'vitest'
-import { shiftMonth, monthRange, stepState, closeKeyToDismiss } from './monthNav.js'
+import { describe, it, expect } from 'vitest'
+import { monthsBetween, shiftMonth, monthRange, stepState, closeKeyToDismiss } from './monthNav.js'
 
 describe('shiftMonth (B3a)', () => {
   it('avanza y retrocede cruzando años', () => {
