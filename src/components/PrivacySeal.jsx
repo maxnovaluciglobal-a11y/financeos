@@ -8,10 +8,15 @@
 // el dibujo y el lema va debajo como texto normal de 12 px.
 
 import { useT } from '../i18n/useT.js'
+import { useAppOptional } from '../context/AppContext.jsx'
+import { moduleOn } from '../utils/modules.js'
 
 export default function PrivacySeal({ size = 72, label, title }) {
   const { t } = useT()
-  if (label === undefined) label = t('seal.label')
+  // Con el módulo Inversiones, el portafolio se lee del servidor de Invest: el
+  // sello dice exactamente qué sigue siendo local.
+  const settings = useAppOptional()?.settings
+  if (label === undefined) label = t(moduleOn(settings, 'investments') ? 'seal.labelInvest' : 'seal.label')
   if (title === undefined) title = t('seal.title')
   const c = 50
   return (

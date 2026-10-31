@@ -3365,4 +3365,5 @@ export const pt = {
     "debts.owed.deletedWithIncome.one": "Excluído junto com a receita do seu recebimento",
     "debts.owed.deletedWithIncome.many": "Excluído junto com as {n} receitas dos seus recebimentos",
     "home.upcoming.empty7": "Não há pagamentos nos próximos 7 dias. As datas vêm do vencimento das suas dívidas e da próxima cobrança das suas assinaturas.",
+    "seal.labelInvest": "Movimentos 100% locais",
 }
