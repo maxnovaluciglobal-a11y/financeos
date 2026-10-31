@@ -752,6 +752,9 @@ export function AppProvider({ children }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
+// Para lo que también se monta sin provider (AuthGate en ?admin=crm): null si no hay.
+export const useAppOptional = () => useContext(AppContext)
+
 export const useApp = () => {
   const ctx = useContext(AppContext)
   if (!ctx) throw new Error('useApp debe usarse dentro de AppProvider')

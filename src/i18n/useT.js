@@ -9,7 +9,7 @@
 // realmente tiene elegido, no los 4 juntos.
 
 import { useEffect, useState } from 'react'
-import { useApp } from '../context/AppContext.jsx'
+import { useAppOptional } from '../context/AppContext.jsx'
 import { translate } from './translate.js'
 // Caché de idiomas ya cargados, ahora compartida con utils/index.js (ver
 // langCache.js) — antes vivía solo acá, pero utils/index.js (catLabel/
@@ -18,7 +18,8 @@ import { translate } from './translate.js'
 import { langCache, loadLang } from './langCache.js'
 
 export function useT() {
-  const { settings } = useApp()
+  // Sin provider (panel ?admin=crm → AuthGate) no hay ajustes: español.
+  const settings = useAppOptional()?.settings
   return useTFor(settings?.language || 'es')
 }
 
