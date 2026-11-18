@@ -1,8 +1,9 @@
 // src/pages/legal/companyBlock.jsx
-// Bloque de identificación de la empresa para Términos y Privacidad (es/en/pt/de).
+// Bloque de identificación de la empresa para Términos y Privacidad (es/en/pt/de)
+// y aviso del cambio de nombre para las cuatro páginas legales.
 import React from 'react'
 import s from './legal.module.css'
-import { COMPANY, SUPPORT_EMAIL } from './legalMeta.js'
+import { COMPANY, REBRAND_NOTICE, SUPPORT_EMAIL, pickLang } from './legalMeta.js'
 
 const FORM = {
   es: 'Sociedad de responsabilidad limitada (LLC) de Florida, EE. UU.',
@@ -25,4 +26,17 @@ export function CompanyBlock({ lang }) {
       Email: {SUPPORT_EMAIL}
     </address>
   )
+}
+
+// Aviso del cambio de nombre (MOY IQ → moyiq) sobre el cuerpo de cada página.
+export function withRebrandNotice(Body, lang) {
+  function BodyWithNotice() {
+    return (
+      <>
+        <p className={s.infoBox}>{pickLang(REBRAND_NOTICE, lang)}</p>
+        <Body />
+      </>
+    )
+  }
+  return BodyWithNotice
 }

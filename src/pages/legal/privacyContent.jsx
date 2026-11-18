@@ -1,5 +1,5 @@
 // src/pages/legal/privacyContent.jsx
-// Política de Privacidad — MOY IQ, contenido por idioma (es/en/pt/de).
+// Política de Privacidad — moyiq, contenido por idioma (es/en/pt/de).
 // Sin hooks ni useT: Privacy.jsx elige el idioma y legal.test.js lo renderiza en node.
 // Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
 // Riesgos residuales: sin representante art. 27 RGPD. Double opt-in para emails promocionales: implementado (migración 20261010010000), activo con MARKETING_DOI_ENABLED.
@@ -15,13 +15,13 @@ import React from 'react'
 import s from './legal.module.css'
 import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
-import { CompanyBlock } from './companyBlock.jsx'
+import { CompanyBlock, withRebrandNotice } from './companyBlock.jsx'
 
 function EsBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Resumen:</strong> Para usar MOY IQ se necesita una cuenta gratuita, asociada a un
+        <strong>Resumen:</strong> Para usar moyiq se necesita una cuenta gratuita, asociada a un
         email. Los datos financieros del usuario se guardan en su dispositivo y no los recibimos.
         Solo salen del dispositivo si el usuario activa la sincronización (se cifran en el
         dispositivo antes de subirse; ver el punto 5 sobre la llave) o si envía un reporte PDF por
@@ -31,9 +31,9 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>1. Quién opera MOY IQ</h2>
+        <h2>1. Quién opera moyiq</h2>
         <p>
-          MOY IQ es desarrollado y distribuido por MAXNOVA & LUCI Global LLC. Esta política explica
+          Moyiq es desarrollado y distribuido por MAXNOVA & LUCI Global LLC. Esta política explica
           qué datos se quedan en el dispositivo del usuario, qué datos guardamos en nuestros
           servidores, con qué proveedores trabajamos y cómo ejercer los derechos sobre esos datos.
         </p>
@@ -184,7 +184,7 @@ function EsBody() {
           script o pedirnos la exclusión en support@moyiq.app.
         </p>
         <p>
-          MOY IQ no incluye otras herramientas de analítica (Google Analytics, Mixpanel, Hotjar u
+          Moyiq no incluye otras herramientas de analítica (Google Analytics, Mixpanel, Hotjar u
           otras) ni seguimiento de comportamiento: no se registran eventos ni clics. La app no se
           conecta con cuentas bancarias y nunca pide credenciales del banco.
         </p>
@@ -197,7 +197,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>9. Cookies y almacenamiento del navegador</h2>
         <p>
-          MOY IQ usa IndexedDB y localStorage para guardar los datos en el dispositivo. No usa
+          Moyiq usa IndexedDB y localStorage para guardar los datos en el dispositivo. No usa
           cookies de seguimiento ni de terceros. El almacenamiento que usa es el estrictamente
           necesario para que la aplicación funcione.
         </p>
@@ -227,7 +227,7 @@ function EsBody() {
         <p>
           La cuenta también se puede eliminar sin escribirnos, desde Ajustes → Eliminar la cuenta
           (o en app.moyiq.app/delete-account). Eso borra al instante la cuenta y lo que el servidor
-          guarda de ella en MOY IQ y MOY IQ Invest. Dos pasos no son automáticos y los hacemos
+          guarda de ella en moyiq y en moyiq · Inversiones. Dos pasos no son automáticos y los hacemos
           nosotros: si hay un plan Pro activo, cancelamos la suscripción en Stripe en un día hábil
           (quien prefiera hacerlo antes puede usar la página de cancelación), y si el correo estaba
           suscrito a un newsletter, lo quitamos de la lista de nuestro proveedor de envío. Solo se
@@ -257,7 +257,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>13. Menores de edad</h2>
         <p>
-          MOY IQ no está dirigido a menores de 18 años. No recopilamos intencionalmente
+          Moyiq no está dirigido a menores de 18 años. No recopilamos intencionalmente
           información de menores.
         </p>
       </div>
@@ -284,7 +284,7 @@ function EnBody() {
     <div className={s.legalWrap}>
       <div className={s.highlight}>
         <strong>Summary:</strong> You need a free account, tied to an email address, to use
-        MOY IQ. Your financial data is stored on your device and we do not receive it. It only
+        moyiq. Your financial data is stored on your device and we do not receive it. It only
         leaves the device if you turn on sync (it is encrypted on the device before upload; see
         section 5 about the key) or if you email a PDF report. We count app openings anonymously
         and without cookies (section 8), with no behavior tracking, and the app does not connect
@@ -292,9 +292,9 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>1. Who operates MOY IQ</h2>
+        <h2>1. Who operates moyiq</h2>
         <p>
-          MOY IQ is developed and distributed by MAXNOVA & LUCI Global LLC. This policy explains
+          Moyiq is developed and distributed by MAXNOVA & LUCI Global LLC. This policy explains
           which data stays on the user's device, which data we store on our servers, which service
           providers we use, and how to exercise rights over that data.
         </p>
@@ -440,7 +440,7 @@ function EnBody() {
           support@moyiq.app.
         </p>
         <p>
-          MOY IQ does not include other analytics tools (Google Analytics, Mixpanel, Hotjar, or
+          Moyiq does not include other analytics tools (Google Analytics, Mixpanel, Hotjar, or
           others) or behavior tracking: no events or clicks are recorded. The app does not connect
           to bank accounts and never asks for bank credentials.
         </p>
@@ -453,7 +453,7 @@ function EnBody() {
       <div className={s.section}>
         <h2>9. Cookies and browser storage</h2>
         <p>
-          MOY IQ uses IndexedDB and localStorage to keep data on the device. It does not use
+          Moyiq uses IndexedDB and localStorage to keep data on the device. It does not use
           tracking or third-party cookies. The storage it uses is strictly what the app needs to
           work.
         </p>
@@ -481,7 +481,7 @@ function EnBody() {
         <p>
           The account can also be deleted without writing to us, from Settings → Delete account
           (or at app.moyiq.app/delete-account). This immediately deletes the account and what the
-          server keeps about it in MOY IQ and MOY IQ Invest. Two steps are not automatic and we do
+          server keeps about it in moyiq and moyiq · Investments. Two steps are not automatic and we do
           them: if there is an active Pro plan, we cancel the subscription in Stripe within one
           business day (anyone who prefers to do it sooner can use the cancellation page), and if
           the email was subscribed to a newsletter, we remove it from our email provider's list.
@@ -510,7 +510,7 @@ function EnBody() {
       <div className={s.section}>
         <h2>13. Minors</h2>
         <p>
-          MOY IQ is not directed at people under 18. We do not knowingly collect information from
+          Moyiq is not directed at people under 18. We do not knowingly collect information from
           minors.
         </p>
       </div>
@@ -536,7 +536,7 @@ function PtBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Resumo:</strong> Para usar o MOY IQ é preciso ter uma conta gratuita, vinculada a
+        <strong>Resumo:</strong> Para usar o moyiq é preciso ter uma conta gratuita, vinculada a
         um email. Os dados financeiros do usuário ficam no dispositivo dele e nós não os
         recebemos. Eles só saem do dispositivo se o usuário ativar a sincronização (são
         criptografados no dispositivo antes do envio; veja o item 5 sobre a chave) ou se enviar um
@@ -545,9 +545,9 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>1. Quem opera o MOY IQ</h2>
+        <h2>1. Quem opera o moyiq</h2>
         <p>
-          O MOY IQ é desenvolvido e distribuído pela MAXNOVA & LUCI Global LLC. Esta política
+          O moyiq é desenvolvido e distribuído pela MAXNOVA & LUCI Global LLC. Esta política
           explica quais dados ficam no dispositivo do usuário, quais dados armazenamos em nossos
           servidores, com quais fornecedores trabalhamos e como exercer os direitos sobre esses dados.
         </p>
@@ -694,7 +694,7 @@ function PtBody() {
           support@moyiq.app.
         </p>
         <p>
-          O MOY IQ não inclui outras ferramentas de analytics (Google Analytics, Mixpanel, Hotjar
+          O moyiq não inclui outras ferramentas de analytics (Google Analytics, Mixpanel, Hotjar
           ou outras) nem rastreamento de comportamento: não são registrados eventos nem cliques. O
           app não se conecta a contas bancárias e nunca pede credenciais do banco.
         </p>
@@ -707,7 +707,7 @@ function PtBody() {
       <div className={s.section}>
         <h2>9. Cookies e armazenamento do navegador</h2>
         <p>
-          O MOY IQ usa IndexedDB e localStorage para manter os dados no dispositivo. Não usa
+          O moyiq usa IndexedDB e localStorage para manter os dados no dispositivo. Não usa
           cookies de rastreamento nem de terceiros. O armazenamento usado é o estritamente
           necessário para o funcionamento do app.
         </p>
@@ -737,7 +737,7 @@ function PtBody() {
         <p>
           A conta também pode ser excluída sem nos escrever, em Ajustes → Excluir a conta (ou em
           app.moyiq.app/delete-account). Isso apaga na hora a conta e o que o servidor guarda dela
-          no MOY IQ e no MOY IQ Invest. Dois passos não são automáticos e nós os fazemos: se houver
+          no moyiq e no moyiq · Investimentos. Dois passos não são automáticos e nós os fazemos: se houver
           um plano Pro ativo, cancelamos a assinatura na Stripe em um dia útil (quem preferir fazer
           antes pode usar a página de cancelamento), e se o email estava inscrito em uma
           newsletter, nós o retiramos da lista do nosso provedor de envio. Ficam apenas os
@@ -766,7 +766,7 @@ function PtBody() {
       <div className={s.section}>
         <h2>13. Menores de idade</h2>
         <p>
-          O MOY IQ não é direcionado a menores de 18 anos. Não coletamos intencionalmente
+          O moyiq não é direcionado a menores de 18 anos. Não coletamos intencionalmente
           informações de menores.
         </p>
       </div>
@@ -795,7 +795,7 @@ function DeBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Kurz gesagt:</strong> Für die Nutzung von MOY IQ benötigen Sie ein kostenloses
+        <strong>Kurz gesagt:</strong> Für die Nutzung von moyiq benötigen Sie ein kostenloses
         Konto mit Ihrer E-Mail-Adresse. Ihre Finanzdaten bleiben auf Ihrem Gerät; wir erhalten sie
         nicht. Sie verlassen das Gerät nur, wenn Sie die Synchronisierung aktivieren (dann vor dem
         Hochladen auf dem Gerät verschlüsselt; zum Schlüssel siehe Abschnitt 5) oder einen
@@ -971,7 +971,7 @@ function DeBody() {
         </p>
         <p>
           Darüber hinaus setzen wir keine Analysewerkzeuge, keine Werbenetzwerke und keine Cookies
-          zu Analyse- oder Werbezwecken ein. Ereignisse oder Klicks werden nicht aufgezeichnet. MOY IQ
+          zu Analyse- oder Werbezwecken ein. Ereignisse oder Klicks werden nicht aufgezeichnet. moyiq
           verbindet sich nicht mit Ihrem Bankkonto und fragt keine Bankzugangsdaten ab. Für den
           Betrieb nutzt die App ausschließlich den technisch erforderlichen Speicher Ihres Browsers
           (IndexedDB, localStorage).
@@ -1022,7 +1022,7 @@ function DeBody() {
           <li>
             Kontodaten: bis zur Löschung Ihres Kontos. Sie können das Konto jederzeit selbst unter
             Einstellungen → Konto löschen (oder unter app.moyiq.app/delete-account) löschen; die beim
-            Server gespeicherten Daten in MOY IQ und MOY IQ Invest werden dabei sofort gelöscht.
+            Server gespeicherten Daten in moyiq und moyiq · Investments werden dabei sofort gelöscht.
             Zwei Schritte erfolgen nicht automatisch und werden von uns erledigt: Bei einem aktiven
             Pro-Abo kündigen wir das Abonnement bei Stripe innerhalb eines Werktags (wer es früher
             erledigen möchte, nutzt die Kündigungsseite), und war die E-Mail-Adresse für einen
@@ -1079,7 +1079,7 @@ function DeBody() {
       <div className={s.section}>
         <h2>14. Minderjährige</h2>
         <p>
-          MOY IQ richtet sich nicht an Personen unter 18 Jahren. Wir erheben wissentlich keine
+          Moyiq richtet sich nicht an Personen unter 18 Jahren. Wir erheben wissentlich keine
           Daten von Minderjährigen.
         </p>
       </div>
@@ -1107,8 +1107,8 @@ function DeBody() {
 }
 
 export const PRIVACY_CONTENT = {
-  es: { title: 'Política de Privacidad', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: EsBody },
-  en: { title: 'Privacy Policy', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: EnBody },
-  pt: { title: 'Política de Privacidade', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: PtBody },
-  de: { title: 'Datenschutzerklärung', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: DeBody },
+  es: { title: 'Política de Privacidad', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
+  en: { title: 'Privacy Policy', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
+  pt: { title: 'Política de Privacidade', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
+  de: { title: 'Datenschutzerklärung', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
 }

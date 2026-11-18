@@ -5,13 +5,38 @@
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
 export const SUPPORT_EMAIL = 'support@moyiq.app'
 
+// Versión vigente de los textos legales (rebranding moyiq, Entrega 1). La fecha
+// de vigencia es el día del despliegue coordinado, que sale junto con la
+// adecuación a la Ley 21.719 de Chile (plan: 1-dic-2026).
+// TODO(rebrand): fijar LEGAL_EFFECTIVE_DATE al día real del despliegue antes de
+// integrar a main; el snapshot de la versión anterior está en
+// `02 - MOY IQ/03 - Legal y Cumplimiento/versiones/` (2026-11-17-app-*-antes-de-moyiq.jsx).
+export const LEGAL_VERSION = '2026-12'
+export const LEGAL_EFFECTIVE_DATE = '2026-12-01'
+
+const DATE_LOCALE = { es: 'es-ES', en: 'en-US', pt: 'pt-BR', de: 'de-DE' }
+function effectiveLabel(lang) {
+  const d = new Date(`${LEGAL_EFFECTIVE_DATE}T12:00:00Z`)
+  const day = new Intl.DateTimeFormat(DATE_LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d)
+  return { es: `Vigente desde el ${day}`, en: `Effective ${day}`, pt: `Em vigor desde ${day}`, de: `Gültig ab ${day}` }[lang]
+}
+
 // Fecha visible en el encabezado de cada página legal. Al cambiar el texto de
-// fondo de cualquiera de las cuatro páginas, actualizar los cuatro idiomas.
+// fondo de cualquiera de las cuatro páginas, cambiar LEGAL_EFFECTIVE_DATE.
 export const LAST_UPDATED = {
-  es: 'Última actualización: octubre 2026',
-  en: 'Last updated: October 2026',
-  pt: 'Última atualização: outubro de 2026',
-  de: 'Stand: Oktober 2026',
+  es: effectiveLabel('es'),
+  en: effectiveLabel('en'),
+  pt: effectiveLabel('pt'),
+  de: effectiveLabel('de'),
+}
+
+// Aviso del cambio de nombre, al inicio de las cuatro páginas legales.
+// "MOY IQ" aparece aquí a propósito (alias permitido en copyLint.test.js).
+export const REBRAND_NOTICE = {
+  es: 'MOY IQ ahora se llama moyiq; el responsable y el tratamiento de los datos no cambian.',
+  en: 'MOY IQ is now called moyiq; the controller and the processing of the data do not change.',
+  pt: 'O MOY IQ agora se chama moyiq; o controlador e o tratamento dos dados não mudam.',
+  de: 'MOY IQ heißt jetzt moyiq; der Verantwortliche und die Verarbeitung der Daten ändern sich nicht.',
 }
 
 export const LEGAL_LANGS = ['es', 'en', 'pt', 'de']

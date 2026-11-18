@@ -1,5 +1,5 @@
 // src/pages/legal/Terms.jsx
-// Términos de Uso — MOY IQ (es/en/pt/de, según settings.language).
+// Términos de Uso — moyiq (es/en/pt/de, según settings.language).
 // El texto vive en ./termsContent.jsx (sin hooks, testeado en legal.test.js); este archivo
 // solo elige el idioma. Idioma desconocido → español.
 

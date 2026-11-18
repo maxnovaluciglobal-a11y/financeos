@@ -1,5 +1,5 @@
 // src/pages/legal/disclaimerContent.jsx
-// Aviso legal / disclaimer financiero — MOY IQ, contenido por idioma (es/en/pt/de).
+// Aviso legal / disclaimer financiero — moyiq, contenido por idioma (es/en/pt/de).
 // Sin hooks ni useT: Disclaimer.jsx elige el idioma y legal.test.js lo renderiza en node.
 // ACTUALIZADO 2026-10: fecha visible, señales de Coach/Modo Asesor y herramientas fiscales
 // (alineado con en/disclaimer.html de la landing), datos locales.
@@ -9,20 +9,21 @@
 import React from 'react'
 import s from './legal.module.css'
 import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
+import { withRebrandNotice } from './companyBlock.jsx'
 
 function EsBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.warnBox} style={{ marginBottom: 0 }}>
-        <strong>MOY IQ es una herramienta de organización financiera personal.</strong>{' '}
+        <strong>Moyiq es una herramienta de organización financiera personal.</strong>{' '}
         No es un asesor financiero, tributario ni de inversión, ni una entidad regulada. Los datos
         y análisis que muestra se basan exclusivamente en la información que ingresa el usuario y
         no constituyen recomendaciones profesionales.
       </div>
 
       <div className={s.section}>
-        <h2>Qué es MOY IQ</h2>
-        <p>MOY IQ es una herramienta de software que permite:</p>
+        <h2>Qué es moyiq</h2>
+        <p>Moyiq es una herramienta de software que permite:</p>
         <ul className={s.list}>
           <li>Registrar y categorizar ingresos y gastos</li>
           <li>Establecer presupuestos mensuales por categoría</li>
@@ -33,7 +34,7 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>Qué no es MOY IQ</h2>
+        <h2>Qué no es moyiq</h2>
         <ul className={s.listWarn}>
           <li>No es un asesor financiero ni reemplaza la consulta con uno</li>
           <li>No es un asesor tributario ni fiscal</li>
@@ -47,8 +48,8 @@ function EsBody() {
       <div className={s.section}>
         <h2>No es asesoría financiera</h2>
         <p>
-          Nada en MOY IQ constituye asesoría financiera, tributaria, contable, legal ni de
-          inversión. Las señales de MOY IQ Coach y del Modo Asesor son orientativas, se basan en
+          Nada en moyiq constituye asesoría financiera, tributaria, contable, legal ni de
+          inversión. Las señales de moyiq Coach y del Modo Asesor son orientativas, se basan en
           los datos que ingresa el usuario y no reemplazan el criterio de un profesional
           certificado.
         </p>
@@ -57,7 +58,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>Sobre las proyecciones y cálculos</h2>
         <p>
-          Las proyecciones de flujo de caja, estimaciones de ahorro y análisis que muestra MOY IQ
+          Las proyecciones de flujo de caja, estimaciones de ahorro y análisis que muestra moyiq
           son <strong>cálculos matemáticos basados en los datos históricos que ingresó el
           usuario</strong>. No consideran factores externos, cambios en el mercado, inflación
           futura, cambios laborales ni otros eventos impredecibles.
@@ -82,7 +83,7 @@ function EsBody() {
         <p>
           El usuario es responsable de la exactitud de los datos que ingresa y de las decisiones
           que toma con base en la información que muestra la herramienta. MAXNOVA & LUCI Global LLC
-          no asume responsabilidad por pérdidas o perjuicios derivados del uso de MOY IQ, en la
+          no asume responsabilidad por pérdidas o perjuicios derivados del uso de moyiq, en la
           medida que lo permita la ley aplicable.
         </p>
       </div>
@@ -90,12 +91,12 @@ function EsBody() {
       <div className={s.section}>
         <h2>Para asesores y profesionales</h2>
         <p>
-          Quien use MOY IQ como asesor financiero, coach, contador o educador, como herramienta
+          Quien use moyiq como asesor financiero, coach, contador o educador, como herramienta
           complementaria a su servicio profesional, es responsable de:
         </p>
         <ul className={s.list}>
           <li>Comunicar con claridad a sus clientes la naturaleza de la herramienta</li>
-          <li>No presentar MOY IQ como sustituto de asesoría profesional</li>
+          <li>No presentar moyiq como sustituto de asesoría profesional</li>
           <li>Cumplir con las regulaciones aplicables en su jurisdicción</li>
         </ul>
       </div>
@@ -121,15 +122,15 @@ function EnBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.warnBox} style={{ marginBottom: 0 }}>
-        <strong>MOY IQ is a personal finance organization tool.</strong>{' '}
+        <strong>Moyiq is a personal finance organization tool.</strong>{' '}
         It is not a financial, tax, or investment advisor, nor a regulated entity. The data and
         analyses it shows are based only on the information the user enters and are not
         professional recommendations.
       </div>
 
       <div className={s.section}>
-        <h2>What MOY IQ is</h2>
-        <p>MOY IQ is a software tool that lets you:</p>
+        <h2>What moyiq is</h2>
+        <p>Moyiq is a software tool that lets you:</p>
         <ul className={s.list}>
           <li>Record and categorize income and expenses</li>
           <li>Set monthly budgets by category</li>
@@ -140,7 +141,7 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>What MOY IQ is not</h2>
+        <h2>What moyiq is not</h2>
         <ul className={s.listWarn}>
           <li>Not a financial advisor, nor a replacement for consulting one</li>
           <li>Not a tax advisor</li>
@@ -154,8 +155,8 @@ function EnBody() {
       <div className={s.section}>
         <h2>Not financial advice</h2>
         <p>
-          Nothing in MOY IQ is financial, tax, accounting, legal, or investment advice. The signals
-          generated by MOY IQ Coach and Advisor Mode are for guidance only, are based on the data
+          Nothing in moyiq is financial, tax, accounting, legal, or investment advice. The signals
+          generated by moyiq Coach and Advisor Mode are for guidance only, are based on the data
           the user enters, and do not replace the judgment of a certified professional.
         </p>
       </div>
@@ -163,7 +164,7 @@ function EnBody() {
       <div className={s.section}>
         <h2>About projections and calculations</h2>
         <p>
-          The cash-flow projections, savings estimates, and analyses MOY IQ shows are{' '}
+          The cash-flow projections, savings estimates, and analyses moyiq shows are{' '}
           <strong>mathematical calculations based on the historical data the user entered</strong>.
           They do not account for external factors, market changes, future inflation, changes in
           employment, or other unpredictable events.
@@ -189,19 +190,19 @@ function EnBody() {
           The user is responsible for the accuracy of the data they enter and for the decisions
           they make based on what the tool shows. To the extent permitted by applicable law,
           MAXNOVA & LUCI Global LLC assumes no responsibility for losses or damages arising from
-          the use of MOY IQ.
+          the use of moyiq.
         </p>
       </div>
 
       <div className={s.section}>
         <h2>For advisors and professionals</h2>
         <p>
-          Anyone using MOY IQ as a financial advisor, coach, accountant, or educator, as a
+          Anyone using moyiq as a financial advisor, coach, accountant, or educator, as a
           complement to their professional service, is responsible for:
         </p>
         <ul className={s.list}>
           <li>Clearly explaining the nature of the tool to their clients</li>
-          <li>Not presenting MOY IQ as a substitute for professional advice</li>
+          <li>Not presenting moyiq as a substitute for professional advice</li>
           <li>Complying with the regulations that apply in their jurisdiction</li>
         </ul>
       </div>
@@ -227,15 +228,15 @@ function PtBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.warnBox} style={{ marginBottom: 0 }}>
-        <strong>O MOY IQ é uma ferramenta de organização financeira pessoal.</strong>{' '}
+        <strong>O moyiq é uma ferramenta de organização financeira pessoal.</strong>{' '}
         Não é um consultor financeiro, tributário ou de investimentos, nem uma entidade regulada.
         Os dados e análises que mostra baseiam-se exclusivamente nas informações que o usuário
         insere e não constituem recomendações profissionais.
       </div>
 
       <div className={s.section}>
-        <h2>O que é o MOY IQ</h2>
-        <p>O MOY IQ é uma ferramenta de software que permite:</p>
+        <h2>O que é o moyiq</h2>
+        <p>O moyiq é uma ferramenta de software que permite:</p>
         <ul className={s.list}>
           <li>Registrar e categorizar receitas e despesas</li>
           <li>Definir orçamentos mensais por categoria</li>
@@ -246,7 +247,7 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>O que o MOY IQ não é</h2>
+        <h2>O que o moyiq não é</h2>
         <ul className={s.listWarn}>
           <li>Não é um consultor financeiro nem substitui a consulta a um</li>
           <li>Não é um consultor tributário nem fiscal</li>
@@ -260,8 +261,8 @@ function PtBody() {
       <div className={s.section}>
         <h2>Não é aconselhamento financeiro</h2>
         <p>
-          Nada no MOY IQ constitui aconselhamento financeiro, tributário, contábil, jurídico ou de
-          investimentos. Os sinais do MOY IQ Coach e do Modo Consultor são orientativos, baseiam-se
+          Nada no moyiq constitui aconselhamento financeiro, tributário, contábil, jurídico ou de
+          investimentos. Os sinais do moyiq Coach e do Modo Consultor são orientativos, baseiam-se
           nos dados que o usuário insere e não substituem o julgamento de um profissional
           certificado.
         </p>
@@ -270,7 +271,7 @@ function PtBody() {
       <div className={s.section}>
         <h2>Sobre as projeções e cálculos</h2>
         <p>
-          As projeções de fluxo de caixa, estimativas de poupança e análises que o MOY IQ mostra
+          As projeções de fluxo de caixa, estimativas de poupança e análises que o moyiq mostra
           são <strong>cálculos matemáticos baseados nos dados históricos que o usuário
           inseriu</strong>. Não consideram fatores externos, mudanças no mercado, inflação futura,
           mudanças de emprego nem outros eventos imprevisíveis.
@@ -296,19 +297,19 @@ function PtBody() {
           O usuário é responsável pela exatidão dos dados que insere e pelas decisões que toma com
           base nas informações que a ferramenta mostra. Na medida permitida pela lei aplicável, a
           MAXNOVA & LUCI Global LLC não assume responsabilidade por perdas ou prejuízos decorrentes
-          do uso do MOY IQ.
+          do uso do moyiq.
         </p>
       </div>
 
       <div className={s.section}>
         <h2>Para consultores e profissionais</h2>
         <p>
-          Quem usa o MOY IQ como consultor financeiro, coach, contador ou educador, como
+          Quem usa o moyiq como consultor financeiro, coach, contador ou educador, como
           ferramenta complementar ao seu serviço profissional, é responsável por:
         </p>
         <ul className={s.list}>
           <li>Comunicar claramente aos seus clientes a natureza da ferramenta</li>
-          <li>Não apresentar o MOY IQ como substituto de aconselhamento profissional</li>
+          <li>Não apresentar o moyiq como substituto de aconselhamento profissional</li>
           <li>Cumprir as regulações aplicáveis na sua jurisdição</li>
         </ul>
       </div>
@@ -334,15 +335,15 @@ function DeBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.warnBox} style={{ marginBottom: 0 }}>
-        <strong>MOY IQ ist ein Werkzeug zur Organisation persönlicher Finanzen.</strong>{' '}
+        <strong>Moyiq ist ein Werkzeug zur Organisation persönlicher Finanzen.</strong>{' '}
         Es ist keine Finanz-, Steuer- oder Anlageberatung und kein reguliertes Institut. Die
         angezeigten Daten und Auswertungen beruhen ausschließlich auf Ihren eigenen Angaben und
         stellen keine professionellen Empfehlungen dar.
       </div>
 
       <div className={s.section}>
-        <h2>Was MOY IQ ist</h2>
-        <p>MOY IQ ist eine Software, mit der Sie:</p>
+        <h2>Was moyiq ist</h2>
+        <p>Moyiq ist eine Software, mit der Sie:</p>
         <ul className={s.list}>
           <li>Einnahmen und Ausgaben erfassen und kategorisieren</li>
           <li>Monatliche Budgets je Kategorie festlegen</li>
@@ -353,7 +354,7 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>Was MOY IQ nicht ist</h2>
+        <h2>Was moyiq nicht ist</h2>
         <ul className={s.listWarn}>
           <li>Keine Finanzberatung und kein Ersatz für eine solche</li>
           <li>Keine Steuerberatung</li>
@@ -367,8 +368,8 @@ function DeBody() {
       <div className={s.section}>
         <h2>Keine Finanzberatung</h2>
         <p>
-          Nichts in MOY IQ stellt eine Finanz-, Steuer-, Buchhaltungs-, Rechts- oder Anlageberatung
-          dar. Die Hinweise von MOY IQ Coach und des Beratermodus dienen nur der Orientierung,
+          Nichts in moyiq stellt eine Finanz-, Steuer-, Buchhaltungs-, Rechts- oder Anlageberatung
+          dar. Die Hinweise von moyiq Coach und des Beratermodus dienen nur der Orientierung,
           beruhen auf Ihren Angaben und ersetzen nicht das Urteil einer qualifizierten Fachperson.
         </p>
       </div>
@@ -376,7 +377,7 @@ function DeBody() {
       <div className={s.section}>
         <h2>Prognosen und Berechnungen</h2>
         <p>
-          Cashflow-Prognosen, Sparschätzungen und Auswertungen in MOY IQ sind{' '}
+          Cashflow-Prognosen, Sparschätzungen und Auswertungen in moyiq sind{' '}
           <strong>mathematische Berechnungen auf Grundlage der von Ihnen erfassten historischen
           Daten</strong>. Externe Faktoren, Marktveränderungen, künftige Inflation, berufliche
           Veränderungen oder andere unvorhersehbare Ereignisse berücksichtigen sie nicht.
@@ -410,12 +411,12 @@ function DeBody() {
       <div className={s.section}>
         <h2>Für Beraterinnen, Berater und andere Fachleute</h2>
         <p>
-          Wenn Sie MOY IQ als Finanzberater, Coach, Buchhalter oder Lehrender ergänzend zu Ihrer
+          Wenn Sie moyiq als Finanzberater, Coach, Buchhalter oder Lehrender ergänzend zu Ihrer
           beruflichen Tätigkeit nutzen, sind Sie dafür verantwortlich:
         </p>
         <ul className={s.list}>
           <li>Ihren Klientinnen und Klienten die Art des Werkzeugs klar zu erklären</li>
-          <li>MOY IQ nicht als Ersatz für professionelle Beratung darzustellen</li>
+          <li>Moyiq nicht als Ersatz für professionelle Beratung darzustellen</li>
           <li>Die in Ihrem Land geltenden Vorschriften einzuhalten</li>
         </ul>
       </div>
@@ -439,8 +440,8 @@ function DeBody() {
 }
 
 export const DISCLAIMER_CONTENT = {
-  es: { title: 'Aviso Legal y Disclaimer', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: EsBody },
-  en: { title: 'Legal Notice & Disclaimer', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: EnBody },
-  pt: { title: 'Aviso Legal e Disclaimer', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: PtBody },
-  de: { title: 'Haftungshinweis', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: DeBody },
+  es: { title: 'Aviso Legal y Disclaimer', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
+  en: { title: 'Legal Notice & Disclaimer', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
+  pt: { title: 'Aviso Legal e Disclaimer', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
+  de: { title: 'Haftungshinweis', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
 }

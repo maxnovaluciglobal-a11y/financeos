@@ -1,5 +1,5 @@
 // src/pages/legal/Disclaimer.jsx
-// Aviso legal / disclaimer financiero — MOY IQ (es/en/pt/de, según settings.language).
+// Aviso legal / disclaimer financiero — moyiq (es/en/pt/de, según settings.language).
 // El texto vive en ./disclaimerContent.jsx (sin hooks, testeado en legal.test.js); este archivo
 // solo elige el idioma. Idioma desconocido → español.
 
