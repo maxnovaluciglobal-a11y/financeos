@@ -115,7 +115,7 @@ describe('C-20 · sesión de la cuenta dueña y tope diario', () => {
     await sendReportEmail({ to: 'c@x.com', clientName: '', month: '2026-09', pdfBase64: 'aG9sYQ==', filename: 'r.pdf', senderEmail: 'ase<sor>@x.com' }, CONFIG)
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(body.reply_to).toBe('ase<sor>@x.com')
-    expect(body.html).toContain('Enviado por ase&lt;sor&gt;@x.com con MOY IQ')
+    expect(body.html).toContain('Enviado por ase&lt;sor&gt;@x.com con moyiq')
     expect(body.html).not.toMatch(/¡|!(?!doctype html>)/)
   })
 
@@ -206,7 +206,7 @@ describe('C-05 · clave de Resend del reporte por correo', () => {
   const configFromEnv = (vars: Record<string, string | undefined>) => ({
     supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key',
     resendApiKey: resolveResendApiKey((name) => vars[name]),
-    fromEmail: 'MOY IQ <licencias@moyiq.app>',
+    fromEmail: 'moyiq <licencias@moyiq.app>',
   })
 
   it('con las dos claves cargadas, el reporte sale con NURTURE_RESEND_API_KEY', async () => {
@@ -217,7 +217,7 @@ describe('C-05 · clave de Resend del reporte por correo', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('https://api.resend.com/emails')
     expect(init.headers.Authorization).toBe('Bearer re_nurture')
-    expect(JSON.parse(init.body).from).toBe('MOY IQ <licencias@moyiq.app>')
+    expect(JSON.parse(init.body).from).toBe('moyiq <licencias@moyiq.app>')
   })
 
   it('si solo existe RESEND_API_KEY se usa como respaldo', async () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { encryptBackupFile, decryptBackupFile, isEncryptedBackupText, passphraseOk } from './backupFile.js'
 
-const backup = { _meta: { app: 'MOY IQ' }, incomes: [{ id: 'a', source: 'Sueldo ñandú', amount: 1000 }], expenses: [] }
+const backup = { _meta: { app: 'moyiq' }, incomes: [{ id: 'a', source: 'Sueldo ñandú', amount: 1000 }], expenses: [] }
 
 describe('respaldo local cifrado (DAT-15)', () => {
   it('ida y vuelta; el archivo no contiene los datos en claro', async () => {

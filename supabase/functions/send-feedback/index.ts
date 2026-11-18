@@ -12,13 +12,14 @@ import { corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
 import { checkTurnstile, clientIp, extractTurnstileToken, turnstileConfigFromEnv, turnstileErrorBody } from "../_shared/turnstile.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const config: FeedbackConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((n) => Deno.env.get(n)),
   supportEmail: Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app",
-  fromEmail: "MOY IQ <hola@moyiq.app>",
+  fromEmail: brandedSender(null, "hola@moyiq.app"),
 };
 
 function json(body: unknown, status: number, origin: string | null) {

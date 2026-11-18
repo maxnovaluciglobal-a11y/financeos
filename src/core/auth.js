@@ -1,6 +1,6 @@
 // src/core/auth.js
 // Login obligatorio — email/contraseña + Google. Requerido para usar la app
-// desde el 12-sep-2026 (antes MOY IQ no tenía ningún concepto de cuenta).
+// desde el 12-sep-2026 (antes moyiq no tenía ningún concepto de cuenta).
 import { authClient, AUTH_ENABLED } from './authClient.js'
 import { logClientError } from '../utils/errorLog.js'
 import { withCaptcha } from './turnstile.js'
@@ -62,7 +62,7 @@ export async function signUpWithPassword(email, password, lang, captchaToken) {
   if (!authClient) return { error: 'auth_not_configured' }
   // emailRedirectTo: sin esto, el correo de confirmación de signup usa el
   // Site URL único del proyecto (compartido con Invest) en vez del origen
-  // real — auth-email-hook/emailHookLogic.ts detecta la marca (MOY IQ vs
+  // real — auth-email-hook/emailHookLogic.ts detecta la marca (moyiq vs
   // Invest) mirando este valor, igual que ya hacía resetPasswordForEmail.
   const { data, error } = await authClient.auth.signUp({
     email,

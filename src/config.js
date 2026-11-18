@@ -8,7 +8,7 @@
 const config = {
 
   // ── IDENTIDAD ──────────────────────────────────────────────────────────────
-  // Rebranding MOY IQ: mergeado y en producción (10-sep-2026). Falta búsqueda
+  // Rebranding moyiq: mergeado y en producción (10-sep-2026). Falta búsqueda
   // de marca paga confirmada (alcance legal, no de código) — ver memoria
   // financeos_renaming_moy_ronda. Walter compró moyiq.app el 11-sep sin
   // esperar esa confirmación. moyiq.app es ahora el dominio PRIMARIO (11-sep):
@@ -16,7 +16,7 @@ const config = {
   // El dominio anterior de FinanceOS se desconectó el 20-oct-2026 (decisión
   // de Walter): la app solo vive en app.moyiq.app y demo.moyiq.app.
   app: {
-    name:        'MOY IQ',              // Nombre que aparece en sidebar y título
+    name:        'moyiq',              // Nombre que aparece en sidebar y título
     tagline:     'Tu dinero, bajo control total',
     version:     '1.5.0',
     supportEmail:'support@moyiq.app',  // Aparece en Ajustes > soporte
@@ -188,7 +188,7 @@ const config = {
   // ── ONBOARDING ─────────────────────────────────────────────────────────────
   onboarding: {
     enabled:       true,
-    welcomeTitle:  'Bienvenido a MOY IQ',
+    welcomeTitle:  'Bienvenido a moyiq',
     welcomeText:   'Tus datos se guardan en este dispositivo. Cifrado de extremo a extremo.',
     steps: [
       { id: 'currency',    title: 'Elige tu moneda',         desc: '¿Con qué moneda trabajas día a día?' },

@@ -33,8 +33,8 @@ describe('aviso de errores de Edge Functions (C-11)', () => {
     expect(mail).toHaveLength(1);
     const body = JSON.parse(mail[0].init.body);
     expect(body.to).toEqual(['maxnovaluciglobal@gmail.com']);
-    expect(body.from).toBe('MOY IQ <hola@moyiq.app>');
-    expect(body.subject).toBe('[MOY IQ] errores en Edge Functions: 3 (stripe-webhook, send-optin-confirmation)');
+    expect(body.from).toBe('moyiq <hola@moyiq.app>');
+    expect(body.subject).toBe('[moyiq] errores en Edge Functions: 3 (stripe-webhook, send-optin-confirmation)');
     expect(body.text).toContain('stripe-webhook: 2 (HTTP 500)');
     expect(body.text).toContain('último: HTTP 500: error issuing license');
     const patch = calls.find((c) => c.init?.method === 'PATCH')!;
@@ -66,6 +66,6 @@ describe('aviso de errores de Edge Functions (C-11)', () => {
 
   it('el asunto corta en 3 funciones', () => {
     const m = edgeErrorEmail([row(1, 'a'), row(2, 'b'), row(3, 'c'), row(4, 'd')]);
-    expect(m.subject).toBe('[MOY IQ] errores en Edge Functions: 4 (a, b, c…)');
+    expect(m.subject).toBe('[moyiq] errores en Edge Functions: 4 (a, b, c…)');
   });
 });

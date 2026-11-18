@@ -36,8 +36,8 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
       body: `
       <h2>Tu cuenta ya está activa</h2>
       <p>Hola,</p>
-      <p>Tu cuenta de MOY IQ ya está lista. Sin nada cargado todavía, el Dashboard no tiene mucho que mostrarte — el primer paso que rinde es importar tus movimientos.</p>
-      <p>Ve a Movimientos → Importar y sube el archivo que descargues de tu banco (CSV o Excel, la mayoría de los bancos de la región lo dan así). MOY IQ categoriza automáticamente lo que reconoce; lo que no, lo dejas en "Importado" y lo ajustas cuando quieras.</p>
+      <p>Tu cuenta de moyiq ya está lista. Sin nada cargado todavía, el Dashboard no tiene mucho que mostrarte — el primer paso que rinde es importar tus movimientos.</p>
+      <p>Ve a Movimientos → Importar y sube el archivo que descargues de tu banco (CSV o Excel, la mayoría de los bancos de la región lo dan así). Moyiq categoriza automáticamente lo que reconoce; lo que no, lo dejas en "Importado" y lo ajustas cuando quieras.</p>
       <p>No hace falta cargar todo el historial. Con el último mes alcanza para que el Dashboard y el IQ Score empiecen a mostrar algo real.</p>
       ${emailButton(appLink("import", "starter-welcome"), `Importar movimientos →`)}
       <p style="${EMAIL_MUTED_STYLE}">Los datos se cifran en tu dispositivo antes de sincronizarse. Nadie del equipo puede ver tus montos ni categorías.</p>
@@ -86,8 +86,8 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
       body: `
       <h2>Your account is active</h2>
       <p>Hello,</p>
-      <p>Your MOY IQ account is ready. With nothing loaded yet, the Dashboard has little to show you — the first step that pays off is importing your transactions.</p>
-      <p>Go to Import and upload the file you download from your bank (CSV or Excel; most banks provide it that way). MOY IQ categorizes what it recognizes automatically; anything else stays under "Imported" and you adjust it whenever you want.</p>
+      <p>Your moyiq account is ready. With nothing loaded yet, the Dashboard has little to show you — the first step that pays off is importing your transactions.</p>
+      <p>Go to Import and upload the file you download from your bank (CSV or Excel; most banks provide it that way). Moyiq categorizes what it recognizes automatically; anything else stays under "Imported" and you adjust it whenever you want.</p>
       <p>You don't need to load your full history. The last month is enough for the Dashboard and the IQ Score to start showing something real.</p>
       ${emailButton(appLink("import", "starter-welcome"), `Import transactions →`)}
       <p style="${EMAIL_MUTED_STYLE}">Your data is encrypted on your device before it syncs. No one on the team can see your amounts or categories.</p>
@@ -135,8 +135,8 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
       body: `
       <h2>Sua conta já está ativa</h2>
       <p>Olá,</p>
-      <p>Sua conta do MOY IQ já está pronta. Sem nada carregado ainda, o Painel não tem muito para mostrar — o primeiro passo que rende é importar seus movimentos.</p>
-      <p>Vá em Importar e envie o arquivo que você baixar do seu banco (CSV ou Excel, a maioria dos bancos fornece assim). O MOY IQ categoriza automaticamente o que reconhece; o que não reconhece fica em "Importado" e você ajusta quando quiser.</p>
+      <p>Sua conta do moyiq já está pronta. Sem nada carregado ainda, o Painel não tem muito para mostrar — o primeiro passo que rende é importar seus movimentos.</p>
+      <p>Vá em Importar e envie o arquivo que você baixar do seu banco (CSV ou Excel, a maioria dos bancos fornece assim). O moyiq categoriza automaticamente o que reconhece; o que não reconhece fica em "Importado" e você ajusta quando quiser.</p>
       <p>Não é preciso carregar todo o histórico. O último mês basta para que o Painel e o IQ Score comecem a mostrar algo real.</p>
       ${emailButton(appLink("import", "starter-welcome"), `Importar movimentos →`)}
       <p style="${EMAIL_MUTED_STYLE}">Os dados são criptografados no seu dispositivo antes de sincronizar. Ninguém da equipe pode ver seus valores nem categorias.</p>
@@ -184,8 +184,8 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
       body: `
       <h2>Ihr Konto ist aktiv</h2>
       <p>Guten Tag,</p>
-      <p>Ihr MOY IQ-Konto ist eingerichtet. Solange noch nichts geladen ist, zeigt das Dashboard wenig — der erste Schritt, der sich lohnt, ist der Import Ihrer Buchungen.</p>
-      <p>Öffnen Sie Importieren und laden Sie die Datei hoch, die Sie bei Ihrer Bank herunterladen (CSV oder Excel, die meisten Banken bieten das an). MOY IQ ordnet erkannte Buchungen automatisch einer Kategorie zu; der Rest bleibt unter "Importiert" und lässt sich jederzeit anpassen.</p>
+      <p>Ihr moyiq-Konto ist eingerichtet. Solange noch nichts geladen ist, zeigt das Dashboard wenig — der erste Schritt, der sich lohnt, ist der Import Ihrer Buchungen.</p>
+      <p>Öffnen Sie Importieren und laden Sie die Datei hoch, die Sie bei Ihrer Bank herunterladen (CSV oder Excel, die meisten Banken bieten das an). Moyiq ordnet erkannte Buchungen automatisch einer Kategorie zu; der Rest bleibt unter "Importiert" und lässt sich jederzeit anpassen.</p>
       <p>Die gesamte Historie ist nicht nötig. Der letzte Monat reicht, damit Dashboard und IQ Score etwas Reales zeigen.</p>
       ${emailButton(appLink("import", "starter-welcome"), `Buchungen importieren →`)}
       <p style="${EMAIL_MUTED_STYLE}">Die Daten werden auf Ihrem Gerät verschlüsselt, bevor sie synchronisiert werden. Niemand im Team kann Ihre Beträge oder Kategorien sehen.</p>

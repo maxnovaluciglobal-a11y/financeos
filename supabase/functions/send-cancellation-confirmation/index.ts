@@ -18,7 +18,7 @@
 //
 // Secrets (todos ya existen, reusados de las funciones de nurture/alertas):
 //   NURTURE_RESEND_API_KEY (o RESEND_API_KEY) ← key de Resend scoped a moyiq.app
-//   NURTURE_FROM_EMAIL                         ← "MOY IQ <hola@moyiq.app>"
+//   NURTURE_FROM_EMAIL                         ← "moyiq <hola@moyiq.app>"
 //   ALERT_EMAIL                                ← copia interna (default maxnovaluciglobal@gmail.com)
 //   SUPPORT_EMAIL (opcional)                   ← default support@moyiq.app
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY    ← los inyecta Supabase
@@ -26,6 +26,7 @@
 import { processCancellation, type CancellationConfig } from "./cancellationLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const SUPPORT = Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app";
 
@@ -33,7 +34,7 @@ const config: CancellationConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: Deno.env.get("NURTURE_RESEND_API_KEY") ?? Deno.env.get("RESEND_API_KEY"),
-  fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL"), "hola@moyiq.app"),
   replyTo: SUPPORT,
   internalTo: [SUPPORT, Deno.env.get("ALERT_EMAIL") ?? "maxnovaluciglobal@gmail.com"],
 };

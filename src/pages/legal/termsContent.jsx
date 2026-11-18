@@ -1,5 +1,5 @@
 // src/pages/legal/termsContent.jsx
-// Términos de Uso — MOY IQ, contenido por idioma (es/en/pt/de).
+// Términos de Uso — moyiq, contenido por idioma (es/en/pt/de).
 // Sin hooks ni useT: Terms.jsx elige el idioma y legal.test.js lo renderiza en node.
 // Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
 // Mismos hechos que ../financeos-landing/terms.html, en/terms.html y de/agb.html (rama
@@ -16,13 +16,13 @@ import React from 'react'
 import s from './legal.module.css'
 import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
-import { CompanyBlock } from './companyBlock.jsx'
+import { CompanyBlock, withRebrandNotice } from './companyBlock.jsx'
 
 function EsBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Importante:</strong> MOY IQ es una herramienta de organización y seguimiento
+        <strong>Importante:</strong> moyiq es una herramienta de organización y seguimiento
         financiero personal. No es un asesor financiero, tributario ni de inversión, y no
         reemplaza la consulta con profesionales certificados.
       </div>
@@ -30,9 +30,9 @@ function EsBody() {
       <div className={s.section}>
         <h2>1. Aceptación de los términos</h2>
         <p>
-          Al crear una cuenta y usar MOY IQ, el usuario acepta estos Términos de Uso en su
+          Al crear una cuenta y usar moyiq, el usuario acepta estos Términos de Uso en su
           totalidad. Si no está de acuerdo con alguna parte, debe dejar de usar la herramienta.
-          MOY IQ es operado por MAXNOVA & LUCI Global LLC.
+          Moyiq es operado por MAXNOVA & LUCI Global LLC.
         </p>
         <CompanyBlock lang="es" />
       </div>
@@ -40,11 +40,11 @@ function EsBody() {
       <div className={s.section}>
         <h2>2. Naturaleza del servicio</h2>
         <p>
-          MOY IQ es una herramienta de software para <strong>organización, diagnóstico y
+          Moyiq es una herramienta de software para <strong>organización, diagnóstico y
           seguimiento financiero personal</strong>. Su propósito es ayudar a registrar,
           visualizar y comprender las finanzas personales.
         </p>
-        <p>MOY IQ <strong>no es</strong> y no debe interpretarse como:</p>
+        <p>moyiq <strong>no es</strong> y no debe interpretarse como:</p>
         <ul className={s.list}>
           <li>Asesor financiero, tributario, contable ni de inversión</li>
           <li>Institución bancaria, financiera ni entidad regulada</li>
@@ -53,7 +53,7 @@ function EsBody() {
           <li>Herramienta de planificación fiscal o tributaria</li>
         </ul>
         <p>
-          Las proyecciones, cálculos y señales que genera (incluidas las de MOY IQ Coach) son
+          Las proyecciones, cálculos y señales que genera (incluidas las de moyiq Coach) son
           orientativas y se basan exclusivamente en los datos ingresados por el usuario. No
           constituyen recomendaciones financieras.
         </p>
@@ -73,7 +73,7 @@ function EsBody() {
         <h2>4. Planes y licencias</h2>
         <ul className={s.list}>
           <li><strong>Plan Starter (gratis):</strong> licencia de uso personal no exclusiva, sin costo y sin límite de tiempo. No permite uso profesional con clientes, redistribución ni entrega a terceros.</li>
-          <li><strong>Plan Pro (suscripción mensual de US$4.99 o anual de US$39.99):</strong> todo lo de Starter más las funciones Pro, incluido el Modo Asesor. Permite el uso profesional de MOY IQ con hasta 30 clientes mientras la suscripción esté activa. No permite reventa del software, compartir la clave de licencia ni sublicenciamiento.</li>
+          <li><strong>Plan Pro (suscripción mensual de US$4.99 o anual de US$39.99):</strong> todo lo de Starter más las funciones Pro, incluido el Modo Asesor. Permite el uso profesional de moyiq con hasta 30 clientes mientras la suscripción esté activa. No permite reventa del software, compartir la clave de licencia ni sublicenciamiento.</li>
         </ul>
         <p>
           El detalle por plan está en el documento de Licencia.
@@ -132,7 +132,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>11. Almacenamiento local y pérdida de datos</h2>
         <p>
-          MOY IQ almacena los datos financieros localmente en el dispositivo del usuario. Salvo
+          Moyiq almacena los datos financieros localmente en el dispositivo del usuario. Salvo
           que el usuario active la sincronización cifrada opcional,{' '}
           <strong>MAXNOVA & LUCI Global LLC no almacena ni puede recuperar esos datos</strong>{' '}
           (y aun con sincronización activa, solo almacena datos cifrados que no puede leer).
@@ -163,7 +163,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>13. Propiedad intelectual</h2>
         <p>
-          El código fuente, el diseño y el contenido de MOY IQ son propiedad de MAXNOVA & LUCI
+          El código fuente, el diseño y el contenido de moyiq son propiedad de MAXNOVA & LUCI
           Global LLC y están protegidos por derechos de autor. La licencia no transfiere derechos
           de propiedad intelectual.
         </p>
@@ -171,7 +171,7 @@ function EsBody() {
 
       <div className={s.section}>
         <h2>14. Uso permitido</h2>
-        <p>El usuario se compromete a no utilizar MOY IQ para:</p>
+        <p>El usuario se compromete a no utilizar moyiq para:</p>
         <ul className={s.list}>
           <li>Actividades ilegales o fraudulentas</li>
           <li>Evadir obligaciones fiscales o legales</li>
@@ -183,7 +183,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>15. Disponibilidad del servicio</h2>
         <p>
-          MOY IQ es una PWA (Progressive Web App) que funciona sin conexión una vez cargada. El
+          Moyiq es una PWA (Progressive Web App) que funciona sin conexión una vez cargada. El
           inicio de sesión, la validación del plan y la sincronización requieren conexión. MAXNOVA &
           LUCI Global LLC no garantiza disponibilidad ininterrumpida del servicio de alojamiento.
         </p>
@@ -193,7 +193,7 @@ function EsBody() {
         <h2>16. Consecuencias del incumplimiento</h2>
         <p>
           El incumplimiento de estos términos o de los términos de licencia puede resultar, previo aviso
-          cuando sea razonable, en la revocación del derecho de uso. Para usar MOY IQ fuera de los límites del
+          cuando sea razonable, en la revocación del derecho de uso. Para usar moyiq fuera de los límites del
           plan adquirido, escribir antes a <strong>support@moyiq.app</strong>.
         </p>
       </div>
@@ -227,7 +227,7 @@ function EnBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Important:</strong> MOY IQ is a personal finance organization and tracking tool.
+        <strong>Important:</strong> moyiq is a personal finance organization and tracking tool.
         It is not a financial, tax, or investment advisor, and it does not replace consultation
         with certified professionals.
       </div>
@@ -235,8 +235,8 @@ function EnBody() {
       <div className={s.section}>
         <h2>1. Acceptance of the terms</h2>
         <p>
-          By creating an account and using MOY IQ, the user accepts these Terms of Use in full. If
-          the user disagrees with any part, they must stop using the tool. MOY IQ is operated by
+          By creating an account and using moyiq, the user accepts these Terms of Use in full. If
+          the user disagrees with any part, they must stop using the tool. Moyiq is operated by
           MAXNOVA & LUCI Global LLC.
         </p>
         <CompanyBlock lang="en" />
@@ -245,11 +245,11 @@ function EnBody() {
       <div className={s.section}>
         <h2>2. Nature of the service</h2>
         <p>
-          MOY IQ is a software tool for <strong>personal financial organization, diagnosis, and
+          Moyiq is a software tool for <strong>personal financial organization, diagnosis, and
           tracking</strong>. Its purpose is to help record, visualize, and understand personal
           finances.
         </p>
-        <p>MOY IQ <strong>is not</strong>, and must not be read as:</p>
+        <p>moyiq <strong>is not</strong>, and must not be read as:</p>
         <ul className={s.list}>
           <li>A financial, tax, accounting, or investment advisor</li>
           <li>A bank, financial institution, or regulated entity</li>
@@ -258,7 +258,7 @@ function EnBody() {
           <li>A tax-planning tool</li>
         </ul>
         <p>
-          The projections, calculations, and signals it generates (including MOY IQ Coach signals)
+          The projections, calculations, and signals it generates (including moyiq Coach signals)
           are indicative and based only on the data the user enters. They are not financial
           recommendations.
         </p>
@@ -278,7 +278,7 @@ function EnBody() {
         <h2>4. Plans and licenses</h2>
         <ul className={s.list}>
           <li><strong>Starter plan (free):</strong> a non-exclusive license for personal use, at no cost and with no time limit. It does not allow professional use with clients, redistribution, or handing the app to third parties.</li>
-          <li><strong>Pro plan (US$4.99 monthly or US$39.99 annual subscription):</strong> everything in Starter plus the Pro features, including Advisor Mode. It allows professional use of MOY IQ with up to 30 clients while the subscription is active. It does not allow reselling the software, sharing the license key, or sublicensing.</li>
+          <li><strong>Pro plan (US$4.99 monthly or US$39.99 annual subscription):</strong> everything in Starter plus the Pro features, including Advisor Mode. It allows professional use of moyiq with up to 30 clients while the subscription is active. It does not allow reselling the software, sharing the license key, or sublicensing.</li>
         </ul>
         <p>
           Details per plan are in the License document.
@@ -337,7 +337,7 @@ function EnBody() {
       <div className={s.section}>
         <h2>11. Local storage and data loss</h2>
         <p>
-          MOY IQ stores financial data locally on the user's device. Unless the user turns on the
+          Moyiq stores financial data locally on the user's device. Unless the user turns on the
           optional encrypted sync,{' '}
           <strong>MAXNOVA & LUCI Global LLC does not store and cannot recover that data</strong>{' '}
           (and even with sync on, it only stores encrypted data it cannot read).
@@ -367,7 +367,7 @@ function EnBody() {
       <div className={s.section}>
         <h2>13. Intellectual property</h2>
         <p>
-          The source code, design, and content of MOY IQ are the property of MAXNOVA & LUCI Global
+          The source code, design, and content of moyiq are the property of MAXNOVA & LUCI Global
           LLC and are protected by copyright. The license does not transfer any intellectual
           property rights.
         </p>
@@ -375,7 +375,7 @@ function EnBody() {
 
       <div className={s.section}>
         <h2>14. Permitted use</h2>
-        <p>The user agrees not to use MOY IQ for:</p>
+        <p>The user agrees not to use moyiq for:</p>
         <ul className={s.list}>
           <li>Illegal or fraudulent activity</li>
           <li>Evading tax or legal obligations</li>
@@ -387,7 +387,7 @@ function EnBody() {
       <div className={s.section}>
         <h2>15. Service availability</h2>
         <p>
-          MOY IQ is a Progressive Web App that works offline once loaded. Sign-in, plan validation,
+          Moyiq is a Progressive Web App that works offline once loaded. Sign-in, plan validation,
           and sync require a connection. MAXNOVA & LUCI Global LLC does not guarantee uninterrupted
           availability of the hosting service.
         </p>
@@ -397,7 +397,7 @@ function EnBody() {
         <h2>16. Non-compliance</h2>
         <p>
           Breaching these terms or the license terms may lead, after notice where
-          reasonable, to revocation of the right of use. To use MOY IQ beyond the limits of the purchased plan, write to{' '}
+          reasonable, to revocation of the right of use. To use moyiq beyond the limits of the purchased plan, write to{' '}
           <strong>support@moyiq.app</strong> first.
         </p>
       </div>
@@ -430,7 +430,7 @@ function PtBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Importante:</strong> O MOY IQ é uma ferramenta de organização e acompanhamento
+        <strong>Importante:</strong> O moyiq é uma ferramenta de organização e acompanhamento
         financeiro pessoal. Não é um consultor financeiro, tributário nem de investimentos, e não
         substitui a consulta a profissionais certificados.
       </div>
@@ -438,8 +438,8 @@ function PtBody() {
       <div className={s.section}>
         <h2>1. Aceitação dos termos</h2>
         <p>
-          Ao criar uma conta e usar o MOY IQ, o usuário aceita estes Termos de Uso na íntegra. Se
-          não concordar com alguma parte, deve deixar de usar a ferramenta. O MOY IQ é operado pela
+          Ao criar uma conta e usar o moyiq, o usuário aceita estes Termos de Uso na íntegra. Se
+          não concordar com alguma parte, deve deixar de usar a ferramenta. O moyiq é operado pela
           MAXNOVA & LUCI Global LLC.
         </p>
         <CompanyBlock lang="pt" />
@@ -448,11 +448,11 @@ function PtBody() {
       <div className={s.section}>
         <h2>2. Natureza do serviço</h2>
         <p>
-          O MOY IQ é uma ferramenta de software para <strong>organização, diagnóstico e
+          O moyiq é uma ferramenta de software para <strong>organização, diagnóstico e
           acompanhamento financeiro pessoal</strong>. Seu propósito é ajudar a registrar,
           visualizar e compreender as finanças pessoais.
         </p>
-        <p>O MOY IQ <strong>não é</strong> e não deve ser interpretado como:</p>
+        <p>O moyiq <strong>não é</strong> e não deve ser interpretado como:</p>
         <ul className={s.list}>
           <li>Consultor financeiro, tributário, contábil ou de investimentos</li>
           <li>Instituição bancária, financeira ou entidade regulada</li>
@@ -461,7 +461,7 @@ function PtBody() {
           <li>Ferramenta de planejamento fiscal ou tributário</li>
         </ul>
         <p>
-          As projeções, cálculos e sinais gerados (inclusive os do MOY IQ Coach) são orientativos
+          As projeções, cálculos e sinais gerados (inclusive os do moyiq Coach) são orientativos
           e baseiam-se exclusivamente nos dados inseridos pelo usuário. Não constituem
           recomendações financeiras.
         </p>
@@ -481,7 +481,7 @@ function PtBody() {
         <h2>4. Planos e licenças</h2>
         <ul className={s.list}>
           <li><strong>Plano Starter (gratuito):</strong> licença de uso pessoal não exclusiva, sem custo e sem limite de tempo. Não permite uso profissional com clientes, redistribuição nem entrega a terceiros.</li>
-          <li><strong>Plano Pro (assinatura mensal de US$4.99 ou anual de US$39.99):</strong> tudo do Starter mais as funções Pro, incluindo o Modo Consultor. Permite o uso profissional do MOY IQ com até 30 clientes enquanto a assinatura estiver ativa. Não permite revenda do software, compartilhamento da chave de licença nem sublicenciamento.</li>
+          <li><strong>Plano Pro (assinatura mensal de US$4.99 ou anual de US$39.99):</strong> tudo do Starter mais as funções Pro, incluindo o Modo Consultor. Permite o uso profissional do moyiq com até 30 clientes enquanto a assinatura estiver ativa. Não permite revenda do software, compartilhamento da chave de licença nem sublicenciamento.</li>
         </ul>
         <p>
           O detalhe de cada plano está no documento de Licença.
@@ -540,7 +540,7 @@ function PtBody() {
       <div className={s.section}>
         <h2>11. Armazenamento local e perda de dados</h2>
         <p>
-          O MOY IQ armazena os dados financeiros localmente no dispositivo do usuário. Salvo se o
+          O moyiq armazena os dados financeiros localmente no dispositivo do usuário. Salvo se o
           usuário ativar a sincronização criptografada opcional,{' '}
           <strong>a MAXNOVA & LUCI Global LLC não armazena nem pode recuperar esses dados</strong>{' '}
           (e, mesmo com a sincronização ativa, armazena apenas dados criptografados que não pode ler).
@@ -571,7 +571,7 @@ function PtBody() {
       <div className={s.section}>
         <h2>13. Propriedade intelectual</h2>
         <p>
-          O código-fonte, o design e o conteúdo do MOY IQ são propriedade da MAXNOVA & LUCI Global
+          O código-fonte, o design e o conteúdo do moyiq são propriedade da MAXNOVA & LUCI Global
           LLC e estão protegidos por direitos autorais. A licença não transfere direitos de
           propriedade intelectual.
         </p>
@@ -579,7 +579,7 @@ function PtBody() {
 
       <div className={s.section}>
         <h2>14. Uso permitido</h2>
-        <p>O usuário se compromete a não usar o MOY IQ para:</p>
+        <p>O usuário se compromete a não usar o moyiq para:</p>
         <ul className={s.list}>
           <li>Atividades ilegais ou fraudulentas</li>
           <li>Evadir obrigações fiscais ou legais</li>
@@ -591,7 +591,7 @@ function PtBody() {
       <div className={s.section}>
         <h2>15. Disponibilidade do serviço</h2>
         <p>
-          O MOY IQ é uma PWA (Progressive Web App) que funciona offline depois de carregada. O
+          O moyiq é uma PWA (Progressive Web App) que funciona offline depois de carregada. O
           login, a validação do plano e a sincronização exigem conexão. A MAXNOVA & LUCI Global LLC
           não garante disponibilidade ininterrupta do serviço de hospedagem.
         </p>
@@ -601,7 +601,7 @@ function PtBody() {
         <h2>16. Consequências do descumprimento</h2>
         <p>
           O descumprimento destes termos ou dos termos de licença pode resultar, mediante aviso
-          prévio quando razoável, na revogação do direito de uso. Para usar o MOY IQ além dos limites do plano adquirido,
+          prévio quando razoável, na revogação do direito de uso. Para usar o moyiq além dos limites do plano adquirido,
           escreva antes para <strong>support@moyiq.app</strong>.
         </p>
       </div>
@@ -639,7 +639,7 @@ function DeBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Wichtig:</strong> MOY IQ ist ein Werkzeug zur Organisation persönlicher Finanzen.
+        <strong>Wichtig:</strong> moyiq ist ein Werkzeug zur Organisation persönlicher Finanzen.
         Es stellt keine Finanz-, Steuer-, Rechts- oder Anlageberatung dar.
       </div>
 
@@ -647,7 +647,7 @@ function DeBody() {
         <h2>§ 1 Geltungsbereich, Anbieter</h2>
         <p>
           (1) Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Verträge über die
-          Nutzung der Web-App „MOY IQ“ (erreichbar über moyiq.app und app.moyiq.app, auch als
+          Nutzung der Web-App „moyiq“ (erreichbar über moyiq.app und app.moyiq.app, auch als
           installierbare Progressive Web App) zwischen der MAXNOVA & LUCI Global LLC, 10482 NW 31st Terrace,
           Office 1D, Doral, FL 33172, USA, E-Mail: support@moyiq.app (nachfolgend „wir“ oder „Anbieter“) und den Nutzerinnen und Nutzern
           (nachfolgend „Sie“). Die vollständige Anbieterkennzeichnung steht im{' '}
@@ -655,7 +655,7 @@ function DeBody() {
         </p>
         <p>
           (2) Unser Angebot richtet sich an Verbraucher im Sinne von § 13 BGB sowie, beim Tarif
-          Pro, auch an Personen, die MOY IQ beruflich mit ihren Klientinnen und Klienten nutzen.
+          Pro, auch an Personen, die moyiq beruflich mit ihren Klientinnen und Klienten nutzen.
           Vorschriften zum Schutz von Verbrauchern gelten nur für Verbraucher. Abweichende
           Bedingungen von Nutzern gelten nicht, es sei denn, wir stimmen ihnen ausdrücklich zu.
         </p>
@@ -666,9 +666,9 @@ function DeBody() {
       <div className={s.section}>
         <h2>§ 2 Leistungsbeschreibung</h2>
         <p>
-          (1) MOY IQ ist eine Anwendung zur Organisation persönlicher Finanzen: Erfassung von
+          (1) moyiq ist eine Anwendung zur Organisation persönlicher Finanzen: Erfassung von
           Einnahmen und Ausgaben, Budgets, Schulden, Ziele und Abos sowie Import von
-          Kontoauszügen. MOY IQ verbindet sich nicht mit Ihrem Bankkonto und fragt keine
+          Kontoauszügen. Moyiq verbindet sich nicht mit Ihrem Bankkonto und fragt keine
           Bankzugangsdaten ab.
         </p>
         <p>
@@ -687,7 +687,7 @@ function DeBody() {
           Datenschutzerklärung in der App).
         </p>
         <p>
-          (5) Steuer- und Finanzberechnungen in MOY IQ sind Schätzungen zu Informations- und
+          (5) Steuer- und Finanzberechnungen in moyiq sind Schätzungen zu Informations- und
           Bildungszwecken. Sie ersetzen keine Beratung durch Steuerberater, Rechtsanwälte oder
           Finanzberater und keine offizielle Steuererklärung (z. B. über ELSTER).
         </p>
@@ -850,7 +850,7 @@ function DeBody() {
         <p>(3) Im Übrigen ist die Haftung für leichte Fahrlässigkeit ausgeschlossen.</p>
         <p>
           (4) Wir haften nicht für finanzielle oder steuerliche Entscheidungen, die Sie auf
-          Grundlage der in MOY IQ angezeigten Informationen treffen; insoweit gilt § 2 Abs. 5.
+          Grundlage der in moyiq angezeigten Informationen treffen; insoweit gilt § 2 Abs. 5.
         </p>
       </div>
 
@@ -868,7 +868,7 @@ function DeBody() {
         <h2>§ 12 Nutzungsrechte</h2>
         <p>
           (1) Wir räumen Ihnen für die Dauer des jeweiligen Vertrags ein einfaches, nicht
-          übertragbares Recht ein, MOY IQ auf Ihren eigenen Geräten zu nutzen: mit Starter für
+          übertragbares Recht ein, moyiq auf Ihren eigenen Geräten zu nutzen: mit Starter für
           private Zwecke, mit Pro zusätzlich beruflich mit bis zu 30 Klientinnen und Klienten.
         </p>
         <p>
@@ -881,7 +881,7 @@ function DeBody() {
       <div className={s.section}>
         <h2>§ 13 Änderungen der Leistung und dieser AGB</h2>
         <p>
-          (1) Wir dürfen MOY IQ über das zur Erhaltung der Vertragsmäßigkeit erforderliche Maß
+          (1) Wir dürfen moyiq über das zur Erhaltung der Vertragsmäßigkeit erforderliche Maß
           hinaus nur unter den Voraussetzungen des § 327r BGB ändern, insbesondere aus triftigem
           Grund, ohne zusätzliche Kosten für Sie und mit klarer Information. Beeinträchtigt eine
           Änderung Ihren Zugang oder die Nutzbarkeit mehr als nur unerheblich, informieren wir Sie
@@ -936,8 +936,8 @@ function DeBody() {
 }
 
 export const TERMS_CONTENT = {
-  es: { title: 'Términos de Uso', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: EsBody },
-  en: { title: 'Terms of Use', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: EnBody },
-  pt: { title: 'Termos de Uso', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: PtBody },
-  de: { title: 'Allgemeine Geschäftsbedingungen (AGB)', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: DeBody },
+  es: { title: 'Términos de Uso', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
+  en: { title: 'Terms of Use', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
+  pt: { title: 'Termos de Uso', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
+  de: { title: 'Allgemeine Geschäftsbedingungen (AGB)', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
 }

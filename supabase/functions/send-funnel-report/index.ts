@@ -8,12 +8,13 @@ import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { runReport, type ReportConfig } from "./funnelReportLogic.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const config: ReportConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL"), "hola@moyiq.app"),
   cronSecret: Deno.env.get("CRON_SECRET"),
 };
 

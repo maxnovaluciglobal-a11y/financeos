@@ -14,7 +14,7 @@ import { PRIVACY_CONTENT } from './privacyContent.jsx'
 import { TERMS_CONTENT } from './termsContent.jsx'
 import { LICENSE_CONTENT } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
-import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_LANGS, pickLang, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
+import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -80,12 +80,15 @@ describe('legal pages × languages', () => {
           }
         })
 
-        it('uses MOY IQ as product name (FinanceOS only as former name)', () => {
-          expect(text).toContain('MOY IQ')
-          const stripped = text.replace(/[^.]*FinanceOS[^.]*\./g, (sentence) =>
-            /antes|previously|chamava|früher/i.test(sentence) ? '' : sentence,
-          )
-          expect(stripped).not.toMatch(/FinanceOS/)
+        it('uses moyiq as product name (MOY IQ and FinanceOS only as former names)', () => {
+          expect(text).toContain('moyiq')
+          expect(text).toContain(REBRAND_NOTICE[lang])
+          const stripped = text
+            .replace(REBRAND_NOTICE[lang], '')
+            .replace(/[^.]*(FinanceOS|MOY IQ)[^.]*\./g, (sentence) =>
+              /antes|previously|chamava|früher/i.test(sentence) ? '' : sentence,
+            )
+          expect(stripped).not.toMatch(/FinanceOS|MOY IQ/)
         })
 
         if (lang === 'es') {
@@ -211,5 +214,15 @@ describe('LEG-12: portal de Stripe en el Menú', () => {
     expect(src).toMatch(/isPro && STRIPE_PORTAL_URL/)
     expect(src).toMatch(/target="_blank" rel="noopener noreferrer"/)
     expect(src).toContain("t('menu.manageSubHint')")
+  })
+})
+
+describe('legal version (rebranding moyiq)', () => {
+  it('has an ISO effective date and shows it in the 4 languages', () => {
+    expect(LEGAL_EFFECTIVE_DATE).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(LAST_UPDATED.es).toMatch(/^Vigente desde el \d{1,2} de \p{L}+ de \d{4}$/u)
+    expect(LAST_UPDATED.en).toMatch(/^Effective \p{L}+ \d{1,2}, \d{4}$/u)
+    expect(LAST_UPDATED.pt).toMatch(/^Em vigor desde \d{1,2} de \p{L}+ de \d{4}$/u)
+    expect(LAST_UPDATED.de).toMatch(/^Gültig ab \d{1,2}\. \p{L}+ \d{4}$/u)
   })
 })

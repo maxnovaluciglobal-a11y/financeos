@@ -18,7 +18,7 @@ const CONFIG: NurtureEmailConfig = {
   supabaseUrl: 'https://proj.supabase.co',
   serviceRole: 'srv-key',
   resendApiKey: 're_key',
-  fromEmail: 'MOY IQ Invest <invest@moyiq.app>',
+  fromEmail: 'moyiq · Inversiones <invest@moyiq.app>',
   cronSecret: 'sekret',
   landingUrl: 'https://invest.moyiq.app',
 }
@@ -34,7 +34,7 @@ describe('renderEmail', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
     expect(r.subject).toContain('Moderado')
     expect(r.html).toContain('Moderado')
-    expect(r.html).toContain('Abrir MOY IQ Invest')
+    expect(r.html).toContain('Abrir moyiq · Inversiones')
     expect(r.html).toContain('https://invest.moyiq.app/app?ref=invest-welcome')
     expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
   })
@@ -42,8 +42,8 @@ describe('renderEmail', () => {
   it('welcome usa el layout de marca compartido con la etiqueta Invest (BRD-5)', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
     expect(r.html).toContain(EMAIL_LOGO_URL)
-    expect(r.html).toContain(`background:${EMAIL_BRAND.laton}`)
-    expect(r.html).toContain(`color:${EMAIL_BRAND.latonDark}">Invest<`)
+    expect(r.html).toContain(`background:${EMAIL_BRAND.accent}`)
+    expect(r.html).toContain(`color:${EMAIL_BRAND.accent}">Inversiones<`)
     expect(r.html).not.toContain('#12161F')
   })
 

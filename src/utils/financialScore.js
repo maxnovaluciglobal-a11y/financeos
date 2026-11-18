@@ -1,6 +1,6 @@
 // src/utils/financialScore.js
 // IQ Score — puntaje de salud financiera 0-100. Migrado al modelo del brand
-// book de MOY IQ: 5 factores con pesos NO uniformes (el modelo anterior era
+// book de moyiq: 5 factores con pesos NO uniformes (el modelo anterior era
 // 5 × 20pts parejos; ver historial de este archivo en git para esa versión):
 //   1. Flujo de caja          — 30 pts
 //   2. Colchón de emergencia  — 20 pts

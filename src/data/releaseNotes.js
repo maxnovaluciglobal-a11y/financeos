@@ -3,6 +3,34 @@
 // primero. Se muestra una sola vez a quien ya usaba la app (WhatsNew.jsx).
 // Voz de producto: seca, sin exclamaciones, sin voseo.
 export const RELEASE_NOTES = [
+  // Rebranding (Entrega 1). El id solo tiene que ser mayor que el de la nota
+  // anterior; se deja con la fecha prevista del despliegue coordinado.
+  // TODO(rebrand): ajustar el id a la fecha real del despliegue si cambia.
+  {
+    id: '2026-12-01',
+    items: {
+      es: [
+        'MOY IQ ahora es moyiq: cambian el nombre, el logo y los colores. Tus datos, tu cuenta y tu plan siguen igual, y el responsable y el tratamiento de los datos no cambian.',
+        'En iPhone: si la instalaste en la pantalla de inicio, bórrala y vuelve a agregarla para ver el ícono nuevo (Compartir › Agregar a inicio). Antes crea un respaldo en Ajustes: al borrarla, el iPhone puede borrar los datos guardados en ella, y después los recuperas desde ese archivo.',
+        'Invest ahora se llama Inversiones y sigue en Panorama y en Patrimonio.',
+      ],
+      en: [
+        'MOY IQ is now moyiq: the name, logo and colors change. Your data, your account and your plan stay the same, and the controller and the processing of your data do not change.',
+        'On iPhone: if you installed it on your Home Screen, remove it and add it again to see the new icon (Share › Add to Home Screen). Create a backup in Settings first: removing it can delete the data stored in it, and you restore it from that file afterwards.',
+        'Invest is now called Investments and is still in Overview and Net worth.',
+      ],
+      pt: [
+        'O MOY IQ agora é moyiq: mudam o nome, o logo e as cores. Seus dados, sua conta e seu plano continuam iguais, e o responsável e o tratamento dos dados não mudam.',
+        'No iPhone: se você instalou na tela de início, apague e adicione de novo para ver o ícone novo (Compartilhar › Adicionar à Tela de Início). Antes, crie um backup em Ajustes: ao apagar, o iPhone pode apagar os dados guardados nele, e depois você os recupera desse arquivo.',
+        'O Invest agora se chama Investimentos e continua no Panorama e no Patrimônio.',
+      ],
+      de: [
+        'MOY IQ heißt jetzt moyiq: Name, Logo und Farben ändern sich. Ihre Daten, Ihr Konto und Ihr Tarif bleiben gleich, und der Verantwortliche und die Verarbeitung Ihrer Daten ändern sich nicht.',
+        'Auf dem iPhone: Wenn Sie die App auf dem Home-Bildschirm installiert haben, entfernen Sie sie und fügen Sie sie erneut hinzu, um das neue Symbol zu sehen (Teilen › Zum Home-Bildschirm). Erstellen Sie vorher eine Sicherung in den Einstellungen: Beim Entfernen kann das iPhone die darin gespeicherten Daten löschen, und Sie stellen sie danach aus dieser Datei wieder her.',
+        'Invest heißt jetzt Investments und ist weiterhin im Überblick und im Vermögen.',
+      ],
+    },
+  },
   {
     id: '2026-10-30e',
     items: {

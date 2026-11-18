@@ -102,7 +102,7 @@ export function renderTrialEmail(step: TrialStep, row: TrialRow, config: TrialCo
     bodyHtml: `${copy.paragraphs.map((p) => `<p>${p}</p>`).join("\n      ")}
       ${emailButton(href, copy.cta)}
       ${cancel}`,
-    footerHtml: `${T.why} MOY IQ · ${COMPANY_POSTAL_HTML}.
+    footerHtml: `${T.why} moyiq · ${COMPANY_POSTAL_HTML}.
         <a href="${footerUnsubscribeUrl(appUrl, row.id)}">${T.unsubscribe}</a>.`,
   });
   return {
@@ -179,7 +179,7 @@ export function renderBillingPreview(step: BillingPreviewStep, lang: EmailLang, 
     supabaseUrl: config.supabaseUrl,
     serviceRole: config.serviceRole,
     resendApiKey: config.resendApiKey,
-    fromEmail: config.billingFromEmail ?? "MOY IQ <licencias@moyiq.app>",
+    fromEmail: config.billingFromEmail ?? "moyiq <licencias@moyiq.app>",
     portalUrl: config.portalUrl,
   };
   const billing: TrialBilling = {
@@ -205,7 +205,7 @@ export async function sendPreview(
   if (typeof step === "string" && (BILLING_PREVIEW_STEPS as readonly string[]).includes(step)) {
     const rendered = renderBillingPreview(step as BillingPreviewStep, pickLang(typeof lang === "string" ? lang : "es"), config);
     rendered.subject = PREVIEW_SUBJECT_PREFIX + rendered.subject;
-    return sendViaResend(to.trim().toLowerCase(), rendered, { ...config, fromEmail: config.billingFromEmail ?? "MOY IQ <licencias@moyiq.app>" }, fetchImpl);
+    return sendViaResend(to.trim().toLowerCase(), rendered, { ...config, fromEmail: config.billingFromEmail ?? "moyiq <licencias@moyiq.app>" }, fetchImpl);
   }
   if (typeof step !== "string" || !(TRIAL_STEPS as string[]).includes(step)) return { ok: false, error: "invalid_step" };
   const now = Date.now();

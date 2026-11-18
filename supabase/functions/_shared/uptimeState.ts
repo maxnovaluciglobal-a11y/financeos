@@ -103,9 +103,9 @@ export function uptimeEmail(action: Exclude<UptimeAction, null>, site: string, u
   const since = state.down_since ? new Date(state.down_since).toISOString().replace("T", " ").slice(0, 16) + " UTC" : "—";
   const mins = state.down_since ? Math.max(0, Math.round((now.getTime() - Date.parse(state.down_since)) / 60000)) : 0;
   const subject =
-    action === "down" ? `[MOY IQ] caída: ${site}`
-    : action === "reminder" ? `[MOY IQ] sigue caído: ${site}`
-    : `[MOY IQ] recuperado: ${site}`;
+    action === "down" ? `[moyiq] caída: ${site}`
+    : action === "reminder" ? `[moyiq] sigue caído: ${site}`
+    : `[moyiq] recuperado: ${site}`;
   const lines =
     action === "recovery"
       ? [`${site} volvió a responder bien.`, ``, `URL: ${url}`, `Último chequeo: ${describeCheck(latest)}`]

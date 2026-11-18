@@ -1,5 +1,5 @@
 // src/demo/demoData.js
-// Datos ficticios para el modo demo de MOY IQ.
+// Datos ficticios para el modo demo de moyiq.
 // Personas (08-oct-2026): se elige por el idioma del navegador (pickDemoPersonaId):
 //   es / pt → Sofía García (Colombia, COP) — este archivo
 //   en      → Maya Robinson (EE. UU., USD) — personas/us.js

@@ -1,5 +1,5 @@
 // Cobertura de src/utils/financialScore.js — no existía ningún test antes de
-// esta migración al modelo del brand book MOY IQ (Flujo de caja 30% / Colchón
+// esta migración al modelo del brand book moyiq (Flujo de caja 30% / Colchón
 // de emergencia 20% / Carga de deuda 20% / Progreso de metas 15% /
 // Consistencia de datos 15%). Fija los 5 pesos exactos, cada escalón de cada
 // factor, y los dos casos límite (score 100 y score 0) para que un cambio

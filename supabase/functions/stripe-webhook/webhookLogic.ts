@@ -69,7 +69,7 @@ export function generateKey(): string {
 // checkout de prueba ($0) NO emite licencia: checkoutSkipReason() lo descarta
 // como "zero_amount_unknown_link" y avisa a ALERT_EMAIL. Es a propósito: este
 // endpoint puede recibir eventos de otros productos de la cuenta de Stripe, y
-// una suscripción de $0 ajena no debe mintear una licencia de MOY IQ.
+// una suscripción de $0 ajena no debe mintear una licencia de moyiq.
 // No inventar ids: solo pegar los que muestra el dashboard de Stripe.
 export const TRIAL_LINK_MONTHLY_TODO: string | null = "plink_1UOR0c2L52ZuuTMrpgyjokRi"; // https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04 Pro mensual con prueba de 14 días (08-oct-2026)
 export const TRIAL_LINK_ANNUAL_TODO: string | null = "plink_1UOR1S2L52ZuuTMrZXDa0fNY";  // https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05 Pro anual con prueba de 14 días (08-oct-2026)
@@ -96,7 +96,7 @@ function trialLinkEntries<T>(value: T | ((interval: "month" | "year") => T)): Re
   return out;
 }
 
-// Payment Links de la cuenta de Stripe de MOY IQ (acct_1UEffP2L52ZuuTMr). Es
+// Payment Links de la cuenta de Stripe de moyiq (acct_1UEffP2L52ZuuTMr). Es
 // la ÚNICA fuente del plan: un checkout cuyo Payment Link no está acá no emite
 // licencia (auditoría 360, C-13 / FN-1). Antes caía a un umbral por monto y
 // cualquier checkout firmado con un secreto aceptado —por ejemplo uno de la
@@ -230,13 +230,13 @@ export function isTestModeCheckout(event: { type?: string; livemode?: boolean })
   return CHECKOUT_EVENT_TYPES.includes(event?.type as string) && event?.livemode !== true;
 }
 
-// Solo checkouts pagados de un Payment Link de MOY IQ emiten licencia.
+// Solo checkouts pagados de un Payment Link de moyiq emiten licencia.
 //   - "unpaid": payment_status distinto de "paid" (OXXO/boleto pendientes:
 //     llega después como async_payment_succeeded).
 //   - "no_payment_link": checkout fuera de Payment Links (otro producto de la
 //     cuenta, p. ej. Invest). Se ignora sin aviso.
 //   - "unknown_payment_link": link que no está en PAYMENT_LINK_PLAN. Puede ser
-//     un link nuevo de MOY IQ sin cargar acá (el cliente pagó y no tiene
+//     un link nuevo de moyiq sin cargar acá (el cliente pagó y no tiene
 //     clave) o uno ajeno: index.ts avisa a ALERT_EMAIL.
 //   - "zero_amount": $0 que no es una prueba de suscripción.
 // Una prueba de Pro llega con amount_total=0 y payment_status "paid" y se
@@ -317,7 +317,7 @@ export async function notifyKeyDeliveryFailure(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "MOY IQ: cliente pagó y no recibió su clave", html,
+        subject: "moyiq: cliente pagó y no recibió su clave", html,
       }),
     });
     if (!res.ok) console.error(`notifyKeyDeliveryFailure: Resend error ${res.status} ${await res.text()}`);
@@ -337,7 +337,7 @@ export async function notifyNewProPurchase(
 ): Promise<void> {
   if (!config.resendApiKey || !config.alertEmail) return;
   const html = adminEmailHtml(`
-      <p><strong>Nueva compra Pro en MOY IQ.</strong></p>
+      <p><strong>Nueva compra Pro en moyiq.</strong></p>
       <ul>
         <li>email: ${details.email ?? "(sin email)"}</li>
         <li>plan: ${details.plan}</li>
@@ -350,7 +350,7 @@ export async function notifyNewProPurchase(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "MOY IQ: nueva compra Pro", html,
+        subject: "moyiq: nueva compra Pro", html,
       }),
     });
     if (!res.ok) console.error(`notifyNewProPurchase: Resend error ${res.status} ${await res.text()}`);
@@ -624,7 +624,7 @@ export async function revokeLicenseBySubscription(
   return await res.json();
 }
 
-// Licencia de MOY IQ asociada a una suscripción (para saber a qué email
+// Licencia de moyiq asociada a una suscripción (para saber a qué email
 // mandar el aviso de fin de prueba: el objeto subscription de Stripe solo
 // trae el id del customer, no su email, y este webhook no llama a la API de
 // Stripe). Devuelve null si no hay fila (suscripción de otro producto).
@@ -748,10 +748,10 @@ interface MailText {
 }
 const MAIL: Record<EmailLang, MailText> = {
   es: {
-    licenseSubject: "Tu licencia de MOY IQ",
-    trialSubject: "Tu prueba de MOY IQ Pro",
-    trialEndingSubject: "Tu prueba de MOY IQ Pro termina pronto",
-    trialEndsOn: (d) => `Tu prueba de MOY IQ Pro termina el ${d}`,
+    licenseSubject: "Tu licencia de moyiq",
+    trialSubject: "Tu prueba de moyiq Pro",
+    trialEndingSubject: "Tu prueba de moyiq Pro termina pronto",
+    trialEndsOn: (d) => `Tu prueba de moyiq Pro termina el ${d}`,
     trialStarted: (n, d) => `Tu prueba de Pro empezó. Dura ${n} días y termina el ${d}.`,
     charge: (a, i) => `Ese día se cobran ${a}${i === "month" ? " al mes" : i === "year" ? " al año" : ""} en la tarjeta que registraste.`,
     chargeNoAmount: "Ese día se cobra el precio de tu plan en la tarjeta que registraste.",
@@ -765,23 +765,23 @@ const MAIL: Record<EmailLang, MailText> = {
     activatedOnAccount: (l) => `Pro ya quedó activado en tu cuenta: abre ${l} con la misma cuenta y no tienes que ingresar la clave. Guárdala por si la necesitas para soporte.`,
     staySame: "Si sigues, no tienes que hacer nada: tu clave de acceso es la misma.",
     privacy: "Tus datos financieros se guardan solo en tu dispositivo.",
-    paymentFailedSubject: "No se pudo cobrar tu suscripción de MOY IQ Pro",
-    paymentFailedIntro: "El cobro de tu suscripción de MOY IQ Pro no se pudo hacer con la tarjeta registrada. Stripe lo va a reintentar en los próximos días.",
+    paymentFailedSubject: "No se pudo cobrar tu suscripción de moyiq Pro",
+    paymentFailedIntro: "El cobro de tu suscripción de moyiq Pro no se pudo hacer con la tarjeta registrada. Stripe lo va a reintentar en los próximos días.",
     paymentFailedPortal: (portal, sup) => `Para que Pro siga activo, actualiza tu método de pago desde <a href="${portal}">tu portal de facturación</a> o escribe a ${sup}.`,
     paymentFailedNoPortal: (sup) => `Para que Pro siga activo, escribe a ${sup} y te ayudamos a actualizar el método de pago.`,
     paymentFailedAfter: "Si los reintentos no funcionan, la suscripción se cancela y la cuenta vuelve a Starter. Tus datos siguen en tu dispositivo.",
-    proEndedSubject: "Tu MOY IQ Pro terminó. Tus datos siguen ahí",
-    proEndedIntro: "Tu suscripción de MOY IQ Pro se canceló, así que las funciones de Pro ya no están activas en tu cuenta.",
+    proEndedSubject: "Tu moyiq Pro terminó. Tus datos siguen ahí",
+    proEndedIntro: "Tu suscripción de moyiq Pro se canceló, así que las funciones de Pro ya no están activas en tu cuenta.",
     proEndedData: "No se borró nada: tus movimientos, presupuestos y metas siguen en tu dispositivo, y puedes seguir usándolos con las funciones gratuitas de Starter.",
     proEndedBack: "Si quieres volver a Pro, puedes hacerlo cuando quieras desde la app.",
     proEndedButton: "Volver a Pro",
     questions: (sup) => `Si tienes dudas, escribe a ${sup}.`,
   },
   en: {
-    licenseSubject: "Your MOY IQ license",
-    trialSubject: "Your MOY IQ Pro trial",
-    trialEndingSubject: "Your MOY IQ Pro trial ends soon",
-    trialEndsOn: (d) => `Your MOY IQ Pro trial ends on ${d}`,
+    licenseSubject: "Your moyiq license",
+    trialSubject: "Your moyiq Pro trial",
+    trialEndingSubject: "Your moyiq Pro trial ends soon",
+    trialEndsOn: (d) => `Your moyiq Pro trial ends on ${d}`,
     trialStarted: (n, d) => `Your Pro trial has started. It lasts ${n} days and ends on ${d}.`,
     charge: (a, i) => `On that day, ${a}${i === "month" ? " per month" : i === "year" ? " per year" : ""} is charged to the card you added.`,
     chargeNoAmount: "On that day, your plan's price is charged to the card you added.",
@@ -795,23 +795,23 @@ const MAIL: Record<EmailLang, MailText> = {
     activatedOnAccount: (l) => `Pro is already active on your account: open ${l} with the same account and you don't need to enter the key. Keep it in case support asks for it.`,
     staySame: "If you continue, you don't need to do anything: your access key stays the same.",
     privacy: "Your financial data is stored only on your device.",
-    paymentFailedSubject: "Your MOY IQ Pro payment didn't go through",
-    paymentFailedIntro: "We couldn't charge your MOY IQ Pro subscription to the card on file. Stripe will retry over the next few days.",
+    paymentFailedSubject: "Your moyiq Pro payment didn't go through",
+    paymentFailedIntro: "We couldn't charge your moyiq Pro subscription to the card on file. Stripe will retry over the next few days.",
     paymentFailedPortal: (portal, sup) => `To keep Pro active, update your payment method from <a href="${portal}">your billing portal</a> or write to ${sup}.`,
     paymentFailedNoPortal: (sup) => `To keep Pro active, write to ${sup} and we'll help you update your payment method.`,
     paymentFailedAfter: "If the retries don't work, the subscription is canceled and the account goes back to Starter. Your data stays on your device.",
-    proEndedSubject: "Your MOY IQ Pro ended. Your data is still there",
-    proEndedIntro: "Your MOY IQ Pro subscription was canceled, so the Pro features are no longer active on your account.",
+    proEndedSubject: "Your moyiq Pro ended. Your data is still there",
+    proEndedIntro: "Your moyiq Pro subscription was canceled, so the Pro features are no longer active on your account.",
     proEndedData: "Nothing was deleted: your transactions, budgets and goals are still on your device, and you can keep using them with the free Starter features.",
     proEndedBack: "If you want to go back to Pro, you can do it at any time from the app.",
     proEndedButton: "Go back to Pro",
     questions: (sup) => `If you have questions, write to ${sup}.`,
   },
   pt: {
-    licenseSubject: "Sua licença do MOY IQ",
-    trialSubject: "Seu teste do MOY IQ Pro",
-    trialEndingSubject: "Seu teste do MOY IQ Pro termina em breve",
-    trialEndsOn: (d) => `Seu teste do MOY IQ Pro termina em ${d}`,
+    licenseSubject: "Sua licença do moyiq",
+    trialSubject: "Seu teste do moyiq Pro",
+    trialEndingSubject: "Seu teste do moyiq Pro termina em breve",
+    trialEndsOn: (d) => `Seu teste do moyiq Pro termina em ${d}`,
     trialStarted: (n, d) => `Seu teste do Pro começou. Dura ${n} dias e termina em ${d}.`,
     charge: (a, i) => `Nesse dia, são cobrados ${a}${i === "month" ? " por mês" : i === "year" ? " por ano" : ""} no cartão que você cadastrou.`,
     chargeNoAmount: "Nesse dia, o preço do seu plano é cobrado no cartão que você cadastrou.",
@@ -825,23 +825,23 @@ const MAIL: Record<EmailLang, MailText> = {
     activatedOnAccount: (l) => `O Pro já está ativado na sua conta: abra ${l} com a mesma conta e não precisa inserir a chave. Guarde-a caso o suporte peça.`,
     staySame: "Se continuar, não precisa fazer nada: sua chave de acesso é a mesma.",
     privacy: "Seus dados financeiros ficam salvos apenas no seu dispositivo.",
-    paymentFailedSubject: "Não foi possível cobrar sua assinatura do MOY IQ Pro",
-    paymentFailedIntro: "A cobrança da sua assinatura do MOY IQ Pro não pôde ser feita no cartão cadastrado. O Stripe vai tentar de novo nos próximos dias.",
+    paymentFailedSubject: "Não foi possível cobrar sua assinatura do moyiq Pro",
+    paymentFailedIntro: "A cobrança da sua assinatura do moyiq Pro não pôde ser feita no cartão cadastrado. O Stripe vai tentar de novo nos próximos dias.",
     paymentFailedPortal: (portal, sup) => `Para que o Pro continue ativo, atualize sua forma de pagamento no <a href="${portal}">seu portal de cobrança</a> ou escreva para ${sup}.`,
     paymentFailedNoPortal: (sup) => `Para que o Pro continue ativo, escreva para ${sup} e ajudamos você a atualizar a forma de pagamento.`,
     paymentFailedAfter: "Se as novas tentativas não funcionarem, a assinatura é cancelada e a conta volta ao Starter. Seus dados continuam no seu dispositivo.",
-    proEndedSubject: "Seu MOY IQ Pro terminou. Seus dados continuam aí",
-    proEndedIntro: "Sua assinatura do MOY IQ Pro foi cancelada, então as funções do Pro não estão mais ativas na sua conta.",
+    proEndedSubject: "Seu moyiq Pro terminou. Seus dados continuam aí",
+    proEndedIntro: "Sua assinatura do moyiq Pro foi cancelada, então as funções do Pro não estão mais ativas na sua conta.",
     proEndedData: "Nada foi apagado: seus movimentos, orçamentos e metas continuam no seu dispositivo, e você pode seguir usando-os com as funções gratuitas do Starter.",
     proEndedBack: "Se quiser voltar ao Pro, pode fazer isso quando quiser pelo app.",
     proEndedButton: "Voltar ao Pro",
     questions: (sup) => `Se tiver dúvidas, escreva para ${sup}.`,
   },
   de: {
-    licenseSubject: "Ihre MOY IQ-Lizenz",
-    trialSubject: "Ihre Testphase von MOY IQ Pro",
-    trialEndingSubject: "Ihre Testphase von MOY IQ Pro endet bald",
-    trialEndsOn: (d) => `Ihre Testphase von MOY IQ Pro endet am ${d}`,
+    licenseSubject: "Ihre moyiq-Lizenz",
+    trialSubject: "Ihre Testphase von moyiq Pro",
+    trialEndingSubject: "Ihre Testphase von moyiq Pro endet bald",
+    trialEndsOn: (d) => `Ihre Testphase von moyiq Pro endet am ${d}`,
     trialStarted: (n, d) => `Ihre Pro-Testphase hat begonnen. Sie dauert ${n} Tage und endet am ${d}.`,
     charge: (a, i) => `An diesem Tag werden ${a}${i === "month" ? " pro Monat" : i === "year" ? " pro Jahr" : ""} von der hinterlegten Karte abgebucht.`,
     chargeNoAmount: "An diesem Tag wird der Preis Ihres Plans von der hinterlegten Karte abgebucht.",
@@ -855,13 +855,13 @@ const MAIL: Record<EmailLang, MailText> = {
     activatedOnAccount: (l) => `Pro ist bereits in Ihrem Konto aktiviert: Öffnen Sie ${l} mit demselben Konto, eine Eingabe des Schlüssels ist nicht nötig. Bewahren Sie ihn für Rückfragen des Supports auf.`,
     staySame: "Wenn Sie weitermachen, müssen Sie nichts tun: Ihr Zugangsschlüssel bleibt gleich.",
     privacy: "Ihre Finanzdaten werden nur auf Ihrem Gerät gespeichert.",
-    paymentFailedSubject: "Ihr MOY IQ Pro-Abonnement konnte nicht abgebucht werden",
-    paymentFailedIntro: "Die Zahlung für Ihr MOY IQ Pro-Abonnement konnte nicht von der hinterlegten Karte abgebucht werden. Stripe versucht es in den nächsten Tagen erneut.",
+    paymentFailedSubject: "Ihr moyiq Pro-Abonnement konnte nicht abgebucht werden",
+    paymentFailedIntro: "Die Zahlung für Ihr moyiq Pro-Abonnement konnte nicht von der hinterlegten Karte abgebucht werden. Stripe versucht es in den nächsten Tagen erneut.",
     paymentFailedPortal: (portal, sup) => `Damit Pro aktiv bleibt, aktualisieren Sie Ihre Zahlungsmethode in <a href="${portal}">Ihrem Abrechnungsportal</a> oder schreiben Sie an ${sup}.`,
     paymentFailedNoPortal: (sup) => `Damit Pro aktiv bleibt, schreiben Sie an ${sup}; wir helfen Ihnen, die Zahlungsmethode zu aktualisieren.`,
     paymentFailedAfter: "Wenn die weiteren Versuche nicht funktionieren, wird das Abonnement gekündigt und das Konto kehrt zu Starter zurück. Ihre Daten bleiben auf Ihrem Gerät.",
-    proEndedSubject: "Ihr MOY IQ Pro ist beendet. Ihre Daten sind noch da",
-    proEndedIntro: "Ihr MOY IQ Pro-Abonnement wurde gekündigt, daher sind die Pro-Funktionen in Ihrem Konto nicht mehr aktiv.",
+    proEndedSubject: "Ihr moyiq Pro ist beendet. Ihre Daten sind noch da",
+    proEndedIntro: "Ihr moyiq Pro-Abonnement wurde gekündigt, daher sind die Pro-Funktionen in Ihrem Konto nicht mehr aktiv.",
     proEndedData: "Es wurde nichts gelöscht: Ihre Buchungen, Budgets und Ziele bleiben auf Ihrem Gerät, und Sie können sie mit den kostenlosen Starter-Funktionen weiter nutzen.",
     proEndedBack: "Wenn Sie zu Pro zurückkehren möchten, können Sie das jederzeit in der App tun.",
     proEndedButton: "Zurück zu Pro",
@@ -1039,7 +1039,7 @@ export function langFromInvoice(invoice: any): EmailLang {
 }
 
 // Un checkout de un Payment Link que no está en PAYMENT_LINK_PLAN no emite
-// licencia (ver checkoutSkipReason). Si es un link de MOY IQ sin cargar, el
+// licencia (ver checkoutSkipReason). Si es un link de moyiq sin cargar, el
 // cliente queda sin clave: se avisa para resolverlo a mano.
 export async function notifyUnmappedTrialCheckout(
   details: { sessionRef: string | null; email: string | null; paymentLink: string | null },
@@ -1047,20 +1047,20 @@ export async function notifyUnmappedTrialCheckout(
 ): Promise<void> {
   if (!config.resendApiKey || !config.alertEmail) return;
   const html = adminEmailHtml(`
-      <p><strong>Checkout pagado de un Payment Link que no es de MOY IQ: no se emitió licencia.</strong></p>
+      <p><strong>Checkout pagado de un Payment Link que no es de moyiq: no se emitió licencia.</strong></p>
       <ul>
         <li>session: ${details.sessionRef ?? "(sin session)"}</li>
         <li>email del cliente: ${details.email ?? "(sin email)"}</li>
         <li>payment_link: ${details.paymentLink ?? "(sin payment_link)"}</li>
       </ul>
-      <p>Si es un link de MOY IQ, falta agregarlo a PAYMENT_LINK_PLAN (webhookLogic.ts) y emitir la licencia a mano. Si es un link retirado o de otro producto, revisar en Stripe de qué cuenta vino el evento.</p>`);
+      <p>Si es un link de moyiq, falta agregarlo a PAYMENT_LINK_PLAN (webhookLogic.ts) y emitir la licencia a mano. Si es un link retirado o de otro producto, revisar en Stripe de qué cuenta vino el evento.</p>`);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "MOY IQ: checkout sin licencia (Payment Link desconocido)", html,
+        subject: "moyiq: checkout sin licencia (Payment Link desconocido)", html,
       }),
     });
     if (!res.ok) console.error(`notifyUnmappedTrialCheckout: Resend error ${res.status} ${await res.text()}`);
@@ -1096,7 +1096,7 @@ export async function handleInvoicePaid(invoice: any, config: WebhookConfig): Pr
 
 // customer.subscription.deleted: revoca por suscripción. Un fallo de red de
 // la RPC devuelve 500 para que Stripe reintente; "not found" es normal.
-// Si revocó una licencia de MOY IQ, avisa "tu Pro terminó, tus datos siguen"
+// Si revocó una licencia de moyiq, avisa "tu Pro terminó, tus datos siguen"
 // (C-35). Best-effort: la revocación ya está hecha y un reintento de Stripe
 // encontraría la licencia revocada (revoked=0) y no reenviaría el correo.
 export async function handleSubscriptionDeleted(subscription: any, config: WebhookConfig): Promise<HandlerResult> {

@@ -146,7 +146,7 @@ export function AppProvider({ children }) {
     try {
       const ups = await reconcileRecurringSources()
       if (ups.length) dispatch({ type: 'SET_RECURRING', items: await dbGetAll('recurring') })
-    } catch (e) { console.error('[MOY IQ] fijos de suscripciones/deudas:', e) }
+    } catch (e) { console.error('[moyiq] fijos de suscripciones/deudas:', e) }
   }, [])
 
   // ── Borrado con deshacer ──────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ export function AppProvider({ children }) {
     try {
       const next = ruleAfterLinkedRecord(await dbGetAll('recurring'), record, { deleted })
       if (next) { await dbAdd('recurring', next); dispatch({ type: 'UPSERT_RULE', item: next }) }
-    } catch (e) { console.error('[MOY IQ] fijo del registro borrado:', e) }
+    } catch (e) { console.error('[moyiq] fijo del registro borrado:', e) }
   }
   // `linked` (opcional): registros que se borran y se restauran JUNTO con el
   // principal, con un solo "Deshacer" — ej. los ingresos que creó un cobro de
@@ -223,7 +223,7 @@ export function AppProvider({ children }) {
       if (upserts.length || adv || created) await rehydrate({ notLocalChange: true })
       if (created) showToast(tr(created === 1 ? 'rec.toast.autoOne' : 'rec.toast.autoMany', { n: created }), 'ok')
     } catch (e) {
-      console.error('[MOY IQ] mantenimiento de fijos:', e)
+      console.error('[moyiq] mantenimiento de fijos:', e)
     } finally {
       maintRef.current = false
     }
@@ -593,7 +593,7 @@ export function AppProvider({ children }) {
       const backup = {
         _meta: {
           version:    '1.5',
-          app:        'MOY IQ',
+          app:        'moyiq',
           createdAt:  new Date().toISOString(),
           recordCount: {
             incomes:       (data.incomes       || []).length,

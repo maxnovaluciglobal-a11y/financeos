@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Read-only check: do the Stripe Payment Links of MOY IQ charge what the code says?
+// Read-only check: do the Stripe Payment Links of moyiq charge what the code says?
 // Compares Stripe (payment links + line items) with src/config.js (config.pricing) and
 // supabase/functions/stripe-webhook/webhookLogic.ts (TRIAL_DAYS, PRO_LIST_PRICE_CENTS,
 // the plink ids), and, with --landing <dir>, the prices written in the landing pages.
 //
 //   STRIPE_RO_KEY=rk_live_... node scripts/verifyStripePrices.mjs [--landing <dir>]
-//   (key: a RESTRICTED, READ-ONLY key of the MOY IQ Stripe account; it is only sent to api.stripe.com
+//   (key: a RESTRICTED, READ-ONLY key of the moyiq Stripe account; it is only sent to api.stripe.com
 //    and never printed.) Without the key: `security find-generic-password -s moyiq-stripe-ro -w`.
 // Exit: 0 all consistent, 1 mismatch, 2 cannot check (no key, bad key, network).
 import fs from 'node:fs'
@@ -97,7 +97,7 @@ async function main() {
   const args = process.argv.slice(2)
   const key = process.env.STRIPE_RO_KEY
   if (!key) {
-    console.error('verifyStripePrices: STRIPE_RO_KEY is not set (restricted read-only key of the MOY IQ account)')
+    console.error('verifyStripePrices: STRIPE_RO_KEY is not set (restricted read-only key of the moyiq account)')
     process.exit(2)
   }
   const li = args.indexOf('--landing')

@@ -1,6 +1,6 @@
 // invest-handoff: lógica pura y llamadas a Auth, sin Deno.env, para testear en vitest.
 //
-// Pasar el refresh token de MOY IQ a Invest cerraría las dos sesiones: Auth rota
+// Pasar el refresh token de moyiq a Invest cerraría las dos sesiones: Auth rota
 // el refresh token y, si la misma familia aparece en dos clientes, la revoca
 // entera. Esta función entrega en cambio el `hashed_token` de un magic link que
 // NO se envía por correo (generate_link no envía nada). Invest lo canjea con

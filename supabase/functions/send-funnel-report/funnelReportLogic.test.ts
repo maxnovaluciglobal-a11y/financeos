@@ -10,7 +10,7 @@ const DATA: ReportData = {
   leads: [{ etapa: "starter", emails: 2, confirmados: 1 }],
   leads_previous: [{ etapa: "starter", emails: 1, confirmados: 1 }],
 };
-const config = { supabaseUrl: "https://x.supabase.co", serviceRole: "srv", resendApiKey: "re", fromEmail: "MOY IQ <hola@moyiq.app>" };
+const config = { supabaseUrl: "https://x.supabase.co", serviceRole: "srv", resendApiKey: "re", fromEmail: "moyiq <hola@moyiq.app>" };
 
 function fakeFetch(data: ReportData) {
   const calls: { url: string; body: any }[] = [];
@@ -52,7 +52,7 @@ describe("send-funnel-report (EST-9)", () => {
     expect(html.match(/Meta al 17-ene-2027/g)).toHaveLength(6);
     expect(html).toContain("+1 (+50 %)");
     expect(html).toContain("s/d");
-    expect(html).toContain("background:#14213D");
+    expect(html).toContain("background:#3C2282");
     expect(html).not.toMatch(/\bvos\b|tenés|podés|querés/);
     expect(renderReport(DATA, { preview: true }).subject.startsWith("[Vista previa]")).toBe(true);
   });

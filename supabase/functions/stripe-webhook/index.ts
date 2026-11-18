@@ -39,6 +39,7 @@ import { userIdFromClientReference } from "../_shared/emailLang.ts";
 import { subscribeToNewsletter, autoSubscribeEnabled } from "../_shared/newsletterSubscribe.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const NEWSLETTER_PROXY_URL = Deno.env.get("NEWSLETTER_PROXY_URL");
 const NEWSLETTER_PROXY_TOKEN = Deno.env.get("NEWSLETTER_PROXY_TOKEN");
@@ -58,7 +59,7 @@ const config: WebhookConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("FROM_EMAIL"), "licencias@moyiq.app"),
   alertEmail: Deno.env.get("ALERT_EMAIL") ?? "maxnovaluciglobal@gmail.com",
   portalUrl: Deno.env.get("STRIPE_PORTAL_URL") || undefined,
 };
@@ -106,7 +107,7 @@ Deno.serve(withErrorReporting("stripe-webhook", async (req) => {
     if (skipReason) {
       console.warn(`Checkout ignorado (${skipReason}): payment_status=${session.payment_status} amount=${session.amount_total ?? 0} mode=${session.mode} payment_link=${session.payment_link ?? "-"} session=${session.id}`);
       if (skipReason === "unknown_payment_link") {
-        // Link sin mapear: si es de MOY IQ, el cliente pagó (o dejó su
+        // Link sin mapear: si es de moyiq, el cliente pagó (o dejó su
         // tarjeta) y no recibió clave. Aviso best-effort, no cambia el 200.
         notifyUnmappedTrialCheckout({
           sessionRef: session.id ?? null,
@@ -162,7 +163,7 @@ Deno.serve(withErrorReporting("stripe-webhook", async (req) => {
       // emisión pese a sessionAlreadyProcessed).
       notifyNewProPurchase({ email, plan, interval: trial ? `${interval ?? "?"} (prueba de ${TRIAL_DAYS} días, sin cobro todavía)` : interval }, config).catch(() => {});
       // Pedido de Walter 21-sep-2026: todo plan pago (Personal/Starter y Pro)
-      // se suscribe también a la publication MOY IQ del newsletter semanal —
+      // se suscribe también a la publication moyiq del newsletter semanal —
       // antes nadie quedaba suscrito automáticamente al pagar.
       // Desde oct-2026 solo con NEWSLETTER_AUTO_SUBSCRIBE_PRO=true (ver arriba).
       if (NEWSLETTER_AUTO_SUBSCRIBE_PRO) {

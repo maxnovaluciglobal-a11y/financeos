@@ -1,7 +1,7 @@
 // supabase/functions/auth-email-hook/index.ts
 // Supabase Auth "Send Email Hook" — reemplaza el envío nativo de Supabase
 // (plantilla genérica, sin marca) para TODOS los correos de auth del
-// proyecto compartido MOY IQ + Invest. Configurado en el dashboard
+// proyecto compartido moyiq + Invest. Configurado en el dashboard
 // (Authentication → Hooks → Send Email) apuntando a esta función, con el
 // secreto SEND_EMAIL_HOOK_SECRET generado ahí mismo.
 //

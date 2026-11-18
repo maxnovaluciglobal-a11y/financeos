@@ -1,7 +1,7 @@
 // src/core/deviceOwner.js
 // Aislamiento por cuenta en el dispositivo (18-oct-2026).
 //
-// MOY IQ guarda las finanzas solo en el dispositivo (IndexedDB) y la licencia,
+// moyiq guarda las finanzas solo en el dispositivo (IndexedDB) y la licencia,
 // el Starter elegido y los ajustes locales en localStorage. Antes nada de eso
 // estaba atado a una cuenta: si en el mismo navegador entraba otra cuenta,
 // veía los datos y hasta el plan de la anterior. Ahora cada cuenta tiene su

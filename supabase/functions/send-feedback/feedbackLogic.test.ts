@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { parseFeedback, claimFeedback, claimNps, sendFeedbackEmail, renderFeedbackEmail, MAX_MESSAGE } from './feedbackLogic.ts'
 import { corsHeaders, ALLOWED_ORIGINS, FALLBACK_ORIGIN } from './cors.ts'
 
-const CONFIG = { supabaseUrl: 'https://p.supabase.co', serviceRole: 'srv', resendApiKey: 're', supportEmail: 'support@moyiq.app', fromEmail: 'MOY IQ <hola@moyiq.app>' }
+const CONFIG = { supabaseUrl: 'https://p.supabase.co', serviceRole: 'srv', resendApiKey: 're', supportEmail: 'support@moyiq.app', fromEmail: 'moyiq <hola@moyiq.app>' }
 afterEach(() => { vi.unstubAllGlobals() })
 
 describe('send-feedback (C-39 / PRD-5): entrada', () => {
@@ -65,7 +65,7 @@ describe('send-feedback: NPS automático (PRD-5)', () => {
   })
   it('el correo dice que es el NPS automático y aguanta el comentario vacío', () => {
     const m = renderFeedbackEmail({ kind: 'nps', message: '', nps: 7, log: null, meta: { trigger: 'movements10' } }, { email: 'a@b.co' })
-    expect(m.subject).toBe('MOY IQ · NPS automático (NPS 7)')
+    expect(m.subject).toBe('moyiq · NPS automático (NPS 7)')
     expect(m.text).toContain('(sin comentario)')
     expect(m.text).toContain('trigger: movements10')
   })

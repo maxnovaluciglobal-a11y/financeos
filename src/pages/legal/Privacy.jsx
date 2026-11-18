@@ -1,5 +1,5 @@
 // src/pages/legal/Privacy.jsx
-// Política de Privacidad — MOY IQ (es/en/pt/de, según settings.language).
+// Política de Privacidad — moyiq (es/en/pt/de, según settings.language).
 // El texto vive en ./privacyContent.jsx (sin hooks, testeado en legal.test.js); este archivo
 // solo elige el idioma. Idioma desconocido → español.
 

@@ -139,14 +139,14 @@ export function followupMessage(
   const subs = result.stripeSubscriptions ?? [];
   const news = result.newsletterFollowup === true && !!email;
   if (!result.ok || (subs.length === 0 && !news)) return null;
-  const lines = ["Una cuenta de MOY IQ se borró desde Ajustes. Los datos del servidor ya no están; falta:", ""];
+  const lines = ["Una cuenta de moyiq se borró desde Ajustes. Los datos del servidor ya no están; falta:", ""];
   if (subs.length) {
     lines.push(result.stripeAutoFailed
       ? "- La cancelación automática en Stripe falló (ver edge_function_errors). Cancelar a mano, sin reembolso salvo pedido:"
-      : "- Cancelar en Stripe (cuenta MOY IQ) estas suscripciones, sin reembolso salvo pedido:");
+      : "- Cancelar en Stripe (cuenta moyiq) estas suscripciones, sin reembolso salvo pedido:");
     for (const s of subs) lines.push(`    ${s}`);
   }
   if (news) lines.push(`- Quitar del newsletter (Resend) el contacto: ${email}`);
   lines.push("", "Después de hacerlo, borrar este correo.");
-  return { subject: "MOY IQ · borrado de cuenta: paso manual pendiente", text: lines.join("\n") };
+  return { subject: "moyiq · borrado de cuenta: paso manual pendiente", text: lines.join("\n") };
 }

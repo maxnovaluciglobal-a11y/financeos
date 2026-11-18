@@ -260,7 +260,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
             </div>
           )}
           <div className={s.appVersion}>
-            MOY IQ v1.5 · MAXNOVA & LUCI Global LLC<br/>
+            moyiq v1.5 · MAXNOVA & LUCI Global LLC<br/>
             <span style={{opacity:.5}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('nav.noServerTag')}</span>
           </div>
           <div style={{marginTop:6}}><BackupStatusBadge compact /></div>

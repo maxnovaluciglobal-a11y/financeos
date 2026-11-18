@@ -11,7 +11,7 @@
 // 12, solo para quien no convirtió en ninguno de los 3 anteriores). Ver el
 // .md para el detalle de qué cambió y por qué en cada email.
 //
-// Remitente: MOY IQ <hola@moyiq.app> — separado a propósito del transaccional
+// Remitente: moyiq <hola@moyiq.app> — separado a propósito del transaccional
 // (licencias@moyiq.app, usado por stripe-webhook y send-report-email). Es
 // marketing/nurture, no transaccional; mezclar los dos golpea la reputación
 // de entrega del remitente que sí importa para logins/recibos. Mismo dominio
@@ -67,7 +67,7 @@ export interface NurtureEmailConfig {
   supabaseUrl: string;
   serviceRole: string;
   resendApiKey?: string;
-  fromEmail: string; // "MOY IQ <hola@moyiq.app>"
+  fromEmail: string; // "moyiq <hola@moyiq.app>"
   cronSecret?: string;
   landingUrl: string; // "https://moyiq.app" — para armar el link de unsubscribe
 }
@@ -108,7 +108,7 @@ function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): s
   return emailLayout({
     lang,
     bodyHtml,
-    footerHtml: `MOY IQ · ${COMPANY_POSTAL_HTML}.
+    footerHtml: `moyiq · ${COMPANY_POSTAL_HTML}.
         <a href="${unsubUrl}">${UNSUBSCRIBE_LABEL[lang]}</a>.`,
   });
 }

@@ -1,5 +1,5 @@
 // src/pages/legal/License.jsx
-// Términos de Licencia por plan — MOY IQ (es/en/pt/de, según settings.language).
+// Términos de Licencia por plan — moyiq (es/en/pt/de, según settings.language).
 // El texto vive en ./licenseContent.jsx (sin hooks, testeado en legal.test.js); este archivo
 // solo elige el idioma. Idioma desconocido → español.
 

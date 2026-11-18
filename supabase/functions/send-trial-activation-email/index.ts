@@ -10,15 +10,16 @@ import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { runTrialCron, sendPreview, type TrialConfig } from "./trialActivationLogic.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const config: TrialConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL"), "hola@moyiq.app"),
   cronSecret: Deno.env.get("CRON_SECRET"),
   portalUrl: Deno.env.get("STRIPE_PORTAL_URL") || undefined,
-  billingFromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
+  billingFromEmail: brandedSender(Deno.env.get("FROM_EMAIL"), "licencias@moyiq.app"),
 };
 
 function json(body: unknown, status: number) {

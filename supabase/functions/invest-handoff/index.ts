@@ -1,4 +1,4 @@
-// invest-handoff: "Abrir Invest" desde MOY IQ con la sesión iniciada. Ver ./investHandoffLogic.ts.
+// invest-handoff: "Abrir Invest" desde moyiq con la sesión iniciada. Ver ./investHandoffLogic.ts.
 // Deploy: supabase functions deploy invest-handoff --project-ref nelwgbcddwiaimzbcuas --use-api --no-verify-jwt
 // verify_jwt=false (supabase/config.toml): el JWT se verifica acá contra Auth,
 // así el preflight y un token vencido reciben una respuesta con CORS.

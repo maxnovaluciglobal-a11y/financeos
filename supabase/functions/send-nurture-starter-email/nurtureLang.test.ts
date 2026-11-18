@@ -13,7 +13,7 @@ const CONFIG: NurtureEmailConfig = {
   supabaseUrl: 'https://proj.supabase.co',
   serviceRole: 'srv-key',
   resendApiKey: 're_key',
-  fromEmail: 'MOY IQ <hola@moyiq.app>',
+  fromEmail: 'moyiq <hola@moyiq.app>',
   cronSecret: 'sekret',
   landingUrl: 'https://moyiq.app',
 }

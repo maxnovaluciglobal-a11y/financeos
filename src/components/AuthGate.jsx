@@ -1,6 +1,6 @@
 // src/components/AuthGate.jsx
 // Login obligatorio — corre ANTES de LicenseGate. Sin esto, nadie usa la app
-// (ni siquiera Starter). Antes del 12-sep-2026 MOY IQ no tenía ningún
+// (ni siquiera Starter). Antes del 12-sep-2026 moyiq no tenía ningún
 // concepto de cuenta; esto no reemplaza esa arquitectura local-first (los
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.

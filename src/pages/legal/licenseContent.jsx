@@ -1,5 +1,5 @@
 // src/pages/legal/licenseContent.jsx
-// Términos de Licencia por Plan — MOY IQ, contenido por idioma (es/en/pt/de).
+// Términos de Licencia por Plan — moyiq, contenido por idioma (es/en/pt/de).
 // Sin hooks ni useT: License.jsx elige el idioma y legal.test.js lo renderiza en node.
 // Modelo vigente desde 2026-09-12: Starter gratis (uso personal, no comercial) / Pro por
 // suscripción US$4.99 mensual o US$39.99 anual (uso comercial con hasta 30 clientes).
@@ -19,6 +19,7 @@ import React from 'react'
 import s from './legal.module.css'
 import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
+import { withRebrandNotice } from './companyBlock.jsx'
 
 export const PLANS = {
   es: [
@@ -50,7 +51,7 @@ export const PLANS = {
       notAllowed: [
         'Compartir la clave de licencia con terceros (cada asesor necesita su propia licencia)',
         'Revender el acceso o cobrarle a terceros por usar tu instancia',
-        'Usar el nombre o la marca "MOY IQ" como propios',
+        'Usar el nombre o la marca "moyiq" como propios',
       ],
     },
   ],
@@ -83,7 +84,7 @@ export const PLANS = {
       notAllowed: [
         'Sharing the license key with third parties (each advisor needs their own license)',
         'Reselling access or charging third parties to use your instance',
-        'Using the "MOY IQ" name or brand as your own',
+        'Using the "moyiq" name or brand as your own',
       ],
     },
   ],
@@ -116,7 +117,7 @@ export const PLANS = {
       notAllowed: [
         'Compartilhar a chave de licença com terceiros (cada consultor precisa da sua própria licença)',
         'Revender o acesso ou cobrar de terceiros pelo uso da sua instância',
-        'Usar o nome ou a marca "MOY IQ" como próprios',
+        'Usar o nome ou a marca "moyiq" como próprios',
       ],
     },
   ],
@@ -149,7 +150,7 @@ export const PLANS = {
       notAllowed: [
         'Weitergabe des Lizenzschlüssels an Dritte (jede Beraterin und jeder Berater benötigt eine eigene Lizenz)',
         'Weiterverkauf des Zugangs oder Entgelt von Dritten für die Nutzung Ihrer Instanz',
-        'Verwendung des Namens oder der Marke „MOY IQ“ als eigene',
+        'Verwendung des Namens oder der Marke „moyiq“ als eigene',
       ],
     },
   ],
@@ -158,7 +159,7 @@ export const PLANS = {
 export const COPY = {
   es: {
     title: 'Términos de Licencia',
-    intro: 'El plan que uses determina cómo puedes usar MOY IQ. Para usar la app necesitas una cuenta gratuita. Starter es gratis, de uso personal y no vence; Pro es una suscripción con renovación automática que permite uso profesional con hasta 30 clientes.',
+    intro: 'El plan que uses determina cómo puedes usar moyiq. Para usar la app necesitas una cuenta gratuita. Starter es gratis, de uso personal y no vence; Pro es una suscripción con renovación automática que permite uso profesional con hasta 30 clientes.',
     allowed: '✓ Permitido',
     notAllowed: '✗ No permitido',
     billingTitle: 'Suscripción Pro: renovación y cancelación',
@@ -166,18 +167,18 @@ export const COPY = {
     billing2: 'Puedes cancelar en línea cuando quieras en moyiq.app/cancelar.html (cuando esté disponible, también en Cuenta → Gestionar suscripción) o escribiendo a support@moyiq.app. La cancelación rige al final del período ya pagado y hasta entonces conservas Pro. No se hacen reembolsos parciales por el tiempo no usado, salvo la garantía técnica de 14 días, el derecho de desistimiento de los consumidores de la UE y lo que exija la ley imperativa de tu país, según los Términos de Uso.',
     billing3: 'Al cancelar o si un cobro de renovación no se puede procesar, tu cuenta pasa automáticamente al plan Starter. No pierdes tus datos, solo el acceso a las funciones exclusivas de Pro.',
     enterpriseTitle: 'Enterprise / marca blanca',
-    enterpriseText: 'La redistribución de MOY IQ bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@moyiq.app para una propuesta.',
+    enterpriseText: 'La redistribución de moyiq bajo marca propia, el uso en múltiples instancias para clientes o integraciones a medida se contratan por separado. Escríbenos a support@moyiq.app para una propuesta.',
     warrantyTitle: 'Garantías y limitaciones',
     warranty1: 'El software se proporciona "tal cual", sin garantía de ningún tipo, expresa o implícita, salvo la garantía técnica de 14 días de los Términos de Uso y los derechos que la ley aplicable no permita excluir. En ningún caso MAXNOVA & LUCI Global LLC será responsable de daños directos, indirectos, incidentales o consecuentes que surjan del uso o la imposibilidad de uso del software.',
-    warranty2: 'Las funciones de análisis financiero de MOY IQ son de orientación general y no constituyen asesoría financiera, tributaria ni legal certificada.',
+    warranty2: 'Las funciones de análisis financiero de moyiq son de orientación general y no constituyen asesoría financiera, tributaria ni legal certificada.',
     formerNameTitle: 'Nombre anterior',
-    formerName: 'MOY IQ se llamaba antes FinanceOS. Las licencias emitidas con ese nombre (claves con formato FNOS-…) siguen siendo válidas; el cambio de nombre no modifica sus derechos.',
+    formerName: 'Moyiq se llamaba antes MOY IQ y, antes, FinanceOS. Las licencias emitidas con esos nombres (claves con formato FNOS-…) siguen siendo válidas; el cambio de nombre no modifica sus derechos.',
     contactTitle: 'Contacto para licencias',
     contactText: 'Para consultas sobre cambio de plan, usos no contemplados o licencias personalizadas: ',
   },
   en: {
     title: 'License Terms',
-    intro: 'The plan you use determines how you may use MOY IQ. You need a free account to use the app. Starter is free, for personal use, and never expires; Pro is an automatically renewing subscription that allows professional use with up to 30 clients.',
+    intro: 'The plan you use determines how you may use moyiq. You need a free account to use the app. Starter is free, for personal use, and never expires; Pro is an automatically renewing subscription that allows professional use with up to 30 clients.',
     allowed: '✓ Allowed',
     notAllowed: '✗ Not allowed',
     billingTitle: 'Pro subscription: renewal and cancellation',
@@ -185,18 +186,18 @@ export const COPY = {
     billing2: 'You can cancel online anytime at moyiq.app/en/cancel.html (when available, also under Account → Manage subscription) or by writing to support@moyiq.app. Cancellation takes effect at the end of the period already paid, and you keep Pro until then. There are no partial refunds for unused time, except under the 14-day technical guarantee, the EU consumer right of withdrawal, and where mandatory law in your country requires one, as set out in the Terms of Use.',
     billing3: 'When you cancel, or if a renewal charge cannot be processed, your account moves automatically to the Starter plan. You keep your data; you only lose access to Pro-only features.',
     enterpriseTitle: 'Enterprise / white-label',
-    enterpriseText: 'Redistributing MOY IQ under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@moyiq.app for a proposal.',
+    enterpriseText: 'Redistributing moyiq under your own brand, multi-instance use for clients, or custom integrations are contracted separately. Write to support@moyiq.app for a proposal.',
     warrantyTitle: 'Warranties and limitations',
     warranty1: 'The software is provided "as is", without warranty of any kind, express or implied, other than the 14-day technical guarantee in the Terms of Use and any rights that applicable law does not allow to be excluded. In no event shall MAXNOVA & LUCI Global LLC be liable for direct, indirect, incidental, or consequential damages arising from the use of, or inability to use, the software.',
-    warranty2: "MOY IQ's financial analysis features provide general guidance and are not certified financial, tax, or legal advice.",
+    warranty2: "moyiq's financial analysis features provide general guidance and are not certified financial, tax, or legal advice.",
     formerNameTitle: 'Former name',
-    formerName: 'MOY IQ was previously called FinanceOS. Licenses issued under that name (keys in the FNOS-… format) remain valid; the name change does not alter their rights.',
+    formerName: 'Moyiq was previously called MOY IQ and, before that, FinanceOS. Licenses issued under those names (keys in the FNOS-… format) remain valid; the name change does not alter their rights.',
     contactTitle: 'License contact',
     contactText: 'For plan changes, uses not covered here, or custom licenses: ',
   },
   pt: {
     title: 'Termos de Licença',
-    intro: 'O plano que você usa determina como pode usar o MOY IQ. Para usar o app você precisa de uma conta gratuita. O Starter é gratuito, de uso pessoal e não vence; o Pro é uma assinatura com renovação automática que permite uso profissional com até 30 clientes.',
+    intro: 'O plano que você usa determina como pode usar o moyiq. Para usar o app você precisa de uma conta gratuita. O Starter é gratuito, de uso pessoal e não vence; o Pro é uma assinatura com renovação automática que permite uso profissional com até 30 clientes.',
     allowed: '✓ Permitido',
     notAllowed: '✗ Não permitido',
     billingTitle: 'Assinatura Pro: renovação e cancelamento',
@@ -204,19 +205,19 @@ export const COPY = {
     billing2: 'Você pode cancelar online quando quiser em moyiq.app/cancelar.html (quando estiver disponível, também em Conta → Gerenciar assinatura) ou escrevendo para support@moyiq.app. O cancelamento vale ao final do período já pago e até lá você mantém o Pro. Não há reembolso parcial pelo tempo não utilizado, exceto pela garantia técnica de 14 dias, pelo direito de arrependimento dos consumidores da UE e pelo que a lei imperativa do seu país exigir, conforme os Termos de Uso.',
     billing3: 'Ao cancelar, ou se uma cobrança de renovação não puder ser processada, sua conta passa automaticamente para o plano Starter. Você não perde seus dados, apenas o acesso às funções exclusivas do Pro.',
     enterpriseTitle: 'Enterprise / marca branca',
-    enterpriseText: 'A redistribuição do MOY IQ sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@moyiq.app para receber uma proposta.',
+    enterpriseText: 'A redistribuição do moyiq sob marca própria, o uso em múltiplas instâncias para clientes ou integrações sob medida são contratados separadamente. Escreva para support@moyiq.app para receber uma proposta.',
     warrantyTitle: 'Garantias e limitações',
     warranty1: 'O software é fornecido "no estado em que se encontra", sem garantia de qualquer tipo, expressa ou implícita, exceto a garantia técnica de 14 dias dos Termos de Uso e os direitos que a lei aplicável não permite excluir. Em nenhum caso a MAXNOVA & LUCI Global LLC será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso ou da impossibilidade de uso do software.',
-    warranty2: 'As funções de análise financeira do MOY IQ são de orientação geral e não constituem aconselhamento financeiro, tributário nem jurídico certificado.',
+    warranty2: 'As funções de análise financeira do moyiq são de orientação geral e não constituem aconselhamento financeiro, tributário nem jurídico certificado.',
     formerNameTitle: 'Nome anterior',
-    formerName: 'O MOY IQ se chamava FinanceOS. As licenças emitidas com esse nome (chaves no formato FNOS-…) continuam válidas; a mudança de nome não altera os seus direitos.',
+    formerName: 'O moyiq se chamava MOY IQ e, antes disso, FinanceOS. As licenças emitidas com esses nomes (chaves no formato FNOS-…) continuam válidas; a mudança de nome não altera os seus direitos.',
     contactTitle: 'Contato para licenças',
     contactText: 'Para questões sobre mudança de plano, usos não previstos ou licenças personalizadas: ',
   },
   // Laufzeit und Kündigung folgen den AGB (de/agb.html § 6), nicht den anderen Sprachen.
   de: {
     title: 'Lizenzbedingungen',
-    intro: 'Der Tarif, den Sie nutzen, bestimmt, wie Sie MOY IQ verwenden dürfen. Für die Nutzung benötigen Sie ein kostenloses Benutzerkonto. Starter ist kostenlos, für private Zwecke und unbefristet; Pro ist ein Abo, das sich automatisch verlängert und die berufliche Nutzung mit bis zu 30 Klientinnen und Klienten erlaubt.',
+    intro: 'Der Tarif, den Sie nutzen, bestimmt, wie Sie moyiq verwenden dürfen. Für die Nutzung benötigen Sie ein kostenloses Benutzerkonto. Starter ist kostenlos, für private Zwecke und unbefristet; Pro ist ein Abo, das sich automatisch verlängert und die berufliche Nutzung mit bis zu 30 Klientinnen und Klienten erlaubt.',
     allowed: '✓ Erlaubt',
     notAllowed: '✗ Nicht erlaubt',
     billingTitle: 'Pro-Abo: Verlängerung und Kündigung',
@@ -232,12 +233,12 @@ export const COPY = {
     ),
     billing3: 'Nach Ende des Abos, auch wenn eine Verlängerungszahlung nicht durchgeführt werden kann, wird Ihr Konto auf Starter umgestellt. Ihre Daten bleiben erhalten; nur die Pro-Funktionen stehen nicht mehr zur Verfügung.',
     enterpriseTitle: 'Enterprise / White-Label',
-    enterpriseText: 'Die Weitergabe von MOY IQ unter eigener Marke, die Nutzung in mehreren Instanzen für Klienten oder individuelle Integrationen werden gesondert vereinbart. Schreiben Sie uns an support@moyiq.app für ein Angebot.',
+    enterpriseText: 'Die Weitergabe von moyiq unter eigener Marke, die Nutzung in mehreren Instanzen für Klienten oder individuelle Integrationen werden gesondert vereinbart. Schreiben Sie uns an support@moyiq.app für ein Angebot.',
     warrantyTitle: 'Gewährleistung und Haftung',
     warranty1: 'Es gelten die gesetzlichen Vorschriften über Mängel digitaler Produkte (§§ 327 ff. BGB) sowie die Haftungsregeln der AGB. Zusätzlich gilt die freiwillige technische Garantie von 14 Tagen ab Kauf.',
-    warranty2: 'Die Finanzanalysen in MOY IQ dienen der allgemeinen Orientierung und stellen keine Finanz-, Steuer- oder Rechtsberatung dar.',
+    warranty2: 'Die Finanzanalysen in moyiq dienen der allgemeinen Orientierung und stellen keine Finanz-, Steuer- oder Rechtsberatung dar.',
     formerNameTitle: 'Früherer Name',
-    formerName: 'MOY IQ hieß früher FinanceOS. Unter diesem Namen ausgegebene Lizenzen (Schlüssel im Format FNOS-…) bleiben gültig; die Namensänderung ändert nichts an ihren Rechten.',
+    formerName: 'Moyiq hieß früher MOY IQ und davor FinanceOS. Unter diesen Namen ausgegebene Lizenzen (Schlüssel im Format FNOS-…) bleiben gültig; die Namensänderung ändert nichts an ihren Rechten.',
     contactTitle: 'Kontakt zu Lizenzen',
     contactText: 'Für Fragen zu Tarifwechseln, hier nicht geregelten Nutzungen oder individuellen Lizenzen: ',
   },
@@ -305,7 +306,7 @@ function entry(lang) {
   return {
     title: c.title,
     sub: `${LAST_UPDATED[lang]} · ${OPERATOR}`,
-    Body: () => <LicenseBody c={c} plans={PLANS[lang]} />,
+    Body: withRebrandNotice(() => <LicenseBody c={c} plans={PLANS[lang]} />, lang),
   }
 }
 

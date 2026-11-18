@@ -14,7 +14,7 @@ const CONFIG = {
   supabaseUrl: 'https://proj.supabase.co',
   serviceRole: 'srv-key',
   resendApiKey: 're_key',
-  fromEmail: 'MOY IQ <hola@moyiq.app>',
+  fromEmail: 'moyiq <hola@moyiq.app>',
   replyTo: 'support@moyiq.app',
   landingUrl: 'https://moyiq.app/',
 }
@@ -181,20 +181,20 @@ describe('processOptin', () => {
 })
 
 describe('renderOptinEmail por producto (C-16 / COM-7)', () => {
-  it('Invest y newsletter de Invest nombran MOY IQ Invest', () => {
+  it('Invest y newsletter de Invest nombran moyiq · Inversiones', () => {
     const inv = renderOptinEmail(row(), CONFIG, 'invest')
     expect(inv.subject).toBe(COPY.es.subjectInvest)
-    expect(inv.text).toContain('MOY IQ Invest')
+    expect(inv.text).toContain('moyiq · Inversiones')
     const nl = renderOptinEmail(row({ product: 'invest' }), CONFIG, 'newsletter')
     expect(nl.subject).toBe(COPY.es.subjectInvest)
-    expect(nl.text).toContain('el newsletter de MOY IQ Invest')
+    expect(nl.text).toContain('el newsletter de moyiq · Inversiones')
   })
 
-  it('newsletter de MOY IQ: asunto de siempre e intro del newsletter, en los 4 idiomas', () => {
+  it('newsletter de moyiq: asunto de siempre e intro del newsletter, en los 4 idiomas', () => {
     for (const lang of ['es', 'en', 'pt', 'de'] as const) {
       const e = renderOptinEmail(row({ lang, product: 'moyiq' }), CONFIG, 'newsletter')
       expect(e.subject).toBe(COPY[lang].subject)
-      expect(e.text).toContain(COPY[lang].introNewsletter.replace('{brand}', 'MOY IQ'))
+      expect(e.text).toContain(COPY[lang].introNewsletter.replace('{brand}', 'moyiq'))
       expect(e.text + e.subject).not.toMatch(/[!¡{}]/)
       expect(e.text).not.toMatch(/querés|podés|tenés|confirmá/i)
     }

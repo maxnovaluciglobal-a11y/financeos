@@ -68,7 +68,7 @@ export function buildCronHealthReport(rows: CronHealthRow[], failures: HttpFailu
     `Detalle: select public.cron_health_snapshot(); select * from public.cron_health;`,
     `Guía: financeos-app/docs/monitoreo.md`,
   ].join("\n");
-  return { problems, subject: `[MOY IQ] cron con problemas: ${problems.length}`, text };
+  return { problems, subject: `[moyiq] cron con problemas: ${problems.length}`, text };
 }
 
 export interface CronHealthConfig {

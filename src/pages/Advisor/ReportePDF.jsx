@@ -223,7 +223,7 @@ export function ReporteFinancieroPDF({ data }) {
       title={t('apdf.docTitle', { client, month: monthLabel(activeMonth) })}
       author={brandName}
       subject={t('apdf.subject')}
-      creator="MOY IQ · MAXNOVA & LUCI Global LLC"
+      creator="moyiq · MAXNOVA & LUCI Global LLC"
     >
       {/* ── PÁGINA 1 — Resumen ejecutivo ── */}
       <Page size="A4" style={s.page}>
@@ -529,7 +529,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Disclaimer */}
         <View style={s.disclaimer}>
           <Text style={s.disclaimerText}>
-            {t('apdf.legal')} {brandName !== 'MOY IQ' ? `${t('apdf.madeWith')} ` : ''}
+            {t('apdf.legal')} {brandName !== config.app.name ? `${t('apdf.madeWith')} ` : ''}
             {t('apdf.contact', { email: config.app.supportEmail })}
           </Text>
         </View>

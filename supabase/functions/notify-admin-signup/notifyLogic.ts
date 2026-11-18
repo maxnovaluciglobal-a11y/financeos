@@ -22,7 +22,7 @@ export interface SignupDetails {
 
 export interface NotifyConfig {
   resendApiKey?: string;
-  fromEmail: string; // "MOY IQ <hola@moyiq.app>"
+  fromEmail: string; // "moyiq <hola@moyiq.app>"
   alertEmail: string; // maxnovaluciglobal@gmail.com — decisión de Walter 14-sep
 }
 
@@ -38,7 +38,7 @@ function copyFor(event: SignupEvent): Copy {
   if (event === 'invest_signup') {
     return { subject: 'Nuevo registro — Invest', eyebrow: 'Nuevo en Invest', tag: 'Invest · Panel admin' };
   }
-  return { subject: 'Nuevo Starter — MOY IQ', eyebrow: 'Nuevo Starter', tag: 'Panel admin' };
+  return { subject: 'Nuevo Starter — moyiq', eyebrow: 'Nuevo Starter', tag: 'Panel admin' };
 }
 
 function fmtNow(): string {
@@ -51,15 +51,15 @@ export function renderNotifyEmail(event: SignupEvent, details: SignupDetails): {
   const html = emailLayout({
     lang: 'es',
     tag: copy.tag,
-    bodyHtml: `<p style="margin:0 0 16px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${EMAIL_BRAND.laton700}">${copy.eyebrow}</p>
+    bodyHtml: `<p style="margin:0 0 16px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${EMAIL_BRAND.brand}">${copy.eyebrow}</p>
           <div style="${label}">Email</div>
-          <div style="font-size:19px;font-weight:600;color:${EMAIL_BRAND.navy};word-break:break-all;margin-bottom:${details.fuente ? '16' : '22'}px">${details.email}</div>
+          <div style="font-size:19px;font-weight:600;color:${EMAIL_BRAND.brand};word-break:break-all;margin-bottom:${details.fuente ? '16' : '22'}px">${details.email}</div>
           ${details.fuente ? `
           <div style="${label}">Fuente</div>
           <div style="font-size:14px;color:${EMAIL_BRAND.ink};margin-bottom:22px">${details.fuente}</div>
           ` : ''}
           ${emailButton('https://app.moyiq.app/app/?admin=crm', 'Ver en el panel CRM →')}`,
-    footerHtml: `${fmtNow()} · MOY IQ, notificación automática`,
+    footerHtml: `${fmtNow()} · moyiq, notificación automática`,
   });
   return { subject: copy.subject, html };
 }

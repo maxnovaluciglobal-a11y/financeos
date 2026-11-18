@@ -1,5 +1,5 @@
 // src/pages/Budgets/budgetCopy.js — "Copiar del mes anterior" (R10).
-// En MOY IQ un presupuesto es una categoría + límite mensual que vale para
+// En moyiq un presupuesto es una categoría + límite mensual que vale para
 // todos los meses (la store `budgets` no tiene mes), así que no hay "el
 // presupuesto de septiembre" que copiar. Lo equivalente útil, sin tocar el
 // esquema: armar un presupuesto por categoría con lo que se gastó el mes

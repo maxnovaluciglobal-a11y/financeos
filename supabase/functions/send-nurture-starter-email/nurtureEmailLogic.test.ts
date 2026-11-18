@@ -17,7 +17,7 @@ const CONFIG: NurtureEmailConfig = {
   supabaseUrl: 'https://proj.supabase.co',
   serviceRole: 'srv-key',
   resendApiKey: 're_key',
-  fromEmail: 'MOY IQ <hola@moyiq.app>',
+  fromEmail: 'moyiq <hola@moyiq.app>',
   cronSecret: 'sekret',
   landingUrl: 'https://moyiq.app',
 }
@@ -86,7 +86,7 @@ describe('sendViaResend', () => {
     vi.stubGlobal('fetch', fetchMock)
     expect(await sendViaResend('a@b.com', rendered, CONFIG)).toEqual({ ok: true })
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
-    expect(body.from).toBe('MOY IQ <hola@moyiq.app>')
+    expect(body.from).toBe('moyiq <hola@moyiq.app>')
     expect(body.to).toBe('a@b.com')
   })
 

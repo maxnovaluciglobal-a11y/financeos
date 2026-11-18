@@ -85,13 +85,13 @@ export async function getDB() {
       // abortó el upgrade fue la foto (cuota llena), la base igual llega a v4.
       try {
         _db = await openFinanceDB({ skipSnapshot: true })
-        console.warn('[MOY IQ] upgrade completado sin la foto previa:', e1?.name || e1)
+        console.warn('[moyiq] upgrade completado sin la foto previa:', e1?.name || e1)
         try { localStorage.setItem('fos_snapshot_skipped', new Date().toISOString()) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
         return _db
       } catch (e2) { err = e2 }
     }
     if (await existingDatabase()) {
-      console.error('[MOY IQ] no se pudo abrir la base existente:', err)
+      console.error('[moyiq] no se pudo abrir la base existente:', err)
       throw new DbOpenError(err)
     }
     console.warn('IndexedDB no disponible → localStorage fallback:', err?.message)
@@ -204,7 +204,7 @@ export async function securityDelete(key) {
 }
 
 // ─── wipeLocalDevice ──────────────────────────────────────────────────────────
-// Borrado TOTAL de lo que MOY IQ guarda en este dispositivo: todas las stores
+// Borrado TOTAL de lo que moyiq guarda en este dispositivo: todas las stores
 // (incluidas 'settings' y 'security', que clearAllData() NO toca), las claves
 // locales `fos_*` (fallback de localStorage, historial del IQ Score, última
 // importación…) y la copia previa al sync (`fnos_presync_backup`, que es un

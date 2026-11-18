@@ -16,7 +16,7 @@ const CONFIG = {
   supabaseUrl: 'https://proj.supabase.co',
   serviceRole: 'srv-key',
   resendApiKey: 're_key',
-  fromEmail: 'MOY IQ <hola@moyiq.app>',
+  fromEmail: 'moyiq <hola@moyiq.app>',
   replyTo: 'support@moyiq.app',
   internalTo: ['support@moyiq.app', 'alert@example.com'],
 }
@@ -132,10 +132,10 @@ describe('desistimiento / Widerruf (kind withdrawal, § 356a BGB)', () => {
 
   it('de: Eingangsbestätigung mit Erklärung, Zeitpunkt (Berliner Zeit), Inhalt und Erstattungsfrist, in "Sie"', () => {
     const e = renderCustomerEmail(w({ lang: 'de' }))
-    expect(e.subject).toBe('Eingangsbestätigung Ihres Widerrufs — MOY IQ')
+    expect(e.subject).toBe('Eingangsbestätigung Ihres Widerrufs — moyiq')
     expect(e.text).toContain('Ihre Widerrufserklärung ist am')
     expect(e.text).toMatch(/MESZ|MEZ/)
-    expect(e.text).toContain('Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: MOY IQ Pro.')
+    expect(e.text).toContain('Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: moyiq Pro.')
     expect(e.text).toContain('Pro-Jahresabo vom 02.10.2026')
     expect(e.text).toContain('Art der Erklärung: Widerruf')
     expect(e.text).toContain('14 Tagen')

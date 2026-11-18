@@ -1,6 +1,6 @@
 // src/utils/deepLink.js — destino que abren los botones de los correos.
 //
-// Los correos de MOY IQ (nurture de Starter y del Diagnóstico) enlazan a
+// Los correos de moyiq (nurture de Starter y del Diagnóstico) enlazan a
 // https://app.moyiq.app/app/?open=<destino>&ref=<origen>. La app vive bajo /app/
 // y navega por estado, no por ruta, así que el destino viaja en ?open=. Un valor
 // desconocido se ignora: la app abre donde abriría sin él. Antes de la auditoría
