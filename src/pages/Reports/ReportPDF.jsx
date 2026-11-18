@@ -116,7 +116,7 @@ export default function ReportPDF({ data }) {
   const recColors = { ok: { bg: P.posBg, txt: P.pos }, warn: { bg: P.warnBg, txt: P.warn }, danger: { bg: P.negBg, txt: P.neg }, info: { bg: P.infoBg, txt: P.info } }
 
   return (
-    <Document title={t('rpdf.docTitle', { month: monthLabel })} author="MOY IQ" creator="MOY IQ v1.5">
+    <Document title={t('rpdf.docTitle', { month: monthLabel })} author="moyiq" creator="moyiq v1.5">
       <Page size="A4" style={s.page}>
 
         {/* Header */}

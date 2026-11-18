@@ -1,7 +1,7 @@
 // src/core/appLock.js — bloqueo de la app con PIN y biometría (T14).
 //
 // Qué es y qué no es: un bloqueo de PANTALLA en este dispositivo. Impide que
-// quien tome el teléfono desbloqueado abra MOY IQ y vea los montos. NO cifra
+// quien tome el teléfono desbloqueado abra moyiq y vea los montos. NO cifra
 // los datos guardados: siguen en IndexedDB tal como antes, y alguien con
 // acceso técnico al dispositivo (devtools, backup del navegador) los puede
 // leer. El texto de Ajustes lo dice así, sin prometer más.
@@ -196,7 +196,7 @@ export async function biometricsAvailable() {
 // residentKey 'discouraged': pedimos una credencial NO descubrible, para que
 // no aparezca como passkey en el gestor de contraseñas. Algunos navegadores
 // igual la guardan como passkey (el texto de Ajustes lo advierte).
-export async function createBiometricCredential({ rpName = 'MOY IQ', hostname = location.hostname } = {}) {
+export async function createBiometricCredential({ rpName = 'moyiq', hostname = location.hostname } = {}) {
   const cr = getCrypto()
   const cred = await navigator.credentials.create({
     publicKey: {

@@ -10,7 +10,7 @@
 //
 // Inversiones (Opción 1 de D-08, 30-oct-2026) es distinto: es opt-in para
 // TODAS las cuentas, viejas y nuevas. Lee el portafolio que Invest guarda en el
-// servidor, y MOY IQ es local por defecto: eso no se enciende sin que la
+// servidor, y moyiq es local por defecto: eso no se enciende sin que la
 // persona lo pida. Es gratis y nunca Pro: los datos de mercado no tienen
 // licencia comercial (INV-1).
 export const MODULE_DEFAULTS = { properties: true, advisor: true, investments: false }

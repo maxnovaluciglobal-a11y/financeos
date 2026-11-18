@@ -49,9 +49,6 @@ const s = StyleSheet.create({
   },
   headerLeft: {},
   brandName: { fontSize: 18, fontFamily: F.display, fontWeight: 600, color: P.navy },
-  wordmark:  { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  plate:     { borderWidth: 1.2, borderColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 5 },
-  plateTx:   { fontSize: 10.5, fontFamily: F.mono, fontWeight: 600, color: P.laton700 },
   brandSub:  { fontSize: 8, color: C.ink3, letterSpacing: 0.5 },
   headerRight: { alignItems: 'flex-end' },
   reportTitle: { fontSize: 13, fontFamily: F.display, fontWeight: 600, color: C.ink, marginBottom: 3 },
@@ -166,17 +163,11 @@ const s = StyleSheet.create({
 })
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-// Wordmark con la placa "IQ" en Latón cuando el reporte es de MOY IQ; el
-// nombre del asesor (marca blanca) va como texto.
+// Nombre de la marca en el PDF. El wordmark de moyiq se escribe en minúscula,
+// como el logo; el nombre del asesor (marca blanca) va igual, como texto.
 function BrandMark({ name, size }) {
   const fs = size ? { fontSize: size } : null
-  if (name !== 'MOY IQ') return <Text style={[s.brandName, fs]}>{name}</Text>
-  return (
-    <View style={s.wordmark}>
-      <Text style={[s.brandName, { letterSpacing: 1.4 }, fs]}>MOY</Text>
-      <View style={s.plate}><Text style={[s.plateTx, size ? { fontSize: Math.round(size * 0.58 * 10) / 10 } : null]}>IQ</Text></View>
-    </View>
-  )
+  return <Text style={[s.brandName, fs]}>{name}</Text>
 }
 
 const STATUS_COLORS = { green: C.grn3, yellow: C.amb, red: C.red }
@@ -225,7 +216,7 @@ export function ReporteFinancieroPDF({ data }) {
       title={t('apdf.docTitle', { client, month: monthLabel(activeMonth) })}
       author={brandName}
       subject={t('apdf.subject')}
-      creator="MOY IQ · MAXNOVA & LUCI Global LLC"
+      creator="moyiq · MAXNOVA & LUCI Global LLC"
     >
       {/* ── PÁGINA 1 — Resumen ejecutivo ── */}
       <Page size="A4" style={s.page}>
@@ -531,7 +522,7 @@ export function ReporteFinancieroPDF({ data }) {
         {/* Disclaimer */}
         <View style={s.disclaimer}>
           <Text style={s.disclaimerText}>
-            {t('apdf.legal')} {brandName !== 'MOY IQ' ? `${t('apdf.madeWith')} ` : ''}
+            {t('apdf.legal')} {brandName !== config.app.name ? `${t('apdf.madeWith')} ` : ''}
             {t('apdf.contact', { email: config.app.supportEmail })}
           </Text>
         </View>

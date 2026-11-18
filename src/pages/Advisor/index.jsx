@@ -612,7 +612,7 @@ export default function Advisor() {
         <div style={{background:'var(--sur)',padding:'16px 20px',borderBottom:'0.5px solid var(--brd)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:700,color:'var(--tx)',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
-            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>MOY IQ Pro</div>
+            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>moyiq Pro</div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             {[

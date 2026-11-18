@@ -148,6 +148,7 @@ export default function InvestCard() {
   return (
     <section className={`${hs.card} rise`} aria-labelledby="pano-invest-title" data-tour="pano-invest">
       <div className={s.wrap}>{body()}</div>
+      <p className={s.legal}>{t('invest.privacy')}</p>
       <p className={s.legal}>{t('invest.legal')}</p>
     </section>
   )

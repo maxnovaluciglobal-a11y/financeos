@@ -1,5 +1,5 @@
 // src/admin/AdminCRM.jsx
-// Panel CRM mínimo compartido MOY IQ + Invest (pedido de Walter, 13-sep-2026).
+// Panel CRM mínimo compartido moyiq + Invest (pedido de Walter, 13-sep-2026).
 // Ruta separada (?admin=crm), fuera del flujo de licencia/onboarding de
 // usuarios finales — ver App.jsx isAdminMode(). El acceso real lo impone la
 // policy RLS de crm_contacts (auth.jwt()->>'email' = admin), no esta pantalla:
@@ -507,7 +507,7 @@ function CRMPanel({ session, onSignOut }) {
   return (
     <div style={{ padding: 24, fontFamily: 'var(--sans, sans-serif)', maxWidth: 1280, margin: '0 auto', overflowX: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600 }}>CRM — MOY IQ + Invest</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600 }}>CRM — moyiq + Invest</h1>
         <div style={{ fontSize: 12, color: 'var(--th)' }}>
           {session.user.email} · <button onClick={onSignOut} style={{ fontSize: 12 }}>Salir</button>
         </div>

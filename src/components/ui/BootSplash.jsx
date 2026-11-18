@@ -3,8 +3,8 @@
 // arrancó pero todavía verifica la sesión o la cuenta (C-32).
 export default function BootSplash() {
   return (
-    <div className="boot" role="status" aria-label="MOY IQ">
-      <span>MOY IQ</span>
+    <div className="boot" role="status" aria-label="moyiq">
+      <span>moyiq</span>
       <div className="boot-bar" />
     </div>
   )

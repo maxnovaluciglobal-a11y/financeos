@@ -141,7 +141,7 @@ export function useHomeData() {
     return evaluateCoach(metrics, t).slice(0, 2)
   }, [incomes, expenses, budgets, debts, goals, subs, settings, kpis.incCount, kpis.expCount, t])
 
-  // ── IQ Score — 5 factores del brand book MOY IQ (ver utils/financialScore.js) ──
+  // ── IQ Score — 5 factores del brand book moyiq (ver utils/financialScore.js) ──
   const healthScore = useMemo(() => {
     if (kpis.incCount === 0 && kpis.expCount === 0) return null
     const meta = syncMeta()

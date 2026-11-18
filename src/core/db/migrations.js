@@ -32,13 +32,13 @@ function putSnapshotBestEffort(transaction, record, label) {
     try {
       req = unwrap(transaction).objectStore('backups').put(record)
     } catch (e) {
-      console.warn(`[MOY IQ] foto previa (${label}) omitida:`, e?.name || e)
+      console.warn(`[moyiq] foto previa (${label}) omitida:`, e?.name || e)
       resolve(); return
     }
     req.onsuccess = () => resolve()
     req.onerror = (ev) => {
       ev.preventDefault(); ev.stopPropagation?.()
-      console.warn(`[MOY IQ] foto previa (${label}) omitida:`, req.error?.name || req.error)
+      console.warn(`[moyiq] foto previa (${label}) omitida:`, req.error?.name || req.error)
       resolve()
     }
   })
@@ -127,13 +127,13 @@ export const MIGRATIONS = [
           // sin que aborte la transacción de upgrade.
           req = unwrap(transaction).objectStore('backups').put(record)
         } catch (e) {
-          console.warn('[MOY IQ] foto previa a fijos omitida:', e?.name || e)
+          console.warn('[moyiq] foto previa a fijos omitida:', e?.name || e)
           resolve(); return
         }
         req.onsuccess = () => resolve()
         req.onerror = (ev) => {
           ev.preventDefault(); ev.stopPropagation?.()
-          console.warn('[MOY IQ] foto previa a fijos omitida:', req.error?.name || req.error)
+          console.warn('[moyiq] foto previa a fijos omitida:', req.error?.name || req.error)
           resolve()
         }
       })
@@ -211,7 +211,7 @@ export function runMigrationSteps(db, oldVersion, newVersion, transaction, steps
   }
   if (!chain) return undefined
   return chain.catch((err) => {
-    console.error('[MOY IQ] migración de IndexedDB fallida, se aborta:', err)
+    console.error('[moyiq] migración de IndexedDB fallida, se aborta:', err)
     // eslint-disable-next-line no-restricted-syntax -- al abortar, transaction.done rechaza siempre; el error real ya se registró arriba
     try { transaction?.done?.catch?.(() => {}) } catch { /* la transacción ya terminó: abortar no aplica */ }
     try { transaction?.abort() } catch { /* la transacción ya terminó: abortar no aplica */ }

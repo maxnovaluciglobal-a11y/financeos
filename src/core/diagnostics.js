@@ -8,7 +8,7 @@ import { technicalLog } from './feedback.js'
 export function buildDiagnostics({ entries = getClientErrorLog(), version = '', lang = '', userAgent = '', now = new Date() } = {}) {
   const list = Array.isArray(entries) ? entries : []
   const head = [
-    `MOY IQ ${version}`.trim(),
+    `moyiq ${version}`.trim(),
     `lang: ${lang || '-'}`,
     `ua: ${String(userAgent || '-').slice(0, 200)}`,
     `at: ${now.toISOString()}`,

@@ -9,7 +9,7 @@ describe('registro de errores para soporte (D-16 / ING-4)', () => {
       entries: [{ at: 't1', type: 'render', message: 'No se pudo leer 1.250.000 en Comida', source: 'Dashboard' }],
       version: '1.5.0', lang: 'es', userAgent: 'UA', now,
     })
-    expect(txt).toContain('MOY IQ 1.5.0')
+    expect(txt).toContain('moyiq 1.5.0')
     expect(txt).toContain('lang: es')
     expect(txt).toContain('errors: 1')
     expect(txt).toContain('t1 | render | No se pudo leer # en Comida | Dashboard')

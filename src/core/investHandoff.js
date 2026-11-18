@@ -1,6 +1,6 @@
 // src/core/investHandoff.js — "Abrir Invest" con la sesión iniciada.
 //
-// Nunca se pasa el refresh token ni la sesión de MOY IQ: Auth rota el refresh
+// Nunca se pasa el refresh token ni la sesión de moyiq: Auth rota el refresh
 // token y, si dos clientes usan la misma familia, la revoca y cierra la sesión
 // de los dos. La Edge Function invest-handoff entrega un token de un solo uso
 // (`hashed_token` de un magic link que no se envía) e Invest abre con él una

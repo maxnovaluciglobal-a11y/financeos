@@ -1,9 +1,9 @@
 // src/core/investBridge.js — lee el portafolio de Invest (módulo Inversiones).
 //
-// MOY IQ guarda sus datos en el dispositivo; Invest, en el servidor. Este puente
+// moyiq guarda sus datos en el dispositivo; Invest, en el servidor. Este puente
 // solo LEE: `portfolio_holdings` de la propia cuenta con `authClient` (RLS por
 // auth.uid()) y los precios de la API pública de Invest. No manda al servidor
-// nada de lo que MOY IQ tiene en el dispositivo. El resultado se guarda como
+// nada de lo que moyiq tiene en el dispositivo. El resultado se guarda como
 // totales en una clave `fos_*`, que es de la cuenta (core/deviceOwner.js).
 import { authClient } from './authClient.js'
 import { arsRate, buildSnapshot, currencyOf, holdingFromRow, quoteBatches, realRates, SNAPSHOT_VERSION } from '../utils/investValuation.js'

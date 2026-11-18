@@ -1,6 +1,6 @@
 // src/core/deleteAccount.js — borrado de la cuenta por autoservicio
 // (auditoría 360, C-22 / SEG-5). La Edge Function delete-account borra todo lo
-// que el servidor guarda de la cuenta (las dos apps: MOY IQ e Invest) y la
+// que el servidor guarda de la cuenta (las dos apps: moyiq e Invest) y la
 // cuenta de Auth. Después, este dispositivo borra lo local de ESA cuenta (su
 // base IndexedDB y sus claves): nunca lo de otra cuenta del mismo navegador.
 import { closeDB } from './db/index.js'

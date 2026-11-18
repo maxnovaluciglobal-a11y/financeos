@@ -280,7 +280,7 @@ export const fmtDate = (iso) => {
   return `${d}/${m}`
 }
 
-// Paleta derivada de la familia de marca MOY IQ (navy/latón/verde/ceniza/info/
+// Paleta derivada de la familia de marca moyiq (navy/latón/verde/ceniza/info/
 // warning/error + variantes) — cosmético (dots/badges de categoría), sin
 // relación con datos financieros reales.
 export const CAT_COLORS = {

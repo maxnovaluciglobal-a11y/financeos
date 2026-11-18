@@ -26,7 +26,7 @@ describe('push-sw.js', () => {
     ['pt-BR', 'Seu teste termina em 3 dias.'],
     ['de-DE', 'Ihre Testphase endet in 3 Tagen.'],
   ])('%s: recordatorio de prueba', (lang, start) => {
-    const n = runPush(lang, { title: 'MOY IQ', body: 'respaldo', i18n: { key: 'trialExpiring', days: 3 } })
+    const n = runPush(lang, { title: 'moyiq', body: 'respaldo', i18n: { key: 'trialExpiring', days: 3 } })
     expect(n.body.startsWith(start)).toBe(true)
   })
 

@@ -246,7 +246,7 @@ describe('paridad de las claves de english-ready (es/en/pt/de)', () => {
     // Solo frases (3+ palabras): etiquetas sueltas como "Streaming", "Internet"
     // o "Original" son iguales en varios idiomas a propósito.
     const offenders = []
-    for (const k of pick(es).filter(k => String(es[k]).trim().split(/\s+/).filter(w => /\p{L}/u.test(w)).length >= 3 && !/^MOY IQ v/.test(es[k]))) {
+    for (const k of pick(es).filter(k => String(es[k]).trim().split(/\s+/).filter(w => /\p{L}/u.test(w)).length >= 3 && !/^moyiq v/.test(es[k]))) {
       for (const [lang, d] of [['en', en], ['de', de]]) {
         if (d[k] === es[k]) offenders.push(`${lang}:${k}`)
       }
