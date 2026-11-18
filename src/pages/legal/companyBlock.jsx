@@ -28,7 +28,7 @@ export function CompanyBlock({ lang }) {
   )
 }
 
-// Aviso del cambio de nombre (MOY IQ → moyiq) sobre el cuerpo de cada página.
+// Aviso del cambio de nombre (REBRAND_NOTICE) sobre el cuerpo de cada página.
 export function withRebrandNotice(Body, lang) {
   function BodyWithNotice() {
     return (

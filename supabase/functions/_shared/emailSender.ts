@@ -4,7 +4,7 @@
 // no cambian (hola@, licencias@, invest@ de moyiq.app, verificadas en Resend);
 // solo cambia el nombre que ve quien recibe. El nombre se impone en código
 // aunque el secret (FROM_EMAIL, NURTURE_FROM_EMAIL, NURTURE_FROM_EMAIL_INVEST)
-// todavía diga "moyiq <…>": del secret se toma solo la dirección.
+// todavía tenga el nombre anterior: del secret se toma solo la dirección.
 
 import type { EmailLang } from "./emailLang.ts";
 
@@ -28,7 +28,7 @@ export function investSiteName(lang: EmailLang = "es"): string {
 
 const ADDRESS = /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/;
 
-// "moyiq <hola@moyiq.app>" | "hola@moyiq.app" | undefined → "moyiq <hola@moyiq.app>".
+// "<nombre anterior> <hola@moyiq.app>" | "hola@moyiq.app" | undefined → "moyiq <hola@moyiq.app>".
 export function brandedSender(value: string | null | undefined, fallbackAddress: string, name: string = SENDER_NAME): string {
   const raw = String(value ?? "").trim();
   const inBrackets = raw.match(/<\s*([^<>\s]+)\s*>\s*$/)?.[1];
