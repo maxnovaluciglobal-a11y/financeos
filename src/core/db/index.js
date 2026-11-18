@@ -10,6 +10,7 @@ import { planConfirmations } from '../../utils/recurringConfirm.js'
 import { stripDeviceOnlySettings, mergeIncomingSettings } from '../../utils/money.js'
 import { regionDefaults } from '../../i18n/region.js'
 import { unifyCategoryPayload } from '../../utils/categoryAliases.js'
+import { convertLegacyColorPayload } from '../../utils/legacyColors.js'
 import { dbNameForActiveAccount } from '../deviceOwner.js'
 import { logClientError } from '../../utils/errorLog.js'
 
@@ -279,7 +280,9 @@ export async function importAllData(input) {
   // Un respaldo o blob anterior a la unificación de categorías (migración v5)
   // puede traer "Entretenimiento": se mapea a la canónica al entrar, igual
   // que la migración (presupuestos duplicados se fusionan sumando límites).
-  const data = unifyCategoryPayload(input)
+  // Y metas con el color de la marca anterior (Navy, Latón…) pasan a su
+  // equivalente nuevo (utils/legacyColors.js): respaldo JSON y sync entran acá.
+  const data = convertLegacyColorPayload(unifyCategoryPayload(input))
   // Un respaldo (o un blob del sync) de una versión anterior no trae
   // 'recurring': en ese caso las reglas locales se conservan en vez de
   // vaciarse — si no, sincronizar con un dispositivo sin actualizar borraría

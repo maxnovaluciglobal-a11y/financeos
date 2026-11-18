@@ -29,6 +29,7 @@ import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
 import { applyTheme, watchSystemTheme } from '../utils/theme.js'
+import { convertColorList } from '../utils/legacyColors.js'
 
 export const AppContext = createContext(null)
 
@@ -129,7 +130,9 @@ export function AppProvider({ children }) {
         return []
       }), getSettings(),
     ])
-    const payload = { incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings }
+    // Metas guardadas con el color de la marca anterior: se convierten al leer
+    // (utils/legacyColors.js), sin reescribir la base.
+    const payload = { incomes, expenses, budgets, debts, goals: convertColorList(goals).list, subscriptions, recurring, settings }
     if (opts?.notLocalChange) quietRef.current = payload
     dispatch({ type: 'HYDRATE', payload })
     applyTheme(settings.theme)

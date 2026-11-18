@@ -119,9 +119,9 @@ export const US_DEBTS = [
 // (límite 2026: US$7,500, ver taxCalcUS.js) — la herramienta del país (US →
 // Ahorro fiscal) muestra 401(k)/IRA/HSA.
 export const US_GOALS = [
-  { id: d('us-g1'), name: 'Emergency fund (3 months)',  target: 9000.00, saved: 2350.00, targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B8863B', notes: '' },
-  { id: d('us-g2'), name: 'Roth IRA — this year',       target: 7500.00, saved: 1750.00, targetDate: nextYearDate(4, 15),  priority: 'Media', color: '#14213D', notes: 'Annual limit' },
-  { id: d('us-g3'), name: 'Trip home for the holidays', target: 1800.00, saved:  420.00, targetDate: nextYearDate(12, 15), priority: 'Media', color: '#5B7A99', notes: 'Flights + gifts' },
+  { id: d('us-g1'), name: 'Emergency fund (3 months)',  target: 9000.00, saved: 2350.00, targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B07414', notes: '' },
+  { id: d('us-g2'), name: 'Roth IRA — this year',       target: 7500.00, saved: 1750.00, targetDate: nextYearDate(4, 15),  priority: 'Media', color: '#3C2282', notes: 'Annual limit' },
+  { id: d('us-g3'), name: 'Trip home for the holidays', target: 1800.00, saved:  420.00, targetDate: nextYearDate(12, 15), priority: 'Media', color: '#0E8C8C', notes: 'Flights + gifts' },
 ]
 
 // ── SUSCRIPCIONES ─────────────────────────────────────────────────────────────

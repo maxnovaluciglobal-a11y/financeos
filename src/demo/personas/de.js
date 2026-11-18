@@ -91,9 +91,9 @@ export const DE_DEBTS = [
 
 // "Notgroschen" lo reconoce isEmergencyGoalName (IQ Score / Coach).
 export const DE_GOALS = [
-  { id: d('de-g1'), name: 'Notgroschen (3 Monatsausgaben)', target: 7500.00, saved: 3150.00, targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B8863B', notes: '' },
-  { id: d('de-g2'), name: 'Urlaub in Portugal',            target: 2000.00, saved:  640.00, targetDate: nextYearDate(7, 1),   priority: 'Media', color: '#14213D', notes: '' },
-  { id: d('de-g3'), name: 'ETF-Sparplan — erstes Jahr',    target: 1800.00, saved:  900.00, targetDate: nextYearDate(12, 31), priority: 'Media', color: '#5B7A99', notes: '150 € pro Monat' },
+  { id: d('de-g1'), name: 'Notgroschen (3 Monatsausgaben)', target: 7500.00, saved: 3150.00, targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B07414', notes: '' },
+  { id: d('de-g2'), name: 'Urlaub in Portugal',            target: 2000.00, saved:  640.00, targetDate: nextYearDate(7, 1),   priority: 'Media', color: '#3C2282', notes: '' },
+  { id: d('de-g3'), name: 'ETF-Sparplan — erstes Jahr',    target: 1800.00, saved:  900.00, targetDate: nextYearDate(12, 31), priority: 'Media', color: '#0E8C8C', notes: '150 € pro Monat' },
 ]
 
 const sub = (id, name, category, amount, dd, paymentMethod, notes = '') =>

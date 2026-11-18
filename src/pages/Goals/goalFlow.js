@@ -91,7 +91,7 @@ export function buildGoal(draft, { now = Date.now() } = {}) {
     saved: Math.min(parseAmount(draft.saved), parseAmount(draft.target)),
     targetDate: draft.targetDate || '',
     priority: draft.priority || 'Media',
-    color: draft.color || '#14213D',
+    color: draft.color || '#3C2282',
     createdAt: now,
   }
   if (draft.icon) goal.icon = draft.icon

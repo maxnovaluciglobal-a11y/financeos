@@ -29,7 +29,7 @@ export default function Goals() {
   const incomes = (_incAll || []).filter(r => !r?.inv)   // "disponible para ahorrar" personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const [show, setShow]               = useState(false)
-  const [f, setF]                     = useState({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#14213D' })
+  const [f, setF]                     = useState({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#3C2282' })
   const [err, setErr]                 = useState('')
   const [flow, setFlow]               = useState(null)   // alta corta (R9): { step, draft }
   const [contribGoal, setContribGoal] = useState(null)   // aporte en hoja (R9)
@@ -99,7 +99,7 @@ export default function Goals() {
     if (!f.name.trim() || !f.target || Number(f.target) <= 0) { setErr(t('goals.err.required')); return }
     setErr('')
     await addGoal({ ...f, target:Number(f.target), saved:Number(f.saved)||0 })
-    setF({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#14213D' })
+    setF({ name:'', target:'', saved:'', targetDate:'', priority:'Media', color:'#3C2282' })
     setShow(false)
   }
 
@@ -141,7 +141,7 @@ export default function Goals() {
   // "Más opciones": el formulario completo de siempre, con lo ya escrito.
   function openFullForm(draft = {}) {
     setFlow(null); setErr('')
-    setF({ name: draft.name || '', target: draft.target ? String(draft.target) : '', saved: '', targetDate: toFullFormDate(draft.targetDate), priority: draft.priority || 'Media', color: '#14213D', ...(draft.icon ? { icon: draft.icon } : {}), ...(draft.kind ? { kind: draft.kind } : {}) })
+    setF({ name: draft.name || '', target: draft.target ? String(draft.target) : '', saved: '', targetDate: toFullFormDate(draft.targetDate), priority: draft.priority || 'Media', color: '#3C2282', ...(draft.icon ? { icon: draft.icon } : {}), ...(draft.kind ? { kind: draft.kind } : {}) })
     setShow(true)
     setTimeout(() => {
       const el = document.getElementById(draft.name ? (draft.target ? 'goal-new-submit' : 'goal-new-target') : 'goal-new-name')
