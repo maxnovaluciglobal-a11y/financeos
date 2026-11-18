@@ -2,13 +2,13 @@
 
 Desde el 19-oct-2026 (auditoría 360, C-11 y C-12; errores de Edge Functions, webhook de Stripe y proxy desde el 21-oct). Sin cuentas externas: todo corre en el proyecto `financeos-prod` (`nelwgbcddwiaimzbcuas`) con `pg_cron`, `pg_net` y dos Edge Functions. Los avisos salen por Resend desde `MOY IQ <hola@moyiq.app>` y llegan **solo** a `maxnovaluciglobal@gmail.com`.
 
-Migraciones: `supabase/migrations/20261019180000_cron_health_and_uptime.sql` y `20261021000000_edge_function_errors_and_uptime_expected_status.sql`. Funciones: `supabase/functions/uptime-alert/` y `supabase/functions/cron-health-alert/`.
+Migraciones: `supabase/migrations/20261019180000_cron_health_and_uptime.sql`, `20261021000000_edge_function_errors_and_uptime_expected_status.sql` y `20261117000000_uptime_markers_rebrand.sql` (markers con alternativas, rebranding). Funciones: `supabase/functions/uptime-alert/` y `supabase/functions/cron-health-alert/`.
 
 ## 1. Uptime (caídas de los sitios)
 
 **Qué mide.** Cada 5 minutos el job `uptime-check` corre `public.uptime_tick()`, que:
 
-1. evalúa las respuestas de la corrida anterior (`net._http_response`): un sitio está **arriba** si respondió su `expected_status` (200 salvo que diga otro), sin timeout (10 s) y si el cuerpo contiene su `marker` (el contenido real, no solo el status);
+1. evalúa las respuestas de la corrida anterior (`net._http_response`): un sitio está **arriba** si respondió su `expected_status` (200 salvo que diga otro), sin timeout (10 s) y si el cuerpo contiene su `marker` (el contenido real, no solo el status). Desde el 17-nov-2026 el marker admite alternativas separadas por `||` y no distingue mayúsculas (`public.uptime_marker_found`, test en `supabase/tests/uptime_markers.sql`): basta con que aparezca una;
 2. lanza un `net.http_get` por sitio de `public.uptime_sites`;
 3. llama a la Edge Function `uptime-alert` (header `x-cron-secret`), que mantiene `public.uptime_state` y manda los correos.
 
@@ -16,8 +16,8 @@ Migraciones: `supabase/migrations/20261019180000_cron_health_and_uptime.sql` y `
 |---|---|---|
 | app.moyiq.app | https://app.moyiq.app/app/ | `id="root"` |
 | demo.moyiq.app | https://demo.moyiq.app/app/ | `id="root"` |
-| moyiq.app | https://moyiq.app/ | `<title>MOY IQ` |
-| invest.moyiq.app | https://invest.moyiq.app/ | `<title>MOY IQ Invest` |
+| moyiq.app | https://moyiq.app/ | `<title>moyiq\|\|<title>MOY IQ` (nuevo o viejo durante el rebranding) |
+| invest.moyiq.app | https://invest.moyiq.app/ | `<title>moyiq\|\|<title>MOY IQ Invest` (nuevo o viejo) |
 | stripe-webhook | https://nelwgbcddwiaimzbcuas.supabase.co/functions/v1/stripe-webhook | **400** + `Webhook signature verification failed` |
 | newsletter-proxy | https://moyiq-newsletter-proxy.vercel.app/api/subscribe | **405** + `method_not_allowed` |
 

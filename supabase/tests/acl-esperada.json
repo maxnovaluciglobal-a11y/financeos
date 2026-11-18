@@ -730,6 +730,12 @@
    "authenticated": "",
    "service_role": "X"
   },
+  "public.uptime_marker_found(text, text)": {
+   "kind": "helper",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
   "public.uptime_tick()": {
    "kind": "rpc",
    "anon": "",
