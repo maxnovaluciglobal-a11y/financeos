@@ -69,16 +69,18 @@ export default defineConfig({
       // H14 (ola A11): un solo registro del SW, el de src/main.jsx (antes el
       // plugin inyectaba además registerSW.js y quedaba registrado dos veces).
       injectRegister: false,
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'favicon.ico', 'notification-96.png'],
       manifest: {
         // Sin `lang`: el manifest solo localiza name/short_name, que son la marca
         // (igual en los 4 idiomas). Declarar 'es' afirmaba un idioma que la app
         // no tiene fijo; el idioma real lo pone <html lang> en tiempo de ejecución.
-        name: 'MOY IQ', short_name: 'MOY IQ',
+        name: 'moyiq', short_name: 'moyiq',
         // PRD-9: descripción, id estable y categoría para la ficha de instalación.
         id: '/app/', description: 'Finanzas personales en dos monedas, con tus datos en tu dispositivo.',
         categories: ['finance', 'productivity'],
-        theme_color: '#14213D', background_color: '#F1EEE6',
+        // Nivel 3: barra y arranque en morado 700 (el ícono es lupa blanca sobre
+        // morado, así que el splash de Android queda continuo con el de index.html).
+        theme_color: '#3C2282', background_color: '#3C2282',
         display: 'standalone', start_url: '/app/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

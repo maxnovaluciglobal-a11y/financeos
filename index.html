@@ -6,49 +6,54 @@
     <meta name="description" content="Finanzas personales en dos monedas, con tus datos en tu dispositivo. Gratis para empezar." />
     <!-- Vista previa al compartir el enlace (BRD-13). Imagen: public/og-app.png (1200x630). -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="MOY IQ" />
+    <meta property="og:site_name" content="moyiq" />
     <meta property="og:url" content="https://app.moyiq.app/app/" />
-    <meta property="og:title" content="MOY IQ · App de finanzas personales" />
+    <meta property="og:title" content="moyiq · App de finanzas personales" />
     <meta property="og:description" content="Finanzas personales en dos monedas, con tus datos en tu dispositivo. Gratis para empezar." />
     <meta property="og:image" content="https://app.moyiq.app/app/og-app.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="MOY IQ: dial de la marca y el lema de la app sobre fondo azul marino" />
+    <meta property="og:image:alt" content="moyiq: el logotipo y el lema de la app sobre el degradado violeta, con la lupa de la marca" />
     <meta property="og:locale" content="es_LA" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MOY IQ · App de finanzas personales" />
+    <meta name="twitter:title" content="moyiq · App de finanzas personales" />
     <meta name="twitter:description" content="Finanzas personales en dos monedas, con tus datos en tu dispositivo. Gratis para empezar." />
     <meta name="twitter:image" content="https://app.moyiq.app/app/og-app.png" />
-    <!-- La barra del navegador/PWA sigue al tema: en oscuro debe igualar --bg (#0E1628), no el navy de marca -->
+    <!-- La barra del navegador/PWA sigue al tema: en claro el morado de marca (700), en oscuro el grafito de --bg -->
     <!-- N4: tema antes de pintar (sin destello). Externo: la CSP lo permite. -->
     <script src="/app/theme-boot.js"></script>
-    <meta name="theme-color" content="#14213D" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0E1628" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#3C2282" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1C1D21" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="MOY IQ" />
-    <link rel="icon" type="image/png" href="/app/favicon.png" />
-    <link rel="apple-touch-icon" href="/app/apple-touch-icon.png" />
-    <title>MOY IQ</title>
+    <meta name="apple-mobile-web-app-title" content="moyiq" />
+    <!-- Íconos (isotipo: la lupa). Rutas sin /app: Vite antepone `base` una sola vez (ver CLAUDE.md). -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>moyiq</title>
     <!-- Fuentes autohospedadas (RGPD: antes iban a Google Fonts, transmitía
          la IP del visitante a Google). Carga NO bloqueante: preload + swap media=print. -->
     <link rel="preload" as="style" href="/fonts.css" />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/InterVariable-latin.woff2" crossorigin />
     <link href="/fonts.css" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="/fonts.css" rel="stylesheet" /></noscript>
     <!-- Pantalla de carga (C-32): se ve mientras baja el JS y mientras la app
-         verifica la sesión; antes era una pantalla en blanco de varios segundos. -->
+         verifica la sesión. Nivel 3: degradado Impulso a sangre con el logotipo
+         en blanco y la barra en lima (prototipo 07, splash), igual en claro y en
+         oscuro. Hex sueltos a propósito: se pinta antes de que cargue el CSS. -->
     <style>
-      .boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: #F1EEE6; color: #14213D; font: 600 15px/1 system-ui, sans-serif; letter-spacing: .02em; }
-      .boot-bar { width: 120px; height: 3px; border-radius: 2px; background: rgba(20,33,61,.12); overflow: hidden; }
-      .boot-bar::after { content: ""; display: block; width: 40%; height: 100%; background: #B8863B; animation: boot-slide 1.1s ease-in-out infinite; }
+      .boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #3C2282; background: linear-gradient(74deg, #2D1D59 0%, #8620D0 59%, #7A21FF 100%); color: #FFFFFF; }
+      .boot-logo { width: 148px; height: auto; display: block; }
+      .boot-bar { width: 120px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.22); overflow: hidden; }
+      .boot-bar::after { content: ""; display: block; width: 40%; height: 100%; background: #D0F06E; animation: boot-slide 1.1s ease-in-out infinite; }
       @keyframes boot-slide { from { transform: translateX(-100%) } to { transform: translateX(250%) } }
-      @media (prefers-color-scheme: dark) { .boot { background: #0E1628; color: #F1EEE6; } .boot-bar { background: rgba(241,238,230,.14); } }
-      @media (prefers-reduced-motion: reduce) { .boot-bar::after { animation: none; width: 100%; opacity: .5; } }
+      @media (prefers-reduced-motion: reduce) { .boot-bar::after { animation: none; width: 100%; opacity: .6; } }
     </style>
   </head>
   <body>
-    <div id="root"><div class="boot" role="status" aria-label="MOY IQ"><span>MOY IQ</span><div class="boot-bar"></div></div></div>
+    <div id="root"><div class="boot" role="status" aria-label="moyiq"><svg class="boot-logo" xmlns="http://www.w3.org/2000/svg" viewBox="87.94 136.94 547.16 189.52" fill="currentColor" aria-hidden="true" focusable="false"><path d="M 390.59375 326.449219 L 385.828125 326.453125 C 377.894531 325.355469 371.960938 318.253906 373.355469 310.117188 C 373.898438 306.960938 375.773438 304.25 378.136719 302.0625 L 399.175781 282.582031 C 378.636719 276.097656 365.183594 259.144531 364.46875 237.691406 L 364.464844 180.414062 L 394.699219 180.46875 L 394.773438 237.101562 C 395.910156 245.4375 401.542969 252.171875 409.601562 254.515625 C 422.496094 258.265625 436.40625 249.289062 436.503906 237.238281 L 436.882812 190.503906 C 436.921875 185.894531 440.195312 182.144531 444.378906 180.878906 C 449.457031 179.34375 454.726562 179.269531 459.707031 181.066406 C 463.765625 182.527344 466.746094 186.371094 466.75 190.800781 L 466.765625 238.097656 C 466.773438 253.746094 459.207031 267.035156 447.9375 277.460938 L 399.363281 322.394531 C 396.867188 324.707031 393.710938 325.882812 390.59375 326.449219 "/><path d="M 299.558594 208.34375 C 286.070312 210.3125 277.164062 222.886719 279.234375 235.992188 C 281.289062 249.003906 293.488281 257.972656 306.546875 256.066406 C 319.65625 254.148438 328.8125 241.925781 326.933594 228.816406 C 325.058594 215.746094 313.011719 206.382812 299.558594 208.34375 M 284.488281 282.472656 C 255.628906 271.789062 241.808594 239.414062 253.5625 211.414062 C 265.324219 183.402344 298.097656 170.554688 325.84375 183.609375 C 351.84375 195.84375 363.5625 226.269531 352.578125 252.722656 C 341.621094 279.109375 311.648438 292.527344 284.488281 282.472656 "/><path d="M 543.023438 236.550781 C 540.953125 223.445312 549.859375 210.867188 563.347656 208.902344 C 576.804688 206.9375 588.847656 216.304688 590.722656 229.375 C 592.605469 242.484375 583.445312 254.707031 570.335938 256.621094 C 557.277344 258.53125 545.078125 249.558594 543.023438 236.550781 M 634.835938 299.75 C 634.332031 296.398438 632.421875 293.363281 630.019531 290.902344 L 617.625 278.199219 L 607.378906 267.808594 C 611.046875 263.570312 614.117188 258.703125 616.367188 253.277344 C 627.355469 226.824219 615.632812 196.402344 589.636719 184.167969 C 561.886719 171.113281 529.117188 183.960938 517.355469 211.972656 C 505.597656 239.972656 519.417969 272.347656 548.277344 283.03125 C 558.835938 286.941406 569.8125 287.289062 579.9375 284.722656 L 609.65625 315.542969 C 613.851562 319.898438 620.519531 320.351562 625.984375 318.042969 C 631.097656 315.886719 634.628906 310.703125 635.070312 304.941406 L 635.097656 301.484375 Z M 634.835938 299.75 "/><path d="M 505.746094 282.730469 L 476.179688 282.949219 L 476.183594 190.507812 C 477.1875 180.746094 487.609375 178.960938 496.367188 180.582031 C 501.664062 181.566406 505.324219 185.605469 505.765625 191.101562 Z M 505.746094 282.730469 "/><path d="M 488.523438 138.402344 C 498.167969 136.9375 506.695312 143.546875 508.117188 152.78125 C 509.5625 162.171875 503.09375 170.925781 493.691406 172.367188 C 484.457031 173.78125 475.695312 167.417969 474.171875 158.148438 C 472.65625 148.917969 478.886719 139.867188 488.523438 138.402344 "/><path d="M 241.714844 282.929688 L 211.753906 282.832031 L 211.644531 226.71875 C 211.136719 222.351562 209.429688 218.480469 206.273438 215.53125 C 196.898438 206.347656 179.433594 212.765625 179.1875 226.167969 C 179.1875 226.167969 178.820312 282.910156 178.820312 282.910156 C 171.367188 282.921875 158.296875 282.921875 150.847656 282.910156 L 150.46875 226.167969 C 150.222656 212.765625 132.761719 206.34375 123.386719 215.53125 C 120.230469 218.480469 118.519531 222.351562 118.011719 226.71875 L 117.914062 282.832031 L 87.941406 282.929688 L 88.003906 222.492188 C 89.230469 183.574219 137.765625 165.8125 164.828125 192.863281 C 191.914062 165.804688 240.429688 183.585938 241.65625 222.492188 Z M 241.714844 282.929688 "/></svg><div class="boot-bar"></div></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
