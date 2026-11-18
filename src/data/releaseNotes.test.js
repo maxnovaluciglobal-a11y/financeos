@@ -21,3 +21,29 @@ describe('Novedades (N12)', () => {
     }
   })
 })
+
+// Aviso del rebranding: en iPhone, borrar el ícono de la pantalla de inicio
+// puede borrar los datos de la app instalada. El texto tiene que ofrecer
+// conservar el ícono viejo (sigue funcionando) y pedir el respaldo ANTES de
+// mencionar el borrado, con la ruta real (Más › Ajustes › Respaldo…).
+describe('Novedades: aviso del rebranding en iPhone', () => {
+  const rebrand = RELEASE_NOTES.find(n => n.items.es.some(l => l.includes('ahora es moyiq')))
+  const RULES = {
+    es: { keep: /puedes conservarlos/, backup: /respaldo \(Más › Ajustes › Respaldo y restauración\)/, remove: /bórrala/, guard: /Sin ese respaldo no la borres/ },
+    en: { keep: /you can keep them/, backup: /backup \(More › Settings › Backup and restore\)/, remove: /remove it and add it again/, guard: /Do not remove it without that backup/ },
+    pt: { keep: /você pode mantê-los/, backup: /backup \(Mais › Configurações › Backup e restauração\)/, remove: /apague e adicione/, guard: /Sem esse backup, não apague/ },
+    de: { keep: /Sie können sie behalten/, backup: /Sicherung \(Mehr › Einstellungen › Sicherung und Wiederherstellung\)/, remove: /entfernen Sie die App/, guard: /Ohne diese Sicherung bitte nicht entfernen/ },
+  }
+  for (const [lang, r] of Object.entries(RULES)) {
+    it(`${lang}: conservar el ícono, respaldo antes de borrar y aviso sin respaldo`, () => {
+      expect(rebrand).toBeTruthy()
+      const line = rebrand.items[lang].find(l => /iPhone/.test(l))
+      expect(line).toMatch(r.keep)
+      expect(line).toMatch(r.guard)
+      const b = line.search(r.backup), d = line.search(r.remove)
+      expect(b).toBeGreaterThan(-1)
+      expect(d).toBeGreaterThan(b)
+      expect(line.search(r.keep)).toBeLessThan(b)
+    })
+  }
+})

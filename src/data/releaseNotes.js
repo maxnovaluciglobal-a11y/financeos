@@ -11,22 +11,22 @@ export const RELEASE_NOTES = [
     items: {
       es: [
         'MOY IQ ahora es moyiq: cambian el nombre, el logo y los colores. Tus datos, tu cuenta y tu plan siguen igual, y el responsable y el tratamiento de los datos no cambian.',
-        'En iPhone: si la instalaste en la pantalla de inicio, bórrala y vuelve a agregarla para ver el ícono nuevo (Compartir › Agregar a inicio). Antes crea un respaldo en Ajustes: al borrarla, el iPhone puede borrar los datos guardados en ella, y después los recuperas desde ese archivo.',
+        'En iPhone, el ícono y el nombre viejos en la pantalla de inicio no afectan el uso: puedes conservarlos y la app sigue funcionando igual. Si prefieres ver el ícono nuevo, primero crea un respaldo (Más › Ajustes › Respaldo y restauración); después bórrala y vuelve a agregarla (Compartir › Agregar a inicio). Sin ese respaldo no la borres: el iPhone puede borrar los datos guardados en ella.',
         'Invest ahora se llama Inversiones y sigue en Panorama y en Patrimonio.',
       ],
       en: [
         'MOY IQ is now moyiq: the name, logo and colors change. Your data, your account and your plan stay the same, and the controller and the processing of your data do not change.',
-        'On iPhone: if you installed it on your Home Screen, remove it and add it again to see the new icon (Share › Add to Home Screen). Create a backup in Settings first: removing it can delete the data stored in it, and you restore it from that file afterwards.',
+        'On iPhone, the old icon and name on your Home Screen do not affect how the app works: you can keep them and everything stays the same. If you want the new icon, first create a backup (More › Settings › Backup and restore); then remove it and add it again (Share › Add to Home Screen). Do not remove it without that backup: the iPhone can delete the data stored in it.',
         'Invest is now called Investments and is still in Overview and Net worth.',
       ],
       pt: [
         'O MOY IQ agora é moyiq: mudam o nome, o logo e as cores. Seus dados, sua conta e seu plano continuam iguais, e o responsável e o tratamento dos dados não mudam.',
-        'No iPhone: se você instalou na tela de início, apague e adicione de novo para ver o ícone novo (Compartilhar › Adicionar à Tela de Início). Antes, crie um backup em Ajustes: ao apagar, o iPhone pode apagar os dados guardados nele, e depois você os recupera desse arquivo.',
+        'No iPhone, o ícone e o nome antigos na tela de início não afetam o uso: você pode mantê-los e o app continua funcionando igual. Se preferir ver o ícone novo, primeiro crie um backup (Mais › Configurações › Backup e restauração); depois apague e adicione de novo (Compartilhar › Adicionar à Tela de Início). Sem esse backup, não apague: o iPhone pode apagar os dados guardados nele.',
         'O Invest agora se chama Investimentos e continua no Panorama e no Patrimônio.',
       ],
       de: [
         'MOY IQ heißt jetzt moyiq: Name, Logo und Farben ändern sich. Ihre Daten, Ihr Konto und Ihr Tarif bleiben gleich, und der Verantwortliche und die Verarbeitung Ihrer Daten ändern sich nicht.',
-        'Auf dem iPhone: Wenn Sie die App auf dem Home-Bildschirm installiert haben, entfernen Sie sie und fügen Sie sie erneut hinzu, um das neue Symbol zu sehen (Teilen › Zum Home-Bildschirm). Erstellen Sie vorher eine Sicherung in den Einstellungen: Beim Entfernen kann das iPhone die darin gespeicherten Daten löschen, und Sie stellen sie danach aus dieser Datei wieder her.',
+        'Auf dem iPhone beeinträchtigen das alte Symbol und der alte Name auf dem Home-Bildschirm die Nutzung nicht: Sie können sie behalten, die App funktioniert unverändert. Wenn Sie das neue Symbol sehen möchten, erstellen Sie zuerst eine Sicherung (Mehr › Einstellungen › Sicherung und Wiederherstellung); entfernen Sie die App dann und fügen Sie sie erneut hinzu (Teilen › Zum Home-Bildschirm). Ohne diese Sicherung bitte nicht entfernen: Das iPhone kann die darin gespeicherten Daten löschen.',
         'Invest heißt jetzt Investments und ist weiterhin im Überblick und im Vermögen.',
       ],
     },
