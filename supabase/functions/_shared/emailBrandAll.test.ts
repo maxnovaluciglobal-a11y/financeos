@@ -51,6 +51,10 @@ afterEach(() => { vi.unstubAllGlobals(); });
 
 function expectBrand(html: string) {
   expect(html).toContain(EMAIL_LOGO_URL);
+  // Logo nuevo en su propia URL: el viejo (/app/email/moyiq-logo.png) queda
+  // intacto para los correos ya enviados con cabecera Navy.
+  expect(html).toContain("/app/email/moyiq-logo-v2.png");
+  expect(html).not.toContain("/app/email/moyiq-logo.png");
   expect(html).toContain("background:#3C2282");
   expect(html).toContain("background:#D0F06E");
   // Ningún rastro de la paleta ni de la tipografía anteriores (Navy/Latón/Papel, Plex/Instrument)

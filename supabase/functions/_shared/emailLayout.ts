@@ -42,10 +42,12 @@ export const EMAIL_FONTS = {
 } as const;
 
 // Logo horizontal blanco sobre el morado de la cabecera (320x73, sin alfa),
-// servido por la propia app desde public/email/moyiq-logo.png (emailLogo.test.ts).
-// La app debe desplegarse antes que las funciones: hasta entonces esa URL
-// sirve el logo anterior.
-export const EMAIL_LOGO_URL = "https://app.moyiq.app/app/email/moyiq-logo.png";
+// servido por la propia app desde public/email/moyiq-logo-v2.png
+// (emailLogo.test.ts). Va en una URL nueva a propósito: public/email/moyiq-logo.png
+// sigue siendo el logo anterior, el que muestran los correos ya enviados con
+// cabecera Navy (entre ellos el de la licencia), y no se toca. La app debe
+// desplegarse antes que las funciones para que el archivo v2 exista.
+export const EMAIL_LOGO_URL = "https://app.moyiq.app/app/email/moyiq-logo-v2.png";
 const LOGO_W = 160;
 const LOGO_H = 37;
 
