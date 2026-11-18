@@ -138,7 +138,7 @@ export default function Deducciones() {
               <span>{t('deducciones.capUsage')}</span>
               <span>{Math.round(result.topePct)}%</span>
             </div>
-            <ProgressBar value={result.topePct} max={100} color={result.topePct >= 100 ? 'green' : 'amber'} height={6} />
+            <ProgressBar value={result.topePct} max={100} color={result.topePct >= 100 ? 'green' : 'amber'} height={6} label={t('deducciones.capUsage')} />
             {result.faltaParaTope > 0 ? (
               <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
                 {t(config.needsIngreso ? 'deducciones.remainingWithIncome' : 'deducciones.remainingNoIncome', { amt: fmt(result.faltaParaTope) })}

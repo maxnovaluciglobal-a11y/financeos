@@ -242,7 +242,7 @@ function WerbungskostenCard({ expenses, settings }) {
         </div>
         {/* El Pauschbetrag es un SUELO, no un techo: la barra se llena al 100%
             cuando los gastos igualan el mínimo automático, y superarlo es lo bueno. */}
-        <ProgressBar value={Math.min(100, result.topePct)} max={100} color={result.topePct >= 100 ? 'green' : 'amber'} height={6} />
+        <ProgressBar value={Math.min(100, result.topePct)} max={100} color={result.topePct >= 100 ? 'green' : 'amber'} height={6} label={t('steuer.werb.aprovechamiento')} />
         <div style={{ fontSize: 11, color: 'var(--tm)', marginTop: 6, lineHeight: 1.5 }}>
           {t('steuer.werb.aprovechamientoHint')}
         </div>
