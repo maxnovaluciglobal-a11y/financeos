@@ -39,12 +39,11 @@
   text-align: left; font-family: var(--sans); appearance: none;
 }
 .ni:hover { color: var(--tx); background: var(--sur2); }
-/* "Dónde estás" en el riel (L2, igual que Invest): chip Latón al 18 % con un
-   anillo interior Latón, ícono en Latón y texto en tinta 600. Sin franja. */
-.active   { color: var(--tx) !important; background: color-mix(in srgb, var(--laton) 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--laton) 35%, transparent); font-weight: 600; }
-.active .ic { color: var(--laton-700); }
-:global([data-theme="dark"]) .active .ic { color: var(--laton-300); }
-.active:hover { background: color-mix(in srgb, var(--laton) 24%, transparent); }
+/* "Dónde estás" en el riel: chip de marca (morado 100 / 22 % en oscuro), ícono
+   en el color de marca y texto en tinta 600. Sin franja. */
+.active   { color: var(--tx) !important; background: var(--color-brand-muted); font-weight: 600; }
+.active .ic { color: var(--color-brand-text); }
+.active:hover { background: var(--color-brand-muted); }
 .ic       { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; }
 
 .footer {
@@ -100,7 +99,7 @@
    cambio de página y el navegador lo toma como :focus-visible: el anillo solo
    se dibuja si la persona está usando el teclado (data-keyboard, Shell.jsx). */
 .content:focus, .content:focus-visible { outline: none; }
-:global(:root[data-keyboard]) .content:focus-visible { outline: 2px solid var(--laton-700); outline-offset: -2px; }
+:global(:root[data-keyboard]) .content:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .contentInner { max-width: 1080px; margin: 0 auto; }
 
 /* GRID HELPERS */
@@ -261,25 +260,29 @@
 /* 12 px (como Invest) cuando entra "Presupuestos" con aire: desde 420 px de ancho.
    Por debajo, 11 px (piso REC-N6): a 360 px la etiqueta más larga mide 70 px. */
 @media (min-width: 420px) { .tabLb { font-size: .75rem; letter-spacing: 0; } }
-.tabActive { color: var(--tx); }
+/* Activa (nivel 3): píldora violeta detrás del ícono, ícono blanco y etiqueta
+   violeta (oscuro: violeta 400 y etiqueta morado 200, revisión A1.5). Solo color:
+   la píldora no cambia el alto de la fila (relleno lateral + sombra de 3 px). */
+.tabActive { color: var(--tabbar-fg-active); }
+.tabActive .tabIc { background: var(--tabbar-pill); color: var(--tabbar-icon-active); border-radius: var(--radius-pill); padding: 0 14px; box-shadow: 0 0 0 3px var(--tabbar-pill); }
 .tabActive .tabLb { font-weight: 600; }
-.tab:focus-visible { outline: 2px solid var(--navy); outline-offset: -4px; border-radius: var(--r); }
-:global([data-theme="dark"]) .tab:focus-visible { outline-color: var(--laton-300); }
+.tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -4px; border-radius: var(--r); }
 
 /* ── "+" dentro de la barra (causa 4) ──
-   Misma zona del pulgar que antes, sin tapar la columna de montos. Radio de
-   botón (--rxl): la píldora queda para segmentados, chips y etiquetas. */
+   Misma zona del pulgar que antes, sin tapar la columna de montos. Nivel 3:
+   violeta de acción con ícono blanco (6,02; en oscuro violeta 400, 3,93) y
+   radio de botón 12 (D7). */
 .tabAddSlot { flex: 0 0 56px; display: flex; align-items: center; justify-content: center; min-height: var(--tabbar-content-h); }
 .tabAdd {
   display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
-  border: 0; border-radius: var(--rxl); background: var(--laton); color: var(--navy); cursor: pointer;
+  border: 0; border-radius: var(--btn-radius); background: var(--action-bg); color: var(--action-fg); cursor: pointer;
+  box-shadow: var(--action-shadow);
   -webkit-tap-highlight-color: transparent; transition: transform var(--dur-press) var(--ease-out);
 }
 /* 320 px: el "+" cede lo justo para que ninguna etiqueta se corte ni baje de 44. */
 @media (max-width: 339px) { .tabAddSlot { flex-basis: 46px; } }
 .tabAdd:active { transform: scale(.94); }
-.tabAdd:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
-:global([data-theme="dark"]) .tabAdd:focus-visible { outline-color: var(--laton-300); }
+.tabAdd:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* "+" flotante (R02): solo en Ingresos, que no tiene barra. */
 .fab {
@@ -290,17 +293,16 @@
   z-index: 151;
   width: var(--fab-size); height: var(--fab-size);
   align-items: center; justify-content: center;
-  border: none; border-radius: var(--rxl);
-  background: var(--laton); color: var(--navy);
-  box-shadow: var(--sh-2);
+  border: none; border-radius: var(--rl);
+  background: var(--action-bg); color: var(--action-fg);
+  box-shadow: var(--action-shadow);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: transform .2s var(--ease), opacity .2s var(--ease), box-shadow var(--dur) var(--ease), bottom .2s var(--ease);
 }
-.fab:hover { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
+.fab:hover { box-shadow: var(--action-shadow), inset 0 0 0 2px rgb(255 255 255 / .22); }
 .fab:active { transform: scale(.94); }
-.fab:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
-:global([data-theme="dark"]) .fab:focus-visible { outline-color: var(--laton-300); }
+.fab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 @media (max-width: 700px) {
   .tabbar { display: flex; }
@@ -341,16 +343,14 @@
     min-width: 44px; min-height: 44px; max-width: 46vw;
     margin: 0 0 0 -12px; padding: 0 10px 0 4px;
     background: none; border: 0; border-radius: var(--r);
-    color: var(--navy); font: 500 .9375rem/1 var(--sans); letter-spacing: 0;
+    color: var(--color-brand-text); font: 500 .9375rem/1 var(--sans); letter-spacing: 0;
     cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
   }
   .backBtn:active { background: var(--sur2); transform: scale(.97); }
-  .backBtn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .backBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   .backLbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
-:global([data-theme="dark"]) .backBtn { color: var(--tx); }
-:global([data-theme="dark"]) .backBtn:focus-visible { outline-color: var(--laton-300); }
 @media (prefers-reduced-motion: reduce) { .backBtn { transition: none; } .backBtn:active { transform: none; } }
 @media (max-width: 700px) {
   :global(:root[data-chrome="pushed"]) .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 24px); }

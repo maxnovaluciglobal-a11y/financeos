@@ -25,7 +25,7 @@
   font: 500 .8125rem/1.35 var(--sans); color: var(--tm);
 }
 .kpiLine:hover { background: var(--sur2); }
-.kpiLine:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.kpiLine:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .kpiLine > svg:last-child { flex-shrink: 0; color: var(--th); }
 
 /* Lista por categoría: una fila-botón por categoría + su medidor (poda P2). */
@@ -38,7 +38,7 @@
 }
 .rowBtn::after { content: ''; width: 8px; height: 8px; border-right: 1.5px solid var(--th); border-top: 1.5px solid var(--th); transform: rotate(45deg); justify-self: center; }
 .rowBtn:hover { background: var(--sur2); }
-.rowBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.rowBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .rowMain { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .rowTop { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .rowLine { font-size: .8125rem; color: var(--tm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -53,7 +53,7 @@
   border: 0; border-radius: var(--r); background: var(--fill); color: var(--tx); cursor: pointer;
 }
 .moreBtn:hover { background: var(--fill-2); }
-.moreBtn:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.moreBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .actions:not(:has(.actionMain)) { justify-content: flex-end; }
 
 /* Reparto del ingreso plegado */
@@ -65,7 +65,7 @@
 }
 .disclosure svg { flex-shrink: 0; color: var(--tm); transition: transform var(--dur) var(--ease); }
 .disclosure[aria-expanded="true"] svg { transform: rotate(180deg); }
-.disclosure:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.disclosure:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .splitBare { border-top: 0; padding-top: 0; margin-top: 0; }
 
 /* Hojas (menú ⋯, KPIs, nuevo límite, 50/30/20, categoría) */
@@ -91,7 +91,7 @@
 }
 .menuItem:hover:not(:disabled) { background: var(--sur2); }
 .menuItem:disabled { cursor: default; color: var(--th); }
-.menuItem:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.menuItem:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .menuLabel { font-size: .9375rem; font-weight: 600; }
 .menuDesc { font-size: .75rem; color: var(--th); }
 
@@ -114,7 +114,7 @@
 .splitHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
 .splitPct { display: inline-flex; align-items: center; gap: 6px; font: 500 .8125rem/1 var(--sans); color: var(--tm); }
 .splitPct input { width: 56px; min-height: 44px; padding: 0 10px; border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur); color: var(--tx); font: 600 .9375rem/1 var(--num); text-align: right; }
-.splitPct input:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.splitPct input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .splitBar { display: flex; gap: 2px; height: 12px; border-radius: 3px; overflow: hidden; background: var(--sur3); }
 .splitBar span { display: block; min-width: 3px; }
 .splitLegend { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }

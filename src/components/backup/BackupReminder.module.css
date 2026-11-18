@@ -16,12 +16,12 @@
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 44px; padding: 0 16px;
   border: 0; border-radius: var(--r);
-  background: var(--laton); color: var(--navy);
+  background: var(--btn-primary-bg); color: var(--btn-primary-fg);
   font-family: var(--sans); font-size: .875rem; font-weight: 600; white-space: nowrap;
   box-shadow: var(--sh-1);
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.cta:hover:not(:disabled) { box-shadow: var(--sh-1), inset 0 0 0 2px rgba(20,33,61,.25); }
+.cta:hover:not(:disabled) { background: var(--btn-primary-bg-hover); box-shadow: var(--sh-1); }
 .cta:active:not(:disabled) { transform: scale(.98); }
 .cta:disabled { opacity: .7; cursor: default; }
 .close {

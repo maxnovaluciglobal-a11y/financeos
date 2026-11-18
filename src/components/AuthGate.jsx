@@ -253,7 +253,7 @@ export default function AuthGate({ onAuthenticated }) {
           <button
             onClick={handleForgotSubmit}
             disabled={loading}
-            style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4, marginBottom: 12 }}
+            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4, marginBottom: 12 }}
           >
             {loading ? t('authGate.loading') : t('authGate.forgotSubmitBtn')}
           </button>
@@ -283,7 +283,7 @@ export default function AuthGate({ onAuthenticated }) {
           </div>
           <button
             onClick={() => { setEmailExists(false); setTab('login'); setPassword(''); setError('') }}
-            style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: 'pointer', marginBottom: 12 }}
+            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: 'pointer', marginBottom: 12 }}
           >
             {t('authGate.emailExistsLoginBtn')}
           </button>
@@ -444,7 +444,7 @@ export default function AuthGate({ onAuthenticated }) {
 
         <button
           style={{
-            width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none',
+            width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none',
             borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)',
             cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, transition: 'opacity .15s',
             marginTop: 4,

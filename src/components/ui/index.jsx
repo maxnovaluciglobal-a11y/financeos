@@ -143,7 +143,7 @@ export function Empty({ text, cta, onCta }) {
         <div style={{ marginTop: 12 }}>
           <button type="button" onClick={onCta} style={{
             fontFamily: 'var(--num)', fontSize: 12, fontWeight: 600,
-            color: 'var(--navy)', background: 'var(--laton)', border: 'none',
+            color: 'var(--btn-primary-fg)', background: 'var(--btn-primary-bg)', border: 'none',
             borderRadius: 'var(--r)', padding: '8px 16px', cursor: 'pointer',
           }}>{cta}</button>
         </div>

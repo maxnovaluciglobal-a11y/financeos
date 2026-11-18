@@ -199,7 +199,7 @@ export default function Dashboard({ setPage }) {
           <div style={{ display:'flex', gap:10, flexDirection:'column' }}>
             <button
               onClick={goNextMonth}
-              style={{ background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily: 'var(--num)' }}
+              style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily: 'var(--num)' }}
             >
               {t('dash.close.next')}
             </button>

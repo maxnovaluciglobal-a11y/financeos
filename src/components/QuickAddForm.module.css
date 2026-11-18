@@ -13,17 +13,17 @@
 }
 .key:active { background: var(--sur3); }
 .keyZero { grid-column: span 2; }
-/* ✓: tinte Latón, no un segundo primario (el primario es "Guardar" al pie). */
+/* ✓: tinte de marca, no un segundo primario (el primario es "Guardar" al pie). */
 .keyOk {
   grid-column: 4; grid-row: 2 / span 3;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  border: 1px solid var(--laton); background: rgba(184, 134, 59, 0.16); color: var(--tx);
+  border: 1px solid var(--color-brand); background: var(--color-brand-muted); color: var(--tx);
   font-family: var(--sans); font-size: .8125rem; font-weight: 600;
 }
 .keyOk:disabled { border-color: transparent; background: var(--sur2); color: var(--th); cursor: not-allowed; }
 /* Hoja de una sola tarea: ✓ es el único guardar a la vista, así que es el primario. */
-.keyOkPrimary:not(:disabled) { border-color: transparent; background: var(--laton); color: var(--navy); }
-.keyOk:focus-visible, .key:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.keyOkPrimary:not(:disabled) { border-color: transparent; background: var(--btn-primary-bg); color: var(--btn-primary-fg); }
+.keyOk:focus-visible, .key:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Fecha + "Pegar SMS" en una sola fila */
 .dateRow { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -66,7 +66,7 @@
   flex: 0 0 44px; height: 44px; display: grid; place-items: center; cursor: pointer;
   border: 0; border-radius: var(--r-pill); background: var(--fill); color: var(--tx);
 }
-.catAll:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.catAll:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* "Más opciones": lo que no hace falta para registrar */
 .moreToggle {
@@ -74,7 +74,7 @@
   border: 0; background: none; cursor: pointer; padding: 0 4px; margin-bottom: 4px;
   font-family: var(--sans); font-size: .875rem; font-weight: 500; color: var(--tm);
 }
-.moreToggle:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; border-radius: var(--rs); }
+.moreToggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--rs); }
 .moreHint { color: var(--th); font-size: .8125rem; }
 .moreHint::before { content: '· '; }
 .moreChev { transition: transform var(--dur-spring-exit) var(--ease); }
@@ -97,7 +97,7 @@
   padding: 0 4px; font-size: .875rem; color: var(--tm); cursor: pointer; border-radius: var(--rs);
 }
 .repeatLabel input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; }
-.repeatLabel:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.repeatLabel:has(input:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .repeatRow select, .repeatRow :global(.fos-select) { width: auto; min-height: 44px; padding: 6px 10px; }
 
 .moreRow { display: flex; justify-content: center; }

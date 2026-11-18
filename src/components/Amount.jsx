@@ -6,7 +6,7 @@
 //   - en la variante `hero`, el símbolo y los centavos al ~65 % del tamaño y en
 //     --tm, para que la parte entera sea la que se lee primero (Mercury,
 //     getquin, Untitled UI);
-//   - cifras en .num (IBM Plex Sans tabular, UI-M1);
+//   - cifras en .num (Inter con dígitos tabulares);
 //   - respeta "ocultar montos" (T13): con hideAmounts el número no llega al DOM.
 //
 // <Amount value={-1250} sym="$" />                 → "−$1.250"

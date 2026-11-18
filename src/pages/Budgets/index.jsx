@@ -197,7 +197,7 @@ export default function Budgets() {
 
   // Ring resumen (texto a 11 px reales o más: el SVG se dibuja 1:1)
   const ringPct = totalBudget > 0 ? totalBudgeted / totalBudget : 0
-  const ringColor = ringPct > 1 ? 'var(--neg)' : ringPct >= 0.8 ? 'var(--warn)' : 'var(--navy-400)'
+  const ringColor = ringPct > 1 ? 'var(--neg)' : ringPct >= 0.8 ? 'var(--warn)' : 'var(--meter-fill)'
   const RC = 2 * Math.PI * 48
 
   const closeSheet = () => setSheet(null)
@@ -227,7 +227,7 @@ export default function Budgets() {
           }}>
             <span style={{
               position: 'absolute', top: 2, left: rolloverOn ? 16 : 2,
-              width: 10, height: 10, borderRadius: '50%', background: 'var(--papel-000)', transition: '.2s',
+              width: 10, height: 10, borderRadius: '50%', background: '#FFF', transition: '.2s',
             }} />
           </span>
           {rolloverOn ? t('budgets.rollover.on') : t('budgets.rollover.off')}

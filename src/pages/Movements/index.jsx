@@ -185,7 +185,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
               style={{ ...inp, fontFamily:'var(--sans)', resize:'vertical' }} />
             <div style={{ display:'flex', gap:8, marginTop:8 }}>
               <button type="button" onClick={detectFromPaste} disabled={!pasteText.trim()}
-                style={{ background:'var(--laton)', color:'var(--navy)', border:'none', borderRadius:6,
+                style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none', borderRadius:6,
                   padding:'6px 14px', fontSize:12, fontWeight:600, cursor: pasteText.trim() ? 'pointer' : 'default', opacity: pasteText.trim() ? 1 : .5 }}>
                 {t('mov.form.detect')}
               </button>
@@ -273,7 +273,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
           if (!f.description.trim() || !f.amount) return
           onSave({ ...f, id:uid(), amount:parseFloat(f.amount)||0,
             createdAt:new Date().toISOString() })
-        }} style={{ background:'var(--laton)', color:'var(--navy)', border:'none',
+        }} style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none',
           borderRadius:6, padding:'6px 16px', fontSize:12, fontWeight:600, cursor:'pointer' }}>
           {t('mov.form.saveExp')}
         </button>
@@ -327,7 +327,7 @@ function FormSub({ onSave, onCancel }) {
           if (!f.name.trim() || !f.amount) return
           onSave({ ...f, id:uid(), amount:parseFloat(f.amount)||0,
             createdAt:new Date().toISOString() })
-        }} style={{ background:'var(--laton)', color:'var(--navy)', border:'none',
+        }} style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none',
           borderRadius:6, padding:'6px 16px', fontSize:12, fontWeight:600, cursor:'pointer' }}>
           {t('mov.form.saveSub')}
         </button>

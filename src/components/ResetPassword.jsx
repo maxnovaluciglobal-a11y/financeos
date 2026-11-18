@@ -63,7 +63,7 @@ export default function ResetPassword({ onDone }) {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4 }}
+          style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4 }}
         >
           {loading ? t('authGate.loading') : t('resetPassword.submitBtn')}
         </button>

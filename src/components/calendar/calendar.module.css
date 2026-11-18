@@ -21,7 +21,7 @@
 }
 .cell:hover { background: var(--grn-tint); }
 .cell:active { background: var(--grn-bg); }
-.cell:focus-visible { outline: 2px solid var(--laton-700); outline-offset: -2px; }
+.cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 
 .dayLine { display: flex; align-items: baseline; gap: 3px; min-width: 0; }
 .num { font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-size: .8125rem; font-weight: 600; line-height: 1.2; }

@@ -120,10 +120,10 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
         {/* "Te queda" primero también en el DOM (lectores de pantalla). Cinco
             elementos (causa 9): rótulo, cifra, días, anillo y ritmo. Toda la
             tarjeta abre el detalle: variación, previsto pendiente, tasa, moneda. */}
-        <div data-tour="kpi-free" className={`${s.hero} ${s.kpi} ${s.kpiLeft} rise`} style={{
-          animationDelay: '0ms',
-          background: hasData ? `color-mix(in srgb, ${freeColor} 6%, var(--box-bg))` : undefined,
-        }}>
+        {/* Tarjeta de marca (morado 50) sin el tinte del estado: el 6 % del color
+            semántico encima bajaba el gris secundario a 4,17:1. El estado ya lo
+            dicen la cifra, el anillo y la palabra. */}
+        <div data-tour="kpi-free" className={`${s.hero} ${s.kpi} ${s.kpiLeft} rise`} style={{ animationDelay: '0ms' }}>
           <div className={`${s.left} ${heroLong ? s.leftLong : ''}`}>
             <div className={s.leftBody}>
               <button type="button" className={s.heroOpen} aria-haspopup="dialog" aria-label={`${free < 0 ? t('home.kpi.short') : t('home.kpi.left')}. ${t('home.detail.open')}`} onClick={() => setDetailOpen(true)}>
