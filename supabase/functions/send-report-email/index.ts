@@ -1,4 +1,4 @@
-// FinanceOS/MOY IQ — Envío por correo del reporte PDF de Modo Asesor.
+// FinanceOS/moyiq — Envío por correo del reporte PDF de Modo Asesor.
 // Supabase Edge Function (Deno). A diferencia de stripe-webhook (llamado por
 // Stripe, servidor a servidor), este endpoint lo llama el NAVEGADOR del
 // usuario directo — por eso necesita CORS, y por eso NUNCA hay que confiar en
@@ -32,12 +32,13 @@ import {
 import { corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const config: EmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("FROM_EMAIL") ?? "MOY IQ <licencias@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("FROM_EMAIL"), "licencias@moyiq.app"),
 };
 const DAILY_LIMIT = dailyLimitFrom(Deno.env.get("REPORT_EMAIL_DAILY_LIMIT"));
 

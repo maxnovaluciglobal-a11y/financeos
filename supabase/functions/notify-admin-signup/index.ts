@@ -14,9 +14,10 @@ import { secretEquals } from '../_shared/secretEquals.ts';
 import { sendAdminNotify, type SignupEvent, type SignupDetails } from './notifyLogic.ts';
 import { subscribeToNewsletter, autoSubscribeEnabled } from '../_shared/newsletterSubscribe.ts';
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from '../_shared/emailSender.ts';
 
 const RESEND_API_KEY = Deno.env.get('NURTURE_RESEND_API_KEY') ?? Deno.env.get('RESEND_API_KEY') ?? '';
-const FROM_EMAIL = Deno.env.get('NURTURE_FROM_EMAIL') ?? 'MOY IQ <hola@moyiq.app>';
+const FROM_EMAIL = brandedSender(Deno.env.get('NURTURE_FROM_EMAIL'), 'hola@moyiq.app');
 const ALERT_EMAIL = Deno.env.get('ALERT_EMAIL') ?? 'maxnovaluciglobal@gmail.com';
 const INTERNAL_SECRET = Deno.env.get('CRON_SECRET') ?? '';
 const NEWSLETTER_PROXY_URL = Deno.env.get('NEWSLETTER_PROXY_URL');

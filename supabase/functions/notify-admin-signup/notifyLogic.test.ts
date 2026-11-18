@@ -2,12 +2,12 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderNotifyEmail, sendAdminNotify } from './notifyLogic.ts'
 
-const CONFIG = { resendApiKey: 're_key', fromEmail: 'MOY IQ <hola@moyiq.app>', alertEmail: 'maxnovaluciglobal@gmail.com' }
+const CONFIG = { resendApiKey: 're_key', fromEmail: 'moyiq <hola@moyiq.app>', alertEmail: 'maxnovaluciglobal@gmail.com' }
 
 describe('renderNotifyEmail', () => {
   it('starter_signup: asunto y contenido correctos', () => {
     const r = renderNotifyEmail('starter_signup', { email: 'lead@test.com', fuente: 'landing' })
-    expect(r.subject).toBe('Nuevo Starter — MOY IQ')
+    expect(r.subject).toBe('Nuevo Starter — moyiq')
     expect(r.html).toContain('lead@test.com')
     expect(r.html).toContain('landing')
     expect(r.html).toContain('Nuevo Starter')
@@ -37,7 +37,7 @@ describe('sendAdminNotify', () => {
     expect(res.ok).toBe(true)
     const body = JSON.parse((global.fetch as any).mock.calls[0][1].body)
     expect(body.to).toBe('maxnovaluciglobal@gmail.com')
-    expect(body.from).toBe('MOY IQ <hola@moyiq.app>')
+    expect(body.from).toBe('moyiq <hola@moyiq.app>')
   })
 
   it('sin resendApiKey no llama a fetch', async () => {

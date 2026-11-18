@@ -117,7 +117,7 @@ export function renderFeedbackEmail(input: FeedbackInput, from: { email: string 
   if (input.log) lines.push("", "Registro técnico adjunto:", input.log);
   const text = lines.filter((l, i) => l !== "" || i > 2).join("\n");
   const html = `<pre style="font-family:ui-monospace,Menlo,monospace;font-size:13px;white-space:pre-wrap">${escapeHtml(text)}</pre>`;
-  return { subject: auto ? `MOY IQ · NPS automático (${nps})` : `MOY IQ · comentario de la app (${nps})`, text, html };
+  return { subject: auto ? `moyiq · NPS automático (${nps})` : `moyiq · comentario de la app (${nps})`, text, html };
 }
 
 export async function sendFeedbackEmail(

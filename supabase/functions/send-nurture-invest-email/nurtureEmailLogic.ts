@@ -11,7 +11,7 @@
 // lee Deno.env.get() a nivel de módulo y no se puede importar desde
 // Node/vitest.
 //
-// Remitente: "MOY IQ Invest <invest@moyiq.app>" — mismo dominio raíz
+// Remitente: "moyiq · Inversiones <invest@moyiq.app>" — mismo dominio raíz
 // (moyiq.app) ya verificado en Resend, usado hoy por auth-email-hook. No
 // hace falta configurar nada nuevo ahí.
 //
@@ -48,11 +48,11 @@ export interface NurtureEmailConfig {
   supabaseUrl: string;
   serviceRole: string;
   resendApiKey?: string;
-  fromEmail: string; // "MOY IQ Invest <invest@moyiq.app>"
+  fromEmail: string; // "moyiq · Inversiones <invest@moyiq.app>"
   cronSecret?: string;
   landingUrl: string; // "https://invest.moyiq.app" — CTAs hacia la app de Invest
   // Base del link de baja. La página unsubscribe.html vive en la landing de
-  // MOY IQ (moyiq.app), no en invest-web: hasta el 18-oct-2026 el link
+  // moyiq (moyiq.app), no en invest-web: hasta el 18-oct-2026 el link
   // apuntaba a invest.moyiq.app/unsubscribe.html y daba 404.
   unsubscribeBaseUrl?: string;
 }
@@ -66,15 +66,15 @@ export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): stri
 // Línea legal fija en el pie de los 3 correos (relanzamiento v2, oct-2026).
 export const DISCLAIMER = "Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.";
 
-// Sistema visual único de los correos (BRD-5): el layout de marca de MOY IQ
+// Sistema visual único de los correos (BRD-5): el layout de marca de moyiq
 // con la etiqueta "Invest" junto al logo, en vez del tema oscuro propio.
 function wrapHtml(bodyHtml: string, unsubUrl: string): string {
   return emailLayout({
     lang: "es",
-    tag: "Invest",
+    tag: "Inversiones",
     bodyHtml,
     footerHtml: `${DISCLAIMER}<br>
-          MOY IQ Invest · ${COMPANY_POSTAL_HTML}.
+          moyiq · Inversiones · ${COMPANY_POSTAL_HTML}.
           <a href="${unsubUrl}">Darme de baja de estos correos</a>.`,
   });
 }
@@ -115,8 +115,8 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       <p>Hola,</p>
       <p>${profile.desc}</p>
       <p>Es un resultado orientativo, no una recomendación de inversión. Sirve para leer tus propias decisiones con más contexto.</p>
-      <p>MOY IQ Invest está abierto como beta pública gratuita. Puedes registrar tus posiciones, ver precios de Yahoo Finance con la hora del último dato y revisar cada indicador con su rango y una lectura simple.</p>
-      ${emailButton("https://invest.moyiq.app/app?ref=invest-welcome", "Abrir MOY IQ Invest")}
+      <p>moyiq · Inversiones está abierto como beta pública gratuita. Puedes registrar tus posiciones, ver precios de Yahoo Finance con la hora del último dato y revisar cada indicador con su rango y una lectura simple.</p>
+      ${emailButton("https://invest.moyiq.app/app?ref=invest-welcome", "Abrir moyiq · Inversiones")}
       <p style="${EMAIL_MUTED_STYLE}">Durante la beta todas las funciones están abiertas para todos, sin tarjeta.</p>
       `,
       unsub,
@@ -130,10 +130,10 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       `
       <h2>Con tu regla de riesgo</h2>
       <p>Hola,</p>
-      <p>En el <strong>Position Builder</strong> de MOY IQ Invest ingresas el ticker, tu capital y el precio de tu stop loss. Con tu regla de riesgo, por ejemplo no arriesgar más del 2% del capital en una sola operación, calcula cuántas unidades corresponden para que, si el precio llega al stop, la pérdida no supere ese límite.</p>
+      <p>En el <strong>Position Builder</strong> de moyiq · Inversiones ingresas el ticker, tu capital y el precio de tu stop loss. Con tu regla de riesgo, por ejemplo no arriesgar más del 2% del capital en una sola operación, calcula cuántas unidades corresponden para que, si el precio llega al stop, la pérdida no supere ese límite.</p>
       <p>Es un cálculo aritmético: no evalúa si la operación conviene ni sugiere comprar o vender. La decisión es tuya.</p>
       ${emailButton("https://invest.moyiq.app/app?ref=invest-d2#position-builder", "Abrir el Position Builder")}
-      <p style="${EMAIL_MUTED_STYLE}">MOY IQ Invest está en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.</p>
+      <p style="${EMAIL_MUTED_STYLE}">moyiq · Inversiones está en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.</p>
       `,
       unsub,
     );
@@ -141,12 +141,12 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
   }
 
   // day5
-  const subject = "Qué incluye la beta pública de MOY IQ Invest";
+  const subject = "Qué incluye la beta pública de moyiq · Inversiones";
   const html = wrapHtml(
     `
     <h2>Qué puedes usar durante la beta</h2>
     <p>Hola,</p>
-    <p>MOY IQ Invest está en beta pública gratuita: todas las funciones están abiertas para todos, sin tarjeta. Esto es lo que puedes usar hoy:</p>
+    <p>moyiq · Inversiones está en beta pública gratuita: todas las funciones están abiertas para todos, sin tarjeta. Esto es lo que puedes usar hoy:</p>
     <p>
     — Seguimiento de tus posiciones<br>
     — Precios de Yahoo Finance con retraso, con la hora del último dato visible<br>
@@ -155,7 +155,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     — Comparador de activos<br>
     — Alertas de precio</p>
     <p>La herramienta ordena tu información y explica cada dato. No te dice qué comprar ni vender, y no está conectada a ningún broker.</p>
-    ${emailButton("https://invest.moyiq.app/app?ref=invest-d5", "Abrir MOY IQ Invest")}
+    ${emailButton("https://invest.moyiq.app/app?ref=invest-d5", "Abrir moyiq · Inversiones")}
     <p style="${EMAIL_MUTED_STYLE}">Si no te sirve ahora, puedes darte de baja con el enlace de abajo.</p>
     `,
     unsub,

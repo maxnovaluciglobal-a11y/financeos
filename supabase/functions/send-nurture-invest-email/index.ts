@@ -1,4 +1,4 @@
-// FinanceOS/MOY IQ — Envío de la secuencia nurture para el lead magnet de
+// FinanceOS/moyiq — Envío de la secuencia nurture para el lead magnet de
 // Invest (perfil-inversor.html → invest_leads). Supabase Edge Function
 // (Deno). Calcada de send-nurture-starter-email/ — mismas dos formas de
 // invocarla:
@@ -16,7 +16,7 @@
 //
 // Secrets necesarios (Supabase → Edge Functions → Secrets):
 //   NURTURE_RESEND_API_KEY                  ← MISMO secret que usan las otras nurture — NO RESEND_API_KEY (ese devuelve 403, ver auth-email-hook/index.ts)
-//   NURTURE_FROM_EMAIL_INVEST                ← "MOY IQ Invest <invest@moyiq.app>" (fallback hardcodeado si no está seteado)
+//   NURTURE_FROM_EMAIL_INVEST                ← "moyiq · Inversiones <invest@moyiq.app>" (fallback hardcodeado si no está seteado)
 //   CRON_SECRET                             ← mismo secreto compartido (private.get_secret('cron_secret'))
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 
@@ -33,12 +33,13 @@ import {
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { corsHeaders } from "./cors.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender, INVEST_SENDER_NAME } from "../_shared/emailSender.ts";
 
 const config: NurtureEmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("NURTURE_FROM_EMAIL_INVEST") ?? "MOY IQ Invest <invest@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL_INVEST"), "invest@moyiq.app", INVEST_SENDER_NAME),
   cronSecret: Deno.env.get("CRON_SECRET"),
   landingUrl: Deno.env.get("INVEST_LANDING_URL") ?? "https://invest.moyiq.app",
 };

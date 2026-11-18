@@ -1,8 +1,8 @@
 // Avisos internos de monitoreo (cron-health-alert, uptime-alert): siempre desde
-// MOY IQ <hola@moyiq.app> y solo a la casilla de la empresa. Nunca a terceros.
+// moyiq <hola@moyiq.app> y solo a la casilla de la empresa. Nunca a terceros.
 import { resolveResendApiKey } from "./resendKey.ts";
 
-export const ALERT_FROM = "MOY IQ <hola@moyiq.app>";
+export const ALERT_FROM = "moyiq <hola@moyiq.app>";
 export const ALERT_TO = "maxnovaluciglobal@gmail.com";
 
 export interface AlertMessage {

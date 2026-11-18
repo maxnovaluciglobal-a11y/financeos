@@ -18,7 +18,7 @@ import { renderEmail as renderAuth } from "../auth-email-hook/emailHookLogic.ts"
 import { renderNotifyEmail } from "../notify-admin-signup/notifyLogic.ts";
 
 const STRIPE = { supabaseUrl: "https://p.supabase.co", serviceRole: "sr", resendApiKey: "re", fromEmail: "a@b.com", alertEmail: "admin@x.com", portalUrl: "https://billing.example/p" } as any;
-const NURTURE = { supabaseUrl: "https://p.supabase.co", serviceRole: "sr", resendApiKey: "re", fromEmail: "MOY IQ <hola@moyiq.app>", cronSecret: "s", landingUrl: "https://moyiq.app" } as any;
+const NURTURE = { supabaseUrl: "https://p.supabase.co", serviceRole: "sr", resendApiKey: "re", fromEmail: "moyiq <hola@moyiq.app>", cronSecret: "s", landingUrl: "https://moyiq.app" } as any;
 const BILLING = { endsAt: "2026-10-23T12:00:00Z", amountCents: 499, currency: "usd", interval: "month" as const };
 const CANCEL_ROW = {
   id: "11111111-1111-4111-8111-111111111111", created_at: "2026-10-08T14:05:00Z", lang: "en", name: "Ana", email: "ana@example.com",
@@ -51,10 +51,14 @@ afterEach(() => { vi.unstubAllGlobals(); });
 
 function expectBrand(html: string) {
   expect(html).toContain(EMAIL_LOGO_URL);
-  expect(html).toContain("background:#B8863B");
-  expect(html).not.toContain("font-family:system-ui");
-  // Nunca texto blanco sobre un botón ni los grises sueltos de antes.
-  expect(html).not.toMatch(/color:#fff\b|#999\b|#888\b|#666\b|#1a1a1a|#8B7A55/i);
+  expect(html).toContain("background:#3C2282");
+  expect(html).toContain("background:#D0F06E");
+  // Ningún rastro de la paleta ni de la tipografía anteriores (Navy/Latón/Papel, Plex/Instrument)
+  // ni el nombre viejo en el HTML.
+  expect(html).not.toMatch(/#14213D|#B8863B|#8A6329|#CC9A52|#F1EEE6|IBM Plex|Instrument Sans/i);
+  expect(html).not.toContain("MOY IQ");
+  // Ni los grises sueltos de antes.
+  expect(html).not.toMatch(/#999\b|#888\b|#666\b|#1a1a1a|#8B7A55/i);
 }
 
 describe("todos los correos de la app usan el layout de marca (BRD-5)", () => {
@@ -70,9 +74,9 @@ describe("todos los correos de la app usan el layout de marca (BRD-5)", () => {
     expectBrand(body.html);
   });
 
-  it("invest lleva la etiqueta Invest junto al logo", () => {
+  it("invest lleva la etiqueta de la sección (Inversiones / Investments) junto al logo", () => {
     for (const [name, html] of SAMPLES) {
-      if (/invest/.test(name)) expect(html).toMatch(/>Invest</);
+      if (/invest/.test(name)) expect(html).toMatch(/>(Inversiones|Investments|Investimentos)</);
     }
   });
 });

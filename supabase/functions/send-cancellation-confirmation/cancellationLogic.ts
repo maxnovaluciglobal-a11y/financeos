@@ -45,7 +45,7 @@ export interface CancellationConfig {
   supabaseUrl: string;
   serviceRole: string;
   resendApiKey?: string;
-  fromEmail: string; // "MOY IQ <hola@moyiq.app>"
+  fromEmail: string; // "moyiq <hola@moyiq.app>"
   replyTo: string; // support@moyiq.app
   internalTo: string[]; // support@moyiq.app + ALERT_EMAIL
 }
@@ -93,7 +93,7 @@ interface Copy {
 
 export const COPY: Record<EmailLang, Copy> = {
   es: {
-    subject: "Recibimos tu cancelación — MOY IQ",
+    subject: "Recibimos tu cancelación — moyiq",
     intro: (ts) => `Recibimos tu declaración de cancelación el ${ts}. Este correo confirma su recepción. Este es su contenido:`,
     outro: (id) =>
       `Número de referencia: ${id}. Guarda este correo. Procesamos la cancelación y te confirmamos por este medio la fecha en que termina tu contrato. Si no pediste esta cancelación, responde a este correo.`,
@@ -112,16 +112,16 @@ export const COPY: Record<EmailLang, Copy> = {
     kind: { ordinary: "Ordinaria", extraordinary: "Extraordinaria (por causa justificada)", withdrawal: "Desistimiento (derecho de desistimiento de 14 días)" },
     nextPossible: "En la próxima fecha posible",
     withdrawal: {
-      subject: "Recibimos tu desistimiento — MOY IQ",
+      subject: "Recibimos tu desistimiento — moyiq",
       intro: (ts) => `Recibimos tu declaración de desistimiento el ${ts}. Este correo confirma su recepción. Este es su contenido:`,
       outro: (id) =>
         `Número de referencia: ${id}. Guarda este correo. Procesamos el desistimiento y te devolvemos los pagos recibidos según las condiciones de desistimiento, sin demora y a más tardar en 14 días desde su recepción, por el mismo medio de pago. Si no pediste este desistimiento, responde a este correo.`,
-      declaration: "Por la presente desisto del contrato que celebré para la prestación del siguiente servicio: MOY IQ Pro.",
+      declaration: "Por la presente desisto del contrato que celebré para la prestación del siguiente servicio: moyiq Pro.",
       kindLabel: "Tipo de declaración",
     },
   },
   en: {
-    subject: "We received your cancellation — MOY IQ",
+    subject: "We received your cancellation — moyiq",
     intro: (ts) => `We received your cancellation notice on ${ts}. This email confirms receipt. This is its content:`,
     outro: (id) =>
       `Reference number: ${id}. Keep this email. We will process the cancellation and confirm by email the date your contract ends. If you did not request this cancellation, reply to this email.`,
@@ -140,16 +140,16 @@ export const COPY: Record<EmailLang, Copy> = {
     kind: { ordinary: "Ordinary", extraordinary: "Extraordinary (for good cause)", withdrawal: "Withdrawal (14-day right of withdrawal)" },
     nextPossible: "At the next possible date",
     withdrawal: {
-      subject: "We received your withdrawal — MOY IQ",
+      subject: "We received your withdrawal — moyiq",
       intro: (ts) => `We received your notice of withdrawal on ${ts}. This email confirms receipt. This is its content:`,
       outro: (id) =>
         `Reference number: ${id}. Keep this email. We will process the withdrawal and refund the payments we received under the withdrawal terms, without undue delay and no later than 14 days after receipt, using the same means of payment. If you did not request this withdrawal, reply to this email.`,
-      declaration: "I hereby withdraw from the contract I concluded for the provision of the following service: MOY IQ Pro.",
+      declaration: "I hereby withdraw from the contract I concluded for the provision of the following service: moyiq Pro.",
       kindLabel: "Type of notice",
     },
   },
   pt: {
-    subject: "Recebemos seu cancelamento — MOY IQ",
+    subject: "Recebemos seu cancelamento — moyiq",
     intro: (ts) => `Recebemos sua declaração de cancelamento em ${ts}. Este e-mail confirma o recebimento. Este é o conteúdo:`,
     outro: (id) =>
       `Número de referência: ${id}. Guarde este e-mail. Vamos processar o cancelamento e confirmar por e-mail a data em que seu contrato termina. Se você não pediu este cancelamento, responda a este e-mail.`,
@@ -168,16 +168,16 @@ export const COPY: Record<EmailLang, Copy> = {
     kind: { ordinary: "Ordinário", extraordinary: "Extraordinário (por justa causa)", withdrawal: "Desistência (direito de desistência de 14 dias)" },
     nextPossible: "Na próxima data possível",
     withdrawal: {
-      subject: "Recebemos sua desistência — MOY IQ",
+      subject: "Recebemos sua desistência — moyiq",
       intro: (ts) => `Recebemos sua declaração de desistência em ${ts}. Este e-mail confirma o recebimento. Este é o conteúdo:`,
       outro: (id) =>
         `Número de referência: ${id}. Guarde este e-mail. Vamos processar a desistência e devolver os pagamentos recebidos conforme as condições de desistência, sem demora e no máximo em 14 dias a partir do recebimento, pelo mesmo meio de pagamento. Se você não pediu esta desistência, responda a este e-mail.`,
-      declaration: "Pela presente, desisto do contrato que celebrei para a prestação do seguinte serviço: MOY IQ Pro.",
+      declaration: "Pela presente, desisto do contrato que celebrei para a prestação do seguinte serviço: moyiq Pro.",
       kindLabel: "Tipo de declaração",
     },
   },
   de: {
-    subject: "Eingangsbestätigung Ihrer Kündigung — MOY IQ",
+    subject: "Eingangsbestätigung Ihrer Kündigung — moyiq",
     intro: (ts) =>
       `Ihre Kündigungserklärung ist am ${ts} bei uns eingegangen. Mit dieser E-Mail bestätigen wir den Eingang. Ihre Erklärung hat folgenden Inhalt:`,
     outro: (id) =>
@@ -197,12 +197,12 @@ export const COPY: Record<EmailLang, Copy> = {
     kind: { ordinary: "Ordentliche Kündigung", extraordinary: "Außerordentliche (fristlose) Kündigung aus wichtigem Grund", withdrawal: "Widerruf" },
     nextPossible: "Zum nächstmöglichen Zeitpunkt",
     withdrawal: {
-      subject: "Eingangsbestätigung Ihres Widerrufs — MOY IQ",
+      subject: "Eingangsbestätigung Ihres Widerrufs — moyiq",
       intro: (ts) =>
         `Ihre Widerrufserklärung ist am ${ts} bei uns eingegangen. Mit dieser E-Mail bestätigen wir den Eingang. Ihre Erklärung hat folgenden Inhalt:`,
       outro: (id) =>
         `Referenznummer: ${id}. Bitte bewahren Sie diese E-Mail auf. Wir bearbeiten Ihren Widerruf und erstatten Ihnen die erhaltenen Zahlungen nach Maßgabe der Widerrufsbelehrung unverzüglich, spätestens binnen 14 Tagen ab Eingang des Widerrufs, über dasselbe Zahlungsmittel. Falls Sie diesen Widerruf nicht veranlasst haben, antworten Sie bitte auf diese E-Mail.`,
-      declaration: "Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: MOY IQ Pro.",
+      declaration: "Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: moyiq Pro.",
       kindLabel: "Art der Erklärung",
     },
   },
@@ -298,13 +298,13 @@ function table(rows: [string, string][]): string {
   return `<table style="border-collapse:collapse;width:100%;font-size:14px;margin:16px 0">${rows
     .map(
       ([k, v]) =>
-        `<tr><td style="padding:6px 12px 6px 0;color:${EMAIL_BRAND.muted};vertical-align:top;white-space:nowrap">${escapeHtml(k)}</td><td style="padding:6px 0;color:${EMAIL_BRAND.navy};vertical-align:top;word-break:break-word">${escapeHtml(v).replace(/\n/g, "<br>")}</td></tr>`,
+        `<tr><td style="padding:6px 12px 6px 0;color:${EMAIL_BRAND.muted};vertical-align:top;white-space:nowrap">${escapeHtml(k)}</td><td style="padding:6px 0;color:${EMAIL_BRAND.brand};vertical-align:top;word-break:break-word">${escapeHtml(v).replace(/\n/g, "<br>")}</td></tr>`,
     )
     .join("")}</table>`;
 }
 
 function wrap(inner: string, lang: EmailLang): string {
-  return emailLayout({ lang, bodyHtml: inner, footerHtml: "MOY IQ · MAXNOVA &amp; LUCI Global LLC · support@moyiq.app" });
+  return emailLayout({ lang, bodyHtml: inner, footerHtml: "moyiq · MAXNOVA &amp; LUCI Global LLC · support@moyiq.app" });
 }
 
 export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
@@ -317,7 +317,7 @@ export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
     `<p>${escapeHtml(c.intro(ts))}</p>${table(rows)}<p>${escapeHtml(c.outro(row.id))}</p>`,
     lang,
   );
-  const text = [c.intro(ts), "", ...rows.map(([k, v]) => `${k}: ${v}`), "", c.outro(row.id), "", "MOY IQ · MAXNOVA & LUCI Global LLC · support@moyiq.app"].join("\n");
+  const text = [c.intro(ts), "", ...rows.map(([k, v]) => `${k}: ${v}`), "", c.outro(row.id), "", "moyiq · MAXNOVA & LUCI Global LLC · support@moyiq.app"].join("\n");
   return { subject: c.subject, html, text };
 }
 

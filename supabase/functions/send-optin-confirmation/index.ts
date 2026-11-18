@@ -25,7 +25,7 @@
 //
 // Secrets (todos ya existen):
 //   NURTURE_RESEND_API_KEY (o RESEND_API_KEY) ← key de Resend scoped a moyiq.app
-//   NURTURE_FROM_EMAIL                         ← "MOY IQ <hola@moyiq.app>"
+//   NURTURE_FROM_EMAIL                         ← "moyiq <hola@moyiq.app>"
 //   SUPPORT_EMAIL (opcional)                   ← reply-to, default support@moyiq.app
 //   LANDING_URL (opcional)                     ← default https://moyiq.app
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY    ← los inyecta Supabase
@@ -34,12 +34,13 @@ import { processOptin, type OptinConfig } from "./optinLogic.ts";
 import { corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const config: OptinConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL"), "hola@moyiq.app"),
   replyTo: Deno.env.get("SUPPORT_EMAIL") ?? "support@moyiq.app",
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",
 };

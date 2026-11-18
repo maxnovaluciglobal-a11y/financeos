@@ -89,15 +89,15 @@ describe('correos de uptime', () => {
     const checks = seq(false, false)
     const d = decideUptime(null, 'app.moyiq.app', checks, at(0))
     const m = uptimeEmail('down', 'app.moyiq.app', 'https://app.moyiq.app/app/', d.state, checks[0], at(0))
-    expect(m.subject).toBe('[MOY IQ] caída: app.moyiq.app')
+    expect(m.subject).toBe('[moyiq] caída: app.moyiq.app')
     expect(m.text).toContain('https://app.moyiq.app/app/')
     expect(m.text).toContain('HTTP 503')
     expect(m.text).toContain('docs/monitoreo.md')
   })
   it('asuntos de recordatorio y recuperación', () => {
     const s = { ...initialState('moyiq.app'), status: 'down' as const, down_since: at(-400).toISOString() }
-    expect(uptimeEmail('reminder', 'moyiq.app', 'u', s, undefined, at(0)).subject).toBe('[MOY IQ] sigue caído: moyiq.app')
-    expect(uptimeEmail('recovery', 'moyiq.app', 'u', s, undefined, at(0)).subject).toBe('[MOY IQ] recuperado: moyiq.app')
+    expect(uptimeEmail('reminder', 'moyiq.app', 'u', s, undefined, at(0)).subject).toBe('[moyiq] sigue caído: moyiq.app')
+    expect(uptimeEmail('recovery', 'moyiq.app', 'u', s, undefined, at(0)).subject).toBe('[moyiq] recuperado: moyiq.app')
   })
   it('describe la causa del chequeo', () => {
     expect(describeCheck(chk(false, 0, { status_code: 200, marker_found: false }))).toContain('contenido esperado')

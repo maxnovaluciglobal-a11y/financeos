@@ -12,7 +12,7 @@
 // email/: index.ts lee Deno.env.get() a nivel de módulo y no se puede
 // importar desde Node/vitest.
 //
-// Remitente: mismo "MOY IQ <hola@moyiq.app>" ya verificado en Resend para
+// Remitente: mismo "moyiq <hola@moyiq.app>" ya verificado en Resend para
 // nurture — no hace falta configurar nada nuevo ahí (ver reporte de la
 // sesión del 13-sep que armó send-nurture-diagnostico-email).
 //
@@ -61,7 +61,7 @@ export interface NurtureEmailConfig {
   supabaseUrl: string;
   serviceRole: string;
   resendApiKey?: string;
-  fromEmail: string; // "MOY IQ <hola@moyiq.app>"
+  fromEmail: string; // "moyiq <hola@moyiq.app>"
   cronSecret?: string;
   landingUrl: string; // "https://moyiq.app" — para armar el link de unsubscribe
 }
@@ -83,7 +83,7 @@ function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): s
   return emailLayout({
     lang,
     bodyHtml,
-    footerHtml: `MOY IQ · ${COMPANY_POSTAL_HTML}.
+    footerHtml: `moyiq · ${COMPANY_POSTAL_HTML}.
         <a href="${unsubUrl}">${UNSUBSCRIBE_LABEL[lang]}</a>.`,
   });
 }

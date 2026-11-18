@@ -1,8 +1,8 @@
 // supabase/functions/auth-email-hook/emailHookLogic.ts
 //
-// Lógica pura del Auth "Send Email Hook" compartido entre MOY IQ e Invest
+// Lógica pura del Auth "Send Email Hook" compartido entre moyiq e Invest
 // (mismo proyecto Supabase, mismo auth.users — ver CLAUDE.md de invest-web,
-// sección "Infraestructura compartida con MOY IQ"). Sin este hook, Supabase
+// sección "Infraestructura compartida con moyiq"). Sin este hook, Supabase
 // manda TODOS los correos de auth (reset, confirmación...) con su plantilla
 // genérica de default, sin marca — pedido de Walter 14-sep-2026: separar la
 // marca por producto en todo el flujo.
@@ -20,10 +20,11 @@
 // signUp() en las dos, vía `options.emailRedirectTo` — antes solo recovery
 // lo pasaba, signup caía al Site URL único del proyecto y hubiera sido
 // indistinguible. Sin ese fix, cualquier email de confirmación de cuenta
-// (signup) llegaría marcado como MOY IQ sin importar de qué app vino.
+// (signup) llegaría marcado como moyiq sin importar de qué app vino.
 import type { EmailLang } from '../_shared/emailLang.ts';
 export { pickLang } from '../_shared/emailLang.ts';
 import { emailButton, emailHeading, emailLayout, EMAIL_MUTED_STYLE } from '../_shared/emailLayout.ts';
+import { INVEST_LABEL, INVEST_SENDER_NAME, SENDER_NAME, investSiteName } from '../_shared/emailSender.ts';
 
 export type Brand = 'moyiq' | 'invest';
 
@@ -32,7 +33,7 @@ export function detectBrand(redirectTo: string | null | undefined): Brand {
   // invest.moyiq.app es el único dominio de Invest (el anterior de FinanceOS
   // se desconectó el 20-oct-2026).
   if (/invest\.moyiq\.app/i.test(url)) return 'invest';
-  return 'moyiq'; // default: MOY IQ es el producto primario, con más usuarios reales
+  return 'moyiq'; // default: Moyiq es el producto primario, con más usuarios reales
 }
 
 export type EmailActionType =
@@ -75,13 +76,13 @@ interface BrandTheme {
 
 const THEMES: Record<Brand, BrandTheme> = {
   moyiq: {
-    fromEmail: 'MOY IQ <hola@moyiq.app>',
-    footer: 'MOY IQ · MAXNOVA &amp; LUCI Global LLC.',
+    fromEmail: `${SENDER_NAME} <hola@moyiq.app>`,
+    footer: 'moyiq · MAXNOVA &amp; LUCI Global LLC.',
   },
   invest: {
-    fromEmail: 'MOY IQ Invest <invest@moyiq.app>', // mismo dominio raíz ya verificado en Resend, sin trabajo de DNS nuevo
-    tag: 'Invest',
-    footer: 'MOY IQ Invest · MAXNOVA &amp; LUCI Global LLC.',
+    fromEmail: `${INVEST_SENDER_NAME} <invest@moyiq.app>`, // mismo dominio raíz ya verificado en Resend, sin trabajo de DNS nuevo
+    tag: 'Invest', // se reemplaza por el nombre de la sección en el idioma del correo (INVEST_LABEL)
+    footer: 'moyiq · Inversiones · MAXNOVA &amp; LUCI Global LLC.',
   },
 };
 
@@ -163,7 +164,7 @@ const COPY: Record<EmailLang, Record<EmailActionType | 'default', CopyFn>> = {
 };
 
 export function copyFor(brand: Brand, actionType: EmailActionType, lang: EmailLang = 'es'): Copy {
-  const productName = brand === 'invest' ? 'MOY IQ Invest' : 'MOY IQ';
+  const productName = brand === 'invest' ? investSiteName(lang) : SENDER_NAME;
   const table = COPY[lang] ?? COPY.es;
   return (table[actionType] ?? table.default)(productName);
 }
@@ -179,12 +180,12 @@ export function renderEmail(brand: Brand, actionType: EmailActionType, actionUrl
   const copy = copyFor(brand, actionType, lang);
   const html = emailLayout({
     lang,
-    tag: theme.tag,
+    tag: theme.tag ? INVEST_LABEL[lang] ?? INVEST_LABEL.es : undefined,
     bodyHtml: `${emailHeading(copy.heading)}
         <p>${copy.body}</p>
         ${emailButton(actionUrl, `${copy.cta} →`)}
         ${copy.afterCta ? `<p style="${EMAIL_MUTED_STYLE}">${copy.afterCta}</p>` : ''}`,
-    footerHtml: theme.footer,
+    footerHtml: brand === 'invest' ? `${investSiteName(lang)} · MAXNOVA &amp; LUCI Global LLC.` : theme.footer,
   });
   return { subject: copy.subject, html, fromEmail: theme.fromEmail };
 }

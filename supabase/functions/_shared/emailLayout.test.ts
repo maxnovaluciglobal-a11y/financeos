@@ -4,31 +4,34 @@ import { emailLayout, emailButton, brandEmailBody, EMAIL_BRAND, EMAIL_LOGO_URL }
 describe("emailLayout (BRD-5)", () => {
   const html = emailLayout({ lang: "en", bodyHtml: "<h2>Hi</h2><p>Body <a href=\"https://x\">link</a></p>", footerHtml: "Footer <a href=\"https://u\">unsubscribe</a>", preheader: "Pre <x>" });
 
-  it("has the Navy header with the logo, the Latón stripe and the Papel background", () => {
-    expect(html).toContain(`background:${EMAIL_BRAND.navy}`);
+  it("has the purple header with the logo, the lime stripe and the light background", () => {
+    expect(html).toContain(`background:${EMAIL_BRAND.brand}`);
     expect(html).toContain(`src="${EMAIL_LOGO_URL}"`);
-    expect(html).toContain(`background:${EMAIL_BRAND.laton}`);
-    expect(html).toContain(`background:${EMAIL_BRAND.papel}`);
+    expect(html).toContain(`background:${EMAIL_BRAND.accent}`);
+    expect(html).toContain(`background:${EMAIL_BRAND.bg}`);
+    expect(html).toContain('alt="moyiq"');
+    expect(html).toContain("<title>moyiq</title>");
     expect(html).toMatch(/<html lang="en">/);
     expect(html).toContain('meta name="color-scheme" content="light"');
   });
 
   it("escapes the preheader and brands headings and plain links", () => {
     expect(html).toContain("Pre &lt;x&gt;");
-    expect(html).toMatch(/<h2 style="[^"]*color:#14213D/);
-    expect(html).toContain(`<a href="https://x" style="color:${EMAIL_BRAND.laton700}`);
-    expect(html).toContain(`<a href="https://u" style="color:${EMAIL_BRAND.laton700}`);
+    expect(html).toMatch(/<h2 style="[^"]*color:#3C2282/);
+    expect(html).toMatch(/font-family:Inter,system-ui/);
+    expect(html).toContain(`<a href="https://x" style="color:${EMAIL_BRAND.brand}`);
+    expect(html).toContain(`<a href="https://u" style="color:${EMAIL_BRAND.brand}`);
   });
 
   it("omits the footer row when there is none", () => {
-    expect(emailLayout({ lang: "es", bodyHtml: "<p>x</p>" })).not.toContain(EMAIL_BRAND.papelDeep + ";font-family");
+    expect(emailLayout({ lang: "es", bodyHtml: "<p>x</p>" })).not.toContain(EMAIL_BRAND.tint + ";font-family");
   });
 
-  it("button: Latón fill with Navy text, never white on Latón, never a pill", () => {
+  it("button: purple fill with white text, never lime text, never a pill", () => {
     const b = emailButton("https://a", "Go");
-    expect(b).toContain(`background-color:${EMAIL_BRAND.laton}`);
-    expect(b).toContain(`color:${EMAIL_BRAND.navy}`);
-    expect(b).not.toMatch(/color:#fff/i);
+    expect(b).toContain(`background-color:${EMAIL_BRAND.brand}`);
+    expect(b).toContain(`color:${EMAIL_BRAND.onBrand}`);
+    expect(b).not.toContain(`color:${EMAIL_BRAND.accent}`);
     expect(b).toContain("border-radius:8px");
   });
 

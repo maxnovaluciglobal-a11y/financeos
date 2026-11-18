@@ -8,7 +8,7 @@ const row = (over: Partial<TrialRow> = {}): TrialRow => ({
   id: '11111111-1111-4111-8111-111111111111', email: 'maxnovaluciglobal@gmail.com', lang: 'es',
   trial_started_at: new Date(start).toISOString(), trial_ends_at: new Date(start + 14 * DAY).toISOString(), ...over,
 });
-const config = { supabaseUrl: 'https://x.supabase.co', serviceRole: 'sr', resendApiKey: 're', fromEmail: 'MOY IQ <hola@moyiq.app>', portalUrl: 'https://billing.example/p' };
+const config = { supabaseUrl: 'https://x.supabase.co', serviceRole: 'sr', resendApiKey: 're', fromEmail: 'moyiq <hola@moyiq.app>', portalUrl: 'https://billing.example/p' };
 
 describe('secuencia de activación de la prueba (C-35 / COM-10)', () => {
   it('días 1, 3 y 10, un solo correo por corrida y nunca hacia atrás', () => {
@@ -89,7 +89,7 @@ describe('secuencia de activación de la prueba (C-35 / COM-10)', () => {
 
   it('vista previa de los correos de cobro (C-35): solo a la empresa, desde licencias@, con prefijo y clave de ejemplo', async () => {
     const f = vi.fn(async () => new Response('{}', { status: 200 }));
-    const cfg = { ...config, billingFromEmail: 'MOY IQ <licencias@moyiq.app>' };
+    const cfg = { ...config, billingFromEmail: 'moyiq <licencias@moyiq.app>' };
     expect(await sendPreview('otra@gmail.com', 'pro_ended', 'es', cfg, f as any)).toEqual({ ok: false, error: 'recipient_not_allowed' });
     expect(f).not.toHaveBeenCalled();
     for (const step of BILLING_PREVIEW_STEPS) {
@@ -97,7 +97,7 @@ describe('secuencia de activación de la prueba (C-35 / COM-10)', () => {
       expect(await sendPreview('MaxNovaLuciGlobal@gmail.com', step, 'es', cfg, f as any)).toEqual({ ok: true });
       const body = JSON.parse((f.mock.calls[0] as any)[1].body);
       expect(body.to).toBe('maxnovaluciglobal@gmail.com');
-      expect(body.from).toBe('MOY IQ <licencias@moyiq.app>');
+      expect(body.from).toBe('moyiq <licencias@moyiq.app>');
       expect(body.subject.startsWith('[Vista previa] ')).toBe(true);
     }
   });

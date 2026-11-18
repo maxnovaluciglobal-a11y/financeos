@@ -29,6 +29,7 @@
 
 import { type EmailLang, pickLang } from "../_shared/emailLang.ts";
 import { emailButton, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { INVEST_LABEL, investSiteName } from "../_shared/emailSender.ts";
 
 // invest (quiz de Invest, auditoría 360 COM-7) y newsletter (formularios de
 // newsletter del blog, el Diagnóstico e Invest, C-16) desde el 19-oct-2026.
@@ -56,7 +57,7 @@ export interface OptinConfig {
   supabaseUrl: string;
   serviceRole: string;
   resendApiKey?: string;
-  fromEmail: string; // "MOY IQ <hola@moyiq.app>"
+  fromEmail: string; // "moyiq <hola@moyiq.app>"
   replyTo: string; // support@moyiq.app
   landingUrl: string; // https://moyiq.app
 }
@@ -72,7 +73,7 @@ interface Copy {
   intro: string;
   subjectInvest: string;
   introInvest: string;
-  introNewsletter: string; // {brand} = MOY IQ o MOY IQ Invest
+  introNewsletter: string; // {brand} = moyiq o moyiq · Inversiones
   cta: string;
   button: string;
   ignore: string;
@@ -81,10 +82,10 @@ interface Copy {
 
 export const COPY: Record<EmailLang, Copy> = {
   es: {
-    subject: "Confirma que quieres recibir correos de MOY IQ",
-    intro: "Pediste recibir por correo consejos y novedades de MOY IQ en esta dirección.",
-    subjectInvest: "Confirma que quieres recibir correos de MOY IQ Invest",
-    introInvest: "Pediste recibir por correo novedades de MOY IQ Invest en esta dirección.",
+    subject: "Confirma que quieres recibir correos de moyiq",
+    intro: "Pediste recibir por correo consejos y novedades de moyiq en esta dirección.",
+    subjectInvest: "Confirma que quieres recibir correos de moyiq · Inversiones",
+    introInvest: "Pediste recibir por correo novedades de moyiq · Inversiones en esta dirección.",
     introNewsletter: "Pediste recibir el newsletter de {brand} en esta dirección.",
     cta: "Para confirmarlo, abre este enlace:",
     button: "Confirmar suscripción",
@@ -93,10 +94,10 @@ export const COPY: Record<EmailLang, Copy> = {
     unsubscribe: "Puedes darte de baja cuando quieras desde el enlace al pie de cada correo.",
   },
   en: {
-    subject: "Confirm that you want emails from MOY IQ",
-    intro: "You asked to receive MOY IQ tips and updates by email at this address.",
-    subjectInvest: "Confirm that you want emails from MOY IQ Invest",
-    introInvest: "You asked to receive MOY IQ Invest updates by email at this address.",
+    subject: "Confirm that you want emails from moyiq",
+    intro: "You asked to receive moyiq tips and updates by email at this address.",
+    subjectInvest: "Confirm that you want emails from moyiq · Investments",
+    introInvest: "You asked to receive moyiq · Investments updates by email at this address.",
     introNewsletter: "You asked to receive the {brand} newsletter at this address.",
     cta: "To confirm, open this link:",
     button: "Confirm subscription",
@@ -105,10 +106,10 @@ export const COPY: Record<EmailLang, Copy> = {
     unsubscribe: "You can unsubscribe at any time from the link at the bottom of every email.",
   },
   pt: {
-    subject: "Confirme que quer receber e-mails do MOY IQ",
-    intro: "Você pediu para receber por e-mail dicas e novidades do MOY IQ neste endereço.",
-    subjectInvest: "Confirme que quer receber e-mails do MOY IQ Invest",
-    introInvest: "Você pediu para receber por e-mail novidades do MOY IQ Invest neste endereço.",
+    subject: "Confirme que quer receber e-mails do moyiq",
+    intro: "Você pediu para receber por e-mail dicas e novidades do moyiq neste endereço.",
+    subjectInvest: "Confirme que quer receber e-mails do moyiq · Investimentos",
+    introInvest: "Você pediu para receber por e-mail novidades do moyiq · Investimentos neste endereço.",
     introNewsletter: "Você pediu para receber a newsletter do {brand} neste endereço.",
     cta: "Para confirmar, abra este link:",
     button: "Confirmar inscrição",
@@ -117,10 +118,10 @@ export const COPY: Record<EmailLang, Copy> = {
     unsubscribe: "Você pode cancelar quando quiser pelo link no rodapé de cada e-mail.",
   },
   de: {
-    subject: "Bitte bestätigen Sie Ihre Anmeldung für E-Mails von MOY IQ",
-    intro: "Sie haben angefordert, Tipps und Neuigkeiten von MOY IQ per E-Mail an diese Adresse zu erhalten.",
-    subjectInvest: "Bitte bestätigen Sie Ihre Anmeldung für E-Mails von MOY IQ Invest",
-    introInvest: "Sie haben angefordert, Neuigkeiten von MOY IQ Invest per E-Mail an diese Adresse zu erhalten.",
+    subject: "Bitte bestätigen Sie Ihre Anmeldung für E-Mails von moyiq",
+    intro: "Sie haben angefordert, Tipps und Neuigkeiten von moyiq per E-Mail an diese Adresse zu erhalten.",
+    subjectInvest: "Bitte bestätigen Sie Ihre Anmeldung für E-Mails von moyiq · Investments",
+    introInvest: "Sie haben angefordert, Neuigkeiten von moyiq · Investments per E-Mail an diese Adresse zu erhalten.",
     introNewsletter: "Sie haben angefordert, den Newsletter von {brand} an diese Adresse zu erhalten.",
     cta: "Zur Bestätigung öffnen Sie bitte diesen Link:",
     button: "Anmeldung bestätigen",
@@ -154,7 +155,7 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-const FOOTER = "MOY IQ · MAXNOVA & LUCI Global LLC · support@moyiq.app";
+const FOOTER = "moyiq · MAXNOVA & LUCI Global LLC · support@moyiq.app";
 
 export function renderOptinEmail(row: OptinRow, config: OptinConfig, source: OptinSource = "starter"): RenderedEmail {
   const lang = pickLang(row.lang);
@@ -162,13 +163,13 @@ export function renderOptinEmail(row: OptinRow, config: OptinConfig, source: Opt
   const invest = source === "invest" || (source === "newsletter" && row.product === "invest");
   const subject = invest ? c.subjectInvest : c.subject;
   const intro = source === "newsletter"
-    ? c.introNewsletter.replace("{brand}", invest ? "MOY IQ Invest" : "MOY IQ")
+    ? c.introNewsletter.replace("{brand}", invest ? investSiteName(lang) : "moyiq")
     : invest ? c.introInvest : c.intro;
   const url = confirmUrl(config.landingUrl, lang, row.consent_token ?? "");
   const u = escapeHtml(url);
   const html = emailLayout({
     lang,
-    tag: invest ? "Invest" : undefined,
+    tag: invest ? INVEST_LABEL[lang] ?? INVEST_LABEL.es : undefined,
     bodyHtml: `<p>${escapeHtml(intro)}</p>
 <p>${escapeHtml(c.cta)}</p>
 ${emailButton(u, escapeHtml(c.button))}

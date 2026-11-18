@@ -53,7 +53,7 @@ export function edgeErrorEmail(rows: EdgeErrorRow[]): AlertMessage {
     `Se avisa como máximo cada 30 min; ver financeos-app/docs/monitoreo.md.`,
   );
   const top = fns.map(([fn]) => fn).slice(0, 3).join(", ");
-  return { subject: `[MOY IQ] errores en Edge Functions: ${rows.length} (${top}${fns.length > 3 ? "…" : ""})`, text: lines.join("\n") };
+  return { subject: `[moyiq] errores en Edge Functions: ${rows.length} (${top}${fns.length > 3 ? "…" : ""})`, text: lines.join("\n") };
 }
 
 export async function runEdgeErrorAlert(config: EdgeAlertConfig, now: Date, opts: { dryRun?: boolean } = {}): Promise<EdgeAlertResult> {

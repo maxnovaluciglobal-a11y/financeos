@@ -12,7 +12,7 @@ describe('buildCronHealthReport', () => {
   })
   it('el caso del 18-oct: 401 con la corrida "succeeded" se avisa', () => {
     const r = buildCronHealthReport([row({ ok: false, problem: 'http_error', last_http_status: 401 })], [], NOW)
-    expect(r.subject).toBe('[MOY IQ] cron con problemas: 1')
+    expect(r.subject).toBe('[moyiq] cron con problemas: 1')
     expect(r.text).toContain('starter-nurture-daily')
     expect(r.text).toContain('último HTTP 401')
   })

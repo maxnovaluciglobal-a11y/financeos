@@ -138,31 +138,31 @@ export interface SendReportParams {
 const REPORT_TEXT: Record<EmailLang, { title: string; body: (month: string) => string; notice: string; subject: (month: string) => string; sentBy: (email: string) => string }> = {
   es: {
     title: "Reporte financiero",
-    body: (m) => `Adjunto encontrarás el diagnóstico financiero de ${m}, generado con MOY IQ Modo Asesor.`,
+    body: (m) => `Adjunto encontrarás el diagnóstico financiero de ${m}, generado con moyiq Modo Asesor.`,
     notice: "Este correo puede contener información financiera personal. Si no esperabas recibirlo, ignóralo y avisa a quien te lo envió.",
     subject: (m) => `Reporte financiero — ${m}`,
-    sentBy: (e) => `Enviado por ${e} con MOY IQ. Si respondes, la respuesta le llega a esa persona.`,
+    sentBy: (e) => `Enviado por ${e} con moyiq. Si respondes, la respuesta le llega a esa persona.`,
   },
   en: {
     title: "Financial report",
-    body: (m) => `Attached is the financial diagnosis for ${m}, generated with MOY IQ Advisor Mode.`,
+    body: (m) => `Attached is the financial diagnosis for ${m}, generated with moyiq Advisor Mode.`,
     notice: "This email may contain personal financial information. If you weren't expecting it, ignore it and let the sender know.",
     subject: (m) => `Financial report — ${m}`,
-    sentBy: (e) => `Sent by ${e} with MOY IQ. If you reply, your answer goes to that person.`,
+    sentBy: (e) => `Sent by ${e} with moyiq. If you reply, your answer goes to that person.`,
   },
   pt: {
     title: "Relatório financeiro",
-    body: (m) => `Em anexo está o diagnóstico financeiro de ${m}, gerado com o Modo Assessor do MOY IQ.`,
+    body: (m) => `Em anexo está o diagnóstico financeiro de ${m}, gerado com o Modo Assessor do moyiq.`,
     notice: "Este e-mail pode conter informações financeiras pessoais. Se não esperava recebê-lo, ignore-o e avise quem o enviou.",
     subject: (m) => `Relatório financeiro — ${m}`,
-    sentBy: (e) => `Enviado por ${e} com o MOY IQ. Se você responder, a resposta chega a essa pessoa.`,
+    sentBy: (e) => `Enviado por ${e} com o moyiq. Se você responder, a resposta chega a essa pessoa.`,
   },
   de: {
     title: "Finanzbericht",
-    body: (m) => `Im Anhang finden Sie die Finanzdiagnose für ${m}, erstellt mit dem Beratungsmodus von MOY IQ.`,
+    body: (m) => `Im Anhang finden Sie die Finanzdiagnose für ${m}, erstellt mit dem Beratungsmodus von moyiq.`,
     notice: "Diese E-Mail kann persönliche Finanzinformationen enthalten. Wenn Sie sie nicht erwartet haben, ignorieren Sie sie und informieren Sie den Absender.",
     subject: (m) => `Finanzbericht – ${m}`,
-    sentBy: (e) => `Gesendet von ${e} mit MOY IQ. Wenn Sie antworten, geht die Antwort an diese Person.`,
+    sentBy: (e) => `Gesendet von ${e} mit moyiq. Wenn Sie antworten, geht die Antwort an diese Person.`,
   },
 };
 

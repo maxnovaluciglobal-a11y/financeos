@@ -50,16 +50,16 @@ describe('buildActionUrl', () => {
 })
 
 describe('renderEmail', () => {
-  it('MOY IQ: remitente y paleta correctos', () => {
+  it('moyiq: remitente y paleta correctos', () => {
     const r = renderEmail('moyiq', 'recovery', 'https://x.test/verify')
-    expect(r.fromEmail).toBe('MOY IQ <hola@moyiq.app>')
+    expect(r.fromEmail).toBe('moyiq <hola@moyiq.app>')
     expect(r.html).toContain('https://x.test/verify')
     expect(r.subject).toBe('Restablece tu contraseña')
   })
-  it('Invest: remitente y paleta correctos, distinto de MOY IQ', () => {
+  it('Invest: remitente y paleta correctos, distinto de moyiq', () => {
     const r = renderEmail('invest', 'recovery', 'https://x.test/verify')
-    expect(r.fromEmail).toBe('MOY IQ Invest <invest@moyiq.app>')
-    expect(r.html).toContain('Invest')
+    expect(r.fromEmail).toBe('moyiq Inversiones <invest@moyiq.app>')
+    expect(r.html).toContain('moyiq · Inversiones')
     expect(r.html).not.toEqual(renderEmail('moyiq', 'recovery', 'https://x.test/verify').html)
   })
   it('signup: copy distinto de recovery', () => {
@@ -134,7 +134,7 @@ describe('renderEmail por idioma (user_metadata.lang)', () => {
   })
 
   it('sin idioma: español, como siempre', () => {
-    expect(renderEmail('moyiq', 'signup', url).subject).toBe('Confirma tu cuenta de MOY IQ')
+    expect(renderEmail('moyiq', 'signup', url).subject).toBe('Confirma tu cuenta de moyiq')
   })
 
   it('pickLang con user_metadata.lang ausente, inválido o regional', () => {
@@ -144,7 +144,7 @@ describe('renderEmail por idioma (user_metadata.lang)', () => {
   })
 
   it('la marca Invest también se traduce', () => {
-    expect(renderEmail('invest', 'signup', url, 'en').subject).toBe('Confirm your MOY IQ Invest account')
+    expect(renderEmail('invest', 'signup', url, 'en').subject).toBe('Confirm your moyiq · Investments account')
   })
 
   it('ningún texto con exclamaciones; el alemán no tutea', () => {

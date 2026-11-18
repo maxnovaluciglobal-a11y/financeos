@@ -1,4 +1,4 @@
-// FinanceOS/MOY IQ — Envío de la secuencia nurture para usuarios Starter
+// FinanceOS/moyiq — Envío de la secuencia nurture para usuarios Starter
 // (cuenta gratis, sin clave). Supabase Edge Function (Deno). Calcada de
 // send-nurture-diagnostico-email/ — mismas dos formas de invocarla:
 //
@@ -16,7 +16,7 @@
 // Secrets necesarios (Supabase → Edge Functions → Secrets) — TODOS ya
 // existen, reusados de send-nurture-diagnostico-email, nada nuevo que crear:
 //   NURTURE_RESEND_API_KEY                  ← key de Resend scoped a moyiq.app
-//   NURTURE_FROM_EMAIL                      ← "MOY IQ <hola@moyiq.app>"
+//   NURTURE_FROM_EMAIL                      ← "moyiq <hola@moyiq.app>"
 //   CRON_SECRET                             ← mismo secreto compartido (private.get_secret('cron_secret'))
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 
@@ -33,12 +33,13 @@ import {
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { corsHeaders } from "./cors.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
+import { brandedSender } from "../_shared/emailSender.ts";
 
 const config: NurtureEmailConfig = {
   supabaseUrl: Deno.env.get("SUPABASE_URL")!,
   serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
-  fromEmail: Deno.env.get("NURTURE_FROM_EMAIL") ?? "MOY IQ <hola@moyiq.app>",
+  fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL"), "hola@moyiq.app"),
   cronSecret: Deno.env.get("CRON_SECRET"),
   landingUrl: Deno.env.get("LANDING_URL") ?? "https://moyiq.app",
 };

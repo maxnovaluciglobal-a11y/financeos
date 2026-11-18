@@ -172,7 +172,7 @@ Deno.serve(withErrorReporting("send-push", async (req) => {
 
       const daysLeft = Math.max(1, Math.ceil((new Date(lic.expires_at).getTime() - Date.now()) / 86400000));
       const payload = {
-        title: "MOY IQ",
+        title: "moyiq",
         // Respaldo en español; el service worker (public/push-sw.js) arma el
         // texto en el idioma del navegador a partir de `i18n`.
         body: `Tu prueba vence en ${daysLeft} día${daysLeft === 1 ? "" : "s"}. Tus datos se quedan si decides continuar.`,

@@ -112,8 +112,8 @@ describe('generateKey', () => {
   })
 })
 
-describe('planFromSession — solo Payment Links de MOY IQ, sin fallback por monto (C-13)', () => {
-  it('links de la cuenta de MOY IQ → pro', () => {
+describe('planFromSession — solo Payment Links de moyiq, sin fallback por monto (C-13)', () => {
+  it('links de la cuenta de moyiq → pro', () => {
     expect(planFromSession({ payment_link: 'plink_1UEgvJ2L52ZuuTMr1Agq0t4b' })).toBe('pro')
     expect(planFromSession({ payment_link: 'plink_1UEgve2L52ZuuTMrdS1OE9fh' })).toBe('pro')
   })
@@ -196,7 +196,7 @@ describe('shouldSkipCheckout / checkoutSkipReason', () => {
     expect(checkoutSkipReason({ payment_status: 'unpaid', amount_total: 2900, payment_link: PRO })).toBe('unpaid')
   })
 
-  it('no salta un pago real de un link de MOY IQ, aunque el monto sea bajo (precio regional)', () => {
+  it('no salta un pago real de un link de moyiq, aunque el monto sea bajo (precio regional)', () => {
     expect(shouldSkipCheckout({ payment_status: 'paid', amount_total: 999, mode: 'subscription', payment_link: PRO })).toBe(false)
   })
 
@@ -421,7 +421,7 @@ describe('llamadas HTTP (fetch mockeado)', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
       const body = JSON.parse(fetchMock.mock.calls[0][1].body)
       expect(body.to).toBe(CONFIG.alertEmail)
-      expect(body.subject).toBe('MOY IQ: nueva compra Pro')
+      expect(body.subject).toBe('moyiq: nueva compra Pro')
       expect(body.html).toContain('cliente@x.com')
       expect(body.html).toContain('month')
     })
@@ -454,7 +454,7 @@ describe('llamadas HTTP (fetch mockeado)', () => {
 
 // ── T10 · prueba de Pro por 14 días CON tarjeta (2026-10-08) ────────────────
 // Un Payment Link "conocido" para estos tests: el de Pro mensual real (cuenta
-// propia MOY IQ). Los de prueba (TRIAL_LINK_*) siguen en null hasta que
+// propia moyiq). Los de prueba (TRIAL_LINK_*) siguen en null hasta que
 // Walter pegue los ids, así que no se pueden usar acá.
 const KNOWN_SUB_LINK = 'plink_1UEgvJ2L52ZuuTMr1Agq0t4b' // Pro mensual
 const KNOWN_ANNUAL_LINK = 'plink_1UEgve2L52ZuuTMrdS1OE9fh' // Pro anual
@@ -697,7 +697,7 @@ describe('T10 · eventos de suscripción (fetch mockeado)', () => {
       expect(emails).toHaveLength(0)
     })
 
-    it('suscripción sin licencia de MOY IQ (otro producto) → 200 sin email ni claim', async () => {
+    it('suscripción sin licencia de moyiq (otro producto) → 200 sin email ni claim', async () => {
       const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [] })
       vi.stubGlobal('fetch', fetchMock)
       const r = await handleTrialWillEnd(event(), CONFIG)
@@ -763,7 +763,7 @@ describe('T10 · email de inicio de prueba (variante de sendKeyEmail)', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     const text = `${body.subject} ${body.html}`
     expect(text).not.toContain('Compra confirmada')
-    expect(body.subject).toBe('Tu prueba de MOY IQ Pro')
+    expect(body.subject).toBe('Tu prueba de moyiq Pro')
     expect(body.html).toContain('23 de octubre de 2026')
     expect(body.html).toContain('US$ 4,99 al mes')
     expect(body.html).toContain('FNOS-X')
@@ -777,7 +777,7 @@ describe('T10 · email de inicio de prueba (variante de sendKeyEmail)', () => {
     vi.stubGlobal('fetch', fetchMock)
     await sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'cs_1', CONFIG, 'year')
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
-    expect(body.subject).toBe('Tu licencia de MOY IQ')
+    expect(body.subject).toBe('Tu licencia de moyiq')
     expect(body.html).toContain('Compra confirmada')
     expect(body.html).toContain('renovación automática anual')
   })
@@ -799,9 +799,9 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
   }
 
   it.each([
-    ['en', 'Your MOY IQ license', 'Purchase confirmed', 'renews automatically every year'],
-    ['pt', 'Sua licença do MOY IQ', 'Compra confirmada', 'renovação automática anual'],
-    ['de', 'Ihre MOY IQ-Lizenz', 'Kauf bestätigt', 'verlängert sich automatisch jedes Jahr'],
+    ['en', 'Your moyiq license', 'Purchase confirmed', 'renews automatically every year'],
+    ['pt', 'Sua licença do moyiq', 'Compra confirmada', 'renovação automática anual'],
+    ['de', 'Ihre moyiq-Lizenz', 'Kauf bestätigt', 'verlängert sich automatisch jedes Jahr'],
   ] as const)('licencia en %s', async (lang, subject, purchase, renewal) => {
     const body = await capture(() => sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'cs_1', CONFIG, 'year', null, lang))
     expect(body.subject).toBe(subject)
@@ -812,9 +812,9 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
   })
 
   it.each([
-    ['en', 'Your MOY IQ Pro trial', 'October 23, 2026', '$4.99 per month'],
-    ['pt', 'Seu teste do MOY IQ Pro', '23 de outubro de 2026', 'US$ 4,99 por mês'],
-    ['de', 'Ihre Testphase von MOY IQ Pro', '23. Oktober 2026', '4,99 $ pro Monat'],
+    ['en', 'Your moyiq Pro trial', 'October 23, 2026', '$4.99 per month'],
+    ['pt', 'Seu teste do moyiq Pro', '23 de outubro de 2026', 'US$ 4,99 por mês'],
+    ['de', 'Ihre Testphase von moyiq Pro', '23. Oktober 2026', '4,99 $ pro Monat'],
   ] as const)('inicio de prueba en %s: fecha y monto en su formato', async (lang, subject, date, amount) => {
     const body = await capture(() => sendKeyEmail('a@b.com', 'FNOS-X', 'pro', 'cs_1', CONFIG, 'month', billing, lang))
     expect(body.subject).toBe(subject)
@@ -823,10 +823,10 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
   })
 
   it.each([
-    ['es', 'Tu prueba de MOY IQ Pro termina pronto'],
-    ['en', 'Your MOY IQ Pro trial ends soon'],
-    ['pt', 'Seu teste do MOY IQ Pro termina em breve'],
-    ['de', 'Ihre Testphase von MOY IQ Pro endet bald'],
+    ['es', 'Tu prueba de moyiq Pro termina pronto'],
+    ['en', 'Your moyiq Pro trial ends soon'],
+    ['pt', 'Seu teste do moyiq Pro termina em breve'],
+    ['de', 'Ihre Testphase von moyiq Pro endet bald'],
   ] as const)('fin de prueba en %s', async (lang, subject) => {
     const body = await capture(() => sendTrialEndingEmail('a@b.com', billing, CONFIG, lang))
     expect(body.subject).toBe(subject)
@@ -834,7 +834,7 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
 
   it('sin idioma: español de siempre', async () => {
     const body = await capture(() => sendTrialEndingEmail('a@b.com', billing, CONFIG))
-    expect(body.subject).toBe('Tu prueba de MOY IQ Pro termina pronto')
+    expect(body.subject).toBe('Tu prueba de moyiq Pro termina pronto')
     expect(body.html).toContain('23 de octubre de 2026')
   })
 
@@ -859,7 +859,7 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
     await handleTrialWillEnd(event, CONFIG)
     const resendCall = fetchMock.mock.calls.find(c => String(c[0]).includes('api.resend.com'))
     expect(resendCall).toBeTruthy()
-    expect(JSON.parse(resendCall![1].body).subject).toBe('Your MOY IQ Pro trial ends soon')
+    expect(JSON.parse(resendCall![1].body).subject).toBe('Your moyiq Pro trial ends soon')
   })
 })
 
@@ -876,7 +876,7 @@ describe('C-05 · clave de Resend del correo de la licencia', () => {
   const configFromEnv = (vars: Record<string, string | undefined>) => ({
     supabaseUrl: 'https://proj.supabase.co', serviceRole: 'srv-key',
     resendApiKey: resolveResendApiKey((name) => vars[name]),
-    fromEmail: 'MOY IQ <licencias@moyiq.app>', alertEmail: 'maxnovaluciglobal@gmail.com',
+    fromEmail: 'moyiq <licencias@moyiq.app>', alertEmail: 'maxnovaluciglobal@gmail.com',
   })
   const sentWith = (fetchMock: ReturnType<typeof vi.fn>) => fetchMock.mock.calls.map(([url, init]: any) => ({
     url, auth: init.headers.Authorization, body: JSON.parse(init.body),
@@ -890,7 +890,7 @@ describe('C-05 · clave de Resend del correo de la licencia', () => {
     const [call] = sentWith(fetchMock)
     expect(call.url).toBe('https://api.resend.com/emails')
     expect(call.auth).toBe('Bearer re_nurture')
-    expect(call.body.from).toBe('MOY IQ <licencias@moyiq.app>')
+    expect(call.body.from).toBe('moyiq <licencias@moyiq.app>')
     expect(call.body.to).toBe('cliente@ejemplo.com')
     expect(call.body.html).toContain('FNOS-AAAA-BBBB-CCCC')
     expect(call.body.html).toContain('https://app.moyiq.app/app/')
@@ -938,7 +938,7 @@ describe('C-05 · clave de Resend del correo de la licencia', () => {
     for (const c of calls) {
       expect(c.url).toBe('https://api.resend.com/emails')
       expect(c.auth).toBe('Bearer re_nurture')
-      expect(c.body.from).toBe('MOY IQ <licencias@moyiq.app>')
+      expect(c.body.from).toBe('moyiq <licencias@moyiq.app>')
     }
   })
 
@@ -1134,7 +1134,7 @@ describe('C-35 · cobro fallido y "tu Pro terminó"', () => {
     const r = await handleSubscriptionDeleted({ id: 'sub_1', status: 'canceled' }, CONFIG)
     expect(r.status).toBe(200)
     expect(emails).toHaveLength(1)
-    expect(emails[0].subject).toBe('Tu MOY IQ Pro terminó. Tus datos siguen ahí')
+    expect(emails[0].subject).toBe('Tu moyiq Pro terminó. Tus datos siguen ahí')
     expect(emails[0].html).toContain('https://app.moyiq.app/app/?open=upgrade&ref=pro-ended')
   })
 

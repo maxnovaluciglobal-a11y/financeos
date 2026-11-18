@@ -93,32 +93,32 @@ function scoreText(lang: EmailLang, score: number | null): string {
 // por qué el label se usa como proxy del hallazgo dominante.
 const ACTION_BLOCKS: Record<EmailLang, Record<string, string> & { _default: string }> = {
   es: {
-    "Crítico": "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en MOY IQ: el Dashboard te va a mostrar exactamente en qué categoría se te va el dinero, sin que tengas que armar una planilla.",
-    "Regular": "Tu resultado está en la zona donde un cambio chico rinde mucho: ordenar el colchón de emergencia o la carga de deuda. Con tus movimientos reales cargados, MOY IQ te muestra cuál de los dos te conviene atacar primero según tu propio flujo de caja.",
+    "Crítico": "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en moyiq: el Dashboard te va a mostrar exactamente en qué categoría se te va el dinero, sin que tengas que armar una planilla.",
+    "Regular": "Tu resultado está en la zona donde un cambio chico rinde mucho: ordenar el colchón de emergencia o la carga de deuda. Con tus movimientos reales cargados, moyiq te muestra cuál de los dos te conviene atacar primero según tu propio flujo de caja.",
     "Bueno": "Ya estás manejando bien lo básico. El siguiente paso es que ese resultado no dependa de que te acuerdes de revisarlo — con tus movimientos importados, el Dashboard te avisa solo cuando algo se corre de lo normal.",
     "Excelente": "Tu resultado ya está en el nivel donde el foco pasa de \"ordenar\" a \"optimizar\" — metas en paralelo, proyección de decisiones grandes. Eso es exactamente lo que hace Goals y Advisor con tus datos reales.",
-    _default: "Registra tus movimientos de esta semana en MOY IQ. El Dashboard te muestra en qué categoría se te va más dinero cada mes, sin que tengas que actualizar nada a mano.",
+    _default: "Registra tus movimientos de esta semana en moyiq. El Dashboard te muestra en qué categoría se te va más dinero cada mes, sin que tengas que actualizar nada a mano.",
   },
   en: {
-    "Crítico": "With your result, the problem is most likely in month-to-month cash flow — more goes out than comes in, or nearly. Record this week's transactions in MOY IQ: the Dashboard shows exactly which category your money goes to, without you having to build a spreadsheet.",
-    "Regular": "Your result is in the zone where a small change goes a long way: sorting out your emergency fund or your debt load. With your real transactions loaded, MOY IQ shows which of the two to tackle first based on your own cash flow.",
+    "Crítico": "With your result, the problem is most likely in month-to-month cash flow — more goes out than comes in, or nearly. Record this week's transactions in moyiq: the Dashboard shows exactly which category your money goes to, without you having to build a spreadsheet.",
+    "Regular": "Your result is in the zone where a small change goes a long way: sorting out your emergency fund or your debt load. With your real transactions loaded, moyiq shows which of the two to tackle first based on your own cash flow.",
     "Bueno": "You already handle the basics well. The next step is for that result not to depend on you remembering to check it — with your transactions imported, the Dashboard flags it when something moves away from normal.",
     "Excelente": "Your result is already at the level where the focus shifts from \"organizing\" to \"optimizing\" — parallel goals, projecting big decisions. That is exactly what Goals and Advisor do with your real data.",
-    _default: "Record this week's transactions in MOY IQ. The Dashboard shows which category takes the most money each month, without you having to update anything by hand.",
+    _default: "Record this week's transactions in moyiq. The Dashboard shows which category takes the most money each month, without you having to update anything by hand.",
   },
   pt: {
-    "Crítico": "Com o seu resultado, o mais provável é que o problema esteja no fluxo de caixa do dia a dia — sai mais do que entra, ou quase. Registre os movimentos desta semana no MOY IQ: o Painel mostra exatamente em qual categoria o seu dinheiro vai, sem que você precise montar uma planilha.",
-    "Regular": "Seu resultado está na faixa em que uma mudança pequena rende muito: organizar a reserva de emergência ou o peso da dívida. Com seus movimentos reais carregados, o MOY IQ mostra qual dos dois atacar primeiro de acordo com o seu próprio fluxo de caixa.",
+    "Crítico": "Com o seu resultado, o mais provável é que o problema esteja no fluxo de caixa do dia a dia — sai mais do que entra, ou quase. Registre os movimentos desta semana no moyiq: o Painel mostra exatamente em qual categoria o seu dinheiro vai, sem que você precise montar uma planilha.",
+    "Regular": "Seu resultado está na faixa em que uma mudança pequena rende muito: organizar a reserva de emergência ou o peso da dívida. Com seus movimentos reais carregados, o moyiq mostra qual dos dois atacar primeiro de acordo com o seu próprio fluxo de caixa.",
     "Bueno": "Você já administra bem o básico. O próximo passo é que esse resultado não dependa de você se lembrar de revisá-lo — com seus movimentos importados, o Painel avisa quando algo sai do normal.",
     "Excelente": "Seu resultado já está no nível em que o foco passa de \"organizar\" para \"otimizar\" — metas em paralelo, projeção de decisões grandes. É exatamente isso que Goals e Advisor fazem com seus dados reais.",
-    _default: "Registre os movimentos desta semana no MOY IQ. O Painel mostra em qual categoria vai mais dinheiro a cada mês, sem que você precise atualizar nada à mão.",
+    _default: "Registre os movimentos desta semana no moyiq. O Painel mostra em qual categoria vai mais dinheiro a cada mês, sem que você precise atualizar nada à mão.",
   },
   de: {
-    "Crítico": "Bei Ihrem Ergebnis liegt das Problem sehr wahrscheinlich im monatlichen Cashflow — es geht mehr hinaus als hereinkommt, oder fast. Erfassen Sie die Buchungen dieser Woche in MOY IQ: Das Dashboard zeigt genau, in welche Kategorie Ihr Geld fließt, ohne dass Sie eine Tabelle anlegen müssen.",
-    "Regular": "Ihr Ergebnis liegt in dem Bereich, in dem eine kleine Änderung viel bewirkt: den Notgroschen oder die Schuldenlast ordnen. Mit Ihren echten Buchungen zeigt MOY IQ, welches der beiden Themen Sie nach Ihrem eigenen Cashflow zuerst angehen sollten.",
+    "Crítico": "Bei Ihrem Ergebnis liegt das Problem sehr wahrscheinlich im monatlichen Cashflow — es geht mehr hinaus als hereinkommt, oder fast. Erfassen Sie die Buchungen dieser Woche in moyiq: Das Dashboard zeigt genau, in welche Kategorie Ihr Geld fließt, ohne dass Sie eine Tabelle anlegen müssen.",
+    "Regular": "Ihr Ergebnis liegt in dem Bereich, in dem eine kleine Änderung viel bewirkt: den Notgroschen oder die Schuldenlast ordnen. Mit Ihren echten Buchungen zeigt moyiq, welches der beiden Themen Sie nach Ihrem eigenen Cashflow zuerst angehen sollten.",
     "Bueno": "Die Grundlagen haben Sie bereits im Griff. Der nächste Schritt: Dieses Ergebnis soll nicht davon abhängen, dass Sie daran denken, es zu prüfen — mit importierten Buchungen meldet das Dashboard, wenn etwas vom Normalen abweicht.",
     "Excelente": "Ihr Ergebnis liegt bereits auf dem Niveau, auf dem sich der Fokus von \"Ordnen\" zu \"Optimieren\" verschiebt — parallele Ziele, Projektion großer Entscheidungen. Genau das leisten Goals und Advisor mit Ihren echten Daten.",
-    _default: "Erfassen Sie die Buchungen dieser Woche in MOY IQ. Das Dashboard zeigt, in welche Kategorie jeden Monat das meiste Geld fließt, ohne dass Sie etwas von Hand aktualisieren müssen.",
+    _default: "Erfassen Sie die Buchungen dieser Woche in moyiq. Das Dashboard zeigt, in welche Kategorie jeden Monat das meiste Geld fließt, ohne dass Sie etwas von Hand aktualisieren müssen.",
   },
 };
 
@@ -145,7 +145,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <h2>Tu diagnóstico completo</h2>
       <p>Hola,</p>
       <p>Este es tu diagnóstico completo, sin el recorte que viste en la vista previa.</p>
-      <p><strong>Tu puntaje MOY IQ exprés: ${scoreText("es", c.score)}${label ? ` (${label})` : ""}</strong></p>
+      <p><strong>Tu puntaje moyiq exprés: ${scoreText("es", c.score)}${label ? ` (${label})` : ""}</strong></p>
       <p>Un paso concreto para esta semana, según tu resultado:</p>
       <p>${actionBlock("es", c.label)}</p>
       <p>Este diagnóstico es una foto de un momento. Para ver cómo cambia con cada decisión que tomas, hace falta registrar los movimientos reales — eso es lo que hace la cuenta gratuita.</p>
@@ -162,7 +162,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Hola,</p>
       <p>Como prometí, aquí va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
       <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
-      <p>Cuando importas tus movimientos en MOY IQ, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más dinero este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
+      <p>Cuando importas tus movimientos en moyiq, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más dinero este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
       <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
       ${emailButton(appLink("signup", "diagnostico-d2"), `Crear mi cuenta gratis →`)}
       <p style="${EMAIL_MUTED_STYLE}">Starter incluye Dashboard, Movimientos y Presupuestos sin costo.</p>
@@ -205,7 +205,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <h2>Here is your full diagnosis</h2>
       <p>Hello,</p>
       <p>Here is your full diagnosis — without the cut you saw in the preview.</p>
-      <p><strong>Your MOY IQ express score: ${scoreText("en", c.score)}${label ? ` (${label})` : ""}</strong></p>
+      <p><strong>Your moyiq express score: ${scoreText("en", c.score)}${label ? ` (${label})` : ""}</strong></p>
       <p>One concrete step for this week, based on your result:</p>
       <p>${actionBlock("en", c.label)}</p>
       <p>This diagnosis is a snapshot of one moment. To see how it changes with each decision you make, you need to record your real transactions — that is what the free account does.</p>
@@ -222,7 +222,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Hello,</p>
       <p>As promised, here is the finding that repeats across financial capability surveys: most people who set up a budget stop updating it within 60 days. Not for lack of discipline — because keeping it up by hand in a spreadsheet is work, and that work competes with everything else.</p>
       <p>The problem is not the budget. It is that it depends on someone typing it in.</p>
-      <p>When you import your transactions into MOY IQ, you don't build the budget — it builds itself from what you already spent. The Transactions section categorizes each transaction automatically, and the Dashboard shows which category took the most money this month compared with the last. Nothing has to be updated by hand to see it.</p>
+      <p>When you import your transactions into moyiq, you don't build the budget — it builds itself from what you already spent. The Transactions section categorizes each transaction automatically, and the Dashboard shows which category took the most money this month compared with the last. Nothing has to be updated by hand to see it.</p>
       <p>If your diagnosis showed a low score, this is probably why: not a lack of income, a lack of visibility into where it goes.</p>
       ${emailButton(appLink("signup", "diagnostico-d2"), `See my dashboard →`)}
       <p style="${EMAIL_MUTED_STYLE}">Starter includes Dashboard, Transactions and Budgets at no cost.</p>
@@ -264,7 +264,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <h2>Aqui está seu diagnóstico completo</h2>
       <p>Olá,</p>
       <p>Aqui está seu diagnóstico completo — sem o corte que você viu na prévia.</p>
-      <p><strong>Sua pontuação MOY IQ expressa: ${scoreText("pt", c.score)}${label ? ` (${label})` : ""}</strong></p>
+      <p><strong>Sua pontuação moyiq expressa: ${scoreText("pt", c.score)}${label ? ` (${label})` : ""}</strong></p>
       <p>Um passo concreto para esta semana, de acordo com o seu resultado:</p>
       <p>${actionBlock("pt", c.label)}</p>
       <p>Este diagnóstico é uma foto de um momento. Para ver como ele muda com cada decisão que você toma, é preciso registrar os movimentos reais — é isso que a conta gratuita faz.</p>
@@ -281,7 +281,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Olá,</p>
       <p>Como prometido, aqui vai o dado que se repete nas pesquisas de capacidade financeira da região: a maioria das pessoas que monta um orçamento deixa de atualizá-lo antes dos 60 dias. Não por falta de disciplina — porque mantê-lo à mão em uma planilha dá trabalho, e esse trabalho compete com todo o resto.</p>
       <p>O problema não é o orçamento. É que ele depende de alguém digitá-lo.</p>
-      <p>Quando você importa seus movimentos no MOY IQ, não monta o orçamento — ele se monta sozinho a partir do que você já gastou. A seção de Movimentos categoriza automaticamente cada transação, e o Painel mostra em qual categoria foi mais dinheiro este mês em comparação com o anterior. Não é preciso atualizar nada à mão para ver isso.</p>
+      <p>Quando você importa seus movimentos no moyiq, não monta o orçamento — ele se monta sozinho a partir do que você já gastou. A seção de Movimentos categoriza automaticamente cada transação, e o Painel mostra em qual categoria foi mais dinheiro este mês em comparação com o anterior. Não é preciso atualizar nada à mão para ver isso.</p>
       <p>Se o seu diagnóstico marcou uma pontuação baixa, provavelmente é isto: não falta de renda, falta de visibilidade de para onde ela vai.</p>
       ${emailButton(appLink("signup", "diagnostico-d2"), `Ver meu painel →`)}
       <p style="${EMAIL_MUTED_STYLE}">O Starter inclui Painel, Movimentos e Orçamentos sem custo.</p>
@@ -323,7 +323,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <h2>Hier ist Ihre vollständige Auswertung</h2>
       <p>Guten Tag,</p>
       <p>Hier ist Ihre vollständige Auswertung — ohne die Kürzung aus der Vorschau.</p>
-      <p><strong>Ihr MOY IQ-Express-Score: ${scoreText("de", c.score)}${label ? ` (${label})` : ""}</strong></p>
+      <p><strong>Ihr moyiq-Express-Score: ${scoreText("de", c.score)}${label ? ` (${label})` : ""}</strong></p>
       <p>Ein konkreter Schritt für diese Woche, abhängig von Ihrem Ergebnis:</p>
       <p>${actionBlock("de", c.label)}</p>
       <p>Diese Auswertung ist eine Momentaufnahme. Um zu sehen, wie sie sich mit jeder Entscheidung verändert, müssen die echten Buchungen erfasst werden — genau das leistet das kostenlose Konto.</p>
@@ -340,7 +340,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Guten Tag,</p>
       <p>Wie angekündigt, hier der Befund, der sich in Erhebungen zur finanziellen Kompetenz wiederholt: Die meisten Menschen, die ein Budget anlegen, hören vor Ablauf von 60 Tagen auf, es zu aktualisieren. Nicht aus Mangel an Disziplin — sondern weil die Pflege von Hand in einer Tabelle Arbeit ist, und diese Arbeit mit allem anderen konkurriert.</p>
       <p>Das Problem ist nicht das Budget. Sondern dass es davon abhängt, dass jemand es eintippt.</p>
-      <p>Wenn Sie Ihre Buchungen in MOY IQ importieren, legen Sie das Budget nicht an — es entsteht aus dem, was Sie bereits ausgegeben haben. Der Bereich Buchungen ordnet jede Transaktion automatisch einer Kategorie zu, und das Dashboard zeigt, in welche Kategorie in diesem Monat im Vergleich zum Vormonat am meisten Geld geflossen ist. Dafür muss nichts von Hand aktualisiert werden.</p>
+      <p>Wenn Sie Ihre Buchungen in moyiq importieren, legen Sie das Budget nicht an — es entsteht aus dem, was Sie bereits ausgegeben haben. Der Bereich Buchungen ordnet jede Transaktion automatisch einer Kategorie zu, und das Dashboard zeigt, in welche Kategorie in diesem Monat im Vergleich zum Vormonat am meisten Geld geflossen ist. Dafür muss nichts von Hand aktualisiert werden.</p>
       <p>Wenn Ihre Auswertung einen niedrigen Score ergeben hat, liegt es wahrscheinlich daran: nicht an fehlendem Einkommen, sondern an fehlendem Überblick, wohin es geht.</p>
       ${emailButton(appLink("signup", "diagnostico-d2"), `Mein Dashboard ansehen →`)}
       <p style="${EMAIL_MUTED_STYLE}">Starter enthält Dashboard, Buchungen und Budgets ohne Kosten.</p>

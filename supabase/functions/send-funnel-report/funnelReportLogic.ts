@@ -45,10 +45,10 @@ export interface ReportConfig {
 export const GOAL_DEADLINE = "17-ene-2027";
 export const METRIC_ROWS: { key: MetricKey; label: string; help: string; goal: string }[] = [
   { key: "visitas", label: "Visitas a la landing", help: "Vercel Web Analytics; la base no las ve", goal: "sin número: encontrar un canal que traiga ≥ 30 % de las altas, con sus horas medidas" },
-  { key: "altas", label: "Altas", help: "cuentas nuevas (MOY IQ e Invest comparten cuentas)", goal: "300 cuentas Starter reales (≈ 23 por semana)" },
+  { key: "altas", label: "Altas", help: "cuentas nuevas (moyiq e Invest comparten cuentas)", goal: "300 cuentas Starter reales (≈ 23 por semana)" },
   { key: "activas", label: "Activas", help: "cuentas con sesión iniciada en la semana", goal: "40 % de las cuentas nuevas con ≥ 10 movimientos en sus primeros 7 días" },
   { key: "pruebas", label: "Pruebas Pro iniciadas", help: "licencias de prueba emitidas", goal: "sin número: el camino a los 10 pagos" },
-  { key: "pagos", label: "Pagos", help: "compras directas y pruebas que pasaron a pago", goal: "10 suscriptores Pro con al menos un cobro (con menos de 5, MOY IQ pasa a mantenimiento)" },
+  { key: "pagos", label: "Pagos", help: "compras directas y pruebas que pasaron a pago", goal: "10 suscriptores Pro con al menos un cobro (con menos de 5, moyiq pasa a mantenimiento)" },
   { key: "bajas", label: "Bajas", help: "pedidos de cancelación recibidos", goal: "sin número: conocer el motivo de cada baja" },
 ];
 
@@ -89,10 +89,10 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-const TH = `style="text-align:left;padding:8px 10px;border-bottom:2px solid ${EMAIL_BRAND.navy};font-family:${EMAIL_FONTS.body};font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:${EMAIL_BRAND.navy}"`;
+const TH = `style="text-align:left;padding:8px 10px;border-bottom:2px solid ${EMAIL_BRAND.brand};font-family:${EMAIL_FONTS.body};font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:${EMAIL_BRAND.brand}"`;
 const THR = TH.replace("text-align:left", "text-align:right");
-const TD = `style="padding:8px 10px;border-bottom:1px solid ${EMAIL_BRAND.papelDeep};vertical-align:top"`;
-const TDN = `style="padding:8px 10px;border-bottom:1px solid ${EMAIL_BRAND.papelDeep};text-align:right;font-family:${EMAIL_FONTS.mono};font-variant-numeric:tabular-nums;white-space:nowrap"`;
+const TD = `style="padding:8px 10px;border-bottom:1px solid ${EMAIL_BRAND.tintDeep};vertical-align:top"`;
+const TDN = `style="padding:8px 10px;border-bottom:1px solid ${EMAIL_BRAND.tintDeep};text-align:right;font-family:${EMAIL_FONTS.mono};font-variant-numeric:tabular-nums;white-space:nowrap"`;
 
 function varColor(cur: number | null, prev: number | null, key: MetricKey): string {
   if (cur == null || prev == null || cur === prev) return EMAIL_BRAND.muted;
@@ -103,12 +103,12 @@ function varColor(cur: number | null, prev: number | null, key: MetricKey): stri
 
 export function renderReport(data: ReportData, opts: { preview?: boolean } = {}): { subject: string; html: string } {
   const label = weekLabel(data.week_start);
-  const subject = `${opts.preview ? "[Vista previa] " : ""}MOY IQ · embudo semanal · ${label}`;
+  const subject = `${opts.preview ? "[Vista previa] " : ""}moyiq · embudo semanal · ${label}`;
   const rows = METRIC_ROWS.map(({ key, label: l, help, goal }) => {
     const cur = data.current[key];
     const prev = data.previous[key];
-    return `<tr><td ${TD}><strong style="color:${EMAIL_BRAND.navy}">${l}</strong><br><span style="${EMAIL_MUTED_STYLE}">${help}</span>`
-      + `<br><span style="font-size:12px;color:${EMAIL_BRAND.laton700}">Meta al ${GOAL_DEADLINE}: ${goal}</span></td>`
+    return `<tr><td ${TD}><strong style="color:${EMAIL_BRAND.brand}">${l}</strong><br><span style="${EMAIL_MUTED_STYLE}">${help}</span>`
+      + `<br><span style="font-size:12px;color:${EMAIL_BRAND.brand}">Meta al ${GOAL_DEADLINE}: ${goal}</span></td>`
       + `<td ${TDN}>${fmt(cur)}</td><td ${TDN}>${fmt(prev)}</td>`
       + `<td ${TDN}><span style="color:${varColor(cur, prev, key)}">${variation(cur, prev)}</span></td></tr>`;
   }).join("\n");
@@ -118,7 +118,7 @@ export function renderReport(data: ReportData, opts: { preview?: boolean } = {})
     ? data.leads.map((r) => `<tr><td ${TD}>${esc(r.etapa)}</td><td ${TDN}>${r.emails}</td><td ${TDN}>${r.confirmados}</td><td ${TDN}>${variation(r.emails, prevLeads.get(r.etapa)?.emails ?? 0)}</td></tr>`).join("\n")
     : `<tr><td ${TD} colspan="4"><span style="${EMAIL_MUTED_STYLE}">Sin leads nuevos esta semana.</span></td></tr>`;
   const body = `
-<p style="margin:0 0 4px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${EMAIL_BRAND.laton700};font-weight:600">Reporte semanal</p>
+<p style="margin:0 0 4px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${EMAIL_BRAND.brand};font-weight:600">Reporte semanal</p>
 <h1>Embudo del ${label}</h1>
 <p>Semana de lunes a domingo (UTC), sin cuentas internas ni de prueba. La variación compara con la semana anterior${data.previous_is_snapshot ? " (foto guardada al enviarla)" : ""}.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px;margin:16px 0 8px">
@@ -132,7 +132,7 @@ ${goals}
 ${leadRows}
 </table>
 <p style="${EMAIL_MUTED_STYLE}">"Activas" no es la activación de EST-9 (10 movimientos en 7 días): los movimientos no salen del dispositivo, así que el servidor no puede contarlos. Visitas queda sin dato hasta que Web Analytics esté habilitado y se lea desde Vercel.</p>`;
-  const footer = `Reporte interno de MOY IQ, solo para ${REPORT_TO}. Lo envía la función send-funnel-report los lunes a las 12 (hora de Chile).`;
+  const footer = `Reporte interno de moyiq, solo para ${REPORT_TO}. Lo envía la función send-funnel-report los lunes a las 12 (hora de Chile).`;
   return { subject, html: emailLayout({ lang: "es", bodyHtml: body, footerHtml: footer, preheader: `Altas ${fmt(data.current.altas)} · Pruebas ${fmt(data.current.pruebas)} · Pagos ${fmt(data.current.pagos)}`, title: subject }) };
 }
 
