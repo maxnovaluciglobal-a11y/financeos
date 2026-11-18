@@ -57,6 +57,11 @@
 /* Raíz en 100 % para que los `rem` sigan el tamaño de texto del navegador
    (migración a rem por etapas, 31-oct-2026); el cuerpo sigue midiendo 14 px. */
 html { font-size: 100%; }
+/* Inter 4.1 (D2): cifras tabulares en todo (validacion/01-tipografia.md §3.2: las
+   cifras cambian en vivo y no deben saltar), eje opsz automático para que los
+   cuerpos grandes tomen las formas Display, y sin cv11 (la «a» de la marca es
+   la de dos pisos). Cuerpo de 14 px como hasta ahora: los 2.057 estilos en
+   línea están medidos contra él; pasa a Texto 15/24 por lotes (Entrega 2). */
 body { font-size: .875rem; }
 html, body, #root {
   height: 100%;
@@ -64,8 +69,11 @@ html, body, #root {
   background: var(--bg);
   color: var(--tx);
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
 }
+b, strong { font-weight: 600; }
 
 /* T14 · velo mientras la app está en segundo plano con el bloqueo activo
    (ver components/lock/AppLockGate.jsx): la captura del selector de apps no
@@ -86,7 +94,7 @@ button, a, [role="button"] {
 ::-webkit-scrollbar-thumb { background: var(--brd2); border-radius: 2px; }
 
 /* Focus */
-:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Form elements — 16px evita el auto-zoom de iOS Safari al enfocar */
 input, select, textarea {
@@ -105,11 +113,11 @@ input, select, textarea {
    padding inline (selector de mes, tipo de deuda). Casillas y radios quedan
    fuera: llevan su propio tamaño de 16 px dentro de una fila de 44 px. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]), select { min-height: 44px; }
-input:focus, select:focus, textarea:focus { border-color: var(--laton-700); }
+input:focus, select:focus, textarea:focus { border-color: var(--color-focus); }
 /* outline:none de arriba mata el :focus-visible global — sin esto, los
    formularios (justo donde más se navega por teclado) quedaban con un
    indicador de foco más débil que el resto de la app (solo 1px de borde). */
-input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 select option { background: var(--sur); }
 
 /* Visualmente oculto pero legible por lectores de pantalla — para tablas de
@@ -137,14 +145,13 @@ button { cursor: pointer; font-family: var(--sans); }
 .card-hover:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
 
 /* Tipografía display — jerarquía con carácter (títulos, no cuerpo). */
-.display { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; }
+.display { font-family: var(--display); font-weight: 500; letter-spacing: -0.02em; }
 
-/* Cifras (UI-M1): una sola familia para todo el dinero y los porcentajes,
-   IBM Plex Sans tabular (--num). Instrument Sans queda solo para titulares y
-   Plex Mono para identificadores. */
+/* Cifras: Inter con dígitos tabulares (--num = la misma familia de UI). La mono
+   del sistema (--mono) queda solo para identificadores. */
 .num { font-family: var(--num); font-weight: 600;
        font-variant-numeric: tabular-nums lining-nums; }
-/* La cifra protagonista: Plex Sans 600, apenas apretada en tamaños grandes. */
+/* La cifra protagonista: Inter 600, apretada como la escala de cifras (−2 %). */
 .num-hero { font-family: var(--num); font-weight: 600;
        font-variant-numeric: tabular-nums lining-nums;
        letter-spacing: -0.02em; }
@@ -165,9 +172,7 @@ button { cursor: pointer; font-family: var(--sans); }
 /* Monto oculto (T13, components/Money.jsx): el "•••" hereda tamaño y color de la
    cifra a la que reemplaza; un poco de aire entre puntos para que se lea como
    máscara deliberada y no como texto truncado. */
-/* Instrument Sans dibuja "•" como cuadrado ("■■■"): la máscara usa la sans de UI
-   (bullet redondo). Las máscaras dentro de strings (m()) en texto display las
-   cubre 'MOY Bullet' en --display (public/fonts.css). */
+/* La máscara usa la sans de UI (Inter dibuja el "•" redondo). */
 .money-masked { font-family: var(--sans); font-weight: 600; letter-spacing: 0.12em; white-space: nowrap; }
 
 /* Entrada suave — para escalonar la aparición de tarjetas (Ronda 3 la explota). */
@@ -238,19 +243,19 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 
 /* ── Acciones de flujo (QuickAdd, onboarding, demo) ──────────────────────────
-   Botón primario Latón con texto Navy: en hover NO se oscurece el fill, se
-   agrega el anillo interior Navy 25% (regla del brand book). Áreas táctiles
-   de 44px. Los chips son píldoras (--r-pill, permitido desde el 31-oct-2026). */
+   Botón primario: morado 700 con texto blanco (oscuro: morado 300 con texto
+   grafito); hover = morado 800 (manual). Radio 12 (D7). Áreas táctiles de
+   44px. Los chips son píldoras (--r-pill, permitido desde el 31-oct-2026). */
 .fos-btn-primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; min-height: 44px; padding: 10px 16px;
-  border: none; border-radius: var(--r);
-  background: var(--laton); color: var(--navy);
+  border: none; border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg); color: var(--btn-primary-fg);
   font-family: var(--sans); font-size: .9375rem; font-weight: 600; line-height: 1.2;
   box-shadow: var(--sh-1);
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.fos-btn-primary:hover:not(:disabled) { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
+.fos-btn-primary:hover:not(:disabled) { background: var(--btn-primary-bg-hover); box-shadow: var(--sh-2); }
 .fos-btn-primary:active:not(:disabled) { transform: scale(.98); }
 .fos-btn-primary:disabled { background: var(--sur3); color: var(--th); box-shadow: none; cursor: not-allowed; }
 
@@ -276,8 +281,8 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-link:hover { color: var(--tx); text-decoration-color: currentColor; }
 
 /* Chip seleccionable (categorías, fecha, opciones del onboarding). La
-   selección es neutra (Navy/Papel): el color semántico gasto/ingreso queda
-   solo en el monto y en el toggle. */
+   selección va en marca (morado con texto blanco): el color semántico
+   gasto/ingreso queda solo en el monto y en el toggle. */
 .fos-chip {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -328,7 +333,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-select:disabled { opacity: .6; cursor: not-allowed; }
 .fos-select__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fos-select__chev { flex-shrink: 0; color: var(--th); }
-.fos-chip:focus-within:has(input:focus-visible) { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.fos-chip:focus-within:has(input:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   .fos-btn-primary, .fos-btn-secondary, .fos-link, .fos-chip { transition: none; }
@@ -336,10 +341,11 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 
 /* ── Modo demo: banner, CTA inferior y recorrido (T09, UI-M9) ────────────────
-   Navy plano (sin degradado), sombra --sh-2. En el celular UNA línea de 56 px:
+   Degradado Profundidad (nivel 3), texto blanco y la acción en lima (D10: lima
+   como CTA sobre violeta, 13,13 con grafito). En el celular UNA línea de 56 px:
      "Demo · datos ficticios" ········· ⋯ · Empezar
    con la persona, el escenario, "Ver planes" y el recorrido en el menú ⋯.
-   Desde 760px una sola fila con todo a la vista. Texto sobre Navy en Papel. */
+   Desde 760px una sola fila con todo a la vista. */
 /* El demo apila la franja y la app en una columna del alto de la pantalla: sin
    esto, la franja sumaba su alto al de la app (100dvh), la ventana se
    desplazaba y la franja fija tapaba la barra superior ("Ocultar montos"
@@ -349,10 +355,13 @@ button { cursor: pointer; font-family: var(--sans); }
 .demo-banner {
   view-transition-name: demo-banner;
   position: sticky; top: 0; z-index: 200;
-  background: var(--navy); color: var(--papel-000);
+  background: var(--gr-profundidad); color: var(--on-grad-text);
   box-shadow: var(--sh-2);
 }
-:root[data-theme="dark"] .demo-banner { box-shadow: 0 1px 0 rgba(228,223,209,0.18); }
+:root[data-theme="dark"] .demo-banner { box-shadow: 0 1px 0 var(--color-divider-strong); }
+/* Acción primaria sobre el degradado: lima con texto grafito (no morado sobre morado). */
+.demo-banner .fos-btn-primary, .demo-bottom-cta .fos-btn-primary { background: var(--color-accent); color: var(--text-on-accent); }
+.demo-banner .fos-btn-primary:hover:not(:disabled), .demo-bottom-cta .fos-btn-primary:hover:not(:disabled) { background: var(--color-accent); box-shadow: var(--sh-2), inset 0 0 0 2px rgb(28 29 33 / .18); }
 .demo-banner__row {
   display: grid; align-items: center; gap: 4px 6px;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -373,56 +382,56 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 .demo-banner__short {
   grid-area: short; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-family: var(--sans); font-size: .875rem; font-weight: 600; color: var(--papel-000);
+  font-family: var(--sans); font-size: .875rem; font-weight: 600; color: var(--on-grad-text);
 }
 .demo-banner__badge {
   grid-area: badge;
   padding: 3px 7px; border-radius: var(--rs);
-  border: 1px solid color-mix(in srgb, var(--papel-000) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-grad-text) 35%, transparent);
   font-family: var(--sans); font-size: .75rem; font-weight: 600;
 }
 .demo-banner__label {
   grid-area: label; min-width: 0;
   font-family: var(--sans); font-size: .75rem; line-height: 1.35;
-  color: color-mix(in srgb, var(--papel-000) 82%, transparent);
+  color: color-mix(in srgb, var(--on-grad-text) 82%, transparent);
 }
 .demo-banner__scenario {
   grid-area: scenario; min-width: 0; min-height: 44px; padding: 6px 12px;
   align-items: center; justify-content: space-between; gap: 8px;
   border-radius: var(--r); cursor: pointer; text-align: left;
-  border: 1px solid color-mix(in srgb, var(--papel-000) 28%, transparent);
-  background: color-mix(in srgb, var(--papel-000) 8%, transparent);
-  color: var(--papel-000); font-family: var(--sans); font-size: .75rem; font-weight: 500; line-height: 1.25;
+  border: 1px solid color-mix(in srgb, var(--on-grad-text) 28%, transparent);
+  background: color-mix(in srgb, var(--on-grad-text) 8%, transparent);
+  color: var(--on-grad-text); font-family: var(--sans); font-size: .75rem; font-weight: 500; line-height: 1.25;
 }
-.demo-banner__scenario:hover { background: color-mix(in srgb, var(--papel-000) 14%, transparent); }
+.demo-banner__scenario:hover { background: color-mix(in srgb, var(--on-grad-text) 14%, transparent); }
 .demo-banner__plans {
   grid-area: plans; min-height: 44px; padding: 0 4px;
   align-items: center;
   font-family: var(--sans); font-size: .75rem; font-weight: 500; white-space: nowrap;
-  color: var(--papel-000); text-decoration: underline; text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--papel-000) 40%, transparent);
+  color: var(--on-grad-text); text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--on-grad-text) 40%, transparent);
 }
 .demo-banner__help, .demo-banner__more {
   width: 44px; height: 44px;
   align-items: center; justify-content: center;
   border-radius: var(--r); cursor: pointer;
-  border: 1px solid color-mix(in srgb, var(--papel-000) 28%, transparent);
-  background: transparent; color: var(--papel-000);
+  border: 1px solid color-mix(in srgb, var(--on-grad-text) 28%, transparent);
+  background: transparent; color: var(--on-grad-text);
   font-family: var(--sans); font-size: .9375rem; font-weight: 600;
 }
 .demo-banner__help { grid-area: help; }
 .demo-banner__more { grid-area: more; display: inline-flex; border-color: transparent; }
-.demo-banner__more[aria-expanded="true"] { background: color-mix(in srgb, var(--papel-000) 12%, transparent); }
-.demo-banner__help:hover, .demo-banner__more:hover { background: color-mix(in srgb, var(--papel-000) 10%, transparent); }
+.demo-banner__more[aria-expanded="true"] { background: color-mix(in srgb, var(--on-grad-text) 12%, transparent); }
+.demo-banner__help:hover, .demo-banner__more:hover { background: color-mix(in srgb, var(--on-grad-text) 10%, transparent); }
 .demo-banner__cta { grid-area: cta; width: auto; min-height: 44px; padding: 0 16px; font-size: .875rem; white-space: nowrap; text-decoration: none; }
-.demo-banner :focus-visible { outline-color: var(--laton); }
+.demo-banner :focus-visible { outline-color: var(--on-grad-accent); }
 
-/* Menú ⋯ del celular: capa flotante bajo la franja, Papel con texto Navy. */
+/* Menú ⋯ del celular: capa flotante bajo la franja, superficie elevada. */
 .demo-banner__menu {
   position: absolute; top: calc(100% + 4px); right: 12px; z-index: 210;
   width: min(300px, calc(100vw - 24px)); padding: 6px;
   display: flex; flex-direction: column;
-  background: var(--sur); color: var(--tx); border: 0; border-radius: var(--rxl);
+  background: var(--color-surface-raised); color: var(--tx); border: 0; border-radius: var(--rxl);
   box-shadow: var(--sh-3);
 }
 .demo-banner__menuLabel { margin: 0; padding: 8px 10px 6px; font-family: var(--sans); font-size: .75rem; line-height: 1.4; color: var(--th); }
@@ -435,7 +444,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .demo-banner__menuItem:hover { background: var(--sur2); }
 .demo-banner__menuItem + .demo-banner__menuItem { border-top: 1px solid var(--brd); border-radius: 0; }
 .demo-banner__menuHint { font-size: .75rem; font-weight: 400; color: var(--th); }
-.demo-banner__menu :focus-visible { outline-color: var(--laton-700); }
+.demo-banner__menu :focus-visible { outline-color: var(--color-focus); }
 
 /* CTA inferior del demo: tarjeta encima de la barra y del botón "+" (no los tapa) */
 .demo-bottom-cta {
@@ -443,7 +452,7 @@ button { cursor: pointer; font-family: var(--sans); }
   left: 14px; right: 14px; bottom: calc(var(--tabbar-h) + var(--fab-clear) + 12px);
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   padding: 12px 12px 12px 16px; border-radius: var(--rl);
-  background: var(--navy); color: var(--papel-000); box-shadow: var(--sh-3);
+  background: var(--gr-profundidad); color: var(--on-grad-text); box-shadow: var(--sh-3);
 }
 @media (min-width: 701px) {
   .demo-bottom-cta { left: auto; right: 20px; bottom: 20px; width: min(440px, calc(100vw - 40px)); }
@@ -451,16 +460,16 @@ button { cursor: pointer; font-family: var(--sans); }
 
 /* Un primario por pantalla (regla 4, V2): si la pantalla declara su propio
    primario (`data-screen-primary`, hoy Metas), "Empezar con mis datos" de la
-   franja y de la tarjeta inferior pasa a secundario sobre Navy: contorno Papel,
-   sin relleno Latón. La acción y el destino no cambian. */
+   franja y de la tarjeta inferior pasa a secundario sobre el degradado:
+   contorno blanco, sin relleno lima. La acción y el destino no cambian. */
 :root:has([data-screen-primary]) .demo-banner__cta,
 :root:has([data-screen-primary]) .demo-bottom-cta .fos-btn-primary {
-  background: transparent; color: var(--papel-000); box-shadow: none;
-  border: 1px solid color-mix(in srgb, var(--papel-000) 55%, transparent);
+  background: transparent; color: var(--on-grad-text); box-shadow: none;
+  border: 1px solid color-mix(in srgb, var(--on-grad-text) 55%, transparent);
 }
 :root:has([data-screen-primary]) .demo-banner__cta:hover,
 :root:has([data-screen-primary]) .demo-bottom-cta .fos-btn-primary:hover {
-  background: color-mix(in srgb, var(--papel-000) 10%, transparent); box-shadow: none;
+  background: color-mix(in srgb, var(--on-grad-text) 10%, transparent); box-shadow: none;
 }
 
 /* Recorrido: el hueco del spotlight y la tarjeta se mueven juntos */
@@ -483,8 +492,8 @@ button { cursor: pointer; font-family: var(--sans); }
   transition: border-color var(--dur) var(--ease);
 }
 .fos-cselect:hover { border-color: var(--tm); }
-.fos-cselect[aria-expanded="true"] { border-color: var(--laton-700); }
-.fos-cselect:focus-visible { outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.fos-cselect[aria-expanded="true"] { border-color: var(--color-focus); }
+.fos-cselect:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .fos-cselect__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fos-cselect__chev { flex-shrink: 0; color: var(--th); transition: transform var(--dur) var(--ease); }
 .fos-cselect__chev[data-open] { transform: rotate(180deg); }
@@ -492,7 +501,7 @@ button { cursor: pointer; font-family: var(--sans); }
   position: absolute; right: 0; top: calc(100% + 4px); z-index: 700; /* sobre Sheet (600) */
   width: max(100%, 240px); max-width: calc(100vw - 32px); overflow-y: auto; overscroll-behavior: contain;
   margin: 0; padding: 4px; list-style: none;
-  background: var(--sur); border: 0; border-radius: var(--rxl); box-shadow: var(--sh-3);
+  background: var(--color-surface-raised); border: 0; border-radius: var(--rxl); box-shadow: var(--sh-3);
 }
 .fos-cselect__list[data-up] { top: auto; bottom: calc(100% + 4px); }
 .fos-cselect__list[hidden] { display: none; }
