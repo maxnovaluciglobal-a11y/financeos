@@ -1,16 +1,26 @@
 // Fecha del despliegue del rebranding: un solo lugar (deployDate.js) del que
 // salen la vigencia de los legales y el id de la nota de Novedades.
-// Con PREDEPLOY=1 (paso previo a integrar a main) falla si sigue el TODO.
+// En main (CI o rama local), con RELEASE=1 (./deploy.sh) o PREDEPLOY=1 falla si
+// sigue el TODO. Para fijar la fecha: node scripts/setDeployDate.mjs AAAA-MM-DD
 import { describe, it, expect } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 import { REBRAND_DEPLOY_DATE } from './deployDate.js'
 import { LEGAL_EFFECTIVE_DATE, LEGAL_VERSION, LAST_UPDATED } from '../pages/legal/legalMeta.js'
 import { RELEASE_NOTES } from './releaseNotes.js'
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 const TODO = 'TODO(rebrand' // TODO(rebrand) y TODO(rebrand-deploy)
+
+function localBranch() {
+  try { return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return '' }
+}
+// Candado de publicación: el TODO no puede llegar a producción.
+export function releaseGate(env = process.env, branch = localBranch()) {
+  return env.PREDEPLOY === '1' || env.RELEASE === '1' || env.GITHUB_REF === 'refs/heads/main' || branch === 'main'
+}
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
@@ -47,7 +57,20 @@ describe('fecha del despliegue del rebranding', () => {
     }
   })
 
-  it.runIf(process.env.PREDEPLOY === '1')('PREDEPLOY: no queda ningún TODO(rebrand…) en src/, supabase/functions/ ni public/', () => {
+  it('el candado se activa en main, con RELEASE=1 y con PREDEPLOY=1, y no en otra rama', () => {
+    expect(releaseGate({}, 'rebrand/entrega-1')).toBe(false)
+    expect(releaseGate({}, 'main')).toBe(true)
+    expect(releaseGate({ GITHUB_REF: 'refs/heads/main' }, 'HEAD')).toBe(true)
+    expect(releaseGate({ GITHUB_REF: 'refs/pull/9/merge' }, 'HEAD')).toBe(false)
+    expect(releaseGate({ RELEASE: '1' }, 'x')).toBe(true)
+    expect(releaseGate({ PREDEPLOY: '1' }, 'x')).toBe(true)
+  })
+
+  it('./deploy.sh corre los tests con RELEASE=1', () => {
+    expect(readFileSync(join(ROOT, 'deploy.sh'), 'utf8')).toMatch(/^RELEASE=1 npm test/m)
+  })
+
+  it.runIf(releaseGate())('release: no queda ningún TODO(rebrand…) en src/, supabase/functions/ ni public/', () => {
     const left = []
     for (const d of ['src', 'supabase/functions', 'public']) {
       for (const file of walk(join(ROOT, d))) {

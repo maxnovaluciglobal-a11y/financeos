@@ -74,7 +74,7 @@ esac
 deploy_guard
 
 echo "==> Tests"
-npm test
+RELEASE=1 npm test   # RELEASE=1: falla si queda un TODO(rebrand…) (src/data/deployDate.test.js)
 
 echo "==> Build local (gate previo — Vercel hace su propio build en su infra,"
 echo "    esto solo evita gastar un deploy si el build está roto)"

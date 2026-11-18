@@ -5,8 +5,10 @@
 // (data/releaseNotes.js). El plan es el 1-dic-2026, junto con la adecuación a
 // la Ley 21.719 de Chile.
 //
-// Antes de integrar a main: poner la fecha real y borrar la línea TODO de
-// abajo. `PREDEPLOY=1 npx vitest run src/data/deployDate.test.js` falla
-// mientras quede.
+// Antes de integrar a main, fijar la fecha real (borra también el TODO):
+//   node scripts/setDeployDate.mjs AAAA-MM-DD
+// Mientras quede el TODO, src/data/deployDate.test.js hace fallar `npm test`
+// en main (CI: GITHUB_REF=refs/heads/main; local: rama main), con RELEASE=1
+// (lo exporta ./deploy.sh) o con PREDEPLOY=1.
 // TODO(rebrand-deploy): fijar REBRAND_DEPLOY_DATE al día real del despliegue.
 export const REBRAND_DEPLOY_DATE = '2026-12-01'
