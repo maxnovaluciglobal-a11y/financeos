@@ -3394,7 +3394,7 @@ export const es = {
     "invest.aportes.one": "1 aporte este mes · Revisar en Inversiones",
     "invest.aportes.many": "{n} aportes este mes · Revisar en Inversiones",
     "invest.legal": "Herramienta educativa. No constituye asesoría financiera ni recomendación de compra o venta. Invertir implica riesgo de pérdida. No somos bróker ni ejecutamos órdenes.",
-    "invest.privacy": "Tus posiciones de inversión se guardan en nuestro servidor para traer precios y verlas en cualquier dispositivo. Tus movimientos siguen solo en tu teléfono.",
+    "invest.privacy": "Tus posiciones de inversión se guardan en nuestro servidor para que puedas verlas en cualquier dispositivo. Para traer precios solo se consultan los símbolos. Tus movimientos siguen solo en tu teléfono.",
     "mov.more": "Más opciones",
     "mov.more.detailed": "Gasto detallado",
     "mov.more.detailedDesc": "Con subcategoría, tipo, notas, inversión o proyecto",

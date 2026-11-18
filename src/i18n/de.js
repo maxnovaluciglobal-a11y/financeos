@@ -3393,7 +3393,7 @@ export const de = {
     "invest.aportes.one": "1 Einzahlung diesen Monat · In Investments prüfen",
     "invest.aportes.many": "{n} Einzahlungen diesen Monat · In Investments prüfen",
     "invest.legal": "Bildungswerkzeug. Keine Finanzberatung und keine Kauf- oder Verkaufsempfehlung. Geldanlagen sind mit Verlustrisiken verbunden. Wir sind kein Broker und führen keine Aufträge aus.",
-    "invest.privacy": "Ihre Anlagepositionen werden auf unserem Server gespeichert, damit wir Kurse abrufen und Sie sie auf jedem Gerät sehen können. Ihre Buchungen bleiben nur auf Ihrem Telefon.",
+    "invest.privacy": "Ihre Anlagepositionen werden auf unserem Server gespeichert, damit Sie sie auf jedem Gerät sehen können. Für die Kurse werden nur die Symbole abgefragt. Ihre Buchungen bleiben nur auf Ihrem Telefon.",
     "mov.more": "Weitere Optionen",
     "mov.more.detailed": "Detaillierte Ausgabe",
     "mov.more.detailedDesc": "Mit Unterkategorie, Art, Notizen, Investition oder Projekt",

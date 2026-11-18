@@ -3394,7 +3394,7 @@ export const en = {
     "invest.aportes.one": "1 contribution this month · Review in Investments",
     "invest.aportes.many": "{n} contributions this month · Review in Investments",
     "invest.legal": "Educational tool. It is not financial advice or a recommendation to buy or sell. Investing involves risk of loss. We are not a broker and do not execute orders.",
-    "invest.privacy": "Your investment positions are stored on our server so we can fetch prices and you can see them on any device. Your transactions stay only on your phone.",
+    "invest.privacy": "Your investment positions are stored on our server so you can see them on any device. To fetch prices, only the symbols are looked up. Your transactions stay only on your phone.",
     "mov.more": "More options",
     "mov.more.detailed": "Detailed expense",
     "mov.more.detailedDesc": "With subcategory, type, notes, investment or project",
