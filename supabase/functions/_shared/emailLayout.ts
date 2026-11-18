@@ -41,9 +41,10 @@ export const EMAIL_FONTS = {
   mono: "ui-monospace,Menlo,Consolas,'Liberation Mono',monospace",
 } as const;
 
-// Logo horizontal para fondo morado (320x73), servido por la propia app
-// (public/email/moyiq-logo.png; el PNG con la marca nueva lo genera la rama
-// del sistema visual en la misma ruta).
+// Logo horizontal blanco sobre el morado de la cabecera (320x73, sin alfa),
+// servido por la propia app desde public/email/moyiq-logo.png (emailLogo.test.ts).
+// La app debe desplegarse antes que las funciones: hasta entonces esa URL
+// sirve el logo anterior.
 export const EMAIL_LOGO_URL = "https://app.moyiq.app/app/email/moyiq-logo.png";
 const LOGO_W = 160;
 const LOGO_H = 37;
