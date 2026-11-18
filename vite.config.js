@@ -127,12 +127,12 @@ export default defineConfig({
         // cachea igual, recién la primera vez que la página que los usa se visita
         // de verdad. pdf.worker (pdfjs-dist) ya queda afuera por su extensión .mjs,
         // que no matchea los globPatterns por defecto — mismo resultado, sin listarlo acá.
-        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**', '**/fonts/pdf/**', '**/screenshots/**'],
-        // Ya no hay regla de runtimeCaching para Google Fonts (2026-09-06,
-        // RGPD): las fuentes ahora son estáticas locales en public/fonts/, así
-        // que Workbox las toma en el PRECACHE por defecto (junto con el resto
-        // de dist/app/) — mejor que el cache-first anterior, que recién
-        // cacheaba en la primera visita.
+        // woff2 se suma a los patrones por defecto (js, wasm, css, html) para que
+        // Inter latin quede en el precache y la app sin conexión no caiga a
+        // system-ui (revisión Entrega 1, B1). latin-ext (unicode-range de
+        // fonts.css) se baja solo si una página lo pide.
+        globPatterns: ['**/*.{js,wasm,css,html,woff2}'],
+        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**', '**/fonts/pdf/**', '**/screenshots/**', '**/fonts/*latin-ext*'],
         runtimeCaching: [
           {
             // Chunks JS/CSS lazy de la propia app — stale-while-revalidate

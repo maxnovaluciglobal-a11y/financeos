@@ -11,7 +11,7 @@
 // lee Deno.env.get() a nivel de módulo y no se puede importar desde
 // Node/vitest.
 //
-// Remitente: "moyiq · Inversiones <invest@moyiq.app>" — mismo dominio raíz
+// Remitente: "moyiq Inversiones <invest@moyiq.app>" (INVEST_SENDER_NAME) — mismo dominio raíz
 // (moyiq.app) ya verificado en Resend, usado hoy por auth-email-hook. No
 // hace falta configurar nada nuevo ahí.
 //
@@ -48,7 +48,7 @@ export interface NurtureEmailConfig {
   supabaseUrl: string;
   serviceRole: string;
   resendApiKey?: string;
-  fromEmail: string; // "moyiq · Inversiones <invest@moyiq.app>"
+  fromEmail: string; // "moyiq Inversiones <invest@moyiq.app>"
   cronSecret?: string;
   landingUrl: string; // "https://invest.moyiq.app" — CTAs hacia la app de Invest
   // Base del link de baja. La página unsubscribe.html vive en la landing de

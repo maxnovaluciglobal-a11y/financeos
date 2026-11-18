@@ -16,7 +16,7 @@
 //
 // Secrets necesarios (Supabase → Edge Functions → Secrets):
 //   NURTURE_RESEND_API_KEY                  ← MISMO secret que usan las otras nurture — NO RESEND_API_KEY (ese devuelve 403, ver auth-email-hook/index.ts)
-//   NURTURE_FROM_EMAIL_INVEST                ← "moyiq · Inversiones <invest@moyiq.app>" (fallback hardcodeado si no está seteado)
+//   NURTURE_FROM_EMAIL_INVEST                ← "moyiq Inversiones <invest@moyiq.app>" (el nombre lo fija brandedSender de _shared/emailSender.ts; fallback hardcodeado si no está seteado)
 //   CRON_SECRET                             ← mismo secreto compartido (private.get_secret('cron_secret'))
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 
