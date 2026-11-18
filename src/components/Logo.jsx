@@ -1,70 +1,53 @@
 // src/components/Logo.jsx
-// Wordmark + monograma de marca (MOY IQ) — geometría y reglas del brand book,
-// se reutiliza literal, no se reinventa acá.
+// Logotipo e isotipo de moyiq (libro de marca de Descentric v2.1, D2). Geometría
+// sin modificar: trazos de financeos-workspace/branding/rebrand-2026-11/
+// derivados-svg/ (pdftocairo desde el PDF de la agencia), con fill="currentColor"
+// para heredar el color. Reemplaza el dial + placa "IQ" de "El Instrumento" (D8).
 //
-// Monograma: bisel (círculo r=40) + escala (arco 270°, 3 ticks) + aguja+pivote
-// en Latón (única constante cromática del sistema, salvo variante 'mono').
-// Wordmark: "MOY" Instrument Sans 600 mayúsculas tracking .08em + placa "IQ"
-// (borde Latón, IBM Plex Mono 500, .58em del tamaño de "MOY", nunca superíndice).
+// Color por defecto: --logo-fg (morado 700 sobre claro, blanco sobre grafito:
+// versiones de color del manual, pág. 10). Sobre un degradado, pasar
+// style={{ color: 'var(--on-grad-text)' }}. Nunca degradado sobre el logo.
 
-export function Monogram({ size = 24, tone = 'brand', ticks = true, className, style }) {
-  // tone: 'brand' (bisel/escala en --tx, aguja+pivote en Latón — uso normal)
-  //       'mono'  (currentColor puro, sin Latón — superficies de un solo color)
-  const stroke = tone === 'mono' ? 'currentColor' : 'var(--tx)'
-  const needle = tone === 'mono' ? 'currentColor' : 'var(--laton)'
+import { LOGO_SVG, ISO_SVG } from './logoPaths.js'
+
+// Proporción del logotipo (ancho / alto del recorte): 2,89:1 (manual 2,93:1).
+export const LOGO_RATIO = LOGO_SVG.ratio
+
+// Isotipo: la lupa sola (ícono de app, avatar, firma del splash). Mínimo 16 px.
+export function Isotipo({ size = 24, title = 'moyiq', decorative = false, className, style }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="MOY IQ"
-      className={className} style={{ display: 'block', flexShrink: 0, ...style }}>
-      <circle cx="50" cy="50" r="40" fill="none" stroke={stroke} strokeWidth="3" />
-      <path d="M 28.79 71.21 A 30 30 0 1 1 71.21 71.21" fill="none" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" />
-      {ticks && (
-        <>
-          <line x1="28.79" y1="71.21" x2="24.54" y2="75.46" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="50" y1="20" x2="50" y2="14" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="71.21" y1="71.21" x2="75.46" y2="75.46" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" />
-        </>
-      )}
-      <path d="M 52 53.46 L 72.52 37 L 48 46.54 Z" fill={needle} stroke="none" />
-      <circle cx="50" cy="50" r="3.5" fill={needle} stroke="none" />
+    <svg
+      width={Math.round(size * ISO_SVG.ratio * 100) / 100} height={size} viewBox={ISO_SVG.viewBox}
+      fill="currentColor" className={className}
+      style={{ display: 'block', flexShrink: 0, color: 'var(--logo-fg)', ...style }}
+      {...(decorative ? { 'aria-hidden': true, focusable: 'false' } : { role: 'img', 'aria-label': title })}
+    >
+      {ISO_SVG.paths.map((d, i) => <path key={i} d={d} />)}
     </svg>
   )
 }
 
-// BRD-15: la placa no se lee si "IQ" baja de 10 px (placa < 14 px de alto).
-// Debajo de ese tamaño va la variante compacta: "IQ" en Latón, mismo cuerpo que
-// "MOY" y sin placa. El texto usa --laton-text (Latón 700 en claro, AA).
-export const PLATE_MIN_IQ_PX = 10
-export const wordmarkVariant = (size) => (size * 0.58 < PLATE_MIN_IQ_PX ? 'compact' : 'plate')
-
-export function Wordmark({ size = 15, style }) {
-  const compact = wordmarkVariant(size) === 'compact'
-  const moy = {
-    fontFamily: 'var(--display)', fontWeight: 600, textTransform: 'uppercase',
-    letterSpacing: '.08em', fontSize: size, color: 'var(--tx)',
-  }
+// Logotipo "moyiq". `size` = alto aproximado del bloque (como el lockup
+// anterior): el dibujo mide size × 1,1 de alto. Mínimo legible: 18 px de alto.
+export function Logotipo({ size = 24, title = 'moyiq', decorative = false, className, style }) {
+  const h = Math.round(size * ISO_SVG.ratio * 100) / 100
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '.3em', lineHeight: 1, ...style }}>
-      <span style={moy}>MOY</span>
-      {compact ? (
-        <span style={{ ...moy, color: 'var(--laton-text)' }}>IQ</span>
-      ) : (
-        <span style={{
-          fontFamily: 'var(--mono)', fontWeight: 500, fontSize: size * 0.58,
-          color: 'var(--laton-text)', border: '1.5px solid var(--laton)', borderRadius: 'var(--r-plate)',
-          padding: '.12em .32em', lineHeight: 1,
-        }}>IQ</span>
-      )}
-    </span>
+    <svg
+      width={Math.round(h * LOGO_RATIO * 100) / 100} height={h} viewBox={LOGO_SVG.viewBox}
+      fill="currentColor" className={className}
+      style={{ display: 'block', flexShrink: 0, color: 'var(--logo-fg)', ...style }}
+      {...(decorative ? { 'aria-hidden': true, focusable: 'false' } : { role: 'img', 'aria-label': title })}
+    >
+      {LOGO_SVG.paths.map((d, i) => <path key={i} d={d} />)}
+    </svg>
   )
 }
 
-// Lockup horizontal completo — respeta el mínimo de 24px de alto documentado
-// en el brand book (size acá es la altura aproximada del lockup).
-export default function Logo({ size = 24, showMonogram = true, style }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: size * 0.35, ...style }}>
-      {showMonogram && <Monogram size={size} />}
-      <Wordmark size={size * 0.62} />
-    </span>
-  )
+// Nombres anteriores, para no tocar a quien los importa: Monogram → isotipo,
+// Wordmark → logotipo (su `size` era el cuerpo del texto, ~0,62 del lockup).
+export const Monogram = ({ size = 24, ...rest }) => <Isotipo size={size} {...rest} />
+export const Wordmark = ({ size = 15, ...rest }) => <Logotipo size={size / 0.62 * 0.8} {...rest} />
+
+export default function Logo({ size = 24, style, ...rest }) {
+  return <Logotipo size={size} style={style} {...rest} />
 }
