@@ -280,38 +280,39 @@ export const fmtDate = (iso) => {
   return `${d}/${m}`
 }
 
-// Paleta derivada de la familia de marca MOY IQ (navy/latón/verde/ceniza/info/
-// warning/error + variantes) — cosmético (dots/badges de categoría), sin
-// relación con datos financieros reales.
+// Paleta derivada de la marca moyiq (morados, colores de dato, grises y el
+// 7.º tono verde azulado de tokens.css) — cosmético (dots/badges de categoría),
+// sin relación con datos financieros reales. Los colores ya guardados con la
+// marca anterior se convierten al leer (utils/legacyColors.js).
 export const CAT_COLORS = {
-  Vivienda: '#14213D',       // navy
-  Alimentación: '#5FA98C',   // verde
-  Transporte: '#B8863B',     // laton
-  Salud: '#5B7A99',          // info
-  Educación: '#8B7A55',      // ceniza
-  Entretenimiento: '#A23E2E', // error
-  Entretención: '#A23E2E',   // alias — algunos registros históricos usan esta grafía
-  Servicios: '#356E57',      // verde-800
-  Ropa: '#C97A3D',           // warning
-  Otro: '#5F5236',           // categorías de INGRESO usan singular (ver CATS_INCOME)
-  Otros: '#5F5236',          // categorías de GASTO usan plural (ver CATS_EXPENSE)
-  Salario: '#14213D',        // navy
-  Freelance: '#3E5A78',      // info-800
-  Inversión: '#8A6329',      // laton-700
-  Arriendo: '#B8863B',       // laton
-  Bono: '#5FA98C',           // verde
-  Tecnología: '#4A5875',     // navy-400
-  Deporte: '#74C2A3',        // verde-dark
-  Viajes: '#CC9A52',         // accent-dark
-  Streaming: '#5B7A99',      // info
-  Música: '#B8AC91',         // ceniza-300
-  Software: '#4A5875',       // navy-400
-  Gimnasio: '#356E57',       // verde-800
-  Seguro: '#8A4A14',         // warning-800
-  Cloud: '#E3C592',          // laton-300
-  Delivery: '#C97A3D',       // warning
-  Suscripción: '#3E5A78',    // info-800
-  Productividad: '#5FA98C',  // verde
+  Vivienda: '#3C2282',       // purple-700
+  Alimentación: '#1FB57A',   // green-500
+  Transporte: '#B07414',     // amber-600
+  Salud: '#0E8C8C',          // teal-600
+  Educación: '#6B6F78',      // gray-600
+  Entretenimiento: '#E5484D', // red-500
+  Entretención: '#E5484D',   // alias — algunos registros históricos usan esta grafía
+  Servicios: '#0E7A50',      // green-700
+  Ropa: '#F5A524',           // amber-500
+  Otro: '#3F4249',           // categorías de INGRESO usan singular (ver CATS_INCOME)
+  Otros: '#3F4249',          // categorías de GASTO usan plural (ver CATS_EXPENSE)
+  Salario: '#3C2282',        // purple-700
+  Freelance: '#6045AE',      // purple-500
+  Inversión: '#9A5B00',      // amber-700
+  Arriendo: '#B07414',       // amber-600
+  Bono: '#1FB57A',           // green-500
+  Tecnología: '#8169C6',     // purple-400
+  Deporte: '#47C292',        // green-300
+  Viajes: '#A897DA',         // purple-300
+  Streaming: '#0E8C8C',      // teal-600
+  Música: '#A3A7AE',         // gray-400
+  Software: '#8169C6',       // purple-400
+  Gimnasio: '#0E7A50',       // green-700
+  Seguro: '#9A5B00',         // amber-700
+  Cloud: '#F5A524',          // amber-500
+  Delivery: '#F5A524',       // amber-500
+  Suscripción: '#6045AE',    // purple-500
+  Productividad: '#1FB57A',  // green-500
 }
 
 // Emoji por categoría — hace el registro más ágil y amigable. Fallback: solo el nombre.
@@ -435,7 +436,7 @@ export const SEED_DEBTS = [
 ]
 
 export const SEED_GOALS = [
-  { id: uid(), name: 'Fondo de emergencia', target: 7200000, saved: 4200000, targetDate: '2025-12-31', priority: 'Alta', color: '#B8863B' },
-  { id: uid(), name: 'Viaje a Europa', target: 5000000, saved: 1400000, targetDate: '2026-03-01', priority: 'Media', color: '#14213D' },
-  { id: uid(), name: 'Pie departamento', target: 5800000, saved: 1200000, targetDate: '2027-06-01', priority: 'Alta', color: '#5B7A99' },
+  { id: uid(), name: 'Fondo de emergencia', target: 7200000, saved: 4200000, targetDate: '2025-12-31', priority: 'Alta', color: '#B07414' },
+  { id: uid(), name: 'Viaje a Europa', target: 5000000, saved: 1400000, targetDate: '2026-03-01', priority: 'Media', color: '#3C2282' },
+  { id: uid(), name: 'Pie departamento', target: 5800000, saved: 1200000, targetDate: '2027-06-01', priority: 'Alta', color: '#0E8C8C' },
 ]

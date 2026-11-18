@@ -1,6 +1,6 @@
 // src/components/ledger/HairlineTable.jsx — tabla sin marco (firma "Hairline Table" de Invest, UI-L1)
 //
-// Sin caja, sin relleno, sin sombra: encabezado en Plex Sans 12/600 tinta
+// Sin caja, sin relleno, sin sombra: encabezado en Inter 12/600 tinta
 // secundaria con una línea del 18 %, filas con líneas del 10 %, primera y
 // última columna al ras de la sección. Las columnas de cifras van a la
 // derecha (`num: true`) y en .num (tabulares).

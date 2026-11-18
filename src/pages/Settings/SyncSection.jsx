@@ -196,7 +196,7 @@ export default function SyncSection() {
       )}
 
       {on && syncBlocked === 'passphrase_required' && (
-        <div style={{ ...box, borderColor: 'var(--laton)' }}>
+        <div style={{ ...box, borderColor: 'var(--color-brand)' }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.blockedTitle')}</div>
           <p style={sub}>{t('syncPass.blockedBody')}</p>
           <PassphraseForm id="sync-unlock" busy={busy} error={error} onSubmit={unlock} submitLabel={t('syncPass.askSubmit')} />
@@ -208,7 +208,7 @@ export default function SyncSection() {
       )}
 
       {on && mode === 'v1' && !syncBlocked && (
-        <div style={{ ...box, borderColor: 'var(--laton)' }}>
+        <div style={{ ...box, borderColor: 'var(--color-brand)' }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.migrateTitle')}</div>
           <p style={sub}>{t('syncPass.migrateBody')}</p>
           {!migrating ? (

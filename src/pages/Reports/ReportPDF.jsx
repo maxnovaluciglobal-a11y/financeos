@@ -4,16 +4,17 @@
 import {
   Document, Page, Text, View, StyleSheet,
 } from '@react-pdf/renderer'
-import { PDF_FONT as F, PDF_COLOR as P } from '../pdfTheme.js'
+import { PDF_FONT as F, PDF_COLOR as P, PDF_CAT_COLORS } from '../pdfTheme.js'
+import PdfLogo from '../PdfLogo.jsx'
 import { fmtSignedMoney, fmtPct, catName, fmtPctPoints } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 
 // Colores y fuentes de la marca (pdfTheme.js, BRD-8).
 const ACCENT  = P.pos         // positivo/ingreso, no la marca
-const BRAND   = P.latonOnNavy // Latón sobre la cabecera Navy
+const BRAND   = P.lime        // acento lima sobre la cabecera morada
 const RED     = P.neg
 const AMBER   = P.warn
-const DARK    = P.navy
+const DARK    = P.ink
 const GRAY    = P.muted
 const LGRAY   = P.card
 const WHITE   = P.page
@@ -21,14 +22,11 @@ const WHITE   = P.page
 const s = StyleSheet.create({
   page:    { fontFamily: F.body, backgroundColor: WHITE, paddingHorizontal: 36, paddingTop: 32, paddingBottom: 64, fontSize: 9, color: DARK },
   // Header
-  header:  { backgroundColor: DARK, marginHorizontal: -36, marginTop: -32, paddingHorizontal: 36, paddingVertical: 20, marginBottom: 20, borderBottomWidth: 3, borderBottomColor: P.laton },
-  wordmark:{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
-  plate:   { borderWidth: 1.2, borderColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 },
-  plateTx: { fontSize: 11.5, fontFamily: F.mono, fontWeight: 600, color: BRAND },
-  hTitle:  { fontSize: 20, fontFamily: F.display, fontWeight: 600, color: P.page, letterSpacing: 1.6, marginBottom: 3 },
+  header:  { backgroundColor: P.brand, marginHorizontal: -36, marginTop: -32, paddingHorizontal: 36, paddingVertical: 20, marginBottom: 20, borderBottomWidth: 3, borderBottomColor: P.lime },
+  wordmark:{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   hSub:    { fontSize: 9, color: BRAND, fontFamily: F.body },
   hRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  hMeta:   { fontSize: 8, color: P.navySub, textAlign: 'right' },
+  hMeta:   { fontSize: 8, color: P.onBrandSub, textAlign: 'right' },
   // Section
   section: { marginBottom: 16 },
   secTitle:{ fontSize: 11, fontFamily: F.display, fontWeight: 600, color: DARK, marginBottom: 8, paddingBottom: 4, borderBottom: `1px solid ${P.line}` },
@@ -67,14 +65,11 @@ const s = StyleSheet.create({
 })
 
 // Con los decimales de la moneda y el signo menos U+2212 (UI-Q3): el PDF usa
-// IBM Plex Sans (pdfTheme.js), que sí tiene "−" y el espacio fino de "%".
+// Inter (pdfTheme.js), que tiene "−" y el espacio fino de "%".
 const fmt = (n, sym = '$') => fmtSignedMoney(n, sym)
 const pct = (n) => fmtPct(n)
 
-const CAT_COLORS = [
-  P.navy, P.laton, P.pos, P.warn, P.info,
-  P.neg, '#4A5875', P.laton700, P.posMid, '#5F5236',
-]
+const CAT_COLORS = PDF_CAT_COLORS
 
 export default function ReportPDF({ data }) {
   const {
@@ -124,8 +119,7 @@ export default function ReportPDF({ data }) {
           <View style={s.hRow}>
             <View>
               <View style={s.wordmark}>
-                <Text style={[s.hTitle, { marginBottom: 0 }]}>MOY</Text>
-                <View style={s.plate}><Text style={s.plateTx}>IQ</Text></View>
+                <PdfLogo height={20} color={P.white} />
               </View>
               <Text style={s.hSub}>{t('rpdf.sub', { month: monthLabel })}</Text>
             </View>

@@ -9,10 +9,9 @@
 .avatar {
   display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
   width: 48px; height: 48px; border-radius: var(--rxl);
-  background: var(--navy); color: var(--papel-000);
+  background: var(--color-brand); color: var(--text-on-brand);
   font-family: var(--display); font-size: 1.25rem; font-weight: 700;
 }
-:global([data-theme="dark"]) .avatar { background: var(--laton); color: var(--navy); }
 .accountBody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .accountName { font-size: 1rem; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .accountMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-size: .75rem; }
@@ -21,17 +20,16 @@
   font-family: var(--sans); font-size: .75rem; font-weight: 600;
   background: var(--fill); color: var(--tm); border: 0;
 }
-.planPro { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-700); }
-:global([data-theme="dark"]) .planPro { color: var(--laton-300); }
+.planPro { background: var(--color-accent); color: var(--text-on-accent); }
 .manage { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--accent); font-family: var(--sans); font-size: .75rem; font-weight: 600; text-decoration: none; }
 
 .upgrade {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   width: 100%; min-height: 56px; margin-top: 14px; padding: 10px 12px 10px 14px; text-align: left;
-  border: 0; border-radius: var(--r); background: var(--laton); color: var(--navy); cursor: pointer;
+  border: 0; border-radius: var(--r); background: var(--btn-primary-bg); color: var(--btn-primary-fg); cursor: pointer;
   font: inherit; transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.upgrade:hover { box-shadow: inset 0 0 0 2px rgba(20,33,61,.25); }
+.upgrade:hover { background: var(--btn-primary-bg-hover); }
 .upgrade:active { transform: scale(.99); }
 .upgradeTitle { display: block; font-size: .875rem; font-weight: 700; }
 .upgradeSub { display: block; font-size: .75rem; line-height: 1.4; opacity: .85; }
@@ -77,8 +75,7 @@ a.row { text-decoration: none; box-sizing: border-box; }
   font-family: var(--sans); font-size: .8125rem; color: var(--tm);
 }
 .legalLink:hover { color: var(--tx); text-decoration: underline; }
-.legalLink:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
-:global([data-theme="dark"]) .legalLink:focus-visible { outline-color: var(--laton-300); }
+.legalLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .version { font-size: .75rem; font-family: var(--sans); color: var(--th); margin-top: 6px; line-height: 1.6; }
 .versionLock { display: inline-flex; align-items: center; gap: 5px; }
 

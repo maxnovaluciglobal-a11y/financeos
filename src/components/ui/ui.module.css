@@ -12,10 +12,10 @@
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 .btn:active { transform: scale(0.97); }
-/* CTA primario en Latón (acento de marca) + texto Navy — nunca oscurecer el fill
-   en hover/pressed (cae bajo AA), en cambio se agrega un anillo interior Navy. */
-.btn_primary { background: var(--laton); color: var(--navy); box-shadow: var(--sh-1); }
-.btn_primary:hover { box-shadow: var(--sh-2), inset 0 0 0 2px rgba(20,33,61,.25); }
+/* CTA primario: morado 700 con texto blanco (oscuro: morado 300 con grafito);
+   hover = morado 800 (manual). */
+.btn_primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); box-shadow: var(--sh-1); }
+.btn_primary:hover { background: var(--btn-primary-bg-hover); box-shadow: var(--sh-2); }
 .btn_ghost { background: var(--fill); color: var(--tx); }
 .btn_ghost:hover, .btn_ghost:active { background: var(--fill-2); }
 .btn_danger { background: var(--red-bg); color: var(--red); }
@@ -45,7 +45,7 @@
      así que la celda puede ser contenedor: la cifra se mide con su ancho. */
   container-type: inline-size;
 }
-/* Etiquetas en Plex Sans 12/600, tipo oración (UI-Q6): nada de mayúsculas mono. */
+/* Etiquetas en Inter 12/600, tipo oración (UI-Q6): nada de mayúsculas mono. */
 .kpiLbl { font-size: .75rem; font-weight: 600; line-height: 1.3; color: var(--tm); font-family: var(--sans); margin-bottom: 6px; }
 /* 1.65 ≈ 1 / ancho medio de un dígito en em; 100cqi = ancho útil de la tarjeta. */
 .kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 600; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; color: var(--tx); }
@@ -145,11 +145,10 @@
 .emptyPick label { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 4px 2px; cursor: pointer; font-family: var(--sans); font-size: .875rem; color: var(--tx); }
 .emptyPickCat { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .emptyPickAmt { font-family: var(--num); font-size: .8125rem; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
-[data-theme="dark"] .emptyChoiceTop svg { color: var(--laton-300); }
 
 /* ── ChoiceGroup (radiogroup de pocas opciones; tema Sistema · Claro · Oscuro) ──
    Segmentado en píldora (31-oct-2026). Elegida: tinta invertida + ✓ (estado =
-   ícono + palabra). Sin Latón. */
+   ícono + palabra). */
 .choiceGroup { display: flex; flex-wrap: wrap; gap: 6px; }
 .choice {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -162,15 +161,14 @@
 }
 .choice:hover { background: var(--fill-2); }
 .choiceOn, .choiceOn:hover { background: var(--chip-on-bg); color: var(--chip-on-tx); font-weight: 600; }
-.choice:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
-[data-theme="dark"] .choice:focus-visible { outline-color: var(--laton-300); }
+.choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .choiceCheck { flex-shrink: 0; }
-/* Miniatura decorativa: Papel, Navy o mitad y mitad (Sistema). Colores fijos de
-   marca a propósito: muestran cómo se ve cada tema, sea cual sea el actual. */
+/* Miniatura decorativa: blanco, grafito o mitad y mitad (Sistema). Colores fijos
+   a propósito: muestran cómo se ve cada tema, sea cual sea el actual. */
 .choicePreview {
   width: 18px; height: 14px; flex-shrink: 0; border-radius: 3px;
-  border: 1px solid var(--brd2); background: var(--papel-000);
+  border: 1px solid var(--brd2); background: var(--gray-0);
 }
-.choicePreview[data-preview="dark"] { background: var(--navy); }
-.choicePreview[data-preview="system"] { background: linear-gradient(135deg, var(--papel-000) 50%, var(--navy) 50%); }
+.choicePreview[data-preview="dark"] { background: var(--gray-900); }
+.choicePreview[data-preview="system"] { background: linear-gradient(135deg, var(--gray-0) 50%, var(--gray-900) 50%); }
 @media (prefers-reduced-motion: reduce) { .choice { transition: none; } .progFill { animation: none; } }

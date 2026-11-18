@@ -66,7 +66,7 @@ const s = {
   summaryLabel: { fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 3 },
   summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--tx)' },
   btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: '.15s' },
-  btnPrimary: { background: 'var(--laton)', color: 'var(--navy)' },
+  btnPrimary: { background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)' },
   btnSecondary: { background: 'var(--fill)', color: 'var(--tx)', border: 0 },
   btnRow: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 },
   disclaimer: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 },

@@ -79,29 +79,29 @@ const config = {
 
   // ── COLORES POR CATEGORÍA ──────────────────────────────────────────────────
   // Asigna un color hex a cada categoría. Si una categoría no tiene color
-  // asignado aquí, usa el fallback '#888780'.
-  // Paleta derivada de la familia de marca MOY IQ (navy/latón/verde/ceniza +
-  // variantes) — cosmético, sin relación con datos financieros reales.
+  // asignado aquí, usa el fallback '#878B93'.
+  // Paleta derivada de la marca moyiq (morados, colores de dato y grises de
+  // tokens.css) — cosmético, sin relación con datos financieros reales.
   categoryColors: {
-    Vivienda:        '#14213D',   // navy
-    Alimentación:    '#5FA98C',   // verde
-    Transporte:      '#B8863B',   // laton
-    Salud:           '#5B7A99',   // info
-    Educación:       '#8B7A55',   // ceniza
-    Entretención:    '#A23E2E',   // error
-    Servicios:       '#356E57',   // verde-800
-    Ropa:            '#C97A3D',   // warning
-    Tecnología:      '#4A5875',   // navy-400
-    Mascota:         '#8A6329',   // laton-700
-    Propiedad:       '#3E5A78',   // info-800
-    Otros:           '#5F5236',   // ceniza-700
-    Salario:         '#14213D',
-    Freelance:       '#5B7A99',
-    Inversión:       '#8B7A55',
-    Arriendo:        '#B8863B',
-    Bono:            '#5FA98C',
-    Pensión:         '#5F5236',
-    'Negocio propio':'#356E57',
+    Vivienda:        '#3C2282',   // purple-700
+    Alimentación:    '#1FB57A',   // green-500
+    Transporte:      '#B07414',   // amber-600
+    Salud:           '#0E8C8C',   // teal-600
+    Educación:       '#6B6F78',   // gray-600
+    Entretención:    '#E5484D',   // red-500
+    Servicios:       '#0E7A50',   // green-700
+    Ropa:            '#F5A524',   // amber-500
+    Tecnología:      '#8169C6',   // purple-400
+    Mascota:         '#9A5B00',   // amber-700
+    Propiedad:       '#6045AE',   // purple-500
+    Otros:           '#3F4249',   // gray-700
+    Salario:         '#3C2282',
+    Freelance:       '#0E8C8C',
+    Inversión:       '#6B6F78',
+    Arriendo:        '#B07414',
+    Bono:            '#1FB57A',
+    Pensión:         '#3F4249',
+    'Negocio propio':'#0E7A50',
   },
 
   // ── EMOJIS POR CATEGORÍA (opcional) ────────────────────────────────────────
@@ -165,9 +165,9 @@ const config = {
   // Luego copia los mismos valores en src/styles/globals.css → :root
   // para que afecten también los estilos CSS que no usan este config.
   brand: {
-    primary:      '#14213D', // Navy — color principal (sidebar activo, estructura)
-    primaryLight: 'rgba(20,33,61,0.07)', // Fondo claro del color principal
-    primaryMid:   '#B8863B', // Latón — acento de CTAs, barras destacadas
+    primary:      '#3C2282', // morado 700 — color principal (acción, estructura)
+    primaryLight: '#F4F1FB', // morado 50 — fondo claro del color principal
+    primaryMid:   '#7A21FF', // violeta de acción (nivel 3) — "+" y pestaña activa
   },
 
   // ── FEATURES ON/OFF ────────────────────────────────────────────────────────

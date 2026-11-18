@@ -17,7 +17,7 @@
 /* Progreso: Latón marca "dónde estás" (regla 4 del sistema visual). */
 .progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 6px 0 14px; }
 .progress span { height: 3px; border-radius: 2px; background: var(--brd2); }
-.progress .progOn { background: var(--laton); }
+.progress .progOn { background: var(--color-brand); }
 .title { margin: 0; font-family: var(--display); font-size: 1.375rem; font-weight: 700; line-height: 1.2; color: var(--tx); outline: none; }
 
 .body { flex: 1; }
@@ -31,7 +31,7 @@
   display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 0 12px;
   border: 1px solid var(--brd2); border-radius: var(--r); background: var(--sur2);
 }
-.amountBox:focus-within { border-color: var(--laton-700); outline: 2px solid var(--laton-700); outline-offset: 1px; }
+.amountBox:focus-within { border-color: var(--color-focus); outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .amountBox .amountInput {
   flex: 1; min-width: 0; width: 100%; padding: 0; border: 0; background: transparent; outline: none;
   font: 600 1.375rem/1.2 var(--num); font-variant-numeric: tabular-nums lining-nums; color: var(--tx); text-align: right;

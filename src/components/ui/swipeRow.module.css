@@ -8,6 +8,5 @@
   border: 0; background: var(--fill-2); color: var(--tx);
   font-family: var(--sans); font-size: .75rem; font-weight: 600; cursor: pointer;
 }
-.danger { background: var(--error); color: var(--papel-000); }
-:global([data-theme="dark"]) .danger { background: var(--error-dark); color: var(--navy); }
+.danger { background: var(--btn-danger-bg); color: var(--btn-danger-fg); }
 @media (prefers-reduced-motion: reduce) { .fg { transition: none !important; } }

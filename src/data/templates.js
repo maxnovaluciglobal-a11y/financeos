@@ -15,7 +15,7 @@
 export const TEMPLATES = [
   {
     id: 'personal',
-    color: '#356E57',
+    color: '#0E7A50',
     name: 'Persona natural',
     tagline: 'tpl.personal.tagline',
     description: 'tpl.personal.description',
@@ -40,7 +40,7 @@ export const TEMPLATES = [
 
   {
     id: 'pareja',
-    color: '#5B7A99',
+    color: '#6045AE',
     name: 'Pareja o familia',
     tagline: 'tpl.pareja.tagline',
     description: 'tpl.pareja.description',
@@ -66,7 +66,7 @@ export const TEMPLATES = [
 
   {
     id: 'freelancer',
-    color: '#8B7A55',
+    color: '#6B6F78',
     name: 'Freelancer',
     tagline: 'tpl.freelancer.tagline',
     description: 'tpl.freelancer.description',
@@ -92,7 +92,7 @@ export const TEMPLATES = [
 
   {
     id: 'pyme',
-    color: '#B8863B',
+    color: '#9A5B00',
     name: 'Pyme o negocio pequeño',
     tagline: 'tpl.pyme.tagline',
     description: 'tpl.pyme.description',
@@ -117,7 +117,7 @@ export const TEMPLATES = [
 
   {
     id: 'deudas',
-    color: '#A23E2E',
+    color: '#C2272D',
     name: 'Cliente con deuda',
     tagline: 'tpl.deudas.tagline',
     description: 'tpl.deudas.description',
@@ -143,7 +143,7 @@ export const TEMPLATES = [
 
   {
     id: 'ahorro',
-    color: '#356E57',
+    color: '#0E7A50',
     name: 'Cliente con meta de ahorro',
     tagline: 'tpl.ahorro.tagline',
     description: 'tpl.ahorro.description',
@@ -167,7 +167,7 @@ export const TEMPLATES = [
 
   {
     id: 'educador',
-    color: '#8B7A55',
+    color: '#6B6F78',
     name: 'Educador financiero',
     tagline: 'tpl.educador.tagline',
     description: 'tpl.educador.description',

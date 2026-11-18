@@ -1,4 +1,7 @@
-# Tokens de diseño (BRD-4 / BRD-10, 20-oct-2026)
+# Tokens de diseño (BRD-4 / BRD-10, 20-oct-2026; v3.1 moyiq, 17-nov-2026)
+
+> **Rebranding moyiq (Entrega 1, rama `rebrand/entrega-1-sistema`).** `tokens.css` pasó a v3.1: primitivos (`--purple-*`, `--gray-*`, `--lime-400`, colores de dato, paradas de Impulso/Profundidad) → semánticos (`--color-*`, `--text-*`, `--on-grad-*`, `--type-*`) → componente (`--btn-*`, `--action-*`, `--tabbar-*`, `--logo-fg`…), nivel 3 en claro y oscuro sobre grafito. Los nombres de rol viejos (`--tx`, `--grn`, `--sur`…) quedan como capa de compatibilidad hasta la Entrega 2; `--navy`, `--laton`, `--papel` y familia ya no existen. `contrast.test.js` compone las superposiciones sobre los degradados y los pares semánticos de los dos temas. Colores guardados con la marca anterior: `utils/legacyColors.js`. Tipografía: Inter 4.1 (`public/fonts.css`, PDF en `public/fonts/pdf/` con tnum fijado). **Invest:** su test `brd4-shared-tokens` compara contra este archivo; con D9 = congelar hay que repuntarlo a su `tokens-v2.css` antes de integrar esta rama.
+
 
 ## Dónde viven
 

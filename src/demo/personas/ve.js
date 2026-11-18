@@ -152,9 +152,9 @@ export const VE_DEBTS = [
 // ── METAS ─────────────────────────────────────────────────────────────────────
 // "Fondo de emergencia" lo reconoce isEmergencyGoalName (IQ Score / Coach).
 export const VE_GOALS = [
-  { id: d('ve-g1'), name: 'Fondo de emergencia (3 meses)', target: bs(1200, M0), saved: bs(310, M0), targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B8863B', notes: 'Ahorrado en US$: 310 de 1.200' },
-  { id: d('ve-g2'), name: 'Moto para trabajar',            target: bs(1800, M0), saved: bs(420, M0), targetDate: nextYearDate(9, 1),   priority: 'Media', color: '#14213D', notes: 'Meta en US$: 1.800' },
-  { id: d('ve-g3'), name: 'Viaje a Mérida en diciembre',   target: bs(350, M0),  saved: bs(90, M0),  targetDate: nextYearDate(12, 15), priority: 'Media', color: '#5B7A99', notes: 'Pasajes y posada' },
+  { id: d('ve-g1'), name: 'Fondo de emergencia (3 meses)', target: bs(1200, M0), saved: bs(310, M0), targetDate: nextYearDate(12, 31), priority: 'Alta',  color: '#B07414', notes: 'Ahorrado en US$: 310 de 1.200' },
+  { id: d('ve-g2'), name: 'Moto para trabajar',            target: bs(1800, M0), saved: bs(420, M0), targetDate: nextYearDate(9, 1),   priority: 'Media', color: '#3C2282', notes: 'Meta en US$: 1.800' },
+  { id: d('ve-g3'), name: 'Viaje a Mérida en diciembre',   target: bs(350, M0),  saved: bs(90, M0),  targetDate: nextYearDate(12, 15), priority: 'Media', color: '#0E8C8C', notes: 'Pasajes y posada' },
 ]
 
 // ── SUSCRIPCIONES ─────────────────────────────────────────────────────────────

@@ -25,7 +25,7 @@ function pushLang() {
 
 self.addEventListener('push', (event) => {
   const T = PUSH_TEXT[pushLang()];
-  let data = { title: 'MOY IQ', body: T.generic };
+  let data = { title: 'moyiq', body: T.generic };
   try { if (event.data) data = { ...data, ...event.data.json() } } catch {}
   if (data.i18n && data.i18n.key === 'trialExpiring' && Number(data.i18n.days) > 0) {
     data.body = T.trialExpiring(Number(data.i18n.days));
@@ -33,8 +33,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: '/app/icon-192.png',
-    badge: '/app/icon-192.png',
+    icon: '/app/icon-192.png',          // ícono de app: lupa blanca sobre morado
+    badge: '/app/notification-96.png',  // barra de estado de Android: monocromo, blanco sobre transparente
     tag: data.tag || 'financeos-reminder',
     data: { url: data.url || '/app/' },
   };

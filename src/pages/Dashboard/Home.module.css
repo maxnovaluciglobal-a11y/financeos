@@ -78,7 +78,7 @@
 .heroOpen { display: block; width: 100%; padding: 0; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .heroOpen::after { content: ''; position: absolute; inset: 0; border-radius: var(--rl); }
 .heroOpen:focus-visible { outline: none; }
-.heroOpen:focus-visible::after { outline: 2px solid var(--laton-700); outline-offset: 2px; }
+.heroOpen:focus-visible::after { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .heroOpen:active::after { background: var(--fill); }
 .heroChevron { color: var(--th); flex-shrink: 0; }
 .kpiLeft .kpiLabel { justify-content: flex-start; gap: 2px; }
@@ -97,7 +97,7 @@
 .kpiTap { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out); }
 .kpiTap { background: none; border: 0; border-top: 1px solid var(--brd2); }
-.kpiTap:hover { border-top-color: var(--navy-400); }
+.kpiTap:hover { border-top-color: var(--color-brand); }
 .kpiTap:active { transform: scale(.99); }
 .kpiChevron { color: var(--th); flex-shrink: 0; margin: -2px -4px -2px 0; }
 /* --chars = largo del monto formateado: la cifra se achica para entrar en una
@@ -240,11 +240,11 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   font: inherit; color: var(--tx); cursor: pointer;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.steps:hover { border-top-color: var(--navy-400); }
+.steps:hover { border-top-color: var(--color-brand); }
 .steps:active { transform: scale(.99); }
 .stepsBar { display: inline-grid; grid-template-columns: repeat(3, 10px); gap: 3px; }
 .stepsSeg, .stepsSegOn { height: 6px; border-radius: 1px; background: var(--sur3); }
-.stepsSegOn { background: var(--laton); }
+.stepsSegOn { background: var(--color-brand); }
 .stepsText { font-size: .875rem; font-weight: 600; line-height: 1.3; min-width: 0; }
 .stepsCount { font-family: var(--num); font-size: .75rem; color: var(--tm); white-space: nowrap; }
 .stepsChevron { color: var(--th); }
@@ -291,7 +291,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   font: inherit; color: var(--tx); cursor: pointer;
   transition: border-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.scoreRow:hover { border-top-color: var(--navy-400); }
+.scoreRow:hover { border-top-color: var(--color-brand); }
 .scoreRow:active { transform: scale(.99); }
 .scoreRowNum { font-size: 1.75rem; line-height: 1; font-weight: 600; }
 .scoreRowMeta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -327,7 +327,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 }
 .refOpt[aria-pressed="true"] .refOptFace { background: var(--seg-on); color: var(--tx); box-shadow: var(--seg-on-sh); }
 .refOpt:focus-visible { outline: none; }
-.refOpt:focus-visible .refOptFace { outline: 2px solid var(--navy); outline-offset: 1px; }
+.refOpt:focus-visible .refOptFace { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 
 .refRow {
   display: flex; flex-direction: column; gap: 4px;
@@ -345,10 +345,9 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .refLink {
   min-height: 44px; margin: -10px 0 -10px -2px; padding: 0 2px;
   background: none; border: 0; cursor: pointer;
-  font: 500 .8125rem/1.2 var(--sans); color: var(--navy);
+  font: 500 .8125rem/1.2 var(--sans); color: var(--color-brand-text);
   text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
 }
-:global([data-theme="dark"]) .refLink { color: var(--laton-300); }
 .refTool {
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px 0 10px;
   border: 0; border-radius: var(--r); background: var(--fill);
@@ -383,7 +382,7 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   display: flex; align-items: center; gap: 8px; padding: 0 12px;
   border: 1px solid var(--field-brd); border-radius: var(--r); background: var(--sur2);
 }
-.rateInputWrap:focus-within { border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy); }
+.rateInputWrap:focus-within { border-color: var(--color-focus); box-shadow: 0 0 0 1px var(--color-focus); }
 .ratePrefix { font-size: .9375rem; color: var(--th); white-space: nowrap; }
 .rateInput {
   flex: 1; min-width: 0; height: 48px; padding: 0 !important; border: 0 !important; background: transparent !important;

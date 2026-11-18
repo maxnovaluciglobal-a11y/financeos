@@ -6,6 +6,10 @@
 // el resto usa arco de 90° (un tercio de esa escala). Los 14 documentados están
 // acá tal cual; al final hay 3 construidos con la MISMA regla para conceptos de
 // nav sin equivalente documentado (Ingresos, Propiedades, Modo Asesor).
+//
+// Rebranding moyiq (Entrega 1, nov-2026): set recoloreado a la paleta nueva
+// (acento de marca en lugar de Latón, dato de ingreso/exceso en lugar de
+// Verde/Error). Set nuevo con la regla de la lupa: pendiente (D8, Entrega 2).
 
 import { Repeat, Receipt, PiggyBank, TrendingUp, Coins, CalendarClock, ChartPie, ChartLine } from 'lucide-react'
 
@@ -25,7 +29,7 @@ export function IconTransacciones({ size = 24, className }) {
   return (
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.5" strokeLinecap="round">
       <path d="M6 8h10l-3-3M18 16H8l3 3" />
-      <circle cx="12" cy="12" r="1.4" fill="var(--laton)" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }
@@ -42,12 +46,12 @@ export function IconAhorro({ size = 24, className }) {
 // Único ícono que reusa el arco completo de 270°.
 export function IconIQScore({ size = 24, className }) {
   return (
-    <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--laton)" strokeWidth="1.6" strokeLinecap="round">
+    <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--color-brand-text)" strokeWidth="1.6" strokeLinecap="round">
       <path d="M6 16 A7 7 0 1 1 18 16" />
       <line x1="6" y1="16" x2="5" y2="18" />
       <line x1="12" y1="8" x2="12" y2="6.5" />
       <line x1="18" y1="16" x2="19" y2="18" />
-      <path d="M12.4 12.6 L16 9 L11.4 11.2Z" fill="var(--laton)" stroke="none" />
+      <path d="M12.4 12.6 L16 9 L11.4 11.2Z" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }
@@ -56,8 +60,8 @@ export function IconAlertas({ size = 24, className }) {
   return (
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.5" strokeLinecap="round">
       <path d="M7 15 A5 5 0 0 1 11 9" />
-      <line x1="10.6" y1="9.2" x2="12.5" y2="7.7" stroke="var(--error)" />
-      <circle cx="12.5" cy="7.7" r="1" fill="var(--error)" stroke="none" />
+      <line x1="10.6" y1="9.2" x2="12.5" y2="7.7" stroke="var(--color-over)" />
+      <circle cx="12.5" cy="7.7" r="1" fill="var(--color-over)" stroke="none" />
     </svg>
   )
 }
@@ -75,7 +79,7 @@ export function IconTransferencias({ size = 24, className }) {
   return (
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.5" strokeLinecap="round">
       <path d="M5 9 A5 5 0 0 1 10 5M19 15 A5 5 0 0 1 14 19" />
-      <circle cx="12" cy="12" r="1.3" fill="var(--laton)" stroke="none" />
+      <circle cx="12" cy="12" r="1.3" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }
@@ -86,7 +90,7 @@ export function IconMetas({ size = 24, className }) {
       <line x1="9" y1="19" x2="9" y2="5" />
       <line x1="6" y1="15" x2="12" y2="15" />
       <line x1="6" y1="10" x2="12" y2="10" />
-      <path d="M9 5 L11 8 L7 8 Z" fill="var(--verde)" stroke="none" />
+      <path d="M9 5 L11 8 L7 8 Z" fill="var(--color-income)" stroke="none" />
     </svg>
   )
 }
@@ -106,7 +110,7 @@ export function IconInversion({ size = 24, className }) {
   return (
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 17 L10 12 L14 14 L19 7" />
-      <circle cx="14" cy="14" r="1.4" fill="var(--laton)" stroke="none" />
+      <circle cx="14" cy="14" r="1.4" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }
@@ -143,7 +147,7 @@ export function IconEscanear({ size = 24, className }) {
   return (
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.6" strokeLinecap="round">
       <path d="M5 8V5h3M19 8V5h-3M5 16v3h3M19 16v3h-3" />
-      <circle cx="12" cy="12" r="1.4" fill="var(--laton)" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }
@@ -156,7 +160,7 @@ export function IconIngresos({ size = 24, className }) {
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 17 A9 9 0 0 1 14 7" />
       <path d="M14 7 h5 M19 7 v5" />
-      <circle cx="14" cy="7" r="1.3" fill="var(--verde)" stroke="none" />
+      <circle cx="14" cy="7" r="1.3" fill="var(--color-income)" stroke="none" />
     </svg>
   )
 }
@@ -167,7 +171,7 @@ export function IconPropiedades({ size = 24, className }) {
       <path d="M4 11 L12 5 L20 11" />
       <path d="M6 10 V19 H18 V10" />
       <line x1="12" y1="19" x2="12" y2="14" />
-      <circle cx="12" cy="16.3" r="1" fill="var(--laton)" stroke="none" />
+      <circle cx="12" cy="16.3" r="1" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }
@@ -176,7 +180,7 @@ export function IconAsesor({ size = 24, className }) {
   return (
     <svg {...base} width={size} height={size} className={className} fill="none" stroke="var(--grn)" strokeWidth="1.5" strokeLinecap="round">
       <path d="M6 15 A6 6 0 0 1 12 9" />
-      <path d="M17 6 l1.2 2.4 L20.6 9.6 18.2 10.8 17 13.2 15.8 10.8 13.4 9.6 15.8 8.4Z" fill="var(--laton)" stroke="none" />
+      <path d="M17 6 l1.2 2.4 L20.6 9.6 18.2 10.8 17 13.2 15.8 10.8 13.4 9.6 15.8 8.4Z" fill="var(--color-brand-text)" stroke="none" />
     </svg>
   )
 }

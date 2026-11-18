@@ -92,7 +92,7 @@ function ProgressBar({ step, t }) {
       {Array.from({ length: TOTAL }).map((_, i) => (
         <div key={i} aria-hidden="true" style={{
           height: 4, flex: 1, borderRadius: 2,
-          background: i <= step ? 'var(--laton)' : 'var(--brd2)',
+          background: i <= step ? 'var(--color-brand)' : 'var(--brd2)',
           transition: 'background var(--dur) var(--ease)',
         }} />
       ))}
@@ -464,7 +464,7 @@ export default function Onboarding({ onComplete }) {
                     <span className="num" style={{ fontSize: 13, color: 'var(--th)' }}>{b.pts}/{b.max}</span>
                   </div>
                   <div aria-hidden="true" style={{ height: 4, borderRadius: 2, background: 'var(--sur3)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${(b.pts / b.max) * 100}%`, background: isWeak ? 'var(--laton)' : 'var(--tm)', borderRadius: 2 }} />
+                    <div style={{ height: '100%', width: `${(b.pts / b.max) * 100}%`, background: isWeak ? 'var(--color-warn)' : 'var(--tm)', borderRadius: 2 }} />
                   </div>
                 </li>
               )

@@ -101,7 +101,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
       >
         {list.map(key => (
           <li key={key} style={{ display: 'flex', alignItems: 'baseline', gap: 10, fontSize: 14, color: 'var(--tm)', lineHeight: 1.5 }}>
-            <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 'var(--rs)', background: 'var(--laton)', flexShrink: 0, transform: 'translateY(-2px)' }} />
+            <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 'var(--rs)', background: 'var(--color-brand)', flexShrink: 0, transform: 'translateY(-2px)' }} />
             {t(key)}
           </li>
         ))}

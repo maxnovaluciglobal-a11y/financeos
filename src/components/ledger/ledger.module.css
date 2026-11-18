@@ -12,8 +12,7 @@
 
 /* ── Medidor (role="meter") ── */
 .meter { position: relative; display: block; height: 6px; border-radius: var(--rs); background: var(--sur3); overflow: hidden; }
-.meterFill { position: absolute; inset: 0; transform-origin: left; border-radius: var(--rs); background: var(--navy-400); transition: transform var(--dur-value-update) var(--ease-instrument); }
-:global([data-theme="dark"]) .meterFill { background: var(--info-dark); }
+.meterFill { position: absolute; inset: 0; transform-origin: left; border-radius: var(--rs); background: var(--meter-fill); transition: transform var(--dur-value-update) var(--ease-instrument); }
 .meter[data-tone="warn"] .meterFill { background: var(--warn); }
 .meter[data-tone="risk"] .meterFill { background: var(--neg); }
 /* Exceso: tramo rayado al final (la barra ya está llena), lectura sin color. */

@@ -7,6 +7,7 @@
 import { Component } from 'react'
 import { translate, detectLanguage } from '../i18n/translate.js'
 import { logClientError } from '../utils/errorLog.js'
+import { BRAND } from '../styles/tokens.js'
 
 // Está FUERA de AppProvider (envuelve a <App/>): no hay useT(). El idioma sale
 // de <html lang>, que AppContext/DemoContext mantienen con settings.language;
@@ -46,23 +47,25 @@ export default class ErrorBoundary extends Component {
   render() {
     if (!this.state.hasError) return this.props.children
 
+    // Hex de la paleta (tokens.js) en vez de var(): esta pantalla tiene que
+    // verse aunque el CSS no haya cargado. Marca nueva: hoja blanca, tarjeta en
+    // morado 50, botón morado 700 con texto blanco (12,05:1), radios 16/12.
     const wrap = {
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#F1EEE6', padding: 20, fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: BRAND.white, padding: 20, fontFamily: "InterVariable, Inter, system-ui, -apple-system, sans-serif",
     }
     const card = {
-      background: '#FAF8F2', border: '0.5px solid #E4DFD1', borderRadius: 12,
+      background: BRAND.purple50, border: 0, borderRadius: 16,
       padding: '28px 24px', maxWidth: 380, width: '100%', textAlign: 'center',
-      boxShadow: '0 20px 50px rgba(20,33,61,.10)',
     }
     const btnP = {
-      width: '100%', padding: '11px', borderRadius: 8, border: 'none',
-      background: '#B8863B', color: '#14213D', fontSize: 14, fontWeight: 600,
+      width: '100%', minHeight: 44, padding: '11px', borderRadius: 12, border: 'none',
+      background: BRAND.purple, color: BRAND.white, fontSize: 15, fontWeight: 600,
       cursor: 'pointer', marginTop: 14,
     }
     const btnG = {
-      width: '100%', padding: '9px', borderRadius: 8, border: '0.5px solid #E4DFD1',
-      background: 'transparent', color: '#63604F', fontSize: 12, cursor: 'pointer', marginTop: 8,
+      width: '100%', minHeight: 44, padding: '9px', borderRadius: 12, border: 'none',
+      background: 'transparent', color: BRAND.muted, fontSize: 13, cursor: 'pointer', marginTop: 8,
     }
 
     const [before, after = ''] = tr('errorBoundary.body').split('{safe}')
@@ -71,10 +74,10 @@ export default class ErrorBoundary extends Component {
       <div style={wrap}>
         <div style={card}>
           <div style={{ fontSize: 34, marginBottom: 10 }}>🔧</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: '#14213D', marginBottom: 8 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, color: BRAND.graphite, marginBottom: 8 }}>
             {tr('errorBoundary.title')}
           </div>
-          <p style={{ fontSize: 13, color: '#4A4739', lineHeight: 1.6, marginBottom: 4 }}>
+          <p style={{ fontSize: 13, color: BRAND.ink, lineHeight: 1.6, marginBottom: 4 }}>
             {before}<strong>{tr('errorBoundary.safe')}</strong>{after}
           </p>
           <button style={btnP} onClick={this.handleReload}>{tr('errorBoundary.reload')}</button>

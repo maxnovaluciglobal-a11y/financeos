@@ -38,7 +38,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = fa
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>{t('common.cancel')}</button>
           <button onClick={onConfirm} style={{
-            background: danger ? 'var(--red)' : 'var(--laton)', color: danger ? '#fff' : 'var(--navy)',
+            background: danger ? 'var(--btn-danger-bg)' : 'var(--btn-primary-bg)', color: danger ? 'var(--btn-danger-fg)' : 'var(--btn-primary-fg)',
             border: 'none', borderRadius: 6, padding: '8px 18px',
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'var(--sans)',
@@ -239,7 +239,7 @@ export default function BackupManager() {
     padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, minHeight: 44,
     cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
     flexShrink: 0, transition: 'all .15s',
-    ...(variant === 'primary' ? { background: 'var(--laton)', color: 'var(--navy)' } : {}),
+    ...(variant === 'primary' ? { background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)' } : {}),
     ...(variant === 'default' ? { background: 'var(--fill)', color: 'var(--tx)', border: 0 } : {}),
     ...(variant === 'danger'  ? { background: 'var(--fill)', color: 'var(--red)', border: 0 } : {}),
   })

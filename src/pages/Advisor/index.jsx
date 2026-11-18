@@ -257,7 +257,7 @@ function AdvisorNotes({ notes, onSave }) {
         <button
           onClick={handleSave}
           style={{
-            background: 'var(--laton)', color: 'var(--navy)', border: 'none',
+            background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none',
             borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
             cursor: 'pointer', fontFamily: 'var(--sans)',
           }}
@@ -414,7 +414,7 @@ export default function Advisor() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         {/* Encabezado único (UI-M8); la etiqueta "Vista profesional" va en tipo
-            oración y en Plex Sans (UI-Q6), no en mayúsculas. */}
+            oración y en Inter (UI-Q6), no en mayúsculas. */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <PageHeader title={t('adv.title')} sub={t('adv.sub', { month: monthLabel(activeMonth) })} />
           <span style={{
@@ -642,7 +642,7 @@ export default function Advisor() {
           <button
             onClick={handleExportPDF}
             disabled={pdfLoading || noData}
-            style={{background:pdfLoading?'var(--sur)':'var(--laton)',color:pdfLoading?'var(--th)':'var(--navy)',border:'none',borderRadius:6,padding:'10px 20px',minHeight:44,fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
+            style={{background:pdfLoading?'var(--sur)':'var(--btn-primary-bg)',color:pdfLoading?'var(--th)':'var(--btn-primary-fg)',border:'none',borderRadius:6,padding:'10px 20px',minHeight:44,fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
           >
             {pdfLoading ? t('adv.pdf.generating') : t('adv.pdf.export')}
           </button>

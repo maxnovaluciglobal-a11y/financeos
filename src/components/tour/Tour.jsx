@@ -141,8 +141,8 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
       {/* Spotlight: un hueco con sombra gigante que oscurece todo lo demás */}
       <div aria-hidden="true" className="demo-tour__hole" style={{
         position: 'absolute', ...hole, borderRadius: rect.round ? '50%' : 'var(--rl)', pointerEvents: 'none',
-        boxShadow: '0 0 0 9999px color-mix(in srgb, var(--navy) 62%, transparent)',
-        outline: '2px solid var(--laton)', outlineOffset: 0,
+        boxShadow: '0 0 0 9999px color-mix(in srgb, var(--purple-900) 62%, transparent)',
+        outline: '2px solid var(--color-accent)', outlineOffset: 0,
       }} />
       <div
         ref={cardRef}

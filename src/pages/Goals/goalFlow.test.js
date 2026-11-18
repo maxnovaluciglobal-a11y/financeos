@@ -53,7 +53,7 @@ describe('R9 Metas: plantillas y alta en 3 pasos (#40, #42)', () => {
   })
   it('buildGoal arma la meta de siempre más campos opcionales', () => {
     const g = buildGoal({ name: ' Auto ', target: '5000', targetDate: '2027-06', icon: 'vehicle' }, { now: 42 })
-    expect(g).toEqual({ name: 'Auto', target: 5000, saved: 0, targetDate: '2027-06', priority: 'Media', color: '#14213D', createdAt: 42, icon: 'vehicle' })
+    expect(g).toEqual({ name: 'Auto', target: 5000, saved: 0, targetDate: '2027-06', priority: 'Media', color: '#3C2282', createdAt: 42, icon: 'vehicle' })
     expect(buildGoal({ name: 'F', target: '10', kind: 'general' }).kind).toBe('general')
   })
   it('"Más opciones" recibe la fecha en formato del formulario completo', () => {

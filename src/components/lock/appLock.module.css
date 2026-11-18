@@ -104,13 +104,11 @@
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; min-height: 48px; padding: 10px 16px;
   border: 1px solid var(--neg); border-radius: var(--r);
-  background: var(--neg); color: var(--papel-000);
+  background: var(--btn-danger-bg); color: var(--btn-danger-fg);
   font-family: var(--sans); font-size: .9375rem; font-weight: 600; cursor: pointer;
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-/* En oscuro, texto --bg (#0E1628) sobre --error-dark #E59580: 7,7:1. */
-:global([data-theme="dark"]) .dangerBtn { color: var(--bg); }
-.dangerBtn:hover:not(:disabled) { box-shadow: inset 0 0 0 2px rgba(20,33,61,.25); }
+.dangerBtn:hover:not(:disabled) { box-shadow: inset 0 0 0 2px rgb(28 29 33 / .25); }
 .dangerBtn:active:not(:disabled) { transform: scale(.98); }
 .dangerBtn:disabled { background: var(--sur3); border-color: var(--sur3); color: var(--th); cursor: not-allowed; }
 

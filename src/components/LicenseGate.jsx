@@ -160,7 +160,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           )}
 
           <button
-            style={{ width: '100%', padding: 12, background: 'var(--laton)', color: 'var(--navy)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: loading || !key.trim() ? 'not-allowed' : 'pointer', opacity: loading || !key.trim() ? 0.55 : 1, fontFamily: 'var(--sans)', transition: 'opacity .15s' }}
+            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: loading || !key.trim() ? 'not-allowed' : 'pointer', opacity: loading || !key.trim() ? 0.55 : 1, fontFamily: 'var(--sans)', transition: 'opacity .15s' }}
             onClick={handleActivate}
             disabled={loading || !key.trim()}
           >
@@ -216,7 +216,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
                 {p.price}{p.suffix && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--th)' }}>{p.suffix}</span>}
               </div>
               {p.badge && (
-                <div style={{ display: 'inline-block', fontFamily: 'var(--num)', fontSize: 11, fontWeight: 600, color: 'var(--navy)', background: 'var(--laton)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
+                <div style={{ display: 'inline-block', fontFamily: 'var(--num)', fontSize: 11, fontWeight: 600, color: 'var(--text-on-accent)', background: 'var(--color-accent)', borderRadius: 'var(--rs)', padding: '2px 7px', marginBottom: 5 }}>{p.badge}</div>
               )}
               <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)', lineHeight: 1.45 }}>{p.desc}</div>
               {buying === p.product && (

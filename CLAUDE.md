@@ -102,6 +102,10 @@ Este proyecto Supabase (`nelwgbcddwiaimzbcuas`) es compartido con `invest-web` (
 
 Detalle completo, gotchas de debug y decisiones: memoria `financeos_moy_iq_invest_crm_20260914`, `financeos_moy_iq_auth_email_hook_20260914`, `financeos_moy_iq_admin_notify_20260914`.
 
+## Sistema visual — rebranding moyiq v3.1 (Entrega 1, rama `rebrand/entrega-1-sistema`, sin mergear al 17-nov-2026)
+
+Al mergear esa rama, lo de abajo sobre Navy/Latón, Instrument Sans/Plex, dial y placa "IQ" queda reemplazado: tokens v3.1 nivel 3 (morado, grafito, lima; ver `docs/tokens-de-diseno.md`), Inter 4.1 autoalojada, `Logo.jsx` con logotipo/isotipo del manual, radios 16/12, "+" y pestaña activa en violeta de acción. Fuentes de verdad: `../../04 - Marca y Diseno/rebrand-startup-2026-11/`.
+
 ## Sistema visual — rebranding MOY IQ (mergeado y desplegado)
 
 **Estado (11-sep-2026): mergeado a `main` y en producción**, en `app.moyiq.app`/`demo.moyiq.app` (únicos dominios desde el 20-oct-2026). ⚠️ El nombre "MOY IQ" sigue sin búsqueda de marca paga confirmada — eso es alcance legal, no de código; Walter compró `moyiq.app` el 11-sep sin esperar esa confirmación. `supportEmail`/`website` en `config.js` ya apuntan a `moyiq.app`. Ver memoria `financeos_moy_iq_rebranding_ejecucion` y `financeos_moy_iq_dominio_moyiq_app` para el detalle completo de qué se tocó.

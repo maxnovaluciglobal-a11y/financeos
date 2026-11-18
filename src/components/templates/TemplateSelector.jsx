@@ -194,7 +194,7 @@ function PreviewModal({ template, onClose, onApply, isAdvisor }) {
           cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
         }}>{tr('common.cancel')}</button>
         <button onClick={() => onApply(template)} style={{
-          background: 'var(--laton)', color: 'var(--navy)', border: 'none',
+          background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none',
           borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
           cursor: 'pointer', fontFamily: 'var(--sans)',
         }}>{tr('tplsel.apply')}</button>
@@ -230,7 +230,7 @@ function ConfirmModal({ template, hasExistingConfig, onConfirm, onCancel }) {
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>{tr('common.cancel')}</button>
           <button onClick={onConfirm} style={{
-            background: 'var(--laton)', color: 'var(--navy)', border: 'none',
+            background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none',
             borderRadius: 6, padding: '8px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
             cursor: 'pointer', fontFamily: 'var(--sans)',
           }}>{tr('common.confirm')}</button>

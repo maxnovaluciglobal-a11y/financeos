@@ -13,10 +13,9 @@
 .link {
   min-height: 44px; margin: -10px 0; padding: 0 2px;
   background: none; border: 0; cursor: pointer;
-  font: 500 .8125rem/1.2 var(--sans); color: var(--navy);
+  font: 500 .8125rem/1.2 var(--sans); color: var(--color-brand-text);
   text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
 }
-:global([data-theme="dark"]) .link { color: var(--laton-300); }
 .fresh { margin: -4px 0 12px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -26,7 +25,7 @@
   border: 1px solid var(--field-brd); border-radius: var(--r); background: var(--sur2);
   font-size: 1.375rem; font-weight: 600; color: var(--tx);
 }
-.input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy); }
+.input:focus { outline: none; border-color: var(--color-focus); box-shadow: 0 0 0 1px var(--color-focus); }
 .output { display: flex; align-items: center; background: var(--fill); border: 0; overflow-wrap: anywhere; }
 .help { margin-top: 6px; min-height: 18px; font-size: .75rem; line-height: 1.45; color: var(--th); }
 .error { margin-top: 6px; min-height: 18px; font-size: .75rem; line-height: 1.45; color: var(--neg); }
@@ -43,7 +42,7 @@
   font: 500 .8125rem/1 var(--sans); color: var(--tx); cursor: pointer;
 }
 .op:hover, .swap:hover { background: var(--fill-2); }
-.op:focus-visible, .swap:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+.op:focus-visible, .swap:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 
 .gap { margin-top: 10px; font-size: .75rem; line-height: 1.45; color: var(--tm); }
 
@@ -57,7 +56,7 @@
   font: 500 .8125rem/1.2 var(--sans); color: var(--tm);
 }
 .panel svg { color: var(--th); }
-.panel:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.panel:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Control segmentado compacto (US$ | €, 7 | 30 | 90 días): botón de 44 px con
    una cara de 28 px, como RefSwitch del Inicio. Segmentado en píldora. */
@@ -77,10 +76,10 @@
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .segCode { font: 600 .6875rem/1 var(--mono); letter-spacing: .04em; } /* código ISO: identificador */
-.segOpt[aria-pressed="true"] .segFace { background: var(--sur); color: var(--navy); box-shadow: 0 1px 2px rgba(20,33,61,.12); }
-:global([data-theme="dark"]) .segOpt[aria-pressed="true"] .segFace { background: color-mix(in srgb, var(--laton) 18%, transparent); color: var(--laton-300); box-shadow: none; }
+.segOpt[aria-pressed="true"] .segFace { background: var(--seg-on); color: var(--color-brand-text); box-shadow: var(--seg-on-sh); }
+:global([data-theme="dark"]) .segOpt[aria-pressed="true"] .segFace { color: var(--text-primary); }
 .segOpt:focus-visible { outline: none; }
-.segOpt:focus-visible .segFace { outline: 2px solid var(--navy); outline-offset: 1px; }
+.segOpt:focus-visible .segFace { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .lensNote { margin: -4px 0 12px; font-size: .75rem; line-height: 1.45; color: var(--tm); }
 
 /* B2b: historial, cerrado por defecto. Línea fina arriba, sin caja. */
@@ -92,7 +91,7 @@
 }
 .histToggle svg { color: var(--th); transition: transform var(--dur) var(--ease); }
 .histChevOpen { transform: rotate(180deg); }
-.histToggle:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.histToggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .histBody { padding-bottom: 4px; }
 .histHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 .histUnit { font-size: .75rem; line-height: 1.45; color: var(--th); }
