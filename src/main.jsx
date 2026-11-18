@@ -10,6 +10,7 @@ import { loadLang } from './i18n/langCache.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
 import { watchServiceWorkerUpdates } from './core/swUpdate.js'
 import { skewCookieStrings, clearSkewCookieStrings } from './utils/skewCookie.js'
+import { installViewportFit } from './core/viewportFit.js'
 
 // Skew Protection (C-49): fija este deploy SOLO para los chunks lazy de
 // /app/assets (cookie técnica de Vercel, sin seguimiento). Vacío en local.
@@ -26,6 +27,9 @@ try {
   if (dpl) sw?.addEventListener?.('controllerchange', () => { for (const c of clearSkewCookieStrings()) document.cookie = c })
 } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
 
+// Alto real de pantalla en la app instalada de iOS antes del primer pintado
+// (barra inferior pegada al borde, ver core/viewportFit.js).
+installViewportFit()
 installGlobalErrorLog()
 installWebAnalytics()
 

@@ -8,6 +8,11 @@
   overflow: hidden;
 }
 :global(.demo-frame) > .shell { height: auto; flex: 1; min-height: 0; }
+/* App instalada en iOS (core/viewportFit.js pone data-vp-fit en <html>): el
+   viewport de diseño queda más corto que la pantalla. El Shell toma el alto
+   real y sale del flujo para que el documento nunca sea desplazable: si lo
+   fuera, iOS lo corre al enfocar un campo y los toques caen fuera de lugar. */
+:global(html[data-vp-fit]) .shell { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
 
 /* SIDEBAR */
 .sb {
@@ -219,7 +224,9 @@
 .tabbar {
   display: none;
   position: fixed;
-  left: 0; right: 0; bottom: 0;
+  /* --vp-gap: lo que le falta al viewport de diseño para llegar al borde
+     físico en la app instalada de iOS (0 en el resto, core/viewportFit.js). */
+  left: 0; right: 0; bottom: calc(0px - var(--vp-gap, 0px));
   z-index: 150;
   align-items: stretch;
   min-height: var(--tabbar-h);
@@ -286,7 +293,7 @@
   display: none;
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
-  bottom: calc(var(--tabbar-h) + 16px);
+  bottom: calc(var(--tabbar-h) + 16px - var(--vp-gap, 0px));
   z-index: 151;
   width: var(--fab-size); height: var(--fab-size);
   align-items: center; justify-content: center;

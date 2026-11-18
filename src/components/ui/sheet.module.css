@@ -2,7 +2,8 @@
    En el teléfono entra y sale con resorte, sigue al dedo desde cualquier punto
    y tiene dos alturas. Desde 521 px es un diálogo centrado. */
 .root {
-  position: fixed; inset: 0; z-index: 600; overscroll-behavior: contain;
+  /* Hasta el borde físico también en la app instalada de iOS (--vp-gap). */
+  position: fixed; inset: 0 0 calc(0px - var(--vp-gap, 0px)) 0; z-index: 600; overscroll-behavior: contain;
   display: flex; align-items: flex-end; justify-content: center;
 }
 .scrim {

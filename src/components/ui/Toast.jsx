@@ -18,7 +18,7 @@ export default function Toast() {
         position: 'fixed',
         // Encima de la barra anclada y del "+" (R03): en escritorio las dos
         // variables valen 0 y queda a 20px del borde como antes.
-        bottom: 'max(calc(20px + env(safe-area-inset-bottom)), calc(var(--tabbar-h) + var(--fab-clear) + 12px))',
+        bottom: 'calc(max(calc(20px + env(safe-area-inset-bottom)), calc(var(--tabbar-h) + var(--fab-clear) + 12px)) - var(--vp-gap, 0px))',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 9999,

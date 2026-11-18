@@ -16,6 +16,7 @@ import { createPortal } from 'react-dom'
 import { useDialogA11y } from '../../hooks/useDialogA11y.js'
 import { SLOP_PX, detentOffsets, rubberBand, settle, springMs, velocityOf, SPRING_MS } from './sheetPhysics.js'
 import s from './sheet.module.css'
+import { viewportHeight } from '../../core/viewportFit.js'
 
 const EXIT_MS = 240
 const SPRING = 'var(--ease-spring)'
@@ -88,7 +89,7 @@ export default function Sheet({ open, onClose, children, ariaLabel, maxWidth = 4
     if (!el) return
     const p = pos.current
     p.height = el.offsetHeight
-    p.offsets = detentOffsets(p.height, window.innerHeight)
+    p.offsets = detentOffsets(p.height, viewportHeight())
     if (p.detent >= p.offsets.length) setDetent(0)
   }, [setDetent])
 
