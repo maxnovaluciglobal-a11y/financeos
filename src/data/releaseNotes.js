@@ -12,22 +12,22 @@ export const RELEASE_NOTES = [
     items: {
       es: [
         'MOY IQ ahora es moyiq: cambian el nombre, el logo y los colores. Tus datos, tu cuenta y tu plan siguen igual, y el responsable y el tratamiento de los datos no cambian.',
-        'En iPhone, el ícono y el nombre viejos en la pantalla de inicio no afectan el uso: puedes conservarlos y la app sigue funcionando igual. Si prefieres ver el ícono nuevo, primero crea un respaldo (Más › Ajustes › Respaldo y restauración); después bórrala y vuelve a agregarla (Compartir › Agregar a inicio). Sin ese respaldo no la borres: el iPhone puede borrar los datos guardados en ella.',
+        'En iPhone, puedes conservar el ícono y el nombre viejos en la pantalla de inicio: la app funciona igual. Si igual quieres el ícono nuevo: 1) crea un respaldo en Más › Ajustes › Respaldo y restauración; 2) borra la app de la pantalla de inicio y vuelve a agregarla (Compartir › Agregar a inicio); 3) ábrela y restaura ese respaldo en el mismo lugar (si lo cifraste, necesitas su contraseña). Sin respaldo no la borres: el iPhone puede borrar los datos guardados en ella.',
         'Invest ahora se llama Inversiones y sigue en Panorama y en Patrimonio.',
       ],
       en: [
         'MOY IQ is now moyiq: the name, logo and colors change. Your data, your account and your plan stay the same, and the controller and the processing of your data do not change.',
-        'On iPhone, the old icon and name on your Home Screen do not affect how the app works: you can keep them and everything stays the same. If you want the new icon, first create a backup (More › Settings › Backup and restore); then remove it and add it again (Share › Add to Home Screen). Do not remove it without that backup: the iPhone can delete the data stored in it.',
+        'On iPhone, you can keep the old icon and name on your Home Screen: the app works the same. If you still want the new icon: 1) create a backup in More › Settings › Backup and restore; 2) remove the app from your Home Screen and add it again (Share › Add to Home Screen); 3) open it and restore that backup in the same place (if you encrypted it, you need its password). Do not remove it without a backup: the iPhone can delete the data stored in it.',
         'Invest is now called Investments and is still in Overview and Net worth.',
       ],
       pt: [
         'O MOY IQ agora é moyiq: mudam o nome, o logo e as cores. Seus dados, sua conta e seu plano continuam iguais, e o responsável e o tratamento dos dados não mudam.',
-        'No iPhone, o ícone e o nome antigos na tela de início não afetam o uso: você pode mantê-los e o app continua funcionando igual. Se preferir ver o ícone novo, primeiro crie um backup (Mais › Configurações › Backup e restauração); depois apague e adicione de novo (Compartilhar › Adicionar à Tela de Início). Sem esse backup, não apague: o iPhone pode apagar os dados guardados nele.',
+        'No iPhone, você pode manter o ícone e o nome antigos na tela de início: o app funciona igual. Se ainda quiser o ícone novo: 1) crie um backup em Mais › Configurações › Backup e restauração; 2) apague o app da tela de início e adicione de novo (Compartilhar › Adicionar à Tela de Início); 3) abra o app e restaure esse backup no mesmo lugar (se você o criptografou, precisa da senha). Sem backup, não apague: o iPhone pode apagar os dados guardados nele.',
         'O Invest agora se chama Investimentos e continua no Panorama e no Patrimônio.',
       ],
       de: [
         'MOY IQ heißt jetzt moyiq: Name, Logo und Farben ändern sich. Ihre Daten, Ihr Konto und Ihr Tarif bleiben gleich, und der Verantwortliche und die Verarbeitung Ihrer Daten ändern sich nicht.',
-        'Auf dem iPhone beeinträchtigen das alte Symbol und der alte Name auf dem Home-Bildschirm die Nutzung nicht: Sie können sie behalten, die App funktioniert unverändert. Wenn Sie das neue Symbol sehen möchten, erstellen Sie zuerst eine Sicherung (Mehr › Einstellungen › Sicherung und Wiederherstellung); entfernen Sie die App dann und fügen Sie sie erneut hinzu (Teilen › Zum Home-Bildschirm). Ohne diese Sicherung bitte nicht entfernen: Das iPhone kann die darin gespeicherten Daten löschen.',
+        'Auf dem iPhone können Sie das alte Symbol und den alten Namen auf dem Home-Bildschirm behalten: Die App funktioniert unverändert. Wenn Sie trotzdem das neue Symbol möchten: 1) Erstellen Sie eine Sicherung unter Mehr › Einstellungen › Sicherung und Wiederherstellung; 2) entfernen Sie die App vom Home-Bildschirm und fügen Sie sie erneut hinzu (Teilen › Zum Home-Bildschirm); 3) öffnen Sie sie und stellen Sie diese Sicherung an derselben Stelle wieder her (wenn Sie sie verschlüsselt haben, brauchen Sie das Passwort). Ohne Sicherung bitte nicht entfernen: Das iPhone kann die darin gespeicherten Daten löschen.',
         'Invest heißt jetzt Investments und ist weiterhin im Überblick und im Vermögen.',
       ],
     },
