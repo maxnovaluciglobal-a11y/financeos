@@ -1,18 +1,18 @@
 // src/pages/legal/legalMeta.js
 // Datos comunes de las páginas legales (es/en/pt/de). Sin React ni hooks: lo
 // importan los módulos de contenido y legal.test.js en node.
+import { REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
 
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
 export const SUPPORT_EMAIL = 'support@moyiq.app'
 
 // Versión vigente de los textos legales (rebranding moyiq, Entrega 1). La fecha
-// de vigencia es el día del despliegue coordinado, que sale junto con la
-// adecuación a la Ley 21.719 de Chile (plan: 1-dic-2026).
-// TODO(rebrand): fijar LEGAL_EFFECTIVE_DATE al día real del despliegue antes de
-// integrar a main; el snapshot de la versión anterior está en
-// `02 - MOY IQ/03 - Legal y Cumplimiento/versiones/` (2026-11-17-app-*-antes-de-moyiq.jsx).
-export const LEGAL_VERSION = '2026-12'
-export const LEGAL_EFFECTIVE_DATE = '2026-12-01'
+// de vigencia es el día del despliegue coordinado y se fija en un solo lugar:
+// data/deployDate.js (REBRAND_DEPLOY_DATE). El snapshot de la versión anterior
+// está en `02 - MOY IQ/03 - Legal y Cumplimiento/versiones/`
+// (2026-11-17-app-*-antes-de-moyiq.jsx).
+export const LEGAL_EFFECTIVE_DATE = REBRAND_DEPLOY_DATE
+export const LEGAL_VERSION = LEGAL_EFFECTIVE_DATE.slice(0, 7)
 
 const DATE_LOCALE = { es: 'es-ES', en: 'en-US', pt: 'pt-BR', de: 'de-DE' }
 function effectiveLabel(lang) {

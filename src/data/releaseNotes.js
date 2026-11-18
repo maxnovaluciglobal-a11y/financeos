@@ -2,12 +2,13 @@
 // Qué cambió, en 2–4 líneas por versión y en los 4 idiomas. La más nueva va
 // primero. Se muestra una sola vez a quien ya usaba la app (WhatsNew.jsx).
 // Voz de producto: seca, sin exclamaciones, sin voseo.
+import { REBRAND_DEPLOY_DATE } from './deployDate.js'
+
 export const RELEASE_NOTES = [
-  // Rebranding (Entrega 1). El id solo tiene que ser mayor que el de la nota
-  // anterior; se deja con la fecha prevista del despliegue coordinado.
-  // TODO(rebrand): ajustar el id a la fecha real del despliegue si cambia.
+  // Rebranding (Entrega 1). El id es la fecha del despliegue coordinado
+  // (data/deployDate.js) y tiene que ser mayor que el de la nota anterior.
   {
-    id: '2026-12-01',
+    id: REBRAND_DEPLOY_DATE,
     items: {
       es: [
         'MOY IQ ahora es moyiq: cambian el nombre, el logo y los colores. Tus datos, tu cuenta y tu plan siguen igual, y el responsable y el tratamiento de los datos no cambian.',
