@@ -4,14 +4,15 @@
 // AVISO: Contenido informativo. No constituye asesoría financiera certificada.
 
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer'
-import { PDF_FONT as F, PDF_COLOR as P } from '../pdfTheme.js'
+import { PDF_FONT as F, PDF_COLOR as P, isOwnBrand } from '../pdfTheme.js'
+import PdfLogo from '../PdfLogo.jsx'
 import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
 
 // ── COLORES (marca: pdfTheme.js, BRD-8) ────────────────────────────────────────
 const C = {
-  ink:     P.navy,
+  ink:     P.ink,
   ink2:    P.text,
   ink3:    P.muted,
   ink4:    P.faint,
@@ -44,14 +45,12 @@ const s = StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingBottom: 14, borderBottomWidth: 2, borderBottomColor: P.laton,
+    paddingBottom: 14, borderBottomWidth: 2, borderBottomColor: P.brand,
     marginBottom: 20,
   },
   headerLeft: {},
-  brandName: { fontSize: 18, fontFamily: F.display, fontWeight: 600, color: P.navy },
-  wordmark:  { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  plate:     { borderWidth: 1.2, borderColor: P.laton, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 5 },
-  plateTx:   { fontSize: 10.5, fontFamily: F.mono, fontWeight: 600, color: P.laton700 },
+  brandName: { fontSize: 18, fontFamily: F.display, fontWeight: 600, color: P.ink },
+  wordmark:  { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   brandSub:  { fontSize: 8, color: C.ink3, letterSpacing: 0.5 },
   headerRight: { alignItems: 'flex-end' },
   reportTitle: { fontSize: 13, fontFamily: F.display, fontWeight: 600, color: C.ink, marginBottom: 3 },
@@ -76,7 +75,7 @@ const s = StyleSheet.create({
   // Secciones
   section: { marginBottom: 16 },
   sectionTitle: {
-    fontSize: 10, fontFamily: F.display, fontWeight: 600, color: P.navy,
+    fontSize: 10, fontFamily: F.display, fontWeight: 600, color: P.ink,
     borderBottomWidth: 0.5, borderBottomColor: C.brd,
     paddingBottom: 5, marginBottom: 8,
   },
@@ -121,15 +120,15 @@ const s = StyleSheet.create({
 
   // Notas del asesor
   notesBox: {
-    backgroundColor: P.papel, borderRadius: 8, padding: '12 14',
-    borderLeftWidth: 2.5, borderLeftColor: P.laton,
+    backgroundColor: P.brandBg, borderRadius: 8, padding: '12 14',
+    borderLeftWidth: 2.5, borderLeftColor: P.brand,
   },
-  notesLabel: { fontSize: 8, fontFamily: F.body, fontWeight: 700, color: P.laton700, marginBottom: 5 },
+  notesLabel: { fontSize: 8, fontFamily: F.body, fontWeight: 600, color: P.brandText, marginBottom: 5 },
   notesText:  { fontSize: 9, color: C.ink2, lineHeight: 1.6 },
 
   // Próximos pasos
   stepRow:  { flexDirection: 'row', gap: 8, marginBottom: 6, alignItems: 'flex-start' },
-  stepNum:  { width: 18, height: 18, borderRadius: 9, backgroundColor: P.navy, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  stepNum:  { width: 18, height: 18, borderRadius: 9, backgroundColor: P.brand, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   stepNumTx:{ fontSize: 8, fontFamily: F.body, fontWeight: 700, color: C.white },
   stepText: { fontSize: 9, color: C.ink2, lineHeight: 1.5, flex: 1, paddingTop: 2 },
 
@@ -166,15 +165,14 @@ const s = StyleSheet.create({
 })
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-// Wordmark con la placa "IQ" en Latón cuando el reporte es de MOY IQ; el
-// nombre del asesor (marca blanca) va como texto.
+// Logotipo de moyiq (morado sobre blanco) cuando el reporte es de la marca
+// propia; el nombre del asesor (marca blanca) va como texto.
 function BrandMark({ name, size }) {
   const fs = size ? { fontSize: size } : null
-  if (name !== 'MOY IQ') return <Text style={[s.brandName, fs]}>{name}</Text>
+  if (!isOwnBrand(name)) return <Text style={[s.brandName, fs]}>{name}</Text>
   return (
     <View style={s.wordmark}>
-      <Text style={[s.brandName, { letterSpacing: 1.4 }, fs]}>MOY</Text>
-      <View style={s.plate}><Text style={[s.plateTx, size ? { fontSize: Math.round(size * 0.58 * 10) / 10 } : null]}>IQ</Text></View>
+      <PdfLogo height={Math.round((size || 18) * 1.15)} color={P.brand} />
     </View>
   )
 }
