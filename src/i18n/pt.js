@@ -3355,7 +3355,7 @@ export const pt = {
     "tour.pano.detail.body": "Diagnóstico, Patrimônio, Projeção, Relatórios e Assinaturas, cada uma com todo o detalhe.",
     "nav.investments": "Investimentos",
     "settings.features.investments": "Investimentos",
-    "settings.features.investments.sub": "Seu portfólio de Investimentos no Panorama e no Patrimônio. Suas posições de investimento ficam no nosso servidor para buscar preços e para você vê-las em qualquer dispositivo. Seus movimentos continuam só no seu telefone. É informação, não consultoria de investimentos.",
+    "settings.features.investments.sub": "Seu portfólio de Investimentos no Panorama e no Patrimônio. Suas posições de investimento ficam no nosso servidor para que você possa vê-las em qualquer dispositivo. Para buscar preços, só os símbolos são consultados. Seus movimentos continuam só no seu telefone.",
     "tour.pano.invest.title": "Seu portfólio de Investimentos",
     "tour.pano.invest.body": "O valor estimado das suas posições e de quando é o dado. É informação, não consultoria de investimentos.",
     "networth.investments.disclaimer": "Orientativo — calculado com o que você registra no moyiq e, à parte, com a estimativa do seu portfólio em Investimentos. Não inclui saldos bancários, outros investimentos nem ativos que você não tenha adicionado.",

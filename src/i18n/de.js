@@ -3354,7 +3354,7 @@ export const de = {
     "tour.pano.detail.body": "Diagnose, Vermögen, Prognose, Berichte und Abos, jeweils mit allen Details.",
     "nav.investments": "Investments",
     "settings.features.investments": "Investments",
-    "settings.features.investments.sub": "Ihr Investments-Portfolio im Überblick und im Vermögen. Ihre Anlagepositionen werden auf unserem Server gespeichert, damit wir Kurse abrufen und Sie sie auf jedem Gerät sehen können. Ihre Buchungen bleiben nur auf Ihrem Telefon. Das ist eine Information, keine Anlageberatung.",
+    "settings.features.investments.sub": "Ihr Investments-Portfolio im Überblick und im Vermögen. Ihre Anlagepositionen werden auf unserem Server gespeichert, damit Sie sie auf jedem Gerät sehen können. Für die Kurse werden nur die Symbole abgefragt. Ihre Buchungen bleiben nur auf Ihrem Telefon.",
     "tour.pano.invest.title": "Ihr Investments-Portfolio",
     "tour.pano.invest.body": "Der geschätzte Wert Ihrer Positionen und der Stand der Daten. Das ist eine Information, keine Anlageberatung.",
     "networth.investments.disclaimer": "Orientierend — errechnet sich aus dem, was Sie in moyiq erfassen, und separat aus der Schätzung Ihres Investments-Portfolios. Nicht enthalten sind Bankguthaben, andere Anlagen oder nicht erfasste Vermögenswerte.",

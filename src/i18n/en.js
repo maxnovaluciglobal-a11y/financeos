@@ -3355,7 +3355,7 @@ export const en = {
     "tour.pano.detail.body": "Diagnosis, Net Worth, Projection, Reports and Subscriptions, each with all its detail.",
     "nav.investments": "Investments",
     "settings.features.investments": "Investments",
-    "settings.features.investments.sub": "Your Investments portfolio in Overview and Net worth. Your investment positions are stored on our server so we can fetch prices and you can see them on any device. Your transactions stay only on your phone. This is information, not investment advice.",
+    "settings.features.investments.sub": "Your Investments portfolio in Overview and Net worth. Your investment positions are stored on our server so you can see them on any device. To fetch prices, only the symbols are looked up. Your transactions stay only on your phone.",
     "tour.pano.invest.title": "Your Investments portfolio",
     "tour.pano.invest.body": "The estimated value of your positions and how recent the data is. This is information, not investment advice.",
     "networth.investments.disclaimer": "Indicative — calculated from what you record in moyiq and, separately, from the estimate of your Investments portfolio. It does not include bank balances, other investments, or assets you haven't added.",
