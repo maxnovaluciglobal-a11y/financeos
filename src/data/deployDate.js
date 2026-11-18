@@ -10,5 +10,4 @@
 // Mientras quede el TODO, src/data/deployDate.test.js hace fallar `npm test`
 // en main (CI: GITHUB_REF=refs/heads/main; local: rama main), con RELEASE=1
 // (lo exporta ./deploy.sh) o con PREDEPLOY=1.
-// TODO(rebrand-deploy): fijar REBRAND_DEPLOY_DATE al día real del despliegue.
-export const REBRAND_DEPLOY_DATE = '2026-12-01'
+export const REBRAND_DEPLOY_DATE = '2026-11-18'
