@@ -191,3 +191,6 @@ Tokens en `src/styles/tokens.css` (único origen; `globals.css` lo importa, `tok
 El sync que está en uso es `src/core/sync.js` (por licencia + sesión). **Desde el 20-oct-2026 (C-21 / D-05) tiene frase de paso:** activarlo desde cero crea una frase (PBKDF2-SHA256 600 000 it.; blob `fnos2:`), quien ya sincronizaba con la licencia (v1) sigue igual hasta migrar en Ajustes (respaldo previo, verificación y vuelta a la copia v1 si falla) y puede volver a v1. Un blob que el dispositivo no puede leer nunca se pisa. `user_entitlements.license_key` guarda el hash salvo mientras exista un blob v1. Diseño, reglas, rollback y tests: `docs/sync-frase-de-paso.md`.
 
 `src/core/cloudSync.js` es otro stub (v2.0, apagado): `CLOUD_ENCRYPTION_READY = false` bloquea `cloudPush` sin cifrar. El resultado de la auditoría de seguridad del 18-oct está en `docs/historial.md`.
+
+## Kits de terceros y repos públicos (17-nov-2026)
+Este repo es **público** hasta que se ejecute D-06/D16 (pasar a privado, decidido el 17-nov-2026). **Ningún archivo, captura exportada, componente ni código copiado línea a línea de kits pagos (UI8: Keel, Marlow, Pennwise, etc.) entra acá**: su licencia prohíbe redistribuirlos en repos públicos. Las fuentes OFL (Inter) sí. Una futura app Expo nace en un repo privado. Plan: `../../04 - Marca y Diseno/rebrand-startup-2026-11/PLAN.md`.
