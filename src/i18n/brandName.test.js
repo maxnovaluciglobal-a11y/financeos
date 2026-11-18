@@ -1,6 +1,7 @@
 // Rebranding moyiq (Entrega 1, plan §4 Fase 1.3): el nombre se escribe
 // "moyiq" (y "Moyiq" al inicio de frase), nunca "MOY IQ". Esta prueba recorre
-// src/ y supabase/functions/ y falla si aparece "MOY IQ" fuera de los alias
+// src/, supabase/functions/, public/, index.html y vite.config.js (manifest)
+// y falla si aparece "MOY IQ" fuera de los alias
 // permitidos: el aviso del cambio de nombre, el nombre anterior en los
 // legales y los tests que comprueban justamente que el nombre viejo no está.
 // Las migraciones de supabase/ no se revisan: son historia ya aplicada.
@@ -10,12 +11,11 @@ import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
-const DIRS = ['src', 'supabase/functions']
-const EXT = /\.(js|jsx|ts|tsx|mjs|css|html|json)$/
-
-// Archivos de la rama del sistema visual (rebrand/entrega-1-sistema), que los
-// cambia en paralelo. TODO(rebrand): sacar estas entradas al integrar esa rama.
-const OWNED_BY_SYSTEM_BRANCH = [/^src\/styles\//, /^src\/components\/Logo\.jsx$/]
+const DIRS = ['src', 'supabase/functions', 'public']
+// Archivos sueltos de la raíz que llevan el nombre: <title> y metadatos de
+// index.html, y el manifest de la PWA que genera vite.config.js.
+const ROOT_FILES = ['index.html', 'vite.config.js']
+const EXT = /\.(js|jsx|ts|tsx|mjs|css|html|json|svg|webmanifest|txt|xml)$/
 
 // Alias permitidos: cada ocurrencia de "MOY IQ" tiene que estar dentro de uno.
 const ALLOWED_ALIASES = [
@@ -74,18 +74,25 @@ describe('nombre de marca: moyiq, nunca "MOY IQ"', () => {
     expect(offendingLines('MOY IQ ahora es moyiq. MOY IQ Pro')).toEqual([1])
   })
 
-  it('src/ y supabase/functions/ solo usan los alias permitidos', () => {
+  it('src/, supabase/functions/, public/, index.html y el manifest solo usan los alias permitidos', () => {
     const offenders = []
     let scanned = 0
-    for (const d of DIRS) {
-      for (const file of walk(join(ROOT, d))) {
-        const rel = relative(ROOT, file).split('\\').join('/')
-        if (TEST_FIXTURES.has(rel) || OWNED_BY_SYSTEM_BRANCH.some(re => re.test(rel))) continue
-        scanned++
-        for (const n of offendingLines(readFileSync(file, 'utf8'))) offenders.push(`${rel}:${n}`)
-      }
+    const files = [...DIRS.flatMap(d => walk(join(ROOT, d))), ...ROOT_FILES.map(f => join(ROOT, f))]
+    for (const file of files) {
+      const rel = relative(ROOT, file).split('\\').join('/')
+      if (TEST_FIXTURES.has(rel)) continue
+      scanned++
+      for (const n of offendingLines(readFileSync(file, 'utf8'))) offenders.push(`${rel}:${n}`)
     }
     expect(scanned).toBeGreaterThan(300)
     expect(offenders).toEqual([])
+  })
+
+  it('el <title>, el nombre de la app instalada y el manifest dicen moyiq', () => {
+    const html = readFileSync(join(ROOT, 'index.html'), 'utf8')
+    expect(html).toMatch(/<title>moyiq<\/title>/)
+    expect(html).toMatch(/apple-mobile-web-app-title" content="moyiq"/)
+    const vite = readFileSync(join(ROOT, 'vite.config.js'), 'utf8')
+    expect(vite).toMatch(/name: 'moyiq', short_name: 'moyiq'/)
   })
 })
