@@ -14,6 +14,8 @@ import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoint
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
+import { goalDisplayColor } from '../../utils/goalColor.js'
+import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import config from '../../config.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
@@ -289,6 +291,7 @@ export default function Advisor() {
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
+  const isDark = useResolvedTheme(settings.theme) === 'dark'
 
   // Leer y guardar notas del asesor en settings (local)
   const advisorNotes = settings.advisorNotes || {}
@@ -580,7 +583,7 @@ export default function Advisor() {
                         </span>
                       </div>
                       <div style={{ height: 5, background: 'var(--brd)', borderRadius: 3, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct * 100}%`, background: g.color || 'var(--grn)', borderRadius: 3 }} />
+                        <div style={{ height: '100%', width: `${pct * 100}%`, background: goalDisplayColor(g.color, isDark) || 'var(--grn)', borderRadius: 3 }} />
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                         {t('adv.goals.line', { pct: fmtPct(pct), d: g.targetDate || '—', p: g.priority || '—' })}
