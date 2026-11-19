@@ -9,6 +9,7 @@ import { detectLanguage } from './i18n/translate.js'
 import { loadLang } from './i18n/langCache.js'
 import { installWebAnalytics } from './utils/webAnalytics.js'
 import { watchServiceWorkerUpdates } from './core/swUpdate.js'
+import { installVpDiag } from './core/vpDiag.js'
 import { skewCookieStrings, clearSkewCookieStrings } from './utils/skewCookie.js'
 import { installViewportFit } from './core/viewportFit.js'
 
@@ -30,6 +31,7 @@ try {
 // Alto real de pantalla en la app instalada de iOS antes del primer pintado
 // (barra inferior pegada al borde, ver core/viewportFit.js).
 installViewportFit()
+try { installVpDiag() } catch { /* diagnóstico opcional */ }
 installGlobalErrorLog()
 installWebAnalytics()
 
