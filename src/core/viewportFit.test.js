@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeViewportFit, applyViewportFit, viewportHeight, MAX_GAP, iosMajorFromUA } from './viewportFit.js'
+import { computeViewportFit, applyViewportFit, viewportHeight, MAX_GAP } from './viewportFit.js'
 
 // iPhone 14/15 (390×844 pt), zona segura superior 47 pt.
 const iphone = { standalone: true, innerWidth: 390, innerHeight: 797, screenWidth: 390, screenHeight: 844 }
@@ -24,8 +24,8 @@ function fakeWin(env) {
 }
 
 describe('computeViewportFit', () => {
-  it('corrige el viewport corto de la app instalada en iPhone', () => {
-    expect(computeViewportFit(iphone)).toEqual({ appH: 844, gap: 47 })
+  it('ajusta la app al viewport corto de la app instalada (sin empujar hacia la franja sin pintar)', () => {
+    expect(computeViewportFit(iphone)).toEqual({ appH: 797, gap: 0, mode: 'fit' })
   })
 
   it('no toca nada fuera de la app instalada de iOS (Safari, Android, TWA, escritorio)', () => {
@@ -38,7 +38,7 @@ describe('computeViewportFit', () => {
   })
 
   it('usa el lado corto de screen como alto en horizontal', () => {
-    expect(computeViewportFit({ ...iphone, innerWidth: 844, innerHeight: 370 })).toEqual({ appH: 390, gap: 20 })
+    expect(computeViewportFit({ ...iphone, innerWidth: 844, innerHeight: 370 })).toEqual({ appH: 370, gap: 0, mode: 'fit' })
   })
 
   it('descarta ventanas que no ocupan el ancho completo (iPad dividido)', () => {
@@ -55,9 +55,9 @@ describe('applyViewportFit', () => {
   it('publica --app-h, --vp-gap y data-vp-fit, y los quita cuando ya no aplica', () => {
     const win = fakeWin(iphone)
     applyViewportFit(win)
-    expect(win.props.get('--app-h')).toBe('844px')
-    expect(win.props.get('--vp-gap')).toBe('47px')
-    expect(win.dataset.vpFit).toBe('standalone')
+    expect(win.props.get('--app-h')).toBe('797px')
+    expect(win.props.get('--vp-gap')).toBe('0px')
+    expect(win.dataset.vpFit).toBe('fit')
     win.innerHeight = 844
     applyViewportFit(win)
     expect(win.props.has('--app-h')).toBe(false)
@@ -65,38 +65,21 @@ describe('applyViewportFit', () => {
     expect(win.dataset.vpFit).toBeUndefined()
   })
 
-  it('viewportHeight da el alto real en la app instalada y innerHeight en el resto', () => {
-    expect(viewportHeight(fakeWin(iphone))).toBe(844)
+  it('viewportHeight da el alto del viewport en la app instalada y innerHeight en el resto', () => {
+    expect(viewportHeight(fakeWin(iphone))).toBe(797)
     expect(viewportHeight(fakeWin({ ...iphone, standalone: false }))).toBe(797)
   })
 })
 
-describe('computeViewportFit · iOS 26 (19-nov-2026)', () => {
-  const base = { standalone: true, innerWidth: 402, innerHeight: 812, screenWidth: 402, screenHeight: 874 }
-  it('si lo fijo ya llega al borde (iOS 26), no empuja nada hacia abajo', () => {
-    expect(computeViewportFit({ ...base, fixedBottom: 874 })).toEqual({ appH: 874, gap: 0 })
-  })
-  it('si lo fijo queda corto (WebKit viejo), corrige solo lo medido', () => {
-    expect(computeViewportFit({ ...base, fixedBottom: 812 })).toEqual({ appH: 874, gap: 62 })
-  })
-  it('sin medida usa innerHeight como antes', () => {
-    expect(computeViewportFit(base)).toEqual({ appH: 874, gap: 62 })
+describe('computeViewportFit · nunca empuja hacia la franja sin pintar (19-nov-2026)', () => {
+  const walter = { standalone: true, innerWidth: 440, innerHeight: 894, screenWidth: 440, screenHeight: 956 }
+  it('iPhone de Walter (iOS 26): la app se ajusta al viewport, hueco 0', () => {
+    expect(computeViewportFit(walter)).toEqual({ appH: 894, gap: 0, mode: 'fit' })
   })
   it('pantalla completa sin hueco: nada que corregir', () => {
-    expect(computeViewportFit({ ...base, innerHeight: 874, fixedBottom: 874 })).toBeNull()
+    expect(computeViewportFit({ ...walter, innerHeight: 956 })).toBeNull()
   })
-})
-
-describe('computeViewportFit · iOS 26 no empuja hacia la franja sin pintar', () => {
-  const base = { standalone: true, innerWidth: 402, innerHeight: 812, screenWidth: 402, screenHeight: 874, fixedBottom: 812 }
-  it('iOS 26: la app se ajusta al viewport (sin hueco)', () => {
-    expect(computeViewportFit({ ...base, iosMajor: 26 })).toEqual({ appH: 812, gap: 0, mode: 'ios26' })
-  })
-  it('iOS 18: sigue corrigiendo el hueco medido', () => {
-    expect(computeViewportFit({ ...base, iosMajor: 18 })).toEqual({ appH: 874, gap: 62 })
-  })
-  it('lee la versión de iOS del user agent', () => {
-    expect(iosMajorFromUA('Mozilla/5.0 (iPhone; CPU iPhone OS 26_1 like Mac OS X) AppleWebKit/605.1.15')).toBe(26)
-    expect(iosMajorFromUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')).toBeUndefined()
+  it('fuera de la app instalada: nada', () => {
+    expect(computeViewportFit({ ...walter, standalone: undefined })).toBeNull()
   })
 })

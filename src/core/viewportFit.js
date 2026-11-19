@@ -39,7 +39,7 @@ export const MAX_GAP = 100
  * Pura: decide la corrección a partir de lo que informa el navegador.
  * @returns {{ appH: number, gap: number } | null}
  */
-export function computeViewportFit({ standalone, innerWidth, innerHeight, screenWidth, screenHeight, fixedBottom, iosMajor }) {
+export function computeViewportFit({ standalone, innerWidth, innerHeight, screenWidth, screenHeight }) {
   if (standalone !== true) return null
   const vals = [innerWidth, innerHeight, screenWidth, screenHeight]
   if (!vals.every((n) => Number.isFinite(n) && n > 0)) return null
@@ -51,41 +51,18 @@ export function computeViewportFit({ standalone, innerWidth, innerHeight, screen
   const fullH = landscape ? short : long
   // Solo ventana de ancho completo (descarta iPad en Split View / Stage Manager).
   if (Math.round(innerWidth) !== Math.round(fullW)) return null
-  // iOS 26+: la franja fuera del viewport no se pinta; nada se empuja hacia ella.
-  if (Number.isFinite(iosMajor) && iosMajor >= 26) {
-    if (Math.round(innerHeight) >= Math.round(fullH)) return null
-    return { appH: Math.round(innerHeight), gap: 0, mode: 'ios26' }
-  }
-  // Dónde termina de verdad lo anclado con bottom: 0 (medido); si no se pudo
-  // medir, se usa innerHeight como antes.
-  const bottom = Number.isFinite(fixedBottom) && fixedBottom > 0 ? fixedBottom : innerHeight
-  const gap = Math.max(0, Math.round(fullH - bottom))
-  if (gap > MAX_GAP) return null
-  if (gap === 0 && Math.round(innerHeight) >= Math.round(fullH)) return null
-  return { appH: Math.round(fullH), gap }
-}
-
-// Mide el borde inferior real del bloque contenedor de los position: fixed.
-function measureFixedBottom(win) {
-  const doc = win.document
-  if (!doc?.body || typeof doc.createElement !== 'function') return undefined
-  const probe = doc.createElement('div')
-  probe.setAttribute('aria-hidden', 'true')
-  probe.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;pointer-events:none;visibility:hidden'
-  doc.body.appendChild(probe)
-  try { return probe.getBoundingClientRect().bottom } finally { probe.remove() }
-}
-
-// Versión mayor de iOS/iPadOS a partir del user agent (undefined fuera de iOS).
-export function iosMajorFromUA(ua = '') {
-  const m = /\bOS (\d+)[_\d]* like Mac OS X/.exec(ua) || /Version\/(\d+)[.\d]* Mobile/.exec(ua)
-  return m ? Number(m[1]) : undefined
+  // Medido en el iPhone de Walter (19-nov-2026, iOS 26 aunque el user agent
+  // dice 18_7): inner 440×894, screen 440×956, lo fijo termina en 894 y la
+  // barra empujada 62 px quedaba en 888–956, en la franja que no se pinta.
+  // Por eso NUNCA se empuja: la app se ajusta al viewport informado.
+  const gap = Math.round(fullH - innerHeight)
+  // Sin hueco, o un hueco que no es la barra de estado (teclado abierto): nada.
+  if (gap <= 0 || gap > MAX_GAP) return null
+  return { appH: Math.round(innerHeight), gap: 0, mode: 'fit' }
 }
 
 function readEnv(win) {
   return {
-    iosMajor: iosMajorFromUA(win.navigator?.userAgent),
-    fixedBottom: win.navigator?.standalone === true ? measureFixedBottom(win) : undefined,
     // navigator.standalone solo existe en iOS/iPadOS: Android y TWA dan undefined.
     standalone: win.navigator?.standalone,
     innerWidth: win.innerWidth,
