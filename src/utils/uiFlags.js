@@ -13,9 +13,9 @@ export const UI_FLAGS = {
   // Pestañas que se deslizan según su orden (false: fundido corto).
   tabSlide: true,
   // Entrega 1.5 (18-nov-2026): Inicio con escena a sangre, cifra gigante y
-  // ChartLupa. Apagado en producción hasta que Walter lo apruebe; encendido en
-  // el demo y en desarrollo local. Ver inicioLupaOn().
-  inicioLupa: false,
+  // ChartLupa. Encendido en producción desde el 19-nov-2026 (OK de Walter);
+  // `?ui=inicio-clasico` vuelve al Inicio anterior. Ver inicioLupaOn().
+  inicioLupa: true,
 }
 
 // ¿Se ve el Inicio nuevo? Orden: parámetro de revisión (`?ui=inicio-lupa`
