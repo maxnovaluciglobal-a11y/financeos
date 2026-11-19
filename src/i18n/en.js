@@ -1006,6 +1006,10 @@ export const en = {
     'dash.insight.budget.danger': "Limit imminent — review your expenses.",
     'dash.insight.budget.warn': "Early warning — moderate the remaining spending.",
     'dash.insight.budget.ok': "Keep it up.",
+    // G2-N2: la tarjeta de presupuesto nombra los excesos en vez del %.
+    'dash.insight.budget.overOne': "One category went over its budget this month.",
+    'dash.insight.budget.overMany': "{n} categories went over their budget this month.",
+    'dash.insight.budget.overSub': "Check where it went and adjust the rest of the month.",
     'dash.insight.goal.text': "“{name}” is at {pct} of your target.",
     'dash.insight.goal.sub': "{v} left to complete it.",
     'dash.health.title': "IQ Score",

@@ -17,6 +17,7 @@ import { moneyLocale, currentMonth, catName, fmtSignedMoney, currencySymbol, fmt
 import { DEFAULT_USD_RATES } from '../shared/constants.js'
 import { useMoney } from '../../components/Money.jsx'
 import { monthPlan, pendingTotals } from '../../utils/recurring.js'
+import { budgetUsage } from '../../utils/budgets.js'
 
 const SEV_COLOR = { info: 'var(--accent)', attention: 'var(--amb)', warning: 'var(--red)' }
 
@@ -105,17 +106,18 @@ export function useHomeData() {
       }
     }
     if (budgets.length > 0 && monthExpenses.length > 0) {
-      const expByCat = {}
-      monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + (Number(e.amount) || 0) })
-      const totalBudget = budgets.reduce((s, b) => s + (Number(b.limit) || 0), 0)
-      const totalUsed   = budgets.reduce((s, b) => s + Math.min(expByCat[b.category] || 0, Number(b.limit) || 0), 0)
-      if (totalBudget > 0) {
-        const budgetPct = ((totalUsed / totalBudget) * 100).toFixed(0)
-        const pctN = Number(budgetPct)
-        const color = pctN > 90 ? 'var(--red)' : pctN > 80 ? 'var(--amb)' : 'var(--accent)'
-        cards.push({ icon: <ScoreStateIcon level={pctN > 90 ? 'risk' : pctN > 80 ? 'attention' : 'ok'} size={13} color="currentColor" />, color,
-          text: t('dash.insight.budget.text', { pct: fmtPctPoints(budgetPct) }),
-          sub: pctN > 90 ? t('dash.insight.budget.danger') : pctN > 80 ? t('dash.insight.budget.warn') : t('dash.insight.budget.ok'), page: 'budgets' })
+      // G2-N2: misma cuenta y mismos umbrales que Presupuestos (budgetUsage).
+      const u = budgetUsage({ budgets, expenses, activeMonth, settings })
+      if (u.total > 0) {
+        const budgetPct = (u.pct * 100).toFixed(0)
+        const color = u.level === 'risk' ? 'var(--red)' : u.level === 'attention' ? 'var(--amb)' : 'var(--accent)'
+        cards.push({ icon: <ScoreStateIcon level={u.level} size={13} color="currentColor" />, color,
+          text: u.overCount > 0
+            ? t(u.overCount === 1 ? 'dash.insight.budget.overOne' : 'dash.insight.budget.overMany', { n: u.overCount })
+            : t('dash.insight.budget.text', { pct: fmtPctPoints(budgetPct) }),
+          sub: u.overCount > 0 ? t('dash.insight.budget.overSub')
+            : u.level === 'attention' ? t(u.pct > 0.9 ? 'dash.insight.budget.danger' : 'dash.insight.budget.warn')
+              : t('dash.insight.budget.ok'), page: 'budgets' })
       }
     }
     if (goals.length > 0) {
@@ -132,7 +134,7 @@ export function useHomeData() {
       }
     }
     return cards.slice(0, 4)
-  }, [subMonthly, monthExpenses, budgets, goals, money, t, lang])
+  }, [subMonthly, monthExpenses, budgets, expenses, activeMonth, settings, goals, money, t, lang])
 
   // ── Señales del Diagnóstico ──────────────────────────────────────────────
   const topSignals = useMemo(() => {
