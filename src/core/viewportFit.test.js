@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeViewportFit, applyViewportFit, viewportHeight, MAX_GAP } from './viewportFit.js'
+import { computeViewportFit, applyViewportFit, viewportHeight, MAX_GAP, iosMajorFromUA } from './viewportFit.js'
 
 // iPhone 14/15 (390×844 pt), zona segura superior 47 pt.
 const iphone = { standalone: true, innerWidth: 390, innerHeight: 797, screenWidth: 390, screenHeight: 844 }
@@ -84,5 +84,19 @@ describe('computeViewportFit · iOS 26 (19-nov-2026)', () => {
   })
   it('pantalla completa sin hueco: nada que corregir', () => {
     expect(computeViewportFit({ ...base, innerHeight: 874, fixedBottom: 874 })).toBeNull()
+  })
+})
+
+describe('computeViewportFit · iOS 26 no empuja hacia la franja sin pintar', () => {
+  const base = { standalone: true, innerWidth: 402, innerHeight: 812, screenWidth: 402, screenHeight: 874, fixedBottom: 812 }
+  it('iOS 26: la app se ajusta al viewport (sin hueco)', () => {
+    expect(computeViewportFit({ ...base, iosMajor: 26 })).toEqual({ appH: 812, gap: 0, mode: 'ios26' })
+  })
+  it('iOS 18: sigue corrigiendo el hueco medido', () => {
+    expect(computeViewportFit({ ...base, iosMajor: 18 })).toEqual({ appH: 874, gap: 62 })
+  })
+  it('lee la versión de iOS del user agent', () => {
+    expect(iosMajorFromUA('Mozilla/5.0 (iPhone; CPU iPhone OS 26_1 like Mac OS X) AppleWebKit/605.1.15')).toBe(26)
+    expect(iosMajorFromUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')).toBeUndefined()
   })
 })

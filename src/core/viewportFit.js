@@ -25,6 +25,12 @@
 // hojas DEBAJO del borde (menú invisible y hojas abiertas fuera de la vista).
 // Ahora el hueco se MIDE: un marcador `position: fixed; bottom: 0` dice dónde
 // termina de verdad el bloque contenedor, y solo se corrige lo que falta.
+// Probado después en el iPhone de Walter (iOS 26): la franja de abajo que queda
+// fuera del viewport (≈ alto de la barra de estado) NO SE PINTA para nada fijo
+// (WebKit 301108; reportes de otros proyectos con el mismo síntoma). Empujar la
+// barra hacia esa franja la dejaba invisible. En iOS 26 o posterior la app se
+// ajusta AL viewport: --app-h = innerHeight y --vp-gap = 0, la barra queda en
+// la parte visible y la franja muestra el fondo de <html>.
 
 // Más que esto no es la zona segura superior: mejor no corregir.
 export const MAX_GAP = 100
@@ -33,7 +39,7 @@ export const MAX_GAP = 100
  * Pura: decide la corrección a partir de lo que informa el navegador.
  * @returns {{ appH: number, gap: number } | null}
  */
-export function computeViewportFit({ standalone, innerWidth, innerHeight, screenWidth, screenHeight, fixedBottom }) {
+export function computeViewportFit({ standalone, innerWidth, innerHeight, screenWidth, screenHeight, fixedBottom, iosMajor }) {
   if (standalone !== true) return null
   const vals = [innerWidth, innerHeight, screenWidth, screenHeight]
   if (!vals.every((n) => Number.isFinite(n) && n > 0)) return null
@@ -45,6 +51,11 @@ export function computeViewportFit({ standalone, innerWidth, innerHeight, screen
   const fullH = landscape ? short : long
   // Solo ventana de ancho completo (descarta iPad en Split View / Stage Manager).
   if (Math.round(innerWidth) !== Math.round(fullW)) return null
+  // iOS 26+: la franja fuera del viewport no se pinta; nada se empuja hacia ella.
+  if (Number.isFinite(iosMajor) && iosMajor >= 26) {
+    if (Math.round(innerHeight) >= Math.round(fullH)) return null
+    return { appH: Math.round(innerHeight), gap: 0, mode: 'ios26' }
+  }
   // Dónde termina de verdad lo anclado con bottom: 0 (medido); si no se pudo
   // medir, se usa innerHeight como antes.
   const bottom = Number.isFinite(fixedBottom) && fixedBottom > 0 ? fixedBottom : innerHeight
@@ -65,8 +76,15 @@ function measureFixedBottom(win) {
   try { return probe.getBoundingClientRect().bottom } finally { probe.remove() }
 }
 
+// Versión mayor de iOS/iPadOS a partir del user agent (undefined fuera de iOS).
+export function iosMajorFromUA(ua = '') {
+  const m = /\bOS (\d+)[_\d]* like Mac OS X/.exec(ua) || /Version\/(\d+)[.\d]* Mobile/.exec(ua)
+  return m ? Number(m[1]) : undefined
+}
+
 function readEnv(win) {
   return {
+    iosMajor: iosMajorFromUA(win.navigator?.userAgent),
     fixedBottom: win.navigator?.standalone === true ? measureFixedBottom(win) : undefined,
     // navigator.standalone solo existe en iOS/iPadOS: Android y TWA dan undefined.
     standalone: win.navigator?.standalone,
@@ -83,7 +101,7 @@ export function applyViewportFit(win = window) {
   if (fit) {
     root.style.setProperty('--app-h', `${fit.appH}px`)
     root.style.setProperty('--vp-gap', `${fit.gap}px`)
-    root.dataset.vpFit = 'standalone'
+    root.dataset.vpFit = fit.mode ?? 'standalone'
   } else {
     root.style.removeProperty('--app-h')
     root.style.removeProperty('--vp-gap')
