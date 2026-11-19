@@ -3467,7 +3467,7 @@ export const de = {
     "qa.voice.stop": "Diktat beenden",
     "qa.voice.listening": "Hört zu…",
     "qa.voice.heard": "Erkannt: „{text}“ · prüfen und speichern",
-    "qa.voice.privacy": "Der Browser transkribiert den Ton (Apple oder Google können ihn verarbeiten); moyiq erhält nur den Text.",
+    "qa.voice.privacy": "Ihr Telefon transkribiert den Ton (Apple oder Google können ihn verarbeiten); moyiq erhält nur den Text.",
     "qa.voice.err.denied": "Keine Mikrofonberechtigung. Aktivieren Sie sie in den Browsereinstellungen.",
     "qa.voice.err.service": "Diktieren ist auf diesem Gerät aus. Auf dem iPhone: Einstellungen › Allgemein › Tastatur › Diktierfunktion aktivieren.",
     "qa.voice.err.noSpeech": "Nichts erkannt. Tippen Sie auf Diktieren und versuchen Sie es erneut.",

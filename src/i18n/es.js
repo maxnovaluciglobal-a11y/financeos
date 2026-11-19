@@ -3468,7 +3468,7 @@ export const es = {
     "qa.voice.stop": "Terminar el dictado",
     "qa.voice.listening": "Escuchando…",
     "qa.voice.heard": "Se escuchó: «{text}» · revisa y guarda",
-    "qa.voice.privacy": "El audio lo transcribe el navegador (Apple o Google pueden procesarlo); moyiq recibe solo el texto.",
+    "qa.voice.privacy": "El audio lo transcribe tu teléfono (Apple o Google pueden procesarlo); moyiq recibe solo el texto.",
     "qa.voice.err.denied": "Sin permiso para el micrófono. Actívalo en los ajustes del navegador.",
     "qa.voice.err.service": "El dictado está apagado en este equipo. En iPhone: Ajustes › General › Teclado › Activar dictado.",
     "qa.voice.err.noSpeech": "No se escuchó nada. Toca Dictar e intenta de nuevo.",

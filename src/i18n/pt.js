@@ -3468,7 +3468,7 @@ export const pt = {
     "qa.voice.stop": "Parar o ditado",
     "qa.voice.listening": "Ouvindo…",
     "qa.voice.heard": "Ouvido: “{text}” · confira e salve",
-    "qa.voice.privacy": "O navegador transcreve o áudio (a Apple ou o Google podem processá-lo); o moyiq recebe só o texto.",
+    "qa.voice.privacy": "O áudio é transcrito pelo seu telefone (a Apple ou o Google podem processá-lo); o moyiq recebe só o texto.",
     "qa.voice.err.denied": "Sem permissão para o microfone. Ative nos ajustes do navegador.",
     "qa.voice.err.service": "O ditado está desativado neste aparelho. No iPhone: Ajustes › Geral › Teclado › Ativar Ditado.",
     "qa.voice.err.noSpeech": "Nada foi ouvido. Toque em Ditar e tente de novo.",

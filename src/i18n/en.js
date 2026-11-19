@@ -3468,7 +3468,7 @@ export const en = {
     "qa.voice.stop": "Stop dictation",
     "qa.voice.listening": "Listening…",
     "qa.voice.heard": "Heard: “{text}” · check and save",
-    "qa.voice.privacy": "Your browser transcribes the audio (Apple or Google may process it); moyiq only gets the text.",
+    "qa.voice.privacy": "Your phone transcribes the audio (Apple or Google may process it); moyiq only gets the text.",
     "qa.voice.err.denied": "No microphone permission. Turn it on in the browser settings.",
     "qa.voice.err.service": "Dictation is off on this device. On iPhone: Settings › General › Keyboard › Enable Dictation.",
     "qa.voice.err.noSpeech": "Nothing was heard. Tap Dictate and try again.",
