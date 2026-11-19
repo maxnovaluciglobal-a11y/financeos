@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { isNativeApp, nativePlatform, apiBase, authEmailRedirect, PUBLIC_APP_URL } from './platform.js'
 import { webCheckoutAllowed, storePurchaseAllowed, oauthProviders, NATIVE_FLAGS } from './storePolicy.js'
-import { parseNativeUrl, tokensFromHash, INTAKE_PARAMS } from './nativeLinks.js'
+import { parseNativeUrl, INTAKE_PARAMS } from './nativeLinks.js'
 
 const cap = (platform) => ({ Capacitor: { isNativePlatform: () => platform !== 'web', getPlatform: () => platform } })
 const web = { location: { origin: 'https://app.moyiq.app', pathname: '/app/' } }
@@ -73,11 +73,10 @@ describe('parseNativeUrl', () => {
     expect(parseNativeUrl('')).toBeNull()
     expect(parseNativeUrl('moyiq://add?x=' + 'a'.repeat(3000))).toBeNull()
   })
-  it('vuelta de OAuth con code (PKCE) o con tokens en el fragmento', () => {
-    expect(parseNativeUrl('moyiq://auth-callback?code=abc')).toEqual({ kind: 'auth', code: 'abc', hash: '' })
+  it('vuelta de OAuth: solo code (PKCE); los tokens del fragmento se ignoran', () => {
+    expect(parseNativeUrl('moyiq://auth-callback?code=abc')).toEqual({ kind: 'auth', code: 'abc', error: null })
     const r = parseNativeUrl('moyiq://auth-callback#access_token=a&refresh_token=b&type=bearer')
-    expect(r.kind).toBe('auth')
-    expect(tokensFromHash(r.hash)).toEqual({ access_token: 'a', refresh_token: 'b' })
-    expect(tokensFromHash('#access_token=a')).toBeNull()
+    expect(r).toEqual({ kind: 'auth', code: null, error: null })
+    expect(parseNativeUrl('moyiq://auth-callback?error=access_denied&error_description=User+cancelled').error).toBe('User cancelled')
   })
 })

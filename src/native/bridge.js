@@ -14,7 +14,7 @@
 //   Browser            vuelta del inicio con Google/Apple (nativeAuth.js)
 //   Keyboard           se configura en capacitor.config (resize nativo)
 import { registerPlugin, SystemBars, SystemBarsStyle } from '@capacitor/core'
-import { parseNativeUrl } from './nativeLinks.js'
+import { parseNativeUrl, NATIVE_OAUTH_ERROR_EVENT } from './nativeLinks.js'
 import { setNativeHaptics } from './nativeHaptics.js'
 import { logRejection } from '../utils/errorLog.js'
 
@@ -116,7 +116,12 @@ async function handleUrl(url, win) {
     const [{ authClient }, { completeNativeOAuth }] = await Promise.all([
       import('../core/authClient.js'), import('./nativeAuth.js'),
     ])
-    await completeNativeOAuth(authClient, r)
+    const res = await completeNativeOAuth(authClient, r)
+    // Un canje fallido se avisa en la pantalla de acceso (AuthGate); un enlace
+    // que no vino de un OAuth de esta app se ignora en silencio.
+    if (res?.error && !res.ignored) {
+      win.dispatchEvent(new win.CustomEvent(NATIVE_OAUTH_ERROR_EVENT, { detail: { error: res.error } }))
+    }
     return
   }
   const here = win.location.pathname + win.location.search

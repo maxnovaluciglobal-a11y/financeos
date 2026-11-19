@@ -7,7 +7,7 @@
 //   moyiq://open/import  ·  moyiq://app?open=…    destinos de ?open= (deepLink.js)
 //   moyiq://demo?persona=ve                       demo sin cuenta (revisión de Apple)
 //   https://app.moyiq.app/app/?…                  enlace universal / App Link
-//   moyiq://auth-callback?code=… | #access_token  vuelta del inicio con Google/Apple
+//   moyiq://auth-callback?code=…                  vuelta del inicio con Google/Apple (PKCE)
 //
 // Solo pasan los parámetros conocidos; cualquier otro se descarta. El destino
 // siempre es /app/ en el mismo origen local: un enlace nunca hace que la vista
@@ -15,6 +15,8 @@
 
 export const NATIVE_SCHEME = 'moyiq:'
 export const AUTH_CALLBACK = 'moyiq://auth-callback'
+// bridge.js lo emite si falla el canje del OAuth; AuthGate lo escucha.
+export const NATIVE_OAUTH_ERROR_EVENT = 'fnos:native-oauth-error'
 export const UNIVERSAL_HOSTS = ['app.moyiq.app', 'demo.moyiq.app']
 
 // Mismo contrato que INTAKE_PARAMS (utils/autoEntry.js, rama feat/registro-automatico).
@@ -37,7 +39,7 @@ function toPath(params) {
 }
 
 /**
- * @returns {null | { kind: 'auth', code: string|null, hash: string }
+ * @returns {null | { kind: 'auth', code: string|null, error: string|null }
  *                | { kind: 'path', path: string }}
  */
 export function parseNativeUrl(raw) {
@@ -60,7 +62,9 @@ export function parseNativeUrl(raw) {
   const head = (segs[0] || '').toLowerCase()
 
   if (head === 'auth-callback') {
-    return { kind: 'auth', code: u.searchParams.get('code'), hash: u.hash || '' }
+    // Solo ?code= (PKCE). Un #access_token del fragmento se ignora (NAT-5).
+    const error = u.searchParams.get('error_description') || u.searchParams.get('error')
+    return { kind: 'auth', code: u.searchParams.get('code'), error: error ? error.slice(0, 300) : null }
   }
   if (head === 'add') {
     const given = pick(u.searchParams, INTAKE_PARAMS)
@@ -84,14 +88,4 @@ export function parseNativeUrl(raw) {
     return { kind: 'path', path: toPath(pick(u.searchParams, APP_PARAMS)) }
   }
   return null
-}
-
-/** Tokens del fragmento #access_token=…&refresh_token=… (flujo implícito). */
-export function tokensFromHash(hash) {
-  try {
-    const p = new URLSearchParams(String(hash || '').replace(/^#/, ''))
-    const access_token = p.get('access_token')
-    const refresh_token = p.get('refresh_token')
-    return access_token && refresh_token ? { access_token, refresh_token } : null
-  } catch { return null }
 }

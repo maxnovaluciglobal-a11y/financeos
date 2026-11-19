@@ -10,33 +10,72 @@
 //      native/bridge.js recibe appUrlOpen y llama a completeNativeOAuth().
 // Requisito en Supabase (Walter): agregar moyiq://auth-callback a Auth → URL
 // Configuration → Redirect URLs. Sin eso Supabase vuelve al Site URL (la web).
+//
+// NAT-5 / SEC-N2: el esquema moyiq:// no es exclusivo (cualquier página o app
+// puede abrir moyiq://auth-callback…). Por eso la vuelta solo se acepta si esta
+// app inició un OAuth hace menos de 10 minutos (marca de un solo uso) y solo
+// con ?code= (PKCE: sin el verificador que guardó el cliente, el canje falla).
+// Ya no se aceptan tokens en el fragmento (#access_token=…): con eso se podía
+// dejar a la persona con la sesión iniciada en la cuenta de otro.
 import { registerPlugin } from '@capacitor/core'
-import { AUTH_CALLBACK, tokensFromHash } from './nativeLinks.js'
+import { AUTH_CALLBACK } from './nativeLinks.js'
 
 const Browser = registerPlugin('Browser')
 
-export async function nativeOAuth(authClient, provider) {
+export const OAUTH_PENDING_KEY = 'fnos_native_oauth_pending'
+export const OAUTH_PENDING_TTL_MS = 10 * 60 * 1000
+
+function defaultStorage() {
+  try { return globalThis.localStorage || null } catch { return null }
+}
+
+// localStorage (no sessionStorage): en Android el sistema puede cerrar la app
+// mientras la persona está en Custom Tabs, y la marca tiene que sobrevivir.
+export function markOAuthPending(provider, { storage = defaultStorage(), now = Date.now() } = {}) {
+  try { storage?.setItem(OAUTH_PENDING_KEY, JSON.stringify({ provider, at: now })) } catch { /* sin almacenamiento: la vuelta se ignorará */ }
+}
+
+export function clearOAuthPending({ storage = defaultStorage() } = {}) {
+  try { storage?.removeItem(OAUTH_PENDING_KEY) } catch { /* nada que limpiar */ }
+}
+
+/** Lee y borra la marca (un solo uso). true si había un OAuth en curso y no venció. */
+export function takeOAuthPending({ storage = defaultStorage(), now = Date.now() } = {}) {
+  let raw = null
+  try { raw = storage?.getItem(OAUTH_PENDING_KEY) ?? null } catch { return false }
+  clearOAuthPending({ storage })
+  if (!raw) return false
+  try {
+    const at = Number(JSON.parse(raw)?.at)
+    return Number.isFinite(at) && at <= now && now - at <= OAUTH_PENDING_TTL_MS
+  } catch { return false }
+}
+
+export async function nativeOAuth(authClient, provider, opts) {
   const { data, error } = await authClient.auth.signInWithOAuth({
     provider,
     options: { redirectTo: AUTH_CALLBACK, skipBrowserRedirect: true },
   })
   if (error) return { error: error.message }
   if (!data?.url) return { error: 'oauth_no_url' }
-  try { await Browser.open({ url: data.url, presentationStyle: 'popover' }) } catch (e) { return { error: String(e?.message || e) } }
+  markOAuthPending(provider, opts)
+  try { await Browser.open({ url: data.url, presentationStyle: 'popover' }) } catch (e) {
+    clearOAuthPending(opts)
+    return { error: String(e?.message || e) }
+  }
   return {}
 }
 
-export async function completeNativeOAuth(authClient, { code, hash }) {
+/**
+ * Vuelta de moyiq://auth-callback. `ignored: true` cuando no hay un OAuth en
+ * curso: el enlace no vino de esta app y no se muestra nada.
+ */
+export async function completeNativeOAuth(authClient, { code, error: providerError } = {}, opts) {
+  if (!takeOAuthPending(opts)) return { error: 'oauth_not_pending', ignored: true }
   try { await Browser.close() } catch { /* Android: no hay vista que cerrar */ }
   if (!authClient) return { error: 'auth_not_configured' }
-  if (code) {
-    const { error } = await authClient.auth.exchangeCodeForSession(code)
-    return error ? { error: error.message } : {}
-  }
-  const tokens = tokensFromHash(hash)
-  if (tokens) {
-    const { error } = await authClient.auth.setSession(tokens)
-    return error ? { error: error.message } : {}
-  }
-  return { error: 'oauth_no_code' }
+  if (providerError) return { error: String(providerError) }
+  if (!code) return { error: 'oauth_no_code' }
+  const { error } = await authClient.auth.exchangeCodeForSession(code)
+  return error ? { error: error.message } : {}
 }
