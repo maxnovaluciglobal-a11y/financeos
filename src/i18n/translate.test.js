@@ -627,6 +627,33 @@ describe('paridad de las claves de "Debo · Me deben" (D2, es/en/pt/de)', () => 
   })
 })
 
+// Registro automático (19-nov-2026): guía del Atajo de Apple Pay y dictado.
+describe('paridad de las claves de registro automático (es/en/pt/de)', () => {
+  const prefixes = ['auto.', 'settings.group.autoEntry.', 'qa.voice.', 'qa.intake.']
+  const pick = (dict) => Object.keys(dict).filter(k => prefixes.some(p => k.startsWith(p))).sort()
+  it('las 4 lenguas tienen exactamente las mismas claves', () => {
+    const base = pick(es)
+    expect(base.length).toBeGreaterThan(40)
+    expect(pick(en)).toEqual(base)
+    expect(pick(pt)).toEqual(base)
+    expect(pick(de)).toEqual(base)
+  })
+  it('las mismas variables {x} en los 4 idiomas', () => {
+    const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
+    for (const k of pick(es)) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))
+  })
+  it('sin voseo, exclamaciones ni "por favor"; el alemán no tutea; la privacidad se dice', () => {
+    for (const k of pick(es)) {
+      expect(es[k], k).not.toMatch(/\b(podés|tenés|querés|vos|tocá|mirá|elegí|revisá|pegá|abrí|usá|creá|agregá|pagá|decí)\b/i)
+      expect(es[k], k).not.toMatch(/por favor/i)
+    }
+    for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/[¡!]/)
+    for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|deinen|deinem|dich|dir)\b/i)
+    expect(es['qa.voice.privacy']).toMatch(/Apple o Google/)
+    expect(es['auto.honest.body']).toMatch(/Safari/)
+  })
+})
+
 describe('waitForLang (V4): primer pintado sin español en otros idiomas', () => {
   it('resuelve al instante si el idioma ya está cargado', async () => {
     let called = false

@@ -19,6 +19,14 @@ describe('cabeceras de seguridad (vercel.json)', () => {
     expect(dir('object-src')).toEqual(["'none'"])
   })
 
+  // Dictado del alta rápida (19-nov-2026): el micrófono solo para el propio
+  // origen; cámara, ubicación, pagos y USB siguen cerrados.
+  it('Permissions-Policy: micrófono solo para el propio origen, el resto cerrado', () => {
+    const pp = get('Permissions-Policy')
+    expect(pp).toContain('microphone=(self)')
+    for (const f of ['camera=()', 'geolocation=()', 'payment=()', 'usb=()']) expect(pp).toContain(f)
+  })
+
   it('sin unsafe-inline ni unsafe-eval en scripts', () => {
     expect(dir('script-src')).not.toContain("'unsafe-inline'")
     expect(dir('script-src')).not.toContain("'unsafe-eval'")

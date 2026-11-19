@@ -4,7 +4,10 @@
 // 5 taps (FAB → navegar → Agregar → tipo → formulario de 10 campos).
 // El formulario vive en QuickAddForm.jsx (también lo usa el onboarding). En la
 // hoja, "Guardar" queda fijo al pie (W3) y aparece "Más detalles" (B4a).
-import { useRef, lazy, Suspense } from 'react'
+import { useRef, useState, useEffect, lazy, Suspense } from 'react'
+import { takeIntake } from '../utils/autoEntry.js'
+import { registroAutomaticoHere } from '../utils/uiFlags.js'
+import { openQuickAdd } from './quickAddBus.js'
 import { useT } from '../i18n/useT.js'
 import Sheet from './ui/Sheet.jsx'
 // V4 (30-oct-2026): el formulario se carga al abrir la hoja (y se precarga en
@@ -19,10 +22,33 @@ const coarsePointer = () => typeof window !== 'undefined' && window.matchMedia?.
 export default function QuickAdd({ open, defaultType = 'expense', onClose, onSaved }) {
   const { t } = useT()
   const amountRef = useRef(null)
+  // Alta que llegó por URL (main.jsx la guardó en sessionStorage, quizá antes
+  // del login): al montar Shell se abre la hoja con eso escrito. Una sola vez.
+  const [prefill, setPrefill] = useState(null)
+  useEffect(() => {
+    if (!registroAutomaticoHere()) return undefined
+    let store = null
+    try { store = sessionStorage } catch { store = null }
+    const intake = takeIntake(store)
+    if (!intake) return undefined
+    setPrefill(intake)
+    // Shell registra su escucha en su propio efecto (después del de este hijo).
+    // Sin limpieza: en StrictMode el segundo montaje ya no encuentra el alta.
+    setTimeout(() => openQuickAdd(intake.type), 0)
+    return undefined
+  }, [])
+  // Cerrada por cualquier camino (también "Más detalles" desde Shell): el
+  // próximo "+" abre vacío.
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (wasOpen.current && !open) setPrefill(null)
+    wasOpen.current = open
+  }, [open])
+  const close = () => { setPrefill(null); onClose?.() }
   return (
-    <Sheet open={open} onClose={onClose} ariaLabel={t('qa.title')} initialFocusRef={coarsePointer() ? undefined : amountRef}>
+    <Sheet open={open} onClose={close} ariaLabel={t('qa.title')} initialFocusRef={coarsePointer() ? undefined : amountRef}>
       <Suspense fallback={<div style={{ minHeight: 420 }} aria-busy="true" />}>
-        <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails onSaved={(type) => { onSaved?.(type); onClose?.() }} />
+        <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails onSaved={(type) => { onSaved?.(type); close() }} prefill={open ? prefill : null} />
       </Suspense>
     </Sheet>
   )

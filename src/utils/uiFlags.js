@@ -16,6 +16,22 @@ export const UI_FLAGS = {
   // ChartLupa. Encendido en producción desde el 19-nov-2026 (OK de Walter);
   // `?ui=inicio-clasico` vuelve al Inicio anterior. Ver inicioLupaOn().
   inicioLupa: true,
+  // Gastos que se registran solos, fase 1 (19-nov-2026): alta por URL
+  // (?add=gasto&monto=…, el Atajo de Apple Pay), dictado en el "+" y la guía en
+  // Ajustes › Registro automático. false lo apaga en producción; demo y
+  // desarrollo local lo siguen mostrando. Ver docs/registro-automatico.md.
+  registroAutomatico: true,
+}
+
+export function registroAutomaticoOn({ isDemo = false, isDev = false } = {}) {
+  return isDemo || isDev || UI_FLAGS.registroAutomatico === true
+}
+// Contexto del navegador (no puro): demo por ?demo=true, desarrollo por Vite.
+export function registroAutomaticoHere() {
+  const isDemo = typeof window !== 'undefined' && /[?&]demo=true\b/.test(window.location.search)
+  let isDev = false
+  try { isDev = !!import.meta.env?.DEV } catch { isDev = false }
+  return registroAutomaticoOn({ isDemo, isDev })
 }
 
 // ¿Se ve el Inicio nuevo? Orden: parámetro de revisión (`?ui=inicio-lupa`
