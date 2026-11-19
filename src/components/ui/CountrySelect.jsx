@@ -22,7 +22,7 @@ import { moveIndex, typeaheadIndex, isTypeaheadKey } from './listboxKeys.js'
 function Mark({ code, size }) {
   // "Otro país" no tiene sello: marca de texto, la misma que usa el onboarding.
   if (code === 'OTHER') {
-    return <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', width: size, fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--th)' }}>··</span>
+    return <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', width: size, fontFamily: 'var(--mono)', fontSize: 'var(--t-footnote)', color: 'var(--th)' }}>··</span>
   }
   return <span aria-hidden="true" style={{ display: 'inline-flex', color: 'var(--tm)' }}><CountryBadge code={code} size={size} /></span>
 }

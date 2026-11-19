@@ -142,7 +142,7 @@ export function Empty({ text, cta, onCta }) {
       {cta && onCta && (
         <div style={{ marginTop: 12 }}>
           <button type="button" onClick={onCta} style={{
-            fontFamily: 'var(--num)', fontSize: 12, fontWeight: 600,
+            fontFamily: 'var(--num)', fontSize: 'var(--t-footnote)', fontWeight: 600,
             color: 'var(--btn-primary-fg)', background: 'var(--btn-primary-bg)', border: 'none',
             borderRadius: 'var(--r)', padding: '8px 16px', cursor: 'pointer',
           }}>{cta}</button>
@@ -237,7 +237,7 @@ export function TxRow({ dot, category, name, label: labelProp, meta, amount, val
           : <>{isIncome ? '+' : MINUS}<Money>{amount}</Money></>}
       </div>
       {onEdit && (
-        <button className={styles.delBtn} onClick={onEdit} title={t('ui.edit')} aria-label={t('ui.editItem', { name: label })} style={{marginRight:2,fontSize:11}}>
+        <button className={styles.delBtn} onClick={onEdit} title={t('ui.edit')} aria-label={t('ui.editItem', { name: label })} style={{marginRight:2,fontSize:'var(--t-footnote)'}}>
           <Pencil size={13} strokeWidth={1.7} aria-hidden="true" />
         </button>
       )}
@@ -285,8 +285,8 @@ export function SegmentedControl({ value, onChange, options }) {
         const active = value === opt.value
         return (
           <button key={opt.value} type="button" onClick={() => onChange(opt.value)} aria-pressed={active} style={{
-            flex: 1, minHeight: 40, padding: '8px 12px', borderRadius: 'var(--r-pill)', cursor: 'pointer', fontSize: 13,
-            border: 0, fontWeight: active ? 600 : 500,
+            flex: 1, minHeight: 44, padding: '8px 12px', borderRadius: 'var(--r-pill)', cursor: 'pointer', fontSize: 'var(--t-subhead)',
+            border: 0, fontWeight: active ? 600 : 400,
             background: active ? 'var(--seg-on)' : 'transparent', boxShadow: active ? 'var(--seg-on-sh)' : 'none',
             color: active ? 'var(--tx)' : 'var(--tm)',
           }}>{opt.label}</button>

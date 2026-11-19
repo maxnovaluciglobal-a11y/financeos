@@ -49,9 +49,9 @@ function DemoProStrip({ t, days }) {
     <div role="note" style={{
       display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', padding: '8px 12px',
       background: 'var(--amb-bg)', border: 0, borderRadius: 'var(--r)',
-      fontSize: 13, color: 'var(--tm)', lineHeight: 1.45,
+      fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.45,
     }}>
-      <span style={{ fontFamily: 'var(--num)', fontSize: 11, fontWeight: 700, letterSpacing: '.5px', color: 'var(--amb)', flexShrink: 0 }}>PRO</span>
+      <span style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-footnote)', fontWeight: 700, letterSpacing: '.5px', color: 'var(--amb)', flexShrink: 0 }}>PRO</span>
       <span>{t('pro.demo.strip', { days })}</span>
     </div>
   )
@@ -88,10 +88,10 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }} aria-hidden="true">
         <IconIQScore size={40} />
       </div>
-      <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--tm)', marginBottom: 8 }}>
+      <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginBottom: 8 }}>
         {t('pro.gate.kicker')}
       </div>
-      <h2 style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.3 }}>
+      <h2 style={{ fontFamily: 'var(--display)', fontSize: 'var(--t-title-2)', fontWeight: 700, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.3 }}>
         {t('pro.gate.title', { feature: featureName })}
       </h2>
 
@@ -100,14 +100,14 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         style={{ listStyle: 'none', display: 'inline-flex', flexDirection: 'column', gap: 8, textAlign: 'left', margin: '0 0 20px', padding: 0 }}
       >
         {list.map(key => (
-          <li key={key} style={{ display: 'flex', alignItems: 'baseline', gap: 10, fontSize: 14, color: 'var(--tm)', lineHeight: 1.5 }}>
+          <li key={key} style={{ display: 'flex', alignItems: 'baseline', gap: 10, fontSize: 'var(--t-body)', color: 'var(--tm)', lineHeight: 1.5 }}>
             <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 'var(--rs)', background: 'var(--color-brand)', flexShrink: 0, transform: 'translateY(-2px)' }} />
             {t(key)}
           </li>
         ))}
       </ul>
 
-      <p style={{ fontSize: 13, color: 'var(--th)', marginBottom: 20 }}>
+      <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--th)', marginBottom: 20 }}>
         {t('pro.gate.price', priceVars)}
       </p>
 
@@ -124,18 +124,18 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         className={`${styles.btn} ${styles.btn_primary}`}
         aria-label={`${ctaLabel} (${t('pro.gate.ctaHint')})`}
         title={t('pro.gate.ctaHint')}
-        style={{ fontSize: 14, fontWeight: 700, padding: '10px 24px', minHeight: 48, textDecoration: 'none' }}
+        style={{ fontSize: 'var(--t-headline)', fontWeight: 700, padding: '10px 24px', minHeight: 48, textDecoration: 'none' }}
       >
         {ctaLabel}
       </a>
 
       {cta.trial && (
-        <p style={{ fontSize: 12, color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
           {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}
         </p>
       )}
       {preview && (
-        <p style={{ fontSize: 13, color: 'var(--tm)', marginTop: 16, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', marginTop: 16, lineHeight: 1.5 }}>
           {t('pro.gate.previewNote', { days: trialDays })}
         </p>
       )}
@@ -147,7 +147,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
     <>
       {gate}
       <section aria-label={t('pro.gate.previewLabel')} style={{ maxWidth: 960, margin: '0 auto 32px' }}>
-        <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)', marginBottom: 8 }}>
+        <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)', marginBottom: 8 }}>
           {t('pro.gate.previewLabel')}
         </div>
         <div inert data-pro-preview="" style={{

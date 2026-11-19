@@ -29,15 +29,15 @@
   border-bottom: 0.5px solid var(--brd);
   margin-bottom: 6px;
 }
-.logoSub  { font-size: .6875rem; color: var(--th); font-family: var(--sans); margin-top: 3px; }
+.logoSub  { font-size: var(--t-footnote); color: var(--th); font-family: var(--sans); margin-top: 3px; }
 
 .sec {
-  font-size: .75rem; font-weight: 600; font-family: var(--sans); color: var(--th);
+  font-size: var(--t-footnote); font-weight: 600; font-family: var(--sans); color: var(--th);
   padding: 10px 14px 3px;
 }
 .ni {
   display: flex; align-items: center; gap: 9px; min-height: 44px; box-sizing: border-box;
-  padding: 7px 10px; margin: 0 8px; cursor: pointer; font-size: .75rem; color: var(--tm);
+  padding: 7px 10px; margin: 0 8px; cursor: pointer; font-size: var(--t-footnote); color: var(--tm);
   border-radius: var(--r); transition: color .15s ease, background .15s ease, box-shadow .15s ease; user-select: none;
   /* reset de <button>: ocupa la fila, alineado a la izquierda, sin chrome */
   width: calc(100% - 16px); background: none; border: 0;
@@ -49,7 +49,7 @@
 .active   { color: var(--tx) !important; background: var(--color-brand-muted); font-weight: 600; }
 .active .ic { color: var(--color-brand-text); }
 .active:hover { background: var(--color-brand-muted); }
-.ic       { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; }
+.ic       { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: var(--t-footnote); flex-shrink: 0; }
 
 .footer {
   margin-top: auto;
@@ -59,7 +59,7 @@
 .themeBtn {
   width: 100%; min-height: 44px; padding: 6px 0; background: var(--fill); border: 0;
   display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
-  border-radius: var(--r); font-size: .75rem; font-family: var(--sans); color: var(--tm);
+  border-radius: var(--r); font-size: var(--t-footnote); font-family: var(--sans); color: var(--tm);
   transition: color .15s ease, border-color .15s ease, transform .16s var(--ease-out, ease-out);
 }
 .themeBtn:hover { color: var(--tx); background: var(--fill-2); }
@@ -83,7 +83,7 @@
 }
 .navTitle {
   position: relative; flex: 1; min-width: 0; text-align: center; pointer-events: none;
-  font-family: var(--sans); font-size: .9375rem; font-weight: 600; color: var(--tx);
+  font-family: var(--sans); font-size: var(--t-headline); font-weight: 600; color: var(--tx);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   opacity: 0; transition: opacity .2s var(--ease);
 }
@@ -96,7 +96,7 @@
   .navTitle { animation-range: 24px 56px; }
 }
 @keyframes navReveal { from { opacity: 0; } to { opacity: 1; } }
-.topRight { position: relative; font-size: .75rem; color: var(--th); font-family: var(--sans); flex-shrink: 0; white-space: nowrap; }
+.topRight { position: relative; font-size: var(--t-footnote); color: var(--th); font-family: var(--sans); flex-shrink: 0; white-space: nowrap; }
 .content  { flex: 1; overflow-y: auto; padding: var(--content-pt) 18px 24px; }
 /* El área de contenido es la que se desplaza (la ventana no): con tabIndex 0
    se puede desplazar con el teclado aunque la pantalla no tenga controles
@@ -135,7 +135,7 @@
 }
 .legalLink {
   /* Enlaces de navegación = lenguaje, no dato → sans */
-  font-size: .6875rem;
+  font-size: var(--t-footnote);
   color: var(--th);
   font-family: var(--sans);
   cursor: pointer;
@@ -148,7 +148,7 @@
   color: var(--grn);
 }
 .appVersion {
-  font-size: .6875rem;
+  font-size: var(--t-footnote);
   color: var(--th);
   font-family: var(--sans);
   margin-top: 8px;
@@ -174,7 +174,7 @@
   background: var(--fill);
   border: 0;
   border-radius: var(--r);
-  font-size: .7188rem;
+  font-size: var(--t-footnote);
   color: var(--th);
   /* Tip en frase → sans */
   font-family: var(--sans);
@@ -186,7 +186,7 @@
   border: none;
   cursor: pointer;
   color: var(--th);
-  font-size: .75rem;
+  font-size: var(--t-footnote);
   flex-shrink: 0;
   padding: 2px 4px;
   border-radius: 4px;
@@ -279,7 +279,7 @@
   transition: transform var(--dur-press) var(--ease-out);
 }
 .tab:active .tabIc { transform: scale(.92); }
-.tabLb { white-space: nowrap; font-size: .6875rem; line-height: .8125rem; font-weight: 500; letter-spacing: -0.01em; }
+.tabLb { white-space: nowrap; font-size: var(--t-caption); line-height: var(--t-caption-lh); font-weight: 500; letter-spacing: -0.01em; }
 /* Activa: píldora rellena en tinte de acción, ícono relleno y etiqueta en
    violeta (oscuro: morado 200 sobre el tinte, revisión A1.5). */
 .tabActive { color: var(--tabbar-fg-active); background: var(--tabbar-active-bg); }
@@ -361,7 +361,7 @@
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-width: 44px; min-height: 44px; margin: -14px 0 -14px -6px; padding: 0 10px;
   background: none; border: 0; border-radius: var(--r); color: var(--tm);
-  font: 500 .75rem/1 var(--sans); letter-spacing: 0; text-transform: none;
+  font: 600 var(--t-footnote)/1 var(--sans); letter-spacing: 0; text-transform: none;
   transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
 .amountsBtn:hover { color: var(--tx); background: var(--sur2); }
@@ -382,7 +382,7 @@
     min-width: 44px; min-height: 44px; max-width: 46vw;
     margin: 0 0 0 -12px; padding: 0 10px 0 4px;
     background: none; border: 0; border-radius: var(--r);
-    color: var(--color-brand-text); font: 500 .9375rem/1 var(--sans); letter-spacing: 0;
+    color: var(--color-brand-text); font: 400 var(--t-body)/1 var(--sans); letter-spacing: 0;
     cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background-color var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
   }

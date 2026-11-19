@@ -60,26 +60,36 @@
 }
 
 
-/* Raíz en 100 % para que los `rem` sigan el tamaño de texto del navegador
-   (migración a rem por etapas, 31-oct-2026); el cuerpo sigue midiendo 14 px. */
+/* Raíz en 100 % para que los `rem` sigan el tamaño de texto del navegador.
+   Desde el 19-nov-2026 el cuerpo es --t-body (17/22, escala de tokens.css §2c). */
 html { font-size: 100%; }
 /* Inter 4.1 (D2): cifras tabulares en todo (validacion/01-tipografia.md §3.2: las
    cifras cambian en vivo y no deben saltar), eje opsz automático para que los
    cuerpos grandes tomen las formas Display, y sin cv11 (la «a» de la marca es
-   la de dos pisos). Cuerpo de 14 px como hasta ahora: los 2.057 estilos en
-   línea están medidos contra él; pasa a Texto 15/24 por lotes (Entrega 2). */
-body { font-size: .875rem; }
+   la de dos pisos). Cuerpo de 17 px (HIG Body): los estilos en línea pasaron a
+   los tokens --t-* por lotes (19-nov-2026, auditoría móvil §5). */
+body { font-size: var(--t-body); }
 html, body, #root {
   height: 100%;
   font-family: var(--sans);
   background: var(--bg);
   color: var(--tx);
-  line-height: 1.5;
+  line-height: 1.4;
   font-variant-numeric: tabular-nums;
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
 }
 b, strong { font-weight: 600; }
+/* Roles de la escala (tokens.css §2c), para JSX sin estilos en línea. */
+.t-large-title { font-size: var(--t-large-title); line-height: var(--t-large-title-lh); font-weight: 700; letter-spacing: -0.025em; }
+.t-title    { font-size: var(--t-title);    line-height: var(--t-title-lh);    font-weight: 700; letter-spacing: -0.02em; }
+.t-title-2  { font-size: var(--t-title-2);  line-height: var(--t-title-2-lh);  font-weight: 700; letter-spacing: -0.015em; }
+.t-headline { font-size: var(--t-headline); line-height: var(--t-headline-lh); font-weight: 600; }
+.t-body     { font-size: var(--t-body);     line-height: var(--t-body-lh);     font-weight: 400; }
+.t-callout  { font-size: var(--t-callout);  line-height: var(--t-callout-lh);  font-weight: 400; }
+.t-subhead  { font-size: var(--t-subhead);  line-height: var(--t-subhead-lh);  font-weight: 400; }
+.t-footnote { font-size: var(--t-footnote); line-height: var(--t-footnote-lh); font-weight: 400; }
+.t-caption  { font-size: var(--t-caption);  line-height: var(--t-caption-lh);  font-weight: 500; }
 
 /* T14 · velo mientras la app está en segundo plano con el bloqueo activo
    (ver components/lock/AppLockGate.jsx): la captura del selector de apps no
@@ -109,7 +119,7 @@ input, select, textarea {
   border: 1px solid var(--field-brd);
   border-radius: var(--r);
   padding: 9px 11px;
-  font-size: 1rem;
+  font-size: var(--t-callout);
   font-family: var(--sans);
   color: var(--tx);
   outline: none;
@@ -151,7 +161,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .card-hover:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
 
 /* Tipografía display — jerarquía con carácter (títulos, no cuerpo). */
-.display { font-family: var(--display); font-weight: 500; letter-spacing: -0.02em; }
+.display { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; }
 
 /* Cifras: Inter con dígitos tabulares (--num = la misma familia de UI). La mono
    del sistema (--mono) queda solo para identificadores. */
@@ -172,7 +182,7 @@ button { cursor: pointer; font-family: var(--sans); }
 /* <Amount> (UI-M2): en la cifra protagonista, símbolo y centavos al 65 % y en
    --tm; la parte entera manda. En montos de fila no se atenúan. */
 .amount { white-space: nowrap; }
-.amount-hero .amount-sym, .amount-hero .amount-frac { font-size: .65em; color: var(--tm); font-weight: 500; }
+.amount-hero .amount-sym, .amount-hero .amount-frac { font-size: .65em; color: var(--tm); font-weight: 600; }
 .amount-hero .amount-sym { margin-right: .04em; }
 
 /* Monto oculto (T13, components/Money.jsx): el "•••" hereda tamaño y color de la
@@ -229,6 +239,13 @@ button { cursor: pointer; font-family: var(--sans); }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 
+/* Utilidad: texto que se oculta a la vista en teléfonos angostos (< 380 px) y
+   sigue siendo el nombre accesible (ej. "+ Agregar" de las bolsas de Metas: el
+   nombre de la meta necesita ese ancho). */
+@media (max-width: 379px) {
+  .fos-sr-narrow { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+}
+
 /* Utilidad: ocultar en móvil (≤700px) */
 @media (max-width: 700px) {
   .fos-hide-mobile { display: none !important; }
@@ -258,7 +275,7 @@ button { cursor: pointer; font-family: var(--sans); }
   width: 100%; min-height: 44px; padding: 10px 16px;
   border: none; border-radius: var(--btn-radius);
   background: var(--btn-primary-bg); color: var(--btn-primary-fg);
-  font-family: var(--sans); font-size: .9375rem; font-weight: 600; line-height: 1.2;
+  font-family: var(--sans); font-size: var(--t-headline); font-weight: 600; line-height: 1.2;
   box-shadow: var(--sh-1);
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
@@ -271,7 +288,7 @@ button { cursor: pointer; font-family: var(--sans); }
   width: 100%; min-height: 44px; padding: 10px 14px;
   border: 0; border-radius: var(--r);
   background: var(--fill); color: var(--tx);
-  font-family: var(--sans); font-size: .875rem; font-weight: 500; line-height: 1.2;
+  font-family: var(--sans); font-size: var(--t-body); font-weight: 600; line-height: 1.2;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .fos-btn-secondary:hover:not(:disabled), .fos-btn-secondary:active:not(:disabled) { background: var(--fill-2); color: var(--tx); }
@@ -281,7 +298,7 @@ button { cursor: pointer; font-family: var(--sans); }
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 44px; padding: 0 4px;
   background: none; border: none;
-  color: var(--tm); font-family: var(--sans); font-size: .875rem; font-weight: 500;
+  color: var(--tm); font-family: var(--sans); font-size: var(--t-body); font-weight: 600;
   text-decoration: underline; text-decoration-color: var(--brd2); text-underline-offset: 3px;
   transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
 }
@@ -293,10 +310,10 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-chip {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  min-height: 40px; padding: 8px 14px;
+  min-height: 44px; padding: 8px 14px;
   border: 0; border-radius: var(--r-pill);
   background: var(--fill); color: var(--tx);
-  font-family: var(--sans); font-size: .8125rem; font-weight: 500; line-height: 1.2;
+  font-family: var(--sans); font-size: var(--t-subhead); font-weight: 600; line-height: 1.2;
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 /* Área táctil de 44 px (V2) sin cambiar el dibujo: el chip puede medir 36 o
@@ -320,12 +337,12 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-tag {
   display: inline-flex; align-items: center; padding: 1px 8px;
   border: 0; border-radius: var(--r-pill); background: var(--fill);
-  font-family: var(--sans); font-size: .75rem; font-weight: 500; line-height: 1.5; color: var(--tm);
+  font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600; line-height: 1.5; color: var(--tm);
 }
 /* Estado = ícono + palabra en el color del estado (nunca solo color). */
 .fos-state {
   display: inline-flex; align-items: center; gap: 4px;
-  font-family: var(--sans); font-size: .75rem; font-weight: 600; line-height: 1.5;
+  font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600; line-height: 1.5;
 }
 /* Un <input> transparente encima del chip (ej. el selector de fecha nativo)
    oculta su propio outline: el anillo de foco se dibuja en el chip. */
@@ -334,7 +351,7 @@ button { cursor: pointer; font-family: var(--sans); }
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   width: 100%; min-height: 44px; padding: 9px 11px; box-sizing: border-box;
   background: var(--sur2); border: 1px solid var(--field-brd); border-radius: var(--r);
-  color: var(--tx); font-family: var(--sans); font-size: 1rem; line-height: 1.25; text-align: left; cursor: pointer;
+  color: var(--tx); font-family: var(--sans); font-size: var(--t-callout); line-height: 1.25; text-align: left; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 .fos-select:disabled { opacity: .6; cursor: not-allowed; }
@@ -389,17 +406,17 @@ button { cursor: pointer; font-family: var(--sans); }
 }
 .demo-banner__short {
   grid-area: short; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-family: var(--sans); font-size: .875rem; font-weight: 600; color: var(--on-grad-text);
+  font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600; color: var(--on-grad-text);
 }
 .demo-banner__badge {
   grid-area: badge;
   padding: 3px 7px; border-radius: var(--rs);
   border: 1px solid color-mix(in srgb, var(--on-grad-text) 35%, transparent);
-  font-family: var(--sans); font-size: .75rem; font-weight: 600;
+  font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600;
 }
 .demo-banner__label {
   grid-area: label; min-width: 0;
-  font-family: var(--sans); font-size: .75rem; line-height: 1.35;
+  font-family: var(--sans); font-size: var(--t-footnote); line-height: 1.35;
   color: color-mix(in srgb, var(--on-grad-text) 82%, transparent);
 }
 .demo-banner__scenario {
@@ -408,13 +425,13 @@ button { cursor: pointer; font-family: var(--sans); }
   border-radius: var(--r); cursor: pointer; text-align: left;
   border: 1px solid color-mix(in srgb, var(--on-grad-text) 28%, transparent);
   background: color-mix(in srgb, var(--on-grad-text) 8%, transparent);
-  color: var(--on-grad-text); font-family: var(--sans); font-size: .75rem; font-weight: 500; line-height: 1.25;
+  color: var(--on-grad-text); font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600; line-height: 1.25;
 }
 .demo-banner__scenario:hover { background: color-mix(in srgb, var(--on-grad-text) 14%, transparent); }
 .demo-banner__plans {
   grid-area: plans; min-height: 44px; padding: 0 4px;
   align-items: center;
-  font-family: var(--sans); font-size: .75rem; font-weight: 500; white-space: nowrap;
+  font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600; white-space: nowrap;
   color: var(--on-grad-text); text-decoration: underline; text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, var(--on-grad-text) 40%, transparent);
 }
@@ -424,13 +441,13 @@ button { cursor: pointer; font-family: var(--sans); }
   border-radius: var(--r); cursor: pointer;
   border: 1px solid color-mix(in srgb, var(--on-grad-text) 28%, transparent);
   background: transparent; color: var(--on-grad-text);
-  font-family: var(--sans); font-size: .9375rem; font-weight: 600;
+  font-family: var(--sans); font-size: var(--t-headline); font-weight: 600;
 }
 .demo-banner__help { grid-area: help; }
 .demo-banner__more { grid-area: more; display: inline-flex; border-color: transparent; }
 .demo-banner__more[aria-expanded="true"] { background: color-mix(in srgb, var(--on-grad-text) 12%, transparent); }
 .demo-banner__help:hover, .demo-banner__more:hover { background: color-mix(in srgb, var(--on-grad-text) 10%, transparent); }
-.demo-banner__cta { grid-area: cta; width: auto; min-height: 44px; padding: 0 16px; font-size: .875rem; white-space: nowrap; text-decoration: none; }
+.demo-banner__cta { grid-area: cta; width: auto; min-height: 44px; padding: 0 16px; font-size: var(--t-subhead); white-space: nowrap; text-decoration: none; }
 .demo-banner :focus-visible { outline-color: var(--on-grad-accent); }
 
 /* Menú ⋯ del celular: capa flotante bajo la franja, superficie elevada. */
@@ -441,16 +458,16 @@ button { cursor: pointer; font-family: var(--sans); }
   background: var(--color-surface-raised); color: var(--tx); border: 0; border-radius: var(--rxl);
   box-shadow: var(--sh-3);
 }
-.demo-banner__menuLabel { margin: 0; padding: 8px 10px 6px; font-family: var(--sans); font-size: .75rem; line-height: 1.4; color: var(--th); }
+.demo-banner__menuLabel { margin: 0; padding: 8px 10px 6px; font-family: var(--sans); font-size: var(--t-footnote); line-height: 1.4; color: var(--th); }
 .demo-banner__menuItem {
   display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px;
   min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r);
   background: none; color: var(--tx); cursor: pointer; text-align: left; text-decoration: none;
-  font-family: var(--sans); font-size: .875rem; font-weight: 500;
+  font-family: var(--sans); font-size: var(--t-body); font-weight: 600;
 }
 .demo-banner__menuItem:hover { background: var(--sur2); }
 .demo-banner__menuItem + .demo-banner__menuItem { border-top: 1px solid var(--brd); border-radius: 0; }
-.demo-banner__menuHint { font-size: .75rem; font-weight: 400; color: var(--th); }
+.demo-banner__menuHint { font-size: var(--t-footnote); font-weight: 400; color: var(--th); }
 .demo-banner__menu :focus-visible { outline-color: var(--color-focus); }
 
 /* CTA inferior del demo: tarjeta encima de la barra y del botón "+" (no los tapa) */
@@ -495,7 +512,7 @@ button { cursor: pointer; font-family: var(--sans); }
   display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
   min-height: 44px; padding: 8px 10px 8px 12px;
   background: var(--sur2); border: 1px solid var(--field-brd); border-radius: var(--r);
-  color: var(--tx); font: 400 1rem/1.2 var(--sans); text-align: left;
+  color: var(--tx); font: 400 var(--t-callout)/1.2 var(--sans); text-align: left;
   transition: border-color var(--dur) var(--ease);
 }
 .fos-cselect:hover { border-color: var(--tm); }
@@ -514,7 +531,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .fos-cselect__list[hidden] { display: none; }
 .fos-cselect__opt {
   display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 10px;
-  border-radius: var(--rs); color: var(--tx); font: 400 .875rem/1.25 var(--sans); cursor: pointer;
+  border-radius: var(--rs); color: var(--tx); font: 400 var(--t-body)/1.25 var(--sans); cursor: pointer;
 }
 .fos-cselect__opt[data-active] { background: var(--grn-bg); }
 .fos-cselect__opt[aria-selected="true"] { font-weight: 600; }
