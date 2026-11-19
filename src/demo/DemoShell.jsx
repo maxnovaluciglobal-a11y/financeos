@@ -96,7 +96,7 @@ function DemoBottomCTA({ hidden }) {
     <div className="demo-bottom-cta" role="region" aria-label={t('demo.cta.title')}>
       <div style={{ flex: 1, minWidth: 180, paddingRight: 36 }}>
         <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 2 }}>{t('demo.cta.title')}</div>
-        <div style={{ fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'var(--on-grad-text-2)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
+        <div style={{ fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'var(--on-grad-text-2)' }}>{canShowWebCheckout() ? t('demo.cta.sub', proPriceVars(lang)) : t('demo.cta.subNative')}</div>
       </div>
       {/* Mismo destino y texto que el CTA del banner (T09): la app real, en la
           misma pestaña — el registro ya captura el lead. "Ver planes" queda como
