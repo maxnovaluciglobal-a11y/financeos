@@ -17,6 +17,12 @@ const LS_V2 = 'fnos_license_v2'
 const LS_V1 = 'fnos_license_v1'
 const REVALIDATE_MS = 7 * 24 * 60 * 60 * 1000 // re-valida online cada 7 días
 const KEY_RE = /^FNOS-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/
+// El prefijo FNOS- es estructural (validate_license, hash y llave del sync
+// salen de la clave completa) pero es un resto de FinanceOS: la app ya no lo
+// muestra (formato "XXXX-XXXX-XXXX", auditoría de correos 18-nov-2026) y
+// acepta la clave con o sin él; internamente siempre se usa la clave completa.
+export const LICENSE_PREFIX = 'FNOS-'
+const KEY_BODY_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -72,6 +78,7 @@ export function normalizeLicenseInput(key) {
   const raw = String(key || '').trim()
   if (LICENSE_HASH_RE.test(raw)) return raw.toLowerCase()
   const up = raw.toUpperCase()
+  if (KEY_BODY_RE.test(up)) return LICENSE_PREFIX + up
   return KEY_RE.test(up) ? up : null
 }
 export function isLicenseHash(key) { return LICENSE_HASH_RE.test(String(key || '').trim()) }

@@ -1,7 +1,7 @@
 // src/components/LicenseGate.jsx
 import { useState, useRef } from 'react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
-import { validateLicense, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement } from '../utils/licenseValidator.js'
+import { validateLicense, normalizeLicenseInput, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
 import Turnstile from './Turnstile.jsx'
 import Logo from './Logo.jsx'
@@ -50,7 +50,9 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   const captcha = useRef(null)
 
   async function handleActivate() {
-    const clean = key.trim()
+    // Con o sin el prefijo FNOS- (la pantalla ya no lo muestra): a la cuenta
+    // se guarda siempre la clave completa, la misma que valida y cifra.
+    const clean = normalizeLicenseInput(key) ?? key.trim()
     if (!clean) return
     setLoading(true)
     setError('')

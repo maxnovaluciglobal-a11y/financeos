@@ -66,3 +66,22 @@ describe('AuthGate', () => {
     }
   })
 })
+
+describe('AuthGate: enlace vencido o ya usado (auditoría de correos 18-nov-2026)', () => {
+  it.each(['es', 'en', 'pt', 'de'])('%s: con #error_code=otp_expired avisa que el enlace venció', (lang) => {
+    const html = render(lang, '', '#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired')
+    expect(html).toContain('data-testid="authgate-link-expired"')
+    expect(html).toContain('role="alert"')
+    expect(html).toContain(translate(lang, 'authGate.linkExpired'))
+    expect(translate(lang, 'authGate.linkExpired')).not.toBe('authGate.linkExpired')
+  })
+
+  it('también con error=access_denied en la query (PKCE)', () => {
+    expect(render('es', '?error=access_denied')).toContain('El enlace venció o ya se usó. Pide uno nuevo.')
+  })
+
+  it('sin error en la URL no muestra el aviso', () => {
+    expect(render('es')).not.toContain('authgate-link-expired')
+    expect(render('es', '', '#signup')).not.toContain('authgate-link-expired')
+  })
+})

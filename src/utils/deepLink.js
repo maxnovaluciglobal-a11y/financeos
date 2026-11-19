@@ -132,3 +132,59 @@ function computeInitialSearch(search, storage, now, local, hash) {
 export function wantsDeleteAccount(search) {
   return openParam(search) === 'delete-account'
 }
+
+// Enlace de un correo de Auth vencido o ya usado (auditoría de correos
+// 18-nov-2026). Supabase vuelve a la app con el error en el hash
+// (#error=access_denied&error_code=otp_expired&error_description=…) o, en el
+// flujo PKCE, en la query. Antes la app lo ignoraba y la persona caía en el
+// login sin saber que su enlace había vencido. Devuelve el código de error o
+// null si la URL no trae ninguno.
+const AUTH_ERROR_PARAMS = ['error', 'error_code', 'error_description']
+
+function authErrorParams(search, hash) {
+  const out = []
+  for (const raw of [String(hash || '').replace(/^#/, ''), String(search || '').replace(/^\?/, '')]) {
+    try { out.push(new URLSearchParams(raw)) } catch { /* URL malformada: se ignora */ }
+  }
+  return out
+}
+
+export function authLinkErrorFrom(search, hash = '') {
+  for (const p of authErrorParams(search, hash)) {
+    const code = p.get('error_code')
+    if (code === 'otp_expired') return 'otp_expired'
+    if (p.get('error') === 'access_denied') return code || 'access_denied'
+  }
+  return null
+}
+
+// Leído al evaluar el módulo, como BOOT_AUTH_MARK: supabase-js puede limpiar
+// la URL antes de que se monte la pantalla de acceso.
+const BOOT_AUTH_LINK_ERROR = (() => {
+  try {
+    if (typeof window === 'undefined') return null
+    return authLinkErrorFrom(window.location.search, window.location.hash)
+  } catch { return null }
+})()
+
+export function bootAuthLinkError() {
+  return BOOT_AUTH_LINK_ERROR
+}
+
+// Saca los parámetros de error de la URL visible (sin recargar) para que el
+// aviso no vuelva a salir al recargar ni quede en un enlace copiado. Devuelve
+// la URL nueva, o null si no había nada que limpiar.
+export function urlWithoutAuthError(href) {
+  let url
+  try { url = new URL(href) } catch { return null }
+  let changed = false
+  for (const k of AUTH_ERROR_PARAMS) if (url.searchParams.has(k)) { url.searchParams.delete(k); changed = true }
+  const hash = new URLSearchParams(url.hash.replace(/^#/, ''))
+  if (AUTH_ERROR_PARAMS.some(k => hash.has(k))) {
+    for (const k of AUTH_ERROR_PARAMS) hash.delete(k)
+    const rest = hash.toString()
+    url.hash = rest ? `#${rest}` : ''
+    changed = true
+  }
+  return changed ? url.toString() : null
+}

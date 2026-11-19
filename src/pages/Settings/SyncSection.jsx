@@ -186,7 +186,7 @@ export default function SyncSection() {
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.licenseTitle')}</div>
           <p style={sub}>{t('syncPass.licenseBody')}</p>
           <label htmlFor="sync-license" style={{ ...lbl, marginTop: 8 }}>{t('syncPass.licenseLabel')}</label>
-          <input id="sync-license" value={licenseInput} onChange={(e) => setLicenseInput(e.target.value)} style={input} autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="FNOS-XXXX-XXXX-XXXX" />
+          <input id="sync-license" value={licenseInput} onChange={(e) => setLicenseInput(e.target.value)} style={input} autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder={t('licenseGate.keyFormat')} />
           {error && <p role="alert" style={{ ...sub, color: 'var(--red)' }}>{error}</p>}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Btn variant="primary" size="sm" type="submit" disabled={busy || !licenseInput.trim()}>{t('syncPass.licenseSubmit')}</Btn>

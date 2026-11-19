@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { pageFromSearch, authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash, initialSearch, planParam, SIGNUP_OPEN_KEY } from './deepLink.js'
+import { pageFromSearch, authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash, initialSearch, planParam, SIGNUP_OPEN_KEY, authLinkErrorFrom, urlWithoutAuthError, bootAuthLinkError } from './deepLink.js'
 import { APP_DESTINATIONS, APP_URL, appLink } from '../../supabase/functions/_shared/appLinks.ts'
 import { STARTER_TEMPLATES } from '../../supabase/functions/send-nurture-starter-email/nurtureTemplates.ts'
 import { DIAGNOSTICO_TEMPLATES } from '../../supabase/functions/send-nurture-diagnostico-email/nurtureTemplates.ts'
@@ -210,5 +210,31 @@ describe('AuthGate: pestaña de registro y destino tras Google (C-31, APP-N2)', 
     expect(initialSearch('?code=z', st, 10, { local: null, hash: '' })).toBe('?open=upgrade&plan=annual')
     expect(planParam('?plan=weekly')).toBe(null)
     expect(planParam('?open=upgrade&plan=annual')).toBe('annual')
+  })
+})
+
+describe('enlace de Auth vencido (auditoría de correos 18-nov-2026)', () => {
+  it('lee el error del hash (implícito) y de la query (PKCE)', () => {
+    expect(authLinkErrorFrom('', '#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired')).toBe('otp_expired')
+    expect(authLinkErrorFrom('?error=access_denied&error_code=otp_expired', '')).toBe('otp_expired')
+    expect(authLinkErrorFrom('', '#error=access_denied')).toBe('access_denied')
+    expect(authLinkErrorFrom('', '#error=access_denied&error_code=flow_state_expired')).toBe('flow_state_expired')
+  })
+  it('sin error o con otros parámetros, null', () => {
+    expect(authLinkErrorFrom('', '')).toBe(null)
+    expect(authLinkErrorFrom('?open=signup', '#signup')).toBe(null)
+    expect(authLinkErrorFrom('', '#access_token=abc&type=signup')).toBe(null)
+    expect(authLinkErrorFrom('?error=server_error', '')).toBe(null)
+  })
+  it('en Node (sin window) la marca de arranque es null', () => {
+    expect(bootAuthLinkError()).toBe(null)
+  })
+  it('urlWithoutAuthError quita solo los parámetros de error', () => {
+    expect(urlWithoutAuthError('https://app.moyiq.app/app/#error=access_denied&error_code=otp_expired&error_description=x'))
+      .toBe('https://app.moyiq.app/app/')
+    expect(urlWithoutAuthError('https://app.moyiq.app/app/?open=import&error=access_denied&error_code=otp_expired#signup'))
+      .toBe('https://app.moyiq.app/app/?open=import#signup')
+    expect(urlWithoutAuthError('https://app.moyiq.app/app/?open=import')).toBe(null)
+    expect(urlWithoutAuthError('no es una url')).toBe(null)
   })
 })

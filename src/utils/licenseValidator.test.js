@@ -37,6 +37,22 @@ describe('formato de la licencia', () => {
   })
 })
 
+describe('clave sin el prefijo FNOS- (auditoría de correos 18-nov-2026)', () => {
+  it('la acepta y la completa: validación, hash y sync usan siempre la clave entera', () => {
+    expect(lv.normalizeLicenseInput('abcd-efgh-ijkl')).toBe('FNOS-ABCD-EFGH-IJKL')
+    expect(lv.normalizeLicenseInput(' ABCD-EFGH-IJKL ')).toBe('FNOS-ABCD-EFGH-IJKL')
+    expect(lv.LICENSE_PREFIX).toBe('FNOS-')
+    for (const bad of ['ABCD-EFGH', 'ABCD-EFGH-IJK', 'ABCDEFGHIJKL', 'XXXX-ABCD-EFGH-IJKL']) expect(lv.normalizeLicenseInput(bad)).toBeNull()
+  })
+
+  it('validateLicense con la clave sin prefijo manda el mismo hash que con prefijo y guarda la clave completa', async () => {
+    const f = server(true)
+    expect(await lv.validateLicense('ABCD-EFGH-IJKL')).toBe(true)
+    expect(JSON.parse(f.mock.calls[0][1].body).p_key).toBe(HASH)
+    expect(lv.getLicenseKey()).toBe('FNOS-ABCD-EFGH-IJKL')
+  })
+})
+
 describe('validateLicense', () => {
   it('manda al servidor el hash, nunca la clave, y guarda la caché', async () => {
     const f = server(true)

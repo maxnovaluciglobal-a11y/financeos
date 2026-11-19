@@ -4,7 +4,7 @@
 // concepto de cuenta; esto no reemplaza esa arquitectura local-first (los
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
@@ -12,7 +12,7 @@ import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
 import { isCaptchaError } from '../core/turnstile.js'
-import { authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash } from '../utils/deepLink.js'
+import { authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash, authLinkErrorFrom, bootAuthLinkError, urlWithoutAuthError } from '../utils/deepLink.js'
 
 const LEGAL_URLS = {
   es: { terms: 'https://moyiq.app/terms.html', privacy: 'https://moyiq.app/privacy.html' },
@@ -78,6 +78,16 @@ export default function AuthGate({ onAuthenticated }) {
     try { return sessionStorage.getItem('fnos_account_deleted') === '1' } catch { return false }
   })
   const clearDeletedNotice = () => { try { sessionStorage.removeItem('fnos_account_deleted') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
+  // Enlace de un correo (confirmación, acceso, recuperar contraseña) vencido o
+  // ya usado: Supabase vuelve con #error_code=otp_expired. Se avisa en vez de
+  // dejar a la persona en el login sin explicación, y se limpia la URL.
+  const [linkError, setLinkError] = useState(() => authLinkErrorFrom(window.location.search, window.location.hash) || bootAuthLinkError())
+  useEffect(() => {
+    try {
+      const clean = urlWithoutAuthError(window.location.href)
+      if (clean) window.history.replaceState(window.history.state, '', clean)
+    } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
+  }, [])
 
   async function handleSubmit() {
     const cleanEmail = email.trim()
@@ -85,6 +95,7 @@ export default function AuthGate({ onAuthenticated }) {
     if (tab === 'signup' && password.length < MIN_PASSWORD_LENGTH) { setError(t('authGate.errorWeakPassword')); return }
     setError('')
     clearDeletedNotice()
+    setLinkError(null)
     setLoading(true)
     if (tab === 'signup') stashOpenForSignup(window.location.search)
     const captchaToken = await captcha.current?.getToken()
@@ -345,6 +356,11 @@ export default function AuthGate({ onAuthenticated }) {
         <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
           {t('authGate.subtitle')}
         </div>
+        {linkError && (
+          <div role="alert" data-testid="authgate-link-expired" style={{ fontSize: 13, color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
+            {t('authGate.linkExpired')}
+          </div>
+        )}
         {accountDeleted && (
           <div role="status" style={{ fontSize: 13, color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
             {t('deleteAccount.doneNotice')}
