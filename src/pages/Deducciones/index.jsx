@@ -58,7 +58,7 @@ export default function Deducciones() {
   // Guard: país sin módulo
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('deducciones.notAvailable')}
       </div>
     )
@@ -79,7 +79,7 @@ export default function Deducciones() {
 
         {/* Inputs */}
         <Card>
-          <CardHeader title={t('deducciones.card.yourYearData')} right={<span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
+          <CardHeader title={t('deducciones.card.yourYearData')} right={<span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
 
           {config.needsIngreso && (
             <FormRow>
@@ -107,7 +107,7 @@ export default function Deducciones() {
             </FormRow>
           )}
 
-          <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', margin: '12px 0 8px' }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', margin: '12px 0 8px' }}>
             {t('deducciones.deductibleExpenses')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
@@ -125,36 +125,36 @@ export default function Deducciones() {
           <Card>
             <CardHeader title={result.tituloResultado} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-large-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 {fmt(result.ahorro)}
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {result.resumen}
               </div>
             </div>
 
             {/* Progreso al tope */}
-            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
+            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>
               <span>{t('deducciones.capUsage')}</span>
               <span>{Math.round(result.topePct)}%</span>
             </div>
             <ProgressBar value={result.topePct} max={100} color={result.topePct >= 100 ? 'green' : 'amber'} height={6} label={t('deducciones.capUsage')} />
             {result.faltaParaTope > 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
                 {t(config.needsIngreso ? 'deducciones.remainingWithIncome' : 'deducciones.remainingNoIncome', { amt: fmt(result.faltaParaTope) })}
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>
                 {t('deducciones.capReached')}
               </div>
             )}
 
             {/* Desglose */}
             <div style={{ marginTop: 16, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
-              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>{t('deducciones.breakdown')}</div>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>{t('deducciones.breakdown')}</div>
               {result.desglose.map((d, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', color: 'var(--tx)' }}>
-                  <span>{d.label}{d.rate ? <span style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 11 }}> · {t('deducciones.deductiblePct', { pct: fmtPctPoints(Math.round(d.rate * 100)) })}</span> : null}</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', padding: '4px 0', color: 'var(--tx)' }}>
+                  <span>{d.label}{d.rate ? <span style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)' }}> · {t('deducciones.deductiblePct', { pct: fmtPctPoints(Math.round(d.rate * 100)) })}</span> : null}</span>
                   <span style={{ fontFamily: 'var(--sans)' }}>
                     {fmt(d.monto)}{d.aporta != null ? <span style={{ color: 'var(--accent)' }}> → {fmt(d.aporta)}</span> : null}
                   </span>
@@ -183,7 +183,7 @@ function EventosCard({ config, fmt }) {
   return (
     <Card>
       <CardHeader title={ev.titulo} />
-      <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>{ev.sub}</div>
+      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>{ev.sub}</div>
 
       <FormRow>
         <FormGroup label={ev.sueldoLabel}>
@@ -214,12 +214,12 @@ function EventosCard({ config, fmt }) {
           const monto = s > 0 ? item.calc(s, extra, regimen) : 0
           return (
             <div key={item.key} style={{ background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{item.label}</div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>{item.when}</div>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 24, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{item.label}</div>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>{item.when}</div>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-title-2)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 {fmt(monto)}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>{item.info}</div>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>{item.info}</div>
             </div>
           )
         })}

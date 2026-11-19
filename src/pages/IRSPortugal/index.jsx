@@ -29,7 +29,7 @@ export default function IRSPortugal() {
 
   if (country !== 'PT') {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('irsPT.notAvailable')}
       </div>
     )
@@ -56,7 +56,7 @@ export default function IRSPortugal() {
           {ESCALOES_IRS_2026.map((e, i) => {
             const desde = i === 0 ? 0 : ESCALOES_IRS_2026[i - 1].hasta
             return (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0', color: 'var(--tx)' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', padding: '6px 0', color: 'var(--tx)' }}>
                 <span>{fmtEUR(desde)} — {e.hasta === Infinity ? t('irsPT.andAbove') : fmtEUR(e.hasta)}</span>
                 <span className="num">{fmtPct(e.tasa, { locale: 'pt-PT' })}</span>
               </div>
@@ -82,7 +82,7 @@ function EmpregadoCard({ t }) {
       </FormRow>
 
       {result && result.isento && (
-        <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, textAlign: 'center', padding: '12px 0' }}>
+        <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--accent)', fontWeight: 600, textAlign: 'center', padding: '12px 0' }}>
           {t('irsPT.exempt', { min: fmtEUR(MINIMO_EXISTENCIA) })}
         </div>
       )}
@@ -90,42 +90,42 @@ function EmpregadoCard({ t }) {
       {result && (
         <>
           <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-large-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
               {fmtEUR(result.liquidoMensal)}
             </div>
-            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
               {t('irsPT.netMonthlyLabel', { rate: fmtPctPoints(result.taxaEfetiva * 100, 1) })}
             </div>
           </div>
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.irsWithholding')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>−{fmtEUR(result.retencaoMensal)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.socialSecurity')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>−{fmtEUR(result.ssMensal)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.annualIRS')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.irsAnual)}</span>
             </div>
             {result.solidariedade > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
                 <span>{t('irsPT.row.solidarity')}</span>
                 <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.solidariedade)}</span>
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.specificDeduction')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.deducaoEspecifica)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.taxableIncome')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.rendimentoColetavel)}</span>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
             {t('irsPT.empregadoNote', {
               min: fmtEUR(MINIMO_EXISTENCIA),
               ssNote: result.deducaoPorSS ? t('irsPT.ssNoteYes') : t('irsPT.ssNoteNo'),
@@ -153,42 +153,42 @@ function RecibosVerdesCard({ t }) {
       {result && (
         <>
           <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-large-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
               {fmtEUR(result.irsAnual)}
             </div>
-            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
               {t('irsPT.annualIRSEstimated', { rate: fmtPctPoints(result.taxaEfetiva * 100, 1) })}
             </div>
           </div>
           <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.taxableBase')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.baseTributavel)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.ssDeduction')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>−{fmtEUR(result.deducaoSS)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.taxableIncome')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.rendimentoColetavel)}</span>
             </div>
             {result.solidariedade > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
                 <span>{t('irsPT.row.solidarity')}</span>
                 <span style={{ fontFamily: 'var(--sans)' }}>{fmtEUR(result.solidariedade)}</span>
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.annualSS')}</span>
               <span style={{ fontFamily: 'var(--sans)' }}>−{fmtEUR(result.ssAnual)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('irsPT.row.netMonthlyEstimated')}</span>
               <span style={{ fontFamily: 'var(--num)', fontWeight: 600 }}>{fmtEUR(result.liquidoMensal)}</span>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
             {t('irsPT.verdesNote')}
           </div>
         </>

@@ -28,7 +28,7 @@ function shortDate(iso) {
   try { return new Date(y, m - 1, d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' }) } catch { return iso }
 }
 
-const groupHead = { display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0 0', paddingTop: 12, borderTop: '1px solid var(--brd2)', fontSize: 12, fontWeight: 600, color: 'var(--tm)', fontFamily: 'var(--sans)' }
+const groupHead = { display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0 0', paddingTop: 12, borderTop: '1px solid var(--brd2)', fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tm)', fontFamily: 'var(--sans)' }
 
 export default function Receivables({ receivables, incomes, addDebt, updateDebt, addIncome, deleteWithUndo, settings, sym }) {
   const { t } = useT()
@@ -107,23 +107,23 @@ export default function Receivables({ receivables, incomes, addDebt, updateDebt,
       <li key={d.id} style={{ listStyle: 'none', padding: '12px 0', borderTop: i > 0 ? '1px solid var(--brd)' : 'none' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.creditor}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 3, fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+            <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.creditor}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 3, fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
               {/* En el grupo "Sin fecha" la fecha ya la dice el título: el estado es "Pendiente". */}
               <StateTag tone={STATE_TONE[state]} label={t(`debts.owed.state.${state === 'undated' ? 'pending' : state}`)} size={13} />
               {meta && <span style={{ minWidth: 0 }}>{meta}</span>}
             </div>
             {history.length > 0 && (
-              <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3 }}>
                 {t('debts.owed.history', { list: history.map(c => `${shortDate(c.date)} +${money(c.amount)}`).join(' · ') })}
               </div>
             )}
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div className="num" style={{ fontSize: 14, fontWeight: 600, color: balance > 0 ? 'var(--pos)' : 'var(--th)' }}>
+            <div className="num" style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: balance > 0 ? 'var(--pos)' : 'var(--th)' }}>
               {balance > 0 ? '+' : ''}<Money>{fmtMoney(balance > 0 ? balance : initial, sym)}</Money>
             </div>
-            {partial && <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('debts.owed.ofTotal', { v: money(initial) })}</div>}
+            {partial && <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('debts.owed.ofTotal', { v: money(initial) })}</div>}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
@@ -132,7 +132,7 @@ export default function Receivables({ receivables, incomes, addDebt, updateDebt,
           )}
           <span style={{ flex: 1 }} />
           <button type="button" onClick={() => remove(d)} aria-label={t('debts.owed.delete')}
-            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 13, cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 'var(--t-subhead)', cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
         {collectId === d.id && (
           <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 8, background: 'var(--fill)', border: 0 }}>
@@ -141,9 +141,9 @@ export default function Receivables({ receivables, incomes, addDebt, updateDebt,
                 <input type="number" inputMode="decimal" min="0" step="0.01" max={balance} value={collectAmt} onChange={e => setCollectAmt(e.target.value)} />
               </FormGroup>
             </FormRow>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 13, color: 'var(--tx)', fontFamily: 'var(--sans)', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 'var(--t-subhead)', color: 'var(--tx)', fontFamily: 'var(--sans)', cursor: 'pointer' }}>
               <input type="checkbox" checked={asIncome} onChange={e => setAsIncome(e.target.checked)} style={{ width: 18, height: 18, flexShrink: 0 }} />
-              <span>{t('debts.owed.collect.asIncome')} <span style={{ color: 'var(--th)', fontSize: 12 }}>{t('debts.owed.collect.asIncomeHint')}</span></span>
+              <span>{t('debts.owed.collect.asIncome')} <span style={{ color: 'var(--th)', fontSize: 'var(--t-footnote)' }}>{t('debts.owed.collect.asIncomeHint')}</span></span>
             </label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <Btn variant="ghost" size="sm" onClick={() => confirmCollect(d)} disabled={entered <= 0}
@@ -165,7 +165,7 @@ export default function Receivables({ receivables, incomes, addDebt, updateDebt,
 
   return (
     <>
-      <p style={{ fontSize: 12.5, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t('debts.owed.intro')}</p>
+      <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t('debts.owed.intro')}</p>
       <div className="kpi-row" data-tour="debt-kpis">
         <KPI label={t('debts.owed.kpi.pending')} value={money(totals.pending)} color="green" />
         <KPI label={t('debts.owed.kpi.collected')} value={money(totals.collected)} />
@@ -197,8 +197,8 @@ export default function Receivables({ receivables, incomes, addDebt, updateDebt,
       {!hasAny && !show && (
         <Card>
           <div style={{ padding: '16px 0', textAlign: 'center' }}>
-            <div style={{ fontSize: 13, color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 6 }}>{t('debts.owed.empty')}</div>
-            <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>{t('debts.owed.emptyHint')}</div>
+            <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 6 }}>{t('debts.owed.empty')}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>{t('debts.owed.emptyHint')}</div>
           </div>
         </Card>
       )}

@@ -24,11 +24,11 @@ import SheetSelect from '../../components/ui/SheetSelect.jsx'
 const s = {
   page: {},
   card: { background: 'var(--sur)', border: 0, borderRadius: 'var(--rl)', padding: 20, marginBottom: 16, boxShadow: 'var(--sh-1)' },
-  cardTitle: { fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 12 },
-  steps: { display: 'flex', gap: 8, marginBottom: 28 },
+  cardTitle: { fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 12 },
+  steps: { display: 'flex', gap: 6, marginBottom: 28 },
   step: (active, done) => ({
-    flex: 1, textAlign: 'center', padding: '8px 4px', borderRadius: 8,
-    fontSize: 11, fontFamily: 'var(--sans)',
+    flex: '1 1 0', minWidth: 0, overflowWrap: 'break-word', hyphens: 'auto', textAlign: 'center', padding: '8px 4px', borderRadius: 8,
+    fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)',
     background: done ? 'var(--grn-bg)' : active ? 'var(--accent-bg)' : 'var(--sur)',
     color: done ? 'var(--grn)' : active ? 'var(--accent)' : 'var(--th)',
     border: `.5px solid ${done ? 'var(--grn)' : active ? 'var(--accent)' : 'var(--brd)'}`,
@@ -43,34 +43,34 @@ const s = {
     display: 'flex', alignItems: 'flex-start', gap: 8,
     background: 'var(--accent-bg)', border: 0,
     borderRadius: 8, padding: '10px 12px', marginTop: 12,
-    fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.5,
+    fontSize: 'var(--t-footnote)', color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
   hint: {
     display: 'flex', alignItems: 'flex-start', gap: 8,
     background: 'var(--fill)', border: 0,
     borderRadius: 8, padding: '10px 12px', marginTop: 8,
-    fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
+    fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
   },
-  select: { width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--sans)' },
-  label: { fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4},
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: 12 },
-  th: { textAlign: 'left', padding: '7px 10px', fontSize: 12, color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--sans)', fontWeight: 600 },
+  select: { width: '100%', background: 'var(--sur2)', border: '.5px solid var(--brd2)', borderRadius: 6, padding: '7px 10px', color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)' },
+  label: { fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4},
+  table: { width: '100%', borderCollapse: 'collapse', fontSize: 'var(--t-footnote)' },
+  th: { textAlign: 'left', padding: '7px 10px', fontSize: 'var(--t-footnote)', color: 'var(--th)', borderBottom: '1px solid var(--brd)', background: 'var(--sur2)', fontFamily: 'var(--sans)', fontWeight: 600 },
   td: { padding: '7px 10px', borderBottom: '.5px solid var(--brd)', fontFamily: 'var(--sans)', verticalAlign: 'top' },
   badge: (status) => ({
-    display: 'inline-block', padding: '2px 7px', borderRadius: 'var(--rs)', fontSize: 11, fontWeight: 600,
+    display: 'inline-block', padding: '2px 7px', borderRadius: 'var(--rs)', fontSize: 'var(--t-caption)', fontWeight: 600,
     background: status === 'valid' ? 'var(--accent-bg)' : status === 'duplicate' ? 'rgba(245,166,35,.12)' : 'rgba(255,77,106,.12)',
     color: status === 'valid' ? 'var(--accent)' : status === 'duplicate' ? 'var(--amb)' : 'var(--red)',
   }),
   summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, marginBottom: 16 },
   summaryItem: { background: 'var(--fill)', borderRadius: 8, padding: '10px 12px', border: 0 },
-  summaryLabel: { fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 3 },
-  summaryVal: { fontSize: 16, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--tx)' },
-  btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: '.15s' },
+  summaryLabel: { fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 3 },
+  summaryVal: { fontSize: 'var(--t-headline)', fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--tx)' },
+  btn: { padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 'var(--t-subhead)', fontWeight: 600, transition: '.15s' },
   btnPrimary: { background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)' },
   btnSecondary: { background: 'var(--fill)', color: 'var(--tx)', border: 0 },
   btnRow: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 },
-  disclaimer: { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 },
-  warn: { background: 'rgba(245,166,35,.1)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)', marginBottom: 16 },
+  disclaimer: { fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 },
+  warn: { background: 'rgba(245,166,35,.1)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 'var(--t-footnote)', color: 'var(--amb)', fontFamily: 'var(--sans)', marginBottom: 16 },
 }
 
 // keys de traducción
@@ -282,11 +282,11 @@ export default function ImportMovements({ setPage } = {}) {
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('csv-input').click() } }}
             >
               {loading
-                ? <div style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>{t('imp.upload.reading')}</div>
+                ? <div style={{ color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>{t('imp.upload.reading')}</div>
                 : <>
-                    <div style={{ fontSize: 28, marginBottom: 10, color: 'var(--th)' }}>↑</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('imp.upload.drop')}</div>
-                    <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('imp.upload.formats', { max: MAX_ROWS })}</div>
+                    <div style={{ fontSize: 'var(--t-title)', marginBottom: 10, color: 'var(--th)' }}>↑</div>
+                    <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('imp.upload.drop')}</div>
+                    <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('imp.upload.formats', { max: MAX_ROWS })}</div>
                   </>
               }
             </div>
@@ -305,7 +305,7 @@ export default function ImportMovements({ setPage } = {}) {
           {/* Panel bancos soportados */}
           <div style={s.card}>
             <div style={s.cardTitle}>{t('imp.banks.title')}</div>
-            <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 14 }}>
+            <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 14 }}>
               {t('imp.banks.sub')}
             </p>
             {/* Un grupo por país con plantilla. El país se marca con CountryBadge
@@ -316,19 +316,19 @@ export default function ImportMovements({ setPage } = {}) {
               banks: BANK_TEMPLATES.filter(b => b.country === code),
             })).map(group => (
               <div key={group.code} style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
                   <CountryBadge code={group.code} size={14} title={group.label} />{group.label}
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {group.banks.map(b => (
-                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--fill)', border: 0, fontSize: 11, color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--rs)', background: 'var(--fill)', border: 0, fontSize: 'var(--t-footnote)', color: 'var(--tx)', fontFamily: 'var(--sans)' }}>
                       <span>{b.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
-            <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
               {t('imp.banks.notListed')}
             </div>
           </div>
@@ -359,7 +359,7 @@ export default function ImportMovements({ setPage } = {}) {
           )}
 
           {history.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 32, color: 'var(--th)', fontSize: 13, fontFamily: 'var(--sans)' }}>
+            <div style={{ textAlign: 'center', padding: 32, color: 'var(--th)', fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)' }}>
               {t('imp.history.empty')}
             </div>
           )}
@@ -374,19 +374,19 @@ export default function ImportMovements({ setPage } = {}) {
             <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:'rgba(10,92,62,.07)',border: 0,borderRadius:8,marginBottom:16}}>
               <div style={{flexShrink:0,lineHeight:0,color:'var(--grn)'}}><CountryBadge code={detectedBank.country} size={22} title={t(`country.${detectedBank.country}`)} /></div>
               <div style={{flex:1}}>
-                <div style={{fontSize:12,fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
+                <div style={{fontSize:'var(--t-footnote)',fontWeight:600,color:'var(--grn)',marginBottom:2}}>{t('imp.map.detected', { bank: detectedBank.name })}</div>
+                <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)'}}>{detectedBank.hint} · {t('imp.map.autoMapped')}</div>
               </div>
-              <div style={{fontSize:11,padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily: 'var(--sans)',flexShrink:0}}>{t('imp.map.auto')}</div>
+              <div style={{fontSize:'var(--t-caption)',padding:'3px 8px',borderRadius:4,background:'rgba(10,92,62,.1)',color:'var(--grn)',fontFamily: 'var(--sans)',flexShrink:0}}>{t('imp.map.auto')}</div>
             </div>
           ) : (
             <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background: 'var(--fill)',border: 0,borderRadius:8,marginBottom:16}}>
-              <div style={{fontSize:18}}>📄</div>
-              <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)'}}>{t('imp.map.notDetected')}</div>
+              <div style={{fontSize:'var(--t-body)'}}>📄</div>
+              <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)'}}>{t('imp.map.notDetected')}</div>
             </div>
           )}
           <div style={s.cardTitle}>{t('imp.map.title')}</div>
-          <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
+          <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
             {detectedBank ? t('imp.map.subAuto') : t('imp.map.subManual')}
           </p>
 
@@ -406,7 +406,7 @@ export default function ImportMovements({ setPage } = {}) {
             <div style={s.label}>{t('imp.map.amountFormat')}</div>
             <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
               {[['single', t('imp.map.single')], ['debit_credit', t('imp.map.debitCredit')]].map(([val, lbl]) => (
-                <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: 'var(--tx)' }}>
+                <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--t-subhead)', cursor: 'pointer', color: 'var(--tx)' }}>
                   <input type="radio" name="mode" value={val} checked={modeConfig.mode === val}
                     onChange={() => setModeConfig(c => ({ ...c, mode: val }))} />
                   {lbl}
@@ -466,7 +466,7 @@ export default function ImportMovements({ setPage } = {}) {
             ))}
           </div>
 
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 8 }}>{t('imp.map.preview')}</div>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 8 }}>{t('imp.map.preview')}</div>
           <div style={{ overflowX: 'auto', marginBottom: 16 }}>
             <table style={s.table}>
               <thead><tr>{parsed.headers.map(h => <th key={h} style={s.th}>{h}</th>)}</tr></thead>
@@ -497,8 +497,8 @@ export default function ImportMovements({ setPage } = {}) {
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.valid')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)' }}>{stats.valid}</div></div>
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.dup')}</div><div style={{ ...s.summaryVal, color: 'var(--amb)' }}>{stats.duplicate}</div></div>
               <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.error')}</div><div style={{ ...s.summaryVal, color: 'var(--red)' }}>{stats.error}</div></div>
-              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.incomeEst')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 13 }}><Money>{fmtMoney(stats.incomeAmt, sym)}</Money></div></div>
-              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.expenseEst')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 13 }}><Money>{fmtMoney(stats.expenseAmt, sym)}</Money></div></div>
+              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.incomeEst')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 'var(--t-subhead)' }}><Money>{fmtMoney(stats.incomeAmt, sym)}</Money></div></div>
+              <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.review.expenseEst')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 'var(--t-subhead)' }}><Money>{fmtMoney(stats.expenseAmt, sym)}</Money></div></div>
             </div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
               {[
@@ -506,7 +506,7 @@ export default function ImportMovements({ setPage } = {}) {
                 [t('imp.review.all'), () => setRows(r => r.map(row => ({ ...row, _include: true })))],
                 [t('imp.review.none'), () => setRows(r => r.map(row => ({ ...row, _include: false })))],
               ].map(([label, fn]) => (
-                <button key={label} style={{ ...s.btn, ...s.btnSecondary, fontSize: 12 }} onClick={fn}>{label}</button>
+                <button key={label} style={{ ...s.btn, ...s.btnSecondary, fontSize: 'var(--t-footnote)' }} onClick={fn}>{label}</button>
               ))}
             </div>
           </div>
@@ -531,23 +531,23 @@ export default function ImportMovements({ setPage } = {}) {
                     <SheetSelect
                       value={row.category || ''}
                       onChange={e => setRows(r => r.map((x, j) => j === i ? { ...x, category: e.target.value, categorySuggested: false } : x))}
-                      style={{ ...s.select, width: 'auto', minWidth: 120, padding: '4px 6px', fontSize: 11 }}
+                      style={{ ...s.select, width: 'auto', minWidth: 120, padding: '4px 6px', fontSize: 'var(--t-footnote)' }}
                     >
                       <option value="">{t('imp.review.noCategory')}</option>
                       {(row.type === 'income' ? categoriesIncome : categoriesExpense).map(c => <option key={c} value={c}>{catLabel(c, lang)}</option>)}
                     </SheetSelect>
-                    {row.categorySuggested && <div style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
+                    {row.categorySuggested && <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--accent)', fontFamily: 'var(--sans)', marginTop: 2 }}><InlineIcon kind="suggested" size={12} />{t('imp.review.suggested')}</div>}
                   </td>
                   <td style={s.td}>
                     <span style={s.badge(row.status)}>{row.status === 'valid' ? t('imp.review.stValid') : row.status === 'duplicate' ? t('imp.review.stDup') : t('imp.review.stError')}</span>
-                    {row.errors?.length > 0 && <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 2 }}>{row.errors.map(c => t(`imp.rowErr.${c}`)).join(', ')}</div>}
+                    {row.errors?.length > 0 && <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--red)', marginTop: 2 }}>{row.errors.map(c => t(`imp.rowErr.${c}`)).join(', ')}</div>}
                   </td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
 
-          <div style={{ background: 'var(--accent-bg)', border: 0, borderRadius: 8, padding: '12px 14px', fontSize: 12, color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
+          <div style={{ background: 'var(--accent-bg)', border: 0, borderRadius: 8, padding: '12px 14px', fontSize: 'var(--t-footnote)', color: 'var(--tx)', fontFamily: 'var(--sans)', marginBottom: 16 }}>
             {t('imp.review.note')}
           </div>
 
@@ -568,21 +568,21 @@ export default function ImportMovements({ setPage } = {}) {
           {result?.demo ? (
             <div style={{ textAlign: 'center', padding: 24 }}>
               <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--pos)' }}><SignalIcon kind="ok" size={28} /></div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{t('imp.done.demoTitle')}</div>
-              <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('imp.done.demoText')}</p>
+              <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{t('imp.done.demoTitle')}</div>
+              <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('imp.done.demoText')}</p>
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 24 }}>
-              <div style={{ fontSize: 28, marginBottom: 12, color: 'var(--accent)' }}>✓</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--tx)', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--t-title)', marginBottom: 12, color: 'var(--accent)' }}>✓</div>
+              <div style={{ fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)', marginBottom: 8 }}>
                 {t('imp.done.imported', { n: result?.importedRows })}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, margin: '20px auto', maxWidth: 400 }}>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.income')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 14 }}><Money>{fmtMoney(result?.totalIncome, sym)}</Money></div></div>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 14 }}><Money>{fmtMoney(result?.totalExpense, sym)}</Money></div></div>
-                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.skipped')}</div><div style={{ ...s.summaryVal, color: 'var(--th)', fontSize: 14 }}>{(result?.skippedRows||0)+(result?.duplicateRows||0)}</div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.income')}</div><div style={{ ...s.summaryVal, color: 'var(--accent)', fontSize: 'var(--t-body)' }}><Money>{fmtMoney(result?.totalIncome, sym)}</Money></div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.expenses')}</div><div style={{ ...s.summaryVal, color: 'var(--red)', fontSize: 'var(--t-body)' }}><Money>{fmtMoney(result?.totalExpense, sym)}</Money></div></div>
+                <div style={s.summaryItem}><div style={s.summaryLabel}>{t('imp.history.skipped')}</div><div style={{ ...s.summaryVal, color: 'var(--th)', fontSize: 'var(--t-body)' }}>{(result?.skippedRows||0)+(result?.duplicateRows||0)}</div></div>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>{t('imp.done.visible')}</p>
+              <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 16 }}>{t('imp.done.visible')}</p>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                 {setPage && (
                   <button style={{ ...s.btn, ...s.btnPrimary }} onClick={() => setPage('dashboard')}>{t('imp.done.goDashboard')}</button>

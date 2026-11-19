@@ -65,7 +65,7 @@ export default function ResicoMX() {
 
   if (country !== 'MX') {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('resicomx.onlyMX')}
       </div>
     )
@@ -83,7 +83,7 @@ export default function ResicoMX() {
         </Alert>
 
         <Card>
-          <CardHeader title={t('resicomx.income.title')} right={<span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{activeMonth}</span>} />
+          <CardHeader title={t('resicomx.income.title')} right={<span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{activeMonth}</span>} />
           <FormRow>
             <FormGroup label={t('resicomx.income.label')}>
               <input type="number" inputMode="decimal" min="0" value={ingreso} placeholder="0"
@@ -92,7 +92,7 @@ export default function ResicoMX() {
           </FormRow>
 
           {ingresoEstimado > 0 && (
-            <div style={{ marginTop: 2, marginBottom: 10, fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 2, marginBottom: 10, fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', lineHeight: 1.5 }}>
               {!ingresoTouched
                 ? <>✓ {t('resicomx.income.autoNote')}</>
                 : <>{t('resicomx.income.suggestedNote', { v: fmtMXN(ingresoEstimado) })} <button type="button" style={{ color: 'var(--grn)', cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 0, padding: 0, font: 'inherit' }} onClick={() => { setIngresoTouched(false); setIngreso(String(ingresoEstimado)) }}>{t('resicomx.income.useAuto')}</button></>}
@@ -102,9 +102,9 @@ export default function ResicoMX() {
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', padding: '10px 12px', background: 'var(--fill)', border: 0, borderRadius: 8 }}>
             <input type="checkbox" checked={personaMoral} onChange={e => setPersonaMoral(e.target.checked)}
               style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontSize: 12, color: 'var(--tx)', lineHeight: 1.5 }}>
+            <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--tx)', lineHeight: 1.5 }}>
               {t('resicomx.personaMoral.label')}
-              <span style={{ display: 'block', fontSize: 11, color: 'var(--th)', marginTop: 2 }}>
+              <span style={{ display: 'block', fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 2 }}>
                 {t('resicomx.personaMoral.hint', { pct: fmtPctPoints(RETENCION_PERSONA_MORAL * 100, 2) })}
               </span>
             </span>
@@ -115,24 +115,24 @@ export default function ResicoMX() {
           <Card>
             <CardHeader title={t('resicomx.result.title')} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 4}}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 4}}>
                 {haySaldoAFavor ? t('resicomx.result.saldoFavor') : t('resicomx.result.aPagarSAT')}
               </div>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: haySaldoAFavor ? 'var(--pos)' : 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-large-title)', fontWeight: 700, color: haySaldoAFavor ? 'var(--pos)' : 'var(--accent)', lineHeight: 1 }}>
                 {fmtMXN(haySaldoAFavor ? result.saldoAFavor : result.aPagar)}
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {t('resicomx.result.tasaSub', { pct: fmtPctPoints(result.tasa * 100, 2), neto: fmtMXN(result.neto) })}
               </div>
             </div>
 
             {/* Desglose: causado − retención = a pagar / saldo a favor */}
             <div style={{ border: 0, borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 'var(--t-footnote)' }}>
                 <span style={{ color: 'var(--th)' }}>{t('resicomx.result.causado')}</span>
                 <span style={{ fontFamily: 'var(--num)', color: 'var(--tx)', fontWeight: 600 }}>{fmtMXN(result.isrCausado)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 12, borderTop: '.5px solid var(--brd)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', fontSize: 'var(--t-footnote)', borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ color: 'var(--th)' }}>
                   {t('resicomx.result.retencionLabel', { pct: fmtPctPoints(RETENCION_PERSONA_MORAL * 100, 2) })}
                 </span>
@@ -140,7 +140,7 @@ export default function ResicoMX() {
                   {result.retencion > 0 ? `− ${fmtMXN(result.retencion)}` : '—'}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', fontSize: 12, borderTop: '.5px solid var(--brd)', background: haySaldoAFavor ? 'var(--pos-bg)' : 'var(--sur2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', fontSize: 'var(--t-footnote)', borderTop: '.5px solid var(--brd)', background: haySaldoAFavor ? 'var(--pos-bg)' : 'var(--sur2)' }}>
                 <span style={{ color: haySaldoAFavor ? 'var(--pos)' : 'var(--tx)', fontWeight: 600 }}>
                   {haySaldoAFavor ? t('resicomx.result.saldoFavor') : t('resicomx.result.aPagarShort')}
                 </span>
@@ -151,7 +151,7 @@ export default function ResicoMX() {
             </div>
 
             {result.conRetencion && (
-              <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.6, marginBottom: 14 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.6, marginBottom: 14 }}>
                 {haySaldoAFavor
                   ? t('resicomx.result.saldoFavorNote', { tasa: fmtPctPoints(result.tasa * 100, 2), ret: fmtPctPoints(RETENCION_PERSONA_MORAL * 100, 2) })
                   : t('resicomx.result.aPagarNote', { v: fmtMXN(result.retencion) })}
@@ -159,13 +159,13 @@ export default function ResicoMX() {
             )}
 
             {result.siguienteTasa && result.margenEnTramo < result.ingreso * 0.15 && (
-              <div style={{ background: 'var(--warn-bg)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ background: 'var(--warn-bg)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 'var(--t-footnote)', color: 'var(--warn)', marginBottom: 14, lineHeight: 1.6 }}>
                 <InlineIcon kind="alert" size={13} />{t('resicomx.result.warnTramo', { v: fmtMXN(result.margenEnTramo), pct: fmtPctPoints(result.siguienteTasa * 100, 2) })}
               </div>
             )}
 
             {result.superaTope && (
-              <div style={{ background: 'var(--red-bg)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--red)', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ background: 'var(--red-bg)', border: 0, borderRadius: 8, padding: '10px 14px', fontSize: 'var(--t-footnote)', color: 'var(--red)', marginBottom: 14, lineHeight: 1.6 }}>
                 {result.topeEsProyeccion
                   ? <><InlineIcon kind="alert" size={13} />{t('resicomx.result.projWarn', { v: fmtMXN(result.ingresoAnualProyectado), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>
                   : <><InlineIcon kind="alert" size={13} />{t('resicomx.result.overTopeWarn', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO) })}</>}
@@ -173,13 +173,13 @@ export default function ResicoMX() {
             )}
 
             {!result.superaTope && !result.topeEsProyeccion && (
-              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 14, lineHeight: 1.6 }}>
                 {t('resicomx.result.acumuladoNote', { year: activeYear, v: fmtMXN(result.baseTope), tope: fmtMXN(TOPE_ANUAL_RESICO), pct: fmtPctPoints(Math.round((result.baseTope / TOPE_ANUAL_RESICO) * 100)) })}
               </div>
             )}
 
             <div style={{ marginTop: 4, borderTop: '.5px solid var(--brd)', paddingTop: 12 }}>
-              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 8 }}>
                 {t('resicomx.tramos.title')}
               </div>
               {TRAMOS_RESICO.map((tr, i) => {
@@ -191,7 +191,7 @@ export default function ResicoMX() {
                 const rangoFueraDeTabla = activo && esUltimo && result.fueraDeTabla
                 return (
                   <div key={i} style={{
-                    display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 8px', marginBottom: 2,
+                    display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', padding: '6px 8px', marginBottom: 2,
                     borderRadius: 6, background: activo ? 'var(--grn-tint)' : 'transparent',
                     color: activo ? 'var(--grn)' : 'var(--tx)', fontWeight: activo ? 600 : 400,
                   }}>

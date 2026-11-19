@@ -82,7 +82,7 @@ export default function Panorama({ setPage }) {
                 title={<><InlineIcon kind="diagnosis" size={13} />{t('dash.signals.title')}</>}
                 right={setPage && (
                   <button type="button" onClick={() => setPage('coach')}
-                    style={{ minHeight: 44, fontSize: 12, fontFamily: 'var(--sans)', color: 'var(--accent)', cursor: 'pointer', background: 'none', border: 0, padding: 0 }}>
+                    style={{ minHeight: 44, fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--accent)', cursor: 'pointer', background: 'none', border: 0, padding: 0 }}>
                     {t('dash.signals.viewAll')}
                   </button>
                 )}
@@ -95,10 +95,10 @@ export default function Panorama({ setPage }) {
                   <span style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: item.color, background: `color-mix(in srgb, ${item.color} 14%, transparent)` }}>{item.icon}</span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{item.title}</span>
-                    <span style={{ display: 'block', fontSize: 12, color: 'var(--tm)', lineHeight: 1.5 }}>{item.sub}</span>
+                    <span style={{ display: 'block', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{item.title}</span>
+                    <span style={{ display: 'block', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5 }}>{item.sub}</span>
                   </span>
-                  {item.page && <span aria-hidden="true" style={{ fontSize: 13, color: item.color, flexShrink: 0 }}>→</span>}
+                  {item.page && <span aria-hidden="true" style={{ fontSize: 'var(--t-subhead)', color: item.color, flexShrink: 0 }}>→</span>}
                 </button>
               ))}
             </Card>
@@ -133,12 +133,12 @@ export default function Panorama({ setPage }) {
             return (
               <div style={{ background: over ? 'color-mix(in srgb, var(--pos) 8%, transparent)' : 'color-mix(in srgb, var(--neg) 8%, transparent)', border: 0, borderRadius: 'var(--r)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 160 }}>
-                  <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)', marginBottom: 4 }}>{t('dash.expected.title')}</div>
-                  <div style={{ fontSize: 13, color: 'var(--tx)' }}>
+                  <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)', marginBottom: 4 }}>{t('dash.expected.title')}</div>
+                  <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
                     {t('dash.expected.expected')} <strong><Money>{fmtMoney(expected, sym)}</Money></strong> · {t('dash.expected.received')} <strong style={{ color: over ? 'var(--accent)' : 'var(--red)' }}><Money>{fmtMoney(kpis.totalInc, sym)}</Money></strong>
                   </div>
                 </div>
-                <div style={{ fontFamily: 'var(--num)', fontSize: 14, fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
+                <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-headline)', fontWeight: 700, color: over ? 'var(--accent)' : 'var(--red)' }}>
                   {fmtPct(diff / expected, { signed: true })}
                 </div>
               </div>
@@ -202,7 +202,7 @@ export default function Panorama({ setPage }) {
           )}
         </div>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16 }}>
+      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16 }}>
         {t('dash.disclaimer')}
       </div>
     </div>

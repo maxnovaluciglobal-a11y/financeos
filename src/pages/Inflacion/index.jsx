@@ -36,7 +36,7 @@ export default function Inflacion() {
 
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('inflacion.notAvailable')}
       </div>
     )
@@ -80,7 +80,7 @@ export default function Inflacion() {
             </FormGroup>
           </FormRow>
           {desde > hasta && (
-            <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 8 }}>{t('inflacion.form.dateError')}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--red)', marginTop: 8 }}>{t('inflacion.form.dateError')}</div>
           )}
         </Card>
 
@@ -88,10 +88,10 @@ export default function Inflacion() {
           <Card>
             <CardHeader title={t('inflacion.result.title', { from: fmtMes(desde), to: fmtMes(hasta) })} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 30, fontWeight: 700, color: 'var(--accent)', lineHeight: 1.1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1.1 }}>
                 {fmt(result.valorAjustado)}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>
                 {t('inflacion.result.equivalencePre', { amt: fmt(monto), from: fmtMes(desde) })}{' '}
                 <strong>{fmt(result.valorAjustado)}</strong>{' '}
                 {t('inflacion.result.equivalencePost', { to: fmtMes(hasta) })}
@@ -111,7 +111,7 @@ export default function Inflacion() {
 
 function Row({ label, value, color }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
       <span>{label}</span>
       <span style={{ fontFamily: 'var(--num)', fontWeight: 600, color }}>{value}</span>
     </div>

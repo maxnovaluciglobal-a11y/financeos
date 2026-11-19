@@ -83,7 +83,7 @@ export default function Multimoneda() {
 
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('multimoneda.onlyVE')}
       </div>
     )
@@ -121,15 +121,15 @@ export default function Multimoneda() {
           <CardHeader title={t('multimoneda.tasa.title')} />
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
             <button type="button" aria-pressed={fuenteTasa === 'oficial'} onClick={() => elegirFuente('oficial')} style={{
-              flex: 1, minHeight: 44, padding: '9px 12px', borderRadius: 'var(--r)', cursor: 'pointer', fontSize: 12,
+              flex: 1, minHeight: 44, padding: '9px 12px', borderRadius: 'var(--r)', cursor: 'pointer', fontSize: 'var(--t-footnote)',
               border: fuenteTasa === 'oficial' ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
               background: fuenteTasa === 'oficial' ? 'var(--grn-bg)' : 'var(--sur2)',
               color: fuenteTasa === 'oficial' ? 'var(--grn)' : 'var(--tx)',
             }}>
-              {t('multimoneda.tasa.oficialBtn')}{live && <span style={{ display: 'block', fontFamily: 'var(--num)', fontSize: 14, fontWeight: 700, marginTop: 2 }}>{Number(live.oficial).toLocaleString('es-VE')}</span>}
+              {t('multimoneda.tasa.oficialBtn')}{live && <span style={{ display: 'block', fontFamily: 'var(--num)', fontSize: 'var(--t-headline)', fontWeight: 700, marginTop: 2 }}>{Number(live.oficial).toLocaleString('es-VE')}</span>}
             </button>
             <button type="button" aria-pressed={fuenteTasa === 'paralelo'} onClick={() => elegirFuente('paralelo')} disabled={paraleloNoDisponible} style={{
-              flex: 1, minHeight: 44, padding: '9px 12px', borderRadius: 'var(--r)', fontSize: 12,
+              flex: 1, minHeight: 44, padding: '9px 12px', borderRadius: 'var(--r)', fontSize: 'var(--t-footnote)',
               cursor: paraleloNoDisponible ? 'not-allowed' : 'pointer',
               opacity: paraleloNoDisponible ? 0.55 : 1,
               border: fuenteTasa === 'paralelo' ? '1.5px solid var(--grn)' : '0.5px solid var(--brd2)',
@@ -144,17 +144,17 @@ export default function Multimoneda() {
             </button>
           </div>
           {tasaMeta && (
-            <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, marginBottom: 6 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 6 }}>
               <span aria-hidden="true" style={{ color: tasaEsLive || tasaEsRef ? 'var(--pos)' : 'var(--th)' }}>{tasaEsLive || tasaEsRef ? '● ' : '○ '}</span>{tasaMeta}
             </div>
           )}
           <FreshRate fresh={fresh} sym={currencySymbol('VES', lang)} onUse={usarFresh} />
           {fresh && <div style={{ height: 6 }} aria-hidden="true" />}
-          <div style={{ fontSize: 12, color: 'var(--th)', lineHeight: 1.5, marginBottom: 10 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5, marginBottom: 10 }}>
             {t('multimoneda.tasa.defaultNote')}
           </div>
           {paraleloNoDisponible && (
-            <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.5, marginBottom: 10 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5, marginBottom: 10 }}>
               {t('multimoneda.tasa.paraleloWarn')}
             </div>
           )}
@@ -162,7 +162,7 @@ export default function Multimoneda() {
             <input type="number" inputMode="decimal" min="0" step="0.01" value={tasa} onChange={e => setTasa(e.target.value)} />
           </FormGroup>
           {!tasaValida && (
-            <div style={{ marginTop: 8, background: 'var(--warn-bg)', border: 0, borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warn)', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 8, background: 'var(--warn-bg)', border: 0, borderRadius: 8, padding: '10px 12px', fontSize: 'var(--t-footnote)', color: 'var(--warn)', lineHeight: 1.5 }}>
               {t('multimoneda.tasa.invalidWarn')}
             </div>
           )}
@@ -184,25 +184,25 @@ export default function Multimoneda() {
           <Card>
             <CardHeader title={t('multimoneda.result.title')} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 32, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-large-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 <Money>{fmtUSD(result.totalUSD)}</Money>
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {t('multimoneda.result.breakdown', { bs: m(fmtUSD(result.bsEnUSD)), usd: m(fmtUSD(Number(usd) || 0)) })}
               </div>
             </div>
 
-            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
+            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>
               <span>{t('multimoneda.result.exposicion')}</span>
               <span>{Math.round(result.exposicionBsPct)}%</span>
             </div>
             <ProgressBar value={result.exposicionBsPct} max={100} color={result.alerta ? 'red' : 'green'} height={6} label={t('multimoneda.result.exposicion')} />
             {result.alerta ? (
-              <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 10, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--red)', marginTop: 10, lineHeight: 1.5 }}>
                 {t('multimoneda.result.alertaText', { pct: fmtPctPoints(Math.round(result.exposicionBsPct)), umbral: fmtPctPoints(config.umbralExposicion) })}
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>
                 ✓ {t('multimoneda.result.okText')}
               </div>
             )}

@@ -150,11 +150,11 @@ function TrafficLight({ signals }) {
             boxShadow: `0 0 6px color-mix(in srgb, ${colors[s.status]} 66%, transparent)`,
           }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 1 }}>{s.label}</div>
-            <div style={{ fontSize: 12, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>{s.note}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>{s.note}</div>
           </div>
           <div style={{
-            fontSize: 11, fontFamily: 'var(--num)', fontWeight: 600,
+            fontSize: 'var(--t-caption)', fontFamily: 'var(--num)', fontWeight: 600,
             color: colors[s.status], flexShrink: 0,
             // Fondo liso: sobre el tinte de la fila, un segundo tinte dejaba el
             // texto de 11 px en 4,45:1 (axe color-contrast).
@@ -164,7 +164,7 @@ function TrafficLight({ signals }) {
           </div>
         </div>
       ))}
-      <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4, lineHeight: 1.5 }}>
         {t('adv.tl.disclaimer')}
       </p>
     </div>
@@ -182,9 +182,9 @@ function AdvisorKPI({ label, value, sub, color = 'var(--tx)' }) {
       background: 'var(--fill)', border: 0,
       borderRadius: 8, padding: '12px 14px', minWidth: 0, overflow: 'hidden',
     }}>
-      <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: valSize, fontWeight: 700, color, fontFamily: 'var(--num)', letterSpacing: '-0.5px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3, overflowWrap: 'anywhere' }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3, overflowWrap: 'anywhere' }}>{sub}</div>}
     </div>
   )
 }
@@ -207,16 +207,16 @@ function AdvisorNotes({ notes, onSave }) {
   const ta = {
     width: '100%', minHeight: 80, resize: 'vertical',
     background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
-    borderRadius: 6, padding: '10px 12px', fontSize: 12,
+    borderRadius: 6, padding: '10px 12px', fontSize: 'var(--t-footnote)',
     color: 'var(--tx)', fontFamily: 'var(--sans)',
     lineHeight: 1.6,
   }
   const inp = {
     width: '100%', background: 'var(--sur)', border: '0.5px solid var(--brd2)',
-    borderRadius: 6, padding: '8px 12px', fontSize: 12,
+    borderRadius: 6, padding: '8px 12px', fontSize: 'var(--t-footnote)',
     color: 'var(--tx)', fontFamily: 'var(--sans)',
   }
-  const lbl = { fontSize: 11, fontWeight: 600, color: 'var(--tx)', marginBottom: 5, display: 'block' }
+  const lbl = { fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 5, display: 'block' }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -250,7 +250,7 @@ function AdvisorNotes({ notes, onSave }) {
           onChange={e => setNextSteps(e.target.value)}
           placeholder={t('adv.notes.nextStepsPh')}
         />
-        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
           {t('adv.notes.nextStepsHint')}
         </div>
       </div>
@@ -260,21 +260,21 @@ function AdvisorNotes({ notes, onSave }) {
           onClick={handleSave}
           style={{
             background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none',
-            borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, minHeight: 44,
+            borderRadius: 6, padding: '9px 20px', fontSize: 'var(--t-footnote)', fontWeight: 600, minHeight: 44,
             cursor: 'pointer', fontFamily: 'var(--sans)',
           }}
         >
           {saved ? t('adv.notes.saved') : t('adv.notes.save')}
         </button>
         {notes.updatedAt && (
-          <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+          <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('adv.notes.updated', { d: new Date(notes.updatedAt).toLocaleDateString(dateLocale()) })}
           </span>
         )}
       </div>
 
       <div style={{
-        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)',
+        fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)',
         padding: '8px 10px', background: 'var(--sur2)',
         borderRadius: 6, borderLeft: '2px solid var(--brd2)', lineHeight: 1.5,
       }}>
@@ -421,7 +421,7 @@ export default function Advisor() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <PageHeader title={t('adv.title')} sub={t('adv.sub', { month: monthLabel(activeMonth) })} />
           <span style={{
-            display: 'inline-block', marginTop: -10, fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600,
+            display: 'inline-block', marginTop: -10, fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600,
             background: 'var(--grn-bg)', color: 'var(--grn)', padding: '2px 8px', borderRadius: 'var(--rs)',
           }}>
             {t('adv.badge')}
@@ -431,7 +431,7 @@ export default function Advisor() {
           aria-label={t('common.month')}
           value={activeMonth}
           onChange={e => updateSettings({ ...settings, activeMonth: e.target.value })}
-          style={{ width: 'auto', fontSize: 11, padding: '5px 8px' }}
+          style={{ width: 'auto', fontSize: 'var(--t-footnote)', padding: '5px 8px' }}
         >
           {[...new Set([
             ...incomes.map(r => r.date?.slice(0,7)),
@@ -446,11 +446,11 @@ export default function Advisor() {
         <div style={{
           padding: '20px 24px', background: 'var(--fill)',
           border: 0, borderRadius: 8,
-          fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, textAlign: 'center',
+          fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.6, textAlign: 'center',
         }}>
           <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><SignalIcon kind="investment" size={24} /></div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{t('adv.empty.title')}</div>
-          <div style={{ fontSize: 12, color: 'var(--th)' }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)' }}>
             {t('adv.empty.sub')}
           </div>
         </div>
@@ -467,17 +467,17 @@ export default function Advisor() {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}>
-                <div className="num" style={{ fontSize: 24, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{score}</div>
-                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>/ 100</div>
+                <div className="num" style={{ fontSize: 'var(--t-title-2)', fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{score}</div>
+                <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>/ 100</div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: scoreColor, marginBottom: 3 }}>{scoreLabel}</div>
-                <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5 }}>
+                <div style={{ fontSize: 'var(--t-headline)', fontWeight: 700, color: scoreColor, marginBottom: 3 }}>{scoreLabel}</div>
+                <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5 }}>
                   {advisorNotes.clientName ? t('adv.score.client', { name: advisorNotes.clientName }) : ''}
                   {t('adv.score.summary', { g: signals.filter(s => s.status === 'green').length, y: signals.filter(s => s.status === 'yellow').length, r: signals.filter(s => s.status === 'red').length })}
                 </div>
                 {advisorNotes.meetingDate && (
-                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
+                  <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
                     {t('adv.score.nextMeeting', { d: new Date(advisorNotes.meetingDate + 'T12:00').toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) })}
                   </div>
                 )}
@@ -488,7 +488,7 @@ export default function Advisor() {
                   { c: 'var(--warn)', l: t('adv.status.yellow') },
                   { c: 'var(--neg)', l: t('adv.status.red') },
                 ].map(i => (
-                  <div key={i.l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+                  <div key={i.l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: i.c }} />
                     {i.l}
                   </div>
@@ -524,7 +524,7 @@ export default function Advisor() {
                   <Alert key={i} type={a.type}>{a.text}</Alert>
                 ))}
               </div>
-              <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 8, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 8, lineHeight: 1.5 }}>
                 {t('adv.alertsDisclaimer')}
               </p>
             </Card>
@@ -544,20 +544,20 @@ export default function Advisor() {
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                         <div>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{d.creditor}</div>
-                          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+                          <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{d.creditor}</div>
+                          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                             {t('adv.debts.rateLine', { rate: fmtPctPoints(d.rate), v: fmtMoney(d.minPayment || 0, sym) })}
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--warn)', fontFamily: 'var(--num)' }}>{fmtMoney(d.balance, sym)}</div>
-                          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('adv.debts.pending')}</div>
+                          <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 700, color: 'var(--warn)', fontFamily: 'var(--num)' }}>{fmtMoney(d.balance, sym)}</div>
+                          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('adv.debts.pending')}</div>
                         </div>
                       </div>
                       <div style={{ height: 4, background: 'var(--brd)', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${Math.min(pct * 100, 100)}%`, background: 'var(--grn)', borderRadius: 2 }} />
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3 }}>
+                      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3 }}>
                         {t('adv.debts.paidDue', { pct: fmtPct(pct), d: d.dueDate || '—' })}
                       </div>
                     </div>
@@ -577,15 +577,15 @@ export default function Advisor() {
                   return (
                     <div key={g.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{g.name}</span>
-                        <span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
+                        <span style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{g.name}</span>
+                        <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>
                           {fmtMoney(g.saved, sym)} / {fmtMoney(g.target, sym)}
                         </span>
                       </div>
                       <div style={{ height: 5, background: 'var(--brd)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${pct * 100}%`, background: goalDisplayColor(g.color, isDark) || 'var(--grn)', borderRadius: 3 }} />
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+                      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                         {t('adv.goals.line', { pct: fmtPct(pct), d: g.targetDate || '—', p: g.priority || '—' })}
                       </div>
                     </div>
@@ -614,8 +614,8 @@ export default function Advisor() {
         {/* Preview mini del reporte */}
         <div style={{background:'var(--sur)',padding:'16px 20px',borderBottom:'0.5px solid var(--brd)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-            <div style={{fontSize:11,fontWeight:700,color:'var(--tx)',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
-            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>moyiq Pro</div>
+            <div style={{fontSize:'var(--t-footnote)',fontWeight:700,color:'var(--tx)',letterSpacing:.5}}>{t('adv.pdf.preview')}</div>
+            <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)'}}>moyiq Pro</div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             {[
@@ -624,35 +624,35 @@ export default function Advisor() {
               {l:t('adv.pdf.savingRate'),  v:fmtPct(mIncome>0?(mIncome-mExpense)/mIncome:0), c:'var(--pos)'},
             ].map((item,i) => (
               <div key={i} style={{background:'var(--sur2)',borderRadius:6,padding:'8px 10px',minWidth:0,overflow:'hidden'}}>
-                <div style={{fontSize:12,fontWeight:600,color:'var(--th)',marginBottom:2}}>{item.l}</div>
+                <div style={{fontSize:'var(--t-footnote)',fontWeight:600,color:'var(--th)',marginBottom:2}}>{item.l}</div>
                 <div style={{fontSize: String(item.v).length>11?11:13,fontWeight:700,color:item.c,fontFamily:'monospace',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{item.v}</div>
               </div>
             ))}
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {t('adv.pdf.chips').split('|').map((chip,i) => (
-              <span key={i} style={{fontSize:11,padding:'2px 8px',borderRadius:10,background:'var(--pos-bg)',color:'var(--pos)',fontFamily:'var(--sans)'}}>{chip}</span>
+              <span key={i} style={{fontSize:'var(--t-caption)',padding:'2px 8px',borderRadius:10,background:'var(--pos-bg)',color:'var(--pos)',fontFamily:'var(--sans)'}}>{chip}</span>
             ))}
           </div>
         </div>
         {/* CTA */}
         <div style={{padding:'14px 20px',background:'var(--grn-bg)',display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
           <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2}}>{t('adv.pdf.ctaTitle')}</div>
-            <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('adv.pdf.ctaSub')}</div>
-            {pdfError && <div style={{fontSize:11,color:'var(--neg)',fontFamily: 'var(--sans)',marginTop:4}}>{pdfError}</div>}
+            <div style={{fontSize:'var(--t-subhead)',fontWeight:600,color:'var(--tx)',marginBottom:2}}>{t('adv.pdf.ctaTitle')}</div>
+            <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('adv.pdf.ctaSub')}</div>
+            {pdfError && <div style={{fontSize:'var(--t-footnote)',color:'var(--neg)',fontFamily: 'var(--sans)',marginTop:4}}>{pdfError}</div>}
           </div>
           <button
             onClick={handleExportPDF}
             disabled={pdfLoading || noData}
-            style={{background:pdfLoading?'var(--sur)':'var(--btn-primary-bg)',color:pdfLoading?'var(--th)':'var(--btn-primary-fg)',border:'none',borderRadius:6,padding:'10px 20px',minHeight:44,fontSize:12,fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
+            style={{background:pdfLoading?'var(--sur)':'var(--btn-primary-bg)',color:pdfLoading?'var(--th)':'var(--btn-primary-fg)',border:'none',borderRadius:6,padding:'10px 20px',minHeight:44,fontSize:'var(--t-footnote)',fontWeight:600,cursor:pdfLoading||noData?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData?0.5:1,transition:'all .15s'}}
           >
             {pdfLoading ? t('adv.pdf.generating') : t('adv.pdf.export')}
           </button>
         </div>
         {/* Envío por correo — acción manual y explícita, no un cron automático (ver ReportePDF.jsx) */}
         <div style={{padding:'14px 20px',borderTop:'0.5px solid rgba(26,163,104,.15)',display:'flex',flexDirection:'column',gap:8}}>
-          <div style={{fontSize:12,fontWeight:600,color:'var(--tx)'}}>{t('adv.pdf.emailLabel')}</div>
+          <div style={{fontSize:'var(--t-footnote)',fontWeight:600,color:'var(--tx)'}}>{t('adv.pdf.emailLabel')}</div>
           <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
             <input
               type="email"
@@ -660,18 +660,18 @@ export default function Advisor() {
               onChange={e => { setEmailTo(e.target.value); if (emailStatus === 'error') setEmailStatus('idle') }}
               placeholder={t('adv.pdf.emailPlaceholder')}
               disabled={noData}
-              style={{flex:'1 1 200px',fontSize:12,padding:'9px 12px',borderRadius:6,border:'0.5px solid var(--brd2)',background:'var(--sur)',color:'var(--tx)',fontFamily:'var(--sans)'}}
+              style={{flex:'1 1 200px',fontSize:'var(--t-footnote)',padding:'9px 12px',borderRadius:6,border:'0.5px solid var(--brd2)',background:'var(--sur)',color:'var(--tx)',fontFamily:'var(--sans)'}}
             />
             <button
               onClick={handleSendEmail}
               disabled={emailStatus === 'sending' || noData || !emailConsentChecked}
-              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'var(--bg)',border:'none',borderRadius:6,padding:'9px 18px',minHeight:44,fontSize:12,fontWeight:600,cursor:emailStatus==='sending'||noData||!emailConsentChecked?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData||!emailConsentChecked?0.5:1}}
+              style={{background:emailStatus==='sending'?'var(--sur)':'var(--grn)',color:emailStatus==='sending'?'var(--th)':'var(--bg)',border:'none',borderRadius:6,padding:'9px 18px',minHeight:44,fontSize:'var(--t-footnote)',fontWeight:600,cursor:emailStatus==='sending'||noData||!emailConsentChecked?'not-allowed':'pointer',fontFamily:'var(--sans)',flexShrink:0,opacity:noData||!emailConsentChecked?0.5:1}}
             >
               {emailStatus === 'sending' ? t('adv.pdf.emailSending') : emailStatus === 'sent' ? t('adv.pdf.emailSent') : t('adv.pdf.emailSend')}
             </button>
           </div>
           {emailStatus === 'error' && emailErrorMsg && (
-            <div style={{fontSize:11,color:'var(--neg)',fontFamily: 'var(--sans)'}}>{emailErrorMsg}</div>
+            <div style={{fontSize:'var(--t-footnote)',color:'var(--neg)',fontFamily: 'var(--sans)'}}>{emailErrorMsg}</div>
           )}
           <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
             <input
@@ -682,7 +682,7 @@ export default function Advisor() {
               disabled={noData}
               style={{width:16,height:16,flexShrink:0,marginTop:1}}
             />
-            <label htmlFor="adv-pdf-email-consent" style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.5,cursor:noData?'default':'pointer'}}>
+            <label htmlFor="adv-pdf-email-consent" style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.5,cursor:noData?'default':'pointer'}}>
               {t('adv.pdf.emailConsent')}
             </label>
           </div>
@@ -692,10 +692,10 @@ export default function Advisor() {
       {/* ── SECCIÓN SUSCRIPCIONES EN MODO ASESOR ── */}
       {subCount > 0 && (
         <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '16px', marginBottom: 0 }}>
-          <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2 }}>
             {t('adv.subs.title')}
           </div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 10 }}>
             {t('adv.subs.note')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px,1fr))', gap: 8, marginBottom: 12 }}>
@@ -706,8 +706,8 @@ export default function Advisor() {
               { label: t('adv.subs.pctIncome'), value: mIncome > 0 ? fmtPct(subPct) : '—' },
             ].map(m => (
               <div key={m.label} style={{ background: 'var(--fill)', borderRadius: 6, padding: '8px 10px', border: 0 }}>
-                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2}}>{m.label}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--num)', color: 'var(--tx)' }}>{m.value}</div>
+                <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 2}}>{m.label}</div>
+                <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, fontFamily: 'var(--num)', color: 'var(--tx)' }}>{m.value}</div>
               </div>
             ))}
           </div>
@@ -715,13 +715,13 @@ export default function Advisor() {
           {subAlerts.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {subAlerts.map((a, i) => (
-                <div key={i} style={{ fontSize: 11, fontFamily: 'var(--sans)', color: a.type === 'duplicate' ? 'var(--amb)' : a.type === 'income' ? 'var(--amb)' : 'var(--th)', background: 'var(--sur2)', padding: '6px 10px', borderRadius: 6, borderLeft: `2px solid ${a.type === 'duplicate' || a.type === 'income' ? 'var(--amb)' : 'var(--brd)'}` }}>
+                <div key={i} style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: a.type === 'duplicate' ? 'var(--amb)' : a.type === 'income' ? 'var(--amb)' : 'var(--th)', background: 'var(--sur2)', padding: '6px 10px', borderRadius: 6, borderLeft: `2px solid ${a.type === 'duplicate' || a.type === 'income' ? 'var(--amb)' : 'var(--brd)'}` }}>
                   {a.msg}
                 </div>
               ))}
             </div>
           )}
-          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 10 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 10 }}>
             {t('adv.subs.disclaimer')}
           </div>
         </div>

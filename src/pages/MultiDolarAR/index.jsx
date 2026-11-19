@@ -41,7 +41,7 @@ export default function MultiDolarAR() {
 
   if (country !== 'AR') {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('multidolarar.onlyAR')}
       </div>
     )
@@ -79,12 +79,12 @@ function MultiDolarARBody() {
         <Card>
           <CardHeader title={t('multidolarar.rates.title')} right={
             live && (
-              <span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: live.source === 'api' ? 'var(--accent)' : 'var(--th)' }}>
+              <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: live.source === 'api' ? 'var(--accent)' : 'var(--th)' }}>
                 {live.source === 'api' ? `● ${t('multidolarar.rates.liveAt', { date: fmtDay(live.at ?? live.ts, true) })}` : `○ ${t('multidolarar.rates.offlineAt', { date: fmtDay(live.at ?? live.ts) })}`}
               </span>
             )
           } />
-          <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, marginBottom: 10 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 10 }}>
             {ref
               ? <><span className="num">1 {currencySymbol('USD', lang)} = {fmtMoney(ref.rate, sym)}</span> · {t('refcur.inUse', { desc: rateSourceText(ref, t) })}</>
               : t('refcur.noRefPanel')}
@@ -93,8 +93,8 @@ function MultiDolarARBody() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
             {DOLARES.map(d => (
               <div key={d.key} style={{ background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', padding: '10px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{d.label}</div>
-                <div style={{ fontFamily: 'var(--num)', fontSize: 16, fontWeight: 700, color: 'var(--tx)' }}>
+                <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{d.label}</div>
+                <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)' }}>
                   {live ? fmtARS(live[d.key]) : '—'}
                 </div>
               </div>
@@ -145,25 +145,25 @@ function RendimientosCard({ blue }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 12 }}>
         {instrumentos.map(inst => (
           <div key={inst.key} style={{ background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{inst.label}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{inst.label}</div>
             <FormGroup label={t('multidolarar.rendimientos.tnaLabel')}>
               <input type="number" inputMode="decimal" min="0" step="0.1" value={tnas[inst.key]}
                 onChange={e => setTna(inst.key, e.target.value)} />
             </FormGroup>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 20, fontWeight: 700, color: 'var(--accent)', marginTop: 10, lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-title-2)', fontWeight: 700, color: 'var(--accent)', marginTop: 10, lineHeight: 1 }}>
               {fmtARS(inst.final)}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--tm)', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 4 }}>
               {t('multidolarar.rendimientos.interesNote', { interes: fmtARS(inst.interes), usd: blue ? fmtUSD(inst.final / blue) : '—' })}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--th)', marginTop: 6, paddingTop: 6, borderTop: '.5px solid var(--brd)' }}>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 6, paddingTop: 6, borderTop: '.5px solid var(--brd)' }}>
               {t('multidolarar.rendimientos.teaNote', { pct: fmtPctPoints(inst.tea * 100, 1) })}
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ fontSize: 11, color: 'var(--th)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
+      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.6, marginTop: 14, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
         {t('multidolarar.rendimientos.explainer1')}
         <br /><br />
         {t('multidolarar.rendimientos.explainer2')}
