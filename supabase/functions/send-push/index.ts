@@ -16,6 +16,7 @@
 // Solo POST con el header x-cron-secret (CRON_SECRET), ver requestGuard.ts (C-45).
 
 import { guardPushRequest } from "./requestGuard.ts";
+import { expiringTrialsPath, trialDaysLeft } from "./trialQuery.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
 
 const SUPABASE_URL   = Deno.env.get("SUPABASE_URL")!;
@@ -154,12 +155,10 @@ Deno.serve(withErrorReporting("send-push", async (req) => {
 
   const results = { trial_reminders: 0, errors: 0 };
 
-  // Licencias de prueba que vencen en las próximas 72h y no recibieron aviso en las últimas 20h
-  const cutoff = new Date(Date.now() + 72 * 3600 * 1000).toISOString();
-  const licRes = await sbFetch(
-    `licenses?select=key_hash,expires_at&status=eq.active&expires_at=not.is.null&expires_at=lte.${cutoff}&expires_at=gt.${new Date().toISOString()}`,
-  );
-  const expiring: { key_hash: string; expires_at: string }[] = licRes.ok ? await licRes.json() : [];
+  // Licencias EN PRUEBA cuya prueba termina en las próximas 72h (BIZ-N4: no las
+  // pagas que renuevan) y no recibieron aviso en las últimas 20h.
+  const licRes = await sbFetch(expiringTrialsPath(new Date()));
+  const expiring: { key_hash: string; trial_ends_at: string }[] = licRes.ok ? await licRes.json() : [];
 
   for (const lic of expiring) {
     const subsRes = await sbFetch(`push_subscriptions?key_hash=eq.${lic.key_hash}&select=*`);
@@ -170,7 +169,7 @@ Deno.serve(withErrorReporting("send-push", async (req) => {
       const sentRecently = s.last_sent_at && Date.now() - new Date(s.last_sent_at).getTime() < 20 * 3600 * 1000;
       if (sentRecently) continue;
 
-      const daysLeft = Math.max(1, Math.ceil((new Date(lic.expires_at).getTime() - Date.now()) / 86400000));
+      const daysLeft = trialDaysLeft(lic.trial_ends_at, new Date());
       const payload = {
         title: "moyiq",
         // Respaldo en español; el service worker (public/push-sw.js) arma el
