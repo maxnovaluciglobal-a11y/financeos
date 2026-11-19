@@ -27,7 +27,7 @@ export function useReadingText(sym) {
   }), [t, m, sym, lang])
 }
 
-export function useMonthReading({ kpis, expenses, budgets, pending, activeMonth, settings, sym, pace = null }) {
+export function useMonthReading({ kpis, expenses, budgets, pending, activeMonth, settings, sym }) {
   const text = useReadingText(sym)
   const hist = useRefHistory(settings || {})
   const reading = useMemo(() => {
@@ -38,8 +38,8 @@ export function useMonthReading({ kpis, expenses, budgets, pending, activeMonth,
     const prev = hist ? rateOnOrBefore(hist, prevDate) : null
     return monthReading({
       activeMonth, totals: kpis, expenses, rows, pending, country: settings?.country,
-      rates: cur && prev ? { cur, prev } : null, pace,
+      rates: cur && prev ? { cur, prev } : null,
     })
-  }, [kpis, expenses, budgets, pending, activeMonth, settings, hist, pace])
+  }, [kpis, expenses, budgets, pending, activeMonth, settings, hist])
   return { reading, text }
 }

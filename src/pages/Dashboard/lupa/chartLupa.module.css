@@ -21,15 +21,14 @@
 .lensIn .plot { width: auto; }
 
 .grid  { stroke: var(--on-grad-text); stroke-opacity: .1; stroke-width: 1; }
-.zero  { stroke: var(--on-grad-text); stroke-opacity: .12; stroke-width: 1; stroke-dasharray: 3 4; }
-/* Relleno: degradado suave bajo "Te queda", del cobro a hoy. */
+/* Relleno: degradado suave bajo lo gastado, del día 1 a hoy. */
 .areaTop { stop-color: var(--on-grad-text); stop-opacity: .2; }
 .areaBot { stop-color: var(--on-grad-text); stop-opacity: 0; }
 /* Ritmo ideal: punteado fino (referencia). Proyección: rayas largas y más
    blancas (lo que viene si se sigue igual). La leyenda dibuja lo mismo. */
 .ideal { fill: none; stroke: var(--on-grad-ideal); stroke-width: 2; stroke-dasharray: .5 5; stroke-linecap: round; }
 .proj  { fill: none; stroke: var(--on-grad-text); stroke-opacity: .9; stroke-width: 2; stroke-dasharray: 7 5; stroke-linecap: round; }
-.lineDim { fill: none; stroke: var(--on-grad-text); stroke-opacity: .4; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
 .pay   { fill: var(--on-grad-text); }
 .line  { fill: none; stroke: var(--on-grad-text); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 .dayDot { fill: var(--on-grad-text); }

@@ -80,7 +80,7 @@ function useSceneChrome(ref) {
   }, [ref])
 }
 
-export default function InicioScene({ series, cpace, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending }) {
+export default function InicioScene({ series, pace: paceData, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending }) {
   const { t, lang } = useT()
   const { m } = useMoney()
   const sceneRef = useRef(null)
@@ -132,9 +132,10 @@ export default function InicioScene({ series, cpace, kpis, activeMonth, sym, inc
   // Lo que dice la escena: hoy (reposo) o el día bajo la lupa.
   const isCurrent = series?.mode === 'current'
   const looking = inspect != null && series && !(isCurrent && inspect === series.lastDay)
-  const value = looking ? series.avail[inspect] : free
+  // Mirando un día, la cifra grande es lo gastado hasta ese día.
+  const value = looking ? series.spentCum[inspect] : free
   const label = looking ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).label : (free < 0 ? t('home.kpi.short') : t('home.kpi.left'))
-  const pace = !looking && isCurrent ? paceLine(cpace, { t, fmt }) : null
+  const pace = !looking && isCurrent ? paceLine(paceData, { t, fmt }) : null
   const sub = looking
     ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).sub
     : daysLeft > 0 ? t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }) : t('home.kpi.leftSub')
@@ -186,7 +187,7 @@ export default function InicioScene({ series, cpace, kpis, activeMonth, sym, inc
                 label={t('home.lupa.aria', { month: monthLabel(activeMonth) })}
                 valueTextOf={valueTextOf} axis={axis} onDay={onDay} onTap={onTap} />
               <div className={s.legend} aria-hidden="true">
-                <span className={s.lgLine}>{t('home.lupa.legend.left')}</span>
+                <span className={s.lgLine}>{t('home.lupa.legend.spent')}</span>
                 {series.ideal && <span className={s.lgIdeal}>{t('home.lupa.legend.ideal')}</span>}
                 {series.projEnd != null && <span className={s.lgProj}>{t('home.lupa.legend.proj')}</span>}
               </div>

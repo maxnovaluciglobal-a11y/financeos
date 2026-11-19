@@ -55,25 +55,17 @@ function geometry(series) {
   const dom = yDomain(series)
   const X = (d) => xOf(d, series.days)
   const Y = (v) => yOf(v, dom)
-  const start = Math.min(series.cycleStart || 1, series.lastDay)
   const pts = []
-  for (let d = 1; d <= series.lastDay; d++) pts.push([X(d), Y(series.avail[d])])
-  // Antes del cobro: tramo atenuado, sin relleno (no es "cero y salto").
-  const pre = start > 1 ? monotonePath(pts.slice(0, start)) : ''
-  const main = pts.slice(start - 1)
-  const line = monotonePath(main)
+  for (let d = 1; d <= series.lastDay; d++) pts.push([X(d), Y(series.spentCum[d])])
+  const line = monotonePath(pts)
   const bot = CHART_H - CHART_PAD.b
-  const zeroY = dom[0] < 0 && dom[1] > 0 ? Y(0) : null
   const last = pts[pts.length - 1]
-  // Un solo relleno suave bajo la curva, del cobro a hoy, hasta el piso.
-  const area = main.length > 1 ? `${line} L${f(last[0])} ${f(bot)} L${f(main[0][0])} ${f(bot)} Z` : ''
-  // Ritmo ideal: una recta, del cobro a 0 el último día.
-  let ideal = ''
-  if (series.ideal && series.ideal[start] != null) {
-    ideal = `M${f(X(start))} ${f(Y(series.ideal[start]))} L${f(X(series.days))} ${f(Y(series.ideal[series.days]))}`
-  }
+  // Un solo relleno suave bajo lo gastado, del día 1 a hoy.
+  const area = pts.length > 1 ? `${line} L${f(last[0])} ${f(bot)} L${f(pts[0][0])} ${f(bot)} Z` : ''
+  // Ritmo ideal: una recta, de ~0 el día 1 al ingreso del mes el último día.
+  const ideal = series.ideal ? `M${f(X(1))} ${f(Y(series.ideal[1]))} L${f(X(series.days))} ${f(Y(series.ideal[series.days]))}` : ''
   const proj = series.projEnd != null && last ? `M${f(last[0])} ${f(last[1])} L${f(X(series.days))} ${f(Y(series.projEnd))}` : ''
-  return { X, Y, line, pre, area, ideal, proj, last, bot, zeroY, payX: series.payday ? X(series.payday) : null, dots: pts }
+  return { X, Y, line, area, ideal, proj, last, bot, payX: series.payday ? X(series.payday) : null, dots: pts }
 }
 
 // El dibujo, una vez para el gráfico y otra (con puntos por día) para la lente.
@@ -88,12 +80,10 @@ const Plot = memo(function Plot({ g, size, dots, gid }) {
         </linearGradient>
       </defs>
       <line className={c.grid} x1={CHART_PAD.l} x2={CHART_W - CHART_PAD.r} y1={g.bot} y2={g.bot} />
-      {g.zeroY != null && <line className={c.zero} x1={CHART_PAD.l} x2={CHART_W - CHART_PAD.r} y1={g.zeroY} y2={g.zeroY} />}
       {g.area && <path d={g.area} fill={`url(#${gid})`} />}
       {g.ideal && <path className={c.ideal} d={g.ideal} />}
       {g.proj && <path className={c.proj} d={g.proj} />}
       {g.payX != null && <circle className={c.pay} cx={g.payX} cy={g.bot} r="2.6" />}
-      {g.pre && <path className={c.lineDim} d={g.pre} />}
       {g.line && <path className={c.line} d={g.line} />}
       {dots && g.dots.map(([x, y], i) => <circle key={i} className={c.dayDot} cx={x} cy={y} r="1.6" />)}
     </svg>
@@ -128,7 +118,7 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
     if (!host || !S.w) { S.cur = d; S.mode = mode; return }
     const changed = d !== S.cur || mode !== S.mode
     S.cur = d; S.mode = mode
-    const x = L.g.X(d) * S.s, y = L.g.Y(L.series.avail[d]) * S.s
+    const x = L.g.X(d) * S.s, y = L.g.Y(L.series.spentCum[d]) * S.s
     const { cx, cy, scale } = lensPlacement({ x, y, mode, width: S.w, R })
     lensRef.current.style.transform = `translate(${f(cx - R * scale)}px,${f(cy - R * scale)}px) scale(${scale})`
     lensInRef.current.style.transform = `translate(${f(R - x * K)}px,${f(R - y * K)}px) scale(${K})`

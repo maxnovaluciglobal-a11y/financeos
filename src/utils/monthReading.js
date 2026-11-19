@@ -94,7 +94,7 @@ const deltaVars = (d, useUsd) => (d.usePct
  *   country     para la regla VE/AR
  *   rates       { cur, prev } tasa de cada período, o null
  */
-export function monthReading({ activeMonth, now = new Date(), totals, expenses = [], rows = [], pending = null, country = '', rates = null, pace = null }) {
+export function monthReading({ activeMonth, now = new Date(), totals, expenses = [], rows = [], pending = null, country = '', rates = null }) {
   const pos = monthPosition(activeMonth, now)
   const { cur, prev, prevToDate, prevCutDay } = totals
   const moves = (cur.incCount || 0) + (cur.expCount || 0)
@@ -160,19 +160,15 @@ export function monthReading({ activeMonth, now = new Date(), totals, expenses =
   if (over.length === 1) add(line('reading.overOne', { cat: cat(over[0].category), amount: money(over[0].spent - over[0].limit) }))
   else if (over.length > 1) add(line('reading.overMany', { n: over.length, cat: cat(over[0].category) }))
 
-  // `pace` (cyclePace de utils/dailyAvailable.js, Inicio con escena): el ritmo
-  // se mide desde el cobro, igual que la píldora y el anillo. Sin `pace`,
-  // contra el mes completo como siempre (Panorama, Inicio clásico).
-  const elapsed = pace ? pace.elapsed : pos.today / pos.days
-  const usedShare = pace ? pace.used : (income > 0 ? spent / income : 0)
-  const paceGap = pace ? pace.used - pace.elapsed : income > 0 ? spent / income - elapsed : null
-  const daily = pace ? pace.daily : pos.today > 0 ? spent / pos.today : 0
-  const fits = pace ? pace.fits : income / pos.days
+  const elapsed = pos.today / pos.days
+  const paceGap = income > 0 ? spent / income - elapsed : null
+  const daily = pos.today > 0 ? spent / pos.today : 0
+  const fits = income / pos.days
   const paceSentence = (() => {
     if (paceGap == null || paceGap <= PACE_OK || balance < 0 || few) return null
     return amountOnly
       ? line('reading.pace.highAmount', { daily: money(daily), diff: money(daily - fits), left: lf })
-      : line('reading.pace.high', { elapsed: pct(elapsed), used: pct(usedShare), left: lf })
+      : line('reading.pace.high', { elapsed: pct(elapsed), used: pct(spent / income), left: lf })
   })()
   add(paceSentence)
 

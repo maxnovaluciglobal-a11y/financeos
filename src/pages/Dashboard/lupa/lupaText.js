@@ -20,28 +20,27 @@ export const shortDate = (activeMonth, day, locale) => fmtDate(activeMonth, day,
 
 const upperFirst = (s) => (s ? s.charAt(0).toLocaleUpperCase() + s.slice(1) : s)
 
-// aria-valuetext del slider: el día, lo que quedaba y lo que se gastó.
+// aria-valuetext del slider: lo gastado hasta ese día, lo de ese día y lo que quedaba.
 export function valueText({ series, day, activeMonth, t, fmt, locale }) {
   const date = longDate(activeMonth, day, locale)
+  const total = fmt(series.spentCum[day])
   const amount = fmt(series.avail[day])
-  if (series.mode === 'current' && day === series.lastDay) return t('home.lupa.vt.today', { date, amount })
-  const spent = fmt(series.spent[day])
-  if (series.earned[day] > 0) return t('home.lupa.vt.pastIncome', { date, amount, spent, income: fmt(series.earned[day]) })
-  return t('home.lupa.vt.past', { date, amount, spent })
+  if (series.mode === 'current' && day === series.lastDay) return t('home.lupa.vt.today', { date, total, amount })
+  return t('home.lupa.vt.past', { date, total, spent: fmt(series.spent[day]), amount })
 }
 
-// Rótulo y línea de abajo de la cifra grande mientras se inspecciona un día.
+// Rótulo y línea de abajo de la cifra grande mientras se inspecciona un día:
+// "El martes 10 llevabas gastado" / "ese día gastaste $Y · te quedaban $Z".
 export function inspectLines({ series, day, activeMonth, t, fmt, locale }) {
   const label = t('home.lupa.label.past', { weekday: weekdayName(activeMonth, day, locale), day })
-  const parts = []
-  if (series.spent[day] > 0) parts.push(t('home.lupa.sub.spent', { spent: fmt(series.spent[day]) }))
-  if (series.earned[day] > 0) parts.push(t('home.lupa.sub.income', { income: fmt(series.earned[day]) }))
-  if (!parts.length) parts.push(t('home.lupa.sub.nothing'))
+  const parts = [series.spent[day] > 0
+    ? t('home.lupa.sub.spent', { spent: fmt(series.spent[day]) })
+    : t('home.lupa.sub.nothing')]
+  parts.push(t('home.lupa.sub.left', { amount: fmt(series.avail[day]) }))
   return { label: upperFirst(label), sub: parts.join(' · ') }
 }
 
-// Distancia contra el ritmo ideal en palabras (reposo).
-// `pace` = cyclePace(): la misma cuenta que el anillo y la frase del mes.
+// `pace` = paceToday(): ideal(hoy) − gastado(hoy), la misma cuenta que el anillo.
 export function paceLine(pace, { t, fmt }) {
   if (!pace) return null
   const gap = pace.gap

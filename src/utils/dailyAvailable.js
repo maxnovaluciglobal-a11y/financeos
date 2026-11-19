@@ -1,21 +1,21 @@
-// src/utils/dailyAvailable.js — "disponible día a día" del mes (Entrega 1.5,
-// ChartLupa del Inicio). Funciones puras: la serie, el ritmo ideal, la
-// proyección, el día de cobro, qué día está bajo el dedo y el teclado.
+// src/utils/dailyAvailable.js — el mes día a día de la ChartLupa del Inicio
+// (Entrega 1.5). Funciones puras: la serie, el ritmo ideal, la proyección, el
+// día de cobro, qué día está bajo el dedo y el teclado.
 //
-// Mismas reglas que el resto del Inicio, para que el gráfico no contradiga a
-// la cifra que tiene encima:
-//   - disponible(d) = ingresos registrados hasta d − gastos registrados hasta d
-//     ("Te queda" es solo lo real, decisión del 08-oct-2026). En el mes en
-//     curso, un movimiento con fecha posterior a hoy cuenta hoy: así el punto
-//     de hoy es EXACTAMENTE la cifra "Te queda" (homeMonthTotals.freeFlow).
-//   - ritmo ideal = UNA recta (v2, pedido de Walter del 18-nov: nada de
-//     dientes de sierra en cada cobro). Arranca el día de cobro (inicio del
-//     ciclo) con todo lo que el mes trae para gastar —la referencia del Anillo
-//     Vivo (ingreso registrado del mes; sin ingreso, el gasto del mes anterior)
-//     menos lo ya gastado antes del cobro— y baja parejo hasta 0 el último día.
-//     Antes del cobro no hay ideal: esos días se dibujan atenuados.
-//     La distancia de hoy contra esa recta es la píldora "por delante/detrás".
-//   - proyección = projBal de projectEndOfMonth (la misma de ProjectionCard).
+// v3 (18-nov, revisión de Walter): el gráfico es el GASTO ACUMULADO del mes
+// contra el ritmo ideal (estilo Copilot Money), no el disponible: una línea que
+// solo sube, sin saltos por los ingresos. Mismas cuentas que el resto del Inicio:
+//   - gastado(d) = gastos registrados del día 1 al d. En el mes en curso, un
+//     gasto con fecha posterior a hoy cuenta hoy (como "Te queda").
+//   - ritmo ideal(d) = ingreso registrado del mes × d / días: una recta de ~0 al
+//     ingreso del mes el último día. Es la misma cuenta del Anillo Vivo
+//     (`pulse`: gastado/ingreso contra día/días), de la frase del mes
+//     (monthReading) y del gráfico de ritmo de Panorama (paceSeries).
+//   - píldora = ideal(hoy) − gastado(hoy): > 0 "por delante", < 0 "por detrás",
+//     pareja dentro del 2 % del ingreso (PACE_OK). Como mide a hoy, todo ingreso
+//     registrado del mes ya cuenta; un cobro que no llegó no cambia el ideal.
+//   - proyección = gastado(hoy) + promedio diario × días que faltan.
+//   - disponible(d) = ingresos hasta d − gastos hasta d (para "te quedaban").
 // Quien llama ya sacó los movimientos de inversión (r.inv), como useHomeData.
 
 // Mismo criterio que monthPosition (utils/monthReading.js), copiado acá para
@@ -30,11 +30,12 @@ function monthPosition(activeMonth, now) {
 }
 
 const dayOf = (r) => Number(String(r?.date || '').slice(8, 10))
+export const PACE_EVEN = 0.02   // igual que PACE_OK de monthReading y `pulse`
 
-// Serie del mes. `reference` = paceReference().value (o null). `projBal` =
-// projectEndOfMonth().projBal (o null). `plan` = monthPlan() del mes, para
-// ubicar el cobro previsto si todavía no se registró.
-export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now = new Date(), reference = null, projBal = null, plan = [] }) {
+// Serie del mes. `income` = ingreso registrado del mes (kpis.totalInc); sin
+// ingreso no hay ritmo ideal. `plan` = monthPlan() del mes, para ubicar el cobro
+// previsto si todavía no se registró.
+export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now = new Date(), income = 0, plan = [] }) {
   const pos = monthPosition(activeMonth, now)
   const days = pos.days
   const lastDay = pos.today
@@ -52,30 +53,21 @@ export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now =
   for (const r of expenses || []) add(spent, r)
 
   const avail = new Array(days + 1).fill(0)
-  const earnedCum = new Array(days + 1).fill(0)
   const spentCum = new Array(days + 1).fill(0)
+  let earnedCum = 0
   for (let d = 1; d <= days; d++) {
-    earnedCum[d] = earnedCum[d - 1] + earned[d]
-    spentCum[d] = spentCum[d - 1] + spent[d]
-    avail[d] = round2(earnedCum[d] - spentCum[d])
+    earnedCum += earned[d]
+    spentCum[d] = round2(spentCum[d - 1] + spent[d])
+    avail[d] = round2(earnedCum - spentCum[d])
   }
-  const ref = Number(reference) > 0 ? Number(reference) : null
-  const payday = paydayOf({ incomes, activeMonth, plan, days })
-  // Inicio del ciclo: el cobro, si ya ocurrió (en el mes en curso, hasta hoy).
-  const cycleStart = payday && payday <= Math.max(1, lastDay) ? payday : 1
-  let ideal = null
-  if (ref != null) {
-    const startValue = ref - spentCum[cycleStart - 1]
-    const span = Math.max(1, days - cycleStart)
-    ideal = avail.map((_, d) => (d < cycleStart || d === 0 ? null : round2(startValue * (days - d) / span)))
-  }
-
+  const ref = Number(income) > 0 ? Number(income) : null
+  const ideal = ref == null ? null : spentCum.map((_, d) => round2(ref * d / days))
+  const avg = lastDay > 0 ? spentCum[lastDay] / lastDay : 0
   return {
-    mode: pos.mode, days, lastDay,
-    avail, earned, spent, ideal,
-    // La proyección solo existe en el mes en curso, desde hoy hasta el último día.
-    projEnd: pos.mode === 'current' && lastDay < days && Number.isFinite(Number(projBal)) && projBal != null ? Number(projBal) : null,
-    payday, cycleStart,
+    mode: pos.mode, days, lastDay, income: ref,
+    spent, spentCum, earned, avail, ideal,
+    projEnd: pos.mode === 'current' && lastDay < days ? round2(spentCum[lastDay] + avg * (days - lastDay)) : null,
+    payday: paydayOf({ incomes, activeMonth, plan, days }),
   }
 }
 
@@ -95,61 +87,35 @@ export function paydayOf({ incomes = [], activeMonth, plan = [], days = 31 }) {
   return best ? best.day : null
 }
 
-// El ritmo del ciclo, UNA sola cuenta para todo el Inicio con la escena: la
-// píldora "por delante / por detrás", el anillo y la etiqueta del detalle de
-// "Te queda" y la frase del mes (monthReading con `pace`). Se mide HOY, cuando
-// todo ingreso registrado del mes ya cuenta (lo fechado después de hoy se
-// suma hoy): un cobro que todavía no llegó no hace aparecer a nadie "por
-// detrás". Las recurrentes sin registrar no entran en la referencia.
-//   startValue = lo que el ciclo trae (referencia − gastado antes del cobro)
-//   elapsed    = parte del ciclo transcurrida (0 el día de cobro, 1 el último)
-//   used       = parte del ciclo ya usada = 1 − disponible hoy / startValue
-//   gap        = disponible − ideal = startValue × (elapsed − used)
-//   level      = mismos umbrales que el Anillo Vivo (PACE_OK 2 %, 10 %)
-export function cyclePace(series) {
-  if (!series || series.mode !== 'current' || !series.ideal) return null
-  const start = series.cycleStart || 1, today = series.lastDay
-  const S = series.ideal[start]
-  if (!(S > 0) || today < start) return null
-  const span = Math.max(1, series.days - start)
-  const elapsed = (today - start) / span
-  const used = 1 - series.avail[today] / S
-  const gap = round2(series.avail[today] - series.ideal[today])
-  const over = used - elapsed
-  const level = over <= 0.02 ? 'ok' : over <= 0.10 ? 'attention' : 'risk'
-  const fits = S / span
-  const daysIn = Math.max(1, today - start)
-  return { startValue: S, elapsed, used, gap, level, fits, daily: fits - gap / daysIn, even: Math.abs(over) <= 0.02 }
-}
-
-// Distancia de hoy contra el ritmo ideal: > 0 = gastó menos que el ritmo.
-export function paceGap(series, day = series?.lastDay) {
-  if (!series?.ideal || !(day >= 1) || series.ideal[day] == null) return null
-  return round2(series.avail[day] - series.ideal[day])
+// Ritmo de hoy: la píldora y el anillo del detalle (pulse) son la misma cuenta.
+//   gap   = ideal(hoy) − gastado(hoy)
+//   over  = gastado/ingreso − hoy/días  (lo que mide `pulse`)
+//   level = 'ok' ≤ 2 %, 'attention' ≤ 10 %, 'risk' (umbrales del Anillo Vivo)
+export function paceToday(series) {
+  if (!series || series.mode !== 'current' || !series.ideal || !(series.lastDay >= 1)) return null
+  const d = series.lastDay
+  const gap = round2(series.ideal[d] - series.spentCum[d])
+  const over = series.spentCum[d] / series.income - d / series.days
+  return { gap, over, even: Math.abs(over) <= PACE_EVEN, level: over <= PACE_EVEN ? 'ok' : over <= 0.10 ? 'attention' : 'risk' }
 }
 
 // ── Geometría (unidades del viewBox) ────────────────────────────────────────
 export const CHART_W = 358
-export const CHART_H = 132
-export const CHART_PAD = { l: 8, r: 8, t: 26, b: 10 }
+export const CHART_H = 140
+export const CHART_PAD = { l: 8, r: 8, t: 24, b: 10 }
 
 export function xOf(day, days, W = CHART_W, P = CHART_PAD) {
-  return P.l + (days > 1 ? (day - 1) / (days - 1) : 0) * (W - P.l - P.r)
+  return P.l + (days > 1 ? (day - 1) / (days - 1) * (W - P.l - P.r) : 0)
 }
 
-// Rango vertical con aire, incluyendo el cero si la serie lo cruza.
+// De 0 al mayor de lo gastado, el ideal del último día y la proyección, con
+// aire arriba (el pico, el aro de la lupa y su mango nunca se cortan).
 export function yDomain(series) {
-  const vals = []
-  for (let d = 1; d <= series.lastDay; d++) vals.push(series.avail[d])
-  if (series.ideal) for (let d = 1; d <= series.days; d++) if (series.ideal[d] != null) vals.push(series.ideal[d])
-  if (series.projEnd != null) vals.push(series.projEnd)
-  if (!vals.length) vals.push(0)
-  let min = Math.min(...vals), max = Math.max(...vals)
-  if (min > 0 && min < max * 0.25) min = 0
-  if (max === min) { max += 1; min -= 1 }
-  // Aire arriba para el pico, el anillo de la lupa en reposo y el mango.
-  const span = max - min
-  return [min - span * 0.06, max + span * 0.1]
+  let max = series.lastDay >= 1 ? series.spentCum[series.lastDay] : 0
+  if (series.ideal) max = Math.max(max, series.ideal[series.days])
+  if (series.projEnd != null) max = Math.max(max, series.projEnd)
+  if (!(max > 0)) max = 1
+  return [0, max * 1.08]
 }
 
 export function yOf(v, [min, max], H = CHART_H, P = CHART_PAD) {

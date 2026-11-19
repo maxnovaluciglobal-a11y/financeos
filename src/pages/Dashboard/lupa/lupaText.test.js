@@ -12,38 +12,36 @@ const NOW = new Date(2026, 10, 18, 12)
 const series = dailyAvailable({
   incomes: [{ date: '2026-11-15', amount: 1150 }],
   expenses: [{ date: '2026-11-10', amount: 54.3 }, { date: '2026-11-18', amount: 20 }],
-  activeMonth: '2026-11', now: NOW, reference: 1150,
+  activeMonth: '2026-11', now: NOW, income: 1150,
 })
 const tOf = (dict) => (k, v) => interpolate(dict[k] ?? k, v)
 const fmt = (n) => `US$${n.toFixed(2)}`
 
 describe('valueText (aria-valuetext del slider)', () => {
-  it('hoy: "Hoy, <fecha>: te queda"', () => {
+  it('hoy: lo gastado y lo que queda', () => {
     expect(valueText({ series, day: 18, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' }))
-      .toBe('Hoy, miércoles, 18 de noviembre: te queda US$1075.70')
+      .toBe('Hoy, miércoles, 18 de noviembre: llevas gastado US$74.30; te queda US$1075.70')
   })
-  it('un día pasado dice cuánto quedaba y cuánto se gastó', () => {
+  it('un día pasado: acumulado, lo de ese día y lo que quedaba', () => {
     expect(valueText({ series, day: 10, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' }))
-      .toBe('martes, 10 de noviembre: te quedaban US$-54.30; ese día gastaste US$54.30')
-  })
-  it('el día de cobro suma lo que entró', () => {
-    expect(valueText({ series, day: 15, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' })).toContain('entraron US$1150.00')
+      .toBe('martes, 10 de noviembre: llevabas gastado US$54.30; ese día gastaste US$54.30; te quedaban US$-54.30')
   })
   it('alemán sin "du"', () => {
     const v = valueText({ series, day: 10, activeMonth: '2026-11', t: tOf(de), fmt, locale: 'de-DE' })
-    expect(v).toBe('Dienstag, 10. November: US$-54.30 übrig; an diesem Tag ausgegeben: US$54.30')
+    expect(v).toContain('Dienstag, 10. November')
     expect(v).not.toMatch(/\bdu\b|\bdir\b|\bdein/i)
   })
 })
 
 describe('inspectLines / paceLine', () => {
-  it('rótulo con el día de la semana y la línea de lo que pasó', () => {
+  it('"El martes 10 llevabas gastado" y "ese día gastaste · te quedaban"', () => {
     const l = inspectLines({ series, day: 10, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' })
-    expect(l.label).toBe('El martes 10 te quedaban')
-    expect(l.sub).toBe('ese día gastaste US$54.30')
-    expect(inspectLines({ series, day: 3, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' }).sub).toBe('ese día no hubo movimientos')
+    expect(l.label).toBe('El martes 10 llevabas gastado')
+    expect(l.sub).toBe('ese día gastaste US$54.30 · te quedaban US$-54.30')
+    expect(inspectLines({ series, day: 3, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' }).sub)
+      .toBe('ese día no gastaste nada · te quedaban US$0.00')
   })
-  it('ritmo: delante, detrás o parejo (la misma cuenta que cyclePace)', () => {
+  it('ritmo: delante, detrás o parejo (la misma cuenta que paceToday)', () => {
     const t = tOf(es)
     expect(paceLine({ gap: 100, even: false }, { t, fmt }).kind).toBe('ahead')
     expect(paceLine({ gap: -100, even: false }, { t, fmt }).text).toBe('US$100.00 por detrás del ritmo ideal')
