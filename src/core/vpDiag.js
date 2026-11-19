@@ -1,5 +1,5 @@
 // src/core/vpDiag.js — Diagnóstico de viewport en el teléfono (19-nov-2026).
-// Oculto: 5 toques seguidos en la esquina superior izquierda (60×60) en menos
+// Oculto: 5 toques seguidos en la esquina superior izquierda (140×140, sobre el título) en menos
 // de 3 s muestran un panel con lo que informa el navegador. Solo lee valores;
 // otro toque en el panel lo cierra. Sirve para depurar la app instalada de iOS,
 // donde no hay herramientas de desarrollo a mano.
@@ -36,7 +36,7 @@ export function installVpDiag(win = window) {
     doc.body.appendChild(box)
   }
   doc.addEventListener('pointerdown', (e) => {
-    if (e.clientX > 60 || e.clientY > 60) { taps = []; return }
+    if (e.clientX > 140 || e.clientY > 140) { taps = []; return }
     const t = Date.now(); taps = taps.filter((x) => t - x < 3000); taps.push(t)
     if (taps.length >= 5) { taps = []; show() }
   }, { passive: true })
