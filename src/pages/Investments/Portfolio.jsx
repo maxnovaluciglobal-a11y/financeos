@@ -205,8 +205,9 @@ export default function Portfolio() {
             <span className={s.sectionHint}>{t(rows.length === 1 ? 'invest.card.positions.one' : 'invest.card.positions.many', { n: rows.length })}</span>
           </div>
           <ul className={s.list}>
-            {rows.map(r => (
-              <li key={r.t}>
+            {rows.map((r, i) => (
+              // INV-N15: puede haber dos lotes del mismo ticker; el ticker no sirve de key.
+              <li key={r.id ?? `${r.t}-${i}`}>
                 <button type="button" className={s.row} onClick={() => setSelected(r)}>
                   <span className={s.badge} aria-hidden="true">{r.t.replace(/-USD$/, '').slice(0, 4)}</span>
                   <span className={s.rowMain}>

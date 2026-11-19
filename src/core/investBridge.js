@@ -72,7 +72,7 @@ async function fetchRaw({ client = authClient, fetchImpl = (...a) => fetch(...a)
   const uid = sess?.session?.user?.id
   if (!uid) throw new Error('session_required')
   const { data, error } = await withTimeout(
-    client.from('portfolio_holdings').select('ticker,asset_type,shares,avg_cost,fx_at_cost').eq('user_id', uid),
+    client.from('portfolio_holdings').select('id,ticker,asset_type,shares,avg_cost,fx_at_cost').eq('user_id', uid),
     HOLDINGS_TIMEOUT_MS,
   )
   if (error) throw new Error('holdings_failed')

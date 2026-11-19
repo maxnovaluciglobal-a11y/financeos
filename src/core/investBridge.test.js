@@ -42,6 +42,8 @@ describe('fetchSnapshot', () => {
     const s = await fetchSnapshot({ client: c, fetchImpl: f })
     expect(c.from).toHaveBeenCalledWith('portfolio_holdings')
     expect(c.eq).toHaveBeenCalledWith('user_id', 'u1')
+    // INV-N15: pide el id para usarlo como key de la lista (hay tickers repetidos).
+    expect(c.from.mock.results[0].value.select).toHaveBeenCalledWith('id,ticker,asset_type,shares,avg_cost,fx_at_cost')
     expect(s.status).toBe('live')
     expect(s.valueUsd).toBeCloseTo(1200 + 500 + 20000)
     expect(s.coingecko).toBe(true)
