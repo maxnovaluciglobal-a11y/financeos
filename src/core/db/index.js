@@ -170,6 +170,9 @@ export async function clearAllData() {
   // 'backups' también: "borrar todos los datos" no puede dejar una copia
   // completa escondida en el dispositivo.
   const stores = [...DATA_STORES, 'backups']
+  // La copia previa al sync de versiones anteriores vivía en claro en
+  // localStorage (V-ENG-FN2): también se borra.
+  try { localStorage.removeItem(LEGACY_PRESYNC_KEY) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   const db = await getDB()
   if (!db) { stores.forEach(lsClear); return }
   const tx = db.transaction(stores, 'readwrite')
@@ -373,6 +376,22 @@ export async function confirmOccurrencesInDb(items, { today = localDateStr(), no
 }
 
 // ─── Copias locales de seguridad ('backups') ─────────────────────────────────
+// Copia previa al sync (G1-N4 / V-ENG-FN2): antes de aplicar datos de otro
+// dispositivo se guarda la foto local acá (una sola, se reemplaza en cada
+// sync), así "Borrar todos los datos" la limpia y Ajustes la puede restaurar.
+// Antes vivía en localStorage['fnos_presync_backup'] y nadie la leía.
+export const PRE_SYNC_SNAPSHOT_ID = 'pre-sync'
+export const LEGACY_PRESYNC_KEY = 'fnos_presync_backup'
+
+// Lanza si no se puede guardar: quien sincroniza no aplica lo remoto sin copia.
+export async function savePreSyncSnapshot(data) {
+  const record = { id: PRE_SYNC_SNAPSHOT_ID, reason: 'pre-sync', createdAt: new Date().toISOString(), data }
+  const db = await getDB()
+  if (db) await db.put('backups', record)
+  else localStorage.setItem('fos_backups', JSON.stringify([...lsGet('backups').filter(b => b?.id !== PRE_SYNC_SNAPSHOT_ID), record]))
+  return record
+}
+
 // Solo metadatos (sin los datos) para mostrar en Ajustes.
 export async function listSnapshots() {
   try {

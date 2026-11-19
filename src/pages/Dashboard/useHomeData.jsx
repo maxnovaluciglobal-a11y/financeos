@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
 import { calcFinancialScore } from '../../utils/financialScore.js'
-import { isSyncEnabled, syncAvailable, syncMeta } from '../../core/sync.js'
+import { isSyncEnabled, syncAvailable, syncMeta, lastSyncTime } from '../../core/sync.js'
 import { ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon from '../../components/icons/SignalIcon.jsx'
 import { refEligible, resolveRefRate } from '../../utils/refRate.js'
@@ -149,7 +149,7 @@ export function useHomeData() {
       savingRate: kpis.savingRate,
       expenses, debts, goals, incomes, activeMonth,
       syncEnabled: isSyncEnabled() && syncAvailable(),
-      lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
+      lastSyncAt: lastSyncTime(meta),
       pending: pendingSum,
     }, t)
   }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, pendingSum, t])
