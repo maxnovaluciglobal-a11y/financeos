@@ -2725,6 +2725,8 @@ export const en = {
     'rec.status.confirmed': "Confirmed",
     'rec.status.matched': "Already recorded",
     'rec.status.skipped': "Skipped this month",
+    // UX-N12: previsto con fecha pasada
+    'rec.status.overdue': "Overdue",
     'rec.action.confirm': "Confirm",
     'rec.action.confirmAria': "Confirm {name}",
     'rec.action.moreAria': "{name}: change amount or skip",

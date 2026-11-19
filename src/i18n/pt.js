@@ -2725,6 +2725,8 @@ export const pt = {
     'rec.status.confirmed': "Confirmado",
     'rec.status.matched': "Já registrado",
     'rec.status.skipped': "Pulado este mês",
+    // UX-N12: previsto con fecha pasada
+    'rec.status.overdue': "Vencido",
     'rec.action.confirm': "Confirmar",
     'rec.action.confirmAria': "Confirmar {name}",
     'rec.action.moreAria': "{name}: alterar valor ou pular",

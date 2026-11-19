@@ -2724,6 +2724,8 @@ export const de = {
     'rec.status.confirmed': "Bestätigt",
     'rec.status.matched': "Bereits erfasst",
     'rec.status.skipped': "Diesen Monat ausgelassen",
+    // UX-N12: previsto con fecha pasada
+    'rec.status.overdue': "Überfällig",
     'rec.action.confirm': "Bestätigen",
     'rec.action.confirmAria': "{name} bestätigen",
     'rec.action.moreAria': "{name}: Betrag ändern oder auslassen",

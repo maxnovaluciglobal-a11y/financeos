@@ -256,15 +256,19 @@ export const FACTOR_PAGE = {
 // Suscripciones, cuotas de deudas y gastos fijos manuales son reglas: los
 // próximos pagos son sus ocurrencias PREVISTAS (no confirmadas ni omitidas)
 // entre hoy y hoy + `days`. Lo ya registrado este mes no vuelve a aparecer.
-export function upcomingFromRules(rules, { incomes = [], expenses = [], today = new Date(), days = 30, limit = 5 } = {}) {
+// `includeOverdue` (UX-N12): suma también los previstos de este mes cuya fecha
+// ya pasó, marcados `overdue: true`; por orden de fecha quedan primero.
+export function upcomingFromRules(rules, { incomes = [], expenses = [], today = new Date(), days = 30, limit = 5, includeOverdue = false } = {}) {
   const t0 = typeof today === 'string' ? today : localDateStr(today)
   const end = addDays(t0, days)
   const months = [...new Set([monthOf(t0), monthOf(addDays(t0, 15)), monthOf(end)])]
   const out = []
   for (const ym of months) {
     for (const o of monthPlan(rules, ym, { incomes, expenses })) {
-      if (o.status !== 'pending' || o.kind !== 'expense' || o.date < t0 || o.date > end) continue
-      out.push({ id: o.key, kind: o.rule.source === 'debt' ? 'debt' : o.rule.source === 'subscription' ? 'sub' : 'manual', name: o.rule.description || '', amount: Number(o.amount) || 0, date: o.date })
+      if (o.status !== 'pending' || o.kind !== 'expense' || o.date > end) continue
+      const overdue = o.date < t0
+      if (overdue && !(includeOverdue && monthOf(o.date) === monthOf(t0))) continue
+      out.push({ id: o.key, kind: o.rule.source === 'debt' ? 'debt' : o.rule.source === 'subscription' ? 'sub' : 'manual', name: o.rule.description || '', amount: Number(o.amount) || 0, date: o.date, ...(overdue ? { overdue: true } : {}) })
     }
   }
   out.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount)
