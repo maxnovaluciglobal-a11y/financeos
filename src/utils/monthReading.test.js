@@ -206,6 +206,14 @@ describe('gasto contra ritmo (#11)', () => {
     expect(say(paceConclusion(data(150), { closed: true }))).toBe('El gasto cerró $50 sobre el ritmo')
     expect(paceConclusion(data(0))).toBeNull()
   })
+  it('G2-N3: "parejo" dentro del 2 % de la referencia del mes, como la píldora de la Lupa', () => {
+    // Día 23 de 30, referencia 1.000: ideal 766,67. Gastado 785 → +18,33 (1,8 % del mes).
+    const ref = 1000, days = 30, today = 23
+    const series = Array.from({ length: days }, (_, i) => ({ day: i + 1, current: i + 1 === today ? 785 : i + 1 < today ? 0 : null, pace: Math.round(ref * (i + 1) / days * 100) / 100 }))
+    expect(paceConclusion(series).key).toBe('reading.title.pace.even')
+    series[today - 1].current = 790   // +23,33: pasa el 2 % del mes
+    expect(paceConclusion(series).key).toBe('reading.title.pace.over')
+  })
 })
 
 describe('renderReading', () => {

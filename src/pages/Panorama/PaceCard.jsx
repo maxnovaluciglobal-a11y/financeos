@@ -18,7 +18,7 @@ export default function PaceCard({ expenses, kpis, activeMonth, sym }) {
   const text = useReadingText(sym)
   const reference = paceReference({ income: kpis.totalInc, prevExpenses: kpis.prev.totalExp })
   const mode = monthPosition(activeMonth).mode
-  const series = useMemo(() => paceSeries(cumulativeByDay(expenses, activeMonth), reference?.value), [expenses, activeMonth, reference?.value])
+  const series = useMemo(() => paceSeries(cumulativeByDay(expenses, activeMonth, new Date(), { futureToToday: true }), reference?.value), [expenses, activeMonth, reference?.value])
   if (!reference || mode === 'future' || !(kpis.totalExp > 0)) return null
   const plain = t('chart.pace.title')
   return (

@@ -27,14 +27,19 @@ export function prevMonthKey(key) {
 // Gasto acumulado por día de `month` contra el mes anterior. En el mes en
 // curso la serie actual se corta en `today` (null después), la anterior sigue.
 // Un día que el mes anterior no tuvo (31 contra 30) repite su último total.
-export function cumulativeByDay(records, month, today = new Date()) {
+// `futureToToday`: en el mes en curso, un gasto con fecha posterior a hoy
+// cuenta hoy, como "Te queda" y la Lupa del Inicio (G2-N3). Panorama lo usa
+// para que su veredicto de ritmo sea el mismo que el del Inicio.
+export function cumulativeByDay(records, month, today = new Date(), { futureToToday = false } = {}) {
   const prev = prevMonthKey(month)
   const n = daysIn(month), np = daysIn(prev)
+  const fold = futureToToday && month === monthKey(today) ? today.getDate() : null
   const cur = new Array(n).fill(0), old = new Array(np).fill(0)
   for (const r of records || []) {
     const d = r?.date
     if (typeof d !== 'string') continue
-    const day = Number(d.slice(8, 10))
+    let day = Number(d.slice(8, 10))
+    if (fold != null && d.startsWith(month) && day > fold && day <= n) day = fold
     if (d.startsWith(month) && day >= 1 && day <= n) cur[day - 1] += Number(r.amount) || 0
     else if (d.startsWith(prev) && day >= 1 && day <= np) old[day - 1] += Number(r.amount) || 0
   }

@@ -28,6 +28,15 @@ describe('series de gráficos (UI-M6)', () => {
     expect(s[29].currentPrev).toBe(100)
     expect(s[30].currentPrev).toBe(100) // septiembre no tiene 31
   })
+  it('futureToToday: en el mes en curso un gasto con fecha futura cuenta hoy (G2-N3)', () => {
+    const recs = [{ date: '2026-10-02', amount: 100 }, { date: '2026-10-28', amount: 40 }]
+    expect(cumulativeByDay(recs, '2026-10', now)[20].current).toBe(100)
+    const s = cumulativeByDay(recs, '2026-10', now, { futureToToday: true })
+    expect(s[20].current).toBe(140)
+    expect(s[21].current).toBe(null)
+    // Un mes cerrado no cambia.
+    expect(cumulativeByDay(recs, '2026-10', new Date(2026, 10, 3), { futureToToday: true })[27].current).toBe(140)
+  })
   it('un mes cerrado no se corta', () => {
     const s = cumulativeByDay([{ date: '2026-09-15', amount: 9 }], '2026-09', now)
     expect(s[29].current).toBe(9)

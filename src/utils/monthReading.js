@@ -247,7 +247,12 @@ export function paceConclusion(series, { closed = false } = {}) {
   const last = known[known.length - 1]
   if (!last || !(last.current > 0)) return null
   const diff = last.current - last.pace
-  const close = Math.abs(diff) <= last.pace * PACE_OK
+  // G2-N3: "parejo" dentro del 2 % de la referencia del MES (el último punto
+  // de la línea), la misma tolerancia que la píldora de la Lupa (PACE_EVEN:
+  // |gastado/ingreso − día/días| ≤ 0,02). Antes era el 2 % del ideal a la
+  // fecha, más estricto, y el mismo día una pantalla decía "parejo" y la otra no.
+  const ref = series[series.length - 1]?.pace ?? last.pace
+  const close = Math.abs(diff) <= ref * PACE_OK
   const tail = closed ? 'Closed' : ''
   if (close) return line(`reading.title.pace.even${tail}`)
   return line(`reading.title.pace.${diff > 0 ? 'over' : 'under'}${tail}`, { amount: money(Math.abs(diff)) })
