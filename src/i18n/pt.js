@@ -2096,6 +2096,10 @@ export const pt = {
     'billing.then.annual': "Depois, US$ {y} por ano. Cancele quando quiser.",
     'billing.then.monthly': "Depois, US$ {m} por mês. Cancele quando quiser.",
     'billing.trialNote': "Exige cartão. A primeira cobrança é no dia {next}; se você cancelar antes, não paga nada.",
+    // LEG-N5 (auditoria 360, 19-nov-2026): renovação automática e como cancelar junto ao botão do teste.
+    'billing.renewal.monthly': "Depois do teste, o plano é renovado automaticamente e cobrado todo mês até você cancelar. Você pode cancelar on-line a qualquer momento em Mais › Gerenciar assinatura.",
+    'billing.renewal.annual': "Depois do teste, o plano é renovado automaticamente e cobrado todo ano até você cancelar. Você pode cancelar on-line a qualquer momento em Mais › Gerenciar assinatura.",
+    'billing.cancelLink': "Como cancelar",
     'home.kpi.left': "Sobra este mês",
     'home.detail.title': "Detalhes do mês",
     'home.detail.open': "Ver detalhes do mês",

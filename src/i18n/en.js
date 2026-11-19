@@ -2096,6 +2096,10 @@ export const en = {
     'billing.then.annual': "Then US$ {y} per year. Cancel anytime.",
     'billing.then.monthly': "Then US$ {m} per month. Cancel anytime.",
     'billing.trialNote': "Card required. The first charge is on day {next}; if you cancel before then, you pay nothing.",
+    // LEG-N5 (360 audit, 2026-11-19): automatic renewal and how to cancel next to the trial button.
+    'billing.renewal.monthly': "After the trial, the plan renews automatically and is charged every month until you cancel it. You can cancel online at any time from More › Manage subscription.",
+    'billing.renewal.annual': "After the trial, the plan renews automatically and is charged every year until you cancel it. You can cancel online at any time from More › Manage subscription.",
+    'billing.cancelLink': "How to cancel",
     'home.kpi.left': "Left this month",
     'home.detail.title': "Month details",
     'home.detail.open': "See month details",

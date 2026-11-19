@@ -7,6 +7,7 @@ import Turnstile from './Turnstile.jsx'
 import Logo from './Logo.jsx'
 import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, annualPerMonth, DEFAULT_BILLING_PERIOD } from '../utils/pricing.js'
 import PeriodToggle from './ui/PeriodToggle.jsx'
+import RenewalNote from './ui/RenewalNote.jsx'
 import config from '../config.js'
 import { activateUrl } from '../utils/landingLinks.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
@@ -233,7 +234,8 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             <PeriodToggle value={period} onChange={setPeriod} />
             <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginTop: 8 }}>
               {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', proPriceVars(lang))}{' '}
-              {t('billing.trialNote', { next: config.pricing.trialDays + 1 })}
+              {t('billing.trialNote', { next: config.pricing.trialDays + 1 })}{' '}
+              <RenewalNote period={period} />
             </div>
           </div>
         )}

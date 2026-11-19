@@ -101,3 +101,27 @@ describe('sin prueba en la config', () => {
     } finally { Object.assign(config.pricing, saved) }
   })
 })
+
+// LEG-N5 (auditoría 360, 19-nov-2026): junto al botón de la prueba se dice que el plan
+// se renueva solo hasta que se cancele, cómo se cancela, y se enlaza la baja en línea.
+describe.each(LANGS)('aviso de renovación y baja junto a la prueba · %s', (lang) => {
+  const CANCEL = { es: 'https://moyiq.app/cancelar.html', en: 'https://moyiq.app/en/cancel.html', pt: 'https://moyiq.app/en/cancel.html', de: 'https://moyiq.app/en/cancel.html' }
+  for (const [name, render] of [['LicenseGate', renderGate], ['Ajustes', renderCard]]) {
+    it(`${name}: renovación anual hasta cancelar y enlace a la baja en línea`, () => {
+      const html = render(lang)
+      const out = text(html)
+      expect(out).toContain(t(lang, 'billing.renewal.annual'))
+      expect(html).toContain(`href="${CANCEL[lang]}"`)
+      expect(out).toContain(t(lang, 'billing.cancelLink'))
+    })
+  }
+
+  it('los textos nombran la renovación y el lugar del portal en los dos periodos', () => {
+    for (const key of ['billing.renewal.monthly', 'billing.renewal.annual']) {
+      const s = t(lang, key)
+      expect(s).not.toBe(key)
+      expect(s).toContain(t(lang, 'menu.manageSub'))
+      expect(s).toContain(t(lang, 'nav.more'))
+    }
+  })
+})

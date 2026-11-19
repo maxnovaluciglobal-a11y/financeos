@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Btn } from '../../components/ui/index.jsx'
 import PeriodToggle from '../../components/ui/PeriodToggle.jsx'
+import RenewalNote from '../../components/ui/RenewalNote.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
 import { checkoutFor, DEFAULT_BILLING_PERIOD, proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
@@ -25,7 +26,8 @@ export default function UpgradeCard({ subStyle }) {
         <div style={subStyle}>{t('settings.upgrade.sub')}</div>
         {trial && (
           <div style={{...subStyle,marginTop:6}}>
-            {t(thenKey, proPriceVars(lang))} {t('billing.trialNote', { next: trialDays + 1 })}
+            {t(thenKey, proPriceVars(lang))} {t('billing.trialNote', { next: trialDays + 1 })}{' '}
+            <RenewalNote period={period} />
           </div>
         )}
       </div>
