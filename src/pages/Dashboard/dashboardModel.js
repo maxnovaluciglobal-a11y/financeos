@@ -6,6 +6,7 @@
 import { localDateStr, fmtPct } from '../../utils/index.js'
 import { budgetStatus } from '../../utils/budgets.js'
 import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
+import { roundCents, sumAmounts } from '../../utils/monthFigures.js'
 
 // ── Variación vs. mes anterior ───────────────────────────────────────────────
 // null = no hay base para comparar (el mes anterior no tiene datos o su valor es
@@ -101,9 +102,11 @@ export function homeMonthTotals({ incomes = [], expenses = [], activeMonth, now 
     const keep = (r) => typeof r?.date === 'string' && r.date.startsWith(month) && (untilDay == null || Number(r.date.slice(8, 10)) <= untilDay)
     const inc = incomes.filter(keep)
     const exp = expenses.filter(keep)
-    const totalInc = inc.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
-    const totalExp = exp.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
-    const balance = totalInc - totalExp
+    // ENG-N5: totales y saldo redondeados a centavos; un mes cuadrado al
+    // centavo da 0, no −0,00 en rojo.
+    const totalInc = sumAmounts(inc)
+    const totalExp = sumAmounts(exp)
+    const balance = roundCents(totalInc - totalExp)
     // "Te queda" = solo lo REAL (decisión de Walter, 08-oct-2026); lo previsto
     // que falta va aparte en "Previsto pendiente".
     return { totalInc, totalExp, balance, freeFlow: balance,
