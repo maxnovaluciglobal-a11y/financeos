@@ -41,10 +41,11 @@ export function inspectLines({ series, day, activeMonth, t, fmt, locale }) {
 }
 
 // Distancia contra el ritmo ideal en palabras (reposo).
-export function paceLine(gap, { t, fmt, reference }) {
-  if (gap == null) return null
-  const close = reference > 0 && Math.abs(gap) <= reference * 0.02
-  if (close) return { kind: 'even', text: t('home.lupa.pace.even') }
+// `pace` = cyclePace(): la misma cuenta que el anillo y la frase del mes.
+export function paceLine(pace, { t, fmt }) {
+  if (!pace) return null
+  const gap = pace.gap
+  if (pace.even) return { kind: 'even', text: t('home.lupa.pace.even') }
   return gap > 0
     ? { kind: 'ahead', text: t('home.lupa.pace.ahead', { amount: fmt(gap) }) }
     : { kind: 'behind', text: t('home.lupa.pace.behind', { amount: fmt(-gap) }) }

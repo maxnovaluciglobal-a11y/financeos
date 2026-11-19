@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { dailyAvailable, paydayOf, paceGap, dayAt, keyStep, lensPlacement, xOf, yDomain, yOf, CHART_W, CHART_PAD } from './dailyAvailable.js'
+import { dailyAvailable, cyclePace, paydayOf, paceGap, dayAt, keyStep, lensPlacement, xOf, yDomain, yOf, CHART_W, CHART_PAD } from './dailyAvailable.js'
 import { homeMonthTotals } from '../pages/Dashboard/dashboardModel.js'
+import { monthReading } from './monthReading.js'
 
 const NOW = new Date(2026, 10, 18, 12) // 18-nov-2026
 const inc = [
@@ -79,6 +80,47 @@ describe('dailyAvailable', () => {
       { kind: 'expense', date: '2026-11-01', expected: 9999, status: 'pending', rule: {} },
     ], days: 30 })).toBe(28)
     expect(paydayOf({ incomes: [], activeMonth: '2026-11', plan: [] })).toBeNull()
+  })
+})
+
+describe('cyclePace (una sola cuenta de ritmo para píldora, anillo y frase)', () => {
+  const s = dailyAvailable({ incomes: inc, expenses: exp, activeMonth: '2026-11', now: NOW, reference: 1350, projBal: 500 })
+  const p = cyclePace(s)
+  it('gap = disponible − ideal y = startValue × (transcurrido − usado)', () => {
+    expect(p.gap).toBe(paceGap(s))
+    expect(p.startValue * (p.elapsed - p.used)).toBeCloseTo(p.gap, 2)
+    expect(p.elapsed).toBeCloseTo(3 / 15, 5)
+  })
+  it('nivel con los umbrales del Anillo Vivo, coherente con el signo del gap', () => {
+    expect(p.gap > 0).toBe(true)
+    expect(p.level).toBe('ok')
+    const heavy = dailyAvailable({ incomes: inc, expenses: [...exp, { date: '2026-11-17', amount: 900 }], activeMonth: '2026-11', now: NOW, reference: 1350 })
+    const ph = cyclePace(heavy)
+    expect(ph.gap).toBeLessThan(0)
+    expect(['attention', 'risk']).toContain(ph.level)
+    expect(ph.daily).toBeGreaterThan(ph.fits)
+  })
+  it('un cobro con fecha posterior a hoy ya cuenta hoy: no deja a nadie "por detrás"', () => {
+    const late = dailyAvailable({
+      incomes: [{ date: '2026-11-03', amount: 1000 }, { date: '2026-11-25', amount: 1000 }],
+      expenses: [{ date: '2026-11-10', amount: 600 }], activeMonth: '2026-11', now: NOW, reference: 2000,
+    })
+    expect(late.avail[18]).toBe(1400)
+    expect(cyclePace(late).gap).toBeGreaterThan(0)
+  })
+  it('la frase del mes usa el mismo ritmo cuando se le pasa', () => {
+    const exp2 = [...exp, { date: '2026-11-17', amount: 900 }]
+    const sr = dailyAvailable({ incomes: inc, expenses: exp2, activeMonth: '2026-11', now: NOW, reference: 1350 })
+    const pace = cyclePace(sr)
+    const totals = homeMonthTotals({ incomes: inc, expenses: exp2, activeMonth: '2026-11', now: NOW })
+    const r = monthReading({ activeMonth: '2026-11', now: NOW, totals: { ...totals.cur, ...totals }, expenses: exp2, pace })
+    const high = r.facts.find(f => f.key === 'reading.pace.high')
+    expect(high.vars.elapsed.pct).toBeCloseTo(pace.elapsed, 5)
+    expect(high.vars.used.pct).toBeCloseTo(pace.used, 5)
+  })
+  it('sin ritmo en meses cerrados o sin referencia', () => {
+    expect(cyclePace(dailyAvailable({ incomes: inc, expenses: exp, activeMonth: '2026-10', now: NOW, reference: 999 }))).toBeNull()
+    expect(cyclePace(dailyAvailable({ incomes: inc, expenses: exp, activeMonth: '2026-11', now: NOW }))).toBeNull()
   })
 })
 

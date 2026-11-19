@@ -145,15 +145,18 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
     }
     host.setAttribute('aria-valuenow', String(d))
     host.setAttribute('aria-valuetext', L.valueTextOf(d))
-    host.classList.toggle(c.active, mode !== 'rest')
-    host.classList.toggle(c.resting, mode === 'rest')
+    // Estado en data-*, no en className: React reescribe className cuando
+    // termina la invitación y se llevaba puestas estas clases (la lente en
+    // reposo volvía a pintarse llena).
+    host.dataset.mode = mode === 'rest' ? 'rest' : 'active'
     if (changed) L.onDay?.(d, mode)
   }, [])
 
   const glide = useCallback((on) => {
     const host = hostRef.current
     if (!host) return
-    host.classList.toggle(c.glide, on && !reduced())
+    if (on && !reduced()) host.dataset.glide = '1'
+    else delete host.dataset.glide
   }, [])
   const rest = useCallback(() => {
     clearTimeout(st.current.glideT)
@@ -279,7 +282,7 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
     <div className={c.wrap}>
       {/* aria-valuenow/valuetext los actualiza place() en el DOM: el valor de
           React (hoy) no cambia entre renders, así que React no lo pisa. */}
-      <div ref={hostRef} className={`${c.chart} ${inviting ? c.invite : ''}`} role="slider" tabIndex={0}
+      <div ref={hostRef} className={`${c.chart} ${inviting ? c.invite : ''}`} role="slider" tabIndex={0} data-mode="rest"
         aria-label={label} aria-valuemin={1} aria-valuemax={maxDay} aria-valuenow={maxDay} aria-orientation="horizontal"
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel} onPointerLeave={onPointerLeave}

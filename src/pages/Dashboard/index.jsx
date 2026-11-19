@@ -46,6 +46,8 @@ import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal } from 'lucide-react'
 import { inicioLupaOn } from '../../utils/uiFlags.js'
+import { dailyAvailable, cyclePace } from '../../utils/dailyAvailable.js'
+import { paceReference } from '../../utils/monthReading.js'
 
 // V4: el anillo es una tarjeta opcional ("Editar Inicio") y es lo único del
 // Inicio que usa recharts (~100 kB gzip). Lazy, el Inicio pinta sin esperarlo.
@@ -245,6 +247,19 @@ export default function Dashboard({ setPage }) {
              refIsIncome: kpis.totalInc > 0 }
   }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, money])
 
+  // Entrega 1.5: la serie del mes y el ritmo del ciclo (desde el cobro). Con la
+  // escena, la píldora, el anillo del detalle y la frase del mes usan esta
+  // MISMA cuenta (cyclePace); sin la escena, nada cambia.
+  const lupaSeries = useMemo(() => {
+    if (!lupa) return null
+    const reference = paceReference({ income: kpis.totalInc, prevExpenses: kpis.prev.totalExp })?.value ?? null
+    const proj = projectEndOfMonth({ incomes, expenses, activeMonth, pending: pendingSum })
+    const sr = dailyAvailable({ incomes, expenses, activeMonth, reference, projBal: proj.projBal, plan })
+    return sr.lastDay >= 1 ? sr : null
+  }, [lupa, incomes, expenses, activeMonth, pendingSum, plan, kpis.totalInc, kpis.prev.totalExp])
+  const cpace = useMemo(() => (lupaSeries && kpis.totalInc > 0 ? cyclePace(lupaSeries) : null), [lupaSeries, kpis.totalInc])
+  const pulseShown = cpace ? { ...pulse, spentRatio: Math.max(0, cpace.used), elapsedRatio: cpace.elapsed, level: cpace.level, color: SCORE_LEVELS[cpace.level].color } : pulse
+
   // R12/R13: moneda de referencia del hero + calculadora del país.
   const [refMode, setRefModeState] = useState(() => { try { return localStorage.getItem('fos_home_refcur') === 'ref' ? 'ref' : 'local' } catch { return 'local' } })
   const setRefMode = (m) => { setRefModeState(m); try { localStorage.setItem('fos_home_refcur', m) } catch { /* modo privado */ } }
@@ -320,9 +335,9 @@ export default function Dashboard({ setPage }) {
 
       {lupa ? (
         <Suspense fallback={<div className={hs.sceneFallback} aria-hidden="true" />}>
-          <InicioScene kpis={kpis} activeMonth={activeMonth} sym={sym} incomes={incomes} expenses={expenses}
-            plan={plan} pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
-            pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
+          <InicioScene series={lupaSeries} cpace={cpace} kpis={kpis} activeMonth={activeMonth} sym={sym} incomes={incomes} expenses={expenses}
+            pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
+            pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulseShown : null}
             daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
             dualOn={dualOn} toUSD={toUSD} onOpen={setPage} refc={refc} />
         </Suspense>
@@ -340,7 +355,7 @@ export default function Dashboard({ setPage }) {
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
               onOpen={setPage} refc={refc} />
           )}
-          <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
+          <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} pace={cpace} />
 
           {quick.length > 0 && (
             <nav className={hs.quick} aria-label={t('dash.quick.title')} data-tour="home-quick">

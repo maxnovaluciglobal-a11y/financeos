@@ -38,7 +38,7 @@
   position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform;
 }
 .guide { width: 1px; background: var(--on-grad-ideal); opacity: 0; transition: opacity .15s; }
-.active .guide { opacity: 1; }
+.chart[data-mode="active"] .guide { opacity: 1; }
 .dot {
   width: 12px; height: 12px; border-radius: 50%; background: var(--on-grad-accent); z-index: 6;
   box-shadow: 0 0 0 2px var(--text-on-accent), 0 0 0 4px var(--on-grad-text);
@@ -52,20 +52,20 @@
 /* En reposo la lupa es solo su contorno (aro lima, centro transparente y
    mango) sobre hoy: no tapa la curva. La lente con el aumento aparece al
    arrastrar, con teclado o al tocar. */
-.resting .lens { background: transparent; box-shadow: 0 0 0 5px var(--on-grad-accent), 0 0 0 7px var(--text-on-accent); }
-.resting .lensIn { opacity: 0; }
-.resting .dot { opacity: 0; }
+.chart[data-mode="rest"] .lens { background: transparent; box-shadow: 0 0 0 5px var(--on-grad-accent), 0 0 0 7px var(--text-on-accent); }
+.chart[data-mode="rest"] .lensIn { opacity: 0; }
+.chart[data-mode="rest"] .dot { opacity: 0; }
 .hand {
   width: 12px; height: 34px; border-radius: 6px; background: var(--on-grad-accent); z-index: 6;
   box-shadow: 0 0 0 1.5px var(--text-on-accent); transform-origin: 6px 0;
 }
 
 /* Deslizamiento al volver a hoy o al moverse con teclado / ‹ ›. */
-.glide .guide, .glide .dot, .glide .lens, .glide .lensIn, .glide .hand {
+.chart[data-glide] .guide, .chart[data-glide] .dot, .chart[data-glide] .lens, .chart[data-glide] .lensIn, .chart[data-glide] .hand {
   transition: transform .55s cubic-bezier(.65, 0, .15, 1), opacity .2s;
 }
 
-.invite.resting .lens { animation: invite 1.6s var(--ease) 2; }
+.invite.chart[data-mode="rest"] .lens { animation: invite 1.6s var(--ease) 2; }
 @keyframes invite {
   0%, 100% { box-shadow: 0 0 0 5px var(--on-grad-accent), 0 0 0 7px var(--text-on-accent); }
   50% { box-shadow: 0 0 0 5px var(--on-grad-accent), 0 0 0 7px var(--text-on-accent), 0 0 0 24px color-mix(in srgb, var(--on-grad-accent) 28%, transparent); }
@@ -85,6 +85,6 @@
   .lens { box-shadow: 0 0 0 3px var(--on-grad-accent), 0 0 0 4.5px var(--text-on-accent); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .guide, .glide .guide, .glide .dot, .glide .lens, .glide .lensIn, .glide .hand { transition: none; }
-  .invite.resting .lens { animation: none; }
+  .guide, .chart[data-glide] .guide, .chart[data-glide] .dot, .chart[data-glide] .lens, .chart[data-glide] .lensIn, .chart[data-glide] .hand { transition: none; }
+  .invite.chart[data-mode="rest"] .lens { animation: none; }
 }

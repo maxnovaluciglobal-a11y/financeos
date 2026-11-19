@@ -95,6 +95,33 @@ export function paydayOf({ incomes = [], activeMonth, plan = [], days = 31 }) {
   return best ? best.day : null
 }
 
+// El ritmo del ciclo, UNA sola cuenta para todo el Inicio con la escena: la
+// píldora "por delante / por detrás", el anillo y la etiqueta del detalle de
+// "Te queda" y la frase del mes (monthReading con `pace`). Se mide HOY, cuando
+// todo ingreso registrado del mes ya cuenta (lo fechado después de hoy se
+// suma hoy): un cobro que todavía no llegó no hace aparecer a nadie "por
+// detrás". Las recurrentes sin registrar no entran en la referencia.
+//   startValue = lo que el ciclo trae (referencia − gastado antes del cobro)
+//   elapsed    = parte del ciclo transcurrida (0 el día de cobro, 1 el último)
+//   used       = parte del ciclo ya usada = 1 − disponible hoy / startValue
+//   gap        = disponible − ideal = startValue × (elapsed − used)
+//   level      = mismos umbrales que el Anillo Vivo (PACE_OK 2 %, 10 %)
+export function cyclePace(series) {
+  if (!series || series.mode !== 'current' || !series.ideal) return null
+  const start = series.cycleStart || 1, today = series.lastDay
+  const S = series.ideal[start]
+  if (!(S > 0) || today < start) return null
+  const span = Math.max(1, series.days - start)
+  const elapsed = (today - start) / span
+  const used = 1 - series.avail[today] / S
+  const gap = round2(series.avail[today] - series.ideal[today])
+  const over = used - elapsed
+  const level = over <= 0.02 ? 'ok' : over <= 0.10 ? 'attention' : 'risk'
+  const fits = S / span
+  const daysIn = Math.max(1, today - start)
+  return { startValue: S, elapsed, used, gap, level, fits, daily: fits - gap / daysIn, even: Math.abs(over) <= 0.02 }
+}
+
 // Distancia de hoy contra el ritmo ideal: > 0 = gastó menos que el ritmo.
 export function paceGap(series, day = series?.lastDay) {
   if (!series?.ideal || !(day >= 1) || series.ideal[day] == null) return null

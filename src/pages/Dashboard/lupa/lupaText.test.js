@@ -43,12 +43,12 @@ describe('inspectLines / paceLine', () => {
     expect(l.sub).toBe('ese día gastaste US$54.30')
     expect(inspectLines({ series, day: 3, activeMonth: '2026-11', t: tOf(es), fmt, locale: 'es-CL' }).sub).toBe('ese día no hubo movimientos')
   })
-  it('ritmo: delante, detrás o parejo (±2 % de la referencia)', () => {
+  it('ritmo: delante, detrás o parejo (la misma cuenta que cyclePace)', () => {
     const t = tOf(es)
-    expect(paceLine(100, { t, fmt, reference: 1000 }).kind).toBe('ahead')
-    expect(paceLine(-100, { t, fmt, reference: 1000 }).text).toBe('US$100.00 por detrás del ritmo ideal')
-    expect(paceLine(15, { t, fmt, reference: 1000 }).kind).toBe('even')
-    expect(paceLine(null, { t, fmt, reference: 1000 })).toBeNull()
+    expect(paceLine({ gap: 100, even: false }, { t, fmt }).kind).toBe('ahead')
+    expect(paceLine({ gap: -100, even: false }, { t, fmt }).text).toBe('US$100.00 por detrás del ritmo ideal')
+    expect(paceLine({ gap: 15, even: true }, { t, fmt }).kind).toBe('even')
+    expect(paceLine(null, { t, fmt })).toBeNull()
   })
   it('fechas en el idioma de la interfaz', () => {
     expect(weekdayName('2026-11', 10, 'en-US')).toBe('Tuesday')

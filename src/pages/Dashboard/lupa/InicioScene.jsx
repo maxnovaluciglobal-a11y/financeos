@@ -14,9 +14,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import { useT } from '../../../i18n/useT.js'
 import { currencySymbol, dateLocale, fmtAmount, fmtMoney, fmtMoneyParts, fmtSignedMoney, moneyLocale } from '../../../utils/index.js'
-import { dailyAvailable, paceGap } from '../../../utils/dailyAvailable.js'
-import { projectEndOfMonth } from '../../../utils/projection.js'
-import { paceReference } from '../../../utils/monthReading.js'
 import { toRef } from '../../../utils/refRate.js'
 import { TOKENS_LIGHT } from '../../../styles/tokens.js'
 import LargeTitle from '../../../components/layout/LargeTitle.jsx'
@@ -83,7 +80,7 @@ function useSceneChrome(ref) {
   }, [ref])
 }
 
-export default function InicioScene({ kpis, activeMonth, sym, incomes, expenses, plan, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending }) {
+export default function InicioScene({ series, cpace, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending }) {
   const { t, lang } = useT()
   const { m } = useMoney()
   const sceneRef = useRef(null)
@@ -100,13 +97,6 @@ export default function InicioScene({ kpis, activeMonth, sym, incomes, expenses,
   // Montos de los textos (frases, aria): en la moneda que se está mirando y
   // con "ocultar montos" aplicado.
   const fmt = useCallback((n) => m(showRef ? (n < 0 ? '−' : '') + fmtRef(Math.abs(toRef(n, rate) || 0), lang) : fmtSignedMoney(n, sym)), [m, showRef, rate, lang, sym])
-
-  const reference = paceReference({ income: kpis.totalInc, prevExpenses: kpis.prev.totalExp })?.value ?? null
-  const series = useMemo(() => {
-    const proj = projectEndOfMonth({ incomes, expenses, activeMonth, pending })
-    const sr = dailyAvailable({ incomes, expenses, activeMonth, reference, projBal: proj.projBal, plan })
-    return sr.lastDay >= 1 ? sr : null
-  }, [incomes, expenses, activeMonth, reference, pending, plan])
 
   const [inspect, setInspect] = useState(null)   // día mirado, o null en reposo
   const [sheetDay, setSheetDay] = useState(null)
@@ -144,8 +134,7 @@ export default function InicioScene({ kpis, activeMonth, sym, incomes, expenses,
   const looking = inspect != null && series && !(isCurrent && inspect === series.lastDay)
   const value = looking ? series.avail[inspect] : free
   const label = looking ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).label : (free < 0 ? t('home.kpi.short') : t('home.kpi.left'))
-  const gap = isCurrent ? paceGap(series) : null
-  const pace = !looking && gap != null ? paceLine(gap, { t, fmt, reference }) : null
+  const pace = !looking && isCurrent ? paceLine(cpace, { t, fmt }) : null
   const sub = looking
     ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).sub
     : daysLeft > 0 ? t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }) : t('home.kpi.leftSub')
