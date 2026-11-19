@@ -154,7 +154,7 @@ describe('contraste de los tokens semánticos (claro y oscuro)', () => {
       check(`${name} grafito sobre lima`, hex(tok(theme, '--text-on-accent')), hex(tok(theme, '--color-accent')), TEXT)
       // "+" y pestaña activa: ícono sobre el violeta (objeto) y el violeta sobre la barra.
       check(`${name} ícono sobre "+"`, hex(tok(theme, '--color-action-fg')), hex(tok(theme, '--color-action')), OBJECT)
-      check(`${name} etiqueta de pestaña activa`, hex(tok(theme, '--tabbar-fg-active')), surfaceRgb(theme, '--color-surface-raised'), TEXT)
+      check(`${name} etiqueta de pestaña activa`, hex(tok(theme, '--tabbar-label-active')), surfaceRgb(theme, '--color-surface-raised'), TEXT)
       // Texto de dato sobre su propio tinte (StateTag, avisos).
       for (const k of ['income', 'over', 'warn']) {
         const tint = surfaceRgb(theme, `--color-${k}-bg`)
@@ -170,5 +170,43 @@ describe('contraste de los tokens semánticos (claro y oscuro)', () => {
 
   it('en oscuro el violeta de acción no es #7A21FF (2,88:1, A1.5)', () => {
     expect(tok(DARK, '--color-action').toUpperCase()).not.toBe('#7A21FF')
+  })
+})
+
+// ── 3. Cápsula inferior translúcida sobre lo que pasa por detrás (A11Y-N3) ──
+// El material es color-mix(superficie elevada X %, transparent): el contraste
+// de las etiquetas se mide contra la mezcla con lo que queda detrás (la escena
+// morada del Inicio, el fondo o la lima), no contra la superficie sólida. El
+// desenfoque promedia el fondo, así que cada parada del degradado es un caso.
+// '--x' → [r, g, b, a] resolviendo color-mix(in srgb, var(--y) N%, transparent).
+function material(theme, name) {
+  const raw = tok(theme, name)
+  const m = raw.match(/^color-mix\(in srgb,\s*var\((--[a-z0-9-]+)\)\s+([\d.]+)%,\s*transparent\)$/)
+  if (m) return [...parse(tok(theme, m[1])).slice(0, 3), +m[2] / 100]
+  return parse(raw)
+}
+const BEHIND = ['--impulso-0', '--impulso-59', '--impulso-100', '--profundidad-0', '--profundidad-100', '--color-bg', '--color-accent']
+
+describe('contraste de la cápsula inferior sobre la escena (A11Y-N3)', () => {
+  for (const [name, theme] of Object.entries(THEMES)) {
+    it(`${name}: etiquetas inactiva y activa ≥ 4,5 sobre el material translúcido con cualquier fondo detrás`, () => {
+      const fg = parse(tok(theme, '--tabbar-fg')).slice(0, 3)
+      const fgOn = parse(tok(theme, '--tabbar-label-active')).slice(0, 3)
+      const icOn = parse(tok(theme, '--tabbar-fg-active')).slice(0, 3)
+      for (const b of BEHIND) {
+        const pill = over(material(theme, '--tabbar-bg'), hex(tok(theme, b)))
+        check(`${name} etiqueta / cápsula sobre ${b}`, fg, pill, TEXT)
+        const activePill = over(material(theme, '--tabbar-active-bg'), pill)
+        check(`${name} etiqueta activa / píldora sobre ${b}`, fgOn, activePill, TEXT)
+        check(`${name} ícono activo / píldora sobre ${b}`, icOn, activePill, OBJECT)
+      }
+      expect(fails).toEqual([])
+    })
+  }
+
+  it('el gris de etiqueta anterior (gris 600 al 82 %) fallaba sobre la escena: no se usa', () => {
+    // Documenta la medición de la auditoría: #6B6F78 sobre ~#E4D8F4 → 3,7:1.
+    const pill = over([255, 255, 255, 0.82], hex(tok(LIGHT, '--impulso-59')))
+    expect(ratio(hex(tok(LIGHT, '--gray-600')), pill)).toBeLessThan(TEXT)
   })
 })
