@@ -313,6 +313,15 @@
   --tabbar-fg-active: var(--color-action);
   --tabbar-pill: var(--color-action);
   --tabbar-icon-active: var(--color-action-fg);
+  /* Cápsula flotante (19-nov-2026, aprobada por Walter): material translúcido
+     con desenfoque, trazo de medio punto y sombra suave con tinte morado. La
+     pestaña activa es una píldora rellena en tinte de acción (Gocash/Rial). */
+  --tabbar-bg: color-mix(in srgb, var(--color-surface-raised) 82%, transparent);
+  --tabbar-blur: saturate(1.8) blur(24px);
+  --tabbar-border: rgb(30 16 68 / .08);
+  --tabbar-shadow: 0 10px 30px -6px rgb(30 16 68 / .22), 0 2px 6px rgb(30 16 68 / .08);
+  --tabbar-active-bg: color-mix(in srgb, var(--color-action) 13%, transparent);
+  --tabbar-radius: 30px;
 
   /* Logotipo e isotipo (manual pág. 10: morado sobre blanco, blanco sobre grafito) */
   --logo-fg: var(--purple-700);
@@ -330,6 +339,10 @@
   --logo-fg: var(--gray-0);
   --action-shadow: 0 10px 22px -10px rgb(0 0 0 / .6);
   --tabbar-fg-active: var(--purple-200);   /* etiqueta activa: 8,10 sobre #2A2C31 */
+  --tabbar-bg: color-mix(in srgb, var(--color-surface-raised) 85%, transparent);
+  --tabbar-border: rgb(250 250 250 / .10);
+  --tabbar-shadow: 0 12px 32px -6px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .3);
+  --tabbar-active-bg: rgb(168 151 218 / .20);
   --card-shadow: none;
 }
 

@@ -1,11 +1,14 @@
 // src/components/layout/TabBar.jsx
-// Navegación primaria en móvil (L2, aprobado por Walter el 21-oct-2026): barra
-// ANCLADA de borde a borde con 5 destinos — Inicio · Movimientos · Presupuestos
-// · Metas · Menú. Reemplaza las 3 pestañas de la decisión D2 (08-oct).
-// Activo (31-oct-2026): ícono relleno y tinta, como iOS y Android; la barra
-// Latón de 3 px era un patrón de pestañas web. El "+" vive DENTRO de la barra, a
-// la derecha, en la misma zona del pulgar: ya no flota sobre la columna de
-// montos. AddFab queda para Ingresos, la pantalla empujada que no tiene barra.
+// Navegación primaria en móvil (L2, aprobado por Walter el 21-oct-2026): 5
+// destinos — Inicio · Movimientos · Presupuestos · Metas · Menú. Reemplaza las
+// 3 pestañas de la decisión D2 (08-oct).
+// Cápsula flotante (19-nov-2026, aprobada por Walter; referencias Gocash y
+// Rial): los 5 destinos van en una píldora translúcida separada de los bordes,
+// y el "+" queda a su lado como botón redondo propio, en la misma zona del
+// pulgar (no se mezcla con los destinos: es una acción, no un lugar). La
+// pestaña activa es una píldora rellena con el ícono relleno. A 340 px o menos
+// las etiquetas se ocultan a la vista (siguen siendo el nombre accesible).
+// AddFab queda para Ingresos, la pantalla empujada que no tiene barra.
 // La pestaña activa sale de activeTabFor(page) (R04): las páginas internas
 // encienden su pestaña madre, así la barra nunca queda sin activo.
 import { Home, ArrowLeftRight, Wallet, Target, LayoutGrid, Plus } from 'lucide-react'
@@ -35,6 +38,7 @@ export default function TabBar({ page, onNavigate, onReselect, onAdd, t }) {
   const active = activeTabFor(page)
   return (
     <nav className={s.tabbar} aria-label={t('nav.tabsLabel')} data-tabbar>
+      <div className={s.tabPill}>
       {TABS.map((tab) => {
         const { id, Ic, On, lb } = tab
         const on = active === id
@@ -55,18 +59,18 @@ export default function TabBar({ page, onNavigate, onReselect, onAdd, t }) {
           </button>
         )
       })}
+      </div>
       {onAdd && (
-        <span className={s.tabAddSlot}>
-          <button type="button" className={s.tabAdd} aria-label={t('qa.title')} data-tour="tab-add" onClick={onAdd}>
-            <Plus size={24} strokeWidth={2.2} aria-hidden="true" />
-          </button>
-        </span>
+        <button type="button" className={s.tabAdd} aria-label={t('qa.title')} data-tour="tab-add" onClick={onAdd}>
+          <Plus size={26} strokeWidth={2.2} aria-hidden="true" />
+        </button>
       )}
     </nav>
   )
 }
 
-// "+" flotante (R02): solo donde no hay barra (Ingresos). Latón con ícono Navy.
+// "+" flotante (R02): solo donde no hay barra (Ingresos). Mismo botón redondo
+// violeta que el de la cápsula.
 export function AddFab({ onAdd, t }) {
   return (
     <button

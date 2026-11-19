@@ -6,29 +6,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 
-/* ── Alto de la barra inferior (R03) ─────────────────────────────────────────
-   Un solo lugar para todo lo que tiene que esquivar la barra anclada del móvil
-   (padding del contenido, CTA del demo, CountrySelect, Toast). En escritorio
-   no hay barra: 0. --fab-clear es el aire que ocupa el botón "+" encima de la
-   barra (56px + 16px de margen), para que nada quede debajo de él. */
-/* --tabbar-safe (pulido 09-oct): cuánto aire deja la barra bajo los íconos.
-   Antes era el inset ENTERO (34px en iPhone con indicador de inicio) y la
-   barra se veía "despegada" del borde. El fondo sigue llegando al borde
-   físico, pero los íconos se acercan: inset − 22px (12px en iPhone, 34px de
-   inset), y 6px donde no hay inset (Android/TWA con navegación por gestos,
-   Safari iOS 26 con barra flotante, escritorio angosto). Todo lo que esquiva
-   la barra (contenido, "+", toasts, CTA del demo, pantallas empujadas) usa
-   esta misma variable vía --tabbar-h.
-   Feedback 2 (09-oct): Safari de iPhone informa inset 0 con su barra de
-   herramientas expandida y 34px al colapsarla, así que la barra "subía"
-   (6 → 20px) al hacer scroll. Con −22px el salto queda en 6 → 12px y los
-   íconos y etiquetas siguen por encima del indicador de inicio (≈8–13px
-   desde el borde); la barra y el "+" además lo animan (shell.module.css,
-   sin animación con movimiento reducido). */
+/* ── Alto de la barra inferior (R03; cápsula flotante desde el 19-nov-2026) ──
+   Un solo lugar para todo lo que tiene que esquivar la barra del móvil
+   (padding del contenido, CTA del demo, CountrySelect, Toast, aviso de
+   versión). En escritorio no hay barra: 0.
+     --tabbar-content-h  alto de la cápsula
+     --tabbar-lift       aire entre la cápsula y el borde inferior del viewport
+     --tabbar-h          todo lo que ocupa la barra desde el borde (cápsula + aire)
+     --tabbar-safe       aire bajo el contenido en pantallas empujadas (sin barra)
+     --fab-clear         aire del "+" flotante de Ingresos (56 px + 16 px)
+   --tabbar-lift: con indicador de inicio (inset 34) la cápsula queda a 20 px
+   del borde, por encima del indicador; sin inset (Android, Safari con la barra
+   expandida, escritorio angosto), a 12 px. Safari de iPhone cambia el inset
+   (0 ↔ 34) al colapsar su barra: el salto 12 → 20 se anima (shell.module.css).
+   App instalada de iOS 26 (data-vp-fit="fit", core/viewportFit.js): la app ya
+   está ajustada al viewport informado y la franja de abajo no se pinta, así
+   que la cápsula va DENTRO del viewport, a 10 px del final (nunca en la franja). */
 :root {
-  --tabbar-content-h: 56px;
+  --tabbar-content-h: 60px;
+  --tabbar-lift: 0px;
   --tabbar-safe: 0px;
   --tabbar-h: 0px;
+  --tabbar-inset: 12px;
   --fab-size: 56px;
   --fab-clear: 0px;
   --nav-h: 44px;          /* barra superior flotante (móvil) */
@@ -37,20 +36,27 @@
 }
 @media (max-width: 700px) {
   :root {
+    --tabbar-lift: max(12px, calc(env(safe-area-inset-bottom, 0px) - 14px));
     --tabbar-safe: max(6px, calc(env(safe-area-inset-bottom, 0px) - 22px));
-    --tabbar-h: calc(var(--tabbar-content-h) + var(--tabbar-safe));
+    --tabbar-h: calc(var(--tabbar-content-h) + var(--tabbar-lift));
     --fab-clear: calc(var(--fab-size) + 16px);
     --content-pt: calc(var(--safe-t) + 8px);
   }
+  :root[data-vp-fit="fit"] { --tabbar-lift: 10px; }
   /* Pantalla empujada: el título va debajo de "‹ Atrás", en su propia línea. */
   :root[data-chrome="pushed"] { --content-pt: calc(var(--safe-t) + var(--nav-h) + 2px); }
 }
+@media (min-width: 400px) and (max-width: 700px) { :root { --tabbar-inset: 16px; } }
 /* Pantallas empujadas (R14, Shell.jsx pone data-chrome/data-fab en <html>):
    sin barra, todo lo que la esquivaba baja al borde (--tabbar-safe); sin
    "+", desaparece su aire. */
 @media (max-width: 700px) {
   :root[data-chrome="pushed"] { --tabbar-h: var(--tabbar-safe); }
   :root[data-fab="off"] { --fab-clear: 0px; }
+}
+/* 341–379 px: el "+" de las raíces flota encima de la cápsula (shell.module.css). */
+@media (min-width: 341px) and (max-width: 379px) {
+  :root[data-chrome="root"][data-fab="off"] { --fab-clear: calc(var(--fab-size) + 12px); }
 }
 
 
@@ -183,13 +189,14 @@ button { cursor: pointer; font-family: var(--sans); }
 /* Transición entre pantallas (components/layout/viewTransition.js).
    Riel, barra superior, barra de pestañas y franja del demo tienen su propio
    view-transition-name: quedan fijos y no se funden con la página (causa 12). */
-::view-transition-group(tabbar), ::view-transition-group(nav-bar),
+::view-transition-group(tabbar), ::view-transition-group(tabbar-add), ::view-transition-group(nav-bar),
 ::view-transition-group(sidebar), ::view-transition-group(demo-banner) { animation: none; }
 ::view-transition-old(tabbar), ::view-transition-new(tabbar),
+::view-transition-old(tabbar-add), ::view-transition-new(tabbar-add),
 ::view-transition-old(nav-bar), ::view-transition-new(nav-bar),
 ::view-transition-old(sidebar), ::view-transition-new(sidebar),
 ::view-transition-old(demo-banner), ::view-transition-new(demo-banner) { animation: none; }
-::view-transition-old(tabbar), ::view-transition-old(nav-bar) { display: none; }
+::view-transition-old(tabbar), ::view-transition-old(tabbar-add), ::view-transition-old(nav-bar) { display: none; }
 /* Cambiar de pestaña no es ir a otro lugar: solo el contenido, muy corto. */
 :root[data-nav-dir^="tab"]::view-transition-old(root) { animation: 90ms var(--ease) both fos-vt-fade-out; }
 :root[data-nav-dir^="tab"]::view-transition-new(root) { animation: 150ms var(--ease-out) both fos-vt-fade-in; }
