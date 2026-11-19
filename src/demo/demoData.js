@@ -222,12 +222,21 @@ export function pickDemoPersonaId(language, { search = '', locales = [] } = {}) 
 
 // Estado completo del demo para una persona. `scenario`: 'exitoso' (mes bueno,
 // el inicial) o 'dificil'.
+// Movimientos con fecha posterior a hoy no deben aparecer como ya ocurridos
+// (el 19-nov se veía "Quincena · lun 30 nov" arriba de "Hoy" y sumaba al mes).
+// Lo que todavía no pasó vive en `recurring` (Próximos pagos).
+export function onlyUntilToday(rows, today = new Date()) {
+  const pad = (n) => String(n).padStart(2, '0')
+  const iso = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`
+  return rows.filter(r => !r.date || String(r.date).slice(0, 10) <= iso)
+}
+
 export function buildDemoState(personaId, language = detectLanguage(), scenario = 'dificil') {
   const p = DEMO_PERSONAS[personaId] || SOFIA_PERSONA
   return {
     personaId: p.id,
-    incomes:       scenario === 'exitoso' ? p.incomesGood : p.incomesHard,
-    expenses:      p.expenses,
+    incomes:       onlyUntilToday(scenario === 'exitoso' ? p.incomesGood : p.incomesHard),
+    expenses:      onlyUntilToday(p.expenses),
     budgets:       p.budgets,
     debts:         p.debts,
     goals:         p.goals,
