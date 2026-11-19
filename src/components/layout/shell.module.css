@@ -70,7 +70,7 @@
 .topbar {
   position: relative;
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: max(10px, env(safe-area-inset-top)) 18px 0; flex-shrink: 0;
+  padding: max(10px, var(--safe-t)) 18px 0; flex-shrink: 0;
   view-transition-name: nav-bar;
 }
 /* Fondo y título compacto: aparecen con el scroll, no de golpe (causa 16). Sin

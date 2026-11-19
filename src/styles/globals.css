@@ -34,6 +34,9 @@
   --safe-t: env(safe-area-inset-top, 0px);
   --content-pt: 14px;     /* aire arriba del contenido: fija la Y del título */
 }
+/* Con la franja del demo arriba, ella ya cubre la isla dinámica (su fila usa
+   env() directo): el resto de la pantalla no debe volver a sumar ese margen. */
+:root:has(.demo-banner) { --safe-t: 0px; }
 @media (max-width: 700px) {
   :root {
     --tabbar-lift: max(12px, calc(env(safe-area-inset-bottom, 0px) - 14px));
