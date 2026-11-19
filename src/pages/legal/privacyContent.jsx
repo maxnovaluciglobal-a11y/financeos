@@ -719,7 +719,7 @@ function EnBody() {
           <li><strong>Legal bases:</strong> performance of the contract (art. 7, V), consent (art. 7, I), compliance with legal obligations (art. 7, II), and legitimate interest (art. 7, IX), depending on the data.</li>
           <li><strong>Your rights (art. 18):</strong> confirmation that we process your data, access, correction, anonymization, blocking or deletion of unnecessary data, portability, information about who we share it with, and withdrawal of consent. If you ask for confirmation and full access, we reply within 15 days.</li>
           <li><strong>Transfers:</strong> you give your data directly to us, a US company, and our providers process it there because it is necessary to provide the service (art. 33, IX, together with art. 7, V). The ANPD has not recognized the USA as offering adequate protection, and we have not signed the ANPD standard clauses.</li>
-          <li><strong>Authority:</strong> you can file a petition with the National Data Protection Authority (ANPD).</li>
+          <li><strong>Authority:</strong> you can file a petition with the National Data Protection Agency (ANPD).</li>
         </ul>
       </div>
 
@@ -1063,7 +1063,7 @@ function PtBody() {
           <li><strong>Bases legais:</strong> execução do contrato (art. 7º, V), consentimento (art. 7º, I), cumprimento de obrigação legal (art. 7º, II) e legítimo interesse (art. 7º, IX), conforme o dado.</li>
           <li><strong>Seus direitos (art. 18):</strong> confirmação da existência de tratamento, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade, informação sobre com quem compartilhamos os dados e revogação do consentimento. A confirmação e o acesso completo, em até 15 dias.</li>
           <li><strong>Transferência internacional:</strong> você nos envia seus dados diretamente, a uma empresa nos EUA, e nossos fornecedores os tratam lá porque é necessário para prestar o serviço que você contrata ou pede (art. 33, IX, combinado com o art. 7º, V). A ANPD não reconheceu os EUA como país com nível adequado de proteção, e não assinamos as cláusulas-padrão contratuais da ANPD.</li>
-          <li><strong>Autoridade:</strong> você pode peticionar perante a Autoridade Nacional de Proteção de Dados (ANPD).</li>
+          <li><strong>Autoridade:</strong> você pode peticionar perante a Agência Nacional de Proteção de Dados (ANPD).</li>
         </ul>
       </div>
 
@@ -1510,7 +1510,7 @@ function DeBody() {
           und vollständige Auskunft erhalten Sie innerhalb von 15 Tagen. Die Übermittlung in die USA
           beruht auf Art. 33 IX in Verbindung mit Art. 7 V LGPD; die ANPD hat die USA nicht als
           angemessen anerkannt, und wir haben die Standardklauseln der ANPD nicht unterzeichnet.
-          Aufsichtsbehörde ist die Autoridade Nacional de Proteção de Dados (ANPD).
+          Aufsichtsbehörde ist die Agência Nacional de Proteção de Dados (ANPD).
         </p>
       </div>
 
