@@ -80,10 +80,13 @@ export function withSeen(seen, page) {
   return seen.includes(page) ? seen : [...seen, page]
 }
 
-// Arranca solo la primera vez que se abre una página con recorrido. En el demo
-// no: el demo tiene su propio recorrido y se pisarían (el "?" sí funciona).
+// Arranca solo la primera vez que se abre el Inicio. En el demo no: el demo
+// tiene su propio recorrido y se pisarían. 19-nov-2026 (prueba en el iPhone de
+// Walter): un recorrido de 5 pasos en CADA pestaña la primera vez se sentía a
+// página web; ahora solo el Inicio arranca solo y en el resto el "?" lo abre.
+export const AUTO_START_PAGES = new Set(['dashboard'])
 export function shouldAutoStartTour({ page, seen = [], isDemo = false }) {
-  return !isDemo && !!PAGE_TOURS[page] && !seen.includes(page)
+  return !isDemo && AUTO_START_PAGES.has(page) && !!PAGE_TOURS[page] && !seen.includes(page)
 }
 
 export function hasTour(page) { return !!PAGE_TOURS[page] }

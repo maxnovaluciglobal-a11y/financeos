@@ -23,8 +23,10 @@ describe('pageTours (R08)', () => {
   })
 
   it('primera visita arranca sola; la segunda no', () => {
-    expect(shouldAutoStartTour({ page: 'movements', seen: [] })).toBe(true)
-    expect(shouldAutoStartTour({ page: 'movements', seen: ['movements'] })).toBe(false)
+    expect(shouldAutoStartTour({ page: 'dashboard', seen: [] })).toBe(true)
+    expect(shouldAutoStartTour({ page: 'dashboard', seen: ['dashboard'] })).toBe(false)
+    // El resto de las pestañas ya no arranca solo (19-nov-2026): el "?" lo abre.
+    expect(shouldAutoStartTour({ page: 'movements', seen: [] })).toBe(false)
   })
 
   it('nunca arranca solo en el demo ni en páginas sin recorrido', () => {

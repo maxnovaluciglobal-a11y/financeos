@@ -40,9 +40,10 @@ describe('swUpdate · recarga sola en iOS (19-nov-2026)', () => {
     sw.fire('controllerchange')
     expect(reload).toHaveBeenCalledTimes(1)
   })
-  it('mientras se usa la app (pasado el arranque): solo avisa, no recarga', () => {
-    const sw = fakeSw({}); const reload = vi.fn(); let t = 0
-    watchServiceWorkerUpdates(sw, { document: fakeDoc(), now: () => t, bootAt: 0, session: mem(), reload })
+  it('mientras se usa la app (pasado el arranque y ya tocó algo): solo avisa, no recarga', () => {
+    const sw = fakeSw({}); const reload = vi.fn(); let t = 0; const doc = fakeDoc()
+    watchServiceWorkerUpdates(sw, { document: doc, now: () => t, bootAt: 0, session: mem(), reload })
+    doc.fire('pointerdown')
     t = BOOT_WINDOW_MS + 1
     sw.fire('controllerchange')
     expect(isUpdateReady()).toBe(true)
@@ -56,6 +57,10 @@ describe('swUpdate · recarga sola en iOS (19-nov-2026)', () => {
     expect(reload).not.toHaveBeenCalled()
     doc.visibilityState = 'visible'; doc.fire('visibilitychange')
     expect(reload).toHaveBeenCalledTimes(1)
+  })
+  it('sin tocar nada todavía (descarga lenta): recarga aunque pasen más de 6 s', () => {
+    expect(shouldAutoReload({ now: 30000, bootAt: 0, hidden: false, session: mem(), interacted: false })).toBe(true)
+    expect(shouldAutoReload({ now: 30000, bootAt: 0, hidden: false, session: mem(), interacted: true })).toBe(false)
   })
   it('el guardia evita un bucle de recargas', () => {
     const session = mem(); session.setItem(AUTO_RELOAD_KEY, '1')
