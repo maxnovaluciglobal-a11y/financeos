@@ -11,7 +11,7 @@ export function FinancialDisclaimer({ compact = false }) {
   if (compact) {
     return (
       <p style={{
-        fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)',
+        fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)',
         lineHeight: 1.5, marginTop: 8,
       }}>
         {t('micro.disclaimer.compact')}
@@ -20,7 +20,7 @@ export function FinancialDisclaimer({ compact = false }) {
   }
   return (
     <div style={{
-      fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)',
+      fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)',
       lineHeight: 1.6, padding: '8px 12px', background: 'var(--sur2)',
       borderRadius: 6, borderLeft: '2px solid var(--brd2)', marginTop: 8,
     }}>
@@ -36,7 +36,7 @@ export function BackupWarning({ variant = 'full' }) {
   if (variant === 'inline') {
     return (
       <p style={{
-        fontSize: 11, color: 'var(--amb)', fontFamily: 'var(--sans)',
+        fontSize: 'var(--t-footnote)', color: 'var(--amb)', fontFamily: 'var(--sans)',
         lineHeight: 1.5, marginTop: 6,
       }}>
         <InlineIcon kind="alert" size={13} />{t('micro.backup.inline')}
@@ -48,7 +48,7 @@ export function BackupWarning({ variant = 'full' }) {
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '12px 14px', background: 'var(--amb-bg)',
       border: '0.5px solid rgba(156,84,25,.25)', borderRadius: 8,
-      fontSize: 12, color: 'var(--amb)', lineHeight: 1.6,
+      fontSize: 'var(--t-footnote)', color: 'var(--amb)', lineHeight: 1.6,
     }}>
       <SignalIcon kind="alert" size={16} style={{ marginTop: 3 }} />
       <div>
@@ -65,7 +65,7 @@ export function ProjectionDisclaimer() {
   const { t } = useT()
   return (
     <p style={{
-      fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)',
+      fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)',
       lineHeight: 1.5, marginTop: 8,
     }}>
       {t('micro.projection')}
@@ -79,7 +79,7 @@ export function ReportsDisclaimer() {
   const { t } = useT()
   return (
     <p style={{
-      fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)',
+      fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)',
       lineHeight: 1.5, padding: '6px 10px', background: 'var(--sur2)',
       borderRadius: 4, marginTop: 4,
     }}>

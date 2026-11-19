@@ -63,19 +63,19 @@ export default function NpsPrompt({ createdAt }) {
   }
 
   if (!trigger || trigger === 'closed') return null
-  const label = { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--tx)', marginBottom: 6 }
+  const label = { display: 'block', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }
   return (
     <Sheet open onClose={dismiss} ariaLabel={t('nps.title')} maxWidth={480} initialFocusRef={firstRef}>
-      <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)' }}>{t('nps.title')}</h2>
+      <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--display)', fontSize: 'var(--t-title)', lineHeight: 'var(--t-title-lh)', fontWeight: 700, color: 'var(--tx)' }}>{t('nps.title')}</h2>
       {state === 'sent' ? (
         <>
-          <p role="status" style={{ fontSize: 14, color: 'var(--tm)', lineHeight: 1.55, margin: '0 0 16px' }}>{t('nps.thanks')}</p>
+          <p role="status" style={{ fontSize: 'var(--t-body)', color: 'var(--tm)', lineHeight: 1.55, margin: '0 0 16px' }}>{t('nps.thanks')}</p>
           <button type="button" className="fos-btn-primary" onClick={dismiss} style={{ width: '100%' }}>{t('nps.close')}</button>
         </>
       ) : (
         <form onSubmit={submit}>
           <fieldset style={{ border: 'none', padding: 0, margin: '0 0 14px' }}>
-            <legend style={{ ...label, padding: 0, fontSize: 14, lineHeight: 1.5 }}>{t('nps.question')}</legend>
+            <legend style={{ ...label, padding: 0, fontSize: 'var(--t-body)', lineHeight: 1.5 }}>{t('nps.question')}</legend>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 4 }}>
               {SCORES.map((n) => (
                 <button
@@ -85,24 +85,24 @@ export default function NpsPrompt({ createdAt }) {
                 >{n}</button>
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--th)', marginTop: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 4 }}>
               <span>{t('feedback.npsLow')}</span><span>{t('feedback.npsHigh')}</span>
             </div>
           </fieldset>
           <label htmlFor="nps-comment" style={label}>{t('nps.commentLabel')}</label>
           <textarea
             id="nps-comment" value={comment} onChange={(e) => setComment(e.target.value)} rows={3} maxLength={2000}
-            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 'var(--t-callout)', fontFamily: 'var(--sans)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
           />
           <Turnstile ref={captcha} action="nps" errorText={t('authGate.errorCaptcha')} />
-          {state === 'error' && <p role="alert" style={{ fontSize: 13, color: 'var(--red)', margin: '0 0 12px' }}>{t('nps.error')}</p>}
+          {state === 'error' && <p role="alert" style={{ fontSize: 'var(--t-subhead)', color: 'var(--red)', margin: '0 0 12px' }}>{t('nps.error')}</p>}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <button type="button" className="fos-btn-secondary" onClick={dismiss}>{t('nps.later')}</button>
             <button type="submit" className="fos-btn-primary" disabled={score == null || state === 'sending'}>
               {state === 'sending' ? t('nps.sending') : t('nps.send')}
             </button>
           </div>
-          <p style={{ fontSize: 12, color: 'var(--th)', margin: '10px 0 0', lineHeight: 1.5 }}>{t('nps.privacy')}</p>
+          <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', margin: '10px 0 0', lineHeight: 1.5 }}>{t('nps.privacy')}</p>
         </form>
       )}
     </Sheet>

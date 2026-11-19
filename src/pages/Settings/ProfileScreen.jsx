@@ -77,12 +77,12 @@ function TaxIdField({ country, taxId, updateSettings, settings }) {
         onChange={e => updateSettings({ ...settings, taxId: e.target.value })}
         style={{
           width: '100%', padding: '7px 10px', minHeight: 44, borderRadius: 8, border: '.5px solid var(--brd2)',
-          background: 'var(--sur2)', color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--mono)',
+          background: 'var(--sur2)', color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontFamily: 'var(--mono)',
           textTransform: 'uppercase', boxSizing: 'border-box',
         }}
       />
       {feedback && (
-        <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: feedback.color }}>{feedback.text}</div>
+        <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: feedback.color }}>{feedback.text}</div>
       )}
       {result?.checkedVia === 'format-only' && (
         <div style={{ ...ssub, lineHeight: 1.5 }}>{t('settings.taxId.formatOnly', { label })}</div>

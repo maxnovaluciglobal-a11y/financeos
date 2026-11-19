@@ -41,7 +41,7 @@ export default function PrivacySeal({ size = 72, label, title }) {
         @media (prefers-reduced-motion: reduce) { .fos-seal-stamp { animation: none; } }
       `}</style>
     </svg>
-      <figcaption style={{ fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 500, lineHeight: 1.3, color: 'var(--tm)', textAlign: 'center' }}>{label}</figcaption>
+      <figcaption style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', fontWeight: 600, lineHeight: 1.3, color: 'var(--tm)', textAlign: 'center' }}>{label}</figcaption>
     </figure>
   )
 }

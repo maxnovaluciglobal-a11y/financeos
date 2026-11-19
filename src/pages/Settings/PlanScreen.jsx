@@ -34,7 +34,7 @@ export default function PlanScreen({ isDemo, accountUserId }) {
       <Setting id="license">
         {confirming ? (
           <div role="group" aria-label={t('settings.license.btn')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background: 'var(--fill)',borderRadius:8,border: 0,flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeactivateLicense')}</span>
+            <span style={{fontSize:'var(--t-footnote)',color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmDeactivateLicense')}</span>
             <div style={{display:'flex',gap:6}}>
               <Btn variant="danger" size="xs" onClick={handleDeactivate}>{t('debts.card.confirm')}</Btn>
               <Btn variant="ghost" size="xs" onClick={()=>setConfirming(false)}>{t('common.cancel')}</Btn>

@@ -21,7 +21,7 @@ export default function UpgradeCard({ subStyle }) {
   return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'12px 14px',margin:'11px 0',background:'var(--color-brand-subtle)',border: 0,borderRadius:'var(--r)'}}>
       <div style={{flex:'1 1 240px',minWidth:0}}>
-        <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{trial ? t('settings.upgrade.title', { days: trialDays }) : t('menu.upgrade.title')}</div>
+        <div style={{fontSize:'var(--t-subhead)',fontWeight:600,color:'var(--tx)'}}>{trial ? t('settings.upgrade.title', { days: trialDays }) : t('menu.upgrade.title')}</div>
         <div style={subStyle}>{t('settings.upgrade.sub')}</div>
         {trial && (
           <div style={{...subStyle,marginTop:6}}>

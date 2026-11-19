@@ -15,7 +15,7 @@ export default function FeaturesScreen() {
   const toggle = (id) => updateSettings({ ...settings, ...setModule(settings, id, !moduleOn(settings, id)) })
   return (
     <div>
-      <p style={{ ...ssub, fontSize: 13, lineHeight: 1.5, margin: '0 0 6px' }}>{t('settings.features.intro')}</p>
+      <p style={{ ...ssub, fontSize: 'var(--t-subhead)', lineHeight: 1.5, margin: '0 0 6px' }}>{t('settings.features.intro')}</p>
       <Setting id="properties" style={srow}>
         <div>
           <div style={slbl} id="settings-feat-properties">{t('settings.features.properties')}</div>

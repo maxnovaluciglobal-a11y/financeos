@@ -93,15 +93,15 @@ function DemoBottomCTA({ hidden }) {
   return (
     <div className="demo-bottom-cta" role="region" aria-label={t('demo.cta.title')}>
       <div style={{ flex: 1, minWidth: 180, paddingRight: 36 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 2 }}>{t('demo.cta.title')}</div>
-        <div style={{ fontSize: 13, fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'var(--on-grad-text-2)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
+        <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 2 }}>{t('demo.cta.title')}</div>
+        <div style={{ fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'var(--on-grad-text-2)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
       </div>
       {/* Mismo destino y texto que el CTA del banner (T09): la app real, en la
           misma pestaña — el registro ya captura el lead. "Ver planes" queda como
           enlace secundario hacia la landing. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
         <a className="fos-btn-primary" href={APP_URL}
-          style={{ width: 'auto', fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          style={{ width: 'auto', fontSize: 'var(--t-body)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
           {t('demo.banner.start')}
         </a>
         <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
@@ -116,7 +116,7 @@ function DemoBottomCTA({ hidden }) {
           position: 'absolute', top: 4, right: 4,
           width: 44, height: 44, flexShrink: 0, borderRadius: 'var(--r)',
           background: 'transparent', border: 'none', cursor: 'pointer',
-          color: 'var(--on-grad-text-2)', fontSize: 16,
+          color: 'var(--on-grad-text-2)', fontSize: 'var(--t-callout)',
         }}
       >
         <span aria-hidden="true">✕</span>

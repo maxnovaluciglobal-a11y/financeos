@@ -23,9 +23,9 @@ export function passphraseProblem(pass, confirm, isNew) {
   return null
 }
 
-const sub = { fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginTop: 4 }
-const input = { width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', marginBottom: 8 }
-const lbl = { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--tx)', marginBottom: 4 }
+const sub = { fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginTop: 4 }
+const input = { width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '10px 12px', fontSize: 'var(--t-callout)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', marginBottom: 8 }
+const lbl = { display: 'block', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }
 const box = { marginTop: 10, padding: '12px', background: 'var(--fill)', borderRadius: 'var(--r)', border: 0 }
 
 function PassphraseForm({ id, isNew, busy, error, onSubmit, submitLabel, onCancel }) {
@@ -159,7 +159,7 @@ export default function SyncSection() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ minWidth: 0, flex: '1 1 200px' }}>
-          <div style={{ fontSize: 13, color: 'var(--tx)', fontWeight: 500 }}>{on ? t('settings.sync.on') : t('settings.sync.off')}</div>
+          <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--tx)', fontWeight: 600 }}>{on ? t('settings.sync.on') : t('settings.sync.off')}</div>
           <div style={sub}>{on ? t('settings.sync.lastSync', { time: lastTxt }) : t('settings.sync.offDesc')}</div>
         </div>
         {on
@@ -169,21 +169,21 @@ export default function SyncSection() {
 
       {!on && need === 'new_passphrase' && (
         <div style={box}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.newTitle')}</div>
+          <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.newTitle')}</div>
           <p style={sub}>{t('syncPass.newBody')}</p>
           <PassphraseForm id="sync-new" isNew busy={busy} error={error} onSubmit={start} submitLabel={t('syncPass.newSubmit')} onCancel={() => { setNeed(null); setError('') }} />
         </div>
       )}
       {!on && need === 'passphrase' && (
         <div style={box}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.askTitle')}</div>
+          <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.askTitle')}</div>
           <p style={sub}>{t('syncPass.askBody')}</p>
           <PassphraseForm id="sync-ask" busy={busy} error={error} onSubmit={start} submitLabel={t('syncPass.askSubmit')} onCancel={() => { setNeed(null); setError('') }} />
         </div>
       )}
       {!on && need === 'license_key' && (
         <form onSubmit={useLicense} style={box}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.licenseTitle')}</div>
+          <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.licenseTitle')}</div>
           <p style={sub}>{t('syncPass.licenseBody')}</p>
           <label htmlFor="sync-license" style={{ ...lbl, marginTop: 8 }}>{t('syncPass.licenseLabel')}</label>
           <input id="sync-license" value={licenseInput} onChange={(e) => setLicenseInput(e.target.value)} style={input} autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder={t('licenseGate.keyFormat')} />
@@ -197,7 +197,7 @@ export default function SyncSection() {
 
       {on && syncBlocked === 'passphrase_required' && (
         <div style={{ ...box, borderColor: 'var(--color-brand)' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.blockedTitle')}</div>
+          <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.blockedTitle')}</div>
           <p style={sub}>{t('syncPass.blockedBody')}</p>
           <PassphraseForm id="sync-unlock" busy={busy} error={error} onSubmit={unlock} submitLabel={t('syncPass.askSubmit')} />
         </div>
@@ -209,7 +209,7 @@ export default function SyncSection() {
 
       {on && mode === 'v1' && !syncBlocked && (
         <div style={{ ...box, borderColor: 'var(--color-brand)' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.migrateTitle')}</div>
+          <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }}>{t('syncPass.migrateTitle')}</div>
           <p style={sub}>{t('syncPass.migrateBody')}</p>
           {!migrating ? (
             <div style={{ marginTop: 8 }}>
@@ -234,7 +234,7 @@ export default function SyncSection() {
       {on && mode === 'v2' && rawLicense && (
         <div style={{ marginTop: 10 }}>
           {!confirmRollback ? (
-            <button type="button" onClick={() => setConfirmRollback(true)} style={{ background: 'none', border: 'none', padding: '8px 0', minHeight: 44, color: 'var(--tm)', fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
+            <button type="button" onClick={() => setConfirmRollback(true)} style={{ background: 'none', border: 'none', padding: '8px 0', minHeight: 44, color: 'var(--tm)', fontSize: 'var(--t-footnote)', textDecoration: 'underline', cursor: 'pointer' }}>
               {t('syncPass.rollbackLink')}
             </button>
           ) : (

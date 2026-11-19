@@ -9,7 +9,7 @@
 .key {
   min-height: 48px; border-radius: var(--r); border: none; cursor: pointer;
   background: var(--sur2); color: var(--tx); font-family: var(--num);
-  font-size: 1.125rem; font-weight: 600;
+  font-size: var(--t-headline); font-weight: 600;
 }
 .key:active { background: var(--sur3); }
 .keyZero { grid-column: span 2; }
@@ -18,7 +18,7 @@
   grid-column: 4; grid-row: 2 / span 3;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   border: 1px solid var(--color-brand); background: var(--color-brand-muted); color: var(--tx);
-  font-family: var(--sans); font-size: .8125rem; font-weight: 600;
+  font-family: var(--sans); font-size: var(--t-subhead); font-weight: 600;
 }
 .keyOk:disabled { border-color: transparent; background: var(--sur2); color: var(--th); cursor: not-allowed; }
 /* Hoja de una sola tarea: ✓ es el único guardar a la vista, así que es el primario. */
@@ -30,7 +30,7 @@
 .pasteBtn {
   min-height: 44px; padding: 0 12px; border-radius: var(--r); cursor: pointer;
   border: 0; background: var(--fill); color: var(--tx);
-  font-size: .8125rem; font-family: var(--sans); font-weight: 500;
+  font-size: var(--t-subhead); font-family: var(--sans); font-weight: 600;
   display: inline-flex; align-items: center; gap: 6px;
 }
 
@@ -39,19 +39,19 @@
   position: absolute; right: 0; top: 50%; transform: translateY(-50%);
   min-width: 44px; min-height: 44px; padding: 0 10px; border-radius: var(--r-pill);
   border: 0; background: var(--fill); color: var(--tx); cursor: pointer;
-  font-family: var(--sans); font-size: .75rem; font-weight: 600;
+  font-family: var(--sans); font-size: var(--t-footnote); font-weight: 600;
 }
 .usdToggle[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-tx); }
 
 /* "≈ US$X" y el chip de la tasa usada, en una línea bajo el monto */
 .equiv {
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px;
-  min-height: 22px; margin: -2px 0 8px; font-size: .8125rem; color: var(--tm); font-family: var(--sans);
+  min-height: 22px; margin: -2px 0 8px; font-size: var(--t-subhead); color: var(--tm); font-family: var(--sans);
 }
 .rateChip {
   display: inline-flex; align-items: center; padding: 1px 8px; max-width: 100%;
   border: 0; border-radius: var(--r-pill); background: var(--fill);
-  font-size: .6875rem; color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: var(--t-caption); color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 /* Categorías en una fila que se desliza, con "Todas" fijo a la derecha */
@@ -72,10 +72,10 @@
 .moreToggle {
   width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px;
   border: 0; background: none; cursor: pointer; padding: 0 4px; margin-bottom: 4px;
-  font-family: var(--sans); font-size: .875rem; font-weight: 500; color: var(--tm);
+  font-family: var(--sans); font-size: var(--t-body); font-weight: 600; color: var(--tm);
 }
 .moreToggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--rs); }
-.moreHint { color: var(--th); font-size: .8125rem; }
+.moreHint { color: var(--th); font-size: var(--t-subhead); }
 .moreHint::before { content: '· '; }
 .moreChev { transition: transform var(--dur-spring-exit) var(--ease); }
 .moreChev[data-open] { transform: rotate(180deg); }
@@ -94,7 +94,7 @@
 .repeatRow { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; }
 .repeatLabel {
   flex: 1; display: flex; align-items: center; gap: 10px; min-height: 44px;
-  padding: 0 4px; font-size: .875rem; color: var(--tm); cursor: pointer; border-radius: var(--rs);
+  padding: 0 4px; font-size: var(--t-body); color: var(--tm); cursor: pointer; border-radius: var(--rs);
 }
 .repeatLabel input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; }
 .repeatLabel:has(input:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }

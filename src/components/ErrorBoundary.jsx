@@ -60,12 +60,12 @@ export default class ErrorBoundary extends Component {
     }
     const btnP = {
       width: '100%', minHeight: 44, padding: '11px', borderRadius: 12, border: 'none',
-      background: BRAND.purple, color: BRAND.white, fontSize: 15, fontWeight: 600,
+      background: BRAND.purple, color: BRAND.white, fontSize: 'var(--t-headline)', fontWeight: 600,
       cursor: 'pointer', marginTop: 14,
     }
     const btnG = {
       width: '100%', minHeight: 44, padding: '9px', borderRadius: 12, border: 'none',
-      background: 'transparent', color: BRAND.muted, fontSize: 13, cursor: 'pointer', marginTop: 8,
+      background: 'transparent', color: BRAND.muted, fontSize: 'var(--t-subhead)', cursor: 'pointer', marginTop: 8,
     }
 
     const [before, after = ''] = tr('errorBoundary.body').split('{safe}')
@@ -73,11 +73,11 @@ export default class ErrorBoundary extends Component {
     return (
       <div style={wrap}>
         <div style={card}>
-          <div style={{ fontSize: 34, marginBottom: 10 }}>🔧</div>
-          <div style={{ fontSize: 18, fontWeight: 600, color: BRAND.graphite, marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--t-large-title)', marginBottom: 10 }}>🔧</div>
+          <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: BRAND.graphite, marginBottom: 8 }}>
             {tr('errorBoundary.title')}
           </div>
-          <p style={{ fontSize: 13, color: BRAND.ink, lineHeight: 1.6, marginBottom: 4 }}>
+          <p style={{ fontSize: 'var(--t-subhead)', color: BRAND.ink, lineHeight: 1.6, marginBottom: 4 }}>
             {before}<strong>{tr('errorBoundary.safe')}</strong>{after}
           </p>
           <button style={btnP} onClick={this.handleReload}>{tr('errorBoundary.reload')}</button>

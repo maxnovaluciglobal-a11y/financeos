@@ -78,7 +78,7 @@ export function BackupStatusBadge({ compact = false }) {
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: 0,
-        fontSize: 11, color: 'var(--amb)',
+        fontSize: 'var(--t-footnote)', color: 'var(--amb)',
         fontFamily: 'var(--sans)',
       }}>
         <SignalIcon kind="alert" size={13} />
@@ -94,7 +94,7 @@ export function BackupStatusBadge({ compact = false }) {
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--red-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: 0,
-        fontSize: 11, color: 'var(--red)',
+        fontSize: 'var(--t-footnote)', color: 'var(--red)',
         fontFamily: 'var(--sans)',
       }}>
         <SignalIcon kind="alert" size={13} />
@@ -110,7 +110,7 @@ export function BackupStatusBadge({ compact = false }) {
         padding: compact ? '4px 10px' : '10px 12px',
         background: 'var(--amb-bg)', borderRadius: compact ? 'var(--rs)' : 8,
         border: 0,
-        fontSize: 11, color: 'var(--amb)',
+        fontSize: 'var(--t-footnote)', color: 'var(--amb)',
         fontFamily: 'var(--sans)',
       }}>
         <SignalIcon kind="attention" size={13} />
@@ -125,7 +125,7 @@ export function BackupStatusBadge({ compact = false }) {
       padding: compact ? '4px 10px' : '10px 12px',
       background: 'var(--pos-bg)', borderRadius: compact ? 'var(--rs)' : 8,
       border: 0,
-      fontSize: 11, color: 'var(--pos)',
+      fontSize: 'var(--t-footnote)', color: 'var(--pos)',
       fontFamily: 'var(--sans)',
     }}>
       <span>✓</span>

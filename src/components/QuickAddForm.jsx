@@ -104,14 +104,14 @@ function DateSegment({ date, setDate, t }) {
       </button>
       <span className="fos-chip fos-chip--tall" data-pressed={isCustom} style={{ minWidth: 44, padding: isCustom ? '8px 10px' : '8px 12px' }}>
         <Calendar size={16} strokeWidth={1.7} aria-hidden="true" />
-        {isCustom && <span className="num" aria-hidden="true" style={{ fontSize: 13 }}>{fmtShortDate(date)}</span>}
+        {isCustom && <span className="num" aria-hidden="true" style={{ fontSize: 'var(--t-subhead)' }}>{fmtShortDate(date)}</span>}
         <input
           type="date"
           value={date}
           onChange={e => { if (e.target.value) setDate(e.target.value) }}
           onClick={e => { try { e.currentTarget.showPicker?.() } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }}
           aria-label={isCustom ? `${t('qa.pickDate')}: ${fmtShortDate(date)}` : t('qa.pickDate')}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, padding: 0, border: 'none', cursor: 'pointer', fontSize: 16 }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, padding: 0, border: 'none', cursor: 'pointer', fontSize: 'var(--t-callout)' }}
         />
       </span>
     </div>
@@ -466,7 +466,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         <div style={{ display: 'flex', gap: 4, background: 'var(--sur3)', borderRadius: 'var(--r-pill)', padding: 3, marginBottom: 12 }}>
           {[['expense', t('qa.expense')], ['income', t('qa.income')]].map(([k, lb]) => (
             <button key={k} type="button" aria-pressed={type === k} onClick={() => changeType(k)}
-              style={{ flex: 1, minHeight: 40, borderRadius: 'var(--r-pill)', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)',
+              style={{ flex: 1, minHeight: 44, borderRadius: 'var(--r-pill)', border: 'none', cursor: 'pointer', fontSize: 'var(--t-headline)', fontWeight: 700, fontFamily: 'var(--sans)',
                 background: type === k ? 'var(--sur)' : 'transparent', color: type === k ? (k === 'expense' ? 'var(--neg)' : 'var(--pos)') : 'var(--tm)',
                 boxShadow: type === k ? 'var(--sh-1)' : 'none' }}>
               {lb}
@@ -478,7 +478,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             (y su zoom) porque el teclado numérico propio de abajo escribe acá.
             Se muestra con separador de miles del locale de la moneda. */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 4, minHeight: 56 }}>
-          <span style={{ fontFamily: 'var(--num)', fontSize: 26, fontWeight: 600, color: 'var(--th)' }}>{usdOn ? usdSym : sym}</span>
+          <span style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-title)', fontWeight: 600, color: 'var(--th)' }}>{usdOn ? usdSym : sym}</span>
           <span ref={mirrorRef} aria-hidden="true" className="num"
             style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'pre', fontSize: amountSize, fontWeight: 700, letterSpacing: '-0.02em' }}>
             {display || '0'}
@@ -575,17 +575,17 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
                 placeholder={t('qa.pastePh')}
                 rows={2}
                 aria-label={t('qa.pasteCta')}
-                style={{ resize: 'none', fontSize: 16, textAlign: 'left', marginBottom: 6 }}
+                style={{ resize: 'none', fontSize: 'var(--t-callout)', textAlign: 'left', marginBottom: 6 }}
               />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span role="status" style={{ fontSize: 12, fontFamily: 'var(--sans)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
+                <span role="status" style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
                   {detected
                     ? `✓ ${pastedDate && pastedDate !== todayStr()
                         ? t('qa.pasteDetectedDate', { date: fmtShortDate(pastedDate) })
                         : t('qa.pasteDetected')}`
                     : t('qa.pasteLocal')}
                 </span>
-                <button type="button" className="fos-link" style={{ fontSize: 13, flexShrink: 0 }}
+                <button type="button" className="fos-link" style={{ fontSize: 'var(--t-subhead)', flexShrink: 0 }}
                   onClick={() => { setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null) }}>
                   {t('qa.pasteClose')}
                 </button>
@@ -607,7 +607,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
                 value={method}
                 onChange={e => setMethod(e.target.value)}
                 aria-label={t('qa.method')}
-                style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
+                style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 600, cursor: 'pointer' }}
               >
                 {config.paymentMethods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
               </SheetSelect>
@@ -648,7 +648,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
           {allowMoreDetails && type === 'expense' && (
             <div className={css.moreRow}>
-              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 13 }}>
+              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
                 {t('qa.moreDetails')}
               </button>
             </div>
