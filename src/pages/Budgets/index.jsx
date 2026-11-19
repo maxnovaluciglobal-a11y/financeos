@@ -145,11 +145,14 @@ export default function Budgets() {
     : t('budgets.pace.line', { used: usedPct, day: pace.day, days: pace.days })
 
   // ── KPIs en una línea (poda P2); el detalle completo va en la hoja ──────
-  const kl = kpiLine({ overCount: overBudget.length, totalBudget, income: ingresoNeto })
+  // UX-N8: "te pasaste" una sola vez. Si la conclusión ya nombra las categorías
+  // excedidas, la línea de KPIs no repite el conteo, el ritmo no suma el chip
+  // "Excedido" y no hay alerta roja aparte (cada fila marca su categoría).
+  const kl = kpiLine({ overCount: overBudget.length, totalBudget, income: ingresoNeto, overStated: !!conclusion })
   const kpiText = [
-    t(kl.over.key, { n: kl.over.n }),
+    kl.over && t(kl.over.key, { n: kl.over.n }),
     kl.coverage.ratio != null ? t(kl.coverage.key, { pct: fmtPct(kl.coverage.ratio, { decimals: 0 }) }) : t(kl.coverage.key),
-  ].join(' · ')
+  ].filter(Boolean).join(' · ')
   const tight = ingresoNeto > 0 && totalBudget > 0 && !overIncome && totalBudget / ingresoNeto > 0.8
 
   // ── Filas por categoría: con presupuesto y, al final, gasto sin asignar ──
@@ -277,7 +280,7 @@ export default function Budgets() {
             <p className={s.headline}>{headline}</p>
             <div className={s.paceRow}>
               <span>{paceText}</span>
-              {!pace.closed && (pace.used > 0 ? (
+              {!pace.closed && !overTotal && (pace.used > 0 ? (
                 <StateTag tone={pace.pace === 'ok' ? 'ok' : pace.pace === 'fast' ? 'warn' : 'risk'}
                   label={pace.pace === 'ok' ? t('budgets.pace.ok') : pace.pace === 'fast' ? t('budgets.pace.fast') : t('budgets.state.over')} />
               ) : (
@@ -303,7 +306,7 @@ export default function Budgets() {
       )}
 
       {/* Alertas, compactas: el detalle con todas las cifras está en la hoja de KPIs. */}
-      {overBudget.length > 0 && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') })}</Alert>}
+      {overBudget.length > 0 && !conclusion && <Alert type="danger">{t('budgets.alert.over', { cats: overBudget.map(b => catName(b.category, lang)).join(', ') })}</Alert>}
       {ingresoNeto > 0 && overIncome && <Alert type="danger">{t('budgets.p2.alert.deficit', { def: fmtMoney(totalBudget - ingresoNeto, sym) })}</Alert>}
       {tight && <Alert type="warning">{t('budgets.alert.tight', { pct: fmtPct(totalBudget/ingresoNeto) })}</Alert>}
 
