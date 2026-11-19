@@ -45,10 +45,23 @@ import { PageHeader } from '../../components/ui/index.jsx'
 import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal } from 'lucide-react'
+import { inicioLupaOn } from '../../utils/uiFlags.js'
 
 // V4: el anillo es una tarjeta opcional ("Editar Inicio") y es lo único del
 // Inicio que usa recharts (~100 kB gzip). Lazy, el Inicio pinta sin esperarlo.
 const CategoryDonut = lazy(() => import('../../components/charts/CategoryDonut.jsx'))
+// Entrega 1.5 (uiFlags.inicioLupa): la escena con la ChartLupa vive en su
+// propio trozo, así con el interruptor apagado no pesa nada.
+const InicioScene = lazy(() => import('./lupa/InicioScene.jsx'))
+
+function lupaOn(isDemo) {
+  let session = null
+  try { session = typeof sessionStorage !== 'undefined' ? sessionStorage : null } catch { session = null }
+  return inicioLupaOn({
+    isDemo, isDev: !!import.meta.env?.DEV, session,
+    search: typeof location !== 'undefined' ? location.search : '',
+  })
+}
 
 const pct = (n) => fmtPct(n)
 
@@ -98,6 +111,7 @@ export default function Dashboard({ setPage }) {
     kpis, rules, plan, pendingSum, todayStr, monthExpenses, healthScore,
   } = useHomeData()
   const updateSettings = ctx.updateSettings
+  const [lupa] = useState(() => lupaOn(!!settings.isDemo))
 
   // R7/A8: un solo aviso de respaldo. Si "Primeros pasos" ya lo pide, no sale
   // la franja.
@@ -304,16 +318,28 @@ export default function Dashboard({ setPage }) {
         prev={autoStart && prevHasData ? { month: prevMonthKey, balance: kpis.prev.balance } : null}
         onGoToList={setPage ? () => { closeSheet(); setPage('recurring') } : undefined} />
 
-      {/* Encabezado único (UI-M8): "Inicio" y el mes que se está mirando. */}
-      <PageHeader title={t('home.title')} sub={monthLabel(activeMonth)} />
-
-      <div className={hs.home}>
-        <div className={hs.stack}>
-          <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
-            pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
+      {lupa ? (
+        <Suspense fallback={<div className={hs.sceneFallback} aria-hidden="true" />}>
+          <InicioScene kpis={kpis} activeMonth={activeMonth} sym={sym} incomes={incomes} expenses={expenses}
+            plan={plan} pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
             pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
             daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
-            onOpen={setPage} refc={refc} />
+            dualOn={dualOn} toUSD={toUSD} onOpen={setPage} refc={refc} />
+        </Suspense>
+      ) : (
+        /* Encabezado único (UI-M8): "Inicio" y el mes que se está mirando. */
+        <PageHeader title={t('home.title')} sub={monthLabel(activeMonth)} />
+      )}
+
+      <div className={`${hs.home} ${lupa ? hs.calm : ''}`}>
+        <div className={hs.stack}>
+          {!lupa && (
+            <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
+              pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
+              pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
+              daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
+              onOpen={setPage} refc={refc} />
+          )}
           <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
 
           {quick.length > 0 && (

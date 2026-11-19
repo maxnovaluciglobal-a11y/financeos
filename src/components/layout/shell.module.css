@@ -363,3 +363,17 @@
   :global(:root[data-chrome="pushed"]) .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 24px); }
 }
 @media (prefers-reduced-motion: reduce) { .navBg, .navTitle { transition: none; } }
+
+/* ── Inicio con escena a sangre (Entrega 1.5, uiFlags.inicioLupa) ──────────
+   InicioScene pone data-scene en <html>. Mientras la escena está debajo, la
+   barra superior flota transparente con los íconos en blanco; su fondo y el
+   título compacto entran recién cuando el título grande sale de la vista
+   (data-title-compact de LargeTitle), no a los 24 px de scroll: así nunca
+   queda una barra blanca con íconos blancos encima del morado. */
+@media (max-width: 700px) {
+  :global(:root[data-scene="on"]:not([data-title-compact="1"])) .topbar .amountsBtn { color: var(--on-grad-text); }
+  :global(:root[data-scene="on"]) .navBg,
+  :global(:root[data-scene="on"]) .navTitle { animation: none; transition: opacity .2s var(--ease); opacity: 0; }
+  :global(:root[data-scene="on"][data-title-compact="1"]) .navBg,
+  :global(:root[data-scene="on"][data-title-compact="1"]) .navTitle { opacity: 1; }
+}

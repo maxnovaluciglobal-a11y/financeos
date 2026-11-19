@@ -1,0 +1,80 @@
+/* src/pages/Dashboard/lupa/chartLupa.module.css — ChartLupa sobre la escena.
+   Todo lo que se mueve durante el arrastre (lente, copia, punto, guía, mango)
+   lo hace con transform/opacity: nada de clip-path ni de layout por cuadro. */
+
+.wrap { position: relative; }
+
+.chart {
+  position: relative;
+  /* El scroll vertical de la página sigue funcionando: el gráfico solo toma
+     el gesto horizontal. */
+  touch-action: pan-y;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: crosshair;
+  border-radius: var(--radius-md);
+}
+.chart:focus { outline: none; }
+.chart:focus-visible { outline: 2px solid var(--on-grad-accent); outline-offset: 6px; }
+
+.plot { display: block; width: 100%; height: auto; overflow: visible; }
+.lensIn .plot { width: auto; }
+
+.grid  { stroke: var(--on-grad-chip); stroke-width: 1; }
+.zero  { stroke: var(--on-grad-track); stroke-width: 1; }
+.area  { fill: var(--on-grad-chip); }
+.ideal { fill: none; stroke: var(--on-grad-ideal); stroke-width: 1.6; stroke-dasharray: 2 5; stroke-linecap: round; }
+.proj  { fill: none; stroke: var(--on-grad-ideal); stroke-width: 2; stroke-dasharray: 7 5; stroke-linecap: round; }
+.today { stroke: var(--on-grad-track); stroke-dasharray: 1 3; }
+.pay   { fill: var(--on-grad-text); }
+.line  { fill: none; stroke: var(--on-grad-text); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.dayDot { fill: var(--on-grad-text); }
+
+.guide, .dot, .lens, .hand {
+  position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform;
+}
+.guide { width: 1px; background: var(--on-grad-ideal); opacity: 0; transition: opacity .15s; }
+.active .guide { opacity: 1; }
+.dot {
+  width: 12px; height: 12px; border-radius: 50%; background: var(--on-grad-accent); z-index: 6;
+  box-shadow: 0 0 0 2px var(--text-on-accent), 0 0 0 4px var(--on-grad-text);
+}
+.lens {
+  width: 88px; height: 88px; border-radius: 50%; overflow: hidden; z-index: 7;
+  background: var(--hero-bg); transform-origin: 0 0;
+  box-shadow: 0 0 0 3px var(--on-grad-accent), 0 0 0 4.5px var(--text-on-accent), 0 14px 28px -10px rgb(0 0 0 / .6);
+}
+.lensIn { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.hand {
+  width: 12px; height: 34px; border-radius: 6px; background: var(--on-grad-accent); z-index: 6;
+  box-shadow: 0 0 0 1.5px var(--text-on-accent); transform-origin: 6px 0;
+}
+
+/* Deslizamiento al volver a hoy o al moverse con teclado / ‹ ›. */
+.glide .guide, .glide .dot, .glide .lens, .glide .lensIn, .glide .hand {
+  transition: transform .55s cubic-bezier(.65, 0, .15, 1), opacity .2s;
+}
+
+.invite .lens { animation: invite 1.6s var(--ease) 2; }
+@keyframes invite {
+  0%, 100% { box-shadow: 0 0 0 3px var(--on-grad-accent), 0 0 0 4.5px var(--text-on-accent); }
+  50% { box-shadow: 0 0 0 3px var(--on-grad-accent), 0 0 0 4.5px var(--text-on-accent), 0 0 0 14px color-mix(in srgb, var(--on-grad-accent) 28%, transparent); }
+}
+
+.axis {
+  position: relative; height: 1rem; margin-top: var(--space-1);
+  font-size: var(--type-etiqueta); line-height: var(--type-etiqueta-lh); font-weight: var(--fw-semibold);
+  color: var(--on-grad-text-2); font-variant-numeric: tabular-nums;
+}
+.axis span { position: absolute; top: 0; left: 0; white-space: nowrap; }
+.axis .axisEnd { left: auto; right: 0; }
+.axis .axisMid { transform: translateX(-50%); }
+
+/* Gama baja: sin sombras grandes en la lente (son caras de pintar). */
+@media (prefers-reduced-transparency: reduce) {
+  .lens { box-shadow: 0 0 0 3px var(--on-grad-accent), 0 0 0 4.5px var(--text-on-accent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide, .glide .guide, .glide .dot, .glide .lens, .glide .lensIn, .glide .hand { transition: none; }
+  .invite .lens { animation: none; }
+}

@@ -415,3 +415,20 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
   .donutEmptyRing { width: 140px; flex: 0 0 auto; }
   .donutEmptyBody { align-items: flex-start; text-align: left; }
 }
+
+/* ── Superficie tranquila bajo la escena (Entrega 1.5, uiFlags.inicioLupa) ──
+   Sin líneas grises entre bloques: cada sección es un plano en --card-bg con
+   el radio único de 16 (12 en los controles). Las filas de adentro siguen
+   separadas por el divisor decorativo. */
+.calm .stack { gap: var(--space-3); }
+.calm .card { border-top: 0; border-radius: var(--rl); background: var(--card-bg); padding: var(--space-4); }
+.calm .card.steps, .calm .card.scoreRow { padding: var(--space-3) var(--space-4); }
+.calm .card.steps:hover, .calm .card.scoreRow:hover { border-top-color: transparent; background: var(--fill-2); }
+.calm .quick { padding: var(--space-1) 0; }
+.calm .quickIc { border-radius: var(--r); background: var(--card-bg); }
+.calm .payDate { border-radius: var(--r); background: var(--color-bg); }
+
+/* Mientras llega el trozo de la escena: el mismo plano morado, sin saltos. */
+.sceneFallback { min-height: 26rem; border-radius: var(--radius-lg); background: var(--gr-impulso); margin-bottom: var(--space-2); }
+:global([data-theme="dark"]) .sceneFallback { background: var(--gr-profundidad); }
+@media (max-width: 700px) { .sceneFallback { border-radius: 0; margin: calc(-1 * var(--content-pt)) -18px var(--space-2); } }
