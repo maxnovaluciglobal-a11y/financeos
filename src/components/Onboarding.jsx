@@ -27,6 +27,7 @@ import { isSyncEnabled, syncAvailable, syncMeta } from '../core/sync.js'
 import { dbAdd } from '../core/db/index.js'
 import { Wordmark } from './Logo.jsx'
 import CountUp from './CountUp.jsx'
+import { markNotesSeen } from '../data/releaseNotes.js'
 import QuickAddForm from './QuickAddForm.jsx'
 import { newAccountModules, setModule } from '../utils/modules.js'
 import SheetSelect from './ui/SheetSelect.jsx'
@@ -157,6 +158,8 @@ export default function Onboarding({ onComplete }) {
 
   // Persiste paso + respuestas para retomar si se cierra la app a mitad del flujo
   useEffect(() => { saveOnboardingProgress(step, answers, firstTxSaved) }, [step, answers, firstTxSaved])
+  // Cuenta nueva: las "Novedades" de versiones anteriores no le corresponden.
+  useEffect(() => { markNotesSeen() }, [])
 
   // Mueve el foco al título del paso nuevo — sin esto un lector de pantalla
   // no se entera de que la pantalla cambió.

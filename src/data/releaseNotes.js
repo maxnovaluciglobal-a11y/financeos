@@ -169,6 +169,16 @@ export const RELEASE_NOTES = [
 
 export const SEEN_KEY = 'fos_release_seen'
 
+// Una cuenta que pasa por el onboarding es nueva: no tiene nada que "ponerse
+// al día". Sin esto, quien cargaba los datos de ejemplo o registraba su primer
+// movimiento en el onboarding llegaba al Inicio con datos y sin `seen`, y
+// pendingNotes() le mostraba la nota del cambio de nombre (19-nov-2026).
+export function markNotesSeen(storage = globalThis.localStorage, notes = RELEASE_NOTES) {
+  const latest = notes[0]?.id
+  if (!latest) return
+  try { storage?.setItem(SEEN_KEY, latest) } catch { /* modo privado: a lo sumo se ve la nota una vez */ }
+}
+
 // Qué notas mostrar: las de versiones más nuevas que la última vista. Primera
 // vez en el dispositivo: si no hay datos propios, se marca como vista sin
 // mostrar nada (una cuenta nueva no "vio" la versión anterior).

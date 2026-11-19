@@ -45,3 +45,19 @@ describe('Novedades: aviso del rebranding en iPhone', () => {
     })
   }
 })
+
+describe('markNotesSeen (onboarding = cuenta nueva)', () => {
+  it('marca la última nota y pendingNotes ya no muestra nada aunque haya datos', async () => {
+    const { markNotesSeen, pendingNotes, SEEN_KEY, RELEASE_NOTES } = await import('./releaseNotes.js')
+    const mem = new Map()
+    const storage = { setItem: (k, v) => mem.set(k, v), getItem: (k) => mem.get(k) ?? null }
+    markNotesSeen(storage)
+    expect(mem.get(SEEN_KEY)).toBe(RELEASE_NOTES[0].id)
+    expect(pendingNotes({ seen: storage.getItem(SEEN_KEY), hasData: true }).show).toEqual([])
+  })
+  it('no rompe sin almacenamiento', async () => {
+    const { markNotesSeen } = await import('./releaseNotes.js')
+    expect(() => markNotesSeen({ setItem() { throw new Error('quota') } })).not.toThrow()
+    expect(() => markNotesSeen(undefined)).not.toThrow()
+  })
+})
