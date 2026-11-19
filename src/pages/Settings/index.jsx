@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   UserRound, Coins, Palette, LayoutTemplate, DatabaseBackup, ShieldCheck, Bell,
-  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles } from 'lucide-react'
+  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles, Zap } from 'lucide-react'
 import { PageHeader } from '../../components/ui/index.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
@@ -17,6 +17,8 @@ import ProfileScreen from './ProfileScreen.jsx'
 import CurrencyScreen from './CurrencyScreen.jsx'
 import AppearanceScreen from './AppearanceScreen.jsx'
 import FeaturesScreen from './FeaturesScreen.jsx'
+import AutoEntryScreen from './AutoEntryScreen.jsx'
+import { registroAutomaticoHere } from '../../utils/uiFlags.js'
 import DataScreen from './DataScreen.jsx'
 import NotificationsScreen from './NotificationsScreen.jsx'
 import PlanScreen from './PlanScreen.jsx'
@@ -26,7 +28,7 @@ import { Setting } from './settingsUi.jsx'
 // Mismas filas que el Menú (patrón rial ya aprobado): grupo con título, lista
 // en una superficie, fila de ≥ 52 px con ícono, texto y chevron.
 import m from '../More/more.module.css'
-import { SETTINGS_SECTIONS, groupById, searchSettings, subFromState, withSub, takePendingSub } from './settingsIndex.js'
+import { SETTINGS_SECTIONS, SETTINGS_GROUPS, groupById, searchSettings, subFromState, withSub, takePendingSub } from './settingsIndex.js'
 import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
 import { announceSubBack } from '../../components/layout/pageStack.js'
 import { getSession } from '../../core/auth.js'
@@ -35,7 +37,7 @@ import config from '../../config.js'
 import { useT } from '../../i18n/useT.js'
 
 const ICONS = {
-  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles,
+  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles, autoEntry: Zap,
   data: DatabaseBackup, security: ShieldCheck, notifications: Bell, plan: CreditCard,
   advanced: SlidersHorizontal, danger: TriangleAlert,
 }
@@ -183,6 +185,7 @@ export default function Settings() {
           {sub === 'currency'      && <CurrencyScreen />}
           {sub === 'appearance'    && <AppearanceScreen />}
           {sub === 'features'      && <FeaturesScreen />}
+          {sub === 'autoEntry'     && <AutoEntryScreen />}
           {sub === 'templates'     && (
             <Setting id="templates" style={{ paddingTop: 10 }}>
               <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>
@@ -202,7 +205,10 @@ export default function Settings() {
     )
   }
 
-  const results = searchSettings(query, t)
+  // Registro automático apagado (uiFlags): sin fila ni resultados de búsqueda.
+  const autoOn = registroAutomaticoHere()
+  const visibleGroup = (id) => autoOn || id !== 'autoEntry'
+  const results = searchSettings(query, t, SETTINGS_GROUPS.filter(g => visibleGroup(g.id)))
   const showUpgradeHint = !isDemo && getLicensePlan() !== 'pro'
 
   return (
@@ -257,7 +263,7 @@ export default function Settings() {
             <section key={sec.id} className={m.group} aria-labelledby={`settings-sec-${sec.id}`}>
               <h2 id={`settings-sec-${sec.id}`} className={m.groupTitle}>{t(sec.title)}</h2>
               <div className={m.list}>
-                {sec.groups.map(id => {
+                {sec.groups.filter(visibleGroup).map(id => {
                   const g = groupById(id)
                   const desc = id === 'plan' && showUpgradeHint ? t('settings.upgrade.title', { days: config.pricing.trialDays }) : t(g.desc)
                   return <GroupRow key={id} id={id} title={t(g.title)} desc={desc} onClick={() => openSub(id)} danger={id === 'danger'} />

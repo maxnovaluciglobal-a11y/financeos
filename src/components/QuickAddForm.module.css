@@ -116,3 +116,25 @@
 
 
 @media (prefers-reduced-motion: reduce) { .key, .keyOk, .moreChev { transition: none; } }
+
+/* Dictado (19-nov-2026): botón del micrófono junto a la fecha y estado debajo */
+.micBtn {
+  min-height: 44px; padding: 0 12px; border-radius: var(--r-pill); cursor: pointer;
+  border: 0; background: var(--fill); color: var(--tx);
+  font-size: .8125rem; font-family: var(--sans); font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.micBtn[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-tx); }
+.micBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.voice { margin: -4px 0 10px; font-family: var(--sans); }
+.voiceStatus { font-size: .8125rem; color: var(--tx); line-height: 1.4; margin-bottom: 2px; overflow-wrap: anywhere; }
+.voiceErr { font-size: .8125rem; color: var(--warn); line-height: 1.4; margin-bottom: 2px; }
+.voiceHint { font-size: .6875rem; color: var(--th); line-height: 1.4; }
+
+/* Alta por URL: de dónde vino y que falta confirmar */
+.intake {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: var(--rl); background: var(--fill);
+  font-family: var(--sans); font-size: .8125rem; color: var(--tm); line-height: 1.45;
+}
+.intakeTitle { font-weight: 600; color: var(--tx); }
+.intakeNote { margin-top: 4px; color: var(--tx); }

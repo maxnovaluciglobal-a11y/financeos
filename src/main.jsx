@@ -12,6 +12,7 @@ import { watchServiceWorkerUpdates } from './core/swUpdate.js'
 import { installVpDiag } from './core/vpDiag.js'
 import { skewCookieStrings, clearSkewCookieStrings } from './utils/skewCookie.js'
 import { installViewportFit } from './core/viewportFit.js'
+import { captureIntake } from './utils/autoEntry.js'
 
 // Skew Protection (C-49): fija este deploy SOLO para los chunks lazy de
 // /app/assets (cookie técnica de Vercel, sin seguimiento). Vacío en local.
@@ -34,6 +35,12 @@ installViewportFit()
 try { installVpDiag() } catch { /* diagnóstico opcional */ }
 installGlobalErrorLog()
 installWebAnalytics()
+
+// Alta por URL (?add=gasto&monto=…, el Atajo de Apple Pay): se guarda en la
+// pestaña hasta que la app esté lista y se limpia la URL antes del primer
+// render (recargar o compartir no la repite). Nunca se guarda sola: abre el
+// alta rápida para confirmar. Ver utils/autoEntry.js.
+try { captureIntake({ location: window.location, history: window.history, storage: window.sessionStorage }) } catch { /* sin almacenamiento: se ignora el alta */ }
 
 // index.html trae lang="es" fijo; hasta que AppContext/DemoContext lean los
 // ajustes, el primer pintado usa el idioma del navegador (mismo criterio que el
