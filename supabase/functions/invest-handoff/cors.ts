@@ -1,8 +1,9 @@
 // CORS de invest-handoff: solo la app, que es la que tiene sesión. El demo no
 // llama a esta función. Separado de index.ts para poder testearlo.
-import { makeCorsHeaders } from "../_shared/cors.ts";
+import { makeCorsHeaders, NATIVE_APP_ORIGINS } from "../_shared/cors.ts";
 
 export const ALLOWED_ORIGINS = [
+  ...NATIVE_APP_ORIGINS,
   "https://app.moyiq.app",
   "http://localhost:5173",
 ] as const;

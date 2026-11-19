@@ -26,6 +26,7 @@ import {
 } from 'recharts'
 import ChartTooltip, { AXIS_TICK, GRID, PREV_LINE } from '../../components/charts/ChartTooltip.jsx'
 import { totalForMonth, cumulativeByDay, prevMonthKey } from '../../utils/chartSeries.js'
+import { canShowWebCheckout } from '../../native/storePolicy.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
@@ -160,7 +161,7 @@ export default function Reports({ setPage }) {
           >
             {pdfLoading ? t('reports.pdf.generating') : t('reports.pdf.download')}
           </button>
-        ) : (
+        ) : canShowWebCheckout() ? (
           <a
             href="https://moyiq.app/#pricing"
             target="_blank"
@@ -175,7 +176,7 @@ export default function Reports({ setPage }) {
           >
             <InlineIcon kind="pdf" size={13} />{t('reports.pdf.pro')}
           </a>
-        )}
+        ) : null}
       </div>
       <div className="kpi-row">
         <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+totalSubs>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />

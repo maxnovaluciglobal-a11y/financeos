@@ -16,6 +16,8 @@ import { useT, useLangReady } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
 import { usePageStack } from '../hooks/usePageStack.js'
 import { prefetchTabs } from '../utils/prefetchTabs.js'
+import { canShowWebCheckout } from '../native/storePolicy.js'
+import { isNativeApp } from '../native/platform.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -100,13 +102,13 @@ function DemoBottomCTA({ hidden }) {
           misma pestaña — el registro ya captura el lead. "Ver planes" queda como
           enlace secundario hacia la landing. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-        <a className="fos-btn-primary" href={APP_URL}
+        <a className="fos-btn-primary" href={isNativeApp() ? '/app/' : APP_URL}
           style={{ width: 'auto', fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
           {t('demo.banner.start')}
         </a>
-        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
+        {canShowWebCheckout() && <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
           {t('demo.banner.plans')}
-        </a>
+        </a>}
       </div>
       <button
         type="button"

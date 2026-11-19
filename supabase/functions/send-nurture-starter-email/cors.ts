@@ -1,9 +1,10 @@
 // CORS de send-nurture-starter-email: orígenes permitidos de esta función + encabezados comunes
 // de navegador (ver ../_shared/cors.ts). Separado de index.ts para poder
 // testearlo (index.ts lee Deno.env y no se importa desde vitest).
-import { makeCorsHeaders } from "../_shared/cors.ts";
+import { makeCorsHeaders, NATIVE_APP_ORIGINS } from "../_shared/cors.ts";
 
 export const ALLOWED_ORIGINS = [
+  ...NATIVE_APP_ORIGINS,
   "https://moyiq.app",
   "https://www.moyiq.app",
   "https://app.moyiq.app",

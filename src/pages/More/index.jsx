@@ -18,6 +18,7 @@ import { getSession, signOutAuth } from '../../core/auth.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import FeedbackSheet from '../../components/FeedbackSheet.jsx'
 import { STRIPE_PORTAL_URL } from '../legal/legalMeta.js'
+import { canShowWebCheckout } from '../../native/storePolicy.js'
 import s from './more.module.css'
 import { logRejection } from '../../utils/errorLog.js'
 import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
@@ -48,7 +49,7 @@ function AccountHeader({ setPage }) {
           <div className={s.accountName}>{name}</div>
           <div className={s.accountMeta}>
             {!isDemo && <span className={isPro ? s.planPro : s.plan}>{t(isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
-            {!isDemo && isPro && STRIPE_PORTAL_URL && (
+            {!isDemo && isPro && STRIPE_PORTAL_URL && canShowWebCheckout() && (
               <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className={s.manage}>
                 <CreditCard size={14} strokeWidth={1.7} aria-hidden="true" />{t('menu.manageSub')}
                 <ExternalLink size={12} strokeWidth={1.8} aria-hidden="true" />

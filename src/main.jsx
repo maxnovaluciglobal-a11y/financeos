@@ -12,6 +12,7 @@ import { watchServiceWorkerUpdates } from './core/swUpdate.js'
 import { installVpDiag } from './core/vpDiag.js'
 import { skewCookieStrings, clearSkewCookieStrings } from './utils/skewCookie.js'
 import { installViewportFit } from './core/viewportFit.js'
+import { isNativeApp } from './native/platform.js'
 
 // Skew Protection (C-49): fija este deploy SOLO para los chunks lazy de
 // /app/assets (cookie técnica de Vercel, sin seguimiento). Vacío en local.
@@ -79,8 +80,15 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>
 )
 
-// Register service worker for PWA (only in production)
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// App nativa (Capacitor): barras del sistema, hápticos, splash, enlaces y
+// botón atrás. Se descarga solo dentro de la app (native/bridge.js).
+if (isNativeApp()) {
+  import('./native/bridge.js').then(m => m.installNative()).catch(console.error)
+}
+
+// Register service worker for PWA (only in production). En la app nativa no:
+// los archivos ya vienen dentro del paquete y se actualizan con la tienda.
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isNativeApp()) {
   window.addEventListener('load', () => {
     // H14 (ola A11): aviso de versión nueva cuando el SW nuevo toma control.
     watchServiceWorkerUpdates(navigator.serviceWorker)

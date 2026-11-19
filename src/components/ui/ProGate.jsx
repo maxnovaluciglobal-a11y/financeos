@@ -28,6 +28,7 @@ import PeriodToggle from './PeriodToggle.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
 import { proPriceVars, proCta, withCheckoutLang, checkoutFor, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
+import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { IconIQScore } from '../icons/Icons.jsx'
 import { initialSearch, planParam } from '../../utils/deepLink.js'
 import styles from './ui.module.css'
@@ -78,6 +79,8 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
   const trialDays = config.pricing.trialDays
   const priceVars = proPriceVars(lang)
   const ctaLabel = t(cta.labelKey, { days: trialDays })
+  // App de tienda: sin precio ni enlace al checkout web (native/storePolicy.js).
+  const webPay = canShowWebCheckout()
 
   const gate = (
     <div style={{
@@ -107,6 +110,13 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         ))}
       </ul>
 
+      {!webPay && (
+        <p style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.5 }}>
+          {t('billing.native.unavailable')}
+        </p>
+      )}
+
+      {webPay && <>
       <p style={{ fontSize: 13, color: 'var(--th)', marginBottom: 20 }}>
         {t('pro.gate.price', priceVars)}
       </p>
@@ -134,7 +144,8 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
           {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}
         </p>
       )}
-      {preview && (
+      </>}
+      {preview && webPay && (
         <p style={{ fontSize: 13, color: 'var(--tm)', marginTop: 16, lineHeight: 1.5 }}>
           {t('pro.gate.previewNote', { days: trialDays })}
         </p>

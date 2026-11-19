@@ -11,6 +11,8 @@ import { MoreHorizontal } from 'lucide-react'
 import { useDemo } from './DemoContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { demoPersona } from './demoData.js'
+import { canShowWebCheckout } from '../native/storePolicy.js'
+import { isNativeApp } from '../native/platform.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
 export const PRICING_URL = 'https://moyiq.app/#pricing'
@@ -60,9 +62,9 @@ export default function DemoBanner({ onReplayTour }) {
           <span aria-hidden="true">↕</span>
         </button>
 
-        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer">
+        {canShowWebCheckout() && <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer">
           {t('demo.banner.plans')}
-        </a>
+        </a>}
 
         {onReplayTour && (
           <button type="button" className="demo-banner__help" onClick={onReplayTour} aria-label={t('demo.tour.replay')} title={t('demo.tour.replay')}>
@@ -75,7 +77,7 @@ export default function DemoBanner({ onReplayTour }) {
           <MoreHorizontal size={20} strokeWidth={1.8} aria-hidden="true" />
         </button>
 
-        <a className="fos-btn-primary demo-banner__cta" href={APP_URL}>
+        <a className="fos-btn-primary demo-banner__cta" href={isNativeApp() ? '/app/' : APP_URL}>
           <span className="demo-banner__ctaLong">{t('demo.banner.start')}</span>
           <span className="demo-banner__ctaShort">{t('demo.banner.startShort')}</span>
         </a>
@@ -93,9 +95,9 @@ export default function DemoBanner({ onReplayTour }) {
               {t('demo.tour.replay')}
             </button>
           )}
-          <a className="demo-banner__menuItem" href={PRICING_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
+          {canShowWebCheckout() && <a className="demo-banner__menuItem" href={PRICING_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
             {t('demo.banner.plans')}
-          </a>
+          </a>}
         </div>
       )}
     </aside>

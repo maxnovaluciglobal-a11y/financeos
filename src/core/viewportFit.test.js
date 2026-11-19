@@ -83,3 +83,9 @@ describe('computeViewportFit · nunca empuja hacia la franja sin pintar (19-nov-
     expect(computeViewportFit({ ...walter, standalone: undefined })).toBeNull()
   })
 })
+
+describe('app nativa (Capacitor)', () => {
+  it('no aplica las correcciones de la PWA: el viewport es el real', () => {
+    expect(computeViewportFit({ standalone: true, native: true, innerWidth: 440, innerHeight: 894, screenWidth: 440, screenHeight: 956 })).toBeNull()
+  })
+})

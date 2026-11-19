@@ -9,6 +9,8 @@ import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
 import { checkoutFor, DEFAULT_BILLING_PERIOD, proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
 import { useAccount } from '../../hooks/useAccount.js'
+import { nativePlatform } from '../../native/platform.js'
+import { webCheckoutAllowed } from '../../native/storePolicy.js'
 
 export default function UpgradeCard({ subStyle }) {
   const { t, lang } = useT()
@@ -17,6 +19,16 @@ export default function UpgradeCard({ subStyle }) {
   const { trial, href } = checkoutFor(period)
   const { trialDays } = config.pricing
   const thenKey = period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual'
+
+  // App de tienda: sin precio ni checkout de Stripe (native/storePolicy.js).
+  if (!webCheckoutAllowed(nativePlatform())) {
+    return (
+      <div style={{padding:'12px 14px',margin:'11px 0',background:'var(--color-brand-subtle)',borderRadius:'var(--r)'}}>
+        <div style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{t('menu.upgrade.title')}</div>
+        <div style={subStyle}>{t('billing.native.unavailable')}</div>
+      </div>
+    )
+  }
 
   return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'12px 14px',margin:'11px 0',background:'var(--color-brand-subtle)',border: 0,borderRadius:'var(--r)'}}>

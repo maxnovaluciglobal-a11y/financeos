@@ -4,6 +4,7 @@
 import { authClient, AUTH_ENABLED } from './authClient.js'
 import { logClientError } from '../utils/errorLog.js'
 import { withCaptcha } from './turnstile.js'
+import { isNativeApp, authEmailRedirect } from '../native/platform.js'
 
 export function isAuthConfigured() {
   return AUTH_ENABLED
@@ -42,7 +43,7 @@ export function onAuthChange(callback, onEvent) {
 export async function resetPasswordForEmail(email, captchaToken) {
   if (!authClient) return { error: 'auth_not_configured' }
   const { error } = await authClient.auth.resetPasswordForEmail(email, withCaptcha({
-    redirectTo: window.location.origin + window.location.pathname,
+    redirectTo: authEmailRedirect(window),
   }, captchaToken))
   if (error) return { error: error.message }
   return {}
@@ -69,7 +70,7 @@ export async function signUpWithPassword(email, password, lang, captchaToken) {
     password,
     // data.lang → user_metadata.lang: auth-email-hook manda la confirmación
     // (y después los resets) en ese idioma. Ver syncUserLang().
-    options: withCaptcha({ emailRedirectTo: window.location.origin + window.location.pathname, ...(lang ? { data: { lang } } : {}) }, captchaToken),
+    options: withCaptcha({ emailRedirectTo: authEmailRedirect(window), ...(lang ? { data: { lang } } : {}) }, captchaToken),
   })
   if (error) return { error: error.message }
   return { data }
@@ -83,7 +84,7 @@ export async function resendSignupConfirmation(email, captchaToken) {
   const { error } = await authClient.auth.resend({
     type: 'signup',
     email,
-    options: withCaptcha({ emailRedirectTo: window.location.origin + window.location.pathname }, captchaToken),
+    options: withCaptcha({ emailRedirectTo: authEmailRedirect(window) }, captchaToken),
   })
   if (error) return { error: error.message }
   return {}
@@ -103,9 +104,26 @@ export async function signInWithPassword(email, password, captchaToken) {
 export const MIN_PASSWORD_LENGTH = 8
 
 export async function signInWithGoogle() {
+  return signInWithProvider('google')
+}
+
+// Sign in with Apple (App Store 4.8). Solo se muestra con NATIVE_FLAGS.appleSignIn
+// (native/storePolicy.js), cuando el proveedor esté configurado en Supabase Auth.
+export async function signInWithApple() {
+  return signInWithProvider('apple')
+}
+
+// En la app nativa el inicio con un proveedor no puede volver a
+// capacitor://localhost: se abre en el navegador del sistema y vuelve por
+// moyiq://auth-callback (native/nativeAuth.js).
+async function signInWithProvider(provider) {
   if (!authClient) return { error: 'auth_not_configured' }
+  if (isNativeApp()) {
+    const { nativeOAuth } = await import('../native/nativeAuth.js')
+    return nativeOAuth(authClient, provider)
+  }
   const { error } = await authClient.auth.signInWithOAuth({
-    provider: 'google',
+    provider,
     options: { redirectTo: window.location.origin + window.location.pathname },
   })
   if (error) return { error: error.message }
