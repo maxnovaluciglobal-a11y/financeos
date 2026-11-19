@@ -8,7 +8,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, signInWithApple, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
-import { nativePlatform } from '../native/platform.js'
+import { nativePlatform, isNativeApp } from '../native/platform.js'
+import { NATIVE_OAUTH_ERROR_EVENT } from '../native/nativeLinks.js'
 import { oauthProviders } from '../native/storePolicy.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
@@ -92,6 +93,14 @@ export default function AuthGate({ onAuthenticated }) {
       if (clean) window.history.replaceState(window.history.state, '', clean)
     } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   }, [])
+  // NAT-5: en la app nativa, el canje del inicio con Google/Apple ocurre en
+  // native/bridge.js; si falla, avisa acá para que la persona no quede sin respuesta.
+  useEffect(() => {
+    if (!isNativeApp()) return undefined
+    const onOAuthError = () => { setLoading(false); setError(t('authGate.errorNativeOAuth')) }
+    window.addEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
+    return () => window.removeEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
+  }, [t])
 
   async function handleSubmit() {
     const cleanEmail = email.trim()
@@ -506,6 +515,17 @@ export default function AuthGate({ onAuthenticated }) {
         </button>
 
         {tab === 'signup' && <LegalNotice t={t} lang={lang} />}
+
+        {/* NAT-3: en la app de tienda, el demo sin cuenta (lo usa la revisión de Apple/Google). */}
+        {isNativeApp() && (
+          <a
+            href="/app/?demo=true"
+            data-testid="authgate-native-demo"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 14, borderRadius: 8, border: '1px solid var(--brd)', color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontWeight: 600, fontFamily: 'var(--sans)', textDecoration: 'none' }}
+          >
+            {t('authGate.nativeDemoBtn')}
+          </a>
+        )}
 
       </div>
     </div>

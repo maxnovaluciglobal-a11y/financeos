@@ -85,3 +85,21 @@ describe('AuthGate: enlace vencido o ya usado (auditoría de correos 18-nov-2026
     expect(render('es', '', '#signup')).not.toContain('authgate-link-expired')
   })
 })
+
+describe('AuthGate: botón "Ver el demo" solo en la app nativa (NAT-3)', () => {
+  afterEach(() => { delete globalThis.Capacitor })
+
+  it.each(['es', 'en', 'pt', 'de'])('%s: en la app nativa ofrece el demo sin cuenta', (lang) => {
+    globalThis.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' }
+    const html = render(lang)
+    expect(html).toContain('data-testid="authgate-native-demo"')
+    expect(html).toContain('href="/app/?demo=true"')
+    expect(html).toContain(translate(lang, 'authGate.nativeDemoBtn'))
+    expect(translate(lang, 'authGate.nativeDemoBtn')).not.toBe('authGate.nativeDemoBtn')
+    expect(translate(lang, 'authGate.errorNativeOAuth')).not.toBe('authGate.errorNativeOAuth')
+  })
+
+  it('en la web no aparece', () => {
+    expect(render('es')).not.toContain('authgate-native-demo')
+  })
+})

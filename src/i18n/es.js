@@ -1474,6 +1474,9 @@ export const es = {
     'authGate.legalPrivacy': 'Política de privacidad',
     'authGate.subtitle': 'Necesitas una cuenta para usar moyiq — tus datos financieros igual se guardan solo en este dispositivo.',
     'authGate.linkExpired': "El enlace venció o ya se usó. Pide uno nuevo.",
+    // App nativa (NAT-3, NAT-5): demo sin cuenta y error del inicio con Google/Apple.
+    'authGate.nativeDemoBtn': "Ver el demo sin cuenta",
+    'authGate.errorNativeOAuth': "No se pudo completar el inicio de sesión. Intenta de nuevo.",
     'authGate.tabLogin': 'Iniciar sesión',
     'authGate.tabSignup': 'Crear cuenta',
     'authGate.tabsLabel': "Acceso a la cuenta",
