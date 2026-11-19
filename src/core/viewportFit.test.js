@@ -70,3 +70,19 @@ describe('applyViewportFit', () => {
     expect(viewportHeight(fakeWin({ ...iphone, standalone: false }))).toBe(797)
   })
 })
+
+describe('computeViewportFit · iOS 26 (19-nov-2026)', () => {
+  const base = { standalone: true, innerWidth: 402, innerHeight: 812, screenWidth: 402, screenHeight: 874 }
+  it('si lo fijo ya llega al borde (iOS 26), no empuja nada hacia abajo', () => {
+    expect(computeViewportFit({ ...base, fixedBottom: 874 })).toEqual({ appH: 874, gap: 0 })
+  })
+  it('si lo fijo queda corto (WebKit viejo), corrige solo lo medido', () => {
+    expect(computeViewportFit({ ...base, fixedBottom: 812 })).toEqual({ appH: 874, gap: 62 })
+  })
+  it('sin medida usa innerHeight como antes', () => {
+    expect(computeViewportFit(base)).toEqual({ appH: 874, gap: 62 })
+  })
+  it('pantalla completa sin hueco: nada que corregir', () => {
+    expect(computeViewportFit({ ...base, innerHeight: 874, fixedBottom: 874 })).toBeNull()
+  })
+})
