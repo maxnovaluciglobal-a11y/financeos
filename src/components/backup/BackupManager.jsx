@@ -11,7 +11,7 @@ import { CLOUD_ENABLED } from '../../core/supabase.js'
 import { cloudPush, cloudPull, cloudStatus } from '../../core/cloudSync.js'
 
 import { useT } from '../../i18n/useT.js'
-import { plural, daysSince, formatDate, validateBackupFile } from './BackupStatus.jsx'
+import { BackupStatusBadge, plural, daysSince, formatDate, validateBackupFile } from './BackupStatus.jsx'
 import { MIN_PASSPHRASE_LENGTH, isEncryptedBackupText, passphraseOk, decryptBackupFile } from '../../utils/backupFile.js'
 
 // ── MODAL DE CONFIRMACIÓN ─────────────────────────────────────────────────────

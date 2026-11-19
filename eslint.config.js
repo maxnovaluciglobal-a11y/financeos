@@ -10,6 +10,31 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 
+// react/jsx-no-undef sin sumar eslint-plugin-react: `no-undef` no ve los
+// componentes JSX, así que `<Foo />` sin importar pasaba el lint y rompía en
+// runtime (ReferenceError → ErrorBoundary). Pasó con <BackupStatusBadge> en
+// Ajustes › Datos y respaldo (de69dc2, 30-oct-2026; reportado el 19-nov).
+const jsxNoUndef = {
+  meta: { type: 'problem', schema: [] },
+  create(context) {
+    return {
+      JSXOpeningElement(node) {
+        let n = node.name
+        while (n.type === 'JSXMemberExpression') n = n.object
+        if (n.type !== 'JSXIdentifier') return
+        // Etiquetas HTML en minúscula; los componentes empiezan con mayúscula.
+        if (!/^[A-Z]/.test(n.name) && node.name.type !== 'JSXMemberExpression') return
+        let scope = context.sourceCode.getScope(node)
+        while (scope) {
+          if (scope.set.has(n.name)) return
+          scope = scope.upper
+        }
+        context.report({ node: n, message: `'${n.name}' no está definido (falta el import): rompe en runtime.` })
+      },
+    }
+  },
+}
+
 const warnAll = (rules) => Object.fromEntries(Object.entries(rules).map(([k, v]) => [k, Array.isArray(v) ? ['warn', ...v.slice(1)] : (v === 'off' || v === 0 ? v : 'warn')]))
 
 export default [
@@ -22,7 +47,7 @@ export default [
       parserOptions: { ecmaFeatures: { jsx: true } },
       globals: { ...globals.browser, ...globals.node, __APP_VERSION__: 'readonly' },
     },
-    plugins: { 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
+    plugins: { 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y, local: { rules: { 'jsx-no-undef': jsxNoUndef } } },
     rules: {
       ...js.configs.recommended.rules,
       'no-useless-escape': 'warn',
@@ -30,6 +55,7 @@ export default [
       ...warnAll(jsxA11y.flatConfigs.recommended.rules),
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_', caughtErrors: 'none' }],
       'no-empty': ['error', { allowEmptyCatch: false }],
+      'local/jsx-no-undef': 'error',
       // ING-5: tampoco .catch(() => {}); se usa logRejection('archivo:línea') o un comentario dentro.
       'no-restricted-syntax': ['error', {
         selector: "CallExpression[callee.property.name='catch'] > ArrowFunctionExpression[body.type='BlockStatement'][body.body.length=0]",
