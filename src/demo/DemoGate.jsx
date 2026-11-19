@@ -25,6 +25,7 @@ import { Btn } from '../components/ui/index.jsx'
 import Logo from '../components/Logo.jsx'
 import BootSplash from '../components/ui/BootSplash.jsx'
 import Turnstile from '../components/Turnstile.jsx'
+import { trackEvent } from '../utils/webAnalytics.js'
 
 const LS_KEY = 'fnos_demo_gate_passed'
 
@@ -63,6 +64,7 @@ export default function DemoGate({ onPass }) {
       .then(token => registerDemoLead(cleanEmail, cleanNombre, consent, lang, token))
       .finally(() => {
         markPassed()
+        trackEvent('demo_gate_pass')
         setLoading(false)
         onPass()
       })

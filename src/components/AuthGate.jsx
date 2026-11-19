@@ -12,6 +12,7 @@ import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
 import { isCaptchaError } from '../core/turnstile.js'
+import { trackEvent } from '../utils/webAnalytics.js'
 import { authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash, authLinkErrorFrom, bootAuthLinkError, urlWithoutAuthError } from '../utils/deepLink.js'
 
 const LEGAL_URLS = {
@@ -97,7 +98,7 @@ export default function AuthGate({ onAuthenticated }) {
     clearDeletedNotice()
     setLinkError(null)
     setLoading(true)
-    if (tab === 'signup') stashOpenForSignup(window.location.search)
+    if (tab === 'signup') { stashOpenForSignup(window.location.search); trackEvent('signup_start', { method: 'email' }) }
     const captchaToken = await captcha.current?.getToken()
     const result = tab === 'login'
       ? await signInWithPassword(cleanEmail, password, captchaToken)
@@ -122,10 +123,12 @@ export default function AuthGate({ onAuthenticated }) {
         setEmailExists(true)
         return
       }
+      trackEvent('signup_done', { method: 'email' })
       // Confirmación de email requerida — sin sesión todavía, no se puede continuar.
       setCheckEmail(true)
       return
     }
+    if (tab === 'signup') trackEvent('signup_done', { method: 'email' })
     onAuthenticated(result.data.session.user)
   }
 
@@ -171,6 +174,7 @@ export default function AuthGate({ onAuthenticated }) {
     setError('')
     clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
+    if (tab === 'signup') trackEvent('signup_start', { method: 'google' })
     const result = await signInWithGoogle()
     if (result.error) setError(friendlyError(t, result.error))
     // Éxito: signInWithGoogle redirige a Google, no hay nada más que hacer acá.

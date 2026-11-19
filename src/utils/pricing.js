@@ -78,6 +78,13 @@ export function annualSavingPct(pricing = config.pricing) {
 // 'monthly' cuenta como anual). Con la prueba habilitada y un link https real es
 // el link CON prueba; si no, la página de precios de la landing y sin promesa de
 // prueba (mismo criterio que proCta).
+// Etiqueta del plan para el evento checkout_start (sin datos de la cuenta):
+// 'annual_trial', 'monthly_trial', o sin '_trial' si la prueba está apagada.
+export function checkoutPlan(period, pricing = config.pricing) {
+  const p = period === 'monthly' ? 'monthly' : 'annual'
+  return checkoutFor(period, pricing).trial ? `${p}_trial` : p
+}
+
 export function checkoutFor(period, pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
   const raw = period === 'monthly' ? pricing?.trialCheckoutUrl : pricing?.trialCheckoutUrlAnnual
   const url = typeof raw === 'string' ? raw.trim() : ''

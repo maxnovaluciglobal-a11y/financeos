@@ -27,7 +27,8 @@ import { useAccount } from '../../hooks/useAccount.js'
 import PeriodToggle from './PeriodToggle.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
-import { proPriceVars, proCta, withCheckoutLang, checkoutFor, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
+import { proPriceVars, proCta, withCheckoutLang, checkoutFor, checkoutPlan, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
+import { trackEvent } from '../../utils/webAnalytics.js'
 import { IconIQScore } from '../icons/Icons.jsx'
 import { initialSearch, planParam } from '../../utils/deepLink.js'
 import styles from './ui.module.css'
@@ -119,6 +120,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
 
       <a
         href={withCheckoutLang(cta.href, lang, account)}
+        onClick={() => { if (cta.trial) trackEvent('checkout_start', { plan: checkoutPlan(period) }) }}
         target="_blank"
         rel="noopener noreferrer"
         className={`${styles.btn} ${styles.btn_primary}`}

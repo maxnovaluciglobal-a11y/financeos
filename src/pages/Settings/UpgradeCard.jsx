@@ -7,7 +7,8 @@ import { Btn } from '../../components/ui/index.jsx'
 import PeriodToggle from '../../components/ui/PeriodToggle.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
-import { checkoutFor, DEFAULT_BILLING_PERIOD, proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
+import { checkoutFor, checkoutPlan, DEFAULT_BILLING_PERIOD, proPriceVars, withCheckoutLang } from '../../utils/pricing.js'
+import { trackEvent } from '../../utils/webAnalytics.js'
 import { useAccount } from '../../hooks/useAccount.js'
 
 export default function UpgradeCard({ subStyle }) {
@@ -31,7 +32,7 @@ export default function UpgradeCard({ subStyle }) {
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:8,flexShrink:0,minWidth:240}}>
         {trial && <PeriodToggle value={period} onChange={setPeriod} />}
-        <Btn variant="primary" size="sm" onClick={() => { window.location.href = withCheckoutLang(href, lang, account) }}>
+        <Btn variant="primary" size="sm" onClick={() => { if (trial) trackEvent('checkout_start', { plan: checkoutPlan(period) }); window.location.href = withCheckoutLang(href, lang, account) }}>
           {trial ? t('settings.upgrade.btn', { days: trialDays }) : t('menu.upgrade.title')}
         </Btn>
       </div>
