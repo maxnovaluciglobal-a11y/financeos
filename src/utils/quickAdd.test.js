@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   ruleKey, suggestCategory, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, appendNote,
-  keyToKeypad, isTextEntryTarget, buildDetailedPrefill, DETAILED_PREFILL_KEY, entryMemoryValue, readEntryDate, ENTRY_MEMORY_MS } from './quickAdd.js'
+  keyToKeypad, isTextEntryTarget, buildDetailedPrefill, DETAILED_PREFILL_KEY, entryMemoryValue, readEntryDate, ENTRY_MEMORY_MS,
+  closeDecision, footerSaveVisible } from './quickAdd.js'
 import { KEY_BACKSPACE, KEY_DECIMAL } from './keypad.js'
 
 const rules = { jumbo: 'Alimentación', 'farmacia ahumada': 'Salud', 'farmacia cruz verde': 'Salud', uber: 'Transporte', 'uber eats': 'Alimentación', sueldo: 'Salario' }
@@ -203,3 +204,26 @@ describe('memoria de fecha del alta rápida', () => {
   })
 })
 
+
+describe('UX-N9: closeDecision', () => {
+  it('sin monto escrito cierra; con monto pregunta una vez', () => {
+    expect(closeDecision({ dirty: false })).toBe('close')
+    expect(closeDecision({ dirty: true })).toBe('ask')
+    expect(closeDecision({ dirty: true, asked: true })).toBe('close')
+    expect(closeDecision()).toBe('close')
+  })
+})
+
+describe('UX-N9: footerSaveVisible', () => {
+  it('fuera de la hoja o con "Más opciones" cerrado: no hay botón al pie', () => {
+    expect(footerSaveVisible({ stickySave: false, showMore: true })).toBe(false)
+    expect(footerSaveVisible({ stickySave: true, compact: true, showMore: false, keypadVisible: false })).toBe(false)
+  })
+  it('hoja compacta: solo cuando el teclado (con su ✓) no se ve', () => {
+    expect(footerSaveVisible({ stickySave: true, compact: true, showMore: true, keypadVisible: true })).toBe(false)
+    expect(footerSaveVisible({ stickySave: true, compact: true, showMore: true, keypadVisible: false })).toBe(true)
+  })
+  it('sin el bloque compacto: fijo al pie como antes', () => {
+    expect(footerSaveVisible({ stickySave: true, compact: false, showMore: true })).toBe(true)
+  })
+})

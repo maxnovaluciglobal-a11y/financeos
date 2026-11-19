@@ -181,3 +181,18 @@ export function readEntryDate(raw, today, now) {
     return age >= 0 && age <= ENTRY_MEMORY_MS ? m.date : null
   } catch { return null }
 }
+
+// UX-N9 (auditoría 19-nov-2026): cerrar la hoja con un monto escrito (Esc, tocar
+// el velo, deslizar hacia abajo) primero pregunta; un segundo intento descarta.
+// Guardar o "Más detalles" cierran sin preguntar (lo escrito no se pierde).
+export function closeDecision({ dirty = false, asked = false } = {}) {
+  return dirty && !asked ? 'ask' : 'close'
+}
+
+// UX-N9: un solo "Guardar" a la vista. En la hoja compacta el ✓ del teclado es
+// el botón; el fijo al pie aparece solo cuando el teclado quedó fuera de la
+// vista (al bajar por "Más opciones"). Sin el bloque compacto, como antes.
+export function footerSaveVisible({ stickySave = false, compact = false, showMore = false, keypadVisible = true } = {}) {
+  if (!stickySave || !showMore) return false
+  return compact ? !keypadVisible : true
+}

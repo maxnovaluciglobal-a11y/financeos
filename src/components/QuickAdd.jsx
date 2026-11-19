@@ -4,12 +4,14 @@
 // 5 taps (FAB → navegar → Agregar → tipo → formulario de 10 campos).
 // El formulario vive en QuickAddForm.jsx (también lo usa el onboarding). En la
 // hoja, "Guardar" queda fijo al pie (W3) y aparece "Más detalles" (B4a).
-import { useRef, useState, useEffect, lazy, Suspense } from 'react'
+import { useRef, useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { takeIntake } from '../utils/autoEntry.js'
+import { closeDecision } from '../utils/quickAdd.js'
 import { registroAutomaticoHere } from '../utils/uiFlags.js'
 import { openQuickAdd } from './quickAddBus.js'
 import { useT } from '../i18n/useT.js'
 import Sheet from './ui/Sheet.jsx'
+import css from './QuickAddForm.module.css'
 // V4 (30-oct-2026): el formulario se carga al abrir la hoja (y se precarga en
 // segundo plano con las pestañas, utils/prefetchTabs.js): fuera del JS inicial.
 const QuickAddForm = lazy(() => import('./QuickAddForm.jsx'))
@@ -44,11 +46,40 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
     if (wasOpen.current && !open) setPrefill(null)
     wasOpen.current = open
   }, [open])
-  const close = () => { setPrefill(null); onClose?.() }
+  // UX-N9: Esc, tocar el velo o deslizar con un monto escrito primero pregunta
+  // (un segundo intento descarta). Guardar cierra directo.
+  const dirty = useRef(false)
+  const [askDiscard, setAskDiscard] = useState(false)
+  const keepRef = useRef(null)
+  useEffect(() => { if (!open) { setAskDiscard(false); dirty.current = false } }, [open])
+  useEffect(() => { if (askDiscard) keepRef.current?.focus() }, [askDiscard])
+  // Estables: Sheet (useDialogA11y) rehace su efecto de foco si onClose cambia,
+  // y eso le quitaría el foco a "Seguir editando" al mostrar la pregunta.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+  const asked = useRef(false)
+  asked.current = askDiscard
+  const forceClose = useCallback(() => { setAskDiscard(false); setPrefill(null); onCloseRef.current?.() }, [])
+  const close = useCallback(() => {
+    if (closeDecision({ dirty: dirty.current, asked: asked.current }) === 'ask') { setAskDiscard(true); return }
+    forceClose()
+  }, [forceClose])
+  const keepEditing = () => { setAskDiscard(false); amountRef.current?.focus?.() }
   return (
     <Sheet open={open} onClose={close} ariaLabel={t('qa.title')} initialFocusRef={coarsePointer() ? undefined : amountRef}>
+      {askDiscard && (
+        <div role="alertdialog" aria-labelledby="qa-discard-text" className={css.discard}>
+          <span id="qa-discard-text">{t('qa.discard.text')}</span>
+          <div className={css.discardActions}>
+            <button ref={keepRef} type="button" className="fos-btn-secondary" onClick={keepEditing}>{t('qa.discard.keep')}</button>
+            <button type="button" className={`fos-btn-secondary ${css.discardBtn}`} onClick={forceClose}>{t('qa.discard.confirm')}</button>
+          </div>
+        </div>
+      )}
       <Suspense fallback={<div style={{ minHeight: 420 }} aria-busy="true" />}>
-        <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails onSaved={(type) => { onSaved?.(type); close() }} prefill={open ? prefill : null} />
+        <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails
+          onDirtyChange={(d) => { dirty.current = d; if (!d) setAskDiscard(false) }}
+          onSaved={(type) => { onSaved?.(type); forceClose() }} prefill={open ? prefill : null} />
       </Suspense>
     </Sheet>
   )

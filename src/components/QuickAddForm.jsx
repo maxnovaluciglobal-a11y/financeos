@@ -9,6 +9,7 @@
 //   stickySave     "Guardar" fijo al pie (dentro de Sheet; decisión W3, B4a)
 //   allowMoreDetails  muestra "Más detalles" (abre el gasto detallado con lo escrito;
 //                  necesita Shell montado, así que el onboarding no lo usa)
+//   onDirtyChange(bool)  avisa si hay un monto escrito (QuickAdd pregunta antes de descartarlo, UX-N9)
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
 import { Calendar, Check, ChevronDown, LayoutGrid, Mic, Square } from 'lucide-react'
@@ -34,7 +35,7 @@ import { logClientError } from '../utils/errorLog.js'
 import { refEligible, resolveRefRate, toRef, SOURCE_LABEL } from '../utils/refRate.js'
 import {
   ruleKey, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, keyToKeypad, isTextEntryTarget,
-  buildDetailedPrefill, DETAILED_PREFILL_KEY, ENTRY_MEMORY_KEY, entryMemoryValue, readEntryDate,
+  buildDetailedPrefill, DETAILED_PREFILL_KEY, ENTRY_MEMORY_KEY, entryMemoryValue, readEntryDate, footerSaveVisible,
 } from '../utils/quickAdd.js'
 import { parseQuickLine, lineFormPatch, findCategory } from '../utils/quickLine.js'
 import { spokenToLine, parseVoiceLine, speechLang } from '../utils/voiceEntry.js'
@@ -124,7 +125,7 @@ function DateSegment({ date, setDate, t }) {
 
 // prefill: alta que llegó por URL (utils/autoEntry.js, el Atajo de Apple Pay).
 // Solo rellena: guardar sigue siendo un toque de la persona.
-export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, prefill = null }) {
+export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, prefill = null, onDirtyChange }) {
   const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
@@ -374,6 +375,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // Monto que se guarda, siempre en la moneda principal (B4b: US$ → local).
   const amt = usdOn ? fromUsd(typed, rate, decimals) : typed
   const canSave = amt > 0 && !saving
+  // UX-N9: el contenedor sabe si cerrar perdería un monto escrito.
+  const dirty = typed > 0
+  const onDirtyRef = useRef(onDirtyChange)
+  onDirtyRef.current = onDirtyChange
+  useEffect(() => { onDirtyRef.current?.(dirty) }, [dirty])
   const canConfirm = canSave && !!cat
   const accent = type === 'expense' ? 'var(--neg)' : 'var(--pos)'
   const entryLocale = usdOn ? localeForCurrency('USD', lang) : moneyLocale()
@@ -505,8 +511,29 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     else if (c.right > r.right) row.scrollLeft += c.right - r.right + 8
   }, [cat, chips])
 
+  // UX-N9: un solo "Guardar" a la vista. En la hoja compacta el ✓ del teclado
+  // basta; el del pie aparece solo si el teclado quedó fuera de la vista.
+  const keypadRef = useRef(null)
+  const [keypadVisible, setKeypadVisible] = useState(true)
+  useEffect(() => {
+    const el = keypadRef.current
+    if (!compact || !el || typeof IntersectionObserver === 'undefined') return undefined
+    const io = new IntersectionObserver(([entry]) => setKeypadVisible(entry.isIntersecting), { threshold: 0.5 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [compact])
+  const footerOn = footerSaveVisible({ stickySave, compact, showMore, keypadVisible })
+
   const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
   const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
+
+  const moreDetailsLink = allowMoreDetails && type === 'expense' ? (
+    <div className={css.moreRow}>
+      <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
+        {t('qa.moreDetails')}
+      </button>
+    </div>
+  ) : null
 
   const saveButton = (
     <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave} style={{ minHeight: 48 }}>
@@ -639,7 +666,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           </div>
         )}
 
-        <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} primaryOk={compact} />
+        <div ref={keypadRef}>
+          <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} primaryOk={compact} />
+        </div>
 
         {/* Lo que no hace falta para registrar: a un toque, con el método a la vista */}
         {compact && (
@@ -734,21 +763,19 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             )}
           </div>
 
-          {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
-          {allowMoreDetails && type === 'expense' && (
-            <div className={css.moreRow}>
-              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
-                {t('qa.moreDetails')}
-              </button>
-            </div>
-          )}
+          {/* Más detalles → gasto detallado con lo ya escrito (secundario).
+              En la hoja compacta va fuera de "Más opciones" (UX-N9: un nivel menos). */}
+          {!compact && moreDetailsLink}
           </>
         )}
+        {compact && moreDetailsLink}
 
 
-        {/* Guardar — Latón con texto Navy en los dos tipos. En la hoja, fijo al pie (W3). */}
+        {/* Guardar — Latón con texto Navy en los dos tipos. En la hoja, fijo al pie (W3),
+            y en la compacta solo cuando el ✓ del teclado no se ve (UX-N9). Se oculta
+            con visibility para que la hoja no cambie de alto al desplazarse. */}
         {stickySave
-          ? (showMore && <div className={css.footer}>{saveButton}</div>)
+          ? (showMore && <div className={css.footer} data-hidden={footerOn ? undefined : ''}>{saveButton}</div>)
           : <div style={{ marginTop: 8 }}>{saveButton}</div>}
     </>
   )
