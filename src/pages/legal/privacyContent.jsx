@@ -63,6 +63,15 @@ function EsBody() {
           <li>Suscripciones y gastos recurrentes</li>
           <li>Configuración de la aplicación</li>
         </ul>
+        <p>
+          <strong>Registro automático.</strong> Si usas <em>Dictar</em>, el reconocimiento de voz lo hace
+          el sistema de tu teléfono o navegador (Apple en iPhone y Safari, Google en Android y Chrome), que
+          puede enviar el audio a sus servidores para transcribirlo según sus propias políticas. moyiq recibe
+          solo el texto, lo interpreta en tu dispositivo y no guarda audio; el micrófono se usa solo mientras
+          dictas. Si configuras el Atajo de iPhone para Apple Pay, iOS le pasa a moyiq el monto y el comercio
+          del pago al abrir la app: ese dato se guarda solo en tu dispositivo, y moyiq no se conecta a tu
+          banco, a tu tarjeta ni a Apple Pay.
+        </p>
         <div className={s.infoBox}>
           <strong>Implicación práctica:</strong> Si el usuario borra los datos del navegador,
           desinstala la app o cambia de dispositivo sin haber exportado un respaldo (o sin tener
@@ -323,6 +332,15 @@ function EnBody() {
           <li>Subscriptions and recurring expenses</li>
           <li>App settings</li>
         </ul>
+        <p>
+          <strong>Automatic entry.</strong> If you use <em>Dictate</em>, speech recognition is done by your
+          phone or browser (Apple on iPhone and Safari, Google on Android and Chrome), which may send the
+          audio to its servers to transcribe it under its own policies. moyiq only receives the text,
+          interprets it on your device and does not store audio; the microphone is used only while you
+          dictate. If you set up the iPhone Shortcut for Apple Pay, iOS passes the payment amount and
+          merchant to moyiq when the app opens: that data is stored only on your device, and moyiq does not
+          connect to your bank, your card or Apple Pay.
+        </p>
         <div className={s.infoBox}>
           <strong>Practical implication:</strong> If the user clears browser data, uninstalls the
           app, or switches devices without exporting a backup (or without sync enabled), the data
@@ -576,6 +594,15 @@ function PtBody() {
           <li>Assinaturas e despesas recorrentes</li>
           <li>Configurações do app</li>
         </ul>
+        <p>
+          <strong>Registro automático.</strong> Se você usa <em>Ditar</em>, o reconhecimento de voz é feito
+          pelo sistema do seu telefone ou navegador (Apple no iPhone e Safari, Google no Android e Chrome),
+          que pode enviar o áudio aos seus servidores para transcrevê-lo conforme as próprias políticas. O
+          moyiq recebe só o texto, interpreta no seu dispositivo e não guarda áudio; o microfone é usado só
+          enquanto você dita. Se você configurar o Atalho do iPhone para Apple Pay, o iOS passa ao moyiq o
+          valor e o estabelecimento do pagamento ao abrir o app: esse dado fica só no seu dispositivo, e o
+          moyiq não se conecta ao seu banco, ao seu cartão nem ao Apple Pay.
+        </p>
         <div className={s.infoBox}>
           <strong>Implicação prática:</strong> Se o usuário apagar os dados do navegador,
           desinstalar o app ou trocar de dispositivo sem ter exportado um backup (ou sem a
@@ -905,6 +932,15 @@ function DeBody() {
             zur Bearbeitung Ihrer Anfrage (Art. 6 Abs. 1 lit. b bzw. lit. f DSGVO).
           </li>
         </ul>
+        <p>
+          <strong>Automatische Erfassung.</strong> Wenn Sie <em>Diktieren</em> nutzen, übernimmt die
+          Spracherkennung Ihr Telefon oder Browser (Apple auf iPhone und Safari, Google auf Android und
+          Chrome), der den Ton nach eigenen Richtlinien zur Transkription an seine Server senden kann. moyiq
+          erhält nur den Text, wertet ihn auf Ihrem Gerät aus und speichert keine Audiodaten; das Mikrofon
+          wird nur während des Diktierens genutzt. Wenn Sie den iPhone-Kurzbefehl für Apple Pay einrichten,
+          übergibt iOS beim Öffnen der App Betrag und Händler der Zahlung an moyiq: Diese Daten bleiben nur
+          auf Ihrem Gerät, und moyiq verbindet sich weder mit Ihrer Bank noch mit Ihrer Karte oder Apple Pay.
+        </p>
       </div>
 
       <div className={s.section}>
