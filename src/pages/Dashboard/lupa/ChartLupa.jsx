@@ -16,7 +16,7 @@
 // salta sin deslizarse. Con "ocultar montos" el gráfico muestra solo la forma
 // y el texto hablado dice "•••" (lo arma quien llama con useMoney).
 
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { forwardRef, memo, useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { CHART_H, CHART_PAD, CHART_W, dayAt, keyStep, lensPlacement, xOf, yDomain, yOf } from '../../../utils/dailyAvailable.js'
 import { hapticSelection } from '../../../utils/haptics.js'
 import c from './chartLupa.module.css'
@@ -55,39 +55,45 @@ function geometry(series) {
   const dom = yDomain(series)
   const X = (d) => xOf(d, series.days)
   const Y = (v) => yOf(v, dom)
+  const start = Math.min(series.cycleStart || 1, series.lastDay)
   const pts = []
   for (let d = 1; d <= series.lastDay; d++) pts.push([X(d), Y(series.avail[d])])
-  const line = monotonePath(pts)
+  // Antes del cobro: tramo atenuado, sin relleno (no es "cero y salto").
+  const pre = start > 1 ? monotonePath(pts.slice(0, start)) : ''
+  const main = pts.slice(start - 1)
+  const line = monotonePath(main)
   const bot = CHART_H - CHART_PAD.b
   const zeroY = dom[0] < 0 && dom[1] > 0 ? Y(0) : null
-  const base = zeroY ?? bot
   const last = pts[pts.length - 1]
-  const area = pts.length > 1 ? `${line} L${f(last[0])} ${f(base)} L${f(pts[0][0])} ${f(base)} Z` : ''
+  // Un solo relleno suave bajo la curva, del cobro a hoy, hasta el piso.
+  const area = main.length > 1 ? `${line} L${f(last[0])} ${f(bot)} L${f(main[0][0])} ${f(bot)} Z` : ''
+  // Ritmo ideal: una recta, del cobro a 0 el último día.
   let ideal = ''
-  if (series.ideal) {
-    const ip = []
-    for (let d = 1; d <= series.days; d++) ip.push(`${d === 1 ? 'M' : 'L'}${f(X(d))} ${f(Y(series.ideal[d]))}`)
-    ideal = ip.join(' ')
+  if (series.ideal && series.ideal[start] != null) {
+    ideal = `M${f(X(start))} ${f(Y(series.ideal[start]))} L${f(X(series.days))} ${f(Y(series.ideal[series.days]))}`
   }
   const proj = series.projEnd != null && last ? `M${f(last[0])} ${f(last[1])} L${f(X(series.days))} ${f(Y(series.projEnd))}` : ''
-  return { X, Y, line, area, ideal, proj, last, bot, zeroY, payX: series.payday ? X(series.payday) : null, dots: pts }
+  return { X, Y, line, pre, area, ideal, proj, last, bot, zeroY, payX: series.payday ? X(series.payday) : null, dots: pts }
 }
 
 // El dibujo, una vez para el gráfico y otra (con puntos por día) para la lente.
-const Plot = memo(function Plot({ g, size, dots }) {
+const Plot = memo(function Plot({ g, size, dots, gid }) {
   const sizeProps = size ? { width: size[0], height: size[1], style: { width: size[0], height: size[1] } } : {}
   return (
     <svg className={c.plot} viewBox={`0 0 ${CHART_W} ${CHART_H}`} aria-hidden="true" focusable="false" {...sizeProps}>
-      {[0, 0.5, 1].map(k => {
-        const y = CHART_PAD.t + k * (CHART_H - CHART_PAD.t - CHART_PAD.b)
-        return <line key={k} className={c.grid} x1={CHART_PAD.l} x2={CHART_W - CHART_PAD.r} y1={y} y2={y} />
-      })}
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" className={c.areaTop} />
+          <stop offset="1" className={c.areaBot} />
+        </linearGradient>
+      </defs>
+      <line className={c.grid} x1={CHART_PAD.l} x2={CHART_W - CHART_PAD.r} y1={g.bot} y2={g.bot} />
       {g.zeroY != null && <line className={c.zero} x1={CHART_PAD.l} x2={CHART_W - CHART_PAD.r} y1={g.zeroY} y2={g.zeroY} />}
-      {g.area && <path className={c.area} d={g.area} />}
+      {g.area && <path d={g.area} fill={`url(#${gid})`} />}
       {g.ideal && <path className={c.ideal} d={g.ideal} />}
       {g.proj && <path className={c.proj} d={g.proj} />}
-      {g.last && <line className={c.today} x1={g.last[0]} x2={g.last[0]} y1={CHART_PAD.t} y2={g.bot} />}
       {g.payX != null && <circle className={c.pay} cx={g.payX} cy={g.bot} r="2.6" />}
+      {g.pre && <path className={c.lineDim} d={g.pre} />}
       {g.line && <path className={c.line} d={g.line} />}
       {dots && g.dots.map(([x, y], i) => <circle key={i} className={c.dayDot} cx={x} cy={y} r="1.6" />)}
     </svg>
@@ -110,6 +116,7 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
   const handRef = useRef(null)
   const st = useRef({ s: 1, w: 0, cur: series.lastDay, mode: 'rest', down: null, ptype: 'mouse', raf: 0, pendX: null, relT: 0, glideT: 0 })
   const [w, setW] = useState(0)
+  const gid = 'cl' + useId().replace(/[^a-zA-Z0-9]/g, '')
   const g = useMemo(() => geometry(series), [series])
   const maxDay = series.lastDay
   // `hold`: con la hoja del día abierta, perder el foco o soltar no vuelve a hoy.
@@ -139,6 +146,7 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
     host.setAttribute('aria-valuenow', String(d))
     host.setAttribute('aria-valuetext', L.valueTextOf(d))
     host.classList.toggle(c.active, mode !== 'rest')
+    host.classList.toggle(c.resting, mode === 'rest')
     if (changed) L.onDay?.(d, mode)
   }, [])
 
@@ -276,12 +284,12 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel} onPointerLeave={onPointerLeave}
         onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur}>
-        <Plot g={g} />
+        <Plot g={g} gid={gid + 'a'} />
         <div ref={guideRef} className={c.guide} style={lensSize ? { height: lensSize[1] } : undefined} />
         <div ref={handRef} className={c.hand} />
         <div ref={dotRef} className={c.dot} />
         <div ref={lensRef} className={c.lens} data-lupa="lens">
-          <div ref={lensInRef} className={c.lensIn}>{lensSize && <Plot g={g} size={lensSize} dots />}</div>
+          <div ref={lensInRef} className={c.lensIn}>{lensSize && <Plot g={g} size={lensSize} dots gid={gid + 'b'} />}</div>
         </div>
       </div>
       {axis && (

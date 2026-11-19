@@ -8,10 +8,13 @@
 //     ("Te queda" es solo lo real, decisión del 08-oct-2026). En el mes en
 //     curso, un movimiento con fecha posterior a hoy cuenta hoy: así el punto
 //     de hoy es EXACTAMENTE la cifra "Te queda" (homeMonthTotals.freeFlow).
-//   - ritmo ideal = la referencia del Anillo Vivo (ingreso del mes; sin
-//     ingreso, el gasto del mes anterior: paceReference) repartida parejo.
-//     ideal(d) = ingresos hasta d − referencia × d / días. La distancia
-//     disponible − ideal es la misma que mide `pulse` (gastado contra tiempo).
+//   - ritmo ideal = UNA recta (v2, pedido de Walter del 18-nov: nada de
+//     dientes de sierra en cada cobro). Arranca el día de cobro (inicio del
+//     ciclo) con todo lo que el mes trae para gastar —la referencia del Anillo
+//     Vivo (ingreso registrado del mes; sin ingreso, el gasto del mes anterior)
+//     menos lo ya gastado antes del cobro— y baja parejo hasta 0 el último día.
+//     Antes del cobro no hay ideal: esos días se dibujan atenuados.
+//     La distancia de hoy contra esa recta es la píldora "por delante/detrás".
 //   - proyección = projBal de projectEndOfMonth (la misma de ProjectionCard).
 // Quien llama ya sacó los movimientos de inversión (r.inv), como useHomeData.
 
@@ -57,14 +60,22 @@ export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now =
     avail[d] = round2(earnedCum[d] - spentCum[d])
   }
   const ref = Number(reference) > 0 ? Number(reference) : null
-  const ideal = ref == null ? null : avail.map((_, d) => round2(earnedCum[d] - ref * d / days))
+  const payday = paydayOf({ incomes, activeMonth, plan, days })
+  // Inicio del ciclo: el cobro, si ya ocurrió (en el mes en curso, hasta hoy).
+  const cycleStart = payday && payday <= Math.max(1, lastDay) ? payday : 1
+  let ideal = null
+  if (ref != null) {
+    const startValue = ref - spentCum[cycleStart - 1]
+    const span = Math.max(1, days - cycleStart)
+    ideal = avail.map((_, d) => (d < cycleStart || d === 0 ? null : round2(startValue * (days - d) / span)))
+  }
 
   return {
     mode: pos.mode, days, lastDay,
     avail, earned, spent, ideal,
     // La proyección solo existe en el mes en curso, desde hoy hasta el último día.
     projEnd: pos.mode === 'current' && lastDay < days && Number.isFinite(Number(projBal)) && projBal != null ? Number(projBal) : null,
-    payday: paydayOf({ incomes, activeMonth, plan, days }),
+    payday, cycleStart,
   }
 }
 
@@ -86,14 +97,14 @@ export function paydayOf({ incomes = [], activeMonth, plan = [], days = 31 }) {
 
 // Distancia de hoy contra el ritmo ideal: > 0 = gastó menos que el ritmo.
 export function paceGap(series, day = series?.lastDay) {
-  if (!series?.ideal || !(day >= 1)) return null
+  if (!series?.ideal || !(day >= 1) || series.ideal[day] == null) return null
   return round2(series.avail[day] - series.ideal[day])
 }
 
 // ── Geometría (unidades del viewBox) ────────────────────────────────────────
 export const CHART_W = 358
 export const CHART_H = 132
-export const CHART_PAD = { l: 8, r: 8, t: 12, b: 10 }
+export const CHART_PAD = { l: 8, r: 8, t: 26, b: 10 }
 
 export function xOf(day, days, W = CHART_W, P = CHART_PAD) {
   return P.l + (days > 1 ? (day - 1) / (days - 1) : 0) * (W - P.l - P.r)
@@ -103,14 +114,15 @@ export function xOf(day, days, W = CHART_W, P = CHART_PAD) {
 export function yDomain(series) {
   const vals = []
   for (let d = 1; d <= series.lastDay; d++) vals.push(series.avail[d])
-  if (series.ideal) for (let d = 1; d <= series.days; d++) vals.push(series.ideal[d])
+  if (series.ideal) for (let d = 1; d <= series.days; d++) if (series.ideal[d] != null) vals.push(series.ideal[d])
   if (series.projEnd != null) vals.push(series.projEnd)
   if (!vals.length) vals.push(0)
   let min = Math.min(...vals), max = Math.max(...vals)
   if (min > 0 && min < max * 0.25) min = 0
   if (max === min) { max += 1; min -= 1 }
-  const pad = (max - min) * 0.08
-  return [min - pad, max + pad]
+  // Aire arriba para el pico, el anillo de la lupa en reposo y el mango.
+  const span = max - min
+  return [min - span * 0.06, max + span * 0.1]
 }
 
 export function yOf(v, [min, max], H = CHART_H, P = CHART_PAD) {

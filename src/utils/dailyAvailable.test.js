@@ -36,11 +36,22 @@ describe('dailyAvailable', () => {
     expect(s.spent[18]).toBe(70)
   })
 
-  it('ritmo ideal = ingresos hasta el día − referencia × día / días', () => {
-    expect(s.ideal[15]).toBeCloseTo(1350 - 1350 * 15 / 30, 2)
+  it('ritmo ideal: una sola recta del cobro a 0 el último día (sin dientes de sierra)', () => {
+    expect(s.cycleStart).toBe(15)
+    expect(s.ideal[14]).toBeNull()
+    // arranca con la referencia menos lo gastado antes del cobro
+    expect(s.ideal[15]).toBeCloseTo(1350 - 55.25, 2)
     expect(s.ideal[30]).toBeCloseTo(0, 2)
-    // distancia al ritmo = referencia × hoy / días − gastado
-    expect(paceGap(s)).toBeCloseTo(1350 * 18 / 30 - 125.25, 2)
+    // recta: pendiente constante
+    const step = s.ideal[16] - s.ideal[15]
+    for (let d = 16; d < 30; d++) expect(s.ideal[d + 1] - s.ideal[d]).toBeCloseTo(step, 1)
+    expect(paceGap(s)).toBeCloseTo(1224.75 - 1294.75 * 12 / 15, 2)
+  })
+
+  it('cobro futuro o sin cobro: el ciclo arranca el día 1', () => {
+    const early = dailyAvailable({ incomes: [{ date: '2026-11-28', amount: 900 }], expenses: exp, activeMonth: '2026-11', now: NOW, reference: 900 })
+    expect(early.cycleStart).toBe(1)
+    expect(early.ideal[1]).toBeCloseTo(900 - 0, 2)
   })
 
   it('proyección solo en el mes en curso y antes del último día', () => {
