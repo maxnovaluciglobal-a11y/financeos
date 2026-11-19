@@ -1969,6 +1969,8 @@ export const pt = {
     'onboarding.v2.step3.goTo': "Abrir {page}",
     'onboarding.v2.next.cashFlow': "Registre suas receitas do mês: o fluxo de caixa compara o que entra com o que sai.",
     'onboarding.v2.next.emergencyCushion': "Crie uma meta de fundo de emergência: a reserva é medida em meses de despesas cobertas.",
+    // UX-N6: la meta de emergencia ya existe
+    'onboarding.v2.next.emergencyCushionGrow': "Aumente seu fundo de emergência: hoje ele cobre {months} de {target} meses de despesas.",
     'onboarding.v2.next.debtLoad': "Revise suas dívidas: o peso compara suas parcelas mensais com sua receita mensal.",
     'onboarding.v2.next.goalsProgress': "Crie uma meta e registre quanto você já guardou.",
     'onboarding.v2.next.dataConsistency': "Categorize os movimentos importados para que a análise seja precisa.",

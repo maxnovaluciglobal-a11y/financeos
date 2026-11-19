@@ -20,8 +20,8 @@ import CountryBadge from './CountryBadge.jsx'
 import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency } from '../data/countries.js'
 import { languageForCountry } from '../i18n/region.js'
 import config from '../config.js'
-import { buildSeed, currentMonth, fmtMoneyFor, currencyDecimals } from '../utils/index.js'
-import { calcFinancialScore, weakestFactor } from '../utils/financialScore.js'
+import { buildSeed, currentMonth, fmtMoneyFor, currencyDecimals, fmtDecimal } from '../utils/index.js'
+import { calcFinancialScore, weakestFactor, nextStepMessage } from '../utils/financialScore.js'
 import { ScoreState } from './ScoreState.jsx'
 import { isSyncEnabled, syncAvailable, syncMeta } from '../core/sync.js'
 import { dbAdd } from '../core/db/index.js'
@@ -436,6 +436,7 @@ export default function Onboarding({ onComplete }) {
 
   // ── Paso 3 · Tu IQ Score ───────────────────────────────────────────────────
   const nextPage = weakest ? NEXT_PAGE[weakest.key] : null
+  const nextMsg = weakest ? nextStepMessage(weakest, (n) => fmtDecimal(n, 1)) : null
   return (
     <div style={wrap} ref={wrapRef}><div style={box}>
       {header}
@@ -471,7 +472,7 @@ export default function Onboarding({ onComplete }) {
           {weakest && (
             <div style={{ padding: '12px 14px', borderRadius: 'var(--rl)', border: 0, background: 'var(--fill)', marginBottom: 18 }}>
               <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 4 }}>{t('onboarding.v2.step3.next')}</div>
-              <p style={{ fontSize: 'var(--t-body)', color: 'var(--tx)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t(`onboarding.v2.next.${weakest.key}`)}</p>
+              <p style={{ fontSize: 'var(--t-body)', color: 'var(--tx)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t(nextMsg.key, nextMsg.vars)}</p>
               {nextPage && (
                 <button type="button" className="fos-link" style={{ marginLeft: -4 }} onClick={() => finish(nextPage)} disabled={busy}>
                   {t('onboarding.v2.step3.goTo', { page: t(PAGE_LABEL[nextPage]) })} <span aria-hidden="true">→</span>

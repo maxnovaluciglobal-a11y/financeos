@@ -72,7 +72,9 @@ export function calcFinancialScore({
     : emergencyMonths > 0 ? 5
     : 0
   score += emergencyPts
-  breakdown.push({ key: 'emergencyCushion', label: tr('score.emergencyCushion'), pts: emergencyPts, max: 20 })
+  // hasGoal/months/target: el "siguiente paso" no pide crear la meta si ya existe (UX-N6).
+  breakdown.push({ key: 'emergencyCushion', label: tr('score.emergencyCushion'), pts: emergencyPts, max: 20,
+    hasGoal: !!emergencyGoal, months: emergencyMonths, target: emergencyFundMonthsGood })
 
   // 3. Carga de deuda (0-20) — SIN CAMBIOS de lógica ni de peso: ya era
   // 20pts (=20%) en el modelo anterior y coincide con el brand book.
@@ -156,6 +158,17 @@ export function scoreLevel(score) {
 
 // Factor con menor proporción pts/max — el "siguiente paso sugerido" del
 // onboarding. A igual proporción gana el primero del modelo (el de más peso).
+// Texto del "siguiente paso" para el factor más débil: clave i18n y variables.
+// Con la meta de emergencia ya creada, invita a sumarle en vez de crearla
+// (UX-N6). `fmt` formatea los meses (p. ej. fmtDecimal).
+export function nextStepMessage(factor, fmt = (n) => String(n)) {
+  if (!factor?.key) return null
+  if (factor.key === 'emergencyCushion' && factor.hasGoal) {
+    return { key: 'onboarding.v2.next.emergencyCushionGrow', vars: { months: fmt(Number(factor.months) || 0), target: factor.target } }
+  }
+  return { key: `onboarding.v2.next.${factor.key}`, vars: undefined }
+}
+
 export function weakestFactor(breakdown) {
   let worst = null
   for (const b of Array.isArray(breakdown) ? breakdown : []) {

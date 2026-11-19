@@ -1969,6 +1969,8 @@ export const es = {
     'onboarding.v2.step3.goTo': "Abrir {page}",
     'onboarding.v2.next.cashFlow': "Registra tus ingresos del mes: el flujo de caja compara lo que entra con lo que sale.",
     'onboarding.v2.next.emergencyCushion': "Crea una meta de fondo de emergencia: el colchón se mide en meses de gastos cubiertos.",
+    // UX-N6: la meta de emergencia ya existe
+    'onboarding.v2.next.emergencyCushionGrow': "Suma a tu fondo de emergencia: hoy cubre {months} de {target} meses de gastos.",
     'onboarding.v2.next.debtLoad': "Revisa tus deudas: la carga compara tus cuotas mensuales con tu ingreso mensual.",
     'onboarding.v2.next.goalsProgress': "Crea una meta y registra cuánto llevas ahorrado.",
     'onboarding.v2.next.dataConsistency': "Categoriza los movimientos importados para que el análisis sea preciso.",

@@ -1968,6 +1968,8 @@ export const de = {
     'onboarding.v2.step3.goTo': "{page} öffnen",
     'onboarding.v2.next.cashFlow': "Erfassen Sie Ihre Einnahmen des Monats: Der Cashflow vergleicht, was hereinkommt, mit dem, was hinausgeht.",
     'onboarding.v2.next.emergencyCushion': "Legen Sie ein Ziel für einen Notgroschen an: Er wird in gedeckten Monatsausgaben gemessen.",
+    // UX-N6: la meta de emergencia ya existe
+    'onboarding.v2.next.emergencyCushionGrow': "Stocken Sie Ihren Notgroschen auf: Er deckt heute {months} von {target} Monatsausgaben.",
     'onboarding.v2.next.debtLoad': "Prüfen Sie Ihre Schulden: Die Last vergleicht Ihre Monatsraten mit Ihrem Monatseinkommen.",
     'onboarding.v2.next.goalsProgress': "Legen Sie ein Ziel an und erfassen Sie, wie viel Sie schon gespart haben.",
     'onboarding.v2.next.dataConsistency': "Kategorisieren Sie importierte Buchungen, damit die Analyse genau ist.",

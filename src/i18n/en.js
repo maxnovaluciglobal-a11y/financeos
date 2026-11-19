@@ -1969,6 +1969,8 @@ export const en = {
     'onboarding.v2.step3.goTo': "Open {page}",
     'onboarding.v2.next.cashFlow': "Record this month's income: cash flow compares what comes in with what goes out.",
     'onboarding.v2.next.emergencyCushion': "Create an emergency fund goal: the cushion is measured in months of expenses covered.",
+    // UX-N6: la meta de emergencia ya existe
+    'onboarding.v2.next.emergencyCushionGrow': "Add to your emergency fund: today it covers {months} of {target} months of expenses.",
     'onboarding.v2.next.debtLoad': "Review your debts: the load compares your monthly payments with your monthly income.",
     'onboarding.v2.next.goalsProgress': "Create a goal and record how much you have saved.",
     'onboarding.v2.next.dataConsistency': "Categorize imported transactions so the analysis is accurate.",
