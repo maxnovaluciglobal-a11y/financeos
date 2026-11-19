@@ -148,3 +148,42 @@ describe('buildSnapshot', () => {
     expect(s).not.toContain('SQM')
   })
 })
+
+describe('holdingRows y allocationByType', async () => {
+  const { holdingRows, allocationByType, portfolioTotals, currencyOf } = await import('./investValuation.js')
+  const holdings = [
+    { t: 'AAPL', type: 'Stock', sh: 10, cost: 100, fxCost: null },
+    { t: 'SQM-B.SN', type: 'Stock', sh: 100, cost: 40000, fxCost: 800 },
+    { t: 'BTC-USD', type: 'Crypto', sh: 0.1, cost: 50000, fxCost: null },
+    { t: 'XYZ.ZZ', type: 'Stock', sh: 1, cost: 10, fxCost: null },
+  ]
+  const quotes = { AAPL: { price: 120, changePct: 0.02 }, 'SQM-B.SN': { price: 44000, currency: 'CLP', changePct: -0.01 } }
+  const rates = { CLP: 1000 }
+  const rows = holdingRows(holdings, quotes, rates)
+  const by = Object.fromEntries(rows.map(r => [r.t, r]))
+
+  it('estado por posición: con precio, al costo y sin tipo de cambio', () => {
+    expect(by.AAPL.status).toBe('live')
+    expect(by['BTC-USD'].status).toBe('cost')
+    expect(by['XYZ.ZZ'].status).toBe('nofx')
+    expect(by['XYZ.ZZ'].valueUsd).toBeNull()
+  })
+  it('ganancia y costo al tipo de cambio de compra', () => {
+    expect(by.AAPL.plUsd).toBeCloseTo(200, 6)
+    expect(by['SQM-B.SN'].costUsd).toBeCloseTo(100 * 40000 / 800, 6)
+    expect(by['SQM-B.SN'].valueUsd).toBeCloseTo(100 * 44000 / 1000, 6)
+  })
+  it('las filas suman lo mismo que portfolioTotals', () => {
+    const T = portfolioTotals(holdings, t => quotes[t] || null, t => currencyOf(t, quotes[t]?.currency), rates)
+    const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0)
+    expect(sum('valueUsd')).toBeCloseTo(T.value, 6)
+    expect(sum('costUsd')).toBeCloseTo(T.cost, 6)
+    expect(sum('dayUsd')).toBeCloseTo(T.day, 6)
+  })
+  it('ordena por valor y reparte por tipo', () => {
+    expect(rows[rows.length - 1].t).toBe('XYZ.ZZ')
+    const alloc = allocationByType(rows)
+    expect(alloc.map(a => a.type).sort()).toEqual(['Crypto', 'Stock'])
+    expect(alloc.reduce((a, x) => a + x.share, 0)).toBeCloseTo(1, 6)
+  })
+})

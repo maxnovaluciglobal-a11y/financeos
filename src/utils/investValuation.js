@@ -127,6 +127,59 @@ export function quoteBatches(holdings) {
   return { stocks: chunks([...stocks], QUOTE_BATCH), crypto: chunks([...crypto], CRYPTO_BATCH) }
 }
 
+// Una fila por posición para la pantalla de Inversiones (solo en memoria: nunca
+// se guarda en el dispositivo, ver buildSnapshot). Mismas reglas que
+// portfolioTotals, así la suma de las filas da el total de la tarjeta:
+//  · status 'nofx': sin tipo de cambio real → sin cifras en USD, fuera del total.
+//  · status 'cost': sin precio → vale su costo, sin ganancia ni "Hoy".
+//  · status 'live': con precio.
+// `weight` es la parte del valor contado (0–1). Orden: mayor valor primero.
+export function holdingRows(holdings, quotes = {}, rates = {}) {
+  const rows = (holdings || []).map((h) => {
+    const q = quotes[h.t] || null
+    const ccy = currencyOf(h.t, q?.currency)
+    const r = rateOf(ccy, rates)
+    const px = q && q.price > 0 ? q.price : null
+    const base = { t: h.t, type: h.type || '', sh: h.sh, ccy, avgCost: h.cost, price: px, name: q?.name || q?.shortName || null }
+    if (r == null) return { ...base, status: 'nofx', valueUsd: null, costUsd: null, plUsd: null, plPct: null, dayUsd: null, dayPct: null }
+    const conv = (v) => (r === 1 ? v : v / r)
+    const fc = r === 1 ? null : fxCostOf(h)
+    const costUsd = fc ? (h.sh * h.cost) / fc : conv(h.sh * h.cost)
+    const valueUsd = conv(h.sh * (px || h.cost))
+    if (!px) return { ...base, status: 'cost', valueUsd, costUsd, plUsd: null, plPct: null, dayUsd: null, dayPct: null }
+    const cp = q.changePct || 0
+    const dayUsd = conv(h.sh * (px - px / (1 + cp)))
+    return {
+      ...base,
+      status: 'live',
+      valueUsd,
+      costUsd,
+      plUsd: valueUsd - costUsd,
+      plPct: costUsd > 0 ? (valueUsd - costUsd) / costUsd : null,
+      dayUsd,
+      dayPct: cp,
+    }
+  })
+  const counted = rows.reduce((a, r) => a + (r.valueUsd || 0), 0)
+  for (const r of rows) r.weight = counted > 0 && r.valueUsd != null ? r.valueUsd / counted : null
+  return rows.sort((a, b) => (b.valueUsd ?? -1) - (a.valueUsd ?? -1))
+}
+
+// Reparto del valor contado por tipo de activo (Acción, ETF, Crypto, …).
+export function allocationByType(rows) {
+  const by = new Map()
+  let total = 0
+  for (const r of rows || []) {
+    if (r.valueUsd == null) continue
+    const k = r.type || 'Otro'
+    by.set(k, (by.get(k) || 0) + r.valueUsd)
+    total += r.valueUsd
+  }
+  return [...by.entries()]
+    .map(([type, valueUsd]) => ({ type, valueUsd, share: total > 0 ? valueUsd / total : 0 }))
+    .sort((a, b) => b.valueUsd - a.valueUsd)
+}
+
 export const SNAPSHOT_VERSION = 1
 
 // Lo único que se guarda en el dispositivo: totales, sin tickers ni posiciones.

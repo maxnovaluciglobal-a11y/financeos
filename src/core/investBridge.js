@@ -6,7 +6,7 @@
 // nada de lo que moyiq tiene en el dispositivo. El resultado se guarda como
 // totales en una clave `fos_*`, que es de la cuenta (core/deviceOwner.js).
 import { authClient } from './authClient.js'
-import { arsRate, buildSnapshot, currencyOf, holdingFromRow, quoteBatches, realRates, SNAPSHOT_VERSION } from '../utils/investValuation.js'
+import { arsRate, buildSnapshot, currencyOf, holdingFromRow, holdingRows, quoteBatches, realRates, SNAPSHOT_VERSION } from '../utils/investValuation.js'
 
 export const INVEST_ORIGIN = (import.meta.env.VITE_INVEST_URL || 'https://invest.moyiq.app').replace(/\/$/, '')
 export const SNAPSHOT_KEY = 'fos_invest_snapshot_v1'
@@ -66,7 +66,7 @@ async function fetchRates(holdings, quotes, fetchImpl) {
   return { rates, at: data?.updatedAt ? Date.parse(data.updatedAt) || null : null }
 }
 
-export async function fetchSnapshot({ client = authClient, fetchImpl = (...a) => fetch(...a), now = Date.now } = {}) {
+async function fetchRaw({ client = authClient, fetchImpl = (...a) => fetch(...a) } = {}) {
   if (!client) throw new Error('auth_unavailable')
   const { data: sess } = await withTimeout(client.auth.getSession(), HOLDINGS_TIMEOUT_MS)
   const uid = sess?.session?.user?.id
@@ -77,10 +77,26 @@ export async function fetchSnapshot({ client = authClient, fetchImpl = (...a) =>
   )
   if (error) throw new Error('holdings_failed')
   const holdings = (data || []).map(holdingFromRow).filter(h => h.t && h.sh > 0)
-  if (holdings.length === 0) return buildSnapshot({ uid, holdings, now: now() })
+  if (holdings.length === 0) return { uid, holdings, quotes: {}, rates: {}, ratesAt: null }
   const quotes = await fetchQuotes(holdings, fetchImpl)
   const { rates, at } = await fetchRates(holdings, quotes, fetchImpl)
-  return buildSnapshot({ uid, holdings, quotes, rates, ratesAt: at, now: now() })
+  return { uid, holdings, quotes, rates, ratesAt: at }
+}
+
+export async function fetchSnapshot({ now = Date.now, ...deps } = {}) {
+  const raw = await fetchRaw(deps)
+  return buildSnapshot({ ...raw, now: now() })
+}
+
+// Pantalla de Inversiones: totales + una fila por posición. Las filas quedan
+// solo en memoria (los tickers no se guardan en el dispositivo); el snapshot
+// de totales sí se guarda y avisa a la tarjeta de Panorama y a Patrimonio.
+export async function fetchPortfolioDetail({ now = Date.now, storage = localStorage, ...deps } = {}) {
+  const raw = await fetchRaw(deps)
+  const snapshot = buildSnapshot({ ...raw, now: now() })
+  writeSnapshot(snapshot, storage)
+  for (const fn of listeners) fn(snapshot)
+  return { snapshot, rows: holdingRows(raw.holdings, raw.quotes, raw.rates) }
 }
 
 // Una sola carga a la vez: Panorama monta la tarjeta y Patrimonio juntas.
