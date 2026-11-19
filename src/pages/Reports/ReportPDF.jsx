@@ -8,6 +8,7 @@ import { PDF_FONT as F, PDF_COLOR as P, PDF_CAT_COLORS } from '../pdfTheme.js'
 import PdfLogo from '../PdfLogo.jsx'
 import { fmtSignedMoney, fmtPct, catName, fmtPctPoints } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
+import { meetsSavingGoal } from '../../utils/monthFigures.js'
 
 // Colores y fuentes de la marca (pdfTheme.js, BRD-8).
 const ACCENT  = P.pos         // positivo/ingreso, no la marca
@@ -90,7 +91,8 @@ export default function ReportPDF({ data }) {
   const maxTrend = Math.max(...trendData.flatMap(d => [d.Ingresos, d.Gastos]), 1)
 
   const recs = []
-  if (savingRate >= 0.25) {
+  // V-G2-F1: contra la meta que eligió la persona, no un 25 % fijo.
+  if (meetsSavingGoal(savingRate, (Number(savingGoalPct) || 0) / 100)) {
     recs.push({ type: 'ok', text: t('rpdf.rec.savingOk', { rate: pct(savingRate), goal: fmtPctPoints(savingGoalPct) }) })
   } else {
     recs.push({ type: 'warn', text: t('rpdf.rec.savingLow', { rate: pct(savingRate), goal: fmtPctPoints(savingGoalPct) }) })
