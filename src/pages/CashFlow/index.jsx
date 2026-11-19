@@ -151,7 +151,7 @@ export default function CashFlow({ setPage }) {
           </div>
           {setPage && (
             <button onClick={() => setPage('movements')}
-              style={{ background:'var(--accent)', color:'var(--bg)', border:'none', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:700, fontFamily: 'var(--num)', cursor:'pointer' }}>
+              style={{ background:'var(--accent)', color:'var(--bg)', border:'none', borderRadius:7, padding:'7px 14px', fontSize:'var(--t-footnote)', fontWeight:700, fontFamily: 'var(--num)', cursor:'pointer' }}>
               {t('cf.empty.btn')}
             </button>
           )}
@@ -183,9 +183,9 @@ export default function CashFlow({ setPage }) {
                 { label: t('cf.eom.projBal'), value: fmtSignedMoney(projBal, sym), sub: projBal >= 0 ? t('cf.eom.positive') : t('cf.eom.deficit'), color: projBal >= 0 ? 'var(--accent)' : 'var(--red)' },
               ].map(k => (
                 <div key={k.label} style={{ background: 'var(--fill)', borderRadius: 8, padding: '10px 12px', border: 0 }}>
-                  <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 4 }}>{k.label}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--num)', color: k.color, marginBottom: 2 }}>{k.value}</div>
-                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{k.sub}</div>
+                  <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--th)', marginBottom: 4 }}>{k.label}</div>
+                  <div style={{ fontSize: 'var(--t-headline)', fontWeight: 700, fontFamily: 'var(--num)', color: k.color, marginBottom: 2 }}>{k.value}</div>
+                  <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{k.sub}</div>
                 </div>
               ))}
             </div>
@@ -193,7 +193,7 @@ export default function CashFlow({ setPage }) {
             {/* Barras de progreso */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>
                   <span>{t('cf.eom.monthElapsed')}</span>
                   <span>{barPct.toFixed(0)}%</span>
                 </div>
@@ -203,14 +203,14 @@ export default function CashFlow({ setPage }) {
               </div>
               {budgetBarPct !== null && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>
                     <span>{t('cf.eom.budgetUsed')}</span>
                     <span style={{ color: paceColor }}>{budgetBarPct.toFixed(0)}% · {paceLabel}</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 3, background: 'var(--brd2)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${budgetBarPct}%`, background: paceColor, borderRadius: 3, transition: '.3s' }} />
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
+                  <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
                     {t('cf.eom.budgetLine', { total: fmtMoney(totalBudget, sym), spent: fmtSignedMoney(curExp, sym) })}
                   </div>
                 </div>
@@ -219,12 +219,12 @@ export default function CashFlow({ setPage }) {
 
             {/* Alerta de ritmo */}
             {pace !== null && pace > 0.08 && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: 0, borderRadius: 8, fontSize: 11, color: 'var(--red)', fontFamily: 'var(--sans)' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(255,77,106,.07)', border: 0, borderRadius: 8, fontSize: 'var(--t-footnote)', color: 'var(--red)', fontFamily: 'var(--sans)' }}>
                 <InlineIcon kind="alert" size={13} />{t('cf.alert.over', { pct: fmtPctPoints(pace * 100, 0), proj: fmtSignedMoney(projExp, sym), overBudget: totalBudget > 0 ? t('cf.alert.overBudgetPart', { v: fmtSignedMoney(projExp - totalBudget, sym) }) : '' })}
               </div>
             )}
             {pace !== null && pace <= 0 && curExp > 0 && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--accent-bg)', border: 0, borderRadius: 8, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--sans)' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--accent-bg)', border: 0, borderRadius: 8, fontSize: 'var(--t-footnote)', color: 'var(--accent)', fontFamily: 'var(--sans)' }}>
                 {t('cf.alert.under', { pct: fmtPctPoints(Math.abs((pace * 100).toFixed(0))) })}
               </div>
             )}
@@ -308,16 +308,16 @@ export default function CashFlow({ setPage }) {
                 {recurringInc.map(({ rule: r, monthly: mensual, amount }) => (
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
+                        <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{r.description}</div>
+                        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 500, color: 'var(--grn)' }}>+<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
-                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
+                        <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--grn)' }}>+<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
+                        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
                 ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 12, fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 'var(--t-footnote)', fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
                   <span>{t('cf.rec.totalMonthly')}</span>
                   <span style={{ color: 'var(--grn)', fontFamily: 'var(--sans)' }}>+{fmtMoney(monthlyRecInc, sym)}</span>
                 </div>
@@ -335,16 +335,16 @@ export default function CashFlow({ setPage }) {
                 {recurringExp.map(({ rule: r, monthly: mensual, amount }) => (
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '0.5px solid var(--brd)' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--tx)' }}>{r.description}</div>
-                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
+                        <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{r.description}</div>
+                        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{freqText(r, t)} · {catName(r.category, lang)}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 500, color: 'var(--red)' }}>−<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
-                        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
+                        <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--red)' }}>−<Money>{t('cf.rec.perMonth', { v: fmtMoney(mensual, sym) })}</Money></div>
+                        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}><Money>{t('cf.rec.original', { v: fmtMoney(amount, sym) })}</Money></div>
                       </div>
                     </div>
                 ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 12, fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 'var(--t-footnote)', fontWeight: 600, borderTop: '0.5px solid var(--brd2)', marginTop: 2 }}>
                   <span>{t('cf.rec.totalMonthly')}</span>
                   <span style={{ color: 'var(--red)', fontFamily: 'var(--sans)' }}>−{fmtMoney(monthlyRecExp, sym)}</span>
                 </div>
@@ -384,7 +384,7 @@ export default function CashFlow({ setPage }) {
         </Card>
       )}
 
-      <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', padding: '4px 0', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', padding: '4px 0', lineHeight: 1.5 }}>
         {t('cf.disclaimer')}
       </div>
     </div>

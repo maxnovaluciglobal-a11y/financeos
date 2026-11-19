@@ -90,7 +90,7 @@ export default function Income({ setPage }) {
         <MonthSelector incomes={incomes} expenses={[]} />
         {/* B3a: los ingresos también están en Movimientos, junto a los gastos (D-B). */}
         {setPage && (
-          <button type="button" className="fos-link" style={{ fontSize: 13 }} onClick={() => {
+          <button type="button" className="fos-link" style={{ fontSize: 'var(--t-subhead)' }} onClick={() => {
             try { sessionStorage.setItem('fos_mov_filter', 'income') } catch { /* almacenamiento no disponible */ }
             setPage('movements')
           }}>{t('movl.seeInMovements')} →</button>
@@ -108,7 +108,7 @@ export default function Income({ setPage }) {
 
           {setPage && (
             <button type="button" onClick={() => setPage('import')}
-              style={{ background:'none', border:'none', padding:0, marginBottom:4, minHeight:44, fontSize:12, fontFamily:'var(--sans)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center' }}>
+              style={{ background:'none', border:'none', padding:0, marginBottom:4, minHeight:44, fontSize:'var(--t-footnote)', fontFamily:'var(--sans)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center' }}>
               <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
             </button>
           )}
@@ -116,25 +116,25 @@ export default function Income({ setPage }) {
             {!showPaste ? (
               <button type="button" onClick={() => { setShowPaste(true); setPasteMsg(null) }}
                 style={{ background: 'var(--fill)', border: 0, borderRadius:6,
-                  padding:'7px 12px', minHeight:44, fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
+                  padding:'7px 12px', minHeight:44, fontSize:'var(--t-footnote)', color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
                 {t('income.paste.btn')}
               </button>
             ) : (
               <div style={{ background: 'var(--fill)', border: 0, borderRadius:8, padding:10 }}>
                 <textarea value={pasteText} onChange={e => setPasteText(e.target.value)} rows={3}
                   placeholder={t('income.paste.placeholder')}
-                  style={{ width:'100%', boxSizing:'border-box', padding:'7px 9px', fontSize:12, borderRadius:6, border:'.5px solid var(--brd2)' }} />
+                  style={{ width:'100%', boxSizing:'border-box', padding:'7px 9px', fontSize:'var(--t-footnote)', borderRadius:6, border:'.5px solid var(--brd2)' }} />
                 <div style={{ display:'flex', gap:8, marginTop:8 }}>
                   <Btn variant="primary" size="sm" onClick={detectFromPaste} disabled={!pasteText.trim()}>{t('income.paste.detect')}</Btn>
                   <Btn variant="ghost" size="sm" onClick={() => { setShowPaste(false); setPasteText('') }}>{t('common.cancel')}</Btn>
                 </div>
-                <div style={{ fontSize:12, color:'var(--th)', fontFamily:'var(--sans)', marginTop:6, lineHeight:1.5 }}>
+                <div style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily:'var(--sans)', marginTop:6, lineHeight:1.5 }}>
                   {t('income.paste.local')}
                 </div>
               </div>
             )}
             {pasteMsg && (
-              <div style={{ marginTop:8, fontSize:12, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--sans)' }}>
+              <div style={{ marginTop:8, fontSize:'var(--t-footnote)', color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily:'var(--sans)' }}>
                 <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
               </div>
             )}
@@ -162,7 +162,7 @@ export default function Income({ setPage }) {
             )}
           </div>
           <FormGroup label={t('income.form.notes')}><input type="text" value={f.notes} placeholder={t('income.form.notesPh')} onChange={e => setF(p => ({ ...p, notes: e.target.value }))} /></FormGroup>
-          <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', margin:'4px 0 10px', lineHeight:1.4 }}>
+          <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:'var(--t-footnote)', color:'var(--tm)', cursor:'pointer', margin:'4px 0 10px', lineHeight:1.4 }}>
             <input type="checkbox" checked={!!f.inv} onChange={e => setF(p => ({ ...p, inv: e.target.checked }))} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />
             <span style={{ minWidth:0 }}>{t('income.form.invCheck')}</span>
           </label>
@@ -188,24 +188,24 @@ export default function Income({ setPage }) {
                   <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border: 0,background:'rgba(10,92,62,.04)',marginBottom:6}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
                       <div style={{gridColumn:'1/-1'}}>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.source')}</div>
+                        <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.source')}</div>
                         <input type="text" value={editForm.source||''} onChange={e=>setEditForm(f=>({...f,source:e.target.value}))}
-                          style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
+                          style={{width:'100%',padding:'5px 8px',fontSize:'var(--t-footnote)',borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.amount')}</div>
+                        <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.amount')}</div>
                         <input type="number" inputMode="decimal" min="0" step="any" value={editForm.amount||''} onChange={e=>setEditForm(f=>({...f,amount:e.target.value}))}
-                          style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
+                          style={{width:'100%',padding:'5px 8px',fontSize:'var(--t-footnote)',borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.date')}</div>
+                        <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.date')}</div>
                         <input type="date" value={editForm.date||''} onChange={e=>setEditForm(f=>({...f,date:e.target.value}))}
-                          style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
+                          style={{width:'100%',padding:'5px 8px',fontSize:'var(--t-footnote)',borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.category')}</div>
+                        <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:3}}>{t('income.edit.category')}</div>
                         <SheetSelect value={editForm.category||''} onChange={e=>setEditForm(f=>({...f,category:e.target.value}))}
-                          style={{width:'100%',padding:'5px 8px',fontSize:12,borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
+                          style={{width:'100%',padding:'5px 8px',fontSize:'var(--t-footnote)',borderRadius:5,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                           {categoriesIncome.map(c=><option key={c} value={c}>{catLabel(c, lang)}</option>)}
                         </SheetSelect>
                       </div>

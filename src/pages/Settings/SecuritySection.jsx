@@ -17,8 +17,8 @@ import {
 import { saveLockConfig, updateLockConfig, disableLock, resetAttempts } from '../../core/appLockStore.js'
 
 const row = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 0', borderBottom: '0.5px solid var(--brd)' }
-const lbl = { fontSize: 14, fontWeight: 500, color: 'var(--tx)' }
-const sub = { fontSize: 12, color: 'var(--tm)', lineHeight: 1.55, marginTop: 3 }
+const lbl = { fontSize: 'var(--t-body)', fontWeight: 600, color: 'var(--tx)' }
+const sub = { fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.55, marginTop: 3 }
 
 export default function SecuritySection() {
   const lock = useAppLock()
@@ -193,9 +193,9 @@ function PinField({ label, value, onChange, onEnter, error, autoFocus }) {
         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onEnter?.() } }}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? `${id}-err` : undefined}
-        style={{ fontFamily: 'var(--mono)', letterSpacing: '.3em', fontSize: 20, minHeight: 48, maxWidth: 220 }}
+        style={{ fontFamily: 'var(--mono)', letterSpacing: '.3em', fontSize: 'var(--t-title-2)', minHeight: 48, maxWidth: 220 }}
       />
-      {error && <div id={`${id}-err`} role="alert" style={{ fontSize: 13, color: 'var(--neg)' }}>{error}</div>}
+      {error && <div id={`${id}-err`} role="alert" style={{ fontSize: 'var(--t-subhead)', color: 'var(--neg)' }}>{error}</div>}
     </div>
   )
 }
@@ -288,7 +288,7 @@ function SetupFlow({ t, bioAvail, busy, onCancel, onDone }) {
         <div style={lbl}>{t('lock.setup.bioAsk')}</div>
         <div style={sub}>{t('lock.settings.bioDesc')}</div>
       </div>
-      {bioError && <div role="alert" style={{ fontSize: 13, color: 'var(--neg)' }}>{bioError}</div>}
+      {bioError && <div role="alert" style={{ fontSize: 'var(--t-subhead)', color: 'var(--neg)' }}>{bioError}</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <Btn variant="primary" onClick={() => finish(pin, true)} disabled={busy || hashing}>
           <Fingerprint size={16} strokeWidth={1.7} aria-hidden="true" />

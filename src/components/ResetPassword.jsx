@@ -31,14 +31,14 @@ export default function ResetPassword({ onDone }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
           <Logo size={22} />
         </div>
-        <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
+        <h1 style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
           {t('resetPassword.title')}
         </h1>
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
           {t('resetPassword.subtitle')}
         </div>
 
-        <label htmlFor="reset-password" style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--tm)', display: 'block', marginBottom: 4 }}>
+        <label htmlFor="reset-password" style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--tm)', display: 'block', marginBottom: 4 }}>
           {t('authGate.passwordPlaceholderSignup')}
         </label>
         <input
@@ -51,11 +51,11 @@ export default function ResetPassword({ onDone }) {
           autoComplete="new-password"
           // eslint-disable-next-line jsx-a11y/no-autofocus -- the user arrived from the reset link to set a new password; focus moves into that field
           autoFocus
-          style={{ width: '100%', padding: '12px 14px', border: 0, borderRadius: 8, fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box' }}
+          style={{ width: '100%', padding: '12px 14px', border: 0, borderRadius: 8, fontSize: 'var(--t-callout)', fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)', marginBottom: 10, boxSizing: 'border-box' }}
         />
 
         {error && (
-          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="alert" style={{ fontSize: 'var(--t-footnote)', color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
             <InlineIcon kind="alert" size={13} />{error}
           </div>
         )}
@@ -63,7 +63,7 @@ export default function ResetPassword({ onDone }) {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4 }}
+          style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 'var(--t-body)', fontWeight: 600, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4 }}
         >
           {loading ? t('authGate.loading') : t('resetPassword.submitBtn')}
         </button>

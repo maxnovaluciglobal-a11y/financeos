@@ -11,7 +11,7 @@ import { normalize } from '../../components/ui/listboxKeys.js'
 
 // Secciones de la raíz, en orden. Cada una agrupa filas (ids de SETTINGS_GROUPS).
 export const SETTINGS_SECTIONS = [
-  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'features'] },
+  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'features', 'autoEntry'] },
   { id: 'dataSec', title: 'settings.section.dataSec', groups: ['data', 'security', 'notifications'] },
   { id: 'more',    title: 'settings.section.more',    groups: ['plan', 'advanced', 'danger'] },
 ]
@@ -43,6 +43,11 @@ export const SETTINGS_GROUPS = [
     { id: 'properties', label: 'settings.features.properties' },
     { id: 'advisor',    label: 'settings.features.advisor' },
     { id: 'investments', label: 'settings.features.investments' },
+  ] },
+  // Gastos que se registran solos (19-nov-2026, uiFlags.registroAutomatico).
+  { id: 'autoEntry', items: [
+    { id: 'applePay', label: 'auto.applePay.label' },
+    { id: 'voice',    label: 'auto.voice.label' },
   ] },
   { id: 'data', items: [
     { id: 'backup',  label: 'settings.backup.title', kw: 'backup.restore.title' },

@@ -36,7 +36,7 @@ export function LegalNotice({ t, lang }) {
     <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tx)', textDecoration: 'underline' }}>{label}</a>
   )
   return (
-    <p data-testid="authgate-legal" style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>
+    <p data-testid="authgate-legal" style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>
       {parts.map((part, i) => (
         part === '{terms}' ? <span key={i}>{link(urls.terms, t('authGate.legalTerms'))}</span>
           : part === '{privacy}' ? <span key={i}>{link(urls.privacy, t('authGate.legalPrivacy'))}</span>
@@ -199,19 +199,19 @@ export default function AuthGate({ onAuthenticated }) {
     },
     input: {
       width: '100%', padding: '12px 14px', border: '1px solid var(--brd)', borderRadius: 8,
-      fontSize: 16, fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)',
+      fontSize: 'var(--t-callout)', fontFamily: 'var(--sans)', background: 'var(--bg)', color: 'var(--tx)',
       marginBottom: 10, boxSizing: 'border-box',
     },
     // PRD-8 (C-39): etiqueta en sans, legible; el ejemplo queda en el placeholder.
     label: {
-      fontSize: 13, fontFamily: 'var(--sans)', fontWeight: 500, color: 'var(--tx)',
+      fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--tx)',
       display: 'block', marginBottom: 6,
     },
     tabBtn: (active) => ({
       flex: 1, minHeight: 44, padding: '9px', border: 'none', borderRadius: 7,
       background: active ? 'var(--sur)' : 'transparent',
       color: active ? 'var(--tx)' : 'var(--th)',
-      fontWeight: active ? 600 : 500, fontSize: 13, cursor: 'pointer',
+      fontWeight: active ? 600 : 400, fontSize: 'var(--t-subhead)', cursor: 'pointer',
       boxShadow: active ? 'var(--sh-1)' : 'none', fontFamily: 'var(--sans)',
     }),
   }
@@ -224,15 +224,15 @@ export default function AuthGate({ onAuthenticated }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
               <Logo size={22} />
             </div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
+            <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
               {t('authGate.forgotSentTitle')}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
               {t('authGate.forgotSentBody', { email: email.trim() })}
             </div>
             <button
               onClick={() => { setForgotMode(false); setForgotSent(false); setError('') }}
-              style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 'var(--t-footnote)', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
             >
               {t('authGate.backToLogin')}
             </button>
@@ -246,10 +246,10 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
             <Logo size={22} />
           </div>
-          <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
+          <h1 style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
             {t('authGate.forgotTitle')}
           </h1>
-          <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
             {t('authGate.forgotSubtitle')}
           </div>
           <label htmlFor="authgate-forgot-email" style={s.label}>{t('authGate.emailLabel')}</label>
@@ -269,20 +269,20 @@ export default function AuthGate({ onAuthenticated }) {
           />
           {captchaWidget}
           {error && (
-            <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+            <div role="alert" style={{ fontSize: 'var(--t-footnote)', color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
               <InlineIcon kind="alert" size={13} />{error}
             </div>
           )}
           <button
             onClick={handleForgotSubmit}
             disabled={loading}
-            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4, marginBottom: 12 }}
+            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 'var(--t-body)', fontWeight: 600, fontFamily: 'var(--sans)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, marginTop: 4, marginBottom: 12 }}
           >
             {loading ? t('authGate.loading') : t('authGate.forgotSubmitBtn')}
           </button>
           <button
             onClick={() => { setForgotMode(false); setError('') }}
-            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 'var(--t-footnote)', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
           >
             {t('authGate.backToLogin')}
           </button>
@@ -298,21 +298,21 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <Logo size={22} />
           </div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
+          <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
             {t('authGate.emailExistsTitle')}
           </div>
-          <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+          <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
             {t('authGate.emailExistsBody', { email: email.trim() })}
           </div>
           <button
             onClick={() => { setEmailExists(false); setTab('login'); setPassword(''); setError('') }}
-            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)', cursor: 'pointer', marginBottom: 12 }}
+            style={{ width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none', borderRadius: 8, fontSize: 'var(--t-body)', fontWeight: 600, fontFamily: 'var(--sans)', cursor: 'pointer', marginBottom: 12 }}
           >
             {t('authGate.emailExistsLoginBtn')}
           </button>
           <button
             onClick={() => { setEmailExists(false); setForgotMode(true); setPassword(''); setError('') }}
-            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 'var(--t-footnote)', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
           >
             {t('authGate.forgotLink')}
           </button>
@@ -328,26 +328,26 @@ export default function AuthGate({ onAuthenticated }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <Logo size={22} />
           </div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
+          <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 8, fontFamily: 'var(--display)' }}>
             {t('authGate.checkEmailTitle')}
           </div>
-          <div style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 16 }}>
+          <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 16 }}>
             {t('authGate.checkEmailBody', { email })}
           </div>
           {resendState !== 'sent' && captchaWidget}
           {resendState === 'sent' ? (
-            <div style={{ fontSize: 12, color: 'var(--pos)' }}>{t('authGate.resendSent')}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--pos)' }}>{t('authGate.resendSent')}</div>
           ) : (
             <button
               onClick={handleResend}
               disabled={resendState === 'sending'}
-              style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 'var(--t-footnote)', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
             >
               {t('authGate.resendButton')}
             </button>
           )}
           {resendState === 'error' && (
-            <div style={{ fontSize: 12, color: 'var(--neg)', marginTop: 6 }}>{t('authGate.resendError')}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--neg)', marginTop: 6 }}>{t('authGate.resendError')}</div>
           )}
         </div>
       </div>
@@ -362,19 +362,19 @@ export default function AuthGate({ onAuthenticated }) {
           <Logo size={22} />
         </div>
 
-        <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
+        <h1 style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>
           {tab === 'signup' ? t('authGate.titleSignup') : t('authGate.title')}
         </h1>
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 20 }}>
           {t('authGate.subtitle')}
         </div>
         {linkError && (
-          <div role="alert" data-testid="authgate-link-expired" style={{ fontSize: 13, color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="alert" data-testid="authgate-link-expired" style={{ fontSize: 'var(--t-subhead)', color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
             {t('authGate.linkExpired')}
           </div>
         )}
         {accountDeleted && (
-          <div role="status" style={{ fontSize: 13, color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="status" style={{ fontSize: 'var(--t-subhead)', color: 'var(--tx)', marginBottom: 16, padding: '8px 12px', background: 'var(--sur2)', borderRadius: 7, lineHeight: 1.5 }}>
             {t('deleteAccount.doneNotice')}
           </div>
         )}
@@ -391,7 +391,7 @@ export default function AuthGate({ onAuthenticated }) {
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               padding: 11, borderRadius: 8, border: 0, background: 'var(--tx)',
-              color: 'var(--bg)', fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 10,
+              color: 'var(--bg)', fontSize: 'var(--t-subhead)', fontWeight: 600, cursor: 'pointer', marginBottom: 10,
               fontFamily: 'var(--sans)',
             }}
           >
@@ -408,7 +408,7 @@ export default function AuthGate({ onAuthenticated }) {
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               padding: 11, borderRadius: 8, border: 0, background: 'var(--bg)',
-              color: 'var(--tx)', fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 14,
+              color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontWeight: 600, cursor: 'pointer', marginBottom: 14,
               fontFamily: 'var(--sans)',
             }}
           >
@@ -425,7 +425,7 @@ export default function AuthGate({ onAuthenticated }) {
         {providers.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
-            <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
             <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
           </div>
         )}
@@ -472,13 +472,13 @@ export default function AuthGate({ onAuthenticated }) {
           </button>
         </div>
         {tab === 'signup' && (
-          <p id="authgate-password-hint" style={{ fontSize: 12, color: 'var(--tm)', margin: '-4px 0 10px' }}>{t('authGate.passwordPlaceholderSignup')}</p>
+          <p id="authgate-password-hint" style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', margin: '-4px 0 10px' }}>{t('authGate.passwordPlaceholderSignup')}</p>
         )}
 
         {tab === 'login' && (
           <button
             onClick={() => { setForgotMode(true); setError('') }}
-            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0, marginBottom: 12, display: 'block' }}
+            style={{ background: 'none', border: 'none', color: 'var(--th)', fontSize: 'var(--t-footnote)', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0, marginBottom: 12, display: 'block' }}
           >
             {t('authGate.forgotLink')}
           </button>
@@ -487,7 +487,7 @@ export default function AuthGate({ onAuthenticated }) {
         {captchaWidget}
 
         {error && (
-          <div role="alert" style={{ fontSize: 11, color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
+          <div role="alert" style={{ fontSize: 'var(--t-footnote)', color: 'var(--red)', marginBottom: 10, marginTop: -2, fontFamily: 'var(--sans)', padding: '8px 12px', background: 'var(--red-bg)', borderRadius: 7, lineHeight: 1.5 }}>
             <InlineIcon kind="alert" size={13} />{error}
           </div>
         )}
@@ -495,7 +495,7 @@ export default function AuthGate({ onAuthenticated }) {
         <button
           style={{
             width: '100%', padding: 12, background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border: 'none',
-            borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: 'var(--sans)',
+            borderRadius: 8, fontSize: 'var(--t-body)', fontWeight: 600, fontFamily: 'var(--sans)',
             cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.55 : 1, transition: 'opacity .15s',
             marginTop: 4,
           }}

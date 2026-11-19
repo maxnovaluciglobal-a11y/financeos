@@ -65,11 +65,11 @@ export default function DeleteAccountSection({ autoOpen = false }) {
     window.location.reload()
   }
 
-  const p = { fontSize: 13, color: 'var(--tm)', lineHeight: 1.6, margin: '0 0 10px' }
+  const p = { fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.6, margin: '0 0 10px' }
   return (
     // R10: vive en Ajustes › Zona de riesgo, separado por una línea (sin caja).
     <div id="delete-account" ref={cardRef} style={{ borderTop: '1px solid var(--brd2)', paddingTop: 14 }}>
-      <h3 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 600, color: 'var(--red)' }}>{t('deleteAccount.title')}</h3>
+      <h3 style={{ margin: '0 0 10px', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--red)' }}>{t('deleteAccount.title')}</h3>
       <p style={p}>{t('deleteAccount.what')}</p>
       <p style={p}>{t('deleteAccount.kept')}</p>
       {isPro && (
@@ -91,7 +91,7 @@ export default function DeleteAccountSection({ autoOpen = false }) {
               <Btn variant="ghost" size="sm" onClick={handleExport}>{t('deleteAccount.exportBtn')}</Btn>
             </div>
           )}
-          <label htmlFor="delete-account-word" style={{ display: 'block', fontSize: 13, color: 'var(--tx)', marginBottom: 6 }}>
+          <label htmlFor="delete-account-word" style={{ display: 'block', fontSize: 'var(--t-subhead)', color: 'var(--tx)', marginBottom: 6 }}>
             {t('deleteAccount.typeLabel', { word })}
           </label>
           <input
@@ -104,7 +104,7 @@ export default function DeleteAccountSection({ autoOpen = false }) {
             autoCapitalize="characters"
             spellCheck={false}
             aria-describedby={error ? 'delete-account-error' : undefined}
-            style={{ width: '100%', maxWidth: 260, padding: '10px 12px', fontSize: 16, border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', boxSizing: 'border-box', marginBottom: 10 }}
+            style={{ width: '100%', maxWidth: 260, padding: '10px 12px', fontSize: 'var(--t-callout)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', boxSizing: 'border-box', marginBottom: 10 }}
           />
           {error && <p id="delete-account-error" role="alert" style={{ ...p, color: 'var(--red)' }}>{error}</p>}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

@@ -137,7 +137,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                     : <Amount key="local" value={free} sym={sym} plus hero animate />}
                 </div>
               ) : (
-                <div className={s.kpiSub} style={{ fontSize: 14, color: 'var(--tm)' }}>{t('verdict.noData')}</div>
+                <div className={s.kpiSub} style={{ fontSize: 'var(--t-body)', color: 'var(--tm)' }}>{t('verdict.noData')}</div>
               )}
               {hasData && daysLeft > 0 && <div className={s.kpiSub}>{t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft })}</div>}
             </div>
@@ -152,7 +152,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                   ariaLabel={t('pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })}
                 />
                 {/* El ritmo con ícono + palabra, no solo el color del anillo (T15) */}
-                <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize: 12 }} />
+                <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize: 'var(--t-footnote)' }} />
               </div>
             )}
           </div>

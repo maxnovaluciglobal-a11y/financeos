@@ -11,7 +11,7 @@
 //                  necesita Shell montado, así que el onboarding no lo usa)
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
-import { Calendar, Check, ChevronDown, LayoutGrid } from 'lucide-react'
+import { Calendar, Check, ChevronDown, LayoutGrid, Mic, Square } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { useMoney } from './Money.jsx'
@@ -36,7 +36,11 @@ import {
   ruleKey, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, keyToKeypad, isTextEntryTarget,
   buildDetailedPrefill, DETAILED_PREFILL_KEY, ENTRY_MEMORY_KEY, entryMemoryValue, readEntryDate,
 } from '../utils/quickAdd.js'
-import { parseQuickLine, lineFormPatch } from '../utils/quickLine.js'
+import { parseQuickLine, lineFormPatch, findCategory } from '../utils/quickLine.js'
+import { spokenToLine, parseVoiceLine, speechLang } from '../utils/voiceEntry.js'
+import { intakeFormValues, isIosSafariTab } from '../utils/autoEntry.js'
+import { registroAutomaticoHere } from '../utils/uiFlags.js'
+import { useSpeechEntry } from '../hooks/useSpeechEntry.js'
 import QuickLineField from './QuickLineField.jsx'
 import { navigateTo } from './quickAddBus.js'
 import css from './QuickAddForm.module.css'
@@ -104,21 +108,23 @@ function DateSegment({ date, setDate, t }) {
       </button>
       <span className="fos-chip fos-chip--tall" data-pressed={isCustom} style={{ minWidth: 44, padding: isCustom ? '8px 10px' : '8px 12px' }}>
         <Calendar size={16} strokeWidth={1.7} aria-hidden="true" />
-        {isCustom && <span className="num" aria-hidden="true" style={{ fontSize: 13 }}>{fmtShortDate(date)}</span>}
+        {isCustom && <span className="num" aria-hidden="true" style={{ fontSize: 'var(--t-subhead)' }}>{fmtShortDate(date)}</span>}
         <input
           type="date"
           value={date}
           onChange={e => { if (e.target.value) setDate(e.target.value) }}
           onClick={e => { try { e.currentTarget.showPicker?.() } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }}
           aria-label={isCustom ? `${t('qa.pickDate')}: ${fmtShortDate(date)}` : t('qa.pickDate')}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, padding: 0, border: 'none', cursor: 'pointer', fontSize: 16 }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, padding: 0, border: 'none', cursor: 'pointer', fontSize: 'var(--t-callout)' }}
         />
       </span>
     </div>
   )
 }
 
-export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false }) {
+// prefill: alta que llegó por URL (utils/autoEntry.js, el Atajo de Apple Pay).
+// Solo rellena: guardar sigue siendo un toque de la persona.
+export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, prefill = null }) {
   const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
@@ -148,6 +154,10 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const [line, setLine] = useState('')               // #2 · el movimiento en una línea
   const [lineResult, setLineResult] = useState(null)
   const lineFill = useRef({})                        // lo último que la línea escribió en cada campo
+  const lineMode = useRef('text')                    // 'voice': la línea viene del dictado
+  const [voiceHeard, setVoiceHeard] = useState('')   // lo que se escuchó, para confirmarlo a la vista
+  const [intakeInfo, setIntakeInfo] = useState(null) // aviso del alta por URL
+  const autoOn = registroAutomaticoHere()
   // ¿El usuario eligió la categoría a mano en esta apertura? La sugerencia
   // mientras escribe (B4a) nunca la pisa.
   const catManual = useRef(false)
@@ -188,10 +198,32 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setDate(baseDate.current); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
     setUsdMode(false); setSuggestedMsg(''); catManual.current = false
-    setLine(''); setLineResult(null); lineFill.current = {}
+    setLine(''); setLineResult(null); lineFill.current = {}; lineMode.current = 'text'
+    setVoiceHeard(''); setIntakeInfo(null)
+    if (prefill && autoOn) applyPrefill(prefill)
     // lastMethod se lee al abrir; cambiarlo mientras el formulario está abierto no lo resetea
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey, defaultType])
+  }, [resetKey, defaultType, prefill])
+
+  function applyPrefill(p) {
+    const v = intakeFormValues(p, { currency, rate })
+    if (!v) return
+    setType(v.type)
+    if (v.amount != null) { setUsdMode(v.usd); setAmount(amountToKeypad(v.amount, v.usd ? usdDecimals : decimals)) }
+    if (v.desc) setDesc(v.desc)
+    if (v.date) setDate(v.date)
+    const allowed = v.type === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)
+    const c = v.desc ? findCategory({ description: v.desc, text: v.desc, type: v.type, rules: merchantRules, allowed }) : null
+    if (c) { setCat(c); lineFill.current = { cat: c }; setSuggestedMsg(t('qa.suggested', { cat: catName(c, lang) })) }
+    let safari = false
+    try { safari = isIosSafariTab(navigator, window.matchMedia?.('(display-mode: standalone)').matches === true) } catch { safari = false }
+    setIntakeInfo({ source: p.source, note: v.note, code: v.code, merchant: p.merchant, amountText: p.amountText, safari })
+  }
+
+  async function copyIntake() {
+    const text = [intakeInfo?.merchant, intakeInfo?.amountText].filter(Boolean).join(' ')
+    try { await navigator.clipboard.writeText(text); showToast?.(t('qa.intake.copied'), 'ok') } catch { showToast?.(t('qa.intake.copyFail'), 'err') }
+  }
 
   useEffect(() => { if (autoFocus) amountRef.current?.focus() }, [autoFocus, amountRef])
 
@@ -285,9 +317,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // #2 · Interpreta la línea en cada tecla (100 % local, utils/quickLine.js) y
   // rellena los campos que sigan libres; nunca guarda. `choice` es la opción
   // tocada cuando el monto se puede leer de dos formas.
-  function applyLine(text, choice = null) {
+  function applyLine(text, choice = null, mode = lineMode.current) {
+    lineMode.current = mode
     setLine(text)
-    const r = parseQuickLine(text, {
+    const parse = mode === 'voice' ? parseVoiceLine : parseQuickLine
+    const r = parse(text, {
       currency, lang, rate, rules: merchantRules, defaultType, today: todayStr(), choice,
       monthFirst: settings?.country === 'US',
       allowedFor: (k) => (k === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)),
@@ -302,7 +336,27 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if ('date' in patch) setDate(patch.date)
     if ('usd' in patch) setUsdMode(patch.usd)
     if ('cat' in patch) { setCat(patch.cat); setSuggestedMsg(t('qa.suggested', { cat: catName(patch.cat, lang) })) }
+    return r
   }
+
+  // Dictado (Web Speech API): la frase pasa a una línea y rellena como si se
+  // hubiera escrito. Si el monto no queda claro, se abre "Más opciones" para
+  // que la pregunta y la línea estén a la vista. Nunca guarda.
+  const speech = useSpeechEntry({
+    lang: speechLang(lang, settings?.country),
+    onFinal: (heard) => {
+      setVoiceHeard(heard)
+      const spoken = spokenToLine(heard, { lang, today: todayStr(), monthFirst: settings?.country === 'US' })
+      const r = applyLine(spoken, null, 'voice')
+      if (r?.status !== 'ok' && compact) setMoreOpen(true)
+      hapticTap()
+    },
+  })
+  const voiceOn = autoOn && speech.supported
+  const voiceStatus = speech.state === 'listening'
+    ? (speech.interim ? `${t('qa.voice.listening')} ${speech.interim}` : t('qa.voice.listening'))
+    : speech.state === 'error' ? t(`qa.voice.err.${speech.error || 'generic'}`)
+      : voiceHeard ? t('qa.voice.heard', { text: voiceHeard }) : ''
 
   // Guarda en UNA escritura de settings la regla comercio→categoría (1.2) y el
   // último método usado: dos updateSettings seguidos con el mismo `settings`
@@ -462,11 +516,30 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
 
   return (
     <>
+        {/* Alta por URL (Atajo de Apple Pay u otra fuente): se ve de dónde vino y que falta confirmar */}
+        {intakeInfo && (
+          <div role="status" className={css.intake}>
+            <div className={css.intakeTitle}>{t(intakeInfo.source === 'applepay' ? 'qa.intake.fromApplePay' : 'qa.intake.fromLink')}</div>
+            <div>{t('qa.intake.confirm')}</div>
+            {intakeInfo.note && (
+              <div className={css.intakeNote}>
+                {t(`qa.intake.note.${intakeInfo.note}`, { code: intakeInfo.code || '', amount: intakeInfo.amountText || '', currency: String(sym || '').replace(/\.$/, '') })}
+              </div>
+            )}
+            {intakeInfo.safari && (
+              <div className={css.intakeNote}>
+                {t('qa.intake.safari')}{' '}
+                <button type="button" className="fos-link" onClick={copyIntake}>{t('qa.intake.copy')}</button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Toggle tipo — único lugar, junto al monto, con color semántico */}
         <div style={{ display: 'flex', gap: 4, background: 'var(--sur3)', borderRadius: 'var(--r-pill)', padding: 3, marginBottom: 12 }}>
           {[['expense', t('qa.expense')], ['income', t('qa.income')]].map(([k, lb]) => (
             <button key={k} type="button" aria-pressed={type === k} onClick={() => changeType(k)}
-              style={{ flex: 1, minHeight: 40, borderRadius: 'var(--r-pill)', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)',
+              style={{ flex: 1, minHeight: 44, borderRadius: 'var(--r-pill)', border: 'none', cursor: 'pointer', fontSize: 'var(--t-headline)', fontWeight: 700, fontFamily: 'var(--sans)',
                 background: type === k ? 'var(--sur)' : 'transparent', color: type === k ? (k === 'expense' ? 'var(--neg)' : 'var(--pos)') : 'var(--tm)',
                 boxShadow: type === k ? 'var(--sh-1)' : 'none' }}>
               {lb}
@@ -478,7 +551,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             (y su zoom) porque el teclado numérico propio de abajo escribe acá.
             Se muestra con separador de miles del locale de la moneda. */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 4, minHeight: 56 }}>
-          <span style={{ fontFamily: 'var(--num)', fontSize: 26, fontWeight: 600, color: 'var(--th)' }}>{usdOn ? usdSym : sym}</span>
+          <span style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-title)', fontWeight: 600, color: 'var(--th)' }}>{usdOn ? usdSym : sym}</span>
           <span ref={mirrorRef} aria-hidden="true" className="num"
             style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'pre', fontSize: amountSize, fontWeight: 700, letterSpacing: '-0.02em' }}>
             {display || '0'}
@@ -518,12 +591,28 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         {/* Fecha + 1.1 · Pegar SMS/notificación bancaria (se interpreta 100% local) */}
         <div className={css.dateRow}>
           <DateSegment date={date} setDate={setDate} t={t} />
+          {voiceOn && (
+            <button type="button" className={css.micBtn} aria-pressed={speech.state === 'listening'}
+              onClick={() => (speech.state === 'listening' ? speech.stop() : speech.start())}
+              aria-label={speech.state === 'listening' ? t('qa.voice.stop') : t('qa.voice.start')} aria-describedby="qa-voice-hint">
+              {speech.state === 'listening'
+                ? <Square size={16} strokeWidth={2} aria-hidden="true" />
+                : <Mic size={18} strokeWidth={1.8} aria-hidden="true" />}
+              <span>{speech.state === 'listening' ? t('qa.voice.stopShort') : t('qa.voice.short')}</span>
+            </button>
+          )}
           {showMore && !pasteOpen && (
             <button type="button" className={css.pasteBtn} onClick={() => setPasteOpen(true)} aria-label={t('qa.pasteCta')} title={t('qa.pasteCta')}>
               <span aria-hidden>⎘</span> {t('qa.pasteShort')}
             </button>
           )}
         </div>
+        {voiceOn && (
+          <div className={css.voice}>
+            {voiceStatus && <div role="status" className={speech.state === 'error' ? css.voiceErr : css.voiceStatus}>{voiceStatus}</div>}
+            <div id="qa-voice-hint" className={css.voiceHint}>{t('qa.voice.privacy')}</div>
+          </div>
+        )}
         {/* Chips de categoría. En la hoja, una fila que se desliza y "Todas". */}
         {compact ? (
           <div className={css.catRow}>
@@ -563,7 +652,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         {showMore && (
           <>
           {/* #2 · Opcional: escribir como en un mensaje; lo de abajo se rellena y sigue editable */}
-          <QuickLineField value={line} result={lineResult} sym={sym} onChange={applyLine}
+          <QuickLineField value={line} result={lineResult} sym={sym} onChange={(v) => applyLine(v, null, 'text')}
             onPick={(i) => applyLine(line, i)} onEnter={() => { if (canConfirm) save() }}
             summary={lineResult?.status === 'ok' && amt > 0 ? { type: type === 'expense' ? t('qa.expense') : t('qa.income'), amount: maskMoney(fmtMoney(amt, sym)), cat: catName(cat, lang) } : null} />
 
@@ -575,17 +664,17 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
                 placeholder={t('qa.pastePh')}
                 rows={2}
                 aria-label={t('qa.pasteCta')}
-                style={{ resize: 'none', fontSize: 16, textAlign: 'left', marginBottom: 6 }}
+                style={{ resize: 'none', fontSize: 'var(--t-callout)', textAlign: 'left', marginBottom: 6 }}
               />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span role="status" style={{ fontSize: 12, fontFamily: 'var(--sans)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
+                <span role="status" style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: detected ? 'var(--pos)' : 'var(--th)' }}>
                   {detected
                     ? `✓ ${pastedDate && pastedDate !== todayStr()
                         ? t('qa.pasteDetectedDate', { date: fmtShortDate(pastedDate) })
                         : t('qa.pasteDetected')}`
                     : t('qa.pasteLocal')}
                 </span>
-                <button type="button" className="fos-link" style={{ fontSize: 13, flexShrink: 0 }}
+                <button type="button" className="fos-link" style={{ fontSize: 'var(--t-subhead)', flexShrink: 0 }}
                   onClick={() => { setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null) }}>
                   {t('qa.pasteClose')}
                 </button>
@@ -607,7 +696,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
                 value={method}
                 onChange={e => setMethod(e.target.value)}
                 aria-label={t('qa.method')}
-                style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 500, cursor: 'pointer' }}
+                style={{ width: 'auto', maxWidth: '40%', minHeight: 44, padding: '8px 10px', color: 'var(--tm)', fontWeight: 600, cursor: 'pointer' }}
               >
                 {config.paymentMethods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
               </SheetSelect>
@@ -648,7 +737,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
           {allowMoreDetails && type === 'expense' && (
             <div className={css.moreRow}>
-              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 13 }}>
+              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
                 {t('qa.moreDetails')}
               </button>
             </div>

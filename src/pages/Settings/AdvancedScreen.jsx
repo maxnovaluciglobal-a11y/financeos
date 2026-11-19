@@ -24,7 +24,7 @@ export default function AdvancedScreen({ install }) {
       <Setting id="demo">
         {confirming ? (
           <div role="group" aria-label={t('settings.loadDemo.label')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'11px 0',background: 'var(--fill)',borderRadius:8,border: 0,flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmLoadDemo')}</span>
+            <span style={{fontSize:'var(--t-footnote)',color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>{t('settings.confirmLoadDemo')}</span>
             <div style={{display:'flex',gap:6}}>
               <Btn variant="danger" size="xs" onClick={handleLoadDemo}>{t('debts.card.confirm')}</Btn>
               <Btn variant="ghost" size="xs" onClick={()=>setConfirming(false)}>{t('common.cancel')}</Btn>

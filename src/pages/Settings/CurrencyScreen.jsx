@@ -73,7 +73,7 @@ export default function CurrencyScreen() {
         />
         {confirm && (
           <div role="group" aria-label={t('settings.currency.label')} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',margin:'8px 0',background:'var(--color-brand-subtle)',borderRadius:'var(--r)',border: 0,flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
+            <span style={{fontSize:'var(--t-footnote)',color:'var(--tx)',fontFamily: 'var(--sans)',flex:1}}>
               {t('settings.confirmChangeCurrency', { currency: confirm.nextCurrency })}
             </span>
             <div style={{display:'flex',gap:6}}>
@@ -127,9 +127,9 @@ export default function CurrencyScreen() {
                 placeholder={String(liveRate(settings.currency) || '')}
                 onChange={e => { const v = parseFloat(e.target.value) || 0; updateSettings({...settings, usdRate: v, usdRateAt: v > 0 ? Date.now() : null, usdRateSource: v > 0 ? 'manual' : null}) }}
                 style={{flex:'1 1 120px', padding:'7px 10px', minHeight:44, borderRadius:8, border:'.5px solid var(--brd2)',
-                  background:'var(--sur2)', color:'var(--tx)', fontSize:13, fontFamily: 'var(--sans)', boxSizing:'border-box'}}
+                  background:'var(--sur2)', color:'var(--tx)', fontSize:'var(--t-subhead)', fontFamily: 'var(--sans)', boxSizing:'border-box'}}
               />
-              <span style={{fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', whiteSpace:'nowrap'}}>
+              <span style={{fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', whiteSpace:'nowrap'}}>
                 {t('settings.exchangeRate.perUsd', { currency: settings.currency || 'CLP' })}
               </span>
               <Btn variant="ghost" size="sm"
@@ -139,22 +139,22 @@ export default function CurrencyScreen() {
             </div>
             {/* B1: la misma descripción de la tasa que el Inicio (fuente · fecha o "sin fecha"). */}
             {savedRate(settings) && (
-              <div style={{fontSize:11, color:'var(--tm)', fontFamily: 'var(--sans)'}}>
+              <div style={{fontSize:'var(--t-footnote)', color:'var(--tm)', fontFamily: 'var(--sans)'}}>
                 ● {t('refcur.inUse', { desc: rateSourceText(savedRate(settings), t) })}
               </div>
             )}
             {fx && fx.source === 'fixer' && liveRate(settings.currency) > 0 && Number(liveRate(settings.currency)) !== Number(settings.usdRate) && (
-              <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
+              <div style={{fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)'}}>
                 ○ {t('refcur.fixerToday', { rate: Number(liveRate(settings.currency)).toLocaleString(moneyLocale()), date: fmtDay(fx.ts) })}
               </div>
             )}
             {fx && fx.source !== 'fixer' && (
-              <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
+              <div style={{fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)'}}>
                 ○ {t('settings.exchangeRate.offline')}
               </div>
             )}
             {settings.usdRate > 0 && (
-              <div style={{fontSize:11, color:'var(--accent)', fontFamily: 'var(--sans)'}}>
+              <div style={{fontSize:'var(--t-footnote)', color:'var(--accent)', fontFamily: 'var(--sans)'}}>
                 → US$1 = {Number(settings.usdRate).toLocaleString(moneyLocale())} {settings.currency} · US$100 = {(settings.usdRate * 100).toLocaleString(moneyLocale())} {settings.currency}
               </div>
             )}
@@ -162,7 +162,7 @@ export default function CurrencyScreen() {
         )}
         {settings.showDualCurrency && settings.currency === 'USD' && (
           <div style={{...srow, borderBottom:'none'}}>
-            <div style={{fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)'}}>
+            <div style={{fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)'}}>
               {t('settings.dualCurrency.alreadyUsd')}
             </div>
           </div>

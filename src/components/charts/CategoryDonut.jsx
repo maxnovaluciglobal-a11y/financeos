@@ -92,8 +92,8 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
         </div>
         {/* Label central */}
         <div aria-hidden="true" style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center', pointerEvents:'none' }}>
-          <div style={{ fontSize:15, fontWeight:700, color:'var(--tx)', fontFamily: 'var(--num)' }}>{fmtTotal}</div>
-          <div style={{ fontSize: 12, color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>{t('chart.donut.total')}</div>
+          <div style={{ fontSize:'var(--t-headline)', fontWeight:700, color:'var(--tx)', fontFamily: 'var(--num)' }}>{fmtTotal}</div>
+          <div style={{ fontSize: 'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>{t('chart.donut.total')}</div>
         </div>
       </div>
       <div className={css.legend}>
@@ -111,8 +111,8 @@ export default function CategoryDonut({ records, sym = '$', maxCategories = 6, o
             style={{ display:'flex', alignItems:'center', gap:8, cursor: clickable(d) ? 'pointer' : 'default', padding:'2px 0', minHeight: clickable(d) ? 44 : undefined }}
           >
             <div style={{ width:8, height:8, borderRadius:'50%', background:COLORS[i % COLORS.length], flexShrink:0 }}/>
-            <div style={{ flex:1, fontSize:13, color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catName(d.name, lang)}{clickable(d) ? <span aria-hidden="true"> ›</span> : ''}</div>
-            <div className="num" style={{ fontSize:12, fontWeight:500, color:'var(--th)' }}>{d.pct}</div>
+            <div style={{ flex:1, fontSize:'var(--t-subhead)', color:'var(--tx)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{catName(d.name, lang)}{clickable(d) ? <span aria-hidden="true"> ›</span> : ''}</div>
+            <div className="num" style={{ fontSize:'var(--t-footnote)', fontWeight:600, color:'var(--th)' }}>{d.pct}</div>
           </div>
         ))}
       </div>

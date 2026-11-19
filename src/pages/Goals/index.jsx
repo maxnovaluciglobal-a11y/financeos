@@ -188,24 +188,24 @@ export default function Goals() {
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
               <div style={{gridColumn:'1/-1'}}>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.name')}</div>
+                <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.name')}</div>
                 <input type="text" value={editForm.name||''} onChange={e=>setEditForm(f=>({...f,name:e.target.value}))}
-                  style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
+                  style={{width:'100%',padding:'6px 10px',fontSize:'var(--t-subhead)',borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
               </div>
               <div>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.target')}</div>
+                <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.target')}</div>
                 <input type="number" inputMode="decimal" min="0" step="any" value={editForm.target||''} onChange={e=>setEditForm(f=>({...f,target:e.target.value}))}
-                  style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
+                  style={{width:'100%',padding:'6px 10px',fontSize:'var(--t-subhead)',borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
               </div>
               <div>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.date')}</div>
+                <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.date')}</div>
                 <input type="month" value={(editForm.targetDate||'').slice(0,7)} onChange={e=>setEditForm(f=>({...f,targetDate:e.target.value}))}
-                  style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
+                  style={{width:'100%',padding:'6px 10px',fontSize:'var(--t-subhead)',borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}/>
               </div>
               <div>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.priority')}</div>
+                <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:4}}>{t('goals.edit.priority')}</div>
                 <SheetSelect value={editForm.priority||'Media'} onChange={e=>setEditForm(f=>({...f,priority:e.target.value}))}
-                  style={{width:'100%',padding:'6px 10px',fontSize:13,borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
+                  style={{width:'100%',padding:'6px 10px',fontSize:'var(--t-subhead)',borderRadius:6,border:'0.5px solid var(--brd)',background:'var(--bg)',color:'var(--tx)',boxSizing:'border-box'}}>
                   {['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}
                 </SheetSelect>
               </div>
@@ -219,20 +219,20 @@ export default function Goals() {
           <>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
               <div style={{flex:1,paddingRight:8}}>
-                <div style={{fontSize:13,fontWeight:600,color:'var(--tx)',marginBottom:2,display:'flex',alignItems:'center',gap:6}}>{GIcon && <GIcon size={14} strokeWidth={1.7} aria-hidden="true" style={{color:'var(--tm)',flexShrink:0}} />}{g.name}</div>
+                <div style={{fontSize:'var(--t-subhead)',fontWeight:600,color:'var(--tx)',marginBottom:2,display:'flex',alignItems:'center',gap:6}}>{GIcon && <GIcon size={14} strokeWidth={1.7} aria-hidden="true" style={{color:'var(--tm)',flexShrink:0}} />}{g.name}</div>
                 <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
                   {g.priority && <span className="fos-tag">{t('goals.card.priority', { p: prioLabel(g.priority, lang) })}</span>}
-                  {g.targetDate && <span style={{fontSize:12,fontFamily:'var(--sans)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: monthYearLabel(g.targetDate.slice(0,7)) })}</span>}
+                  {g.targetDate && <span style={{fontSize:'var(--t-footnote)',fontFamily:'var(--sans)',color:'var(--th)'}}>{t('goals.card.targetDate', { d: monthYearLabel(g.targetDate.slice(0,7)) })}</span>}
                   {st === 'done' && <span className="fos-state" style={{color:'var(--pos)'}}><SignalIcon kind="ok" size={13} />{t('goals.status.done')}</span>}
                   {st === 'onTrack' && <span className="fos-state" style={{color:'var(--pos)'}}><SignalIcon kind="ok" size={13} />{t('goals.status.onTrack')}</span>}
                   {st === 'behind' && <span className="fos-state" style={{color:'var(--warn)'}}><SignalIcon kind="alert" size={13} />{t('goals.status.behind')}</span>}
                 </div>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-                <span className="num" style={{fontSize:14,fontWeight:600,color:'var(--tx)'}}>{fmtPct(p, { decimals: 0 })}</span>
+                <span className="num" style={{fontSize:'var(--t-headline)',fontWeight:600,color:'var(--tx)'}}>{fmtPct(p, { decimals: 0 })}</span>
                 <button onClick={()=>{setEditingId(g.id);setEditForm({name:g.name,target:g.target,targetDate:g.targetDate||'',priority:g.priority||'Media'})}}
-                  style={{background:'none',border:'none',color:'var(--th)',fontSize:12,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}} title={t('goals.card.editTitle')} aria-label={t('goals.card.editTitle')}><Pencil size={14} strokeWidth={1.7} aria-hidden="true" /></button>
-                <button onClick={()=>{ if (inSheet) closeBucketGoal(); deleteWithUndo('goals', g, t('common.deleted'), t('common.undo')) }} aria-label={t('common.confirmDelete')} style={{background:'none',border:'none',color:'var(--th)',fontSize:11,cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}><X size={16} strokeWidth={1.7} aria-hidden="true" /></button>
+                  style={{background:'none',border:'none',color:'var(--th)',fontSize:'var(--t-footnote)',cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44}} title={t('goals.card.editTitle')} aria-label={t('goals.card.editTitle')}><Pencil size={14} strokeWidth={1.7} aria-hidden="true" /></button>
+                <button onClick={()=>{ if (inSheet) closeBucketGoal(); deleteWithUndo('goals', g, t('common.deleted'), t('common.undo')) }} aria-label={t('common.confirmDelete')} style={{background:'none',border:'none',color:'var(--th)',fontSize:'var(--t-footnote)',cursor:'pointer',padding:'2px 5px',minWidth:44,minHeight:44,display:'inline-flex',alignItems:'center',justifyContent:'center'}}><X size={16} strokeWidth={1.7} aria-hidden="true" /></button>
               </div>
             </div>
             <div role="progressbar" aria-valuenow={Math.round(p*100)} aria-valuemin={0} aria-valuemax={100} aria-label={g.name} style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden',marginBottom:8}}>
@@ -246,9 +246,9 @@ export default function Goals() {
               if (recommended <= 0 || Math.abs(g.target - recommended) / recommended < 0.15) return null
               return (
                 <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',padding:'6px 10px',marginBottom:8,background:'rgba(245,166,35,.07)',border: 0,borderRadius:6}}>
-                  <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--amb)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
+                  <span style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--amb)',flex:1,minWidth:180}}>{t('goals.emergencyAdjust', { v: fmtMoney(recommended, sym) })}</span>
                   <button onClick={() => updateGoal({ ...g, target: recommended, saved: Math.min(g.saved, recommended) })}
-                    style={{background:'none',border:'.5px solid var(--amb)',borderRadius:6,padding:'3px 10px',fontSize:11,fontWeight:600,color:'var(--amb)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap'}}>
+                    style={{background:'none',border:'.5px solid var(--amb)',borderRadius:6,padding:'3px 10px',fontSize:'var(--t-caption)',fontWeight:600,color:'var(--amb)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap'}}>
                     {t('goals.emergencyAdjustBtn')}
                   </button>
                 </div>
@@ -257,9 +257,9 @@ export default function Goals() {
             {/* flexWrap: con montos largos (Bs. en millones) la fila no entra en 375px; se reparte en líneas en vez de salirse de la tarjeta */}
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'4px 8px'}}>
               <div style={{display:'flex',flexWrap:'wrap',gap:'2px 6px',alignItems:'baseline',minWidth:0}}>
-                <span className="num" style={{fontSize:12,color:'var(--tx)',fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
-                <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
-                <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
+                <span className="num" style={{fontSize:'var(--t-footnote)',color:'var(--tx)',fontWeight:600}}><Money>{fmtMoney(g.saved,sym)}</Money></span>
+                <span style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.card.of', { v: fmtMoney(g.target,sym) })}</span>
+                <span style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.card.remaining', { v: fmtMoney(g.target-g.saved,sym) })}</span>
               </div>
               {!done && <Btn variant="ghost" size="xs" onClick={()=>{ if (inSheet) closeBucketGoal(); setContribGoal(g) }} aria-haspopup="dialog" style={{minHeight:44}}>{t('goals.card.addSaving')}</Btn>}
             </div>
@@ -289,11 +289,11 @@ export default function Goals() {
         const ok = disponible > 0
         return (
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: ok ? 'var(--accent-bg)' : 'var(--red-bg)', border: 0, flexWrap:'wrap' }}>
-            <span style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('goals.available')}</span>
-            <span style={{ fontSize:15, fontWeight:700, fontFamily: 'var(--num)', color: ok ? 'var(--accent)' : 'var(--red)', marginLeft:'auto' }}>
+            <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('goals.available')}</span>
+            <span style={{ fontSize:'var(--t-headline)', fontWeight:700, fontFamily: 'var(--num)', color: ok ? 'var(--accent)' : 'var(--red)', marginLeft:'auto' }}>
               {ok ? '' : '−'}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
             </span>
-            {!ok && <span style={{ fontSize:11, color:'var(--red)', width:'100%' }}>{t('goals.available.negative')}</span>}
+            {!ok && <span style={{ fontSize:'var(--t-footnote)', color:'var(--red)', width:'100%' }}>{t('goals.available.negative')}</span>}
           </div>
         )
       })()}
@@ -332,8 +332,8 @@ export default function Goals() {
           {ingresoNetoGoals > 0 ? (
             <>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,padding:'8px 12px',background:'var(--sur2)',borderRadius:6}}>
-                <span style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('goals.suggest.basedOn', { month: activeMonth })}</span>
-                <span style={{fontSize:13,fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(ingresoNetoGoals,sym)}</Money></span>
+                <span style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('goals.suggest.basedOn', { month: activeMonth })}</span>
+                <span style={{fontSize:'var(--t-subhead)',fontWeight:700,color:'var(--grn)',fontFamily: 'var(--num)'}}><Money>{fmtMoney(ingresoNetoGoals,sym)}</Money></span>
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:14}}>
                 {suggestions.map((s,i) => (
@@ -344,28 +344,28 @@ export default function Goals() {
                         style={{marginTop:3,accentColor:'var(--grn)'}}/>
                       <div style={{minWidth:0}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4,flexWrap:'wrap',gap:4}}>
-                          <span style={{fontSize:13,fontWeight:600,color:'var(--tx)'}}>{s.name}</span>
-                          {s.alreadyExists && <span style={{fontSize:11,padding:'1px 6px',borderRadius:4,background:'var(--sur2)',color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('goals.suggest.exists')}</span>}
+                          <span style={{fontSize:'var(--t-subhead)',fontWeight:600,color:'var(--tx)'}}>{s.name}</span>
+                          {s.alreadyExists && <span style={{fontSize:'var(--t-caption)',padding:'1px 6px',borderRadius:4,background:'var(--sur2)',color:'var(--th)',fontFamily: 'var(--sans)'}}>{t('goals.suggest.exists')}</span>}
                         </div>
-                        <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:6,lineHeight:1.4}}>{s.description}</div>
+                        <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:6,lineHeight:1.4}}>{s.description}</div>
                         <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:4}}>
-                          <span style={{fontSize:11,fontFamily: 'var(--num)',color:'var(--grn)',fontWeight:600}}>{t('goals.suggest.target', { v: fmtMoney(s.target,sym) })}</span>
-                          <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.suggest.monthly', { v: fmtMoney(s.monthlyContribution,sym) })}</span>
-                          {s.monthsToGoal && <span style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.suggest.months', { n: s.monthsToGoal })}</span>}
+                          <span style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--num)',color:'var(--grn)',fontWeight:600}}>{t('goals.suggest.target', { v: fmtMoney(s.target,sym) })}</span>
+                          <span style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.suggest.monthly', { v: fmtMoney(s.monthlyContribution,sym) })}</span>
+                          {s.monthsToGoal && <span style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)'}}>{t('goals.suggest.months', { n: s.monthsToGoal })}</span>}
                         </div>
-                        <div style={{fontSize:11.5,color:'var(--th)',fontFamily:'var(--sans)',fontStyle:'italic',lineHeight:1.45}}>{s.hint}</div>
+                        <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)',fontStyle:'italic',lineHeight:1.45}}>{s.hint}</div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
               <div style={{padding:'10px 14px',background:'var(--sur2)',borderRadius:6,marginBottom:14}}>
-                <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)'}}>
+                <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)'}}>
                   {t('goals.suggest.totalLine')} <span style={{color:'var(--grn)',fontWeight:700}}><Money>{fmtMoney(totalMonthlyContribution(suggestions),sym)}</Money>{t('goals.suggest.perMonthSuffix')}</span>
                   <span style={{marginLeft:8,color:'var(--th)'}}>{t('goals.suggest.pctIncome', { pct: fmtPctPoints(ingresoNetoGoals>0?((totalMonthlyContribution(suggestions)/ingresoNetoGoals)*100).toFixed(0):0) })}</span>
                 </div>
               </div>
-              <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>
+              <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginBottom:12,lineHeight:1.5}}>
                 <InlineIcon kind="info" size={12} />{t('goals.suggest.disclaimer')}
               </div>
               <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -374,7 +374,7 @@ export default function Goals() {
               </div>
             </>
           ) : (
-            <div style={{fontSize:12,color:'var(--th)',fontFamily: 'var(--sans)',padding:'12px 0'}}>
+            <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',padding:'12px 0'}}>
               <InlineIcon kind="alert" size={13} />{t('goals.suggest.noIncome', { month: activeMonth })}
             </div>
           )}
@@ -398,7 +398,7 @@ export default function Goals() {
       <Sheet open={!!bucketGoal} onClose={closeBucketGoal} ariaLabel={bucketGoal ? bucketGoal.name : ''} maxWidth={480}>
         {bucketGoal && (
           <>
-            <h2 style={{ margin: '0 0 12px', fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)' }}>{t('goals.p2.bucketSheet')}</h2>
+            <h2 style={{ margin: '0 0 12px', fontFamily: 'var(--display)', fontSize: 'var(--t-title-2)', fontWeight: 700, color: 'var(--tx)' }}>{t('goals.p2.bucketSheet')}</h2>
             {renderGoalCard(bucketGoal, { inSheet: true })}
           </>
         )}

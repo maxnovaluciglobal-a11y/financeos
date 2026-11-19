@@ -7,8 +7,8 @@ import Sheet from '../../components/ui/Sheet.jsx'
 import { moveIndex, typeaheadIndex, isTypeaheadKey } from '../../components/ui/listboxKeys.js'
 
 export const srow = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 0', borderBottom: '0.5px solid var(--brd)' }
-export const slbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
-export const ssub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }
+export const slbl = { fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }
+export const ssub = { fontSize: 'var(--t-subhead)', lineHeight: 'var(--t-subhead-lh)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }
 
 // Interruptor de 44×24 (área táctil de 44 de alto con el relleno del botón).
 export function Switch({ checked, onChange, label, labelledBy }) {
@@ -67,7 +67,7 @@ export function OptionSheetRow({ label, sub, value, options, onChange, sheetTitl
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, maxWidth: '60%',
           padding: '0 10px', background: 'var(--sur2)', border: '0.5px solid var(--brd2)', borderRadius: 8,
-          color: 'var(--tx)', fontSize: 13, fontFamily: 'var(--sans)', cursor: 'pointer', flexShrink: 0,
+          color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', cursor: 'pointer', flexShrink: 0,
         }}
       >
         <span id={`osr-${uid}-value`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{current?.label}</span>
@@ -127,7 +127,7 @@ export function OptionSheet({ open, title, value, options, onClose, onChoose }) 
 
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={title} initialFocusRef={listRef}>
-      <div id={`os-${uid}-title`} style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{title}</div>
+      <div id={`os-${uid}-title`} style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 8 }}>{title}</div>
       <ul
         ref={listRef}
         role="listbox"
@@ -150,7 +150,7 @@ export function OptionSheet({ open, title, value, options, onClose, onChoose }) 
               onClick={() => onChoose(o.value)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, minHeight: 48, padding: '0 10px',
-                borderRadius: 8, cursor: 'pointer', fontSize: 14, color: 'var(--tx)',
+                borderRadius: 8, cursor: 'pointer', fontSize: 'var(--t-body)', color: 'var(--tx)',
                 background: i === active ? 'var(--sur2)' : 'transparent',
                 fontWeight: selected ? 600 : 400,
               }}

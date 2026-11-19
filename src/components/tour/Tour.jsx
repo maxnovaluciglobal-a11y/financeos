@@ -155,13 +155,13 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
         }}
       >
         <div aria-live="polite">
-          <div className="num" style={{ fontFamily: 'var(--sans)', fontWeight: 500, fontSize: 12, color: 'var(--th)', marginBottom: 6 }}>
+          <div className="num" style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)', marginBottom: 6 }}>
             {t('tour.count', { n: i + 1, total: steps.length })}
           </div>
-          <h2 id={labelledBy} style={{ margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)' }}>
+          <h2 id={labelledBy} style={{ margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 'var(--t-headline)', fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)' }}>
             {t(step.title)}
           </h2>
-          <p style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 14, lineHeight: 1.5, color: 'var(--tm)' }}>{t(step.body)}</p>
+          <p style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 'var(--t-body)', lineHeight: 1.5, color: 'var(--tm)' }}>{t(step.body)}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 12 }}>
           <button type="button" className="fos-link" onClick={close} style={{ marginLeft: -4 }}>{t('tour.exit')}</button>
@@ -169,7 +169,7 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
             {i > 0 && (
               <button type="button" className="fos-link" onClick={() => setI(n => n - 1)}>{t('tour.back')}</button>
             )}
-            <button type="button" ref={nextRef} className="fos-btn-primary" style={{ width: 'auto', fontSize: 14 }}
+            <button type="button" ref={nextRef} className="fos-btn-primary" style={{ width: 'auto', fontSize: 'var(--t-body)' }}
               onClick={() => (isLast ? close() : setI(n => n + 1))}>
               {isLast ? t('tour.finish') : t('tour.next')}
             </button>

@@ -92,7 +92,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
         </span>
         <span className={s.scoreRowMeta}>
           <span className={s.scoreLabel}><IconIQScore size={14} />{t('dash.health.title')}</span>
-          <ScoreState level={healthScore.level} label={healthScore.label} size={14} style={{ fontSize: 14, fontWeight: 600 }} />
+          <ScoreState level={healthScore.level} label={healthScore.label} size={14} style={{ fontSize: 'var(--t-headline)', fontWeight: 600 }} />
         </span>
         {setPage && <span className={s.scoreRowLink}>{t('home.score.viewPanorama')}</span>}
         {setPage && <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true" style={{ color: 'var(--th)' }} />}
@@ -118,7 +118,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
           <h2 id="home-score-title" className={s.scoreLabel} style={{ margin: 0 }}>
             <IconIQScore size={14} />{t('dash.health.title')}
           </h2>
-          <ScoreState level={healthScore.level} label={healthScore.label} size={16} style={{ fontSize: 15, fontWeight: 700 }} />
+          <ScoreState level={healthScore.level} label={healthScore.label} size={16} style={{ fontSize: 'var(--t-headline)', fontWeight: 700 }} />
           {delta && <DeltaLine delta={delta} valueText={valueText} prevMonth={prev ? prev.m : prevMonthOf(activeMonth)} />}
         </div>
         <Sparkline history={history} color={healthScore.color} />
@@ -158,7 +158,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
         })}
       </div>
       {Date.now() < SCORE_METHOD_NOTICE_UNTIL && (
-        <p style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, margin: '10px 0 0' }}>{t('score.debtLoadChanged')}</p>
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, margin: '10px 0 0' }}>{t('score.debtLoadChanged')}</p>
       )}
     </section>
   )

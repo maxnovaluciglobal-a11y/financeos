@@ -20,8 +20,8 @@ export default function TrialUnsubscribe({ id }) {
     <main aria-labelledby="unsub-title" style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--bg)' }}>
       <div style={{ maxWidth: 440, width: '100%', background: 'var(--sur)', border: 0, borderRadius: 'var(--rxl)', boxShadow: 'var(--sh-2)', padding: '28px 24px' }}>
         <div style={{ marginBottom: 18 }}><Logo size={28} /></div>
-        <h1 id="unsub-title" className="display" style={{ fontSize: 22, fontWeight: 600, color: 'var(--tx)', margin: '0 0 10px' }}>{t('unsub.trial.title')}</h1>
-        <p role="status" aria-live="polite" style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--tm)', margin: '0 0 20px' }}>
+        <h1 id="unsub-title" className="display" style={{ fontSize: 'var(--t-title-2)', fontWeight: 600, color: 'var(--tx)', margin: '0 0 10px' }}>{t('unsub.trial.title')}</h1>
+        <p role="status" aria-live="polite" style={{ fontSize: 'var(--t-body)', lineHeight: 1.55, color: 'var(--tm)', margin: '0 0 20px' }}>
           {state === 'done' ? t('unsub.trial.done') : state === 'error' ? t('unsub.trial.error') : t('unsub.trial.body')}
         </p>
         {state !== 'done' && (

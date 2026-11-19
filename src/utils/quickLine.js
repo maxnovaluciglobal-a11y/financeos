@@ -69,9 +69,10 @@ const DATE_LEAD_INS = new Set(['el', 'on', 'am', 'no', 'na', 'last', 'pasado', '
 // Punto de partida para la primera vez, cuando todavía no hay reglas
 // aprendidas: las reglas de la persona siempre mandan.
 const SEED_EXPENSE = {
-  'Alimentación': 'pan super supermercado mercado almuerzo cena desayuno cafe comida pizza empanadas arepa groceries lunch dinner breakfast coffee food bread padaria almoco jantar lanche brot kaffee mittagessen abendessen supermarkt lebensmittel',
-  Transporte: 'uber taxi didi cabify bus colectivo metro nafta gasolina combustible peaje estacionamiento fuel parking gasoline onibus benzin tanken bahn',
-  'Entretención': 'netflix spotify disney hbo cine movie cinema kino',
+  // Con marcas de uso común: el comercio que manda el Atajo de Apple Pay (autoEntry.js).
+  'Alimentación': 'pan super supermercado mercado almuerzo cena desayuno cafe comida pizza empanadas arepa groceries lunch dinner breakfast coffee food bread padaria almoco jantar lanche brot kaffee mittagessen abendessen supermarkt lebensmittel lider jumbo unimarc tottus oxxo walmart carrefour starbucks mcdonalds rewe aldi lidl edeka',
+  Transporte: 'uber taxi didi cabify bus colectivo metro nafta bencina gasolina combustible peaje estacionamiento fuel parking gasoline onibus benzin tanken bahn copec',
+  'Entretención': 'netflix spotify disney hbo cine movie cinema kino cinemark cinepolis',
   Salud: 'farmacia medico doctor pharmacy remedio apotheke arzt',
   Servicios: 'luz agua internet telefono electricity strom',
   Vivienda: 'alquiler arriendo renta rent aluguel miete',
@@ -312,7 +313,8 @@ function buildDescription(tokens, skip) {
   return s && s === s.toLowerCase() ? s[0].toUpperCase() + s.slice(1) : s
 }
 
-function findCategory({ description, text, type, rules, allowed }) {
+// También la usan el dictado (voiceEntry.js) y el alta por URL (autoEntry.js).
+export function findCategory({ description, text, type, rules, allowed }) {
   const ok = (c) => c && (!allowed || allowed.includes(c))
   const direct = suggestCategory(description, rules, allowed)
   if (direct) return direct

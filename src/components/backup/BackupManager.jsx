@@ -29,18 +29,18 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = fa
         maxWidth: 400, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,.2)',
         border: 0,
       }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 10 }}>{title}</div>
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.7, marginBottom: 20, whiteSpace: 'pre-line' }}>{message}</div>
+        <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 10 }}>{title}</div>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.7, marginBottom: 20, whiteSpace: 'pre-line' }}>{message}</div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
             background: 'var(--fill)', border: 0,
-            borderRadius: 6, padding: '8px 16px', fontSize: 12,
+            borderRadius: 6, padding: '8px 16px', fontSize: 'var(--t-footnote)',
             cursor: 'pointer', color: 'var(--tm)', fontFamily: 'var(--sans)',
           }}>{t('common.cancel')}</button>
           <button onClick={onConfirm} style={{
             background: danger ? 'var(--btn-danger-bg)' : 'var(--btn-primary-bg)', color: danger ? 'var(--btn-danger-fg)' : 'var(--btn-primary-fg)',
             border: 'none', borderRadius: 6, padding: '8px 18px',
-            fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            fontSize: 'var(--t-footnote)', fontWeight: 600, cursor: 'pointer',
             fontFamily: 'var(--sans)',
           }}>{t('common.confirm')}</button>
         </div>
@@ -233,10 +233,10 @@ export default function BackupManager() {
     justifyContent: 'space-between', padding: '14px 0',
     borderBottom: '0.5px solid var(--brd)', gap: 12,
   }
-  const slbl = { fontSize: 13, fontWeight: 500, color: 'var(--tx)' }
-  const ssub = { fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2, lineHeight: 1.5 }
+  const slbl = { fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }
+  const ssub = { fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2, lineHeight: 1.5 }
   const btn = (variant = 'default') => ({
-    padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, minHeight: 44,
+    padding: '8px 16px', borderRadius: 6, fontSize: 'var(--t-footnote)', fontWeight: 600, minHeight: 44,
     cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
     flexShrink: 0, transition: 'all .15s',
     ...(variant === 'primary' ? { background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)' } : {}),
@@ -266,7 +266,7 @@ export default function BackupManager() {
           <div style={{
             padding: '10px 14px', background: 'var(--fill)',
             border: 0, borderRadius: 8,
-            fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
+            fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5,
           }}>
             {t('backup.noData')}
           </div>
@@ -277,14 +277,14 @@ export default function BackupManager() {
           padding: '14px 16px', background: 'var(--fill)',
           border: 0, borderRadius: 8,
         }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }}>
             <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('backup.where.title')}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--tm)', lineHeight: 1.7, fontFamily: 'var(--sans)' }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.7, fontFamily: 'var(--sans)' }}>
             {t('backup.where.body')} <strong style={{ color: 'var(--tx)' }}>{t('backup.where.warn')}</strong>.{' '}
             {t('backup.where.noRecovery')}
           </div>
-          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+          <div style={{ marginTop: 8, fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('backup.where.tip')}
           </div>
         </div>
@@ -324,7 +324,7 @@ export default function BackupManager() {
               autoComplete="new-password"
               aria-label={t('backup.enc.label', { n: MIN_PASSPHRASE_LENGTH })}
               placeholder={t('backup.enc.label', { n: MIN_PASSPHRASE_LENGTH })}
-              style={{ padding: '8px 10px', borderRadius: 6, border: '0.5px solid var(--brd2)', background: 'var(--sur)', color: 'var(--tx)', fontSize: 13 }}
+              style={{ padding: '8px 10px', borderRadius: 6, border: '0.5px solid var(--brd2)', background: 'var(--sur)', color: 'var(--tx)', fontSize: 'var(--t-subhead)' }}
             />
           )}
         </div>
@@ -341,7 +341,7 @@ export default function BackupManager() {
               autoComplete="current-password"
               aria-label={t('backup.enc.askLabel')}
               placeholder={t('backup.enc.askLabel')}
-              style={{ padding: '8px 10px', borderRadius: 6, border: '0.5px solid var(--brd2)', background: 'var(--sur)', color: 'var(--tx)', fontSize: 13 }}
+              style={{ padding: '8px 10px', borderRadius: 6, border: '0.5px solid var(--brd2)', background: 'var(--sur)', color: 'var(--tx)', fontSize: 'var(--t-subhead)' }}
             />
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={handleOpenEncrypted} disabled={importing || !openPass} style={{ ...btn('primary'), opacity: importing || !openPass ? 0.6 : 1 }}>{t('backup.enc.open')}</button>
@@ -383,8 +383,8 @@ export default function BackupManager() {
           <div style={{ marginTop: 8, padding: '16px', background: 'var(--fill)', border: 0, borderRadius: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>☁ {t('backup.cloud.title')}</div>
-                <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+                <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>☁ {t('backup.cloud.title')}</div>
+                <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
                   {cloudInfo?.connected
                     ? `${t('backup.cloud.connected', { id: cloudInfo.userId })}${cloudInfo.lastSync ? ' · ' + t('backup.cloud.lastSync', { date: formatDate(cloudInfo.lastSync) }) : ''}`
                     : t('backup.cloud.noSession')}
@@ -395,7 +395,7 @@ export default function BackupManager() {
                   onClick={handleCloudPull}
                   disabled={cloudSyncing}
                   title={t('backup.cloud.pullTitle')}
-                  style={{ ...btn('default'), fontSize: 11, padding: '6px 12px', opacity: cloudSyncing ? 0.5 : 1 }}
+                  style={{ ...btn('default'), fontSize: 'var(--t-footnote)', padding: '6px 12px', opacity: cloudSyncing ? 0.5 : 1 }}
                 >
                   ↓ {t('backup.restore.btn')}
                 </button>
@@ -403,13 +403,13 @@ export default function BackupManager() {
                   onClick={handleCloudPush}
                   disabled={cloudSyncing || !hasRealData}
                   title={t('backup.cloud.pushTitle')}
-                  style={{ ...btn('primary'), fontSize: 11, padding: '6px 12px', opacity: (cloudSyncing || !hasRealData) ? 0.5 : 1 }}
+                  style={{ ...btn('primary'), fontSize: 'var(--t-footnote)', padding: '6px 12px', opacity: (cloudSyncing || !hasRealData) ? 0.5 : 1 }}
                 >
                   {cloudSyncing ? t('backup.cloud.syncing') : `↑ ${t('backup.cloud.sync')}`}
                 </button>
               </div>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>
               {t('backup.cloud.note')}
             </div>
           </div>
@@ -418,7 +418,7 @@ export default function BackupManager() {
         {/* Mensaje de estado */}
         {status && (
           <div style={{
-            padding: '10px 14px', borderRadius: 8, fontSize: 11,
+            padding: '10px 14px', borderRadius: 8, fontSize: 'var(--t-footnote)',
             fontFamily: 'var(--sans)', lineHeight: 1.5,
             background: status.type === 'ok' ? 'var(--pos-bg)' : status.type === 'error' ? 'var(--red-bg)' : 'var(--amb-bg)',
             color: status.type === 'ok' ? 'var(--pos)' : status.type === 'error' ? 'var(--red)' : 'var(--amb)',

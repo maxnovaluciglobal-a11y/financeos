@@ -126,9 +126,9 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
   const set = (k,v) => setF(p => ({ ...p, [k]:v }))
   const categoriesExpense = getCategoriesExpense(settings)
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
-    padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
+    padding:'7px 10px', fontSize:'var(--t-subhead)', color:'var(--tx)', width:'100%',
     boxSizing:'border-box', fontFamily: 'var(--sans)' }
-  const lbl = { fontSize: 12, color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600,
+  const lbl = { fontSize: 'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600,
     marginBottom:3, display:'block' }
 
   const subcatOptions = SUBCATS[f.category] || []
@@ -159,13 +159,13 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
   return (
     <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
       borderRadius:'var(--r)', padding:'16px', marginBottom:12 }}>
-      <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:12 }}>
+      <div style={{ fontSize:'var(--t-subhead)', fontWeight:600, color:'var(--tx)', marginBottom:12 }}>
         {t('mov.form.expTitle')}
       </div>
 
       {onImport && (
         <button type="button" onClick={onImport}
-          style={{ background:'none', border:'none', padding:0, marginBottom:4, minHeight:44, fontSize:12, fontFamily:'var(--sans)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center' }}>
+          style={{ background:'none', border:'none', padding:0, marginBottom:4, minHeight:44, fontSize:'var(--t-footnote)', fontFamily:'var(--sans)', color:'var(--accent)', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center' }}>
           <InlineIcon kind="upload" size={13} />{t('common.importShortcut')}
         </button>
       )}
@@ -174,7 +174,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
         {!showPaste ? (
           <button type="button" onClick={() => { setShowPaste(true); setPasteMsg(null) }}
             style={{ background: 'var(--fill)', border: 0, borderRadius:6,
-              padding:'7px 12px', fontSize:12, color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
+              padding:'7px 12px', fontSize:'var(--t-footnote)', color:'var(--tm)', cursor:'pointer', width:'100%', textAlign:'left' }}>
             {t('mov.form.pasteBtn')}
           </button>
         ) : (
@@ -186,22 +186,22 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
             <div style={{ display:'flex', gap:8, marginTop:8 }}>
               <button type="button" onClick={detectFromPaste} disabled={!pasteText.trim()}
                 style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none', borderRadius:6,
-                  padding:'6px 14px', fontSize:12, fontWeight:600, cursor: pasteText.trim() ? 'pointer' : 'default', opacity: pasteText.trim() ? 1 : .5 }}>
+                  padding:'6px 14px', fontSize:'var(--t-footnote)', fontWeight:600, cursor: pasteText.trim() ? 'pointer' : 'default', opacity: pasteText.trim() ? 1 : .5 }}>
                 {t('mov.form.detect')}
               </button>
               <button type="button" onClick={() => { setShowPaste(false); setPasteText('') }}
                 style={{ background: 'var(--fill)', border: 0, borderRadius:6,
-                  padding:'6px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
+                  padding:'6px 14px', fontSize:'var(--t-footnote)', color:'var(--th)', cursor:'pointer' }}>
                 {t('common.cancel')}
               </button>
             </div>
-            <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:6, lineHeight:1.5 }}>
+            <div style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', marginTop:6, lineHeight:1.5 }}>
               {t('mov.form.pasteLocal')}
             </div>
           </div>
         )}
         {pasteMsg && (
-          <div style={{ marginTop:8, fontSize:11, color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily: 'var(--sans)' }}>
+          <div style={{ marginTop:8, fontSize:'var(--t-footnote)', color: pasteMsg.ok ? 'var(--grn)' : 'var(--red)', fontFamily: 'var(--sans)' }}>
             <InlineIcon kind={pasteMsg.ok ? 'ok' : 'alert'} size={13} />{pasteMsg.text}
           </div>
         )}
@@ -225,14 +225,14 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
         {subcatOptions.length > 0 && (
           <div style={{ gridColumn:'1 / -1' }}>
             <label style={lbl}>
-              {t('mov.form.subcat')} <span style={{ color:'var(--accent)', fontSize:11 }}>{t('mov.form.optional')}</span>
+              {t('mov.form.subcat')} <span style={{ color:'var(--accent)', fontSize:'var(--t-footnote)' }}>{t('mov.form.optional')}</span>
             </label>
             <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
               {subcatOptions.map(sc => (
                 <button key={sc} type="button"
                   onClick={() => set('subcategory', f.subcategory === sc ? '' : sc)}
                   style={{
-                    padding:'4px 10px', borderRadius:16, fontSize:11, cursor:'pointer',
+                    padding:'4px 10px', borderRadius:16, fontSize:'var(--t-caption)', cursor:'pointer',
                     fontFamily:'var(--sans)', border:`.5px solid ${f.subcategory === sc ? 'var(--accent)' : 'var(--brd2)'}`,
                     background: f.subcategory === sc ? 'var(--accent-bg)' : 'var(--sur2)',
                     color: f.subcategory === sc ? 'var(--accent)' : 'var(--th)',
@@ -252,7 +252,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
           <SheetSelect style={inp} value={f.type} onChange={e => set('type', e.target.value)}>
             <option value="Necesidad">{t('mov.form.typeNeed')}</option><option value="Deseo">{t('mov.form.typeWant')}</option></SheetSelect></FormGroup>
       </div>
-      <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12, color:'var(--tm)', cursor:'pointer', marginBottom:12, lineHeight:1.4 }}>
+      <label style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:'var(--t-footnote)', color:'var(--tm)', cursor:'pointer', marginBottom:12, lineHeight:1.4 }}>
         <input type="checkbox" checked={!!f.inv} onChange={e => set('inv', e.target.checked)} style={{ width:16, height:16, flexShrink:0, marginTop:1 }} />
         <span style={{ minWidth:0 }}>{t('mov.form.invCheck')}</span>
       </label>
@@ -266,7 +266,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
       </div>
       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
         <button onClick={onCancel} style={{ background: 'var(--fill)', border: 0,
-          borderRadius:6, padding:'6px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
+          borderRadius:6, padding:'6px 14px', fontSize:'var(--t-footnote)', color:'var(--th)', cursor:'pointer' }}>
           {t('common.cancel')}
         </button>
         <button onClick={() => {
@@ -274,7 +274,7 @@ function FormGasto({ onSave, onCancel, sym, projects = [], onImport, settings, i
           onSave({ ...f, id:uid(), amount:parseFloat(f.amount)||0,
             createdAt:new Date().toISOString() })
         }} style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none',
-          borderRadius:6, padding:'6px 16px', fontSize:12, fontWeight:600, cursor:'pointer' }}>
+          borderRadius:6, padding:'6px 16px', fontSize:'var(--t-footnote)', fontWeight:600, cursor:'pointer' }}>
           {t('mov.form.saveExp')}
         </button>
       </div>
@@ -291,13 +291,13 @@ function FormSub({ onSave, onCancel }) {
   })
   const set = (k,v) => setF(p => ({ ...p, [k]:v }))
   const inp = { background:'var(--sur)', border:'.5px solid var(--brd)', borderRadius:6,
-    padding:'7px 10px', fontSize:13, color:'var(--tx)', width:'100%',
+    padding:'7px 10px', fontSize:'var(--t-subhead)', color:'var(--tx)', width:'100%',
     boxSizing:'border-box', fontFamily: 'var(--sans)' }
 
   return (
     <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
       borderRadius:'var(--r)', padding:'16px', marginBottom:12 }}>
-      <div style={{ fontSize:13, fontWeight:600, color:'var(--tx)', marginBottom:12 }}>
+      <div style={{ fontSize:'var(--t-subhead)', fontWeight:600, color:'var(--tx)', marginBottom:12 }}>
         {t('mov.form.subTitle')}
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:10, marginBottom:10 }}>
@@ -320,7 +320,7 @@ function FormSub({ onSave, onCancel }) {
       </div>
       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
         <button onClick={onCancel} style={{ background: 'var(--fill)', border: 0,
-          borderRadius:6, padding:'6px 14px', fontSize:12, color:'var(--th)', cursor:'pointer' }}>
+          borderRadius:6, padding:'6px 14px', fontSize:'var(--t-footnote)', color:'var(--th)', cursor:'pointer' }}>
           {t('common.cancel')}
         </button>
         <button onClick={() => {
@@ -328,7 +328,7 @@ function FormSub({ onSave, onCancel }) {
           onSave({ ...f, id:uid(), amount:parseFloat(f.amount)||0,
             createdAt:new Date().toISOString() })
         }} style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none',
-          borderRadius:6, padding:'6px 16px', fontSize:12, fontWeight:600, cursor:'pointer' }}>
+          borderRadius:6, padding:'6px 16px', fontSize:'var(--t-footnote)', fontWeight:600, cursor:'pointer' }}>
           {t('mov.form.saveSub')}
         </button>
       </div>
@@ -705,10 +705,10 @@ export default function Movements({ setPage }) {
           <div style={{ marginBottom:16 }}>
             <Alert type={totalSubs > totalInc * 0.15 ? 'danger' : 'warn'}>
               <div>
-                <div style={{ fontSize:12, fontWeight:600, fontFamily: 'var(--sans)', marginBottom:3 }}>
+                <div style={{ fontSize:'var(--t-footnote)', fontWeight:600, fontFamily: 'var(--sans)', marginBottom:3 }}>
                   {t('mov.banner.title')}
                 </div>
-                <div style={{ fontSize:13, color:'var(--tx)', fontFamily: 'var(--sans)' }}>
+                <div style={{ fontSize:'var(--t-subhead)', color:'var(--tx)', fontFamily: 'var(--sans)' }}>
                   <strong style={{ color:'var(--amb)' }}>{t('mov.banner.perMonth', { v: fmtL(totalSubs) })}</strong>
                   {' → '}
                   <strong style={{ color:'var(--tx)' }}>{t('mov.banner.perYear', { v: fmtL(totalAnnual) })}</strong>
@@ -870,12 +870,12 @@ export default function Movements({ setPage }) {
         borderRadius:'var(--r)', overflow:'hidden' }}>
         <div style={{ padding:'10px 14px', borderBottom:'.5px solid var(--brd)',
           display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-          <div style={{ fontSize: 12, fontWeight:600, color:'var(--amb)',
+          <div style={{ fontSize: 'var(--t-footnote)', fontWeight:600, color:'var(--amb)',
             fontFamily: 'var(--sans)'}}>
             {t('rec.mov.title', { n: fixedExp.length })}
           </div>
           {setPage && (
-            <button type="button" className="fos-link" style={{ fontSize:12 }} onClick={() => setPage('recurring')}>{t('rec.sheet.goList')} →</button>
+            <button type="button" className="fos-link" style={{ fontSize:'var(--t-footnote)' }} onClick={() => setPage('recurring')}>{t('rec.sheet.goList')} →</button>
           )}
         </div>
         <div style={{ maxHeight:460, overflowY:'auto', padding:'0 14px' }}>
@@ -892,7 +892,7 @@ export default function Movements({ setPage }) {
       </div>
 
       {/* Disclaimer */}
-      <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:4 }}>
+      <div style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', marginTop:4 }}>
         {t('mov.disclaimer')}
       </div>
     </div>

@@ -116,8 +116,8 @@ function OptionCard({ icon, label, desc, onClick, disabled }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>{icon}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--tx)', fontFamily: 'var(--sans)' }}>{label}</span>
-        {desc && <span style={{ display: 'block', fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }}>{desc}</span>}
+        <span style={{ display: 'block', fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', fontFamily: 'var(--sans)' }}>{label}</span>
+        {desc && <span style={{ display: 'block', fontSize: 'var(--t-subhead)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }}>{desc}</span>}
       </span>
     </button>
   )
@@ -134,9 +134,9 @@ const box = {
   borderRadius: 'var(--rxl)', padding: '20px 20px 22px', maxWidth: 460, width: '100%',
   boxShadow: 'var(--sh-3)', margin: 'auto',
 }
-const h1s = { fontSize: 24, fontWeight: 700, color: 'var(--tx)', margin: '0 0 6px', fontFamily: 'var(--display)', letterSpacing: '-0.02em', lineHeight: 1.15, outline: 'none' }
-const subs = { fontSize: 14, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 20px' }
-const fieldLabel = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 8, letterSpacing: '.02em' }
+const h1s = { fontSize: 'var(--t-title-2)', fontWeight: 700, color: 'var(--tx)', margin: '0 0 6px', fontFamily: 'var(--display)', letterSpacing: '-0.02em', lineHeight: 1.15, outline: 'none' }
+const subs = { fontSize: 'var(--t-body)', color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 20px' }
+const fieldLabel = { display: 'block', fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 8, letterSpacing: '.02em' }
 
 export default function Onboarding({ onComplete }) {
   const { settings, updateSettings, incomes, expenses, debts, goals, rehydrate } = useApp()
@@ -281,7 +281,7 @@ export default function Onboarding({ onComplete }) {
       <Wordmark size={14} />
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}><ProgressBar step={step} t={t} /></div>
       {step === 0
-        ? <button type="button" className="fos-link" style={{ fontSize: 13 }} onClick={() => finish('dashboard', { setup: true })} disabled={busy}>{t('onboarding.v2.skip')}</button>
+        ? <button type="button" className="fos-link" style={{ fontSize: 'var(--t-subhead)' }} onClick={() => finish('dashboard', { setup: true })} disabled={busy}>{t('onboarding.v2.skip')}</button>
         : <span style={{ width: 44 }} aria-hidden="true" />}
     </div>
   )
@@ -313,7 +313,7 @@ export default function Onboarding({ onComplete }) {
             style={{ justifyContent: 'flex-start', textAlign: 'left', gap: 10 }}>
             {/* D5 (08-oct-2026): CountryBadge en vez del código ISO suelto. "Otro" no
                 tiene país → texto. aria-hidden: el nombre del botón es el país. */}
-            <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', minWidth: 22, color: 'var(--tm)', fontFamily: 'var(--sans)', fontSize: 12 }}>
+            <span aria-hidden="true" style={{ display: 'inline-flex', justifyContent: 'center', minWidth: 22, color: 'var(--tm)', fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)' }}>
               {c.code === 'OTHER' ? '··' : <CountryBadge code={c.code} size={22} />}
             </span>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t(countryKey(c.code))}</span>
@@ -321,7 +321,7 @@ export default function Onboarding({ onComplete }) {
         ))}
       </div>
       {!allCountries && (
-        <button type="button" className="fos-link" style={{ fontSize: 13, marginBottom: 12 }} onClick={() => setAllCountries(true)}>
+        <button type="button" className="fos-link" style={{ fontSize: 'var(--t-subhead)', marginBottom: 12 }} onClick={() => setAllCountries(true)}>
           {t('onboarding.v2.moreCountries', { n: COUNTRIES.length })}
         </button>
       )}
@@ -337,7 +337,7 @@ export default function Onboarding({ onComplete }) {
           })}
         </SheetSelect>
         {answers.currency === suggestedCurrency(answers.country) && answers.country !== 'OTHER' && (
-          <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+          <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('onboarding.v2.currencySuggested', { country: t(countryKey(answers.country)) })}
           </span>
         )}
@@ -345,10 +345,10 @@ export default function Onboarding({ onComplete }) {
 
       {/* Vista previa del formato — mono porque es un dato */}
       <div aria-live="polite" style={{ padding: '12px 14px', borderRadius: 'var(--rl)', background: 'var(--fill)', border: 0, marginBottom: 14 }}>
-        <div className="num" style={{ fontSize: 24, color: 'var(--tx)', lineHeight: 1.2 }}>
-          {previewAmount(answers.currency, lang)} <span style={{ fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
+        <div className="num" style={{ fontSize: 'var(--t-title-2)', color: 'var(--tx)', lineHeight: 1.2 }}>
+          {previewAmount(answers.currency, lang)} <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--th)', letterSpacing: '.04em' }}>{answers.currency}</span>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>{t('onboarding.v2.step1.preview')}</div>
+        <div style={{ fontSize: 'var(--t-subhead)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>{t('onboarding.v2.step1.preview')}</div>
       </div>
 
       {/* Plantilla por persona (09-oct-2026): una sola pregunta, "No" por defecto */}
@@ -362,7 +362,7 @@ export default function Onboarding({ onComplete }) {
           </button>
         ))}
       </div>
-      <p id="onb-self-hint" style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
+      <p id="onb-self-hint" style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
         {t('onboarding.v2.selfEmployed.hint')}
       </p>
 
@@ -377,11 +377,11 @@ export default function Onboarding({ onComplete }) {
           </button>
         ))}
       </div>
-      <p id="onb-props-hint" style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
+      <p id="onb-props-hint" style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 16px' }}>
         {t('onboarding.v2.properties.hint')}
       </p>
 
-      <p style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 18px' }}>
+      <p style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 'var(--t-subhead)', color: 'var(--tm)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: '0 0 18px' }}>
         <Smartphone size={16} strokeWidth={1.7} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2, color: 'var(--th)' }} />
         {t('onboarding.v2.step1.privacy')}
       </p>
@@ -405,7 +405,7 @@ export default function Onboarding({ onComplete }) {
       <p style={subs}>{t('onboarding.v2.step2.sub')}</p>
 
       {firstTxSaved ? (
-        <div role="status" style={{ padding: '14px', borderRadius: 'var(--rl)', background: 'var(--pos-bg)', color: 'var(--pos)', fontSize: 14, fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 16 }}>
+        <div role="status" style={{ padding: '14px', borderRadius: 'var(--rl)', background: 'var(--pos-bg)', color: 'var(--pos)', fontSize: 'var(--t-headline)', fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 16 }}>
           ✓ {t('onboarding.v2.step2.done')}
         </div>
       ) : (
@@ -447,8 +447,8 @@ export default function Onboarding({ onComplete }) {
             <span className="num-hero" style={{ fontSize: 'var(--fs-hero)', color: score.color, lineHeight: 1 }}>
               <CountUp value={score.score} format={(v) => Math.round(v)} duration={900} overshoot />
             </span>
-            <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--th)' }}>/ 100</span>
-            <ScoreState level={score.level} label={score.label} size={16} style={{ fontSize: 15, fontFamily: 'var(--sans)', marginLeft: 'auto', alignSelf: 'center' }} />
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)', color: 'var(--th)' }}>/ 100</span>
+            <ScoreState level={score.level} label={score.label} size={16} style={{ fontSize: 'var(--t-body)', fontFamily: 'var(--sans)', marginLeft: 'auto', alignSelf: 'center' }} />
           </div>
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 18px', display: 'grid', gap: 10 }}>
@@ -457,8 +457,8 @@ export default function Onboarding({ onComplete }) {
               return (
                 <li key={b.key}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: 13, fontFamily: 'var(--sans)', color: isWeak ? 'var(--tx)' : 'var(--tm)', fontWeight: isWeak ? 600 : 400 }}>{b.label}</span>
-                    <span className="num" style={{ fontSize: 13, color: 'var(--th)' }}>{b.pts}/{b.max}</span>
+                    <span style={{ fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', color: isWeak ? 'var(--tx)' : 'var(--tm)', fontWeight: isWeak ? 600 : 400 }}>{b.label}</span>
+                    <span className="num" style={{ fontSize: 'var(--t-subhead)', color: 'var(--th)' }}>{b.pts}/{b.max}</span>
                   </div>
                   <div aria-hidden="true" style={{ height: 4, borderRadius: 2, background: 'var(--sur3)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${(b.pts / b.max) * 100}%`, background: isWeak ? 'var(--color-warn)' : 'var(--tm)', borderRadius: 2 }} />
@@ -470,8 +470,8 @@ export default function Onboarding({ onComplete }) {
 
           {weakest && (
             <div style={{ padding: '12px 14px', borderRadius: 'var(--rl)', border: 0, background: 'var(--fill)', marginBottom: 18 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 4 }}>{t('onboarding.v2.step3.next')}</div>
-              <p style={{ fontSize: 14, color: 'var(--tx)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t(`onboarding.v2.next.${weakest.key}`)}</p>
+              <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 4 }}>{t('onboarding.v2.step3.next')}</div>
+              <p style={{ fontSize: 'var(--t-body)', color: 'var(--tx)', fontFamily: 'var(--sans)', lineHeight: 1.5, margin: 0 }}>{t(`onboarding.v2.next.${weakest.key}`)}</p>
               {nextPage && (
                 <button type="button" className="fos-link" style={{ marginLeft: -4 }} onClick={() => finish(nextPage)} disabled={busy}>
                   {t('onboarding.v2.step3.goTo', { page: t(PAGE_LABEL[nextPage]) })} <span aria-hidden="true">→</span>

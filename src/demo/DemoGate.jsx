@@ -75,10 +75,10 @@ export default function DemoGate({ onPass }) {
 
   if (!langReady) return <BootSplash />
 
-  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }
+  const labelStyle = { display: 'block', fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }
   const inputStyle = {
     width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 'var(--r)',
-    border: '1px solid var(--brd2)', fontSize: 16, fontFamily: 'var(--sans)',
+    border: '1px solid var(--brd2)', fontSize: 'var(--t-callout)', fontFamily: 'var(--sans)',
   }
 
   return (
@@ -108,7 +108,7 @@ export default function DemoGate({ onPass }) {
 
         <h1 style={{
           fontFamily: 'var(--display)',
-          fontSize: 20,
+          fontSize: 'var(--t-title-2)',
           fontWeight: 700,
           color: 'var(--tx)',
           textAlign: 'center',
@@ -118,7 +118,7 @@ export default function DemoGate({ onPass }) {
         </h1>
         <p style={{
           fontFamily: 'var(--sans)',
-          fontSize: 13,
+          fontSize: 'var(--t-subhead)',
           color: 'var(--tm)',
           textAlign: 'center',
           margin: '0 0 24px',
@@ -158,7 +158,7 @@ export default function DemoGate({ onPass }) {
             onChange={e => setConsent(e.target.checked)}
             style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }}
           />
-          <span style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.45 }}>
+          <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.45 }}>
             {t(MARKETING_DOI_ENABLED ? 'demoGate.consentDoi' : 'demoGate.consent')}
           </span>
         </label>
@@ -166,7 +166,7 @@ export default function DemoGate({ onPass }) {
         <Turnstile ref={captcha} action="demo" errorText={t('authGate.errorCaptcha')} />
 
         {error && (
-          <div role="alert" style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>
+          <div role="alert" style={{ color: 'var(--red)', fontSize: 'var(--t-subhead)', marginBottom: 12 }}>
             {error}
           </div>
         )}
@@ -178,7 +178,7 @@ export default function DemoGate({ onPass }) {
           style={{
             width: '100%',
             minHeight: 48,
-            fontSize: 14,
+            fontSize: 'var(--t-headline)',
             fontWeight: 700,
             cursor: loading ? 'default' : 'pointer',
             opacity: loading ? 0.7 : 1,
@@ -187,7 +187,7 @@ export default function DemoGate({ onPass }) {
           {loading ? t('demoGate.loading') : t('demoGate.submit')}
         </Btn>
 
-        <p style={{ fontSize: 12, color: 'var(--tm)', textAlign: 'center', marginTop: 14, lineHeight: 1.45 }}>
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', textAlign: 'center', marginTop: 14, lineHeight: 1.45 }}>
           {t('demoGate.foot')}
         </p>
       </form>

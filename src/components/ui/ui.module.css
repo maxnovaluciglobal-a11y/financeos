@@ -3,8 +3,8 @@
 /* BUTTON */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  border-radius: var(--r); font-size: .8125rem; font-family: var(--sans);
-  font-weight: 500; border: 0;
+  border-radius: var(--r); font-size: var(--t-subhead); font-family: var(--sans);
+  font-weight: 600; border: 0;
   padding: 7px 14px; min-height: 44px;
   /* propiedades explícitas (no `all`) + press feedback con ease-out fuerte (Emil) */
   transition: background .15s ease, border-color .15s ease, opacity .15s ease,
@@ -20,8 +20,8 @@
 .btn_ghost:hover, .btn_ghost:active { background: var(--fill-2); }
 .btn_danger { background: var(--red-bg); color: var(--red); }
 .btn_danger:hover { background: color-mix(in srgb, var(--red) 18%, transparent); }
-.btn_sm { padding: 4px 10px; font-size: .75rem; }
-.btn_xs { padding: 2px 7px; font-size: .75rem; background: transparent; }
+.btn_sm { padding: 4px 10px; font-size: var(--t-footnote); }
+.btn_xs { padding: 2px 7px; font-size: var(--t-footnote); background: transparent; }
 
 /* CARD */
 .card {
@@ -31,7 +31,7 @@
 }
 .cardHd {
   display: flex; align-items: center; justify-content: space-between;
-  font-size: .75rem; font-weight: 600; color: var(--tm);
+  font-size: var(--t-footnote); font-weight: 600; color: var(--tm);
   font-family: var(--sans); margin-bottom: 12px;
 }
 
@@ -46,20 +46,20 @@
   container-type: inline-size;
 }
 /* Etiquetas en Inter 12/600, tipo oración (UI-Q6): nada de mayúsculas mono. */
-.kpiLbl { font-size: .75rem; font-weight: 600; line-height: 1.3; color: var(--tm); font-family: var(--sans); margin-bottom: 6px; }
+.kpiLbl { font-size: var(--t-footnote); font-weight: 600; line-height: 1.3; color: var(--tm); font-family: var(--sans); margin-bottom: 6px; }
 /* 1.65 ≈ 1 / ancho medio de un dígito en em; 100cqi = ancho útil de la tarjeta. */
 .kpiVal { font-size: clamp(13px, calc(100cqi * 1.65 / var(--kpi-chars, 1)), 22px); font-weight: 600; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; color: var(--tx); }
 /* "green" acá es semántico de DATO (positivo), no de marca → --pos (Verde), no --grn (Navy). */
 .kpi_green { color: var(--pos); }
 .kpi_red   { color: var(--red); }
 .kpi_amber { color: var(--amb); }
-.kpiSub { font-size: .75rem; color: var(--th); font-family: var(--sans); margin-top: 2px; }
-.kpiAlert { display: flex; align-items: center; gap: 4px; font-size: .75rem; font-weight: 600; color: var(--red); font-family: var(--sans); margin-top: 2px; }
+.kpiSub { font-size: var(--t-footnote); color: var(--th); font-family: var(--sans); margin-top: 2px; }
+.kpiAlert { display: flex; align-items: center; gap: 4px; font-size: var(--t-footnote); font-weight: 600; color: var(--red); font-family: var(--sans); margin-top: 2px; }
 
 /* BADGE — etiqueta de estado: píldora permitida (31-oct-2026). */
 .badge {
-  font-size: .75rem; font-family: var(--sans); padding: 2px 9px;
-  border-radius: var(--r-pill); font-weight: 500; display: inline-block;
+  font-size: var(--t-footnote); font-family: var(--sans); padding: 2px 9px;
+  border-radius: var(--r-pill); font-weight: 600; display: inline-block;
 }
 .badge_green { background: var(--pos-bg); color: var(--pos); }
 .badge_red   { background: var(--red-bg); color: var(--red); }
@@ -76,13 +76,13 @@
 
 /* FORM */
 .fg { margin-bottom: 10px; }
-.fl { font-size: .75rem; font-weight: 600; font-family: var(--sans); color: var(--tm); display: block; margin-bottom: 4px; }
+.fl { font-size: var(--t-footnote); font-weight: 600; font-family: var(--sans); color: var(--tm); display: block; margin-bottom: 4px; }
 .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .frow > * { min-width: 0; }  /* permite que los inputs (ej. fecha) encojan sin desbordar */
 @media (max-width: 480px) { .frow { grid-template-columns: 1fr; } }  /* móvil: una columna */
 
 /* ALERT */
-.alert { border-radius: var(--r); padding: 10px 12px; font-size: .75rem; line-height: 1.5; display: flex; align-items: flex-start; gap: 8px; }
+.alert { border-radius: var(--r); padding: 10px 12px; font-size: var(--t-footnote); line-height: 1.5; display: flex; align-items: flex-start; gap: 8px; }
 .alert_warn   { background: var(--amb-bg); color: var(--amb); }
 .alert_danger { background: var(--red-bg); color: var(--red); }
 .alert_ok     { background: var(--pos-bg); color: var(--pos); }
@@ -90,25 +90,25 @@
 
 /* EMPTY */
 /* Estados vacíos: son una invitación a actuar, se leen como lenguaje → sans */
-.empty { text-align: center; padding: 28px 0; color: var(--th); font-size: .7812rem; font-family: var(--sans); line-height: 1.55; }
+.empty { text-align: center; padding: 28px 0; color: var(--th); font-size: var(--t-footnote); font-family: var(--sans); line-height: 1.55; }
 
 /* TX ROW */
 .txRow { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 7px 0; border-bottom: 0.5px solid var(--brd); }
 .txRow:last-child { border-bottom: none; }
 .txDot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .txInfo { flex: 1; min-width: 0; }
-.txName { font-size: .9375rem; line-height: 1.3; color: var(--tx); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.txMeta { font-size: .8125rem; line-height: 1.3; color: var(--th); font-family: var(--sans); }
-.txAmt  { font-size: .9375rem; font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; flex-shrink: 0; }
+.txName { font-size: var(--t-headline); line-height: var(--t-headline-lh); color: var(--tx); font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; hyphens: auto; }
+.txMeta { font-size: var(--t-subhead); line-height: 1.3; color: var(--th); font-family: var(--sans); }
+.txAmt  { font-size: var(--t-headline); font-family: var(--num); font-variant-numeric: tabular-nums lining-nums; font-weight: 600; flex-shrink: 0; }
 .txInc  { color: var(--pos); }
 .txExp  { color: var(--tx); }   /* gastar no es un error: tinta neutra (UI-Q4) */
-.delBtn { background: transparent; border: none; color: var(--th); font-size: .6875rem; padding: 2px 5px; border-radius: 4px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease, color .15s ease, transform .16s var(--ease-out, ease-out); }
+.delBtn { background: transparent; border: none; color: var(--th); font-size: var(--t-footnote); padding: 2px 5px; border-radius: 4px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease, color .15s ease, transform .16s var(--ease-out, ease-out); }
 .delBtn:hover { background: var(--red-bg); color: var(--red); }
 .delBtn:active { transform: scale(0.9); }
 
 /* BAR ROW */
 .barRow { margin-bottom: 8px; }
-.barLbl { display: flex; justify-content: space-between; font-size: .6875rem; margin-bottom: 3px; }
+.barLbl { display: flex; justify-content: space-between; font-size: var(--t-footnote); margin-bottom: 3px; }
 .barLbl span:first-child { color: var(--tx); }
 .barLbl span:last-child  { color: var(--tm); font-family: var(--num); font-variant-numeric: tabular-nums; }
 .barBg  { height: 5px; background: var(--sur3); border-radius: 3px; overflow: hidden; }
@@ -116,7 +116,7 @@
 
 /* PAGE HEADER — movido a components/layout/largeTitle.module.css (PageHeader
    ahora renderiza LargeTitle, que agrega la barra compacta al hacer scroll) */
-.sectionTitle  { font-size: .75rem; font-weight: 600; color: var(--tm); font-family: var(--sans); margin-bottom: 10px; }
+.sectionTitle  { font-size: var(--t-footnote); font-weight: 600; color: var(--tm); font-family: var(--sans); margin-bottom: 10px; }
 
 /* ── Estado vacío uniforme (R10) ── */
 .emptyState {
@@ -130,21 +130,21 @@
   width: 44px; height: 44px; margin-bottom: 4px; border-radius: var(--r);
   background: var(--grn-bg); color: var(--grn);
 }
-.emptyTitle { margin: 0; font-family: var(--display); font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; color: var(--tx); text-transform: none; }
-.emptyText { margin: 0 0 6px; max-width: 360px; font-family: var(--sans); font-size: .875rem; line-height: 1.5; color: var(--tm); }
+.emptyTitle { margin: 0; font-family: var(--display); font-size: var(--t-headline); font-weight: 700; letter-spacing: -0.01em; color: var(--tx); text-transform: none; }
+.emptyText { margin: 0 0 6px; max-width: 360px; font-family: var(--sans); font-size: var(--t-body); line-height: 1.5; color: var(--tm); }
 .emptySecondary { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 2px; }
-.emptyHint { font-family: var(--sans); font-size: .75rem; line-height: 1.4; color: var(--th); max-width: 320px; }
+.emptyHint { font-family: var(--sans); font-size: var(--t-footnote); line-height: 1.4; color: var(--th); max-width: 320px; }
 /* Primera entrada guiada: opciones (Metas) y lista de sugerencias (Presupuestos). */
 .emptyChoices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 440px; margin: 4px 0 8px; }
 .emptyChoice { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; text-align: left; width: 100%; }
 .emptyChoiceTop { display: inline-flex; align-items: center; gap: 8px; color: var(--tx); }
 .emptyChoiceTop svg { flex-shrink: 0; color: var(--grn); }
-.emptyChoiceSub { font-size: .75rem; font-weight: 400; color: var(--th); }
+.emptyChoiceSub { font-size: var(--t-footnote); font-weight: 400; color: var(--th); }
 .emptyPick { list-style: none; width: 100%; max-width: 440px; margin: 4px 0 8px; padding: 0; text-align: left; border-top: 0.5px solid var(--brd); }
 .emptyPick li { border-bottom: 0.5px solid var(--brd); }
-.emptyPick label { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 4px 2px; cursor: pointer; font-family: var(--sans); font-size: .875rem; color: var(--tx); }
+.emptyPick label { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 4px 2px; cursor: pointer; font-family: var(--sans); font-size: var(--t-body); color: var(--tx); }
 .emptyPickCat { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.emptyPickAmt { font-family: var(--num); font-size: .8125rem; color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.emptyPickAmt { font-family: var(--num); font-size: var(--t-subhead); color: var(--tm); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* ── ChoiceGroup (radiogroup de pocas opciones; tema Sistema · Claro · Oscuro) ──
    Segmentado en píldora (31-oct-2026). Elegida: tinta invertida + ✓ (estado =
@@ -155,7 +155,7 @@
   min-height: 44px; min-width: 44px; padding: 0 14px;
   border: 0; border-radius: var(--r-pill);
   background: var(--fill); color: var(--tx); cursor: pointer;
-  font-family: var(--sans); font-size: .8125rem; font-weight: 500; line-height: 1.2;
+  font-family: var(--sans); font-size: var(--t-subhead); font-weight: 600; line-height: 1.2;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }

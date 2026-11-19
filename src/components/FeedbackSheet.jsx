@@ -47,23 +47,23 @@ export default function FeedbackSheet({ open, onClose }) {
       : (r.error === 'captcha_failed' || r.error === 'captcha_unavailable') ? 'authGate.errorCaptcha' : 'feedback.errorGeneric'))
   }
 
-  const label = { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--tx)', marginBottom: 6 }
+  const label = { display: 'block', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }
   return (
     <Sheet open={open} onClose={close} ariaLabel={t('feedback.title')} maxWidth={480} initialFocusRef={textRef}>
-      <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)' }}>{t('feedback.title')}</h2>
+      <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--display)', fontSize: 'var(--t-title)', lineHeight: 'var(--t-title-lh)', fontWeight: 700, color: 'var(--tx)' }}>{t('feedback.title')}</h2>
       {state === 'sent' ? (
         <>
-          <p role="status" style={{ fontSize: 14, color: 'var(--tm)', lineHeight: 1.55, margin: '0 0 16px' }}>{t('feedback.sent')}</p>
+          <p role="status" style={{ fontSize: 'var(--t-body)', color: 'var(--tm)', lineHeight: 1.55, margin: '0 0 16px' }}>{t('feedback.sent')}</p>
           <button type="button" className="fos-btn-primary" onClick={close} style={{ width: '100%' }}>{t('feedback.close')}</button>
         </>
       ) : (
         <form onSubmit={submit}>
-          <p style={{ fontSize: 13, color: 'var(--tm)', lineHeight: 1.55, margin: '0 0 14px' }}>{t('feedback.intro')}</p>
+          <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.55, margin: '0 0 14px' }}>{t('feedback.intro')}</p>
           <label htmlFor="feedback-message" style={label}>{t('feedback.messageLabel')}</label>
           <textarea
             id="feedback-message" ref={textRef} value={message} onChange={(e) => setMessage(e.target.value)}
             rows={5} maxLength={2000} required
-            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 16, fontFamily: 'var(--sans)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 'var(--t-callout)', fontFamily: 'var(--sans)', border: 0, borderRadius: 8, background: 'var(--bg)', color: 'var(--tx)', resize: 'vertical', marginBottom: 14 }}
           />
           <fieldset style={{ border: 'none', padding: 0, margin: '0 0 14px' }}>
             <legend style={{ ...label, padding: 0 }}>{t('feedback.npsLabel')}</legend>
@@ -76,20 +76,20 @@ export default function FeedbackSheet({ open, onClose }) {
                 >{n}</button>
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--th)', marginTop: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 4 }}>
               <span>{t('feedback.npsLow')}</span><span>{t('feedback.npsHigh')}</span>
             </div>
           </fieldset>
-          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, color: 'var(--tm)', lineHeight: 1.5, marginBottom: 16, cursor: 'pointer' }}>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 16, cursor: 'pointer' }}>
             <input type="checkbox" checked={includeLog} onChange={(e) => setIncludeLog(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18 }} />
             <span>{t('feedback.logLabel')}</span>
           </label>
           <Turnstile ref={captcha} action="feedback" errorText={t('authGate.errorCaptcha')} />
-          {error && <p role="alert" style={{ fontSize: 13, color: 'var(--red)', margin: '0 0 12px' }}>{error}</p>}
+          {error && <p role="alert" style={{ fontSize: 'var(--t-subhead)', color: 'var(--red)', margin: '0 0 12px' }}>{error}</p>}
           <button type="submit" className="fos-btn-primary" disabled={!message.trim() || state === 'sending'} style={{ width: '100%' }}>
             {state === 'sending' ? t('feedback.sending') : t('feedback.send')}
           </button>
-          <p style={{ fontSize: 12, color: 'var(--th)', margin: '10px 0 0', lineHeight: 1.5 }}>{t('feedback.privacy')}</p>
+          <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', margin: '10px 0 0', lineHeight: 1.5 }}>{t('feedback.privacy')}</p>
         </form>
       )}
     </Sheet>

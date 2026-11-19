@@ -12,7 +12,7 @@ import { useT } from '../../i18n/useT.js'
 import { srow, slbl, ssub, Setting } from './settingsUi.jsx'
 
 const block = { borderTop: '1px solid var(--brd2)', paddingTop: 14, marginTop: 18 }
-const h3 = { margin: '0 0 10px', fontSize: 13, fontWeight: 600, color: 'var(--tx)' }
+const h3 = { margin: '0 0 10px', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }
 
 export default function DataScreen() {
   const { exportCSV } = useApp()
@@ -39,11 +39,11 @@ export default function DataScreen() {
 
       <Setting id="storage" style={block}>
         <h3 style={h3}>{t('settings.dataStorage.title')}</h3>
-        <div style={{fontSize:12,color:'var(--tm)',lineHeight:1.8,display:'flex',flexDirection:'column',gap:8}}>
+        <div style={{fontSize:'var(--t-footnote)',color:'var(--tm)',lineHeight:1.8,display:'flex',flexDirection:'column',gap:8}}>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.indexeddbLabel')}</span> — {t('settings.dataStorage.indexeddbDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.serverLabel')}</span> — {t('settings.dataStorage.serverDesc')}</div>
           <div><span style={{fontWeight:600,color:'var(--tx)'}}>{t('settings.dataStorage.backupLabel')}</span> — {t('settings.dataStorage.backupDesc')}</div>
-          <div style={{fontSize:12,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
+          <div style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)',marginTop:4}}><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('settings.dataStorage.privacyBadge')}</div>
         </div>
       </Setting>
     </div>

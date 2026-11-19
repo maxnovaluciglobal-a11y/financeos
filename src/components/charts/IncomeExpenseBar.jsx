@@ -54,7 +54,7 @@ export default function IncomeExpenseBar({ incomes, expenses, sym = '$', months 
         <YAxis domain={[0, Math.ceil(maxVal * 1.15)]} tick={AXIS_TICK} axisLine={false} tickLine={false} tickFormatter={tickFmt}/>
         <Tooltip cursor={{ fill: 'var(--grn-tint)' }} content={<ChartTooltip format={(v) => m(fmtMoney(v, sym))}
           footer={(p) => { const inc = p.find(x => x.dataKey === 'ingresos')?.value || 0; const exp = p.find(x => x.dataKey === 'gastos')?.value || 0; return [{ label: t('chart.net'), value: m(fmtMoney(inc - exp, sym)) }] }} />}/>
-        <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--chart-axis)', paddingTop:8 }}/>
+        <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize:'var(--t-footnote)', fontFamily: 'var(--sans)', color:'var(--chart-axis)', paddingTop:8 }}/>
         <Bar dataKey="ingresos" name={t('chart.income')} fill="var(--chart-income)" radius={[2,2,0,0]} maxBarSize={32}/>
         <Bar dataKey="gastos"   name={t('chart.expenses')} fill="var(--chart-expense)" radius={[2,2,0,0]} maxBarSize={32}/>
         {hasPrev && <Line dataKey="gastosPrev" name={t('chart.expensesPrev')} type="monotone" legendType="plainline" {...PREV_LINE}/>}

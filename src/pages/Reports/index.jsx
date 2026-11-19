@@ -155,7 +155,7 @@ export default function Reports({ setPage }) {
               minHeight:44, padding:'7px 14px', borderRadius:'var(--r)', border:'.5px solid ' + (pdfLoading ? 'var(--brd2)' : 'var(--btn-primary-bg)'),
               // Primario de marca (tokens --btn-primary-*: morado con texto blanco).
               background: pdfLoading ? 'var(--sur2)' : 'var(--btn-primary-bg)', color: pdfLoading ? 'var(--th)' : 'var(--btn-primary-fg)',
-              fontFamily:'var(--sans)', fontWeight:600, fontSize:13, cursor: pdfLoading ? 'wait' : 'pointer',
+              fontFamily:'var(--sans)', fontWeight:600, fontSize:'var(--t-subhead)', cursor: pdfLoading ? 'wait' : 'pointer',
               transition:'.2s', flexShrink:0,
             }}
           >
@@ -170,7 +170,7 @@ export default function Reports({ setPage }) {
               marginLeft:'auto', display:'flex', alignItems:'center', gap:6,
               padding:'7px 14px', borderRadius:8, border:'.5px solid var(--amb)',
               background:'rgba(245,166,35,.08)', color:'var(--amb)',
-              fontFamily: 'var(--num)', fontWeight:700, fontSize:12,
+              fontFamily: 'var(--num)', fontWeight:700, fontSize:'var(--t-footnote)',
               textDecoration:'none', flexShrink:0, whiteSpace:'nowrap',
             }}
           >
@@ -196,7 +196,7 @@ export default function Reports({ setPage }) {
         </Card>
         <Card>
           <CardHeader title={t('reports.rule.title')} />
-          <div style={{fontSize:11,color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginTop:-2,marginBottom:10}}>{t('reports.rule.sub')}</div>
+          <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginTop:-2,marginBottom:10}}>{t('reports.rule.sub')}</div>
           {totalIncome === 0 ? <Empty text={t('reports.rule.empty')} cta={setPage ? t('empty.importCta') : undefined} onCta={() => setPage?.('import')} /> : (() => {
             const rules = [
               {id:'needs', label:t('reports.rule.needs'), actual:necesidad+totalDebt, ideal:totalIncome*0.5, color:'var(--grn)', max:50},
@@ -210,14 +210,14 @@ export default function Reports({ setPage }) {
                   const ok = r.id==='savings' ? actualPct>=r.max : actualPct<=r.max
                   return (
                     <div key={r.label}>
-                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:12}}>
-                        <span style={{fontWeight:500}}>{r.label}</span>
-                        <span style={{fontFamily: 'var(--sans)',color:ok?'var(--grn)':'var(--red)',fontSize:11}}>{t('reports.rule.idealPct', { actual: fmtPct(actualPct / 100), max: fmtPct(r.max / 100, { decimals: 0 }), mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
+                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:'var(--t-footnote)'}}>
+                        <span style={{fontWeight:600}}>{r.label}</span>
+                        <span style={{fontFamily: 'var(--sans)',color:ok?'var(--grn)':'var(--red)',fontSize:'var(--t-footnote)'}}>{t('reports.rule.idealPct', { actual: fmtPct(actualPct / 100), max: fmtPct(r.max / 100, { decimals: 0 }), mark: '' }).trim()} <InlineIcon kind={ok ? 'ok' : 'alert'} size={12} /></span>
                       </div>
                       <div style={{height:8,background:'var(--sur3)',borderRadius:4,overflow:'hidden'}}>
                         <div style={{height:'100%',width:'100%',transform:`scaleX(${Math.min(actualPct/r.max,1)})`,transformOrigin:'left',background:ok?r.color:'var(--red)',borderRadius:4,transition:'transform .4s'}}/>
                       </div>
-                      <div style={{fontSize:11,color:'var(--th)',fontFamily: 'var(--sans)',marginTop:2,display:'flex',justifyContent:'space-between'}}>
+                      <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',marginTop:2,display:'flex',justifyContent:'space-between'}}>
                         <span><Money>{fmtMoney(r.actual,sym)}</Money></span><span>{t('reports.rule.ideal', { v: fmtMoney(r.ideal,sym) })}</span>
                       </div>
                     </div>
@@ -237,7 +237,7 @@ export default function Reports({ setPage }) {
                   <XAxis dataKey="mes" tick={axisStyle} axisLine={false} tickLine={false}/>
                   <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))}/>
                   <RTooltip cursor={{ fill: 'var(--grn-tint)' }} content={<ChartTooltip format={money}/>}/>
-                  <Legend iconType="square" iconSize={8} wrapperStyle={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--chart-axis)',paddingTop:8}}/>
+                  <Legend iconType="square" iconSize={8} wrapperStyle={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--chart-axis)',paddingTop:8}}/>
                   <Bar dataKey="Ingresos" name={t('reports.trend.income')} fill="var(--chart-income)" radius={[2,2,0,0]}/>
                   <Bar dataKey="Gastos"   name={t('reports.trend.expenses')} fill="var(--chart-expense)" radius={[2,2,0,0]}/>
                   {hasPrevExp && <Line dataKey="GastosPrev" name={t('chart.expensesPrev')} type="monotone" legendType="plainline" {...PREV_LINE}/>}
@@ -257,7 +257,7 @@ export default function Reports({ setPage }) {
       {cumHasData && (
         <Card>
           <CardHeader title={t('reports.cum.title')} />
-          <div style={{fontSize:12,color:'var(--th)',fontFamily:'var(--sans)',marginTop:-6,marginBottom:10}}>{t('reports.cum.sub', { prev: prevMonthName })}</div>
+          <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)',marginTop:-6,marginBottom:10}}>{t('reports.cum.sub', { prev: prevMonthName })}</div>
           <div aria-hidden="true">
           <ResponsiveContainer width="100%" height={180}>
             <LineChart accessibilityLayer={false} data={cumData}>
@@ -265,7 +265,7 @@ export default function Reports({ setPage }) {
               <XAxis dataKey="day" tick={axisStyle} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={18}/>
               <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={v=>m(fmtAxis(v))} width={48}/>
               <RTooltip content={<ChartTooltip format={money} labelFormat={(d) => t('reports.cum.day', { d })}/>}/>
-              <Legend iconType="plainline" iconSize={14} wrapperStyle={{fontSize:11,fontFamily:'var(--sans)',color:'var(--chart-axis)',paddingTop:8}}/>
+              <Legend iconType="plainline" iconSize={14} wrapperStyle={{fontSize:'var(--t-footnote)',fontFamily:'var(--sans)',color:'var(--chart-axis)',paddingTop:8}}/>
               <Line dataKey="current" name={monthLabel(activeMonth)} type="monotone" stroke="var(--chart-expense)" strokeWidth={2} dot={false} connectNulls={false}/>
               <Line dataKey="currentPrev" name={prevMonthName} type="monotone" {...PREV_LINE}/>
             </LineChart>
@@ -326,7 +326,7 @@ export default function Reports({ setPage }) {
       {subMetrics.count > 0 && (
         <Card>
           <CardHeader title={t('reports.subs.title')} />
-          <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginBottom:12}}>{t('reports.subs.note')}</div>
+          <div style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)',marginBottom:12}}>{t('reports.subs.note')}</div>
           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
             {[
               {lb:t('reports.subs.monthly'),v:fmtMoney(subMetrics.monthly,sym)},
@@ -335,16 +335,16 @@ export default function Reports({ setPage }) {
               ...(subMetrics.monthlyIncome>0?[{lb:t('reports.subs.pctIncome'),v:fmtPct(subMetrics.pct)}]:[]),
             ].map(m=>(
               <div key={m.lb} style={{flex:'1 1 110px',background: 'var(--fill)',borderRadius:6,padding:'8px 10px',border: 0}}>
-                <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:2}}>{m.lb}</div>
-                <div style={{fontSize:14,fontWeight:700,fontFamily: 'var(--num)',color:'var(--tx)'}}>{m.v}</div>
+                <div style={{fontSize: 'var(--t-footnote)',fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:2}}>{m.lb}</div>
+                <div style={{fontSize:'var(--t-headline)',fontWeight:700,fontFamily: 'var(--num)',color:'var(--tx)'}}>{m.v}</div>
               </div>
             ))}
           </div>
           {subMetrics.byCategory.length>0 && (
             <div style={{marginBottom:12}}>
-              <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:7}}>{t('reports.subs.byCat')}</div>
+              <div style={{fontSize: 'var(--t-footnote)',fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:7}}>{t('reports.subs.byCat')}</div>
               {subMetrics.byCategory.map(([cat,data])=>(
-                <div key={cat} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'.5px solid var(--brd)',fontSize:12}}>
+                <div key={cat} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'.5px solid var(--brd)',fontSize:'var(--t-footnote)'}}>
                   <span style={{color:'var(--tm)'}}>{subLabel(cat, lang)}</span>
                   <span style={{fontFamily: 'var(--sans)',color:'var(--tx)'}}>{t('reports.subs.perMonthCount', { v: fmtMoney(data.monthly,sym), n: data.count })}</span>
                 </div>
@@ -352,21 +352,21 @@ export default function Reports({ setPage }) {
             </div>
           )}
           {subMetrics.alerts.map((a,i)=><Alert key={i} type={a.type==='duplicate'?'warn':'info'}>{a.msg}</Alert>)}
-          <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:8}}>{t('reports.subs.disclaimer')}</div>
+          <div style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)',marginTop:8}}>{t('reports.subs.disclaimer')}</div>
         </Card>
       )}
       {/* Resumen de patrimonio (stock a hoy) — el desglose vive en la página Patrimonio */}
       {nw.hasData && (
         <div style={{padding:'12px 16px',background: 'var(--box-bg)', boxShadow: 'var(--box-sh)',border: 0,borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <div style={{flex:1,minWidth:200}}>
-            <div style={{fontSize: 12,fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:3}}>{t('reports.networth.title')}</div>
-            <div className="num" style={{fontSize:22,fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
+            <div style={{fontSize: 'var(--t-footnote)',fontFamily: 'var(--sans)', fontWeight: 600,color:'var(--th)',marginBottom:3}}>{t('reports.networth.title')}</div>
+            <div className="num" style={{fontSize:'var(--t-title-2)',fontWeight:700,color: nw.netWorth >= 0 ? 'var(--grn)' : 'var(--red)'}}>
               {nw.netWorth >= 0 ? '' : '−'}<Money>{fmtMoney(Math.abs(nw.netWorth), sym)}</Money>
             </div>
-            <div style={{fontSize:11,fontFamily: 'var(--sans)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
+            <div style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)',marginTop:2}}>{t('reports.networth.formula', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })}</div>
           </div>
           {setPage && (
-            <button onClick={() => setPage('networth')} style={{background: 'var(--fill)',border: 0,borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
+            <button onClick={() => setPage('networth')} style={{background: 'var(--fill)',border: 0,borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:'var(--t-footnote)',fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.networth.detail')}
             </button>
           )}
@@ -376,9 +376,9 @@ export default function Reports({ setPage }) {
       {/* La lista completa de señales vive en la página Diagnóstico (evita duplicar información) */}
       {coachSignals.length > 0 && (
         <div style={{padding:'12px 16px',background: 'var(--box-bg)', boxShadow: 'var(--box-sh)',border: 0,borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-          <span style={{fontSize:12,color:'var(--th)',fontFamily:'var(--sans)',flex:1,minWidth:200,lineHeight:1.5}}><InlineIcon kind="diagnosis" size={13} />{t('reports.diag.linkText')}</span>
+          <span style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)',flex:1,minWidth:200,lineHeight:1.5}}><InlineIcon kind="diagnosis" size={13} />{t('reports.diag.linkText')}</span>
           {setPage && (
-            <button onClick={() => setPage('coach')} style={{background: 'var(--fill)',border: 0,borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:12,fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
+            <button onClick={() => setPage('coach')} style={{background: 'var(--fill)',border: 0,borderRadius:7,padding:'6px 14px',minHeight:44,fontSize:'var(--t-footnote)',fontWeight:600,color:'var(--accent)',cursor:'pointer',fontFamily: 'var(--num)',whiteSpace:'nowrap',flexShrink:0}}>
               {t('reports.diag.linkBtn')}
             </button>
           )}

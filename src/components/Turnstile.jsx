@@ -55,7 +55,7 @@ const Turnstile = forwardRef(function Turnstile({ action, errorText, siteKey = T
     <div>
       <div ref={boxRef} />
       {(failed || showError) && (
-        <p role="alert" style={{ fontSize: 13, color: 'var(--red)', margin: '8px 0 0', lineHeight: 1.5 }}>
+        <p role="alert" style={{ fontSize: 'var(--t-subhead)', color: 'var(--red)', margin: '8px 0 0', lineHeight: 1.5 }}>
           {errorText}
         </p>
       )}

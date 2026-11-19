@@ -82,7 +82,7 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
             <input type="number" inputMode="decimal" min="0" step="any" value={f.amount} placeholder="0" onChange={e => set('amount', e.target.value)} />
           </FormGroup>
         </FormRow>
-        {initial && <p style={{ fontSize: 12, color: 'var(--th)', margin: '-4px 0 10px' }}>{t('rec.form.amountNote', { month: monthYearLabel(currentMonth()) })}</p>}
+        {initial && <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', margin: '-4px 0 10px' }}>{t('rec.form.amountNote', { month: monthYearLabel(currentMonth()) })}</p>}
         <FormRow>
           <FormGroup label={t('rec.form.category')}>
             <SheetSelect value={f.category} onChange={e => set('category', e.target.value)}>
@@ -129,7 +129,7 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
           <input type="checkbox" checked={f.autoConfirm} onChange={e => set('autoConfirm', e.target.checked)} />
           {t('rec.form.auto')}
         </label>
-        <p style={{ fontSize: 12, color: 'var(--th)', margin: '2px 0 12px 24px', lineHeight: 1.45 }}>{t('rec.form.autoHint')}</p>
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', margin: '2px 0 12px 24px', lineHeight: 1.45 }}>{t('rec.form.autoHint')}</p>
         <div style={{ display: 'flex', gap: 8 }}>
           <Btn variant="primary" type="submit">{t('rec.form.save')}</Btn>
           <Btn variant="ghost" type="button" onClick={onCancel}>{t('common.cancel')}</Btn>
@@ -173,7 +173,7 @@ function RuleRow({ rule, sym, today, onEdit, onTogglePause, onEnd, onDelete, onT
         <div id={detailsId} className={s.edit} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
           <div>
             <div className={s.groupTitle}>{t('rec.rule.history')}</div>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, fontSize: 13 }}>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, fontSize: 'var(--t-subhead)' }}>
               {history.map(h => (
                 <li key={h.from} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '3px 0' }}>
                   <span style={{ color: 'var(--tm)' }}>{t('rec.rule.historyFrom', { month: monthYearLabel(h.from) })}</span>

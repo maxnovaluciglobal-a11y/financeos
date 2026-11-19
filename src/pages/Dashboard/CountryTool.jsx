@@ -42,18 +42,18 @@ export default function CountryTool({ country, setPage }) {
     >
       <span style={{ lineHeight: 0, flexShrink: 0, color: 'var(--grn)' }} aria-hidden="true"><CountryBadge code={cc} size={30} /></span>
       <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
-        <span style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--grn)' }}>
+        <span style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--grn)' }}>
           {t('countryTool.eyebrow')}
         </span>
-        <span className="display" style={{ fontSize: 17, fontWeight: 700, color: 'var(--tx)', lineHeight: 1.15 }}>
+        <span className="display" style={{ fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)', lineHeight: 1.15 }}>
           {t(tool.nameKey)}
         </span>
-        <span style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.45 }}>
+        <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.45 }}>
           {t('countryTool.sub')}
         </span>
       </span>
       <span style={{
-        flexShrink: 0, fontFamily: 'var(--num)', fontSize: 12, fontWeight: 600,
+        flexShrink: 0, fontFamily: 'var(--num)', fontSize: 'var(--t-footnote)', fontWeight: 600,
         color: 'var(--grn)', display: 'inline-flex', alignItems: 'center', gap: 5,
         border: 0,
         borderRadius: 'var(--r)', padding: '6px 12px', whiteSpace: 'nowrap',

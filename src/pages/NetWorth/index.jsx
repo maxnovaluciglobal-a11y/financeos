@@ -39,7 +39,7 @@ export default function NetWorth() {
       {!hasData ? (
         <Card>
           <Empty text={t('networth.empty')} />
-          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.7, marginTop: 8 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.7, marginTop: 8 }}>
             {t('networth.emptyHint')}
           </div>
         </Card>
@@ -47,13 +47,13 @@ export default function NetWorth() {
         <>
           <Card>
             <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
-              <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 6 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 6 }}>
                 {t('networth.headline')}
               </div>
-              <div className="num" style={{ fontSize: 36, fontWeight: 700, color: netWorth >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
+              <div className="num" style={{ fontSize: 'var(--t-large-title)', fontWeight: 700, color: netWorth >= 0 ? 'var(--grn)' : 'var(--neg)' }}>
                 {netWorth >= 0 ? '' : '−'}<Money><CountUp value={Math.abs(netWorth)} format={(v) => fmtMoneyRaw(v, sym)} duration={750} /></Money>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 4 }}>
                 {t('networth.formula', { a: fmtMoney(totalActivos, sym), p: fmtMoney(totalPasivos, sym) })}
               </div>
             </div>
@@ -68,8 +68,8 @@ export default function NetWorth() {
               <Row label={t('networth.receivables')} value={receivablesPending} sym={sym} color="var(--grn)" />
               {inv && <InvestLine inv={inv} sym={sym} />}
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalAssets')}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--grn)' }}><Money>{fmtMoney(totalActivos, sym)}</Money></span>
+                <span style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalAssets')}</span>
+                <span style={{ fontSize: 'var(--t-subhead)', fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--grn)' }}><Money>{fmtMoney(totalActivos, sym)}</Money></span>
               </div>
             </Card>
 
@@ -78,13 +78,13 @@ export default function NetWorth() {
               <Row label={t('networth.pendingDebts')} value={pendingDebt} sym={sym} color="var(--neg)" />
               <Row label={t('networth.propsNegative')} value={Math.max(0, -propertiesNet)} sym={sym} color="var(--neg)" />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalLiabilities')}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--neg)' }}><Money>{fmtMoney(totalPasivos, sym)}</Money></span>
+                <span style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalLiabilities')}</span>
+                <span style={{ fontSize: 'var(--t-subhead)', fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--neg)' }}><Money>{fmtMoney(totalPasivos, sym)}</Money></span>
               </div>
             </Card>
           </div>
 
-          <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, padding: '0 4px' }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, padding: '0 4px' }}>
             {t(inv ? 'networth.investments.disclaimer' : 'networth.disclaimer')}{propsValueTotal > 0 ? ' ' + t('networth.propsValueNote') : ''}
           </div>
         </>
@@ -100,8 +100,8 @@ function Row({ label, value, sym, color }) {
   if (!value) return null
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '5px 0' }}>
-      <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--num)', color }}><Money>{fmtMoney(value, sym)}</Money></span>
+      <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{label}</span>
+      <span style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, fontFamily: 'var(--num)', color }}><Money>{fmtMoney(value, sym)}</Money></span>
     </div>
   )
 }

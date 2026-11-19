@@ -58,7 +58,7 @@ export default function AhorroFiscal() {
 
   if (!config) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--th)', fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)' }}>
         {t('ahorroFiscal.notAvailable')}
       </div>
     )
@@ -80,7 +80,7 @@ export default function AhorroFiscal() {
         </Alert>
 
         <Card>
-          <CardHeader title={t('ahorroFiscal.card.yourYearData')} right={<span style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
+          <CardHeader title={t('ahorroFiscal.card.yourYearData')} right={<span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
           <FormRow>
             <FormGroup label={config.ingresoLabel}>
               <input type="number" inputMode="decimal" min="0" value={ingreso} placeholder="0" onChange={e => setIngreso(e.target.value)} />
@@ -97,7 +97,7 @@ export default function AhorroFiscal() {
                     aria-describedby={c.hint ? `af-hint-${c.key}` : undefined}
                     onChange={e => setExtras(prev => ({ ...prev, [c.key]: e.target.value }))} />
                   {c.hint && (
-                    <div id={`af-hint-${c.key}`} style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 4, lineHeight: 1.5 }}>
+                    <div id={`af-hint-${c.key}`} style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 4, lineHeight: 1.5 }}>
                       {c.hint}
                     </div>
                   )}
@@ -114,18 +114,18 @@ export default function AhorroFiscal() {
           )}
           {config.toggle && (
             <div style={{ marginTop: 10 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--tx)', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--t-subhead)', color: 'var(--tx)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={toggleOn} onChange={e => setToggleOn(e.target.checked)} style={{ width: 16, height: 16, flexShrink: 0 }} />
                 {config.toggle.label}
               </label>
               {config.toggle.hint && (
-                <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 4, paddingLeft: 24 }}>
+                <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 4, paddingLeft: 24 }}>
                   {config.toggle.hint}
                 </div>
               )}
             </div>
           )}
-          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
             {config.resumenTope}
           </div>
           {esUS && <LimitesUSA edad={edad} fmt={fmt} t={t} />}
@@ -135,42 +135,42 @@ export default function AhorroFiscal() {
           <Card>
             <CardHeader title={t('ahorroFiscal.card.estimatedSavings')} />
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 34, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-large-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>
                 {fmt(result.ahorro)}
               </div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
                 {t('ahorroFiscal.summarySub', { resumen: result.resumen, pct: fmtPctPoints(Math.round(result.marginal * 100)) })}
               </div>
             </div>
 
             {esUS && result.gravable != null && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--tm)', marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginBottom: 12 }}>
                 <span>{t('ahorroFiscal.taxableIncomeLabel')}</span>
                 <span style={{ fontFamily: 'var(--sans)' }}>{fmt(result.gravable)}</span>
               </div>
             )}
 
-            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)' }}>
+            <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>
               <span>{t('ahorroFiscal.capUsageDeductible')}</span>
               <span>{Math.round(result.topePct)}%</span>
             </div>
             <ProgressBar value={result.topePct} max={100} color={result.topePct >= 100 ? 'green' : 'amber'} height={6} label={t('ahorroFiscal.capUsageDeductible')} />
             {result.faltaParaTope > 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
                 {t('ahorroFiscal.canContributeMore', { amt: fmt(result.faltaParaTope), cap: fmt(result.tope) })}
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--accent)', marginTop: 10, fontWeight: 600 }}>
                 {t('ahorroFiscal.capReached')}
               </div>
             )}
 
-            <div style={{ marginTop: 16, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--tx)' }}>
+            <div style={{ marginTop: 16, borderTop: '.5px solid var(--brd)', paddingTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-subhead)', color: 'var(--tx)' }}>
               <span>{t('ahorroFiscal.deductibleAmountApplied')}</span>
               <span style={{ fontFamily: 'var(--num)', fontWeight: 600 }}>{fmt(result.deducible)}</span>
             </div>
             {result.nota && (
-              <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 8, lineHeight: 1.5 }}>
                 {result.nota}
               </div>
             )}
@@ -196,7 +196,7 @@ function LimitesUSA({ edad, fmt, t }) {
   return (
     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '.5px solid var(--brd)', display: 'flex', flexDirection: 'column', gap: 5 }}>
       {filas.map(([label, l]) => (
-        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--tx)' }}>
+        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', color: 'var(--tx)' }}>
           <span>{label} {l.catchUp > 0 ? <span style={{ color: 'var(--accent)' }}>+ catch-up</span> : null}</span>
           <span style={{ fontFamily: 'var(--sans)' }}>
             {fmt(l.total)}{l.catchUp > 0 ? ` (${fmt(l.base)} + ${fmt(l.catchUp)})` : ''}
@@ -204,7 +204,7 @@ function LimitesUSA({ edad, fmt, t }) {
         </div>
       ))}
       {e >= 60 && e <= 63 && (
-        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5 }}>
           {t('ahorroFiscal.limitsSuperCatchUp', { a: fmt(LIMITES_2026.catchUp401kSuper6063), b: fmt(LIMITES_2026.catchUp401k50) })}
         </div>
       )}
@@ -246,7 +246,7 @@ function RothHSACard({ fmt, ingresoAnual, edad, t }) {
     <>
       <Card>
         <CardHeader title={t('ahorroFiscal.card.rothVsTraditional')} />
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>
           {t('ahorroFiscal.rothVsTradIntro')}
         </div>
         <FormRow>
@@ -273,31 +273,31 @@ function RothHSACard({ fmt, ingresoAnual, edad, t }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 }}>
           <div style={{ background: rothVsTrad.convieneTraditional ? 'var(--grn-tint)' : 'var(--sur2)', border: rothVsTrad.convieneTraditional ? '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)' : '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '12px 14px' }}>
-            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{t('ahorroFiscal.traditionalNetTotal')}</div>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 18, fontWeight: 700, color: rothVsTrad.convieneTraditional ? 'var(--grn)' : 'var(--tx)' }}>{fmt(rothVsTrad.traditionalTotal)}</div>
-            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{t('ahorroFiscal.traditionalNetTotal')}</div>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-headline)', fontWeight: 700, color: rothVsTrad.convieneTraditional ? 'var(--grn)' : 'var(--tx)' }}>{fmt(rothVsTrad.traditionalTotal)}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6, lineHeight: 1.5 }}>
               {t('ahorroFiscal.traditionalBreakdown', { acct: fmt(rothVsTrad.traditionalNeto), ded: fmt(rothVsTrad.ahorroInvertido) })}
             </div>
           </div>
           <div style={{ background: !rothVsTrad.convieneTraditional ? 'var(--grn-tint)' : 'var(--sur2)', border: !rothVsTrad.convieneTraditional ? '.5px solid color-mix(in srgb, var(--grn) 35%, transparent)' : '.5px solid var(--brd)', borderRadius: 'var(--r)', padding: '12px 14px' }}>
-            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{t('ahorroFiscal.rothFutureValue')}</div>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 18, fontWeight: 700, color: !rothVsTrad.convieneTraditional ? 'var(--grn)' : 'var(--tx)' }}>{fmt(rothVsTrad.rothFinal)}</div>
-            <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>{t('ahorroFiscal.rothFutureValue')}</div>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-headline)', fontWeight: 700, color: !rothVsTrad.convieneTraditional ? 'var(--grn)' : 'var(--tx)' }}>{fmt(rothVsTrad.rothFinal)}</div>
+            <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6, lineHeight: 1.5 }}>
               {t('ahorroFiscal.rothTaxFree')}
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', marginTop: 10, lineHeight: 1.5 }}>
           {t(rothVsTrad.convieneTraditional ? 'ahorroFiscal.traditionalWins' : 'ahorroFiscal.rothWins', { diff: fmt(rothVsTrad.diferencia) })}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 12, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 12, padding: '10px 12px', background: 'var(--fill)', borderRadius: 8, border: 0 }}>
           {t('ahorroFiscal.assumesReinvest', { amt: fmt(rothVsTrad.ahorroFiscalHoy) })}
         </div>
       </Card>
 
       <Card>
         <CardHeader title={t('ahorroFiscal.card.hsa')} />
-        <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>
+        <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, marginBottom: 14 }}>
           {t('ahorroFiscal.hsaIntro', { self: fmt(LIMITES_2026.hsaSelfOnly), family: fmt(LIMITES_2026.hsaFamily) })}
           {topeHsa.catchUp > 0
             ? t('ahorroFiscal.hsaCatchUpApplied', { amt: fmt(topeHsa.catchUp), total: fmt(topeHsa.total) })
@@ -316,17 +316,17 @@ function RothHSACard({ fmt, ingresoAnual, edad, t }) {
         </FormRow>
 
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-          <div style={{ fontFamily: 'var(--num)', fontSize: 30, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>{fmt(hsa.ahorroFiscalHoy)}</div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6, lineHeight: 1.6 }}>
+          <div style={{ fontFamily: 'var(--num)', fontSize: 'var(--t-title)', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>{fmt(hsa.ahorroFiscalHoy)}</div>
+          <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6, lineHeight: 1.6 }}>
             {t('ahorroFiscal.hsaSavingsSub', { contrib: fmt(hsa.aporte), years: anios, fv: fmt(hsa.valorFuturo), total: fmt(hsa.totalAportado) })}
           </div>
         </div>
         {hsa.faltaParaTope > 0 ? (
-          <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5 }}>
             {t('ahorroFiscal.hsaCanContributeMore', { amt: fmt(hsa.faltaParaTope), limit: fmt(hsa.limite) })}
           </div>
         ) : (
-          <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>{t('ahorroFiscal.hsaLimitReached', { type: coverage === 'family' ? t('ahorroFiscal.coverageTypeFamily') : t('ahorroFiscal.coverageTypeSelf') })}</div>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--accent)', fontWeight: 600 }}>{t('ahorroFiscal.hsaLimitReached', { type: coverage === 'family' ? t('ahorroFiscal.coverageTypeFamily') : t('ahorroFiscal.coverageTypeSelf') })}</div>
         )}
       </Card>
     </>

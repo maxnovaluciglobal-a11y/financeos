@@ -32,11 +32,11 @@ export default function PushAsk({ open, onClose, onResult }) {
         }}>
           <Bell size={26} strokeWidth={1.7} />
         </span>
-        <h2 style={{ margin: 0, fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)' }}>
+        <h2 style={{ margin: 0, fontFamily: 'var(--display)', fontSize: 'var(--t-title)', lineHeight: 'var(--t-title-lh)', fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)' }}>
           {t('pushAsk.title')}
         </h2>
-        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: 'var(--tm)', maxWidth: 340 }}>{t('pushAsk.body')}</p>
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--th)', maxWidth: 340 }}>{t('pushAsk.privacy')}</p>
+        <p style={{ margin: 0, fontSize: 'var(--t-body)', lineHeight: 1.55, color: 'var(--tm)', maxWidth: 340 }}>{t('pushAsk.body')}</p>
+        <p style={{ margin: 0, fontSize: 'var(--t-subhead)', lineHeight: 1.5, color: 'var(--th)', maxWidth: 340 }}>{t('pushAsk.privacy')}</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
         <button type="button" className="fos-btn-primary" onClick={activate} disabled={busy} aria-busy={busy || undefined}>

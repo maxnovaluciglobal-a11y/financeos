@@ -66,8 +66,8 @@ export default function DebtProgressList({ debts, sym = '$' }) {
           { label:t('chart.debt.overall'), value:`${(totalProg*100).toFixed(0)}%`, color: totalProg >= 0.75 ? 'var(--accent)' : totalProg >= 0.4 ? 'var(--amb)' : 'var(--th)' },
         ].map((k,i) => (
           <div key={i} style={{ background:'var(--sur)', border: 0, borderRadius:'var(--rl)', padding:'12px 14px', boxShadow:'var(--sh-1)' }}>
-            <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:5 }}>{k.label}</div>
-            <div className="num" style={{ fontSize:19, letterSpacing:'-0.01em', color:k.color }}>{k.value}</div>
+            <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color:'var(--th)', marginBottom:5 }}>{k.label}</div>
+            <div className="num" style={{ fontSize:'var(--t-title-2)', letterSpacing:'-0.01em', color:k.color }}>{k.value}</div>
           </div>
         ))}
       </div>
@@ -75,8 +75,8 @@ export default function DebtProgressList({ debts, sym = '$' }) {
       {/* Barra global */}
       <div style={{ marginBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-          <span style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>{t('chart.debt.progressTitle')}</span>
-          <span style={{ fontSize:12, fontWeight:700, color:'var(--accent)', fontFamily: 'var(--num)' }}>{(totalProg*100).toFixed(0)}%</span>
+          <span style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)' }}>{t('chart.debt.progressTitle')}</span>
+          <span style={{ fontSize:'var(--t-footnote)', fontWeight:700, color:'var(--accent)', fontFamily: 'var(--num)' }}>{(totalProg*100).toFixed(0)}%</span>
         </div>
         <div style={{ height:8, background:'var(--sur2)', borderRadius:4, overflow:'hidden' }}>
           <div style={{ height:'100%', width:'100%', transform:`scaleX(${Math.min(totalProg,1)})`, transformOrigin:'left', background:'var(--accent)', borderRadius:4, transition:'transform .4s ease' }}/>
@@ -91,10 +91,10 @@ export default function DebtProgressList({ debts, sym = '$' }) {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <SignalIcon kind={d.status.icon} size={14} />
-                <span style={{ fontSize:13, fontWeight:600, color:'var(--tx)' }}>{d.creditor}</span>
-                {d.rate > 0 && <span style={{ fontSize:11, fontFamily: 'var(--sans)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: fmtPctPoints(d.rate) })}</span>}
+                <span style={{ fontSize:'var(--t-subhead)', fontWeight:600, color:'var(--tx)' }}>{d.creditor}</span>
+                {d.rate > 0 && <span style={{ fontSize:'var(--t-caption)', fontFamily: 'var(--sans)', color:'var(--red)', background:'color-mix(in srgb, var(--neg) 12%, transparent)', padding:'1px 6px', borderRadius: 'var(--rs)' }}>{t('chart.debt.rate', { rate: fmtPctPoints(d.rate) })}</span>}
               </div>
-              <span style={{ fontSize:11, fontFamily:'var(--sans)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
+              <span style={{ fontSize:'var(--t-caption)', fontFamily:'var(--sans)', fontWeight:600, color:d.status.color, background:`${d.status.color}18`, padding:'2px 8px', borderRadius: 'var(--rs)' }}>
                 {t(d.status.label)}
               </span>
             </div>
@@ -113,16 +113,16 @@ export default function DebtProgressList({ debts, sym = '$' }) {
                   { label:t('chart.debt.initial'), value:fmtV(d.initial, sym), color:'var(--th)' },
                 ].map((c,j) => (
                   <div key={j}>
-                    <div style={{ fontSize: 12, color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom:1 }}>{c.label}</div>
-                    <div style={{ fontSize:12, fontWeight:700, color:c.color, fontFamily: 'var(--num)' }}>{c.value}</div>
+                    <div style={{ fontSize: 'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom:1 }}>{c.label}</div>
+                    <div style={{ fontSize:'var(--t-footnote)', fontWeight:700, color:c.color, fontFamily: 'var(--num)' }}>{c.value}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize:20, fontWeight:700, color:d.status.color, fontFamily: 'var(--num)' }}>{d.pct}%</div>
+              <div style={{ fontSize:'var(--t-title-2)', fontWeight:700, color:d.status.color, fontFamily: 'var(--num)' }}>{d.pct}%</div>
             </div>
 
             {d.dueDate && (
-              <div style={{ marginTop:6, fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)' }}>
+              <div style={{ marginTop:6, fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)' }}>
                 {t('chart.debt.due', { date: fmtDay(d.dueDate) })} {d.minPayment > 0 ? `· ${t('chart.debt.minPayment', { amount: fmtV(d.minPayment, sym) })}` : ''}
               </div>
             )}

@@ -33,22 +33,22 @@ function SignalCard({ signal }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <SignalIcon kind={SEV_ICON[signal.severity]} size={14} color={color} />
-        <span style={{ fontSize: 12, fontWeight: 600, color, fontFamily: 'var(--sans)'}}>
+        <span style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color, fontFamily: 'var(--sans)'}}>
           {t(SEV_LABEL[signal.severity])}
         </span>
-        <span style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginLeft: 'auto' }}>
           {signal.category}
         </span>
       </div>
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>
         {signal.title}
       </div>
-      <div style={{ fontSize: 12, color: 'var(--tm)', lineHeight: 1.6 }}>
+      <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6 }}>
         {signal.msg}
       </div>
       {signal.action && (
         <div style={{
-          marginTop: 8, fontSize: 11, fontFamily: 'var(--sans)',
+          marginTop: 8, fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)',
           color: 'var(--grn)', background: 'var(--grn-bg)',
           padding: '5px 9px', borderRadius: 6,
           borderLeft: '2px solid var(--grn)',
@@ -75,7 +75,7 @@ function CategorySummary({ signals }) {
         const color = COACH_CONFIG.severityColors[dominant]
         return (
           <div key={cat} style={{
-            padding: '5px 11px', borderRadius: 'var(--rs)', fontSize: 11,
+            padding: '5px 11px', borderRadius: 'var(--rs)', fontSize: 'var(--t-footnote)',
             background: 'var(--fill)', border: 0,
             color: 'var(--tm)', fontFamily: 'var(--sans)',
             display: 'flex', alignItems: 'center', gap: 5,
@@ -97,7 +97,7 @@ function KpiBar({ label, value, pct, level }) {
   const color = SCORE_LEVELS[level]?.color
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 3 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 'var(--t-footnote)', marginBottom: 3 }}>
         <span style={{ color: 'var(--tm)', fontFamily: 'var(--sans)' }}>{label}</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600, color: color || 'var(--tx)', fontFamily: 'var(--num)' }}>
           {level && <ScoreStateIcon level={level} size={13} />}
@@ -147,10 +147,10 @@ export default function Coach() {
       <div style={{ marginBottom: 20 }}>
         {/* Encabezado único (UI-M8): sin antetítulo, un solo subtítulo. */}
         <PageHeader title={t('coach.title')} sub={t('coach.sub', { month: monthLabel(metrics.activeMonth) })} />
-        <p style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', margin: '-8px 0 6px' }}>
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', margin: '-8px 0 6px' }}>
           {t('coach.disclaimerShort')}
         </p>
-        <p style={{ fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', background: 'var(--sur2)', padding: '5px 9px', borderRadius: 6, display: 'inline-block' }}>
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', background: 'var(--sur2)', padding: '5px 9px', borderRadius: 6, display: 'inline-block' }}>
           {t('coach.localBadge')}
         </p>
       </div>
@@ -159,13 +159,13 @@ export default function Coach() {
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
         {/* Score circle */}
         <div style={{ textAlign: 'center', padding: '0 12px' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)'}}>{t('coach.score.label')}</div>
-          <div style={{ fontSize: 42, fontWeight: 800, color: scoreColor, fontFamily: 'var(--sans)', lineHeight: 1, letterSpacing: '-2px' }}>
+          <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)'}}>{t('coach.score.label')}</div>
+          <div style={{ fontSize: 42, fontWeight: 700, color: scoreColor, fontFamily: 'var(--sans)', lineHeight: 1, letterSpacing: '-2px' }}>
             {score}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>/100</div>
-          <ScoreState level={level} label={t(SCORE_LEVELS[level].key)} size={14} style={{ fontSize: 13, marginTop: 6, justifyContent: 'center' }} />
-          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3, lineHeight: 1.4, textAlign: 'center' }}>{t('coach.score.note')}</div>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 2 }}>/100</div>
+          <ScoreState level={level} label={t(SCORE_LEVELS[level].key)} size={14} style={{ fontSize: 'var(--t-subhead)', marginTop: 6, justifyContent: 'center' }} />
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3, lineHeight: 1.4, textAlign: 'center' }}>{t('coach.score.note')}</div>
         </div>
 
         {/* KPIs */}
@@ -203,17 +203,17 @@ export default function Coach() {
       {signals.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           {warnings.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--red)', fontFamily: 'var(--sans)' }}>
+            <div style={{ padding: '6px 12px', background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 'var(--t-footnote)', color: 'var(--red)', fontFamily: 'var(--sans)' }}>
               <InlineIcon kind="warning" size={13} />{t('coach.badge.review', { n: warnings.length })}
             </div>
           )}
           {attentions.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--amb-bg)', border: '.5px solid var(--amb)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--amb)', fontFamily: 'var(--sans)' }}>
+            <div style={{ padding: '6px 12px', background: 'var(--amb-bg)', border: '.5px solid var(--amb)', borderRadius: 'var(--rs)', fontSize: 'var(--t-footnote)', color: 'var(--amb)', fontFamily: 'var(--sans)' }}>
               <InlineIcon kind="attention" size={13} />{t('coach.badge.attention', { n: attentions.length })}
             </div>
           )}
           {infos.length > 0 && (
-            <div style={{ padding: '6px 12px', background: 'var(--grn-bg)', border: '.5px solid var(--grn)', borderRadius: 'var(--rs)', fontSize: 12, color: 'var(--grn)', fontFamily: 'var(--sans)' }}>
+            <div style={{ padding: '6px 12px', background: 'var(--grn-bg)', border: '.5px solid var(--grn)', borderRadius: 'var(--rs)', fontSize: 'var(--t-footnote)', color: 'var(--grn)', fontFamily: 'var(--sans)' }}>
               <InlineIcon kind="info" size={13} />{t('coach.badge.info', { n: infos.length })}
             </div>
           )}
@@ -227,8 +227,8 @@ export default function Coach() {
       {signals.length === 0 ? (
         <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '28px', textAlign: 'center' }}>
           <div style={{ marginBottom: 8, color: 'var(--pos)', display: 'flex', justifyContent: 'center' }}><SignalIcon kind="ok" size={22} /></div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('coach.empty.title')}</div>
-          <div style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>
+          <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 4 }}>{t('coach.empty.title')}</div>
+          <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
             {t('coach.empty.sub')}
           </div>
         </div>
@@ -236,7 +236,7 @@ export default function Coach() {
         <>
           {warnings.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--red)', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--red)', marginBottom: 8 }}>
                 <InlineIcon kind="warning" size={12} />{t('coach.section.review')}
               </div>
               {warnings.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -244,7 +244,7 @@ export default function Coach() {
           )}
           {attentions.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--amb)', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--amb)', marginBottom: 8 }}>
                 <InlineIcon kind="attention" size={12} />{t('coach.section.attention')}
               </div>
               {attentions.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -252,7 +252,7 @@ export default function Coach() {
           )}
           {infos.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--grn)', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color: 'var(--grn)', marginBottom: 8 }}>
                 <InlineIcon kind="info" size={12} />{t('coach.section.info')}
               </div>
               {infos.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -274,13 +274,13 @@ export default function Coach() {
         return (
           <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color: 'var(--th)'}}>{t('coach.check.title')}</div>
-              <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: doneCount === items.length ? 'var(--accent)' : 'var(--th)' }}>{doneCount}/{items.length}</span>
+              <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)'}}>{t('coach.check.title')}</div>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: doneCount === items.length ? 'var(--accent)' : 'var(--th)' }}>{doneCount}/{items.length}</span>
             </div>
             {items.map((it, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < items.length - 1 ? '.5px solid var(--brd)' : 'none' }}>
-                <span style={{ fontSize: 13, color: it.done ? 'var(--accent)' : 'var(--brd2)', flexShrink: 0 }}>{it.done ? '✓' : '○'}</span>
-                <span style={{ fontSize: 12, color: it.done ? 'var(--tx)' : 'var(--th)' }}>{it.label}</span>
+                <span style={{ fontSize: 'var(--t-subhead)', color: it.done ? 'var(--accent)' : 'var(--brd2)', flexShrink: 0 }}>{it.done ? '✓' : '○'}</span>
+                <span style={{ fontSize: 'var(--t-footnote)', color: it.done ? 'var(--tx)' : 'var(--th)' }}>{it.label}</span>
               </div>
             ))}
           </div>
@@ -288,7 +288,7 @@ export default function Coach() {
       })()}
 
       {/* Disclaimer completo al pie */}
-      <div style={{ padding: '10px 12px', background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', fontSize: 11, color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 8 }}>
+      <div style={{ padding: '10px 12px', background: 'var(--fill)', border: 0, borderRadius: 'var(--r)', fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 8 }}>
         {t('coach.disclaimerFull')}
       </div>
     </div>

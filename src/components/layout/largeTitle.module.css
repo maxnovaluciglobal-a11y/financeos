@@ -2,13 +2,15 @@
    Un bloque único en el flujo de la página (ver LargeTitle.jsx). */
 .pageHeader { position: relative; flex: 1 1 100%; min-width: 0; margin-bottom: 18px; }
 :global(.stack) > .pageHeader { margin-bottom: 8px; }
-.pageHeader h1 { font-size: 1.5rem; font-weight: 700; font-family: var(--display); letter-spacing: -0.02em; color: var(--tx); }
-.pageHeader p  { font-size: .8125rem; color: var(--th); font-family: var(--sans); margin-top: 5px; line-height: 1.5; }
+.pageHeader h1 { font-size: var(--t-title-2); font-weight: 700; font-family: var(--display); letter-spacing: -0.02em; color: var(--tx); }
+.pageHeader p  { font-size: var(--t-subhead); color: var(--th); font-family: var(--sans); margin-top: 5px; line-height: 1.5; }
 .sentinel { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; pointer-events: none; }
 
 /* Título grande estilo iOS (34), solo en el ancho móvil. El relleno a la derecha
    deja libres los dos botones de la barra, que flotan en esta misma línea. */
 @media (max-width: 700px) {
-  .pageHeader h1 { font-size: 2.125rem; line-height: 1.1; letter-spacing: -0.025em; min-height: calc(var(--nav-h) - 8px); }
+  .pageHeader h1 { font-size: var(--t-large-title); line-height: var(--t-large-title-lh); letter-spacing: -0.025em; min-height: calc(var(--nav-h) - 8px); }
+  /* Sub-pantalla (empujada): título 28/34 (HIG Title 1), no el grande de pestaña. */
+  :global(:root[data-chrome="pushed"]) .pageHeader h1 { font-size: var(--t-title); line-height: var(--t-title-lh); letter-spacing: -0.02em; }
   :global(:root[data-chrome="root"]) .pageHeader h1 { padding-right: 92px; }
 }
