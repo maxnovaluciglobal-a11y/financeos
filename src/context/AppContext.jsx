@@ -14,7 +14,7 @@ import {
   isUsingFallback, firstRunSettings,
   reconcileRecurringSources, confirmOccurrencesInDb,
 } from '../core/db/index.js'
-import { uid, SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel, currentMonth } from '../utils/index.js'
+import { uid, buildSeed, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel, currentMonth } from '../utils/index.js'
 import { dueAutoConfirmations, ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { monthAdvance } from '../utils/monthAdvance.js'
 import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow, syncRequirement, setupPassphrase, unlockWithPassphrase } from '../core/sync.js'
@@ -534,11 +534,7 @@ export function AppProvider({ children }) {
     try {
       await clearAllData()
       const seeds = {
-        incomes:      SEED_INCOMES.map(r  => ({ ...r,  id: uid() })),
-        expenses:     SEED_EXPENSES.map(r => ({ ...r,  id: uid() })),
-        budgets:      SEED_BUDGETS.map(r  => ({ ...r,  id: uid() })),
-        debts:        SEED_DEBTS.map(r    => ({ ...r,  id: uid() })),
-        goals:        SEED_GOALS.map(r    => ({ ...r,  id: uid() })),
+        ...buildSeed(),
         // clearAllData() ya vació subscriptions/importBatches en IndexedDB;
         // sin limpiarlos también acá quedan huérfanos en el estado en memoria
         // hasta el próximo reload.

@@ -440,3 +440,30 @@ export const SEED_GOALS = [
   { id: uid(), name: 'Viaje a Europa', target: 5000000, saved: 1400000, targetDate: '2026-03-01', priority: 'Media', color: '#3C2282' },
   { id: uid(), name: 'Pie departamento', target: 5800000, saved: 1200000, targetDate: '2027-06-01', priority: 'Alta', color: '#0E8C8C' },
 ]
+
+// Los datos de ejemplo están escritos en mayo de 2025. Cargados tal cual, el
+// Inicio de una cuenta nueva mostraba "$0" y "Todavía no hay movimientos este
+// mes" (estaban 18 meses atrás), las metas vencidas y las deudas atrasadas.
+// buildSeed() los corre al mes actual: mismo día (sin pasar de hoy), y fechas
+// de vencimiento y metas corridas la misma cantidad de meses (19-nov-2026).
+const SEED_MONTH = '2025-05'
+export function buildSeed(now = new Date()) {
+  const [sy, sm] = SEED_MONTH.split('-').map(Number)
+  const delta = (now.getFullYear() - sy) * 12 + (now.getMonth() + 1 - sm)
+  const todayStr = localDateStr(now)
+  const shift = (iso, clampToToday) => {
+    if (!iso) return iso
+    const [y, m, d] = iso.split('-').map(Number)
+    const t = new Date(y, m - 1 + delta, 1)
+    const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate()
+    const out = localDateStr(new Date(t.getFullYear(), t.getMonth(), Math.min(d, last)))
+    return clampToToday && out > todayStr ? todayStr : out
+  }
+  return {
+    incomes:  SEED_INCOMES.map(r  => ({ ...r, id: uid(), date: shift(r.date, true) })),
+    expenses: SEED_EXPENSES.map(r => ({ ...r, id: uid(), date: shift(r.date, true) })),
+    budgets:  SEED_BUDGETS.map(r  => ({ ...r, id: uid() })),
+    debts:    SEED_DEBTS.map(r    => ({ ...r, id: uid(), dueDate: shift(r.dueDate, false) })),
+    goals:    SEED_GOALS.map(r    => ({ ...r, id: uid(), targetDate: shift(r.targetDate, false) })),
+  }
+}

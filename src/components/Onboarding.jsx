@@ -20,7 +20,7 @@ import CountryBadge from './CountryBadge.jsx'
 import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency } from '../data/countries.js'
 import { languageForCountry } from '../i18n/region.js'
 import config from '../config.js'
-import { SEED_INCOMES, SEED_EXPENSES, SEED_BUDGETS, SEED_DEBTS, SEED_GOALS, uid, currentMonth, fmtMoneyFor, currencyDecimals } from '../utils/index.js'
+import { buildSeed, currentMonth, fmtMoneyFor, currencyDecimals } from '../utils/index.js'
 import { calcFinancialScore, weakestFactor } from '../utils/financialScore.js'
 import { ScoreState } from './ScoreState.jsx'
 import { isSyncEnabled, syncAvailable, syncMeta } from '../core/sync.js'
@@ -227,13 +227,7 @@ export default function Onboarding({ onComplete }) {
   async function loadDemoData() {
     setBusy(true)
     try {
-      const s = {
-        incomes:  SEED_INCOMES.map(r  => ({ ...r, id: uid() })),
-        expenses: SEED_EXPENSES.map(r => ({ ...r, id: uid() })),
-        budgets:  SEED_BUDGETS.map(r  => ({ ...r, id: uid() })),
-        debts:    SEED_DEBTS.map(r    => ({ ...r, id: uid() })),
-        goals:    SEED_GOALS.map(r    => ({ ...r, id: uid() })),
-      }
+      const s = buildSeed()
       await Promise.all([
         ...s.incomes.map(r  => dbAdd('incomes',  r)),
         ...s.expenses.map(r => dbAdd('expenses', r)),
