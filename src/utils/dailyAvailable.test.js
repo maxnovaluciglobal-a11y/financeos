@@ -38,8 +38,26 @@ describe('gasto acumulado del mes', () => {
     const step = S.ideal[2] - S.ideal[1]
     for (let d = 2; d < 30; d++) expect(S.ideal[d + 1] - S.ideal[d]).toBeCloseTo(step, 1)
   })
-  it('proyección al promedio diario actual', () => {
-    expect(S.projEnd).toBeCloseTo(125.25 + (125.25 / 18) * 12, 2)
+  it('proyección = la de la tarjeta Proyección (projection.js), nunca menos que lo gastado', () => {
+    const p = projectEndOfMonth({ incomes: inc, expenses: exp, activeMonth: '2026-11', now: NOW })
+    expect(S.projEnd).toBe(Math.max(S.spentCum[18], p.projExp))
+  })
+  it('ENG-N2: el arriendo del día 1 no se extrapola como gasto diario', () => {
+    // 5-nov: ingreso 2.000.000, arriendo 950.000 el día 1 (fijo) y 200.000 de gasto variable.
+    const now = new Date(2026, 10, 5, 12)
+    const incomes = [{ date: '2026-11-01', amount: 2000000 }]
+    const expenses = [
+      { date: '2026-11-01', amount: 950000, recurringId: 'r-arriendo' },
+      { date: '2026-11-02', amount: 50000 }, { date: '2026-11-03', amount: 50000 },
+      { date: '2026-11-04', amount: 50000 }, { date: '2026-11-05', amount: 50000 },
+    ]
+    const sr = dailyAvailable({ incomes, expenses, activeMonth: '2026-11', now, income: 2000000 })
+    const p = projectEndOfMonth({ incomes, expenses, activeMonth: '2026-11', now })
+    expect(sr.projEnd).toBe(p.projExp)
+    expect(sr.projEnd).toBe(2400000)          // 1.150.000 + 50.000 × 25 días; antes daba 6.900.000
+    // Los fijos que faltan se suman, igual que en la tarjeta Proyección.
+    const withPending = dailyAvailable({ incomes, expenses, activeMonth: '2026-11', now, income: 2000000, pending: { income: 0, expense: 30000, count: 1 } })
+    expect(withPending.projEnd).toBe(2430000)
   })
   it('sin ingreso no hay ideal ni píldora; mes cerrado sin proyección; mes futuro sin días', () => {
     const noInc = dailyAvailable({ incomes: [], expenses: exp, activeMonth: '2026-11', now: NOW })
