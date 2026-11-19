@@ -60,7 +60,7 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
     <section className={`${s.card} rise`} aria-labelledby="home-upcoming-title">
       <div className={s.cardHead}>
         <h2 id="home-upcoming-title" className={s.cardTitle}>
-          {t(hasCollect ? 'home.upcoming.titleBoth' : 'home.upcoming.title')}
+          {t(hasCollect ? 'home.upcoming.titleBoth' : items.some(it => it.overdue) ? 'home.upcoming.titleDue' : 'home.upcoming.title')}
           {short && <span className={s.cardHintInline}> · {t('home.upcoming.hint7')}</span>}
         </h2>
         {short && setPage

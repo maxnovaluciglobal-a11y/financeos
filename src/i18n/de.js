@@ -2147,6 +2147,8 @@ export const de = {
     'home.upcoming.kind.sub': "Abo",
     'home.upcoming.kind.collect': "Eingang",
     'home.upcoming.titleBoth': "Anstehende Zahlungen und Eingänge",
+    // UX-N12: hay previstos vencidos en la lista
+    'home.upcoming.titleDue': "Offene Zahlungen",
     'home.upcoming.today': "heute",
     'home.upcoming.tomorrow': "morgen",
     'home.upcoming.more.one': "Und {n} weitere Zahlung in den nächsten 30 Tagen.",

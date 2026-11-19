@@ -2148,6 +2148,8 @@ export const pt = {
     'home.upcoming.kind.sub': "Assinatura",
     'home.upcoming.kind.collect': "Recebimento",
     'home.upcoming.titleBoth': "Pagamentos e recebimentos próximos",
+    // UX-N12: hay previstos vencidos en la lista
+    'home.upcoming.titleDue': "Pagamentos pendentes",
     'home.upcoming.today': "hoje",
     'home.upcoming.tomorrow': "amanhã",
     'home.upcoming.more.one': "E mais {n} pagamento nos próximos 30 dias.",

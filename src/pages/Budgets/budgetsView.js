@@ -21,7 +21,9 @@ export function kpiLine({ overCount = 0, totalBudget = 0, income = 0, overStated
   const total = Number(totalBudget) || 0
   const coverage = inc > 0 ? { key: 'budgets.p2.kpi.coverage', ratio: total / inc } : { key: 'budgets.p2.kpi.noIncome' }
   const overIncome = inc > 0 && exceedsWithTolerance(total, inc)
-  const tone = n > 0 || overIncome ? 'risk' : inc > 0 && total / inc > 0.8 ? 'warn' : 'ok'
+  // Sin el conteo en la línea (overStated), el tono habla solo de la cobertura.
+  const countsOver = n > 0 && over !== null
+  const tone = countsOver || overIncome ? 'risk' : inc > 0 && total / inc > 0.8 ? 'warn' : 'ok'
   return { over, coverage, tone }
 }
 

@@ -2148,6 +2148,8 @@ export const en = {
     'home.upcoming.kind.sub': "Subscription",
     'home.upcoming.kind.collect': "Collection",
     'home.upcoming.titleBoth': "Upcoming payments and collections",
+    // UX-N12: hay previstos vencidos en la lista
+    'home.upcoming.titleDue': "Payments due",
     'home.upcoming.today': "today",
     'home.upcoming.tomorrow': "tomorrow",
     'home.upcoming.more.one': "And {n} more payment in the next 30 days.",
