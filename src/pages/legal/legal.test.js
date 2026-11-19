@@ -119,11 +119,84 @@ describe('privacy facts', () => {
     it(`${lang}: account required, processors and encryption named`, () => {
       const { text } = render('privacy', lang)
       expect(text).toMatch(ACCOUNT_REQUIRED[lang])
-      for (const word of ['Supabase', 'Stripe', 'Resend', 'Vercel', 'Formspree', 'AES-GCM', 'IndexedDB', 'Google']) {
+      for (const word of ['Supabase', 'Stripe', 'Resend', 'Vercel', 'Cloudflare', 'Turnstile', 'mindicador.cl', 'dolarapi.com', 'AES-GCM', 'IndexedDB', 'Google']) {
         expect(text).toContain(word)
       }
+      // Formspree no se usa en el código (auditoría 360, LEG-N1): no se declara.
+      expect(text).not.toContain('Formspree')
     })
   }
+})
+
+// Auditoría 360 del 19-nov-2026 (LEG-N1, LEG-N2, LEG-N8, SEC-N7): la política de la
+// app repite lo que la de la landing ya publica y lo que el código hace.
+const INVEST_PROFILE = { es: /Perfil de inversionista/, en: /Investor profile/, pt: /Perfil de investidor/, de: /Anlegerprofil/ }
+const CHILE = { es: /Si vives en Chile/, en: /If you live in Chile/, pt: /Se você mora no Chile/, de: /Wenn Sie in Chile leben/ }
+const BRAZIL = { es: /Si vives en Brasil/, en: /If you live in Brazil/, pt: /Se você mora no Brasil/, de: /Wenn Sie in Brasilien leben/ }
+const NO_CLICK_CLAIM = /no se registran eventos ni clics|no events or clicks are recorded|não são registrados eventos nem cliques|Ereignisse oder Klicks werden nicht aufgezeichnet/
+const STRIPE_MANUAL_ONLY = /Dos pasos no son automáticos|Two steps are not automatic|Dois passos não são automáticos|Zwei Schritte erfolgen nicht automatisch/
+
+describe('privacy: alineada con la landing y el código (auditoría 360, 19-nov-2026)', () => {
+  for (const lang of LEGAL_LANGS) {
+    it(`${lang}: Chile (Ley 21.719) y Brasil (LGPD) con sus autoridades`, () => {
+      const { text } = render('privacy', lang)
+      expect(text).toMatch(CHILE[lang])
+      expect(text).toContain('21.719')
+      expect(text).toContain('18.623-07')
+      expect(text).toContain('Agencia de Protección de Datos Personales')
+      expect(text).toMatch(BRAZIL[lang])
+      expect(text).toContain('ANPD')
+    })
+
+    it(`${lang}: perfil de inversionista declarado, sin uso para recomendar, borrado con la cuenta`, () => {
+      const { text } = render('privacy', lang)
+      expect(text).toMatch(INVEST_PROFILE[lang])
+      expect(text).toContain('invest.moyiq.app')
+      expect(text).toMatch(/recomendar|recommend|Anlageempfehlungen/)
+    })
+
+    it(`${lang}: comentarios/NPS y clics de Resend declarados; sin la frase de "no se registran clics"`, () => {
+      const { text } = render('privacy', lang)
+      expect(text).toContain('NPS')
+      expect(text).not.toMatch(NO_CLICK_CLAIM)
+      expect(text).toMatch(/medición de clics|click measurement|medição de cliques|Klickmessung/)
+    })
+
+    it(`${lang}: la cancelación en Stripe al borrar la cuenta es automática, con respaldo manual`, () => {
+      const { text } = render('privacy', lang)
+      expect(text).not.toMatch(STRIPE_MANUAL_ONLY)
+    })
+  }
+
+  it('es/en/pt nombran las autoridades de México, Argentina, Perú y Colombia (LEG-N8)', () => {
+    for (const lang of ['es', 'en', 'pt']) {
+      const { text } = render('privacy', lang)
+      for (const word of ['Secretaría Anticorrupción y Buen Gobierno', 'AAIP', 'Protección de Datos Personales', 'SIC']) {
+        expect(text, `${lang}: ${word}`).toContain(word)
+      }
+    }
+  })
+
+  it('cada origen externo de la CSP de vercel.json está declarado en la política (4 idiomas)', () => {
+    const vercel = JSON.parse(readFileSync(join(here, '../../../vercel.json'), 'utf8'))
+    const csp = vercel.headers.flatMap(h => h.headers).find(h => h.key === 'Content-Security-Policy').value
+    const hosts = [...new Set((csp.match(/(?:https|wss):\/\/[^\s;]+/g) || []).map(u => new URL(u.replace(/^wss:/, 'https:')).hostname))]
+    // Origen → palabra que la política tiene que decir. Origen nuevo sin entrada = falla:
+    // antes de sumarlo a la CSP hay que declararlo en privacyContent.jsx y en la landing.
+    const DECLARED_AS = [
+      [/\.supabase\.co$/, 'Supabase'],
+      [/^(ve\.)?dolarapi\.com$/, 'dolarapi.com'],
+      [/^mindicador\.cl$/, 'mindicador.cl'],
+      [/^challenges\.cloudflare\.com$/, 'Turnstile'],
+      [/^invest\.moyiq\.app$/, 'invest.moyiq.app'],
+    ]
+    expect(hosts.length).toBeGreaterThan(3)
+    for (const host of hosts) {
+      const entry = DECLARED_AS.find(([re]) => re.test(host))
+      expect(entry, `origen de la CSP sin declarar: ${host}`).toBeTruthy()
+      for (const lang of LEGAL_LANGS) expect(render('privacy', lang).text, `${lang}: ${host}`).toContain(entry[1])
+    }
+  })
 })
 
 describe('privacy: double opt-in for marketing emails', () => {
