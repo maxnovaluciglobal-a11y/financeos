@@ -206,7 +206,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   }, [resetKey, defaultType, prefill])
 
   function applyPrefill(p) {
-    const v = intakeFormValues(p, { currency, rate })
+    const v = intakeFormValues(p, { currency, rate, lang })
     if (!v) return
     setType(v.type)
     if (v.amount != null) { setUsdMode(v.usd); setAmount(amountToKeypad(v.amount, v.usd ? usdDecimals : decimals)) }
