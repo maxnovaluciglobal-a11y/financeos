@@ -8,8 +8,8 @@ export default function ChartCard({ title, subtitle, children, minHeight = 220 }
     <section style={{ borderTop:'1px solid var(--brd2)', padding:'14px 0 0', marginBottom:20, minWidth:0 }}>
       {title && (
         <div style={{ marginBottom:12 }}>
-          <h2 className="display" style={{ margin:0, fontSize:16, fontWeight:600, color:'var(--tx)' }}>{title}</h2>
-          {subtitle && <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', marginTop:3 }}>{subtitle}</div>}
+          <h2 className="display" style={{ margin:0, fontSize:'var(--t-headline)', fontWeight:600, color:'var(--tx)' }}>{title}</h2>
+          {subtitle && <div style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', marginTop:3 }}>{subtitle}</div>}
         </div>
       )}
       <div style={{ minHeight }}>{children}</div>
@@ -22,7 +22,7 @@ export function ChartEmpty({ msg }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:160, flexDirection:'column', gap:8 }}>
       <div style={{ opacity:.35, color:'var(--th)' }}><SignalIcon kind="category" size={22} /></div>
-      <div style={{ fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', textAlign:'center', maxWidth:220 }}>{msg || t('chart.empty.generic')}</div>
+      <div style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', textAlign:'center', maxWidth:220 }}>{msg || t('chart.empty.generic')}</div>
     </div>
   )
 }

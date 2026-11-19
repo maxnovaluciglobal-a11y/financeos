@@ -53,14 +53,14 @@
 }
 
 .heroOpen {
-  display: inline-flex; align-items: center; gap: 2px; min-height: 2.25rem; max-width: 100%;
+  display: inline-flex; align-items: center; gap: 2px; min-height: 44px; max-width: 100%;
   margin: 0 0 0 -4px; padding: 0 4px; border: 0; border-radius: var(--radius-sm);
   background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 .heroOpen:focus-visible { outline: 2px solid var(--on-grad-accent); outline-offset: 2px; }
 .label {
-  font-size: var(--type-small); line-height: var(--type-small-lh); font-weight: var(--fw-medium);
+  font-size: var(--t-subhead); line-height: var(--t-subhead-lh); font-weight: var(--fw-semibold);
   color: var(--on-grad-text-2);
   /* El alemán ("Übrig am Donnerstag, 30.") entra; si no, corta prolijo. */
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
@@ -76,17 +76,17 @@
   margin: var(--space-1) 0 var(--space-2); white-space: nowrap; color: var(--on-grad-text);
   font-variant-numeric: tabular-nums lining-nums;
 }
-.cur { font-size: .34em; font-weight: var(--fw-medium); letter-spacing: 0; vertical-align: 1.5em; margin-right: .12em; color: var(--on-grad-text-2); }
-.curAfter { font-size: .34em; font-weight: var(--fw-medium); letter-spacing: 0; vertical-align: 1.5em; color: var(--on-grad-text-2); }
+.cur { font-size: .34em; font-weight: var(--fw-semibold); letter-spacing: 0; vertical-align: 1.5em; margin-right: .12em; color: var(--on-grad-text-2); }
+.curAfter { font-size: .34em; font-weight: var(--fw-semibold); letter-spacing: 0; vertical-align: 1.5em; color: var(--on-grad-text-2); }
 .dec { font-size: var(--type-dec); letter-spacing: var(--type-dec-tr); vertical-align: .9em; margin-left: .02em; }
-.noData { margin: var(--space-2) 0; font-size: var(--type-body); line-height: var(--type-body-lh); color: var(--on-grad-text-2); }
+.noData { margin: var(--space-2) 0; font-size: var(--t-body); line-height: var(--t-body-lh); color: var(--on-grad-text-2); }
 
 .sub {
   display: flex; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: var(--space-1) var(--space-2);
   /* Dos renglones siempre (píldora + días, o lo del día mirado): el gráfico
      no salta al pasar de reposo a inspección. */
   min-height: calc(1.625rem * 2 + var(--space-1)); margin: 0;
-  font-size: var(--type-small); line-height: var(--type-small-lh); color: var(--on-grad-text-2);
+  font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--on-grad-text-2);
 }
 /* El dato clave en lima con tinta encima (una sola vez en la escena). */
 .paceKey, .paceChip {
@@ -95,11 +95,11 @@
 }
 .paceKey { background: var(--on-grad-accent); color: var(--text-on-accent); }
 .paceChip { background: var(--on-grad-chip); color: var(--on-grad-text); box-shadow: inset 0 0 0 1px var(--on-grad-track); }
-.dual { margin: var(--space-1) 0 0; font-size: var(--type-small); color: var(--on-grad-text-2); }
+.dual { margin: var(--space-1) 0 0; font-size: var(--t-footnote); color: var(--on-grad-text-2); }
 
 .legend {
   display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-2);
-  font-size: var(--type-etiqueta); line-height: var(--type-etiqueta-lh); color: var(--on-grad-text-2);
+  font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--on-grad-text-2);
 }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend span::before { content: ''; width: 16px; height: 0; border-top: 2.5px solid var(--on-grad-text); border-radius: 2px; }
@@ -115,7 +115,7 @@
 .stepBtn:hover { background: var(--on-grad-track); }
 .stepBtn:active { transform: scale(.94); }
 .stepBtn:focus-visible { outline: 2px solid var(--on-grad-accent); outline-offset: 2px; }
-.stepHint { flex: 1; min-width: 0; text-align: center; font-size: var(--type-small); line-height: var(--type-small-lh); color: var(--on-grad-text-2); }
+.stepHint { flex: 1; min-width: 0; text-align: center; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--on-grad-text-2); }
 
 .pairLine {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin: var(--space-3) calc(-1 * var(--space-2)) 0;
@@ -129,7 +129,7 @@
 button.pairItem { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur) var(--ease); }
 button.pairItem:hover, button.pairItem:active { background: var(--on-grad-chip); }
 button.pairItem:focus-visible { outline: 2px solid var(--on-grad-accent); outline-offset: -2px; }
-.pairLabel { display: inline-flex; align-items: center; gap: 2px; font-size: var(--type-small); line-height: var(--type-small-lh); color: var(--on-grad-text-2); }
+.pairLabel { display: inline-flex; align-items: center; gap: 2px; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--on-grad-text-2); }
 .pairValue {
   min-width: 0; max-width: 100%; white-space: nowrap; color: var(--on-grad-text); font-weight: var(--fw-semibold);
   font-size: clamp(.75rem, calc(100cqi * 1.65 / var(--chars, 10)), 1.0625rem); line-height: 1.3;
@@ -141,21 +141,21 @@ button.pairItem:focus-visible { outline: 2px solid var(--on-grad-accent); outlin
 }
 
 /* ── Hoja del día ──────────────────────────────────────────────────────── */
-.sheetTitle { margin: var(--space-1) 0 2px; font-size: var(--type-h2); line-height: var(--type-h2-lh); font-weight: var(--fw-semibold); letter-spacing: var(--type-h2-tr); color: var(--tx); }
-.sheetTotal { margin: 0 0 var(--space-3); font-size: var(--type-small); line-height: var(--type-small-lh); color: var(--tm); }
-.sheetEmpty { margin: var(--space-2) 0 var(--space-4); font-size: var(--type-body); color: var(--tm); }
+.sheetTitle { margin: var(--space-1) 0 2px; font-size: var(--t-title); line-height: var(--t-title-lh); font-weight: var(--fw-bold); letter-spacing: -0.02em; color: var(--tx); }
+.sheetTotal { margin: 0 0 var(--space-3); font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tm); }
+.sheetEmpty { margin: var(--space-2) 0 var(--space-4); font-size: var(--t-headline); color: var(--tm); }
 .dayRows { list-style: none; margin: 0; padding: 0; }
 .dayRow { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; }
 .dayRow + .dayRow { box-shadow: inset 0 1px 0 var(--color-divider); }
 .dayRowText { min-width: 0; display: flex; flex-direction: column; }
-.dayRowText b { font-weight: var(--fw-medium); font-size: var(--type-body); line-height: 1.3; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dayRowText small { font-size: var(--type-small); color: var(--th); }
-.dayRowAmt, .dayRowInc { font-weight: var(--fw-semibold); white-space: nowrap; font-size: var(--type-body); color: var(--tx); }
+.dayRowText b { font-weight: var(--fw-semibold); font-size: var(--t-headline); line-height: 1.3; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dayRowText small { font-size: var(--t-footnote); color: var(--th); }
+.dayRowAmt, .dayRowInc { font-weight: var(--fw-semibold); white-space: nowrap; font-size: var(--t-headline); color: var(--tx); }
 .dayRowInc { color: var(--pos); }
 .dayNav { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-4); }
 .dayNavBtn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: 44px;
   border: 0; border-radius: var(--radius-md); background: var(--fill); color: var(--color-brand-text);
-  font: inherit; font-size: var(--type-small); font-weight: var(--fw-semibold); cursor: pointer;
+  font: inherit; font-size: var(--t-footnote); font-weight: var(--fw-semibold); cursor: pointer;
 }
 .dayNavBtn:disabled { opacity: .4; cursor: default; }

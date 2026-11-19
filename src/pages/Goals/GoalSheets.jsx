@@ -19,10 +19,10 @@ export const GOAL_ICONS = {
   business: Store, custom: PencilLine, emergency: ShieldCheck, general: PiggyBank,
 }
 
-const h2 = { margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--tx)' }
-const lead = { fontSize: 13, color: 'var(--tm)', lineHeight: 1.5, margin: '0 0 14px' }
-const fieldLabel = { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--tx)', marginBottom: 6 }
-const input = { width: '100%', boxSizing: 'border-box', minHeight: 44, fontSize: 16 }
+const h2 = { margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 'var(--t-title-2)', fontWeight: 700, color: 'var(--tx)' }
+const lead = { fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.5, margin: '0 0 14px' }
+const fieldLabel = { display: 'block', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }
+const input = { width: '100%', boxSizing: 'border-box', minHeight: 44, fontSize: 'var(--t-callout)' }
 const primaryFull = { width: '100%', minHeight: 48, marginTop: 16 }
 const linksRow = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }
 
@@ -48,17 +48,17 @@ export function FixedBuckets({ buckets, t, fmt, onSelect, onDetails }) {
                   <Icon size={16} strokeWidth={1.7} />
                 </span>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: 'block', fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g ? g.name : name}</span>
-                  <span style={{ display: 'block', fontSize: 12, color: 'var(--th)', marginTop: 1 }}>
+                  <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', fontSize: 'var(--t-headline)', lineHeight: 'var(--t-headline-lh)', fontWeight: 600, overflow: 'hidden', overflowWrap: 'break-word', hyphens: 'auto' }}>{g ? g.name : name}</span>
+                  <span style={{ display: 'block', fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 1 }}>
                     {g
                       ? t('goals.r9.bucket.progress', { saved: fmt(g.saved), target: fmt(g.target) })
                       : b.suggested ? t('goals.r9.bucket.suggested', { v: fmt(b.suggested) }) : t('goals.r9.bucket.empty')}
                   </span>
                 </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: done ? 'var(--pos)' : 'var(--tm)' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--t-subhead)', fontWeight: 600, color: done ? 'var(--pos)' : 'var(--tm)' }}>
                   {done
                     ? <><SignalIcon kind="ok" size={13} />{t('goals.status.done')}</>
-                    : <><Plus size={14} strokeWidth={1.7} />{g ? t('goals.r9.bucket.add') : t('goals.r9.bucket.create')}<ChevronRight size={14} strokeWidth={1.7} /></>}
+                    : <><Plus size={14} strokeWidth={1.7} /><span className="fos-sr-narrow">{g ? t('goals.r9.bucket.add') : t('goals.r9.bucket.create')}</span><ChevronRight size={14} strokeWidth={1.7} /></>}
                 </span>
               </button>
               {g && onDetails && (
@@ -95,7 +95,7 @@ function StepDots({ step, t }) {
           <span key={i} style={{ width: 8, height: 8, borderRadius: 2, background: i < step ? 'var(--tx)' : 'var(--brd2)' }} />
         ))}
       </span>
-      <span style={{ fontSize: 12, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('goals.r9.step', { n: step, total: FLOW_STEPS })}</span>
+      <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('goals.r9.step', { n: step, total: FLOW_STEPS })}</span>
     </div>
   )
 }
@@ -132,7 +132,7 @@ export function GoalFlowSheet({ flow, setFlow, onClose, onPickTemplate, onCreate
 
   const monthly = step === 3 ? monthlyNeeded({ target: draft.target, targetDate: draft.targetDate, activeMonth }) : null
   const title = step === 0 ? t('goals.r9.pick.title') : step === 1 ? t('goals.r9.amount.title') : step === 2 ? t('goals.r9.name.title') : t('goals.r9.summary.title')
-  const row = { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--brd)', fontSize: 14 }
+  const row = { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--brd)', fontSize: 'var(--t-body)' }
 
   return (
     <Sheet open={!!flow} onClose={onClose} ariaLabel={title} maxWidth={480} initialFocusRef={sheetFocus}>
@@ -156,7 +156,7 @@ export function GoalFlowSheet({ flow, setFlow, onClose, onPickTemplate, onCreate
               <input id="goal-flow-amount" ref={sheetFocus} className="num" type="number" inputMode="decimal" min="0" step="any" placeholder="0"
                 value={draft.target ?? ''} onChange={e => { set({ target: e.target.value }); setErr('') }}
                 aria-invalid={!!err} aria-describedby={err ? 'goal-flow-err' : undefined}
-                style={{ ...input, fontSize: 28, fontWeight: 600, padding: '8px 12px' }} />
+                style={{ ...input, fontSize: 'var(--t-title)', fontWeight: 600, padding: '8px 12px' }} />
             </>
           )}
           {step === 2 && (
@@ -180,7 +180,7 @@ export function GoalFlowSheet({ flow, setFlow, onClose, onPickTemplate, onCreate
               )}
             </div>
           )}
-          {err && <p id="goal-flow-err" role="alert" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--neg)', margin: '8px 0 0' }}><SignalIcon kind="alert" size={13} />{err}</p>}
+          {err && <p id="goal-flow-err" role="alert" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--t-subhead)', color: 'var(--neg)', margin: '8px 0 0' }}><SignalIcon kind="alert" size={13} />{err}</p>}
           <button type="submit" className="fos-btn-primary" style={primaryFull} disabled={busy}>
             {step < FLOW_STEPS ? t('goals.r9.next') : t('goals.r9.create')}
           </button>
@@ -224,8 +224,8 @@ export function ContributionSheet({ goal, onClose, onConfirm, t, lang, fmt, curr
         <input id="goal-add-amount" ref={amtRef} className="num" type="number" inputMode="decimal" min="0" step="any" placeholder="0"
           value={amount} onChange={e => setAmount(e.target.value)}
           aria-describedby={capped ? 'goal-add-capped' : undefined}
-          style={{ ...input, fontSize: 28, fontWeight: 600, padding: '8px 12px' }} />
-        {capped && <p id="goal-add-capped" style={{ fontSize: 12, color: 'var(--th)', margin: '6px 0 0' }}>{t('goals.r9.add.capped', { v: fmt(remaining) })}</p>}
+          style={{ ...input, fontSize: 'var(--t-title)', fontWeight: 600, padding: '8px 12px' }} />
+        {capped && <p id="goal-add-capped" style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', margin: '6px 0 0' }}>{t('goals.r9.add.capped', { v: fmt(remaining) })}</p>}
         <label htmlFor="goal-add-method" style={{ ...fieldLabel, marginTop: 14 }}>{t('goals.r9.add.from')}</label>
         <SheetSelect id="goal-add-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...input, padding: '8px 10px' }}>
           {methods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}

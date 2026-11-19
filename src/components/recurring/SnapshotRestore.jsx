@@ -34,11 +34,11 @@ export default function SnapshotRestore() {
 
   return (
     <div style={{ borderTop: '.5px solid var(--brd)', marginTop: 14, paddingTop: 12 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{t('rec.restore.title')}</div>
-      <p style={{ fontSize: 12, color: 'var(--th)', lineHeight: 1.5, margin: '0 0 8px' }}>{t('rec.restore.desc', { date: when })}</p>
+      <div style={{ fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 2 }}>{t('rec.restore.title')}</div>
+      <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5, margin: '0 0 8px' }}>{t('rec.restore.desc', { date: when })}</p>
       {confirming ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--tx)', flex: '1 1 220px' }}>{t('rec.restore.confirm')}</span>
+          <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--tx)', flex: '1 1 220px' }}>{t('rec.restore.confirm')}</span>
           {/* Reemplaza los datos: confirmación en rojo, no Latón (R10). */}
           <Btn variant="danger" size="sm" onClick={restore}>{t('rec.restore.btn')}</Btn>
           <Btn variant="ghost" size="sm" onClick={() => setConfirming(false)}>{t('common.cancel')}</Btn>

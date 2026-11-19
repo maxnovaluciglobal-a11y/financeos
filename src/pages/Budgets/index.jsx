@@ -216,7 +216,7 @@ export default function Budgets() {
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             background: 'none', border: 0,
             borderRadius: 'var(--r-pill)', padding: '5px 4px', cursor: 'pointer', minHeight: 44,
-            fontSize: 13, fontFamily: 'var(--sans)',
+            fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)',
             color: rolloverOn ? 'var(--accent)' : 'var(--tm)',
           }}
         >
@@ -264,7 +264,7 @@ export default function Budgets() {
         </div>
       )}
       {rolloverOn && (
-        <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', borderRadius: 'var(--r)', fontSize: 12, color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.6 }}>
+        <div style={{ padding: '8px 12px', background: 'var(--accent-bg)', borderRadius: 'var(--r)', fontSize: 'var(--t-footnote)', color: 'var(--accent)', fontFamily: 'var(--sans)', lineHeight: 1.6 }}>
           <InlineIcon kind="subs" size={13} />{t('budgets.rollover.banner', { prev: monthLabel(prevMonth), cur: monthLabel(activeMonth) })}
         </div>
       )}
@@ -311,7 +311,7 @@ export default function Budgets() {
       <section className={s.section} aria-labelledby="bud-list-title" data-tour="bud-summary">
         <h2 id="bud-list-title" className={s.sectionTitle}>{t('budgets.byCat', { month: monthLabel(activeMonth) })}</h2>
         {rows.length === 0 ? (
-          <p style={{fontSize:13,color:'var(--th)',padding:'12px 0'}}>{t('budgets.summary.empty')}</p>
+          <p style={{fontSize:'var(--t-subhead)',color:'var(--th)',padding:'12px 0'}}>{t('budgets.summary.empty')}</p>
         ) : (
           <ul className={s.list} aria-label={t('budgets.list.aria')}>
             {rows.map(r => {
@@ -428,7 +428,7 @@ export default function Budgets() {
       {/* Modelo 50/30/20: la tabla de sugerencias y "Aplicar". */}
       <Sheet open={sheet === 'model'} onClose={closeSheet} ariaLabel={t('budgets.model.title')} maxWidth={520}>
         <h2 className={s.sheetTitle}>{t('budgets.model.title')}</h2>
-        <p style={{fontSize:13,color:ingresoNeto > 0 ? 'var(--tm)' : 'var(--neg)',margin:'4px 0 8px'}}>
+        <p style={{fontSize:'var(--t-subhead)',color:ingresoNeto > 0 ? 'var(--tm)' : 'var(--neg)',margin:'4px 0 8px'}}>
           {ingresoNeto > 0
             ? <>{t('budgets.model.netIncome', { month: monthLabel(activeMonth) })} <Amount value={ingresoNeto} sym={sym} signed={false} /></>
             : <><InlineIcon kind="alert" size={13} />{t('budgets.model.noIncome', { month: monthLabel(activeMonth) })}</>}
@@ -446,7 +446,7 @@ export default function Budgets() {
             share: fmtPct(sg.pct, { decimals: 0 }),
           }))} />
         {ingresoNeto > 0 && <>
-          <div style={{fontSize:12,color:'var(--th)',fontFamily: 'var(--sans)',margin:'10px 0 8px'}}>{t('budgets.model.onlyNew')}</div>
+          <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',margin:'10px 0 8px'}}>{t('budgets.model.onlyNew')}</div>
           <Btn variant="primary" onClick={aplicar}>{t('budgets.model.apply')}</Btn>
         </>}
       </Sheet>

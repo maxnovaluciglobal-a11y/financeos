@@ -177,13 +177,13 @@ export default function Dashboard({ setPage }) {
     const ok = balance >= 0
     return (
       <Sheet open={showCloseModal} onClose={dismissClose} ariaLabel={t('dash.close.title')} maxWidth={380}>
-          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 12, color:'var(--th)', marginBottom:8 }}>
+          <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color:'var(--th)', marginBottom:8 }}>
             {t('dash.close.title')}
           </div>
-          <div style={{ fontSize:20, fontWeight:700, color:'var(--tx)', marginBottom:4 }}>
+          <div style={{ fontSize:'var(--t-title-2)', fontWeight:700, color:'var(--tx)', marginBottom:4 }}>
             {activeMonth}
           </div>
-          <div style={{ fontSize:13, color: ok ? 'var(--accent)' : 'var(--red)', fontWeight:600, marginBottom:20 }}>
+          <div style={{ fontSize:'var(--t-subhead)', color: ok ? 'var(--accent)' : 'var(--red)', fontWeight:600, marginBottom:20 }}>
             {ok ? t('dash.close.positive') : t('dash.close.negative')}
           </div>
 
@@ -195,18 +195,18 @@ export default function Dashboard({ setPage }) {
               { label:t('dash.close.savings'),      val:pct(kpis.savingRate),            color: kpis.savingRate >= 0.2 ? 'var(--accent)' : 'var(--amb)' },
             ].map(k => (
               <div key={k.label} style={{ background:'var(--bg2)', borderRadius:10, padding:'10px 12px' }}>
-                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)', marginBottom:3 }}>{k.label}</div>
-                <div style={{ fontSize:15, fontWeight:700, fontFamily: 'var(--num)', color:k.color }}>{k.prefix||''}{k.val}</div>
+                <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)', marginBottom:3 }}>{k.label}</div>
+                <div style={{ fontSize:'var(--t-headline)', fontWeight:700, fontFamily: 'var(--num)', color:k.color }}>{k.prefix||''}{k.val}</div>
               </div>
             ))}
           </div>
 
           {healthScore && (
             <div style={{ background:'var(--bg2)', borderRadius:10, padding:'10px 12px', marginBottom:20, display:'flex', alignItems:'center', gap:12 }}>
-              <div style={{ fontSize:28, fontWeight:700, fontFamily: 'var(--num)', color:healthScore.color }}>{healthScore.score}</div>
+              <div style={{ fontSize:'var(--t-title)', fontWeight:700, fontFamily: 'var(--num)', color:healthScore.color }}>{healthScore.score}</div>
               <div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('dash.health.title')}</div>
-                <ScoreState level={healthScore.level} label={healthScore.label} style={{ fontSize:13 }} />
+                <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('dash.health.title')}</div>
+                <ScoreState level={healthScore.level} label={healthScore.label} style={{ fontSize:'var(--t-subhead)' }} />
               </div>
             </div>
           )}
@@ -214,13 +214,13 @@ export default function Dashboard({ setPage }) {
           <div style={{ display:'flex', gap:10, flexDirection:'column' }}>
             <button
               onClick={goNextMonth}
-              style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily: 'var(--num)' }}
+              style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-fg)', border:'none', borderRadius:9, padding:'11px 18px', fontSize:'var(--t-subhead)', fontWeight:700, cursor:'pointer', fontFamily: 'var(--num)' }}
             >
               {t('dash.close.next')}
             </button>
             <button
               onClick={dismissClose}
-              style={{ background: 'var(--fill)', color:'var(--th)', border: 0, borderRadius:9, padding:'9px 18px', fontSize:12, cursor:'pointer', fontFamily: 'var(--sans)' }}
+              style={{ background: 'var(--fill)', color:'var(--th)', border: 0, borderRadius:9, padding:'9px 18px', fontSize:'var(--t-footnote)', cursor:'pointer', fontFamily: 'var(--sans)' }}
             >
               {t('dash.close.stay', { m: activeMonth })}
             </button>
@@ -414,22 +414,22 @@ export default function Dashboard({ setPage }) {
         </div>
       )}
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} ariaLabel={t('home.edit.title')} maxWidth={420}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: 'var(--tx)' }}>{t('home.edit.title')}</h2>
-        <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--tm)', lineHeight: 1.5 }}>{t('home.edit.sub')}</p>
+        <h2 style={{ margin: '0 0 4px', fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)' }}>{t('home.edit.title')}</h2>
+        <p style={{ margin: '0 0 12px', fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.5 }}>{t('home.edit.sub')}</p>
         {HOME_CARDS.map(id => (
           <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 52, borderBottom: '0.5px solid var(--brd)' }}>
-            <span id={`home-edit-${id}`} style={{ fontSize: 14, color: 'var(--tx)' }}>{t(`home.edit.card.${id}`)}</span>
+            <span id={`home-edit-${id}`} style={{ fontSize: 'var(--t-body)', color: 'var(--tx)' }}>{t(`home.edit.card.${id}`)}</span>
             <Switch checked={cardOn(id)} labelledBy={`home-edit-${id}`}
               onChange={() => updateSettings?.({ ...settings, ...toggleHomeCard(settings, id) })} />
           </div>
         ))}
-        <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--th)', lineHeight: 1.5 }}>{t('home.edit.note')}</p>
+        <p style={{ margin: '12px 0 0', fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5 }}>{t('home.edit.note')}</p>
       </Sheet>
 
       {/* El aviso habla de los gráficos: en el Inicio solo aparece si la
           persona sumó alguno en "Editar Inicio" (Panorama lo muestra siempre). */}
       {HOME_CARDS.some(cardOn) && (
-        <div style={{ fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.6, marginTop:16 }}>
+        <div style={{ fontSize:'var(--t-footnote)', color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.6, marginTop:16 }}>
           {t('dash.disclaimer')}
         </div>
       )}

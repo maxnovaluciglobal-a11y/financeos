@@ -23,7 +23,7 @@ export default function PaceChart({ data, sym = '$', paceLabel, caption }) {
             <XAxis dataKey="day" tick={AXIS_TICK} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={18} />
             <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} tickFormatter={tickFmt} width={48} />
             <Tooltip content={<ChartTooltip format={(v) => m(fmtMoney(v, sym))} labelFormat={(d) => t('reports.cum.day', { d })} />} />
-            <Legend iconType="plainline" iconSize={14} wrapperStyle={{ fontSize: 11, fontFamily: 'var(--sans)', color: 'var(--chart-axis)', paddingTop: 8 }} />
+            <Legend iconType="plainline" iconSize={14} wrapperStyle={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--chart-axis)', paddingTop: 8 }} />
             <Line dataKey="current" name={spentLabel} type="monotone" stroke="var(--chart-expense)" strokeWidth={2} dot={false} connectNulls={false} />
             <Line dataKey="pace" name={paceLabel} type="linear" stroke="var(--chart-axis)" strokeWidth={1.5} strokeDasharray="6 4" dot={false} />
           </LineChart>

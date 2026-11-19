@@ -61,7 +61,7 @@ export default function MovementSheet({ expense, open = true, startEditing = fal
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <CategoryIcon category={e.category} size={32} />
-            <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--tm)' }}>{catName(e.category, lang)}</span>
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-subhead)', color: 'var(--tm)' }}>{catName(e.category, lang)}</span>
           </div>
           <div className={income ? `${s.sheetAmt} ${s.rowAmtIn}` : s.sheetAmt}>
             <Amount value={(income ? 1 : -1) * Math.abs(Number(e.amount) || 0)} sym={sym} plus={income} hero />
