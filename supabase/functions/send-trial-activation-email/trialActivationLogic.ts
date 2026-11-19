@@ -16,6 +16,7 @@ import { type EmailLang, pickLang } from "../_shared/emailLang.ts";
 import { appLink } from "../_shared/appLinks.ts";
 import { COMPANY_POSTAL_HTML } from "../_shared/marketingEmail.ts";
 import { emailButton, emailLayout } from "../_shared/emailLayout.ts";
+import { htmlToText } from "../_shared/emailText.ts";
 import { TRIAL_TEMPLATES, type TrialStep } from "./trialTemplates.ts";
 import {
   PRO_LIST_PRICE_CENTS, renderKeyEmail, renderPaymentFailedEmail, renderProEndedEmail, renderTrialEndingEmail,
@@ -88,7 +89,8 @@ export function footerUnsubscribeUrl(appUrl: string, id: string): string {
 
 const STEP_LINK: Record<TrialStep, Parameters<typeof appLink>[0]> = { day1: "import", day3: "upgrade", day10: "dashboard" };
 
-export interface RenderedEmail { subject: string; html: string; headers: Record<string, string> }
+// text: parte de texto plano, derivada del HTML (_shared/emailText.ts).
+export interface RenderedEmail { subject: string; html: string; text?: string; headers: Record<string, string> }
 
 export function renderTrialEmail(step: TrialStep, row: TrialRow, config: TrialConfig): RenderedEmail {
   const lang = pickLang(row.lang);
@@ -108,6 +110,7 @@ export function renderTrialEmail(step: TrialStep, row: TrialRow, config: TrialCo
   return {
     subject: copy.subject,
     html,
+    text: htmlToText(html),
     headers: {
       "List-Unsubscribe": `<${oneClickUnsubscribeUrl(config.supabaseUrl, row.id)}>, <mailto:support@moyiq.app?subject=unsubscribe>`,
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -128,7 +131,7 @@ async function rpc<T>(name: string, body: unknown, config: TrialConfig, fetchImp
 
 export async function sendViaResend(to: string, rendered: RenderedEmail, config: TrialConfig, fetchImpl: typeof fetch = fetch): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
-  const body = JSON.stringify({ from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, headers: rendered.headers });
+  const body = JSON.stringify({ from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), headers: rendered.headers });
   const attempt = () => fetchImpl("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
@@ -193,7 +196,7 @@ export function renderBillingPreview(step: BillingPreviewStep, lang: EmailLang, 
     : step === "trial_ending" ? renderTrialEndingEmail(billing, wcfg, lang)
     : step === "payment_failed" ? renderPaymentFailedEmail(wcfg, lang)
     : renderProEndedEmail(lang);
-  return { subject: r.subject, html: r.html, headers: {} };
+  return { subject: r.subject, html: r.html, text: r.text, headers: {} };
 }
 
 // Vista previa de un paso para revisar el copy: solo a la cuenta de empresa,

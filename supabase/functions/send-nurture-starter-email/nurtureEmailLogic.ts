@@ -43,6 +43,7 @@ import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/email
 import { STARTER_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
 import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";
 import { emailLayout } from "../_shared/emailLayout.ts";
+import { htmlToText } from "../_shared/emailText.ts";
 
 export type NurtureMode = "welcome" | "day2" | "day5";
 export const NURTURE_MODES: NurtureMode[] = ["welcome", "day2", "day5"];
@@ -91,15 +92,19 @@ function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): s
 export interface RenderedEmail {
   subject: string;
   html: string;
+  // Parte de texto plano, derivada del HTML (_shared/emailText.ts).
+  text?: string;
   headers?: Record<string, string>;
 }
 
 export function renderEmail(mode: NurtureMode, lead: StarterLead, config: NurtureEmailConfig): RenderedEmail {
   const lang = pickLang(lead.lang);
   const copy = STARTER_TEMPLATES[lang][mode];
+  const html = wrapHtml(copy.body, unsubscribeUrl(config, lead.id), lang);
   return {
     subject: copy.subject,
-    html: wrapHtml(copy.body, unsubscribeUrl(config, lead.id), lang),
+    html,
+    text: htmlToText(html),
     headers: listUnsubscribeHeaders(config.supabaseUrl, "starter", lead.id),
   };
 }
@@ -113,7 +118,7 @@ export async function sendViaResend(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, ...(rendered.headers ? { headers: rendered.headers } : {}) };
+  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), ...(rendered.headers ? { headers: rendered.headers } : {}) };
   const attempt = () =>
     fetch("https://api.resend.com/emails", {
       method: "POST",

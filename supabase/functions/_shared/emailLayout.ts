@@ -51,7 +51,12 @@ export const EMAIL_LOGO_URL = "https://app.moyiq.app/app/email/moyiq-logo-v2.png
 const LOGO_W = 160;
 const LOGO_H = 37;
 
-export const EMAIL_LINK_STYLE = `color:${EMAIL_BRAND.brand};text-decoration:underline`;
+// Línea legal de los pies transaccionales (facturación, reporte): quién está
+// detrás del servicio y cómo contactarlo. Mismo texto que optin y cancelación;
+// el nombre de la LLC es el de legalMeta.js (OPERATOR). HTML ya escapado.
+export const EMAIL_LEGAL_LINE = `moyiq · MAXNOVA &amp; LUCI Global LLC · <a href="mailto:support@moyiq.app">support@moyiq.app</a>`;
+
+export const EMAIL_LINK_STYLE =`color:${EMAIL_BRAND.brand};text-decoration:underline`;
 export const EMAIL_MUTED_STYLE = `color:${EMAIL_BRAND.muted};font-size:13px`;
 export const EMAIL_H_STYLE = `font-family:${EMAIL_FONTS.display};color:${EMAIL_BRAND.brand};font-weight:600;font-size:20px;line-height:1.25;margin:0 0 12px`;
 

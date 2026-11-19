@@ -12,6 +12,7 @@
 // repo: index.ts lee Deno.env.get() a nivel de módulo, no importable desde
 // Node/vitest.
 import { emailButton, emailLayout, EMAIL_BRAND } from '../_shared/emailLayout.ts';
+import { htmlToText } from '../_shared/emailText.ts';
 
 export type SignupEvent = 'starter_signup' | 'invest_signup';
 
@@ -71,7 +72,7 @@ export async function sendAdminNotify(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: 'resend_not_configured' };
   const { subject, html } = renderNotifyEmail(event, details);
-  const body = { from: config.fromEmail, to: config.alertEmail, subject, html };
+  const body = { from: config.fromEmail, to: config.alertEmail, subject, html, text: htmlToText(html) };
   const attempt = () =>
     fetch('https://api.resend.com/emails', {
       method: 'POST',

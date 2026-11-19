@@ -42,6 +42,8 @@ export interface InvestLead {
   id: string;
   email: string;
   perfil: Perfil | null;
+  // invest_leads.lang (migración 20261019210000). Sin dato o desconocido: es.
+  lang?: string | null;
 }
 
 export interface NurtureEmailConfig {
@@ -63,104 +65,257 @@ export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): stri
   return `${(config.unsubscribeBaseUrl ?? "https://moyiq.app").replace(/\/$/, "")}/unsubscribe.html?id=${encodeURIComponent(leadId)}&t=invest`;
 }
 
-// Línea legal fija en el pie de los 3 correos (relanzamiento v2, oct-2026).
-export const DISCLAIMER = "Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.";
+// Pie de los 3 correos (relanzamiento v2, oct-2026): disclaimer, nombre del
+// sitio, dirección de la LLC y baja. Desde el 18-nov-2026 en los 4 idiomas
+// (antes solo español aunque invest_leads.lang existía).
+export const DISCLAIMERS: Record<EmailLang, string> = {
+  es: "Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.",
+  en: "Educational tool. It is not financial advice and does not execute orders.",
+  pt: "Ferramenta educativa. Não é assessoria financeira nem executa ordens.",
+  de: "Ein Werkzeug zum Lernen. Keine Finanzberatung und keine Ausführung von Aufträgen.",
+};
+export const DISCLAIMER = DISCLAIMERS.es;
+
+const UNSUBSCRIBE: Record<EmailLang, string> = {
+  es: "Darme de baja de estos correos",
+  en: "Unsubscribe from these emails",
+  pt: "Cancelar a inscrição nestes e-mails",
+  de: "Von diesen E-Mails abmelden",
+};
 
 // Sistema visual único de los correos (BRD-5): el layout de marca de moyiq
-// con la etiqueta "Invest" junto al logo, en vez del tema oscuro propio.
-function wrapHtml(bodyHtml: string, unsubUrl: string): string {
+// con la etiqueta de la sección ("Inversiones", "Investments"…) junto al logo.
+function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang): string {
   return emailLayout({
-    lang: "es",
-    tag: "Inversiones",
+    lang,
+    tag: INVEST_LABEL[lang],
     bodyHtml,
-    footerHtml: `${DISCLAIMER}<br>
-          moyiq · Inversiones · ${COMPANY_POSTAL_HTML}.
-          <a href="${unsubUrl}">Darme de baja de estos correos</a>.`,
+    footerHtml: `${DISCLAIMERS[lang]}<br>
+          ${investSiteName(lang)} · ${COMPANY_POSTAL_HTML}.
+          <a href="${unsubUrl}">${UNSUBSCRIBE[lang]}</a>.`,
   });
 }
 
 export interface RenderedEmail {
   subject: string;
   html: string;
+  // Parte de texto plano, derivada del HTML (_shared/emailText.ts).
+  text?: string;
   headers?: Record<string, string>;
 }
 
 // Relanzamiento v2 (beta pública gratuita, oct-2026): el copy describe el
 // perfil según las respuestas del quiz, sin sugerir un mix ni recomendar
 // activos. Nada de planes pagos, precios, "tiempo real" ni puntajes.
-const PROFILE_COPY: Record<Perfil, { name: string; desc: string }> = {
-  conservador: {
-    name: "Conservador",
-    desc: "Según tus respuestas, priorizas preservar tu capital por sobre el crecimiento y toleras poco las caídas de valor.",
+const PROFILE_COPY: Record<EmailLang, Record<Perfil, { name: string; desc: string }>> = {
+  es: {
+    conservador: { name: "Conservador", desc: "Según tus respuestas, priorizas preservar tu capital por sobre el crecimiento y toleras poco las caídas de valor." },
+    moderado: { name: "Moderado", desc: "Según tus respuestas, buscas un balance entre crecimiento y estabilidad y toleras caídas de valor moderadas." },
+    agresivo: { name: "Agresivo", desc: "Según tus respuestas, priorizas el crecimiento, tienes un horizonte largo y toleras caídas de valor más fuertes." },
   },
-  moderado: {
-    name: "Moderado",
-    desc: "Según tus respuestas, buscas un balance entre crecimiento y estabilidad y toleras caídas de valor moderadas.",
+  en: {
+    conservador: { name: "Conservative", desc: "Based on your answers, you put preserving your capital ahead of growth and have little tolerance for drops in value." },
+    moderado: { name: "Moderate", desc: "Based on your answers, you look for a balance between growth and stability and tolerate moderate drops in value." },
+    agresivo: { name: "Aggressive", desc: "Based on your answers, you put growth first, have a long horizon and tolerate larger drops in value." },
   },
-  agresivo: {
-    name: "Agresivo",
-    desc: "Según tus respuestas, priorizas el crecimiento, tienes un horizonte largo y toleras caídas de valor más fuertes.",
+  pt: {
+    conservador: { name: "Conservador", desc: "Pelas suas respostas, você prioriza preservar seu capital em vez do crescimento e tolera pouco as quedas de valor." },
+    moderado: { name: "Moderado", desc: "Pelas suas respostas, você busca um equilíbrio entre crescimento e estabilidade e tolera quedas de valor moderadas." },
+    agresivo: { name: "Arrojado", desc: "Pelas suas respostas, você prioriza o crescimento, tem um horizonte longo e tolera quedas de valor maiores." },
+  },
+  de: {
+    conservador: { name: "Konservativ", desc: "Nach Ihren Antworten ist Ihnen der Erhalt Ihres Kapitals wichtiger als Wachstum, und Wertverluste tolerieren Sie kaum." },
+    moderado: { name: "Ausgewogen", desc: "Nach Ihren Antworten suchen Sie ein Gleichgewicht zwischen Wachstum und Stabilität und tolerieren moderate Wertverluste." },
+    agresivo: { name: "Wachstumsorientiert", desc: "Nach Ihren Antworten steht für Sie Wachstum im Vordergrund, Sie haben einen langen Anlagehorizont und tolerieren größere Wertverluste." },
+  },
+};
+
+interface InvestCopy {
+  welcomeSubject: (profile: string) => string;
+  welcomeHeading: (profile: string) => string;
+  hello: string;
+  orientative: string;
+  welcomeBeta: string;
+  open: string;
+  welcomeNote: string;
+  day2Subject: string;
+  day2Heading: string;
+  day2Body: string;
+  day2Math: string;
+  day2Button: string;
+  day2Note: string;
+  day5Subject: string;
+  day5Heading: string;
+  day5Intro: string;
+  day5Items: string[];
+  day5Tool: string;
+  day5Note: string;
+}
+
+// Regla de nombre (D14): "moyiq · Inversiones" es el nombre del sitio
+// (investSiteName); en prosa, "las Inversiones de moyiq". Una frase nunca
+// empieza con "moyiq" en minúscula.
+const COPY: Record<EmailLang, InvestCopy> = {
+  es: {
+    welcomeSubject: (p) => `Tu perfil: ${p}`,
+    welcomeHeading: (p) => `Tu perfil es ${p}`,
+    hello: "Hola,",
+    orientative: "Es un resultado orientativo, no una recomendación de inversión. Sirve para leer tus propias decisiones con más contexto.",
+    welcomeBeta: "Las Inversiones de moyiq están abiertas como beta pública gratuita. Puedes registrar tus posiciones, ver precios de Yahoo Finance con la hora del último dato y revisar cada indicador con su rango y una lectura simple.",
+    open: `Abrir ${investSiteName("es")}`,
+    welcomeNote: "Durante la beta todas las funciones están abiertas para todos, sin tarjeta.",
+    day2Subject: "Cuánto arriesgar por operación, con tu regla de riesgo",
+    day2Heading: "Con tu regla de riesgo",
+    day2Body: `En el <strong>Position Builder</strong> de ${investSiteName("es")} ingresas el ticker, tu capital y el precio de tu stop loss. Con tu regla de riesgo, por ejemplo no arriesgar más del 2% del capital en una sola operación, calcula cuántas unidades corresponden para que, si el precio llega al stop, la pérdida no supere ese límite.`,
+    day2Math: "Es un cálculo aritmético: no evalúa si la operación conviene ni sugiere comprar o vender. La decisión es tuya.",
+    day2Button: "Abrir el Position Builder",
+    day2Note: "Las Inversiones de moyiq están en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.",
+    day5Subject: `Qué incluye la beta pública de ${investSiteName("es")}`,
+    day5Heading: "Qué puedes usar durante la beta",
+    day5Intro: "Las Inversiones de moyiq están en beta pública gratuita: todas las funciones están abiertas para todos, sin tarjeta. Esto es lo que puedes usar hoy:",
+    day5Items: [
+      "Seguimiento de tus posiciones",
+      "Precios de Yahoo Finance con retraso, con la hora del último dato visible",
+      "Indicadores (RSI, MACD, Bandas de Bollinger), cada uno con su rango y una lectura simple",
+      "Position Builder con tu regla de riesgo",
+      "Comparador de activos",
+      "Alertas de precio",
+    ],
+    day5Tool: "La herramienta ordena tu información y explica cada dato. No te dice qué comprar ni vender, y no está conectada a ningún broker.",
+    day5Note: "Si no te sirve ahora, puedes darte de baja con el enlace de abajo.",
+  },
+  en: {
+    welcomeSubject: (p) => `Your profile: ${p}`,
+    welcomeHeading: (p) => `Your profile is ${p}`,
+    hello: "Hi,",
+    orientative: "This is an indicative result, not an investment recommendation. It helps you read your own decisions with more context.",
+    welcomeBeta: "The investments section of moyiq is open as a free public beta. You can record your positions, see Yahoo Finance prices with the time of the latest data point and review each indicator with its range and a plain reading.",
+    open: `Open ${investSiteName("en")}`,
+    welcomeNote: "During the beta every feature is open to everyone, no card required.",
+    day2Subject: "How much to risk per trade, with your risk rule",
+    day2Heading: "With your risk rule",
+    day2Body: `In the <strong>Position Builder</strong> of ${investSiteName("en")} you enter the ticker, your capital and your stop-loss price. With your risk rule, for example never risking more than 2% of your capital on a single trade, it works out how many units fit so that, if the price reaches the stop, the loss stays within that limit.`,
+    day2Math: "It is plain arithmetic: it doesn't judge whether the trade is worth it or suggest buying or selling. The decision is yours.",
+    day2Button: "Open the Position Builder",
+    day2Note: "The investments section of moyiq is in free public beta. If you haven't created your account yet, you can do it from the same link.",
+    day5Subject: `What the ${investSiteName("en")} public beta includes`,
+    day5Heading: "What you can use during the beta",
+    day5Intro: "The investments section of moyiq is in free public beta: every feature is open to everyone, no card required. This is what you can use today:",
+    day5Items: [
+      "Tracking of your positions",
+      "Delayed Yahoo Finance prices, with the time of the latest data point shown",
+      "Indicators (RSI, MACD, Bollinger Bands), each with its range and a plain reading",
+      "Position Builder with your risk rule",
+      "Asset comparison",
+      "Price alerts",
+    ],
+    day5Tool: "The tool organizes your information and explains each data point. It doesn't tell you what to buy or sell, and it isn't connected to any broker.",
+    day5Note: "If it isn't useful right now, you can unsubscribe with the link below.",
+  },
+  pt: {
+    welcomeSubject: (p) => `Seu perfil: ${p}`,
+    welcomeHeading: (p) => `Seu perfil é ${p}`,
+    hello: "Olá,",
+    orientative: "É um resultado orientativo, não uma recomendação de investimento. Serve para ler suas próprias decisões com mais contexto.",
+    welcomeBeta: "Os Investimentos do moyiq estão abertos como beta pública gratuita. Você pode registrar suas posições, ver preços do Yahoo Finance com o horário do último dado e revisar cada indicador com sua faixa e uma leitura simples.",
+    open: `Abrir ${investSiteName("pt")}`,
+    welcomeNote: "Durante a beta, todas as funções estão abertas para todos, sem cartão.",
+    day2Subject: "Quanto arriscar por operação, com sua regra de risco",
+    day2Heading: "Com sua regra de risco",
+    day2Body: `No <strong>Position Builder</strong> do ${investSiteName("pt")} você informa o ticker, seu capital e o preço do seu stop loss. Com sua regra de risco, por exemplo não arriscar mais de 2% do capital em uma única operação, ele calcula quantas unidades cabem para que, se o preço chegar ao stop, a perda não passe desse limite.`,
+    day2Math: "É um cálculo aritmético: não avalia se a operação vale a pena nem sugere comprar ou vender. A decisão é sua.",
+    day2Button: "Abrir o Position Builder",
+    day2Note: "Os Investimentos do moyiq estão em beta pública gratuita. Se você ainda não criou sua conta, pode fazer isso pelo mesmo link.",
+    day5Subject: `O que inclui a beta pública do ${investSiteName("pt")}`,
+    day5Heading: "O que você pode usar durante a beta",
+    day5Intro: "Os Investimentos do moyiq estão em beta pública gratuita: todas as funções estão abertas para todos, sem cartão. Isto é o que você pode usar hoje:",
+    day5Items: [
+      "Acompanhamento das suas posições",
+      "Preços do Yahoo Finance com atraso, com o horário do último dado visível",
+      "Indicadores (RSI, MACD, Bandas de Bollinger), cada um com sua faixa e uma leitura simples",
+      "Position Builder com sua regra de risco",
+      "Comparador de ativos",
+      "Alertas de preço",
+    ],
+    day5Tool: "A ferramenta organiza suas informações e explica cada dado. Não diz o que comprar ou vender e não está conectada a nenhuma corretora.",
+    day5Note: "Se não for útil agora, você pode cancelar a inscrição pelo link abaixo.",
+  },
+  de: {
+    welcomeSubject: (p) => `Ihr Profil: ${p}`,
+    welcomeHeading: (p) => `Ihr Profil: ${p}`,
+    hello: "Hallo,",
+    orientative: "Das Ergebnis dient der Orientierung und ist keine Anlageempfehlung. Es hilft Ihnen, Ihre eigenen Entscheidungen besser einzuordnen.",
+    welcomeBeta: "Der Investmentbereich von moyiq ist als kostenlose öffentliche Beta geöffnet. Sie können Ihre Positionen erfassen, Kurse von Yahoo Finance mit der Uhrzeit des letzten Datenpunkts sehen und jeden Indikator mit seinem Wertebereich und einer einfachen Einordnung prüfen.",
+    // Un botón no empieza con "moyiq" en minúscula: se nombra la sección.
+    open: "Investmentbereich öffnen",
+    welcomeNote: "Während der Beta sind alle Funktionen für alle freigeschaltet, ohne Kreditkarte.",
+    day2Subject: "Wie viel pro Trade riskieren, nach Ihrer Risikoregel",
+    day2Heading: "Nach Ihrer Risikoregel",
+    day2Body: `Im <strong>Position Builder</strong> von ${investSiteName("de")} geben Sie den Ticker, Ihr Kapital und den Kurs Ihres Stop-Loss ein. Mit Ihrer Risikoregel, zum Beispiel nie mehr als 2 % des Kapitals in einem einzelnen Trade zu riskieren, berechnet er, wie viele Einheiten passen, damit der Verlust diese Grenze nicht überschreitet, wenn der Kurs den Stop erreicht.`,
+    day2Math: "Das ist reine Arithmetik: Es wird weder bewertet, ob sich der Trade lohnt, noch ein Kauf oder Verkauf vorgeschlagen. Die Entscheidung liegt bei Ihnen.",
+    day2Button: "Position Builder öffnen",
+    day2Note: "Der Investmentbereich von moyiq ist in einer kostenlosen öffentlichen Beta. Falls Sie noch kein Konto haben, können Sie es über denselben Link anlegen.",
+    day5Subject: `Was die öffentliche Beta von ${investSiteName("de")} umfasst`,
+    day5Heading: "Was Sie während der Beta nutzen können",
+    day5Intro: "Der Investmentbereich von moyiq ist in einer kostenlosen öffentlichen Beta: Alle Funktionen sind für alle freigeschaltet, ohne Kreditkarte. Das können Sie heute nutzen:",
+    day5Items: [
+      "Verfolgung Ihrer Positionen",
+      "Verzögerte Kurse von Yahoo Finance, mit sichtbarer Uhrzeit des letzten Datenpunkts",
+      "Indikatoren (RSI, MACD, Bollinger-Bänder), jeweils mit Wertebereich und einfacher Einordnung",
+      "Position Builder mit Ihrer Risikoregel",
+      "Vergleich von Anlagen",
+      "Kursalarme",
+    ],
+    day5Tool: "Das Werkzeug ordnet Ihre Informationen und erklärt jeden Wert. Es sagt Ihnen nicht, was Sie kaufen oder verkaufen sollen, und ist mit keinem Broker verbunden.",
+    day5Note: "Wenn es Ihnen gerade nicht weiterhilft, können Sie sich über den Link unten abmelden.",
   },
 };
 
 export function renderEmail(mode: NurtureMode, lead: InvestLead, config: NurtureEmailConfig): RenderedEmail {
+  const lang = pickLang(lead.lang);
+  const T = COPY[lang];
   const unsub = unsubscribeUrl(config, lead.id);
-  const profile = PROFILE_COPY[lead.perfil ?? "moderado"];
+  const profile = PROFILE_COPY[lang][lead.perfil ?? "moderado"];
+  const headers = listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id);
+  const done = (subject: string, body: string): RenderedEmail => {
+    const html = wrapHtml(body, unsub, lang);
+    return { subject, html, text: htmlToText(html), headers };
+  };
 
   if (mode === "welcome") {
-    const subject = `Tu perfil: ${profile.name}`;
-    const html = wrapHtml(
-      `
-      <h2>Tu perfil es ${profile.name}</h2>
-      <p>Hola,</p>
+    return done(T.welcomeSubject(profile.name), `
+      <h2>${T.welcomeHeading(profile.name)}</h2>
+      <p>${T.hello}</p>
       <p>${profile.desc}</p>
-      <p>Es un resultado orientativo, no una recomendación de inversión. Sirve para leer tus propias decisiones con más contexto.</p>
-      <p>moyiq · Inversiones está abierto como beta pública gratuita. Puedes registrar tus posiciones, ver precios de Yahoo Finance con la hora del último dato y revisar cada indicador con su rango y una lectura simple.</p>
-      ${emailButton("https://invest.moyiq.app/app?ref=invest-welcome", "Abrir moyiq · Inversiones")}
-      <p style="${EMAIL_MUTED_STYLE}">Durante la beta todas las funciones están abiertas para todos, sin tarjeta.</p>
-      `,
-      unsub,
-    );
-    return { subject, html, headers: listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id) };
+      <p>${T.orientative}</p>
+      <p>${T.welcomeBeta}</p>
+      ${emailButton("https://invest.moyiq.app/app?ref=invest-welcome", T.open)}
+      <p style="${EMAIL_MUTED_STYLE}">${T.welcomeNote}</p>
+      `);
   }
 
   if (mode === "day2") {
-    const subject = "Cuánto arriesgar por operación, con tu regla de riesgo";
-    const html = wrapHtml(
-      `
-      <h2>Con tu regla de riesgo</h2>
-      <p>Hola,</p>
-      <p>En el <strong>Position Builder</strong> de moyiq · Inversiones ingresas el ticker, tu capital y el precio de tu stop loss. Con tu regla de riesgo, por ejemplo no arriesgar más del 2% del capital en una sola operación, calcula cuántas unidades corresponden para que, si el precio llega al stop, la pérdida no supere ese límite.</p>
-      <p>Es un cálculo aritmético: no evalúa si la operación conviene ni sugiere comprar o vender. La decisión es tuya.</p>
-      ${emailButton("https://invest.moyiq.app/app?ref=invest-d2#position-builder", "Abrir el Position Builder")}
-      <p style="${EMAIL_MUTED_STYLE}">moyiq · Inversiones está en beta pública gratuita. Si todavía no creaste tu cuenta, puedes hacerlo desde el mismo enlace.</p>
-      `,
-      unsub,
-    );
-    return { subject, html, headers: listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id) };
+    return done(T.day2Subject, `
+      <h2>${T.day2Heading}</h2>
+      <p>${T.hello}</p>
+      <p>${T.day2Body}</p>
+      <p>${T.day2Math}</p>
+      ${emailButton("https://invest.moyiq.app/app?ref=invest-d2#position-builder", T.day2Button)}
+      <p style="${EMAIL_MUTED_STYLE}">${T.day2Note}</p>
+      `);
   }
 
   // day5
-  const subject = "Qué incluye la beta pública de moyiq · Inversiones";
-  const html = wrapHtml(
-    `
-    <h2>Qué puedes usar durante la beta</h2>
-    <p>Hola,</p>
-    <p>moyiq · Inversiones está en beta pública gratuita: todas las funciones están abiertas para todos, sin tarjeta. Esto es lo que puedes usar hoy:</p>
+  return done(T.day5Subject, `
+    <h2>${T.day5Heading}</h2>
+    <p>${T.hello}</p>
+    <p>${T.day5Intro}</p>
     <p>
-    — Seguimiento de tus posiciones<br>
-    — Precios de Yahoo Finance con retraso, con la hora del último dato visible<br>
-    — Indicadores (RSI, MACD, Bandas de Bollinger), cada uno con su rango y una lectura simple<br>
-    — Position Builder con tu regla de riesgo<br>
-    — Comparador de activos<br>
-    — Alertas de precio</p>
-    <p>La herramienta ordena tu información y explica cada dato. No te dice qué comprar ni vender, y no está conectada a ningún broker.</p>
-    ${emailButton("https://invest.moyiq.app/app?ref=invest-d5", "Abrir moyiq · Inversiones")}
-    <p style="${EMAIL_MUTED_STYLE}">Si no te sirve ahora, puedes darte de baja con el enlace de abajo.</p>
-    `,
-    unsub,
-  );
-  return { subject, html, headers: listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id) };
+    ${T.day5Items.map((i) => `— ${i}`).join("<br>\n    ")}</p>
+    <p>${T.day5Tool}</p>
+    ${emailButton("https://invest.moyiq.app/app?ref=invest-d5", T.open)}
+    <p style="${EMAIL_MUTED_STYLE}">${T.day5Note}</p>
+    `);
 }
 
 // --- Envío con reintento (mismo patrón que las otras nurture) ---------------
@@ -172,7 +327,7 @@ export async function sendViaResend(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, ...(rendered.headers ? { headers: rendered.headers } : {}) };
+  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), ...(rendered.headers ? { headers: rendered.headers } : {}) };
   const attempt = () =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -222,7 +377,7 @@ async function restPatch(path: string, body: unknown, config: NurtureEmailConfig
 
 export async function fetchLeadById(id: string, config: NurtureEmailConfig): Promise<InvestLead | null> {
   const rows = await restGet<InvestLead[]>(
-    `invest_leads?id=eq.${encodeURIComponent(id)}&select=id,email,perfil,email1_sent_at,unsubscribed_at&limit=1`,
+    `invest_leads?id=eq.${encodeURIComponent(id)}&select=id,email,perfil,email1_sent_at,unsubscribed_at,lang&limit=1`,
     config,
   );
   return rows[0] ?? null;
@@ -232,7 +387,7 @@ const BATCH_LIMIT = 200; // tope por corrida del cron — salvaguarda, no expect
 
 export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promise<InvestLead[]> {
   return restGet<InvestLead[]>(
-    `invest_leads?select=id,email,perfil` +
+    `invest_leads?select=id,email,perfil,lang` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null&email2_sent_at=is.null` +
       `&limit=${BATCH_LIMIT}`,
     config,
@@ -243,7 +398,7 @@ export async function fetchEligibleForEmail2(config: NurtureEmailConfig): Promis
 export async function fetchEligibleForEmail3(config: NurtureEmailConfig): Promise<InvestLead[]> {
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   return restGet<InvestLead[]>(
-    `invest_leads?select=id,email,perfil` +
+    `invest_leads?select=id,email,perfil,lang` +
       `&unsubscribed_at=is.null&consent_marketing=is.true&consent_confirmed_at=not.is.null&account_created_at=is.null` +
       `&email3_sent_at=is.null&email2_sent_at=not.is.null&email2_sent_at=lte.${cutoff}` +
       `&limit=${BATCH_LIMIT}`,
@@ -332,3 +487,6 @@ export async function processWelcome(leadId: unknown, config: NurtureEmailConfig
 import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
 import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";
 import { emailButton, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { htmlToText } from "../_shared/emailText.ts";
+import { type EmailLang, pickLang } from "../_shared/emailLang.ts";
+import { INVEST_LABEL, investSiteName } from "../_shared/emailSender.ts";

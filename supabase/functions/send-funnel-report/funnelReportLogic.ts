@@ -11,6 +11,7 @@
 // la semana no se envió; "dry_run" devuelve los datos y el asunto sin mandar;
 // "preview" manda una copia marcada como vista previa sin registrar la semana.
 import { emailLayout, EMAIL_BRAND, EMAIL_FONTS, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { htmlToText } from "../_shared/emailText.ts";
 
 export const REPORT_TO = "maxnovaluciglobal@gmail.com";
 export const REPORT_TZ = "America/Santiago";
@@ -149,7 +150,7 @@ async function rpc<T>(name: string, body: unknown, config: ReportConfig, fetchIm
 
 export async function sendViaResend(rendered: { subject: string; html: string }, config: ReportConfig, fetchImpl: typeof fetch = fetch): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
-  const body = JSON.stringify({ from: config.fromEmail, to: REPORT_TO, subject: rendered.subject, html: rendered.html });
+  const body = JSON.stringify({ from: config.fromEmail, to: REPORT_TO, subject: rendered.subject, html: rendered.html, text: htmlToText(rendered.html) });
   const attempt = () => fetchImpl("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },

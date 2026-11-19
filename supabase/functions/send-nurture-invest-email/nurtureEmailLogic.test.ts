@@ -311,6 +311,79 @@ describe('C-35 · bienvenida de Invest con select acotado (COM-7)', () => {
     const f = vi.fn().mockResolvedValue({ ok: true, json: async () => [] })
     vi.stubGlobal('fetch', f)
     await fetchLeadById(LEAD.id, CONFIG)
-    expect(f.mock.calls[0][0]).toContain('select=id,email,perfil,email1_sent_at,unsubscribed_at&')
+    expect(f.mock.calls[0][0]).toContain('select=id,email,perfil,email1_sent_at,unsubscribed_at,lang&')
+  })
+})
+
+describe('idiomas y nombre de la sección (auditoría de correos 18-nov-2026)', () => {
+  const MODES = ['welcome', 'day2', 'day5'] as const
+  const EXPECT = {
+    es: { open: 'Abrir moyiq · Inversiones', tag: 'Inversiones', disclaimer: 'Herramienta educativa', unsub: 'Darme de baja' },
+    en: { open: 'Open moyiq · Investments', tag: 'Investments', disclaimer: 'Educational tool', unsub: 'Unsubscribe from these emails' },
+    pt: { open: 'Abrir moyiq · Investimentos', tag: 'Investimentos', disclaimer: 'Ferramenta educativa', unsub: 'Cancelar a inscrição' },
+    de: { open: 'Investmentbereich öffnen', tag: 'Investments', disclaimer: 'Keine Finanzberatung', unsub: 'Von diesen E-Mails abmelden' },
+  } as const
+
+  it('usa invest_leads.lang: los 3 correos salen en es/en/pt/de con su etiqueta, disclaimer y baja', () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      for (const mode of MODES) {
+        const r = renderEmail(mode, { ...LEAD, lang }, CONFIG)
+        const e = EXPECT[lang]
+        expect(r.html).toContain(`<html lang="${lang}"`)
+        expect(r.html).toContain(`">${e.tag}<`)
+        expect(r.html).toContain(e.disclaimer)
+        expect(r.html).toContain(e.unsub)
+        expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
+        if (mode !== 'day2') expect(r.html).toContain(e.open)
+        expect(r.text).toBeTruthy()
+      }
+    }
+  })
+
+  it('el alemán usa "Sie" y el inglés no cae al español', () => {
+    const de = renderEmail('welcome', { ...LEAD, lang: 'de' }, CONFIG)
+    expect(de.subject).toBe('Ihr Profil: Ausgewogen')
+    expect(de.html).toMatch(/\bIhre?\b/)
+    expect(de.html).not.toMatch(/\bdu\b|\bdein/i)
+    const en = renderEmail('day5', { ...LEAD, lang: 'en' }, CONFIG)
+    expect(en.html).not.toMatch(/Hola|beta pública/)
+  })
+
+  it('sin idioma o con uno desconocido, español', () => {
+    expect(renderEmail('welcome', { ...LEAD, lang: null }, CONFIG).html).toContain('<html lang="es"')
+    expect(renderEmail('welcome', { ...LEAD, lang: 'fr' }, CONFIG).html).toContain('Tu perfil es Moderado')
+  })
+
+  it('ninguna frase empieza con "moyiq" en minúscula ni con "moyiq · Inversiones"', () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      for (const mode of MODES) {
+        const { text } = renderEmail(mode, { ...LEAD, lang }, CONFIG)
+        // Inicio de línea o tras punto: no "moyiq" (salvo el nombre del sitio en el pie).
+        const lines = text!.split('\n').filter((l) => !/MAXNOVA/.test(l))
+        for (const line of lines) {
+          expect(line, `${lang}/${mode}: ${line}`).not.toMatch(/^moyiq\b/)
+          expect(line, `${lang}/${mode}: ${line}`).not.toMatch(/[.:]\s+moyiq\b/)
+        }
+      }
+    }
+  })
+
+  it('los claims prohibidos tampoco aparecen en en/pt/de', () => {
+    const banned = [/real[- ]time/i, /tempo real/i, /Echtzeit/i, /\bPro\b/, /trial/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /optimal|ótimo|optimal/i, /¡|!(?!doctype html>)/]
+    for (const lang of ['en', 'pt', 'de'] as const) {
+      for (const mode of MODES) {
+        const r = renderEmail(mode, { ...LEAD, lang, perfil: 'agresivo' }, CONFIG)
+        for (const re of banned) expect(r.subject + r.html).not.toMatch(re)
+      }
+    }
+  })
+
+  it('el cron pide lang en las dos consultas', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true, json: async () => [] })
+    vi.stubGlobal('fetch', f)
+    await fetchEligibleForEmail2(CONFIG)
+    await fetchEligibleForEmail3(CONFIG)
+    expect(f.mock.calls[0][0]).toContain('select=id,email,perfil,lang&')
+    expect(f.mock.calls[1][0]).toContain('select=id,email,perfil,lang&')
   })
 })

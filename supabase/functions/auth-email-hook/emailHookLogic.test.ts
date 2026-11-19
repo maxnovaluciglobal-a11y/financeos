@@ -157,3 +157,18 @@ describe('renderEmail por idioma (user_metadata.lang)', () => {
     }
   })
 })
+
+describe('nombre de marca al empezar el asunto (auditoría de correos 18-nov-2026)', () => {
+  it('ningún asunto ni título empieza con "moyiq" en minúscula', async () => {
+    const { renderEmail } = await import('./emailHookLogic.ts')
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      for (const brand of ['moyiq', 'invest'] as const) {
+        for (const act of ['signup', 'magiclink', 'recovery', 'email_change', 'invite', 'reauthentication'] as const) {
+          const r = renderEmail(brand, act, 'https://x/verify', lang)
+          expect(r.subject, `${brand}/${act}/${lang}`).not.toMatch(/^moyiq/)
+          expect(r.text, `${brand}/${act}/${lang}`).toBeTruthy()
+        }
+      }
+    }
+  })
+})

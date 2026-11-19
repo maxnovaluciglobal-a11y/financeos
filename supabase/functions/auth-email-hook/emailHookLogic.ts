@@ -24,6 +24,7 @@
 import type { EmailLang } from '../_shared/emailLang.ts';
 export { pickLang } from '../_shared/emailLang.ts';
 import { emailButton, emailHeading, emailLayout, EMAIL_MUTED_STYLE } from '../_shared/emailLayout.ts';
+import { htmlToText } from '../_shared/emailText.ts';
 import { INVEST_LABEL, INVEST_SENDER_NAME, SENDER_NAME, investSiteName } from '../_shared/emailSender.ts';
 
 export type Brand = 'moyiq' | 'invest';
@@ -99,6 +100,8 @@ interface Copy {
 // financeos-app/src/core/auth.js); sin él, español. Mismo registro seco en los
 // cuatro: nada de exclamaciones ni "por favor" (voz-de-producto.md); alemán
 // con "Sie".
+// Ningún asunto empieza con el nombre en minúscula ("moyiq — verificación"):
+// la frase empieza por el verbo y el nombre va dentro.
 type CopyFn = (productName: string) => Copy;
 const COPY: Record<EmailLang, Record<EmailActionType | 'default', CopyFn>> = {
   es: {
@@ -113,8 +116,8 @@ const COPY: Record<EmailLang, Record<EmailActionType | 'default', CopyFn>> = {
     magiclink: (p) => ({ subject: `Tu enlace de acceso a ${p}`, heading: 'Entra a tu cuenta', body: `Usa el enlace de abajo para entrar a ${p}. Vence pronto y solo se puede usar una vez.`, cta: 'Entrar' }),
     email_change: (p) => ({ subject: 'Confirma tu nuevo email', heading: 'Confirma tu nuevo email', body: `Pediste cambiar el email de tu cuenta de ${p}.`, cta: 'Confirmar nuevo email', afterCta: 'Si no pediste este cambio, puedes ignorar este correo.' }),
     invite: (p) => ({ subject: `Te invitaron a ${p}`, heading: 'Te invitaron', body: `Te invitaron a crear una cuenta en ${p}.`, cta: 'Aceptar invitación' }),
-    reauthentication: (p) => ({ subject: `${p} — verificación`, heading: 'Verificación de cuenta', body: `Completa este paso para tu cuenta de ${p}.`, cta: 'Continuar' }),
-    default: (p) => ({ subject: `${p} — verificación`, heading: 'Verificación de cuenta', body: `Completa este paso para tu cuenta de ${p}.`, cta: 'Continuar' }),
+    reauthentication: (p) => ({ subject: `Verifica tu cuenta de ${p}`, heading: 'Verificación de cuenta', body: `Completa este paso para tu cuenta de ${p}.`, cta: 'Continuar' }),
+    default: (p) => ({ subject: `Verifica tu cuenta de ${p}`, heading: 'Verificación de cuenta', body: `Completa este paso para tu cuenta de ${p}.`, cta: 'Continuar' }),
   },
   en: {
     recovery: (p) => ({
@@ -128,8 +131,8 @@ const COPY: Record<EmailLang, Record<EmailActionType | 'default', CopyFn>> = {
     magiclink: (p) => ({ subject: `Your ${p} sign-in link`, heading: 'Sign in to your account', body: `Use the link below to sign in to ${p}. It expires soon and works only once.`, cta: 'Sign in' }),
     email_change: (p) => ({ subject: 'Confirm your new email', heading: 'Confirm your new email', body: `You asked to change the email on your ${p} account.`, cta: 'Confirm new email', afterCta: "If you didn't ask for this change, you can ignore this email." }),
     invite: (p) => ({ subject: `You've been invited to ${p}`, heading: "You've been invited", body: `You've been invited to create an account on ${p}.`, cta: 'Accept invitation' }),
-    reauthentication: (p) => ({ subject: `${p} — verification`, heading: 'Account verification', body: `Complete this step for your ${p} account.`, cta: 'Continue' }),
-    default: (p) => ({ subject: `${p} — verification`, heading: 'Account verification', body: `Complete this step for your ${p} account.`, cta: 'Continue' }),
+    reauthentication: (p) => ({ subject: `Verify your ${p} account`, heading: 'Account verification', body: `Complete this step for your ${p} account.`, cta: 'Continue' }),
+    default: (p) => ({ subject: `Verify your ${p} account`, heading: 'Account verification', body: `Complete this step for your ${p} account.`, cta: 'Continue' }),
   },
   pt: {
     recovery: (p) => ({
@@ -143,8 +146,8 @@ const COPY: Record<EmailLang, Record<EmailActionType | 'default', CopyFn>> = {
     magiclink: (p) => ({ subject: `Seu link de acesso ao ${p}`, heading: 'Entre na sua conta', body: `Use o link abaixo para entrar no ${p}. Ele expira em breve e só pode ser usado uma vez.`, cta: 'Entrar' }),
     email_change: (p) => ({ subject: 'Confirme seu novo e-mail', heading: 'Confirme seu novo e-mail', body: `Você pediu para alterar o e-mail da sua conta ${p}.`, cta: 'Confirmar novo e-mail', afterCta: 'Se não pediu esta alteração, pode ignorar este e-mail.' }),
     invite: (p) => ({ subject: `Você foi convidado para o ${p}`, heading: 'Você foi convidado', body: `Você foi convidado a criar uma conta no ${p}.`, cta: 'Aceitar convite' }),
-    reauthentication: (p) => ({ subject: `${p} — verificação`, heading: 'Verificação da conta', body: `Conclua este passo para sua conta ${p}.`, cta: 'Continuar' }),
-    default: (p) => ({ subject: `${p} — verificação`, heading: 'Verificação da conta', body: `Conclua este passo para sua conta ${p}.`, cta: 'Continuar' }),
+    reauthentication: (p) => ({ subject: `Verifique sua conta ${p}`, heading: 'Verificação da conta', body: `Conclua este passo para sua conta ${p}.`, cta: 'Continuar' }),
+    default: (p) => ({ subject: `Verifique sua conta ${p}`, heading: 'Verificação da conta', body: `Conclua este passo para sua conta ${p}.`, cta: 'Continuar' }),
   },
   de: {
     recovery: (p) => ({
@@ -158,8 +161,8 @@ const COPY: Record<EmailLang, Record<EmailActionType | 'default', CopyFn>> = {
     magiclink: (p) => ({ subject: `Ihr Anmeldelink für ${p}`, heading: 'Bei Ihrem Konto anmelden', body: `Melden Sie sich über den Link unten bei ${p} an. Er läuft bald ab und funktioniert nur einmal.`, cta: 'Anmelden' }),
     email_change: (p) => ({ subject: 'Bestätigen Sie Ihre neue E-Mail-Adresse', heading: 'Bestätigen Sie Ihre neue E-Mail-Adresse', body: `Sie haben beantragt, die E-Mail-Adresse Ihres ${p}-Kontos zu ändern.`, cta: 'Neue E-Mail bestätigen', afterCta: 'Wenn Sie diese Änderung nicht beantragt haben, können Sie diese E-Mail ignorieren.' }),
     invite: (p) => ({ subject: `Sie wurden zu ${p} eingeladen`, heading: 'Sie wurden eingeladen', body: `Sie wurden eingeladen, ein Konto bei ${p} zu erstellen.`, cta: 'Einladung annehmen' }),
-    reauthentication: (p) => ({ subject: `${p} – Bestätigung`, heading: 'Kontobestätigung', body: `Schließen Sie diesen Schritt für Ihr ${p}-Konto ab.`, cta: 'Weiter' }),
-    default: (p) => ({ subject: `${p} – Bestätigung`, heading: 'Kontobestätigung', body: `Schließen Sie diesen Schritt für Ihr ${p}-Konto ab.`, cta: 'Weiter' }),
+    reauthentication: (p) => ({ subject: `Kontobestätigung für ${p}`, heading: 'Kontobestätigung', body: `Schließen Sie diesen Schritt für Ihr ${p}-Konto ab.`, cta: 'Weiter' }),
+    default: (p) => ({ subject: `Kontobestätigung für ${p}`, heading: 'Kontobestätigung', body: `Schließen Sie diesen Schritt für Ihr ${p}-Konto ab.`, cta: 'Weiter' }),
   },
 };
 
@@ -172,6 +175,8 @@ export function copyFor(brand: Brand, actionType: EmailActionType, lang: EmailLa
 export interface RenderedEmail {
   subject: string;
   html: string;
+  // Parte de texto plano, derivada del HTML (_shared/emailText.ts).
+  text: string;
   fromEmail: string;
 }
 
@@ -187,7 +192,7 @@ export function renderEmail(brand: Brand, actionType: EmailActionType, actionUrl
         ${copy.afterCta ? `<p style="${EMAIL_MUTED_STYLE}">${copy.afterCta}</p>` : ''}`,
     footerHtml: brand === 'invest' ? `${investSiteName(lang)} · MAXNOVA &amp; LUCI Global LLC.` : theme.footer,
   });
-  return { subject: copy.subject, html, fromEmail: theme.fromEmail };
+  return { subject: copy.subject, html, text: htmlToText(html), fromEmail: theme.fromEmail };
 }
 
 export async function sendViaResend(
@@ -195,7 +200,7 @@ export async function sendViaResend(
   rendered: RenderedEmail,
   resendApiKey: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  const body = { from: rendered.fromEmail, to, subject: rendered.subject, html: rendered.html };
+  const body = { from: rendered.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html) };
   const attempt = () =>
     fetch('https://api.resend.com/emails', {
       method: 'POST',

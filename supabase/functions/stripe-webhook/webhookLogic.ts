@@ -17,11 +17,19 @@ const enc = new TextEncoder();
 import { type EmailLang, INTL_LOCALE, langFromStripeSession, langFromStripeSubscription, pickLang } from "../_shared/emailLang.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
 import { appLink } from "../_shared/appLinks.ts";
-import { emailButton, emailCode, emailHeading, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { emailButton, emailCode, emailHeading, emailLayout, EMAIL_LEGAL_LINE, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { htmlToText } from "../_shared/emailText.ts";
 
 // Avisos internos al admin: mismo layout de marca, sin pie.
 function adminEmailHtml(bodyHtml: string): string {
   return emailLayout({ lang: "es", bodyHtml, tag: "Panel admin" });
+}
+
+// Pie de los correos de facturación al cliente: la línea propia del correo y,
+// debajo, quién cobra (la entidad legal) y el contacto (auditoría de correos
+// 18-nov-2026: el pie solo decía "tus datos se guardan en tu dispositivo").
+function billingFooter(lineHtml: string): string {
+  return `${lineHtml}<br>${EMAIL_LEGAL_LINE}`;
 }
 export { langFromStripeSession, langFromStripeSubscription };
 
@@ -317,7 +325,7 @@ export async function notifyKeyDeliveryFailure(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "moyiq: cliente pagó y no recibió su clave", html,
+        subject: "moyiq: cliente pagó y no recibió su clave", html, text: htmlToText(html),
       }),
     });
     if (!res.ok) console.error(`notifyKeyDeliveryFailure: Resend error ${res.status} ${await res.text()}`);
@@ -350,7 +358,7 @@ export async function notifyNewProPurchase(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "moyiq: nueva compra Pro", html,
+        subject: "moyiq: nueva compra Pro", html, text: htmlToText(html),
       }),
     });
     if (!res.ok) console.error(`notifyNewProPurchase: Resend error ${res.status} ${await res.text()}`);
@@ -529,7 +537,7 @@ export function renderKeyEmail(
   trial: TrialBilling | null = null,
   lang: EmailLang = "es",
   attachedToAccount = false,
-): { subject: string; html: string } {
+): { subject: string; html: string; text: string } {
   const appUrl = "https://app.moyiq.app/app/";
   // T10: si el checkout fue una prueba, el email no dice "Compra confirmada"
   // (no se cobró nada): dice que la prueba empezó, cuándo termina, qué se
@@ -556,9 +564,9 @@ export function renderKeyEmail(
       ${emailCode(key)}
       <p>${(attachedToAccount ? T.activatedOnAccount : T.activate)(`<a href="${appUrl}">${appUrl}</a>`)}</p>
       ${billingNote}`,
-    footerHtml: T.privacy,
+    footerHtml: billingFooter(T.privacy),
   });
-  return { subject, html };
+  return { subject, html, text: htmlToText(html) };
 }
 
 // Devuelve true solo si Resend aceptó el envío. La clave NUNCA se imprime en
@@ -583,11 +591,11 @@ export async function sendKeyEmail(
     console.error(`CRITICO: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas — el cliente pago y NO recibio su clave. session=${sessionRef}`);
     return false;
   }
-  const { subject, html } = renderKeyEmail(key, plan, config, interval, trial, lang, attachedToAccount);
+  const { subject, html, text } = renderKeyEmail(key, plan, config, interval, trial, lang, attachedToAccount);
   const attempt = async () => fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: config.fromEmail, to, subject, html }),
+    body: JSON.stringify({ from: config.fromEmail, to, subject, html, text }),
   });
   let res = await attempt();
   if (!res.ok) {
@@ -934,7 +942,7 @@ export function trialBillingFromSubscription(sub: any): TrialBilling | null {
   };
 }
 
-export function renderTrialEndingEmail(billing: TrialBilling, config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string } {
+export function renderTrialEndingEmail(billing: TrialBilling, config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string; text: string } {
   const T = MAIL[lang] ?? MAIL.es;
   const html = emailLayout({
     lang,
@@ -942,9 +950,9 @@ export function renderTrialEndingEmail(billing: TrialBilling, config: WebhookCon
       <p>${chargeSentence(billing, lang)}${T.renews(billing.interval)}</p>
       ${cancelSentence(config, lang)}
       <p>${T.staySame}</p>`,
-    footerHtml: T.privacy,
+    footerHtml: billingFooter(T.privacy),
   });
-  return { subject: T.trialEndingSubject, html };
+  return { subject: T.trialEndingSubject, html, text: htmlToText(html) };
 }
 
 // Aviso previo al cobro (customer.subscription.trial_will_end, Stripe lo manda
@@ -956,12 +964,12 @@ export async function sendTrialEndingEmail(to: string, billing: TrialBilling, co
     console.error("sendTrialEndingEmail: ni NURTURE_RESEND_API_KEY ni RESEND_API_KEY están configuradas");
     return false;
   }
-  const { subject, html } = renderTrialEndingEmail(billing, config, lang);
+  const { subject, html, text } = renderTrialEndingEmail(billing, config, lang);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: config.fromEmail, to, subject, html }),
+      body: JSON.stringify({ from: config.fromEmail, to, subject, html, text }),
     });
     if (!res.ok) {
       console.error(`sendTrialEndingEmail: Resend error ${res.status} ${await res.text()}`);
@@ -987,7 +995,7 @@ async function sendCustomerEmail(to: string, subject: string, html: string, conf
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_EMAIL, subject, html }),
+      body: JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_EMAIL, subject, html, text: htmlToText(html) }),
     });
     if (!res.ok) {
       console.error(`${tag}: Resend error ${res.status}`);
@@ -1000,7 +1008,7 @@ async function sendCustomerEmail(to: string, subject: string, html: string, conf
   }
 }
 
-export function renderPaymentFailedEmail(config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string } {
+export function renderPaymentFailedEmail(config: WebhookConfig, lang: EmailLang = "es"): { subject: string; html: string; text: string } {
   const T = MAIL[lang] ?? MAIL.es;
   const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
   const html = emailLayout({
@@ -1009,12 +1017,12 @@ export function renderPaymentFailedEmail(config: WebhookConfig, lang: EmailLang 
       <p>${T.paymentFailedIntro}</p>
       <p>${config.portalUrl ? T.paymentFailedPortal(config.portalUrl, support) : T.paymentFailedNoPortal(support)}</p>
       <p>${T.paymentFailedAfter}</p>`,
-    footerHtml: T.privacy,
+    footerHtml: billingFooter(T.privacy),
   });
-  return { subject: T.paymentFailedSubject, html };
+  return { subject: T.paymentFailedSubject, html, text: htmlToText(html) };
 }
 
-export function renderProEndedEmail(lang: EmailLang = "es"): { subject: string; html: string } {
+export function renderProEndedEmail(lang: EmailLang = "es"): { subject: string; html: string; text: string } {
   const T = MAIL[lang] ?? MAIL.es;
   const support = `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
   const html = emailLayout({
@@ -1024,9 +1032,9 @@ export function renderProEndedEmail(lang: EmailLang = "es"): { subject: string; 
       <p>${T.proEndedData}</p>
       <p>${T.proEndedBack}</p>
       ${emailButton(appLink("upgrade", "pro-ended"), T.proEndedButton)}`,
-    footerHtml: T.questions(support),
+    footerHtml: billingFooter(T.questions(support)),
   });
-  return { subject: T.proEndedSubject, html };
+  return { subject: T.proEndedSubject, html, text: htmlToText(html) };
 }
 
 // Idioma de una invoice: metadata de la suscripción si viene (no hay otro
@@ -1060,7 +1068,7 @@ export async function notifyUnmappedTrialCheckout(
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.fromEmail, to: config.alertEmail,
-        subject: "moyiq: checkout sin licencia (Payment Link desconocido)", html,
+        subject: "moyiq: checkout sin licencia (Payment Link desconocido)", html, text: htmlToText(html),
       }),
     });
     if (!res.ok) console.error(`notifyUnmappedTrialCheckout: Resend error ${res.status} ${await res.text()}`);

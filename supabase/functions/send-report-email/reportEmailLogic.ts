@@ -14,7 +14,8 @@
 const MAX_PDF_BYTES = 8 * 1024 * 1024; // 8MB — un reporte de 1-2 páginas nunca se acerca a esto; el límite es contra abuso, no contra uso real.
 
 import { type EmailLang, INTL_LOCALE } from "../_shared/emailLang.ts";
-import { emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { emailLayout, EMAIL_LEGAL_LINE, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
+import { htmlToText } from "../_shared/emailText.ts";
 export { pickLang } from "../_shared/emailLang.ts";
 
 export interface EmailConfig {
@@ -180,8 +181,8 @@ function escapeHtml(s: string): string {
 }
 
 // Render puro del correo (BRD-5: layout de marca compartido). El aviso de
-// privacidad va en el pie.
-export function renderReportEmail(params: SendReportParams): { subject: string; html: string } {
+// privacidad va en el pie, con la línea legal (quién opera moyiq y soporte).
+export function renderReportEmail(params: SendReportParams): { subject: string; html: string; text: string } {
   const lang: EmailLang = params.lang ?? "es";
   const T = REPORT_TEXT[lang] ?? REPORT_TEXT.es;
   const month = formatReportMonth(params.month, lang);
@@ -190,9 +191,9 @@ export function renderReportEmail(params: SendReportParams): { subject: string; 
     bodyHtml: `<h2>${T.title}${params.clientName ? " — " + escapeHtml(params.clientName) : ""}</h2>
       <p>${T.body(escapeHtml(month))}</p>
       ${params.senderEmail ? `<p style="${EMAIL_MUTED_STYLE}">${T.sentBy(escapeHtml(params.senderEmail))}</p>` : ""}`,
-    footerHtml: T.notice,
+    footerHtml: `${T.notice}<br>${EMAIL_LEGAL_LINE}`,
   });
-  return { subject: T.subject(month), html };
+  return { subject: T.subject(month), html, text: htmlToText(html) };
 }
 
 // Igual patrón que sendKeyEmail (webhookLogic.ts): reintenta una vez ante un
@@ -204,13 +205,14 @@ export async function sendReportEmail(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const { subject, html } = renderReportEmail(params);
+  const { subject, html, text } = renderReportEmail(params);
 
   const body: Record<string, unknown> = {
     from: config.fromEmail,
     to: params.to,
     subject,
     html,
+    text,
     attachments: [{ filename: params.filename, content: params.pdfBase64 }],
   };
   if (params.senderEmail) body.reply_to = params.senderEmail;
