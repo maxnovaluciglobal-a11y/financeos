@@ -91,7 +91,10 @@
 /* El dato clave en lima con tinta encima (una sola vez en la escena). */
 .paceKey, .paceChip {
   display: inline-flex; align-items: center; min-height: 1.625rem; padding: 0 var(--space-2);
-  border-radius: var(--radius-pill); font-weight: var(--fw-semibold); white-space: nowrap;
+  border-radius: var(--radius-pill); font-weight: var(--fw-semibold);
+  /* A11Y-N1: con texto agrandado el chip parte en dos líneas en vez de salirse
+     de la pantalla (a tamaño normal entra en una, como antes con nowrap). */
+  max-width: 100%; white-space: normal; overflow-wrap: anywhere;
 }
 .paceKey { background: var(--on-grad-accent); color: var(--text-on-accent); }
 .paceChip { background: var(--on-grad-chip); color: var(--on-grad-text); box-shadow: inset 0 0 0 1px var(--on-grad-track); }
