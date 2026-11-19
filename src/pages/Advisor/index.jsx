@@ -10,7 +10,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints } from '../../utils/index.js'
+import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints, localDateStr } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -20,8 +20,9 @@ import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import config from '../../config.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
-import { personalDebtRatio, personalDebts } from '../../utils/personal.js'
-import { projectEndOfMonth } from '../../utils/projection.js'
+import { monthDebtLoad, personalDebts } from '../../utils/personal.js'
+import { monthPlan, pendingTotals } from '../../utils/recurring.js'
+import { sumAmounts, roundCents } from '../../utils/monthFigures.js'
 import { COACH_CONFIG } from '../../data/coachRules.js'
 import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
 import { monthLabel } from '../shared/constants.js'
@@ -287,7 +288,7 @@ function AdvisorNotes({ notes, onSave }) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function Advisor() {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts, receivables, goals, settings, updateSettings } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts, receivables, goals, settings, updateSettings, recurring: rules } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
@@ -370,13 +371,16 @@ export default function Advisor() {
   // Métricas del mes activo
   const monthIncomes  = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)),  [incomes,  activeMonth])
   const monthExpenses = useMemo(() => expenses.filter(r => r.date?.startsWith(activeMonth)), [expenses, activeMonth])
-  const mIncome  = monthIncomes.reduce((s, r) => s + r.amount, 0)
-  const mExpense = monthExpenses.reduce((s, r) => s + r.amount, 0)
-  const mBalance = mIncome - mExpense
+  const mIncome  = sumAmounts(monthIncomes)
+  const mExpense = sumAmounts(monthExpenses)
+  const mBalance = roundCents(mIncome - mExpense)
   const savingRate = mIncome > 0 ? mBalance / mIncome : 0
   // Solo deuda del ámbito personal (excluye propiedades de inversión) — mismo
   // cálculo que el score y el Coach, ver personalDebtRatio en utils/personal.js.
-  const { totalDebt, ratio: debtRatio } = personalDebtRatio(debts, projectEndOfMonth({ incomes, expenses, activeMonth }).projInc)
+  // G2-N5: con los fijos pendientes (el sueldo previsto), como el IQ Score.
+  const plan = useMemo(() => monthPlan(rules || [], activeMonth, { incomes: _incAll || [], expenses: _expAll || [], today: localDateStr() }), [rules, activeMonth, _incAll, _expAll])
+  const pending = useMemo(() => pendingTotals(plan), [plan])
+  const { totalDebt, ratio: debtRatio } = monthDebtLoad({ debts, incomes, expenses, activeMonth, pending })
   const totalMinPayments = personalDebts(debts).reduce((s, d) => s + (d.minPayment || 0), 0)
 
   // Presupuestos excedidos

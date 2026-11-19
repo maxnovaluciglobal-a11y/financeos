@@ -5,6 +5,7 @@
 // distorsionar el presupuesto ni la tasa de ahorro personal.
 
 import { isOwed } from './debtDirection.js'
+import { projectEndOfMonth } from './projection.js'
 
 export const isInvestment = (r) => !!(r && r.inv)
 
@@ -59,4 +60,14 @@ export function personalDebtRatio(debts, monthlyIncome) {
   const monthlyPayments = active.reduce((s, d) => s + (Number(d.minPayment) || 0), 0)
   const ratio = monthlyIncome > 0 ? monthlyPayments / monthlyIncome : (monthlyPayments > 0 ? 1 : 0)
   return { totalDebt, monthlyPayments, ratio }
+}
+
+// Carga de deuda del mes con la MISMA base que el IQ Score (financialScore.js):
+// el ingreso proyectado a fin de mes CON los fijos pendientes (`pending` =
+// pendingTotals(monthPlan)). Sin `pending`, antes del cobro el ingreso
+// proyectado era 0 y el Asesor marcaba la carga al 100 % en rojo mientras el
+// score daba 15 de 20 (auditoría 360, G2-N5; regresión parcial de FIN-11).
+export function monthDebtLoad({ debts, incomes, expenses, activeMonth, pending = null, now = null }) {
+  const { projInc } = projectEndOfMonth({ incomes, expenses, activeMonth, pending, now })
+  return personalDebtRatio(debts, projInc)
 }
