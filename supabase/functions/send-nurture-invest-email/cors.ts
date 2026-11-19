@@ -6,8 +6,6 @@ import { makeCorsHeaders } from "../_shared/cors.ts";
 export const ALLOWED_ORIGINS = [
   "https://invest.moyiq.app",
   "https://www.invest.moyiq.app",
-  "http://localhost:4323",
-  "http://localhost:5173",
 ] as const;
 
 export const FALLBACK_ORIGIN = "https://invest.moyiq.app";
