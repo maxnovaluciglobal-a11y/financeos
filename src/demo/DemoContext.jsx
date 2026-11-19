@@ -5,8 +5,8 @@
 
 import { encryptBackupFile } from '../utils/backupFile.js'
 import { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
-import { buildDemoState, pickDemoPersonaId, demoPersona } from './demoData.js'
-import { detectLanguage } from '../i18n/translate.js'
+import { buildDemoState, pickDemoPersonaId, scenarioIncomes } from './demoData.js'
+import { currentDemoLanguage, storeDemoLang } from './demoLanguage.js'
 import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel, localDateStr } from '../utils/index.js'
 import { reconcileRules } from '../utils/recurringSources.js'
 import { splitDebts } from '../utils/debtDirection.js'
@@ -33,7 +33,7 @@ function withLinkedSkip(prev, next, action) {
   return rule ? { ...next, recurring: next.recurring.map(r => r.id === rule.id ? rule : r) } : next
 }
 
-function reducer(state, action) {
+export function demoReducer(state, action) {
   const next = withLinkedSkip(state, baseReducer(state, action), action)
   if (!SOURCE_ACTIONS.has(action.type) || next === state) return next
   const ups = reconcileRules(next.recurring || [], next.subscriptions || [], next.debts || [], { today: localDateStr() })
@@ -81,10 +81,8 @@ function baseReducer(state, action) {
     case 'SAVE_SETTINGS':return { ...state, settings: action.settings }
     // En demo, "borrar todo" recarga los datos de la misma persona (y conserva el idioma elegido)
     case 'CLEAR_ALL':    return { ...state, ...buildDemoState(state.personaId, state.settings?.language) }
-    case 'SET_SCENARIO': {
-      const p = demoPersona(state.personaId)
-      return { ...state, incomes: action.scenario === 'exitoso' ? p.incomesGood : p.incomesHard }
-    }
+    // FN-UX-1: mismo filtro que la carga inicial, sin ingresos con fecha futura.
+    case 'SET_SCENARIO': return { ...state, incomes: scenarioIncomes(state.personaId, action.scenario) }
     case 'SET_TOAST':    return { ...state, toast: action.toast }
     default:             return state
   }
@@ -97,8 +95,10 @@ export function DemoProvider({ children }) {
   // navegador (en → EE. UU./USD, de → Alemania/EUR, es-VE → Venezuela/VES,
   // resto de es/pt → Sofía/COP; ver pickDemoPersonaId). Arranca en el mes positivo (aspiracional); el toggle
   // lleva a 'mes difícil'.
-  const [state, dispatch] = useReducer(reducer, null, () => {
-    const language = detectLanguage()
+  // Idioma: ?lang=, luego el de ?persona=, luego el elegido antes en el demo y
+  // por último el del navegador (demoLanguage.js, UX-N3).
+  const [state, dispatch] = useReducer(demoReducer, null, () => {
+    const language = currentDemoLanguage()
     return {
       ...buildDemoState(pickDemoPersonaId(language, {
         search: typeof window !== 'undefined' ? window.location.search : '',
@@ -207,6 +207,7 @@ export function DemoProvider({ children }) {
 
   const updateSettings = useCallback((settings) => {
     dispatch({ type: 'SAVE_SETTINGS', settings })
+    storeDemoLang(settings.language)
     applyTheme(settings.theme)
     document.documentElement.setAttribute('lang', settings.language || 'es')
     // El demo también debe respetar el formato de miles de la moneda elegida
@@ -283,8 +284,7 @@ export function DemoProvider({ children }) {
     dispatch({ type: 'SET_SCENARIO', scenario })
     // Total de ingresos del mes activo de ese escenario (antes iba fijo en el texto).
     const month = state.settings?.activeMonth || ''
-    const p = demoPersona(state.personaId)
-    const list = scenario === 'exitoso' ? p.incomesGood : p.incomesHard
+    const list = scenarioIncomes(state.personaId, scenario)
     const total = list.filter(r => r.date?.startsWith(month)).reduce((s, r) => s + (Number(r.amount) || 0), 0)
     const sym = currencySymbol(state.settings?.currency, state.settings?.language)
     showToast(tr(scenario === 'exitoso' ? 'demo.toast.scenarioGood' : 'demo.toast.scenarioHard', { amount: fmtMoney(total, sym) }), 'ok')

@@ -13,6 +13,8 @@ import { useT } from '../i18n/useT.js'
 import { demoPersona } from './demoData.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
+// UX-N4: el CTA del demo abre "Crear cuenta" (no "Iniciar sesión") y marca el origen.
+export const APP_SIGNUP_URL = `${APP_URL}?signup&ref=demo`
 export const PRICING_URL = 'https://moyiq.app/#pricing'
 
 export default function DemoBanner({ onReplayTour }) {
@@ -75,7 +77,7 @@ export default function DemoBanner({ onReplayTour }) {
           <MoreHorizontal size={20} strokeWidth={1.8} aria-hidden="true" />
         </button>
 
-        <a className="fos-btn-primary demo-banner__cta" href={APP_URL}>
+        <a className="fos-btn-primary demo-banner__cta" href={APP_SIGNUP_URL}>
           <span className="demo-banner__ctaLong">{t('demo.banner.start')}</span>
           <span className="demo-banner__ctaShort">{t('demo.banner.startShort')}</span>
         </a>
