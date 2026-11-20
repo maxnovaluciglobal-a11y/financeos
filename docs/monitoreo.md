@@ -1,6 +1,6 @@
 # Monitoreo desde Supabase (uptime y salud de los crons)
 
-Desde el 19-oct-2026 (auditoría 360, C-11 y C-12; errores de Edge Functions, webhook de Stripe y proxy desde el 21-oct). Sin cuentas externas: todo corre en el proyecto `financeos-prod` (`nelwgbcddwiaimzbcuas`) con `pg_cron`, `pg_net` y dos Edge Functions. Los avisos salen por Resend desde `MOY IQ <hola@moyiq.app>` y llegan **solo** a `maxnovaluciglobal@gmail.com`.
+Desde el 19-oct-2026 (auditoría 360, C-11 y C-12; errores de Edge Functions, webhook de Stripe y proxy desde el 21-oct). Sin cuentas externas: todo corre en el proyecto `financeos-prod` (`nelwgbcddwiaimzbcuas`) con `pg_cron`, `pg_net` y dos Edge Functions. Los avisos salen por Resend desde `moyiq <hola@moyiq.app>` (`supabase/functions/_shared/alertEmail.ts`) y llegan **solo** a `maxnovaluciglobal@gmail.com`.
 
 Migraciones: `supabase/migrations/20261019180000_cron_health_and_uptime.sql`, `20261021000000_edge_function_errors_and_uptime_expected_status.sql` y `20261117000000_uptime_markers_rebrand.sql` (markers con alternativas, rebranding). Funciones: `supabase/functions/uptime-alert/` y `supabase/functions/cron-health-alert/`.
 
@@ -25,9 +25,9 @@ Cada sitio tiene un status esperado (`uptime_sites.expected_status`, 200 por def
 
 **Cuándo avisa** (estado por sitio, sin spam; lógica pura en `supabase/functions/_shared/uptimeState.ts` con tests):
 
-- **Caída:** 2 chequeos seguidos fallidos → un correo "[MOY IQ] caída: <sitio>" (o sea, unos 10 minutos de caída).
-- **Sigue caído:** un recordatorio cada 6 h ("[MOY IQ] sigue caído: <sitio>").
-- **Recuperación:** el primer chequeo bueno → "[MOY IQ] recuperado: <sitio>".
+- **Caída:** 2 chequeos seguidos fallidos → un correo "[moyiq] caída: <sitio>" (o sea, unos 10 minutos de caída).
+- **Sigue caído:** un recordatorio cada 6 h ("[moyiq] sigue caído: <sitio>").
+- **Recuperación:** el primer chequeo bueno → "[moyiq] recuperado: <sitio>".
 - Si Resend falla, el cambio de estado no se guarda y se reintenta en la corrida siguiente.
 
 **Ver el estado:** en el SQL Editor (service role), `select * from public.uptime_status;` (último chequeo, fallas y % de uptime en 24 h por sitio). Historial: `public.uptime_checks` (30 días).
@@ -46,7 +46,7 @@ select status_code, content from net._http_response order by id desc limit 1;
 **Agregar uno:** `insert into public.uptime_sites (site, url, marker, expected_status) values ('…', 'https://…', 'texto que siempre está en la página', 200);`
 **Apagar todo el uptime:** `select cron.unschedule('uptime-check');` Para volver a prenderlo: `select cron.schedule('uptime-check', '*/5 * * * *', $$select public.uptime_tick();$$);`
 
-**Límites.** Mira desde la infraestructura de Supabase: si se cae Supabase entero, no hay aviso (tampoco funcionaría la app). No mide latencia. Del webhook de Stripe mide que arranque y verifique firmas, no que procese eventos (eso lo cubren los errores de la sección 3). Un monitor externo (Better Stack, UptimeRobot) seguiría siendo un buen complemento si algún día se crea la cuenta.
+**Límites.** Mira desde la infraestructura de Supabase: si se cae Supabase entero, `pg_cron` deja de correr o Resend no manda, este uptime no avisa. Para eso está el monitor externo (sección 4). No mide latencia. Del webhook de Stripe mide que arranque y verifique firmas, no que procese eventos (eso lo cubren los errores de la sección 3).
 
 ## 2. Salud de los crons (`cron_health`)
 
@@ -56,7 +56,7 @@ select status_code, content from net._http_response order by id desc limit 1;
 
 - `public.cron_health_snapshot()` (job `cron-health-snapshot`, minuto 7 de cada hora) copia las respuestas nuevas de `net._http_response` a `public.cron_http_log` (90 días) y las atribuye al job que hizo la llamada por ventana de tiempo (cada job HTTP corre a un minuto distinto; las del uptime se atribuyen por id). También borra el historial de `cron.job_run_details` de más de 30 días.
 - La vista `public.cron_health` da un renglón por job: última corrida, estado SQL, último código HTTP, `problem` y `ok`. `problem` puede ser `never_ran`, `overdue` (no corrió en su horario), `sql_failed`, `stuck_running`, `no_http_response`, `http_timeout` o `http_error`.
-- El job `cron-health-alert-daily` (15:03 UTC, después de los nurtures de las 14:00-14:37 UTC) llama a la Edge Function `cron-health-alert`, que refresca el log, lee la vista y las respuestas ≠ 2xx de las últimas 24 h (también las de triggers como `notify-admin-signup`) y, si hay algo, manda **un** correo "[MOY IQ] cron con problemas: N".
+- El job `cron-health-alert-daily` (15:03 UTC, después de los nurtures de las 14:00-14:37 UTC) llama a la Edge Function `cron-health-alert`, que refresca el log, lee la vista y las respuestas ≠ 2xx de las últimas 24 h (también las de triggers como `notify-admin-signup`) y, si hay algo, manda **un** correo "[moyiq] cron con problemas: N".
 
 **Ver el estado:** `select public.cron_health_snapshot(); select * from public.cron_health;`
 **Probar sin mandar correos:** igual que arriba, con la URL `…/functions/v1/cron-health-alert` y `{"mode":"check"}`.
@@ -69,12 +69,21 @@ select status_code, content from net._http_response order by id desc limit 1;
 **Cómo funciona.**
 
 - Las 18 funciones envuelven su handler con `withErrorReporting("<nombre>", …)` de `supabase/functions/_shared/errorReport.ts` (un test verifica que ninguna quede afuera). Si el handler lanza una excepción (responde 500 `internal_error`) o devuelve 5xx, guarda una fila en `public.edge_function_errors`: función, status y un mensaje limpio (sin correos, claves `FNOS-…`, tokens ni JWT; 300 caracteres). El guardado corre después de responder (`EdgeRuntime.waitUntil`) y nunca cambia la respuesta.
-- `uptime-alert` (cada 5 min) lee las filas sin `notified_at` y manda **un** correo "[MOY IQ] errores en Edge Functions: N (funciones)" con el conteo, los status y el último mensaje por función; después marca `notified_at`. Como máximo un correo cada 30 min: lo que llega mientras tanto va en el siguiente. Si Resend falla, no marca y reintenta.
+- `uptime-alert` (cada 5 min) lee las filas sin `notified_at` y manda **un** correo "[moyiq] errores en Edge Functions: N (funciones)" con el conteo, los status y el último mensaje por función; después marca `notified_at`. Como máximo un correo cada 30 min: lo que llega mientras tanto va en el siguiente. Si Resend falla, no marca y reintenta.
 - Las filas se purgan a los 30 días (en `uptime_tick()`).
 - No ve un error que impide arrancar la función (`BOOT_ERROR`): eso lo cubre el uptime de `stripe-webhook` (y `cron_health` para las de los crons).
 
 **Ver los errores:** `select * from public.edge_function_errors order by id desc limit 50;`
 **Probar sin mandar correos:** `uptime-alert` con `{"mode":"check"}` devuelve `edge_errors: {pending: N}`.
+
+## 4. Fuera de Supabase: heartbeat externo y vigilancia del backup
+
+Desde el 19-nov-2026 (auditoría 360, OPS-N8 y OPS-N1) hay dos workflows de GitHub Actions en el repo privado `financeos-workspace`, que no dependen de Supabase, `pg_cron`, Vercel ni Resend:
+
+- **Heartbeat** (`.github/workflows/heartbeat.yml` + `ops/heartbeat/heartbeat.mjs`, cada hora al minuto 17): revisa los mismos sitios de la tabla de la sección 1, con status esperado y marker. La única diferencia es Invest: mira `https://invest.moyiq.app/api/health` en lugar de la raíz (200 si todo está bien, 503 con `checkedAt` cuando falla un proveedor de datos: eso es advertencia, no caída). Si algo está caído abre (o comenta) un Issue con la etiqueta `heartbeat-caido`, y la primera corrida buena lo cierra. Si llega ese Issue y ningún correo `[moyiq] caída`, sospechar de Supabase, `pg_cron` o Resend.
+- **Vigilancia del backup** (`.github/workflows/backup-watch.yml`, todos los días a las 10:00 UTC): revisa que la copia externa más nueva de la base (release `db-backups` del mismo repo) tenga menos de 36 h y coincida con su manifiesto. Si no, abre (o comenta) un Issue `backup-atrasado`. El job diario de la Mac (`ops/db-backup/daily-job.sh`) usa el mismo Issue cuando falla. Solo se cierra cuando aparece una copia posterior al último aviso.
+
+El aviso fiable de los dos es el **Issue**: GitHub lo notifica a quienes siguen el repo. El correo de "workflow failed" de un workflow programado le llega a quien editó el cron por última vez, no necesariamente a la cuenta de la empresa. Detalle en `financeos-workspace/docs/RUNBOOK.md` y `ops/db-backup/RESTORE.md`.
 
 ## Permisos
 
