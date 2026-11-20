@@ -1,8 +1,9 @@
 // src/pages/Investments/hub/InvestHub.jsx — Inversiones completo (F0).
 // Solo se monta con UI_FLAGS.investFull y con acceso (perfil de inversionista,
 // ver ../index.jsx). Cinco pestañas arriba (control segmentado del patrón APG)
-// y el buscador de tickers. Hoy (F2) y Portafolio (F1: portfolio/PortfolioTab.jsx)
-// ya son las completas; las demás dicen con honestidad qué traen mientras no están.
+// y el buscador de tickers. Hoy (F2), Portafolio (F1: portfolio/PortfolioTab.jsx)
+// y Mercado (F6) ya son las completas; Lista y Planificar dicen con honestidad
+// qué traen mientras no están.
 // La pestaña vive en la entrada del historial y en fos_invest_tab (investNav).
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Hammer } from 'lucide-react'
@@ -13,8 +14,9 @@ import PortfolioTab from '../portfolio/PortfolioTab.jsx'
 import TickerSearch from './TickerSearch.jsx'
 import s from './hub.module.css'
 
-// Hoy (F2) en su propio chunk: solo se baja al abrir la pestaña.
+// Hoy (F2) y Mercado (F6) en su propio chunk: solo se bajan al abrir la pestaña.
 const Hoy = lazy(() => import('../hoy/Hoy.jsx'))
+const Market = lazy(() => import('../market/Market.jsx'))
 
 const safeStorage = {
   getItem: (k) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -54,12 +56,14 @@ export default function InvestHub({ setPage, demo = false }) {
     refs.current[next]?.focus()
   }
   const open = useCallback((ticker) => openAsset(setPage, ticker), [setPage])
-  // Desde una tarjeta de Hoy a otra pestaña ("Ver en Portafolio", "Ver mercado"):
-  // sube al principio para que la pestaña nueva se lea desde arriba.
+  // De una pestaña a otra (Hoy › "Ver en Portafolio", Mercado › "Ver lecturas
+  // de tu lista"): el foco va a la pestaña nueva, que se lee desde arriba y el
+  // lector de pantalla anuncia el cambio.
   const go = useCallback((next) => {
     if (!isTab(next)) return
     setTab(next)
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => refs.current[next]?.focus())
+    else setTimeout(() => refs.current[next]?.focus(), 0)
   }, [])
 
   return (
@@ -81,7 +85,9 @@ export default function InvestHub({ setPage, demo = false }) {
           ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Hoy demo={demo} onOpen={open} onTab={go} /></Suspense>
           : tab === 'portafolio'
             ? <PortfolioTab setPage={setPage} demo={demo} />
-            : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
+            : tab === 'mercado'
+              ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.mkt.fresh.loading')}</p>}><Market demo={demo} onOpen={open} onTab={go} /></Suspense>
+              : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
       </div>
     </div>
   )
