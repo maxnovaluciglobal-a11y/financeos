@@ -21,6 +21,7 @@ import { prefetchTabs } from '../utils/prefetchTabs.js'
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
 const Panorama      = lazy(() => import('../pages/Panorama/index.jsx'))
 const Investments   = lazy(() => import('../pages/Investments/index.jsx'))
+const InvestAsset   = lazy(() => import('../pages/Investments/Asset.jsx'))
 const CashFlow      = lazy(() => import('../pages/CashFlow/index.jsx'))
 const Income        = lazy(() => import('../pages/Income/index.jsx'))
 const Budgets       = lazy(() => import('../pages/Budgets/index.jsx'))
@@ -195,7 +196,8 @@ function DemoInner() {
       case 'import':        return <ImportCSV />
       case 'more':          return <More setPage={setPage} />
       case 'panorama':      return <Panorama setPage={setPage} />
-      case 'investments':   return <Investments />
+      case 'investments':   return <Investments setPage={setPage} />
+      case 'investAsset':   return <InvestAsset setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>
     }
   }

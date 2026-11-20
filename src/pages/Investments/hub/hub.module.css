@@ -1,0 +1,70 @@
+/* Inversiones completo (F0, 20-nov-2026): pestañas, buscador y avisos de
+   "en construcción". Objetivos de 44 px, foco visible, texto ≥ 13 px. */
+.hub { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Pestañas: control segmentado accesible (role="tablist") ── */
+.tabs {
+  display: flex; gap: 2px; padding: 2px; border-radius: var(--r-pill, 999px);
+  background: var(--fill); overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1 0 auto; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r-pill, 999px);
+  background: transparent; color: var(--tm); font: inherit; font-size: var(--t-subhead); font-weight: 400;
+  cursor: pointer; white-space: nowrap;
+}
+.tab[aria-selected="true"] { background: var(--seg-on); box-shadow: var(--seg-on-sh); color: var(--tx); font-weight: 600; }
+.tab:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+@media (max-width: 380px) { .tab { padding: 8px 6px; font-size: var(--t-footnote); } }
+
+/* ── Buscador (combobox) ── */
+.search { position: relative; }
+.searchLabel { display: block; margin-bottom: 6px; font-size: var(--t-footnote); color: var(--th); }
+.searchField { position: relative; display: flex; align-items: center; }
+.searchIcon { position: absolute; left: 12px; color: var(--th); pointer-events: none; }
+.searchInput {
+  width: 100%; min-height: 44px; padding: 10px 12px 10px 38px; border: 1px solid var(--brd); border-radius: 12px;
+  background: var(--sur); color: var(--tx); font: inherit; font-size: var(--t-callout);
+}
+.searchInput:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 1px; }
+.searchInput[aria-invalid="true"] { border-color: var(--neg); }
+.listbox {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none;
+  max-height: 320px; overflow-y: auto; border-radius: 12px; background: var(--sur); box-shadow: var(--sh-2); border: 0.5px solid var(--brd);
+}
+.groupLabel { padding: 8px 10px 4px; font-size: var(--t-footnote); color: var(--th); }
+.option {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 6px 10px;
+  border-radius: 8px; cursor: pointer; color: var(--tx); font-size: var(--t-subhead);
+}
+.option[aria-selected="true"] { background: var(--fill); }
+.optionTicker { font-weight: 600; font-variant-numeric: tabular-nums; }
+.optionName { color: var(--th); font-size: var(--t-footnote); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.searchNote { margin: 6px 0 0; min-height: 18px; font-size: var(--t-footnote); color: var(--th); font-variant-numeric: tabular-nums; }
+.searchNote[data-tone="error"] { color: var(--neg); }
+
+/* ── "En construcción" ── */
+.wip {
+  display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 16px;
+  background: var(--sur); border: 0.5px solid var(--brd);
+}
+.wipTag {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px 10px;
+  border-radius: 999px; background: var(--fill); color: var(--tx); font-size: var(--t-footnote); font-weight: 600;
+}
+.wipBody { margin: 0; font-size: var(--t-subhead); color: var(--th); }
+.wipList { margin: 0; font-size: var(--t-subhead); color: var(--tx); line-height: var(--t-subhead-lh); }
+
+/* ── Ficha del activo ── */
+.assetHead { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; }
+.assetPrice { font-family: var(--display); font-size: var(--t-title); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tx); }
+.assetDay { font-size: var(--t-subhead); font-weight: 600; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; }
+.assetDay[data-tone="up"] { color: var(--pos); }
+.assetDay[data-tone="down"] { color: var(--neg); }
+.assetNote { margin: 0; font-size: var(--t-footnote); color: var(--th); }
+.chartBox { min-height: 300px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px;
+  border: 1px solid var(--brd); border-radius: 999px; background: var(--sur); color: var(--tx);
+  font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer; align-self: flex-start;
+}

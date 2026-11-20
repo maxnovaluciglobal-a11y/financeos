@@ -3,7 +3,9 @@
 import { useState } from 'react'
 
 const STORAGE_KEY = 'fos_active_page'
-const SKIP_PERSIST = new Set(['privacy', 'terms', 'license', 'disclaimer'])
+// investAsset: la ficha depende del ticker de su entrada del historial, que no
+// se guarda en el dispositivo; al reabrir la app se vuelve a la página anterior.
+const SKIP_PERSIST = new Set(['privacy', 'terms', 'license', 'disclaimer', 'investAsset'])
 
 // `override`: página pedida por un enlace de correo (utils/deepLink.js). Gana sobre
 // la guardada: es una intención explícita de esta visita.

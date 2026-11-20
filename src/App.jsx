@@ -62,6 +62,7 @@ const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
 const More          = lazy(() => import('./pages/More/index.jsx'))
 const Panorama      = lazy(() => import('./pages/Panorama/index.jsx'))
 const Investments   = lazy(() => import('./pages/Investments/index.jsx'))
+const InvestAsset   = lazy(() => import('./pages/Investments/Asset.jsx'))
 const NpsPrompt     = lazy(() => import('./components/NpsPrompt.jsx'))
 // V4 (30-oct-2026): el onboarding solo lo ve una cuenta nueva: fuera del JS inicial.
 const Onboarding    = lazy(() => import('./components/Onboarding.jsx'))
@@ -309,7 +310,8 @@ function Inner() {
       case 'import':        return <ImportCSV setPage={setPage} />
       case 'more':          return <More setPage={setPage} />
       case 'panorama':      return <Panorama setPage={setPage} />
-      case 'investments':   return <Investments />
+      case 'investments':   return <Investments setPage={setPage} />
+      case 'investAsset':   return <InvestAsset setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>
     }
   }

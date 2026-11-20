@@ -11,7 +11,9 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { useInvestAccess } from '../../hooks/useInvestAccess.js'
 import { moduleOn } from '../../utils/modules.js'
+import { investFullHere } from '../../utils/uiFlags.js'
 import Portfolio from './Portfolio.jsx'
+import InvestHub from './hub/InvestHub.jsx'
 import ProfileSheet from './ProfileSheet.jsx'
 import s from './investments.module.css'
 
@@ -33,12 +35,15 @@ function Gate({ onStart }) {
   )
 }
 
-export default function Investments() {
+// `setPage` (el go de usePageStack) solo lo usa Inversiones completo para
+// abrir la ficha de un activo; apagado (UI_FLAGS.investFull) no cambia nada.
+export default function Investments({ setPage }) {
   const { t } = useT()
   const app = useApp() || {}
   const settings = app.settings || {}
   const { status, saveProfile } = useInvestAccess()
   const [asking, setAsking] = useState(false)
+  const [full] = useState(investFullHere)
   const on = moduleOn(settings, 'investments') || !!settings.isDemo
 
   async function save(answers) {
@@ -52,7 +57,7 @@ export default function Investments() {
   else if (status === 'loading') body = <p className={s.status} role="status">{t('invest.gate.loading')}</p>
   else if (status === 'no-account') body = <p className={s.status}>{t('invest.gate.noAccount')}</p>
   else if (status === 'needs-profile') body = <Gate onStart={() => setAsking(true)} />
-  else body = <Portfolio />
+  else body = full ? <InvestHub setPage={setPage} demo={!!settings.isDemo} /> : <Portfolio />
 
   return (
     <div className={s.page}>
