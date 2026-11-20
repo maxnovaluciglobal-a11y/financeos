@@ -39,7 +39,7 @@ jobs:
   # ENG-N9 (19-nov-2026): Edge Functions (stripe-webhook, delete-account...) were excluded from ESLint and tsc,
   # and vitest only transpiles them. deno check + deno lint catch type errors before they reach production.
   # Non-blocking for now: the code was never checked, so the first runs list the existing debt. Once a run is
-  # green, remove continue-on-error to make it a gate.
+  # green, remove continue-on-error to make it a gate. Until then ENG-N9 is only partly done (no green run yet).
   edge-functions:
     runs-on: ubuntu-latest
     timeout-minutes: 10

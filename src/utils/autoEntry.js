@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/autoEntry.js — "Gastos que se registran solos", fase 1 (19-nov-2026).
 //
 // Contrato de URL para que otra fuente (el Atajo de iOS que corre al pagar con
@@ -37,6 +38,7 @@ const SOURCES = new Set(['applepay', 'atajo', 'widget', 'app'])
 
 // Símbolos y códigos que pueden venir pegados al monto (el Atajo lo formatea
 // con la región del iPhone). "$" solo no dice qué moneda es: queda null.
+/** @type {Array<[RegExp, string]>} */
 const MARKS = [
   [/^us\$|us\$$|^u\$s|u\$s$/i, 'USD'], [/^r\$|r\$$/i, 'BRL'], [/^s\/|s\/$/i, 'PEN'],
   [/^bs\.?|bs\.?$/i, 'VES'], [/€/, 'EUR'], [/£/, 'GBP'],
@@ -107,6 +109,8 @@ export function hasIntake(search) {
  * @returns {null | { type: 'expense'|'income', amount: number|null, amountStatus: string,
  *   amountText: string, options?: number[], merchant: string, currency: string|null,
  *   source: string, date: string|null }}
+ * @param {*} search
+ * @param {{ today?: string, fallbackCurrency?: string, lang?: string }} [opts]
  */
 export function parseIntake(search, { today, fallbackCurrency = 'CLP', lang = 'es' } = {}) {
   const p = params(search)
@@ -172,6 +176,7 @@ export function takeIntake(storage, now = Date.now()) {
 // main.jsx, antes del primer render: guarda el alta para cuando la app esté
 // lista (puede faltar el login) y limpia la URL para que recargar o compartir
 // la pestaña no la repita.
+/** @param {{ location?: any, history?: any, storage?: any, now?: number, lang?: string }} [opts] */
 export function captureIntake({ location, history, storage, now = Date.now(), lang = 'es' } = {}) {
   try {
     if (!location || !hasIntake(location.search)) return null
@@ -187,6 +192,7 @@ export function captureIntake({ location, history, storage, now = Date.now(), la
 // Qué rellena en el formulario. La moneda del alta solo se usa si es la de la
 // persona, o US$ con una tasa guardada (se escribe en "Escribir en US$").
 // note: null | 'foreign' | 'ambiguous' | 'unreadable' | 'negative' | 'missing'
+/** @param {*} intake @param {{ currency?: string, rate?: number }} [opts] */
 export function intakeFormValues(intake, { currency, rate = 0 } = {}) {
   if (!intake) return null
   const out = { type: intake.type, desc: intake.merchant || '', date: intake.date, amount: null, usd: false, note: null, code: null }

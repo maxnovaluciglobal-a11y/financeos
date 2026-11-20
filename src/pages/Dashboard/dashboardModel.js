@@ -1,3 +1,4 @@
+// @ts-check
 // src/pages/Dashboard/dashboardModel.js — lógica pura del Inicio (M5), sin React.
 // Responde las tres preguntas del mockup M5: ¿cuánto me queda? (variación de
 // los KPIs vs. el mes anterior), ¿en qué me estoy pasando? (presupuesto por
@@ -48,6 +49,7 @@ export function deltaRateDates({ activeMonth, cutDay = null, now = new Date() })
 }
 
 // B5: variación en US$ con la tasa de CADA período. null si falta una tasa.
+/** @param {*} cur @param {*} prev @param {{ curRate?: number, prevRate?: number, invert?: boolean, hasPrev?: boolean }} [opts] */
 export function usdMonthDelta(cur, prev, { curRate, prevRate, invert = false, hasPrev = true } = {}) {
   if (!(curRate > 0) || !(prevRate > 0)) return null
   return monthDelta((Number(cur) || 0) / curRate, (Number(prev) || 0) / prevRate, { invert, hasPrev, preferAmount: true })
@@ -65,6 +67,7 @@ export function prevMonthOf(month) {
 // Nombre del mes ("septiembre", "September") en el idioma de la interfaz.
 // width 'short' → "sept", "Sep", "Sept" (sin el punto final de algunos idiomas):
 // la variación de los KPIs dice "vs. sept al día 21" en una columna angosta (UI-M7).
+/** @param {'long'|'short'|'narrow'} [width] */
 export function monthName(month, lang = 'es', width = 'long') {
   const [y, m] = String(month).split('-').map(Number)
   if (!y || !m) return ''
@@ -160,7 +163,7 @@ export function nextOccurrence(dateStr, todayDate, { months = 1, weekly = false 
   const t0 = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
   if (base >= t0) return base
   if (weekly) {
-    const diff = Math.ceil((t0 - base) / (7 * 86400000))
+    const diff = Math.ceil((t0.getTime() - base.getTime()) / (7 * 86400000))
     const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + diff * 7)
     return d < t0 ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7) : d
   }
