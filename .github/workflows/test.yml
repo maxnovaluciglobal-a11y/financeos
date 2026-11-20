@@ -27,7 +27,33 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      # ENG-N8 (19-nov-2026): without these, AUTH_ENABLED is false, supabase-js is tree-shaken out and the
+      # bundle budget measures ~215 kB while production (Vercel, with the real values) weighs ~252 of 256 kB.
+      # Public placeholders, not secrets: they only make the build include the same code as production.
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+          VITE_INVEST_URL: https://invest.moyiq.app
+
+  # ENG-N9 (19-nov-2026): Edge Functions (stripe-webhook, delete-account...) were excluded from ESLint and tsc,
+  # and vitest only transpiles them. deno check + deno lint catch type errors before they reach production.
+  # Non-blocking for now: the code was never checked, so the first runs list the existing debt. Once a run is
+  # green, remove continue-on-error to make it a gate.
+  edge-functions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.x
+      - name: deno check (entry points, as deployed)
+        run: deno check supabase/functions/*/index.ts
+      - name: deno lint (without the vitest test files)
+        if: always()
+        run: deno lint --ignore='supabase/functions/**/*.test.ts' supabase/functions
 
   # Replays supabase/migrations on an empty Postgres that simulates Supabase from 2026-10-30 (no automatic
   # privileges), then runs the SQL tests and compares the resulting ACL with supabase/tests/acl-esperada.json.
