@@ -1,0 +1,29 @@
+/* src/components/layout/pageScene.module.css — escena de cada pantalla.
+   Copia la geometría de la escena del Inicio (lupa/scene.module.css): Impulso
+   en claro, Profundidad en oscuro, de borde a borde y hasta la barra de
+   estado en el teléfono, y texto en blanco (contrast.test.js). */
+.scene {
+  position: relative;
+  color: var(--on-grad-text);
+  background: var(--gr-impulso);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-3);
+  isolation: isolate;
+}
+:global([data-theme="dark"]) .scene { background: var(--gr-profundidad); }
+.inner { position: relative; padding: var(--space-5) var(--space-6) var(--space-4); }
+
+@media (max-width: 700px) {
+  .scene { border-radius: 0; margin: calc(-1 * var(--content-pt)) -18px var(--space-3); }
+  .scene::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; z-index: -1; pointer-events: none;
+    height: calc(var(--safe-t) + 56px);
+    background: linear-gradient(to bottom, var(--impulso-0) calc(var(--safe-t) + 4px), transparent);
+  }
+  .inner { padding: var(--content-pt) 18px var(--space-4); }
+}
+
+/* Título y subtítulo en blanco sobre el morado. */
+.scene h1 { color: var(--on-grad-text); }
+.scene p { color: var(--on-grad-text-2); }
+.scene > .inner > div { margin-bottom: 0; }
