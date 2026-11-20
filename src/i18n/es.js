@@ -2119,6 +2119,11 @@ export const es = {
     'billing.then.annual': "Luego US$ {y} al año. Cancela cuando quieras.",
     'billing.then.monthly': "Luego US$ {m} al mes. Cancela cuando quieras.",
     'billing.trialNote': "Requiere tarjeta. El primer cobro es el día {next}; si cancelas antes, no pagas nada.",
+    // LEG-N5 (auditoría 360, 19-nov-2026): renovación automática y cómo cancelar junto al botón de la prueba.
+    'billing.renewal.monthly': "Después de la prueba, el plan se renueva solo y se cobra cada mes hasta que lo canceles, en línea desde Más › Gestionar suscripción.",
+    'billing.renewal.annual': "Después de la prueba, el plan se renueva solo y se cobra cada año hasta que lo canceles, en línea desde Más › Gestionar suscripción.",
+    'billing.renewal.noTrial': "Los planes de pago se renuevan solos y se cobran en cada periodo hasta que los canceles, en línea desde Más › Gestionar suscripción.",
+    'billing.cancelLink': "Cómo cancelar",
     'home.kpi.left': "Te queda este mes",
     'home.detail.title': "Detalle del mes",
     'home.detail.open': "Ver detalle del mes",

@@ -25,6 +25,7 @@ import { useState } from 'react'
 import { usePlan } from '../../hooks/usePlan.js'
 import { useAccount } from '../../hooks/useAccount.js'
 import PeriodToggle from './PeriodToggle.jsx'
+import RenewalNote from './RenewalNote.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
 import { proPriceVars, proCta, withCheckoutLang, checkoutFor, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
@@ -131,7 +132,13 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
 
       {cta.trial && (
         <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
-          {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}
+          {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}{' '}
+          <RenewalNote period={period} />
+        </p>
+      )}
+      {!cta.trial && (
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
+          <RenewalNote trial={false} />
         </p>
       )}
       {preview && (
