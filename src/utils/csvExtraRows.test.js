@@ -33,4 +33,15 @@ describe('extraCsvRows (DAT-15)', () => {
     const csv = toCsv(extraCsvRows({ goals: [{ name: '=HYPERLINK("x")', target: 1 }] }, tr))
     expect(csv).toContain(`"'=HYPERLINK(""x"")"`)
   })
+
+  it('un apartado sale con su propio tipo, monto positivo y destino (no como gasto)', () => {
+    const rows = extraCsvRows({ setAsides: [
+      { kind: 'setAside', dest: 'goal', goalId: 1, amount: 100, date: '2026-11-05', description: 'Viaje' },
+      { kind: 'setAside', dest: 'invest', amount: 50, date: '2026-11-06', description: '' },
+    ] }, tr)
+    expect(rows).toEqual([
+      ['csv.type.setAside', '2026-11-05', 'Viaje', 'csv.setAside.goal', 100, '', '', ''],
+      ['csv.type.setAside', '2026-11-06', '', 'csv.setAside.invest', 50, '', '', ''],
+    ])
+  })
 })

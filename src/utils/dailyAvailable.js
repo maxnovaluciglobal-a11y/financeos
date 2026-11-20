@@ -24,7 +24,7 @@
 // Quien llama ya sacó los movimientos de inversión (r.inv), como useHomeData.
 
 import { projectEndOfMonth } from './projection.js'
-import { isSetAside } from './setAside.js'
+import { isSetAside, uniqueSetAsides } from './setAside.js'
 
 // Mismo criterio que monthPosition (utils/monthReading.js), copiado acá para
 // que la ChartLupa no arrastre al trozo todo monthReading/dashboardModel.
@@ -60,8 +60,9 @@ export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], ac
     arr[d] += Number(r.amount) || 0
   }
   for (const r of incomes || []) add(earned, r)
-  for (const r of expenses || []) add(isSetAside(r) ? aside : spent, r)
-  for (const r of setAsides || []) if (isSetAside(r)) add(aside, r)
+  for (const r of expenses || []) if (!isSetAside(r)) add(spent, r)
+  // Un apartado que llegue en las dos listas cuenta una sola vez.
+  for (const r of uniqueSetAsides(setAsides, expenses)) add(aside, r)
 
   const avail = new Array(days + 1).fill(0)
   const spentCum = new Array(days + 1).fill(0)

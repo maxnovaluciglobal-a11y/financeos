@@ -23,6 +23,15 @@ export function monthsLeft(activeMonth, targetDate) {
   return (ty - ay) * 12 + (tm - am) + 1
 }
 
+// Lo que cuenta para el ritmo de las metas: "Te queda" + lo ya apartado a
+// metas este mes (ingresos − gastos − apartado para invertir). Si se usara
+// "Te queda" a secas, cada aporte bajaría el disponible por el monto entero y
+// lo que pide la meta solo por monto/meses: aportar la volvería "Atrasada".
+// `month` = monthLeft() del mes activo (utils/monthLeft.js).
+export function paceBudget(month) {
+  return (Number(month?.left) || 0) + (Number(month?.setAsideGoals) || 0)
+}
+
 export function goalStatuses(goals, { activeMonth, available }) {
   const out = {}
   let budget = Math.max(0, Number(available) || 0)

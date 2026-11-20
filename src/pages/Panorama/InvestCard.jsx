@@ -56,7 +56,7 @@ export default function InvestCard({ setPage } = {}) {
 
   const sym = currencySymbol(settings.currency, settings.language)
   const month = settings.activeMonth || currentMonth()
-  const contrib = monthContributions(app.expenses, month)
+  const contrib = monthContributions(app.expenses, month, app.setAsides)
 
   // Con Inversiones completo (UI_FLAGS.investFull) el aporte se registra
   // dentro de moyiq: Portafolio › Movimientos ofrece el depósito. Sin él,

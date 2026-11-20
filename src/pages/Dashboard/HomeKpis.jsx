@@ -99,7 +99,8 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
   const { t, lang } = useT()
   const [detailOpen, setDetailOpen] = useState(false)
   const { cur } = kpis
-  const hasData = cur.incCount > 0 || cur.expCount > 0
+  // Un mes con solo apartados también tiene datos: hay que poder verlos y quitarlos.
+  const hasData = cur.incCount > 0 || cur.expCount > 0 || (cur.setAsideCount || 0) > 0
   const { prevMonth, prev, cutDay, usdOn, usdFmt, deltaOf } = useKpiDeltas({ kpis, activeMonth, country: refc?.country })
   const prevHasData = prev.incCount > 0 || prev.expCount > 0
 

@@ -20,6 +20,7 @@ import {
   createImportBatch, buildTransactions, MAX_ROWS,
 } from './fileParser.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { splitSetAsides } from '../../utils/setAside.js'
 
 const s = {
   page: {},
@@ -167,7 +168,9 @@ export default function ImportMovements({ setPage } = {}) {
     let existing = []
     if (!isDemo) {
       const [inc, exp] = await Promise.all([dbGetAll('incomes'), dbGetAll('expenses')])
-      existing = [...(inc || []), ...(exp || [])]
+      // Los apartados (utils/setAside.js) viven en la store `expenses` pero no
+      // son movimientos del banco: no marcan duplicados ni sugieren categoría.
+      existing = [...(inc || []), ...splitSetAsides(exp).expenses]
     }
     const withDupes = detectDuplicates(validated, existing)
     // Auto-sugerencia de categoría (heurística local, ver fileParser.js): solo

@@ -1,5 +1,5 @@
 // src/utils/csvExtraRows.js — filas del CSV para lo que no son movimientos
-// (DAT-15): presupuestos, deudas, metas, suscripciones y fijos. Mismas columnas
+// (DAT-15): presupuestos, deudas, apartados, metas, suscripciones y fijos. Mismas columnas
 // que los ingresos y gastos; la primera (tipo) dice de qué colección viene.
 const money = n => Number(n) || 0
 
@@ -16,6 +16,11 @@ export function extraCsvRows(state, tr) {
     const notes = [d.rate ? `${d.rate} %` : '', d.minPayment ? `min ${money(d.minPayment)}` : ''].filter(Boolean).join(' · ')
     rows.push([tr('csv.type.debt'), d.dueDate || '', d.creditor, d.debtType || '', -money(d.balance), '', '', notes])
   }
+  // Apartar (F-1): no es gasto. Monto positivo (la plata sigue siendo tuya) y
+  // el destino en la columna de categoría. Lo apartado a una meta ya está
+  // dentro de su "Ahorrado": esta fila es el movimiento, no se suma otra vez.
+  for (const r of state.setAsides || [])
+    rows.push([tr('csv.type.setAside'), r.date || '', r.description || '', r.dest === 'invest' ? tr('csv.setAside.invest') : tr('csv.setAside.goal'), money(r.amount), r.method || '', '', ''])
   for (const g of state.goals || [])
     rows.push([tr('csv.type.goal'), g.targetDate || '', g.name, '', money(g.target), '', '', `${money(g.saved)}`])
   for (const s of state.subscriptions || [])

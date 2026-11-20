@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { goalStatuses, monthsLeft } from './goalStatus.js'
+import { goalStatuses, monthsLeft, paceBudget } from './goalStatus.js'
+import { monthLeft } from '../../utils/monthLeft.js'
 
 describe('monthsLeft', () => {
   it('cuenta el mes activo', () => {
@@ -36,5 +37,24 @@ describe('goalStatuses (UI-Q5)', () => {
   it('sin disponible (o negativo) toda meta con fecha queda atrasada', () => {
     const s = goalStatuses([{ id: 'g', target: 100, saved: 0, targetDate: '2027-01' }], { ...base, available: -50 })
     expect(s.g).toBe('behind')
+  })
+})
+
+describe('paceBudget: aportar no atrasa la meta', () => {
+  it('apartar 100 a una meta que pide 100/mes la deja a tiempo', () => {
+    const goal = { id: 'g', target: 1200, saved: 0, targetDate: '2027-10' } // 12 meses desde 2026-11
+    const incomes = [{ amount: 1000, date: '2026-11-01' }]
+    const expenses = [{ amount: 850, date: '2026-11-02' }]
+    const before = monthLeft({ incomes, expenses, month: '2026-11' })
+    expect(goalStatuses([goal], { activeMonth: '2026-11', available: paceBudget(before) }).g).toBe('onTrack')
+    const sa = { id: 's1', kind: 'setAside', dest: 'goal', goalId: 'g', amount: 100, date: '2026-11-03' }
+    const after = monthLeft({ incomes, expenses, setAsides: [sa], month: '2026-11' })
+    expect(after.left).toBe(50)
+    expect(paceBudget(after)).toBe(150)
+    expect(goalStatuses([{ ...goal, saved: 100 }], { activeMonth: '2026-11', available: paceBudget(after) }).g).toBe('onTrack')
+  })
+  it('lo apartado para invertir sí resta del ritmo', () => {
+    expect(paceBudget({ left: 50, setAsideGoals: 0, setAsideInvest: 100 })).toBe(50)
+    expect(paceBudget(null)).toBe(0)
   })
 })

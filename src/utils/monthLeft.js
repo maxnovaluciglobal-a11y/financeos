@@ -18,7 +18,7 @@
 //  · Apartar (utils/setAside.js) no es gasto: resta de "Te queda" pero no de
 //    la tasa de ahorro, que lo cuenta como ahorro.
 import { roundCents } from './monthFigures.js'
-import { isSetAside, monthSetAsides } from './setAside.js'
+import { isSetAside, monthSetAsides, uniqueSetAsides } from './setAside.js'
 
 /**
  * @param {any} r @param {string} month @param {number | null} untilDay
@@ -37,7 +37,8 @@ export function monthLeft({ incomes = [], expenses = [], setAsides = [], month, 
     incCount++
   }
   // Un apartado que llegue mezclado con los gastos (lista cruda de la store)
-  // cuenta como apartado, nunca dos veces.
+  // cuenta como apartado, nunca dos veces (aunque también venga en setAsides:
+  // se deduplica por id).
   const mixed = []
   for (const r of expenses || []) {
     if (!r || r.inv) continue
@@ -48,7 +49,7 @@ export function monthLeft({ incomes = [], expenses = [], setAsides = [], month, 
   }
   income = roundCents(income)
   spent = roundCents(spent)
-  const sa = monthSetAsides([...(setAsides || []), ...mixed], month, { untilDay })
+  const sa = monthSetAsides(uniqueSetAsides(setAsides, mixed), month, { untilDay })
   const left = roundCents(income - spent - sa.total)
   return {
     income, spent,

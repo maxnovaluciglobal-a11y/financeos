@@ -35,6 +35,24 @@ const cents = (n) => { const v = Math.round(num(n) * 100) / 100; return v === 0 
 export const isSetAside = (r) => !!r && r.kind === SET_ASIDE_KIND
 
 /**
+ * Une listas de apartados sin repetir: el mismo registro (mismo id, o el mismo
+ * objeto si no tiene id) cuenta una sola vez aunque llegue en varias listas.
+ * @param {...(any[] | null | undefined)} lists
+ * @returns {any[]}
+ */
+export function uniqueSetAsides(...lists) {
+  const seen = new Map()
+  for (const list of lists) {
+    for (const r of Array.isArray(list) ? list : []) {
+      if (!isSetAside(r)) continue
+      const key = r.id != null ? `id:${r.id}` : r
+      if (!seen.has(key)) seen.set(key, r)
+    }
+  }
+  return [...seen.values()]
+}
+
+/**
  * Reparte la store `expenses` en gastos y apartados.
  * @param {any[]} records
  * @returns {{ expenses: any[], setAsides: any[] }}

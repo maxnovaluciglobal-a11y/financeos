@@ -601,11 +601,14 @@ export function AppProvider({ children }) {
       // Encabezados y valores fijos (tipo, categoría canónica, método,
       // recurrencia) en el idioma activo; lo que escribió el usuario va tal cual.
       const lang = langRef.current
+      // Apartar no es gasto: los apartados salen con su propio tipo, no como
+      // filas "Gasto" de "Otros" (utils/setAside.js).
+      const split = splitSetAsides(state.expenses)
       const rows = [
         ['type', 'date', 'description', 'category', 'amount', 'method', 'recurrence', 'notes'].map(c => tr(`csv.col.${c}`)),
         ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, lang), r.amount,  '',                           recurrenceLabel(r.recurrence, lang), r.notes || '']),
-        ...state.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, lang), -r.amount, methodLabel(r.method, lang), recurrenceLabel(r.recurrence, lang), r.notes || '']),
-        ...extraCsvRows(state, tr),
+        ...split.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, lang), -r.amount, methodLabel(r.method, lang), recurrenceLabel(r.recurrence, lang), r.notes || '']),
+        ...extraCsvRows({ ...state, setAsides: split.setAsides }, tr),
       ]
       const csv  = toCsv(rows)
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }) // FIX: BOM
@@ -773,14 +776,19 @@ export function AppProvider({ children }) {
     }
     return item
   }, [addExpense, updateGoal, delExpense])
+  // Primero la meta y después el registro (al revés que addSetAside): si la
+  // meta no se puede actualizar, el apartado sigue entero; si el registro no
+  // se puede borrar, la meta vuelve a como estaba.
   const delSetAside = useCallback(async (id) => {
     const rec = (recordsRef.current || []).find(r => r.id === id)
-    await delExpense(id)
-    if (rec?.dest === 'goal') {
-      const goal = (goalsRef.current || []).find(g => g.id === rec.goalId)
-      const next = goalWithoutSetAside(goal, rec)
-      if (next) await updateGoal(next)
+    const goal = rec?.dest === 'goal' ? (goalsRef.current || []).find(g => g.id === rec.goalId) : null
+    const next = goal ? goalWithoutSetAside(goal, rec) : null
+    if (next) await updateGoal(next)
+    try { await delExpense(id) } catch (e) {
+      if (next) await updateGoal(goal).catch(logRejection('AppContext:delSetAsideRollback'))
+      throw e
     }
+    return rec || null
   }, [delExpense, updateGoal])
   const setAsideSplit = useMemo(() => splitSetAsides(state.expenses), [state.expenses])
 

@@ -234,7 +234,9 @@ export function DemoProvider({ children }) {
     const rows = [
       ['type', 'date', 'description', 'category', 'amount', 'method', 'recurrence'].map(c => tr(`csv.col.${c}`)),
       ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, langRef.current), r.amount,  '',                                     recurrenceLabel(r.recurrence, langRef.current)]),
-      ...state.expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, langRef.current), -r.amount, methodLabel(r.method, langRef.current), recurrenceLabel(r.recurrence, langRef.current)]),
+      // Apartar no es gasto: fila propia, como en AppContext.exportCSV.
+      ...splitSetAsides(state.expenses).expenses.map(r => [tr('csv.type.expense'), r.date, r.description, catName(r.category, langRef.current), -r.amount, methodLabel(r.method, langRef.current), recurrenceLabel(r.recurrence, langRef.current)]),
+      ...splitSetAsides(state.expenses).setAsides.map(r => [tr('csv.type.setAside'), r.date, r.description || '', r.dest === 'invest' ? tr('csv.setAside.invest') : tr('csv.setAside.goal'), Number(r.amount) || 0, '', '']),
     ]
     const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
@@ -314,6 +316,7 @@ export function DemoProvider({ children }) {
       const next = goalWithoutSetAside((stateRef.current.goals || []).find(g => g.id === rec.goalId), rec)
       if (next) dispatch({ type: 'UPDATE_GOAL', item: next })
     }
+    return rec || null
   }, [])
   const setAsideSplit = useMemo(() => splitSetAsides(state.expenses), [state.expenses])
 

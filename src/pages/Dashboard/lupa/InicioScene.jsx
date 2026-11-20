@@ -69,7 +69,8 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
 
   const { cur } = kpis
   const free = cur.freeFlow
-  const hasData = cur.incCount > 0 || cur.expCount > 0
+  // Un mes con solo apartados también tiene datos: hay que poder verlos y quitarlos.
+  const hasData = cur.incCount > 0 || cur.expCount > 0 || (cur.setAsideCount || 0) > 0
   const showRef = !!(refc?.rate && refc.mode === 'ref')
   const rate = showRef ? refc.rate.rate : null
   const locale = dateLocale()

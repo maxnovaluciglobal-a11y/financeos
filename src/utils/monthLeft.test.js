@@ -56,4 +56,17 @@ describe('Te queda: una sola cuenta', () => {
     const home = homeMonthTotals({ incomes, expenses, activeMonth: '2026-11', now: new Date(2026, 10, 20) }).cur
     expect(home).toMatchObject({ totalInc: 1000, totalExp: 300, balance: 700, setAside: 0 })
   })
+
+  it('el mismo apartado en las dos listas cuenta una sola vez', () => {
+    const sa = { id: 'sa-1', kind: 'setAside', dest: 'goal', goalId: 1, amount: 100, date: '2026-11-05' }
+    const m = monthLeft({ incomes: [{ amount: 500, date: '2026-11-01' }], expenses: [sa], setAsides: [sa], month: '2026-11' })
+    expect(m.setAside).toBe(100)
+    expect(m.setAsideCount).toBe(1)
+    expect(m.left).toBe(400)
+    const d = dailyAvailable({ incomes: [{ amount: 500, date: '2026-11-01' }], expenses: [sa], setAsides: [sa], activeMonth: '2026-11', now: new Date(2026, 10, 20), income: 500 })
+    expect(d.avail[d.lastDay]).toBe(400)
+    // Copias distintas con el mismo id (lista cruda + lista separada) también.
+    const m2 = monthLeft({ expenses: [{ ...sa }], setAsides: [{ ...sa }], month: '2026-11' })
+    expect(m2.setAside).toBe(100)
+  })
 })

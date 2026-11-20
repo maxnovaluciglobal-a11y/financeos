@@ -111,7 +111,7 @@ export function homeMonthTotals({ incomes = [], expenses = [], setAsides = [], a
     return { totalInc: m.income, totalExp: m.spent, setAside: m.setAside,
              setAsideGoals: m.setAsideGoals, setAsideInvest: m.setAsideInvest,
              balance: m.left, freeFlow: m.left, savingRate: m.savingRate,
-             incCount: m.incCount, expCount: m.expCount }
+             incCount: m.incCount, expCount: m.expCount, setAsideCount: m.setAsideCount }
   }
   const cur = totals(activeMonth)
   const prev = totals(prevMo)

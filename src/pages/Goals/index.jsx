@@ -16,7 +16,7 @@ import { fixedBuckets, draftFromTemplate, buildGoal, applyContribution, toFullFo
 import { FixedBuckets, TemplateGrid, GoalFlowSheet, ContributionSheet, GOAL_ICONS } from './GoalSheets.jsx'
 import { listedGoals } from './goalList.js'
 import Sheet from '../../components/ui/Sheet.jsx'
-import { goalStatuses } from './goalStatus.js'
+import { goalStatuses, paceBudget } from './goalStatus.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { monthLeft } from '../../utils/monthLeft.js'
@@ -73,8 +73,11 @@ export default function Goals() {
   const totalTarget = useMemo(() => goals.reduce((s,g) => s+g.target, 0), [goals])
   const totalSaved  = useMemo(() => goals.reduce((s,g) => s+g.saved, 0), [goals])
   // Estado por ritmo, no por porcentaje (UI-Q5): "A tiempo" / "Atrasada".
-  const statuses = useMemo(() => goalStatuses(goals, { activeMonth, available: leftThisMonth }),
-    [goals, activeMonth, leftThisMonth])
+  // El ritmo suma de vuelta lo ya apartado a metas (paceBudget): aportar no
+  // puede volver "Atrasada" una meta. La caja "Te queda" sigue en month.left.
+  const paceAvailable = paceBudget(month)
+  const statuses = useMemo(() => goalStatuses(goals, { activeMonth, available: paceAvailable }),
+    [goals, activeMonth, paceAvailable])
 
   function openSuggestions() {
     setSuggestions(generateGoalSuggestions({ ingresoNeto:ingresoNetoGoals, gastoMensual:gastoMensualGoals, existingGoals:goals }, t))
@@ -162,13 +165,16 @@ export default function Goals() {
       if (addSetAside) rec = await addSetAside({ amount: r.added, date: localDateStr(), dest: 'goal', goalId: prev.id, description: prev.name, method })
       else await updateGoal(r.goal)
     } catch { return }
+    // addSetAside da null si no guardó nada (monto que redondea a 0, meta que
+    // ya no está): ni se cierra la hoja ni se dice "Agregado".
+    if (addSetAside && !rec) { showToast(t('qa.setAside.noRoom'), 'error'); return }
     setContribGoal(null)
     const msg = r.done
       ? t('goals.r9.toast.addedDone', { v: fmtPlain(r.added) })
       : t('goals.r9.toast.added', { v: fmtPlain(r.added), r: fmtPlain(r.remaining) })
     const undo = rec?.id && delSetAside
-      ? () => { delSetAside(rec.id).catch(logRejection('Goals:undoContribution')) }
-      : () => { updateGoal(prev).catch(logRejection('Goals:undoContribution')) }
+      ? () => { Promise.resolve(delSetAside(rec.id)).catch(logRejection('Goals:undoContribution')) }
+      : () => { Promise.resolve(updateGoal(prev)).catch(logRejection('Goals:undoContribution')) }
     showToast(msg, 'ok', { label: t('common.undo'), onAction: undo })
   }
 
@@ -295,15 +301,17 @@ export default function Goals() {
       {(() => {
         const disponible = leftThisMonth
         if (ingresoNetoGoals <= 0) return null
+        // Tres estados: positivo, cero (neutro, como en el Inicio) y negativo.
         const ok = disponible > 0
+        const neg = disponible < 0
         return (
-          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: ok ? 'var(--accent-bg)' : 'var(--red-bg)', border: 0, flexWrap:'wrap' }}>
-            <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{ok || disponible === 0 ? t('home.kpi.left') : t('home.kpi.short')}</span>
-            <span style={{ fontSize:'var(--t-headline)', fontWeight:700, fontFamily: 'var(--num)', color: ok ? 'var(--accent)' : 'var(--red)', marginLeft:'auto' }}>
-              {ok ? '' : '−'}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
+          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: neg ? 'var(--red-bg)' : 'var(--accent-bg)', border: 0, flexWrap:'wrap' }}>
+            <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{neg ? t('home.kpi.short') : t('home.kpi.left')}</span>
+            <span style={{ fontSize:'var(--t-headline)', fontWeight:700, fontFamily: 'var(--num)', color: ok ? 'var(--accent)' : neg ? 'var(--red)' : 'var(--th)', marginLeft:'auto' }}>
+              {neg ? '−' : ''}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
             </span>
-            <span style={{ fontSize:'var(--t-footnote)', color: ok ? 'var(--th)' : 'var(--red)', width:'100%' }}>
-              {ok ? t('goals.available.hint') : t('goals.available.negative')}
+            <span style={{ fontSize:'var(--t-footnote)', color: neg ? 'var(--red)' : 'var(--th)', width:'100%' }}>
+              {neg ? t('goals.available.negative') : t('goals.available.hint')}
               {month.setAsideGoals > 0 && <> {t('goals.available.setAside', { v: fmtMoney(month.setAsideGoals, sym) })}</>}
             </span>
           </div>
