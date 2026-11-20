@@ -8,6 +8,7 @@ import {
   regimeOf, vixLevel, historySymbol, fxSymbol, historyPlan, runLimited, topPositions,
   validateAporte, aporteUsd, aportePending, stripFormat, STRIP_SYMS, DEFAULT_STOP_PCT,
 } from './investHoy.js'
+import { normalizeQuote } from '../core/investApi.js'
 
 const MIN = 60000
 const day = (s) => Date.parse(`${s}T00:00:00Z`) / 1000
@@ -22,6 +23,16 @@ describe('frescura de precios (readings.js)', () => {
     expect(quoteFreshness({ marketTime: now - 60 * MIN, tradingEnd: now - 30 * MIN }, now).state).toBe('closed')
     expect(quoteFreshness({ fetchedAt: now }, now)).toMatchObject({ state: 'unknown', time: now })
     expect(quoteFreshness({ marketTime: now }, now, true).state).toBe('offline')
+  })
+  it('una cotización real normalizada, un sábado, dice "Mercado cerrado" y no "Retraso ~2.900 min"', () => {
+    // Respuesta de /api/quote (invest-web api/quote.js): sesión regular del viernes
+    // 20-nov-2026 (14:30–21:00 UTC), último precio al cierre; ahora es sábado 12:00 UTC.
+    const fri = Date.parse('2026-11-21T00:00:00Z')
+    const raw = { ticker: 'AAPL', price: 190.12, prevClose: 188, changePct: 0.011, currency: 'USD', source: 'yahoo',
+      marketTime: fri - 3 * 3600000, tradingStart: fri - 9.5 * 3600000, tradingEnd: fri - 3 * 3600000, fetchedAt: fri + 36 * 3600000 }
+    const sat = fri + 36 * 3600000
+    expect(quoteFreshness(normalizeQuote(raw, 'AAPL'), sat)).toMatchObject({ state: 'closed', minutes: null })
+    expect(summarizeFreshness([normalizeQuote(raw, 'AAPL')], sat).state).toBe('closed')
   })
   it('resume con el peor caso entre los mercados abiertos', () => {
     const qs = [{ marketTime: now - 2 * MIN }, { marketTime: now - 20 * MIN }, { marketTime: now - 90 * MIN, tradingEnd: now - MIN }]
