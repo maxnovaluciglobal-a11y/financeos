@@ -62,6 +62,12 @@
 }
 .catScroll::-webkit-scrollbar { display: none; }
 .catChip { flex: 0 0 auto; scroll-snap-align: start; white-space: nowrap; }
+/* UX-N9: preselección (la última usada) como sugerencia hasta que se toque */
+.catChip.catChip[data-suggested] {
+  background: var(--fill); color: var(--tx); font-weight: 600;
+  outline: 1.5px dashed var(--chip-on-bg); outline-offset: -1.5px;
+}
+.catHint { margin: -4px 0 8px; text-align: center; font-family: var(--sans); font-size: var(--t-footnote); color: var(--tm); }
 .catAll {
   flex: 0 0 44px; height: 44px; display: grid; place-items: center; cursor: pointer;
   border: 0; border-radius: var(--r-pill); background: var(--fill); color: var(--tx);
@@ -113,6 +119,9 @@
   background: var(--sur); border-top: 1px solid var(--brd);
 }
 .footer :global(.fos-btn-primary) { min-height: 48px; }
+/* UX-N9: con el ✓ del teclado a la vista no hay un segundo "Guardar" (ni para
+   el lector de pantalla: visibility lo saca del árbol y del orden de foco). */
+.footer[data-hidden] { visibility: hidden; }
 
 
 @media (prefers-reduced-motion: reduce) { .key, .keyOk, .moreChev { transition: none; } }
@@ -138,3 +147,14 @@
 }
 .intakeTitle { font-weight: 600; color: var(--tx); }
 .intakeNote { margin-top: 4px; color: var(--tx); }
+
+/* UX-N9: cerrar con un monto escrito pregunta antes (QuickAdd.jsx). Pegado
+   arriba para que se vea aunque la hoja esté desplazada. */
+.discard {
+  position: sticky; top: 0; z-index: 2; display: grid; gap: 10px; margin: 0 0 12px;
+  padding: 12px; border-radius: var(--rl); background: var(--sur); border: 1px solid var(--brd);
+  box-shadow: var(--sh-1); font-family: var(--sans); font-size: var(--t-callout); color: var(--tx);
+}
+.discardActions { display: flex; gap: 8px; }
+.discardActions > button { flex: 1; min-height: 44px; }
+.discardBtn { color: var(--neg); }

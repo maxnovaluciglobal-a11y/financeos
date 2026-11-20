@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseIntake, parseIntakeAmount, cleanText, hasIntake, stripIntakeParams, stashIntake, takeIntake,
-  captureIntake, intakeFormValues, isIosSafariTab, INTAKE_KEY, INTAKE_TTL_MS, MAX_MERCHANT,
+  captureIntake, intakeFormValues, reparseIntake, isIosSafariTab, INTAKE_KEY, INTAKE_TTL_MS, MAX_MERCHANT,
 } from './autoEntry.js'
 
 const TODAY = '2026-11-19'
@@ -206,6 +206,52 @@ describe('intakeFormValues', () => {
   it('sin monto: el motivo', () => {
     expect(intakeFormValues({ ...base, amount: null, amountStatus: 'negative' }, { currency: 'CLP' }).note).toBe('negative')
     expect(intakeFormValues({ ...base, amount: null, amountStatus: 'missing' }, { currency: 'CLP' }).note).toBe('missing')
+  })
+})
+
+describe('ENG-N1: el monto se vuelve a leer con la moneda de la cuenta', () => {
+  // main.jsx lee la URL antes de cargar los ajustes (sin moneda: reglas de CLP).
+  const intake = (monto, extra = {}) => parseIntake(q({ add: 'gasto', monto, ...extra }), { today: TODAY })
+  const cases = [
+    ['$4.99', 'USD', 4.99],
+    ['4.99', 'USD', 4.99],
+    ['$45.50', 'USD', 45.5],
+    ['1,234.56', 'USD', 1234.56],
+    ['$45.50', 'MXN', 45.5],
+    ['12,50', 'EUR', 12.5],
+    ['4,99 €', 'EUR', 4.99],
+    ['12.50', 'EUR', 12.5],
+    ['$12.500', 'CLP', 12500],
+    ['12500', 'CLP', 12500],
+  ]
+  it.each(cases)('%s en una cuenta %s → %s', (monto, currency, amount) => {
+    expect(intakeFormValues(intake(monto), { currency, lang: 'es' })).toMatchObject({ amount, note: null })
+  })
+  it('"1.250" en USD ya no se precarga como 1250 (lectura CLP): se pide escribirlo', () => {
+    expect(intakeFormValues(intake('1.250'), { currency: 'USD' })).toMatchObject({ amount: null, note: 'ambiguous' })
+  })
+  it('un alta guardada (sessionStorage) también se vuelve a leer: los Atajos ya instalados siguen andando', () => {
+    const st = memStorage()
+    stashIntake(intake('$4.99'), st)
+    expect(intakeFormValues(takeIntake(st), { currency: 'USD' })).toMatchObject({ amount: 4.99, note: null })
+  })
+  it('con moneda explícita (parámetro o símbolo) no se relee: otra moneda sigue avisando', () => {
+    expect(intakeFormValues(intake('€12,50'), { currency: 'CLP' })).toMatchObject({ amount: null, note: 'foreign', code: 'EUR' })
+    expect(intakeFormValues(intake('12,50', { moneda: 'EUR' }), { currency: 'USD' })).toMatchObject({ amount: null, note: 'foreign', code: 'EUR' })
+    expect(intakeFormValues(intake('US$ 5.99'), { currency: 'USD' })).toMatchObject({ amount: 5.99, note: null })
+  })
+  it('reparseIntake no toca un alta sin texto, sin moneda de cuenta o ya con moneda', () => {
+    const a = intake('$4.99')
+    expect(reparseIntake(a, { currency: undefined })).toBe(a)
+    expect(reparseIntake(a, { currency: 'usd' })).toBe(a)
+    const b = intake('€5')
+    expect(reparseIntake(b, { currency: 'USD' })).toBe(b)
+    const c = { ...a, amountText: '' }
+    expect(reparseIntake(c, { currency: 'USD' })).toBe(c)
+    expect(reparseIntake(null, { currency: 'USD' })).toBeNull()
+  })
+  it('negativo sigue negativo con la moneda de la cuenta', () => {
+    expect(intakeFormValues(intake('-4.99'), { currency: 'USD' }).note).toBe('negative')
   })
 })
 

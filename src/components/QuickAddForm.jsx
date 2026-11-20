@@ -9,6 +9,8 @@
 //   stickySave     "Guardar" fijo al pie (dentro de Sheet; decisión W3, B4a)
 //   allowMoreDetails  muestra "Más detalles" (abre el gasto detallado con lo escrito;
 //                  necesita Shell montado, así que el onboarding no lo usa)
+//   onDirtyChange(bool)  avisa si hay un monto escrito, en cada cambio del monto
+//                  (QuickAdd pregunta antes de descartarlo, UX-N9)
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
 import { Calendar, Check, ChevronDown, LayoutGrid, Mic, Square } from 'lucide-react'
@@ -34,7 +36,8 @@ import { logClientError } from '../utils/errorLog.js'
 import { refEligible, resolveRefRate, toRef, SOURCE_LABEL } from '../utils/refRate.js'
 import {
   ruleKey, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, keyToKeypad, isTextEntryTarget,
-  buildDetailedPrefill, DETAILED_PREFILL_KEY, ENTRY_MEMORY_KEY, entryMemoryValue, readEntryDate,
+  buildDetailedPrefill, DETAILED_PREFILL_KEY, ENTRY_MEMORY_KEY, entryMemoryValue, readEntryDate, footerSaveVisible,
+  initialCategory,
 } from '../utils/quickAdd.js'
 import { parseQuickLine, lineFormPatch, findCategory } from '../utils/quickLine.js'
 import { spokenToLine, parseVoiceLine, speechLang } from '../utils/voiceEntry.js'
@@ -124,7 +127,7 @@ function DateSegment({ date, setDate, t }) {
 
 // prefill: alta que llegó por URL (utils/autoEntry.js, el Atajo de Apple Pay).
 // Solo rellena: guardar sigue siendo un toque de la persona.
-export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, prefill = null }) {
+export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, prefill = null, onDirtyChange }) {
   const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
@@ -161,6 +164,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // ¿El usuario eligió la categoría a mano en esta apertura? La sugerencia
   // mientras escribe (B4a) nunca la pisa.
   const catManual = useRef(false)
+  // UX-N9: la categoría que la hoja dejó elegida sola al abrir; se marca como
+  // sugerencia hasta que la persona la toque o elija otra.
+  const [autoCat, setAutoCat] = useState('')
   const ownAmountRef = useRef(null)
   const amountRef = externalAmountRef || ownAmountRef
 
@@ -197,7 +203,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
     setDate(baseDate.current); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
-    setUsdMode(false); setSuggestedMsg(''); catManual.current = false
+    setUsdMode(false); setSuggestedMsg(''); catManual.current = false; setAutoCat('')
     setLine(''); setLineResult(null); lineFill.current = {}; lineMode.current = 'text'
     setVoiceHeard(''); setIntakeInfo(null)
     if (prefill && autoOn) applyPrefill(prefill)
@@ -206,7 +212,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   }, [resetKey, defaultType, prefill])
 
   function applyPrefill(p) {
-    const v = intakeFormValues(p, { currency, rate })
+    const v = intakeFormValues(p, { currency, rate, lang })
     if (!v) return
     setType(v.type)
     if (v.amount != null) { setUsdMode(v.usd); setAmount(amountToKeypad(v.amount, v.usd ? usdDecimals : decimals)) }
@@ -252,8 +258,15 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const allowedCats = useMemo(() => [...new Set([...chips, ...effectiveCats, ...(type === 'expense' ? CATS_EXPENSE : CATS_INCOME)])], [chips, effectiveCats, type])
 
   // Fija la primera categoría al abrir / cambiar de tipo
-  // (la que acaba de escribir la línea se respeta aunque no esté entre los chips)
-  useEffect(() => { setCat(c => (chips.includes(c) || (c && c === lineFill.current.cat) ? c : chips[0] || '')) }, [chips, resetKey])
+  // (la que acaba de escribir la línea o eligió la persona se respeta aunque no
+  // esté entre los chips). En la hoja (UX-N9) solo si se usó hace un día o menos.
+  useEffect(() => {
+    const next = compact ? initialCategory({ chips, records: ownOfType, now: Date.now() }) : (chips[0] || '')
+    setCat(c => (chips.includes(c) || (c && (c === lineFill.current.cat || catManual.current)) ? c : next))
+    setAutoCat(catManual.current ? '' : next)
+    // ownOfType ya cambia chips; compact es fijo por apertura
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chips, resetKey])
 
   // "Repetir" (B4b): los 3 movimientos más frecuentes de los últimos 90 días
   // (si no hay, el último de todos, como antes).
@@ -266,6 +279,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
 
   function pickCategory(c) {
     catManual.current = true
+    setAutoCat('')
     setSuggestedMsg('')
     setCat(c)
   }
@@ -285,7 +299,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setUsdMode(false)
     setAmount(amountToKeypad(r.amount, decimals))
     setDesc(r.description || '')
-    if (r.category) { setCat(r.category); catManual.current = true }
+    if (r.category) { setCat(r.category); catManual.current = true; setAutoCat('') }
     setSuggestedMsg('')
     hapticTap()
   }
@@ -374,6 +388,12 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // Monto que se guarda, siempre en la moneda principal (B4b: US$ → local).
   const amt = usdOn ? fromUsd(typed, rate, decimals) : typed
   const canSave = amt > 0 && !saving
+  // UX-N9: el contenedor sabe si cerrar perdería un monto escrito.
+  const dirty = typed > 0
+  const onDirtyRef = useRef(onDirtyChange)
+  onDirtyRef.current = onDirtyChange
+  // También en cada cambio del monto: QuickAdd retira la pregunta de descarte.
+  useEffect(() => { onDirtyRef.current?.(dirty) }, [dirty, amount])
   const canConfirm = canSave && !!cat
   const accent = type === 'expense' ? 'var(--neg)' : 'var(--pos)'
   const entryLocale = usdOn ? localeForCurrency('USD', lang) : moneyLocale()
@@ -480,7 +500,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (!k) return
     if (isTextEntryTarget(e.target, { forEnter: k === 'save' })) return
     e.preventDefault()
-    if (k === 'save') { save(); return }
+    // Enter = el ✓ del teclado: pide categoría (UX-N9, sin preselección vieja)
+    if (k === 'save') { if (canConfirm) save(); return }
     setAmount(a => pressKey(a, k, entryDecimals))
   }
   useEffect(() => {
@@ -505,8 +526,32 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     else if (c.right > r.right) row.scrollLeft += c.right - r.right + 8
   }, [cat, chips])
 
+  // UX-N9: un solo "Guardar" a la vista. En la hoja compacta el ✓ del teclado
+  // basta; el del pie aparece solo si el teclado quedó fuera de la vista.
+  const keypadRef = useRef(null)
+  const [keypadVisible, setKeypadVisible] = useState(true)
+  useEffect(() => {
+    const el = keypadRef.current
+    if (!compact || !el || typeof IntersectionObserver === 'undefined') return undefined
+    const io = new IntersectionObserver(([entry]) => setKeypadVisible(entry.isIntersecting), { threshold: 0.5 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [compact])
+  const footerOn = footerSaveVisible({ stickySave, compact, showMore, keypadVisible, needsFallback: canSave && !canConfirm })
+  // UX-N9: la preselección se ve como sugerencia; sin categoría, se pide elegir.
+  const catSuggested = compact && !!cat && cat === autoCat
+  const catHint = catSuggested ? t('qa.catSuggestedHint') : (compact && !cat && typed > 0 ? t('qa.catPickHint') : '')
+
   const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
   const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
+
+  const moreDetailsLink = allowMoreDetails && type === 'expense' ? (
+    <div className={css.moreRow}>
+      <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
+        {t('qa.moreDetails')}
+      </button>
+    </div>
+  ) : null
 
   const saveButton = (
     <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave} style={{ minHeight: 48 }}>
@@ -618,7 +663,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           <div className={css.catRow}>
             <div ref={catRowRef} role="group" aria-label={t('qa.category')} className={css.catScroll}>
               {(chips.includes(cat) || !cat ? chips : [cat, ...chips]).map(c => (
-                <button key={c} type="button" className={`fos-chip ${css.catChip}`} aria-pressed={cat === c} onClick={() => pickCategory(c)}>
+                <button key={c} type="button" className={`fos-chip ${css.catChip}`} aria-pressed={cat === c} onClick={() => pickCategory(c)}
+                  data-suggested={catSuggested && cat === c ? '' : undefined} aria-describedby={catSuggested && cat === c ? 'qa-cat-hint' : undefined}>
                   {chipLabel(c)}
                 </button>
               ))}
@@ -639,7 +685,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           </div>
         )}
 
-        <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} primaryOk={compact} />
+        {catHint && <div id="qa-cat-hint" className={css.catHint}>{catHint}</div>}
+
+        <div ref={keypadRef}>
+          <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} primaryOk={compact} />
+        </div>
 
         {/* Lo que no hace falta para registrar: a un toque, con el método a la vista */}
         {compact && (
@@ -734,21 +784,19 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             )}
           </div>
 
-          {/* Más detalles → gasto detallado con lo ya escrito (secundario) */}
-          {allowMoreDetails && type === 'expense' && (
-            <div className={css.moreRow}>
-              <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
-                {t('qa.moreDetails')}
-              </button>
-            </div>
-          )}
+          {/* Más detalles → gasto detallado con lo ya escrito (secundario).
+              En la hoja compacta va fuera de "Más opciones" (UX-N9: un nivel menos). */}
+          {!compact && moreDetailsLink}
           </>
         )}
+        {compact && moreDetailsLink}
 
 
-        {/* Guardar — Latón con texto Navy en los dos tipos. En la hoja, fijo al pie (W3). */}
+        {/* Guardar — Latón con texto Navy en los dos tipos. En la hoja, fijo al pie (W3),
+            y en la compacta solo cuando el ✓ del teclado no se ve (UX-N9). Se oculta
+            con visibility para que la hoja no cambie de alto al desplazarse. */}
         {stickySave
-          ? (showMore && <div className={css.footer}>{saveButton}</div>)
+          ? (showMore && <div className={css.footer} data-hidden={footerOn ? undefined : ''}>{saveButton}</div>)
           : <div style={{ marginTop: 8 }}>{saveButton}</div>}
     </>
   )

@@ -181,3 +181,44 @@ export function readEntryDate(raw, today, now) {
     return age >= 0 && age <= ENTRY_MEMORY_MS ? m.date : null
   } catch { return null }
 }
+
+// UX-N9 (auditoría 19-nov-2026): cerrar la hoja con un monto escrito (Esc, tocar
+// el velo, deslizar hacia abajo) primero pregunta; un segundo intento descarta.
+// Guardar o "Más detalles" cierran sin preguntar (lo escrito no se pierde).
+export function closeDecision({ dirty = false, asked = false } = {}) {
+  return dirty && !asked ? 'ask' : 'close'
+}
+
+// UX-N9: un solo "Guardar" a la vista. En la hoja compacta el ✓ del teclado es
+// el botón; el fijo al pie aparece solo cuando el teclado quedó fuera de la
+// vista (al bajar por "Más opciones"). Sin el bloque compacto, como antes.
+// needsFallback: hay monto pero no categoría. El ✓ pide categoría y el del pie
+// guarda en "Otros": sin categoría, el del pie se muestra para no dejar la hoja
+// sin ningún Guardar habilitado.
+export function footerSaveVisible({ stickySave = false, compact = false, showMore = false, keypadVisible = true, needsFallback = false } = {}) {
+  if (!stickySave || !showMore) return false
+  return compact ? (!keypadVisible || needsFallback) : true
+}
+
+// UX-N9: la categoría que la hoja deja elegida al abrir. Solo la primera de la
+// fila (la última usada) y solo si se usó hace un día o menos: si no, la
+// persona elige (una preselección vieja guarda gastos mal clasificados).
+// Momento de uso: createdAt (cuándo se cargó); sin él, el mediodía de `date`.
+export const CATEGORY_PRESELECT_MS = 24 * 60 * 60 * 1000
+const usedAt = (r) => {
+  const c = Date.parse(r?.createdAt || '')
+  if (Number.isFinite(c)) return c
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(r?.date || ''))
+  return m ? new Date(+m[1], +m[2] - 1, +m[3], 12).getTime() : NaN
+}
+export function initialCategory({ chips = [], records = [], now = Date.now(), maxAgeMs = CATEGORY_PRESELECT_MS } = {}) {
+  const first = chips[0]
+  if (!first) return ''
+  let last = -Infinity
+  for (const r of records) {
+    if (!r?.category) continue
+    const t = usedAt(r)
+    if (Number.isFinite(t) && t > last) last = t
+  }
+  return now - last <= maxAgeMs ? first : ''
+}

@@ -184,11 +184,26 @@ export function captureIntake({ location, history, storage, now = Date.now(), la
   } catch { return null }
 }
 
+// ENG-N1 (auditoría 19-nov-2026): main.jsx lee la URL antes de que carguen los
+// ajustes, así que un monto sin moneda explícita ("$4.99", "12,50", "4.99") se
+// leyó con las reglas de CLP. Al abrir la hoja ya se sabe la moneda de la
+// cuenta: se vuelve a leer el texto crudo con ella. Si el alta trae su moneda
+// (parámetro `moneda` o símbolo inequívoco), se respeta lo ya leído.
+export function reparseIntake(intake, { currency, lang = 'es' } = {}) {
+  if (!intake || intake.currency || !intake.amountText || !/^[A-Z]{3}$/.test(currency || '')) return intake
+  const a = parseIntakeAmount(intake.amountText, { fallbackCurrency: currency, lang })
+  if (a.currency) return intake          // el texto sí traía la moneda: no cambia nada
+  const out = { ...intake, amount: a.amount, amountStatus: a.status }
+  if (a.options) out.options = a.options; else delete out.options
+  return out
+}
+
 // Qué rellena en el formulario. La moneda del alta solo se usa si es la de la
 // persona, o US$ con una tasa guardada (se escribe en "Escribir en US$").
 // note: null | 'foreign' | 'ambiguous' | 'unreadable' | 'negative' | 'missing'
-export function intakeFormValues(intake, { currency, rate = 0 } = {}) {
-  if (!intake) return null
+export function intakeFormValues(rawIntake, { currency, rate = 0, lang = 'es' } = {}) {
+  if (!rawIntake) return null
+  const intake = reparseIntake(rawIntake, { currency, lang })
   const out = { type: intake.type, desc: intake.merchant || '', date: intake.date, amount: null, usd: false, note: null, code: null }
   const code = intake.currency
   if (intake.amount == null) { out.note = intake.amountStatus === 'ok' ? 'missing' : intake.amountStatus; return out }
