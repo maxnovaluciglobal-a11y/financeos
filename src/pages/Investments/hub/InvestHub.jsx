@@ -1,16 +1,19 @@
 // src/pages/Investments/hub/InvestHub.jsx — Inversiones completo (F0).
 // Solo se monta con UI_FLAGS.investFull y con acceso (perfil de inversionista,
 // ver ../index.jsx). Cinco pestañas arriba (control segmentado del patrón APG)
-// y el buscador de tickers. Cada pestaña dice con honestidad qué trae cuando
-// todavía no está; Portafolio ya muestra el visor actual.
+// y el buscador de tickers. Hoy está completa (F2); las demás dicen con
+// honestidad qué traen mientras no están, y Portafolio ya muestra el visor actual.
 // La pestaña vive en la entrada del historial y en fos_invest_tab (investNav).
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Hammer } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
 import { INVEST_TABS, bootTab, isTab, openAsset, rememberTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
 import Portfolio from '../Portfolio.jsx'
 import TickerSearch from './TickerSearch.jsx'
+
+// Hoy (F2) en su propio chunk: solo se baja al abrir la pestaña.
+const Hoy = lazy(() => import('../hoy/Hoy.jsx'))
 import s from './hub.module.css'
 
 const safeStorage = {
@@ -51,6 +54,13 @@ export default function InvestHub({ setPage, demo = false }) {
     refs.current[next]?.focus()
   }
   const open = useCallback((ticker) => openAsset(setPage, ticker), [setPage])
+  // Desde una tarjeta de Hoy a otra pestaña ("Ver en Portafolio", "Ver mercado"):
+  // sube al principio para que la pestaña nueva se lea desde arriba.
+  const go = useCallback((next) => {
+    if (!isTab(next)) return
+    setTab(next)
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => refs.current[next]?.focus())
+  }, [])
 
   return (
     <div className={s.hub}>
@@ -67,9 +77,11 @@ export default function InvestHub({ setPage, demo = false }) {
       <TickerSearch onOpen={open} demo={demo} demoTickers={demo ? demoInvestRows().map(r => r.t) : []} />
 
       <div role="tabpanel" id={`invest-panel-${tab}`} aria-labelledby={`invest-tab-${tab}`} tabIndex={0}>
-        {tab === 'portafolio'
-          ? <div className={s.hub}><Wip id="portafolio" text={t('invest.hub.soon.portafolio')} /><Portfolio /></div>
-          : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
+        {tab === 'hoy'
+          ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Hoy demo={demo} onOpen={open} onTab={go} /></Suspense>
+          : tab === 'portafolio'
+            ? <div className={s.hub}><Wip id="portafolio" text={t('invest.hub.soon.portafolio')} /><Portfolio /></div>
+            : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
       </div>
     </div>
   )
