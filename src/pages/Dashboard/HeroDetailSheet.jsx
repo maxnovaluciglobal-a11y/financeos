@@ -13,6 +13,7 @@ import { useT } from '../../i18n/useT.js'
 import { fmtMoney, fmtPctPoints } from '../../utils/index.js'
 import { toRef } from '../../utils/refRate.js'
 import DeltaLine from './DeltaLine.jsx'
+import SetAsideBlock from './SetAsideBlock.jsx'
 import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
 import s from './Home.module.css'
 import r from '../../components/recurring/recurring.module.css'
@@ -47,6 +48,8 @@ export default function HeroDetailSheet({ open, onClose, free, hasData, sym, sho
           {onReviewPending && <button type="button" className={r.reviewLink} onClick={() => { onClose(); onReviewPending() }}>{t('rec.pending.review')} →</button>}
         </div>
       )}
+
+      {hasData && <SetAsideBlock sym={sym} onClose={onClose} />}
 
       {hasData && pulse && (
         <div className={`${s.detailPulse} ${s.detailBlock}`}>

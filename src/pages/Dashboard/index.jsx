@@ -108,7 +108,7 @@ const Slot = ({ children }) => <div className={hs.todoSlot}>{children}</div>
 export default function Dashboard({ setPage }) {
   const { t } = useT()
   const {
-    ctx, settings, incomes, expenses, budgets, goals, subs, debts, sym, activeMonth,
+    ctx, settings, incomes, expenses, setAsides, budgets, goals, subs, debts, sym, activeMonth,
     refOn, refRate, bumpRate, dualOn, toUSD, money,
     kpis, rules, plan, pendingSum, todayStr, monthExpenses, healthScore,
   } = useHomeData()
@@ -252,9 +252,9 @@ export default function Dashboard({ setPage }) {
   // y que la frase del mes: gastado/ingreso contra día/días.
   const lupaSeries = useMemo(() => {
     if (!lupa) return null
-    const sr = dailyAvailable({ incomes, expenses, activeMonth, income: kpis.totalInc, plan, pending: pendingSum })
+    const sr = dailyAvailable({ incomes, expenses, setAsides, activeMonth, income: kpis.totalInc, plan, pending: pendingSum })
     return sr.lastDay >= 1 ? sr : null
-  }, [lupa, incomes, expenses, activeMonth, plan, pendingSum, kpis.totalInc])
+  }, [lupa, incomes, expenses, setAsides, activeMonth, plan, pendingSum, kpis.totalInc])
   const lupaPace = useMemo(() => paceToday(lupaSeries), [lupaSeries])
 
   // R12/R13: moneda de referencia del hero + calculadora del país.

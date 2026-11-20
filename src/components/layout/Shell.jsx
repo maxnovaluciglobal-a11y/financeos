@@ -38,10 +38,10 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
   const isDark = useResolvedTheme(settings.theme) === 'dark'
 
-  const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income'
+  const [quickAdd, setQuickAdd] = useState(null) // null | 'expense' | 'income' | 'setAside'
   // Otras pantallas (Primeros pasos del Inicio) piden abrir el Registro rápido.
   useEffect(() => {
-    const onOpen = (e) => setQuickAdd(e.detail?.type === 'income' ? 'income' : 'expense')
+    const onOpen = (e) => setQuickAdd(['income', 'setAside'].includes(e.detail?.type) ? e.detail.type : 'expense')
     window.addEventListener(QUICK_ADD_EVENT, onOpen)
     return () => window.removeEventListener(QUICK_ADD_EVENT, onOpen)
   }, [])

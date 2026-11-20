@@ -432,3 +432,10 @@ button.pairItem:hover, button.pairItem:active { background: var(--fill); }
 .sceneFallback { min-height: 26rem; border-radius: var(--radius-lg); background: var(--gr-impulso); margin-bottom: var(--space-2); }
 :global([data-theme="dark"]) .sceneFallback { background: var(--gr-profundidad); }
 @media (max-width: 700px) { .sceneFallback { border-radius: 0; margin: calc(-1 * var(--content-pt)) -18px var(--space-2); } }
+
+/* F-1: lo apartado este mes, en el detalle de "Te queda" */
+.asideHead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-family: var(--sans); font-size: var(--t-headline); font-weight: 600; color: var(--tx); }
+.asideSplit { margin-top: 2px; font-size: var(--t-footnote); color: var(--tm); }
+.asideList { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.asideRow { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: var(--t-subhead); color: var(--tx); }
+.asideName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

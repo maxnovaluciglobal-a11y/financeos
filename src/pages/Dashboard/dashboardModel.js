@@ -7,7 +7,7 @@
 import { localDateStr, fmtPct } from '../../utils/index.js'
 import { budgetStatus } from '../../utils/budgets.js'
 import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
-import { roundCents, sumAmounts } from '../../utils/monthFigures.js'
+import { monthLeft } from '../../utils/monthLeft.js'
 
 // ── Variación vs. mes anterior ───────────────────────────────────────────────
 // null = no hay base para comparar (el mes anterior no tiene datos o su valor es
@@ -98,23 +98,20 @@ export function budgetState(spent, limit) {
 // FIN-14: totales del mes activo y del anterior. Con el mes en curso, la
 // comparación usa el mes anterior HASTA EL MISMO DÍA (prevToDate); con un mes
 // cerrado, el mes anterior completo. `now` se inyecta para poder probarlo.
-export function homeMonthTotals({ incomes = [], expenses = [], activeMonth, now = new Date() }) {
+// "Te queda" sale de monthLeft (utils/monthLeft.js), la única cuenta de la app
+// (F-1): ingresos − gastos − apartado, solo lo REAL (decisión de Walter,
+// 08-oct-2026); lo previsto que falta va aparte en "Previsto pendiente".
+export function homeMonthTotals({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date() }) {
   const [y, mo] = String(activeMonth).split('-').map(Number)
   const prevMo = prevMonthOf(activeMonth)
   const totals = (month, untilDay = null) => {
-    const keep = (r) => typeof r?.date === 'string' && r.date.startsWith(month) && (untilDay == null || Number(r.date.slice(8, 10)) <= untilDay)
-    const inc = incomes.filter(keep)
-    const exp = expenses.filter(keep)
     // ENG-N5: totales y saldo redondeados a centavos; un mes cuadrado al
     // centavo da 0, no −0,00 en rojo.
-    const totalInc = sumAmounts(inc)
-    const totalExp = sumAmounts(exp)
-    const balance = roundCents(totalInc - totalExp)
-    // "Te queda" = solo lo REAL (decisión de Walter, 08-oct-2026); lo previsto
-    // que falta va aparte en "Previsto pendiente".
-    return { totalInc, totalExp, balance, freeFlow: balance,
-             savingRate: totalInc > 0 ? balance / totalInc : 0,
-             incCount: inc.length, expCount: exp.length }
+    const m = monthLeft({ incomes, expenses, setAsides, month, untilDay })
+    return { totalInc: m.income, totalExp: m.spent, setAside: m.setAside,
+             setAsideGoals: m.setAsideGoals, setAsideInvest: m.setAsideInvest,
+             balance: m.left, freeFlow: m.left, savingRate: m.savingRate,
+             incCount: m.incCount, expCount: m.expCount }
   }
   const cur = totals(activeMonth)
   const prev = totals(prevMo)

@@ -85,7 +85,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
         </div>
       )}
       <Suspense fallback={<div style={{ minHeight: 420 }} aria-busy="true" />}>
-        <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails
+        <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails allowSetAside
           onDirtyChange={(d) => { dirty.current = d; setAskDiscard(false) }}
           onSaved={(type) => { onSaved?.(type); forceClose() }} prefill={open ? prefill : null} />
       </Suspense>

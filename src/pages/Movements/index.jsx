@@ -10,6 +10,7 @@
 // queda a la vista como chip quitable. El donut "Por categoría" (que deja el
 // Inicio) abre con el resumen, y tocar una porción filtra la lista.
 
+import { monthLeft } from '../../utils/monthLeft.js'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
@@ -468,8 +469,6 @@ export default function Movements({ setPage }) {
   const invInc     = useMemo(() =>
     incomes.filter(r => r?.date?.startsWith(activeMonth) && r.inv).reduce((s,r) => s + (Number(r.amount)||0), 0)
   , [incomes, activeMonth])
-  const personalInc = totalInc - invInc
-  const personalExp = totalExp - invExp
 
   // Nombres de propiedades/proyectos ya usados (autocompletar en el form)
   const projectOptions = useMemo(() => [...new Set([...incomes, ...expenses].map(r => r?.project).filter(Boolean))], [incomes, expenses])
@@ -511,9 +510,11 @@ export default function Movements({ setPage }) {
   // ve lo que viene ("por pagar", rial #46). El selector solo mira las fechas.
   const navExpenses = useMemo(() => (view === 'cal' ? [...expenses, { date: `${shiftMonth(currentMonth(), 1)}-01` }] : expenses), [view, expenses])
 
-  // Disponible PERSONAL = ingresos personales − gastos personales (solo lo real,
-  // igual que "Te queda" del Inicio; excluye inversión 💼).
-  const balance      = personalInc - personalExp
+  // "Te queda este mes": la misma cuenta que el Inicio (utils/monthLeft.js, F-1):
+  // ingresos − gastos personales − apartado, solo lo real, sin inversión 💼.
+  const left = useMemo(() => monthLeft({ incomes, expenses: monthExp, setAsides: ctx.setAsides, month: activeMonth }),
+    [incomes, monthExp, ctx.setAsides, activeMonth])
+  const balance      = left.left
 
   // Datos para gráficos — solo gastos REGISTRADOS del mes. Antes se sumaban
   // además las suscripciones activas: una suscripción también registrada como
@@ -695,9 +696,9 @@ export default function Movements({ setPage }) {
           <KPI label={t('mov.kpi.totalOut')} value={fmtL(totalExp)}
             sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtL(invExp) }) : undefined} />
           <KPI label={t('rec.mov.pendingKpi')} value={fmtL(pendingFixed)} color="amber" sub={t('rec.mov.pendingSub')} />
-          <KPI label={t('mov.kpi.available')} value={fmtL(balance)} color={balance >= 0 ? 'green' : 'red'}
+          <KPI label={balance < 0 ? t('home.kpi.short') : t('home.kpi.left')} value={fmtL(balance)} color={balance >= 0 ? 'green' : 'red'}
             alert={balance < 0 ? t('ui.state.overdrawn') : undefined}
-            sub={(invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
+            sub={left.setAside > 0 ? t('mov.kpi.setAsideSub', { v: fmtL(left.setAside) }) : (invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
         </div>
 
         {/* Banner impacto anual suscripciones */}
