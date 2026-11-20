@@ -1,0 +1,33 @@
+// Texte der Basisansicht von Investments (de). Gleiche Schlüssel und Variablen wie es.
+export default {
+  'ess.view.label': 'Vollansicht',
+  'ess.view.hint': 'Zeigt zusätzlich Kerzen, Indikatoren (RSI, MACD, Durchschnitte und Bollinger-Bänder), Stops und das Marktband. Ausgeschaltet sehen Sie das Wesentliche mit einer einfachen Kurslinie.',
+  'ess.edu': 'Informationen zu Lernzwecken, keine Anlageempfehlung.',
+
+  'ess.put.title': 'Was Sie eingezahlt haben und was der Markt dazugab',
+  'ess.put.put': 'Eingezahlt',
+  'ess.put.putSub.contributed': 'Ihre Einzahlungen minus Auszahlungen, plus Käufe mit Geld von außen.',
+  'ess.put.putSub.invested': 'Was Sie für Ihre heutigen Positionen bezahlt haben.',
+  'ess.put.gain': 'Der Markt gab dazu',
+  'ess.put.lost': 'Der Markt nahm weg',
+  'ess.put.gainSub': '{pct} auf das Eingezahlte',
+  'ess.put.value': 'Heute wert: {v}.',
+  'ess.put.parts': 'Woher es kommt',
+  'ess.put.part.price': 'Kurs',
+  'ess.put.part.priceSub': 'Wie sich die Kurse des Gekauften verändert haben',
+  'ess.put.part.dividends': 'Dividenden',
+  'ess.put.part.dividendsSub': 'Zahlungen von Unternehmen oder Fonds an Sie',
+  'ess.put.part.fx': 'Dollar',
+  'ess.put.part.fxSub': 'Was der Wechselkurs seit dem Kauf bewegt hat',
+  'ess.put.partial': 'Einige Beträge haben keinen Wechselkurs: Sie zählen in diesen Zahlen nicht mit.',
+
+  'ess.beat.title': 'Haben Sie Inflation und Dollar geschlagen?',
+  'ess.beat.titleUsd': 'Haben Sie den Dollar geschlagen?',
+  'ess.beat.usd.yes': 'Ja. Nicht angelegt wären diese Dollar weiter so viel wert wie eingezahlt; angelegt kamen {pct} dazu.',
+  'ess.beat.usd.no': 'Noch nicht. Nicht angelegt wären diese Dollar so viel wert wie eingezahlt; angelegt veränderten sie sich um {pct}.',
+  'ess.beat.usd.even': 'Sie stehen gleich da, als hätten Sie die Dollar nicht angelegt.',
+  'ess.beat.inflation.yes': 'Ja. Sie haben {pct} dazugewonnen, die Inflation im Zeitraum lag bei {ref}.',
+  'ess.beat.inflation.no': 'Nein. Sie haben {pct} dazugewonnen, die Inflation im Zeitraum lag bei {ref}.',
+  'ess.beat.inflation.even': 'Sie liegen gleichauf mit der Inflation im Zeitraum ({ref}).',
+  'ess.beat.note': 'Eine Momentaufnahme von heute, in Dollar gemessen: Kurse ändern sich täglich.',
+}

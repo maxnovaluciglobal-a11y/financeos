@@ -160,6 +160,7 @@
 .cellLabel { font-size: var(--t-footnote); color: var(--th); }
 @media (min-width: 720px) {
   .topRow { grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr)); align-items: center; }
+  .topRow[data-cols="3"] { grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); }
   .topMain { grid-column: auto; }
   .topCell { flex-direction: column; gap: 0; }
 }

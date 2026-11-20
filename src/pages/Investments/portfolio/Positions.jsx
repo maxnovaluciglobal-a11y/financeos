@@ -4,6 +4,9 @@
 // cifras) y una fila por posición que se despliega con su detalle, el stop
 // editable y las acciones. Las filas suman el total (tipo de cambio de compra,
 // utils/investPositions.js). Dirección siempre con flecha + signo + texto.
+// Arriba de todo, "Pusiste / El mercado sumó" (esencial/PutSummary). En la
+// vista esencial (utils/investView.js) no se muestran el riesgo al stop, el
+// stop editable ni el capital de referencia: siguen en Vista completa.
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, Equal, Download, Plus, RefreshCw, Upload, FileJson, ListPlus, PlusCircle } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
@@ -15,6 +18,9 @@ import { capitalLine, priceSources, riskShare } from './view.js'
 import { parseInput, toneOf } from './format.js'
 import { ChooserSheet } from './sheets.jsx'
 import Sources from './Sources.jsx'
+import PutSummary from '../esencial/PutSummary.jsx'
+import { putAndGain } from '../../../utils/investEsencial.js'
+import { shows } from '../../../utils/investView.js'
 import s from './portfolio.module.css'
 
 const TYPE_COLOR = { ETF: 'var(--cat-1)', Stock: 'var(--cat-2)', Crypto: 'var(--cat-3)', Otro: 'var(--cat-5)' }
@@ -52,7 +58,7 @@ function StopEditor({ row, onSave, t, fmt }) {
   )
 }
 
-function PositionRow({ r, open, onToggle, fmt, t, actions, stopColumn, limit }) {
+function PositionRow({ r, open, onToggle, fmt, t, actions, stopColumn, limit, showStop = true }) {
   const panelId = `pf-row-${r.id}`
   const excluded = r.status === 'nofx'
   return (
@@ -92,13 +98,15 @@ function PositionRow({ r, open, onToggle, fmt, t, actions, stopColumn, limit }) 
               <dd className={s.tone} data-tone={toneOf(r.plUsd)}><Dir n={r.plUsd} size={12} /> <Money>{fmt.money(r.plUsd, { signed: true })}</Money></dd>
               {r.fxEffectUsd ? <><dt>{t('pf.d.fxEffect')}</dt><dd><Money>{fmt.money(r.fxEffectUsd, { signed: true })}</Money></dd></> : null}
               <dt>{t('pf.d.weight')}</dt><dd>{fmt.pct(r.weight, { decimals: 1 })}</dd>
-              <dt>{t('pf.d.risk')}</dt>
-              <dd>{r.riskUsd == null ? t('pf.pos.noStop') : <><Money>{fmt.money(-r.riskUsd)}</Money>{r.riskEstimated ? ` ${t('pf.pos.est')}` : ''}</>}</dd>
+              {showStop && <>
+                <dt>{t('pf.d.risk')}</dt>
+                <dd>{r.riskUsd == null ? t('pf.pos.noStop') : <><Money>{fmt.money(-r.riskUsd)}</Money>{r.riskEstimated ? ` ${t('pf.pos.est')}` : ''}</>}</dd>
+              </>}
             </>}
             {r.fxCost != null && <><dt>{t('pf.d.fxCost', { ccy: r.ccy })}</dt><dd>{fmt.units(r.fxCost)}</dd></>}
             {r.note && <><dt>{t('pf.f.note')}</dt><dd style={{ fontWeight: 400 }}>{r.note}</dd></>}
           </dl>
-          {stopColumn && !excluded && <StopEditor row={r} onSave={actions.setStop} t={t} fmt={fmt} />}
+          {showStop && stopColumn && !excluded && <StopEditor row={r} onSave={actions.setStop} t={t} fmt={fmt} />}
           <div className={s.actionsRow}>
             <button type="button" className={s.btn} onClick={() => actions.openAsset(r.t)}>{t('pf.pos.openAsset')}</button>
             <button type="button" className={s.btn} onClick={() => actions.openTrade({ type: 'buy', ticker: r.t, price: r.price != null ? String(r.price) : '' })}>{t('pf.pos.trade')}</button>
@@ -149,10 +157,12 @@ function CapitalLine({ pb, fmt, disp, t }) {
   )
 }
 
-export default function Positions({ pb, fmt, disp, demo, t, actions, targets }) {
+export default function Positions({ pb, fmt, disp, demo, t, actions, targets, settings = {}, view = 'esencial' }) {
   const [openId, setOpenId] = useState(null)
   const [menu, setMenu] = useState(null) // 'add' | 'export'
   const { rows, totals } = pb.positions
+  const showStop = shows(view, 'stop')
+  const put = useMemo(() => putAndGain({ ledger: pb.opsState === 'ready' ? pb.ledger : null, totals: { ...totals, total: totals.pl } }), [pb.opsState, pb.ledger, totals])
   const share = riskShare(totals.risk, pb.capital, totals.value)
   const base = useMemo(() => rebalanceBase(rows), [rows])
   const drift = targets ? driftHint(base, targets) : null
@@ -235,17 +245,18 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets }) 
   const n = rows.length
   return (
     <>
+      <PutSummary summary={put} money={(v, signed) => fmt.money(v, { signed })} pct={(f, signed) => fmt.pct(f, { signed })} currency={settings.currency} />
       <p className={s.note}>{t(n === 1 ? 'pf.pos.count.one' : 'pf.pos.count.many', { n })} · {t(demo ? 'pf.pos.notSaved' : 'pf.pos.saved')}</p>
 
       <section className={s.band} aria-label={t('pf.band.label')}>
-        <div className={`${s.stat} ${s.bandWide}`}>
+        {showStop && <div className={`${s.stat} ${s.bandWide}`}>
           <span className={s.statLabel}>{t('pf.band.risk')}</span>
           <span className={`${s.statValue} ${s.statBig}`}><Money>{fmt.money(totals.risk > 0 ? -totals.risk : 0)}</Money></span>
           <span className={s.statSub}>
             {share ? t(share.onCapital ? 'pf.band.riskOfCapital' : 'pf.band.riskOfValue', { p: fmt.pct(share.pct, { decimals: 1 }) }) : ''}
             {totals.estimated ? ` · ${t('pf.band.riskEstimated')}` : totals.noStop > 0 ? ` · ${t(totals.noStop === 1 ? 'pf.band.noStop.one' : 'pf.band.noStop.many', { n: totals.noStop })}` : ''}
           </span>
-        </div>
+        </div>}
         <div className={s.stat}>
           <span className={s.statLabel}>{t('pf.band.value')}</span>
           <span className={s.statValue}><Money>{fmt.money(totals.value)}</Money></span>
@@ -282,7 +293,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets }) 
         {totals.fxUnknown > 0 && <p className={s.note}>{t(totals.fxUnknown === 1 ? 'pf.note.fxUnknown.one' : 'pf.note.fxUnknown.many', { n: totals.fxUnknown })}</p>}
         {totals.unpriced > 0 && <p className={s.note}>{t(totals.unpriced === 1 ? 'pf.note.unpriced.one' : 'pf.note.unpriced.many', { n: totals.unpriced })}</p>}
         {pb.market.phase === 'error' && <p className={s.note} role="status">{t('pf.note.marketError')}</p>}
-        <CapitalLine pb={pb} fmt={fmt} disp={disp} t={t} />
+        {showStop && <CapitalLine pb={pb} fmt={fmt} disp={disp} t={t} />}
         {fmt.dccy !== 'USD' && (
           <p className={s.note}>
             {disp.missing ? t('pf.note.dispMissing', { ccy: actions.dispCcy }) : t('pf.note.disp', { ccy: fmt.dccy, rate: fmt.units(Math.round(disp.rate * 100) / 100) })}
@@ -323,7 +334,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets }) 
           {rows.map((r, i) => (
             // INV-N15: dos lotes del mismo ticker; la key es el id.
             <PositionRow key={r.id ?? `${r.t}-${i}`} r={r} open={openId === (r.id ?? `${r.t}-${i}`)} onToggle={() => setOpenId(id => (id === (r.id ?? `${r.t}-${i}`) ? null : (r.id ?? `${r.t}-${i}`)))}
-              fmt={fmt} t={t} actions={actions} stopColumn={pb.columns.stop} limit={totals.limit} />
+              fmt={fmt} t={t} actions={actions} stopColumn={pb.columns.stop} limit={totals.limit} showStop={showStop} />
           ))}
         </ul>
         <div className={s.totalRow}>
@@ -331,8 +342,10 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets }) 
           <strong><Money>{fmt.money(totals.value)}</Money></strong>
           <span>{t('pf.band.pl')}</span>
           <span className={s.tone} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} size={12} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money> ({fmt.pct(totals.plPct, { signed: true })})</span>
-          <span>{t('pf.band.risk')}</span>
-          <span><Money>{totals.risk > 0 ? fmt.money(-totals.risk) : fmt.money(0)}</Money></span>
+          {showStop && <>
+            <span>{t('pf.band.risk')}</span>
+            <span><Money>{totals.risk > 0 ? fmt.money(-totals.risk) : fmt.money(0)}</Money></span>
+          </>}
         </div>
         <p className={s.note}>{t('pf.pos.sumNote')}</p>
       </section>
@@ -356,7 +369,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets }) 
       )}
 
       <div className={s.notes}>
-        <p className={s.note}>{t(totals.estimated ? 'pf.pos.footEstimated' : 'pf.pos.foot')}</p>
+        {showStop && <p className={s.note}>{t(totals.estimated ? 'pf.pos.footEstimated' : 'pf.pos.foot')}</p>}
         <Sources t={t} src={src} fx={foreign || fmt.dccy !== 'USD'} ars={!!pb.rates.ars} />
       </div>
       {menus}

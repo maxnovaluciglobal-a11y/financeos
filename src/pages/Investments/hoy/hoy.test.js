@@ -36,9 +36,10 @@ function sampleData(over = {}) {
     ...over,
   }
 }
-const render = (data, settings = { currency: 'USD', language: 'es' }) => renderToStaticMarkup(
+// Las pruebas de siempre miran la Vista completa; la esencial tiene las suyas.
+const render = (data, settings = { currency: 'USD', language: 'es' }, view = 'completa') => renderToStaticMarkup(
   h(AppContext.Provider, { value: { settings, expenses: [], showToast: () => {} } },
-    h(Hoy, { demo: true, onOpen: () => {}, onTab: () => {}, useData: () => data })),
+    h(Hoy, { demo: true, onOpen: () => {}, onTab: () => {}, useData: () => data, view })),
 )
 
 describe('datos de ejemplo de Hoy', () => {
@@ -69,6 +70,30 @@ describe('datos de ejemplo de Hoy', () => {
   })
   it('son deterministas', () => {
     expect(demo.demoHistory('VOO', '1y')).toEqual(demo.demoHistory('VOO', '1y'))
+  })
+})
+
+describe('<Hoy> en la vista esencial (por defecto)', () => {
+  it('abre con Pusiste y El mercado sumó, sin cinta, sin riesgo al stop ni "Para revisar hoy"', () => {
+    const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
+    expect(out.indexOf('Pusiste')).toBeGreaterThan(-1)
+    expect(out.indexOf('Pusiste')).toBeLessThan(out.indexOf('Valor de tu portafolio'))
+    expect(out).toMatch(/El mercado (sumó|restó)/)
+    for (const k of ['Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Riesgo al stop']) expect(out, k).not.toContain(k)
+    // Lo demás sigue: gráfico de valor, posiciones, efectivo.
+    for (const k of ['Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes']) expect(out, k).toContain(k)
+  })
+  it('con el libro de ejemplo, Pusiste es lo aportado (11.500) y el mercado suma valor − aportado', () => {
+    const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
+    expect(out).toContain('Lo que aportaste')
+    expect(out).toMatch(/Pusiste (US)?\$ ?11\.500,00/)
+  })
+  it('en otra moneda pregunta si le ganó al dólar; en US$ no (no hay inflación en dólares para comparar)', () => {
+    const usd = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
+    expect(usd).not.toContain('¿Le ganaste')
+    const clp = text(render(sampleData(), { currency: 'CLP', language: 'es' }, 'esencial'))
+    expect(clp).toContain('¿Le ganaste al dólar?')
+    expect(clp).not.toContain('inflación')
   })
 })
 

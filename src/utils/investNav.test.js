@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
-  INVEST_TABS, PORT_TABS, PORT_TAB_KEY, bootPortTab, rememberPortTab, queueInvestTab, initialTab, tabFromOpen, tabFromSearch, tabKeyTarget, normAssetTicker, bootTab, rememberTab,
+  INVEST_TABS, LEGACY_TABS, normTab, PORT_TABS, PORT_TAB_KEY, bootPortTab, rememberPortTab, queueInvestTab, initialTab, tabFromOpen, tabFromSearch, tabKeyTarget, normAssetTicker, bootTab, rememberTab,
   openAsset, currentAssetTicker, TAB_KEY, ASSET_PAGE, __resetInvestNav,
   assetView, rememberAssetView, ASSET_VIEW_TABS, ASSET_VIEW_RANGES,
 } from './investNav.js'
@@ -13,15 +13,29 @@ function fakeHistory() {
 }
 
 describe('pestañas de Inversiones', () => {
-  it('son las 5 del plan, en orden', () => {
-    expect(INVEST_TABS).toEqual(['hoy', 'portafolio', 'lista', 'planificar', 'mercado'])
+  it('son las 5 del plan, en orden (Resumen · Portafolio · Siguiendo · Planificar · Mercado)', () => {
+    expect(INVEST_TABS).toEqual(['resumen', 'portafolio', 'siguiendo', 'planificar', 'mercado'])
   })
-  it('orden de la pestaña inicial: historial → enlace → guardada → Hoy', () => {
-    expect(initialTab({ state: { invTab: 'lista' }, linkTab: 'mercado', saved: 'hoy' })).toBe('lista')
-    expect(initialTab({ state: { invTab: 'x' }, linkTab: 'mercado', saved: 'hoy' })).toBe('mercado')
+  it('los nombres viejos (Hoy y Lista) redirigen a los nuevos', () => {
+    expect(LEGACY_TABS).toEqual({ hoy: 'resumen', lista: 'siguiendo' })
+    expect(normTab('hoy')).toBe('resumen')
+    expect(normTab('lista')).toBe('siguiendo')
+    expect(normTab('mercado')).toBe('mercado')
+    expect(normTab('toString')).toBeNull()
+    expect(normTab('otra')).toBeNull()
+    expect(initialTab({ state: { invTab: 'hoy' } })).toBe('resumen')
+    expect(initialTab({ saved: 'lista' })).toBe('siguiendo')
+    expect(tabFromOpen('invest-hoy')).toBe('resumen')
+    expect(tabFromOpen('invest-lista')).toBe('siguiendo')
+    expect(pageFromSearch('?open=invest-hoy')).toBe('investments')
+    expect(pageFromSearch('?open=invest-lista')).toBe('investments')
+  })
+  it('orden de la pestaña inicial: historial → enlace → guardada → Resumen', () => {
+    expect(initialTab({ state: { invTab: 'siguiendo' }, linkTab: 'mercado', saved: 'resumen' })).toBe('siguiendo')
+    expect(initialTab({ state: { invTab: 'x' }, linkTab: 'mercado', saved: 'resumen' })).toBe('mercado')
     expect(initialTab({ saved: 'planificar' })).toBe('planificar')
-    expect(initialTab({ saved: 'otra' })).toBe('hoy')
-    expect(initialTab()).toBe('hoy')
+    expect(initialTab({ saved: 'otra' })).toBe('resumen')
+    expect(initialTab()).toBe('resumen')
   })
   it('enlaces ?open=invest-<pestaña> abren Inversiones en esa pestaña', () => {
     for (const t of INVEST_TABS) {
@@ -30,16 +44,16 @@ describe('pestañas de Inversiones', () => {
     }
     expect(pageFromSearch('?open=invest')).toBe('investments')
     expect(tabFromOpen('invest-otra')).toBeNull()
-    expect(tabFromSearch('?open=invest-lista&ref=x')).toBe('lista')
+    expect(tabFromSearch('?open=invest-siguiendo&ref=x')).toBe('siguiendo')
     expect(tabFromSearch('?open=import')).toBeNull()
     expect(pageFromSearch('?open=invest-otra')).toBeNull()
   })
   it('flechas, Inicio y Fin recorren las pestañas en círculo', () => {
-    expect(tabKeyTarget('ArrowRight', 'mercado')).toBe('hoy')
-    expect(tabKeyTarget('ArrowLeft', 'hoy')).toBe('mercado')
-    expect(tabKeyTarget('Home', 'lista')).toBe('hoy')
-    expect(tabKeyTarget('End', 'lista')).toBe('mercado')
-    expect(tabKeyTarget('a', 'lista')).toBeNull()
+    expect(tabKeyTarget('ArrowRight', 'mercado')).toBe('resumen')
+    expect(tabKeyTarget('ArrowLeft', 'resumen')).toBe('mercado')
+    expect(tabKeyTarget('Home', 'siguiendo')).toBe('resumen')
+    expect(tabKeyTarget('End', 'siguiendo')).toBe('mercado')
+    expect(tabKeyTarget('a', 'siguiendo')).toBeNull()
   })
 })
 
@@ -49,16 +63,16 @@ describe('historial y ficha del activo', () => {
   it('la pestaña queda en la entrada del historial y en la clave de la cuenta', () => {
     globalThis.history.state = { fosPage: 'investments', fosDepth: 1 }
     const s = mem()
-    rememberTab('lista', s)
-    expect(globalThis.history.state).toEqual({ fosPage: 'investments', fosDepth: 1, invTab: 'lista' })
-    expect(s.m.get(TAB_KEY)).toBe('lista')
+    rememberTab('siguiendo', s)
+    expect(globalThis.history.state).toEqual({ fosPage: 'investments', fosDepth: 1, invTab: 'siguiendo' })
+    expect(s.m.get(TAB_KEY)).toBe('siguiendo')
     expect(TAB_KEY.startsWith('fos_')).toBe(true)
     rememberTab('nada', s)
-    expect(s.m.get(TAB_KEY)).toBe('lista')
+    expect(s.m.get(TAB_KEY)).toBe('siguiendo')
   })
   it('el enlace manda una sola vez por carga', () => {
     expect(bootTab({ search: '?open=invest-mercado', storage: mem() })).toBe('mercado')
-    expect(bootTab({ search: '?open=invest-mercado', storage: mem() })).toBe('hoy')
+    expect(bootTab({ search: '?open=invest-mercado', storage: mem() })).toBe('resumen')
   })
   it('openAsset empuja la ficha y anota el ticker en esa entrada (no en el dispositivo)', () => {
     const setPage = vi.fn((p) => { globalThis.history.state = { fosPage: p, fosDepth: 2, fosFrom: 'investments' } })
@@ -109,7 +123,7 @@ describe('historial y ficha del activo', () => {
   })
   it('un destino pedido desde otra pantalla se usa una sola vez y gana', () => {
     globalThis.history = fakeHistory()
-    globalThis.history.state = { invTab: 'lista' }
+    globalThis.history.state = { invTab: 'siguiendo' }
     queueInvestTab('portafolio', 'movimientos')
     expect(bootTab({ search: '', storage: mem() })).toBe('portafolio')
     expect(bootPortTab({ storage: mem() })).toBe('movimientos')
@@ -126,9 +140,9 @@ describe('enlace que vuelve de OAuth o del correo', () => {
     const deepLink = await import('./deepLink.js')
     const store = { ...mem(), removeItem: () => {} }
     const m = mem(); store.getItem = m.getItem; store.setItem = m.setItem
-    deepLink.stashOpenForOAuth('?open=invest-lista', store, 1000)
+    deepLink.stashOpenForOAuth('?open=invest-siguiendo', store, 1000)
     // La vuelta de Google llega sin la query; initialSearch recupera el destino.
-    expect(deepLink.initialSearch('', store, 2000, { local: mem(), hash: '' })).toBe('?open=invest-lista')
-    expect(bootTab({ storage: mem() })).toBe('lista')
+    expect(deepLink.initialSearch('', store, 2000, { local: mem(), hash: '' })).toBe('?open=invest-siguiendo')
+    expect(bootTab({ storage: mem() })).toBe('siguiendo')
   })
 })

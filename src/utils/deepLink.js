@@ -15,7 +15,8 @@
 // utils/investNav.js (tabFromSearch) y solo cuenta con UI_FLAGS.investFull.
 const PAGE_BY_OPEN = {
   import: 'import', dashboard: 'dashboard', upgrade: 'advisor', 'delete-account': 'settings',
-  invest: 'investments', 'invest-hoy': 'investments', 'invest-portafolio': 'investments', 'invest-lista': 'investments',
+  invest: 'investments', 'invest-resumen': 'investments', 'invest-portafolio': 'investments', 'invest-siguiendo': 'investments',
+  'invest-hoy': 'investments', 'invest-lista': 'investments', // nombres de antes del 20-nov-2026: redirigen
   'invest-planificar': 'investments', 'invest-mercado': 'investments',
 }
 

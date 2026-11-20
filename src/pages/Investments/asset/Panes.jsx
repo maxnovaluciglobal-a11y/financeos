@@ -184,7 +184,7 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
 }
 
 // ── Mi posición ──
-export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo, onSaveStop }) {
+export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo, onSaveStop, showStop = true }) {
   const { t } = useAssetT()
   const id = useId()
   const limit = profile.data?.limit ?? 25
@@ -233,16 +233,16 @@ export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo
           <dt>{t('asset.mine.pl')}</dt>
           <dd className={s.num} data-tone={plTone}>{m.pl == null ? '—' : <><Money>{fmtPxSigned(m.pl, ccy, { decimals: 0 })}</Money>{m.plPct != null ? ` · ${fmtPct(m.plPct, { signed: true })}` : ''}</>}</dd>
         </div>
-        <div>
+        {showStop && <div>
           <dt>{t('asset.mine.stopRisk')}</dt>
           <dd className={s.num}>
             {m.riskKind === 'stop' || m.riskKind === 'estimate' ? <Money>{fmtPxSigned(m.risk, ccy, { decimals: 0 })}</Money> : m.riskKind === 'noStop' ? t('asset.mine.noStop') : '—'}
             {m.riskKind === 'estimate' && <span className={s.factSub}>{t('asset.mine.stopEst')}</span>}
           </dd>
-        </div>
+        </div>}
       </dl>
       {m.lots > 1 && <p className={s.note}>{t('asset.mine.lots', { n: m.lots, t: ticker })}</p>}
-      {m.editableStop && (
+      {showStop && m.editableStop && (
         <form className={s.stopForm} onSubmit={save} noValidate>
           <label htmlFor={`${id}-stop`} className={s.label}>{t('asset.mine.stopField', { ccy })}</label>
           <div className={s.inline}>

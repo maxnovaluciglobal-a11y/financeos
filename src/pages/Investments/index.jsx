@@ -2,7 +2,9 @@
 // decisión de Walter del 19-nov-2026). Se entra desde Más, el riel y la tarjeta
 // de Panorama. Solo se abre con perfil de inversionista (utils/investProfile.js):
 //   granted → Portfolio · needs-profile → puerta + cuestionario
-//   no-account → pedir cuenta · loading → aviso breve
+//   no-account → pedir cuenta (con botón: recargar lleva a la puerta de
+//   acceso de moyiq, components/AuthGate.jsx; coherencia 360 I-19) ·
+//   loading → aviso breve
 // Sin perfil no se pide nada al servidor (useInvestPortfolio queda 'locked').
 import { useState } from 'react'
 import { Check, ChartLine } from 'lucide-react'
@@ -55,7 +57,14 @@ export default function Investments({ setPage }) {
   let body
   if (!on) body = <p className={s.status}>{t('invest.gate.moduleOff')}</p>
   else if (status === 'loading') body = <p className={s.status} role="status">{t('invest.gate.loading')}</p>
-  else if (status === 'no-account') body = <p className={s.status}>{t('invest.gate.noAccount')}</p>
+  else if (status === 'no-account') {
+    body = (
+      <div className={s.actions}>
+        <p className={s.status}>{t('invest.gate.noAccount')}</p>
+        <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => { try { window.location.reload() } catch { /* sin ventana */ } }}>{t('invest.gate.signIn')}</button>
+      </div>
+    )
+  }
   else if (status === 'needs-profile') body = <Gate onStart={() => setAsking(true)} />
   else body = full ? <InvestHub setPage={setPage} demo={!!settings.isDemo} /> : <Portfolio />
 

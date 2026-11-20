@@ -3,12 +3,16 @@
 // (12, 26, 9) en SVG debajo (Invest: renderDrawerBody + drwRsiSvg/drwMacdSvg).
 // El canvas lleva una descripción con las cifras del rango para lector de
 // pantalla; las capas son decorativas y su lectura va en texto.
+// Vista esencial (simple): solo los rangos y una línea con el cierre de cada
+// día (LineChart.jsx); velas, medias, Bollinger, volumen, RSI y MACD quedan en
+// Vista completa.
 import { lazy, Suspense, useMemo } from 'react'
 import { ASSET_RANGES, chartData, rangeSummary } from '../../../utils/investAsset.js'
 import { rsiZone } from '../../../utils/investIndicators.js'
 import { fmtPct } from '../../../utils/index.js'
 import { useAssetT } from './assetDict.js'
 import { fmtPx } from './format.js'
+import LineChart from './LineChart.jsx'
 import s from './asset.module.css'
 
 const CandleChart = lazy(() => import('../../../components/charts/CandleChart.jsx'))
@@ -45,7 +49,7 @@ export function MacdSvg({ values }) {
   )
 }
 
-export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, layers, onLayer, demo, onRetry }) {
+export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, layers, onLayer, demo, onRetry, simple = false }) {
   const { t } = useAssetT()
   const r = ASSET_RANGES.find(x => x.key === range) || ASSET_RANGES[2]
   const data = useMemo(() => (rows ? chartData(rows, r.n) : null), [rows, r.n])
@@ -62,6 +66,43 @@ export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, l
     ? t('asset.chart.label', { t: ticker, range: rangeLong, to: fmtPx(sum.to, ccy), pct: fmtPct(sum.pct, { signed: true }), low: fmtPx(sum.low, ccy), high: fmtPx(sum.high, ccy) })
     : t('asset.chart.labelShort', { t: ticker, range: rangeLong })
   const zone = data ? rsiZone(data.rsiNow) : 'na'
+  const lineLabel = sum
+    ? t('asset.line.label', { t: ticker, range: rangeLong, from: fmtPx(sum.from, ccy), to: fmtPx(sum.to, ccy), pct: fmtPct(sum.pct, { signed: true }) })
+    : t('asset.chart.labelShort', { t: ticker, range: rangeLong })
+
+  if (simple) {
+    return (
+      <section className={s.chartSec} aria-label={lineLabel}>
+        <div className={s.ctl}>
+          <div role="group" aria-label={t('asset.range.group')} className={s.chips}>
+            {ASSET_RANGES.map(x => (
+              <button key={x.key} type="button" className={s.chip} aria-pressed={x.key === r.key} onClick={() => onRange(x.key)}>
+                {t(`asset.range.${x.key}`)}<span className="sr-only"> ({t(`asset.range.long.${x.key}`)})</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className={s.chartBox}>
+          {phase === 'ready' && data?.candles.length > 1 ? (
+            <LineChart closes={data.candles.map(c => c.close)} label={lineLabel} up={sum ? sum.pct >= 0 : false} height={220} />
+          ) : phase === 'loading' || phase === 'idle' ? (
+            <p className={s.note} role="status">{t('invest.chart.loading')}</p>
+          ) : (
+            <div className={s.stateBox}>
+              <p className={s.note} role="alert">{t('invest.chart.error')}</p>
+              {onRetry && <button type="button" className={s.btn} onClick={onRetry}>{t('asset.retry')}</button>}
+            </div>
+          )}
+        </div>
+        {data && data.candles.length > 1 && (
+          <>
+            {data.total < r.n && r.n > 21 && <p className={s.note}>{t('asset.chart.short', { n: data.total })}</p>}
+            <p className={s.note}>{t('asset.line.legend')} · {demo ? t('invest.chart.sample') : t('invest.card.source', { source: 'Yahoo Finance' })}</p>
+          </>
+        )}
+      </section>
+    )
+  }
 
   return (
     <section className={s.chartSec} aria-label={t('asset.chart.labelShort', { t: ticker, range: rangeLong })}>

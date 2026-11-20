@@ -120,9 +120,11 @@ export default function Portfolio() {
   const busy = phase === 'loading' || phase === 'refreshing'
   const empty = (rows && rows.length === 0) || snapshot?.status === 'empty'
 
-  // Cifra principal: en la moneda de la persona si hay tasa; si no, en US$.
+  // Una moneda por pantalla (coherencia 360 I-13): las filas y el detalle van
+  // en US$, así que la cifra principal también; la moneda de la persona queda
+  // como equivalente debajo, solo si hay tasa con fecha.
   const inUserCcy = inv?.amount != null && rate?.source !== 'usd'
-  const mainText = inv ? (inUserCcy ? fmtMoney(inv.amount, sym) : fmtUsd(inv.usd, currency)) : null
+  const mainText = inv ? fmtUsd(inv.usd, currency) : null
   const [whole, cents] = mainText ? splitCents(mainText) : ['', '']
   const tag = demo ? t('invest.state.sample')
     : phase === 'stale' ? t('invest.state.stale')
@@ -150,7 +152,7 @@ export default function Portfolio() {
             {phase === 'error' ? t('invest.card.error') : empty ? t('invest.port.empty') : t('invest.card.loading')}
           </p>
         )}
-        {inUserCcy && <div className={s.heroSub}>≈ <Money>{fmtUsd(inv.usd, currency)}</Money></div>}
+        {inUserCcy && <div className={s.heroSub}>≈ <Money>{fmtMoney(inv.amount, sym)}</Money></div>}
         {snapshot?.status === 'live' && (
           <div className={s.heroChanges}>
             {snapshot.dayUsd != null && (

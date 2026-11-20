@@ -107,12 +107,7 @@ export const RETIRED = [
  * test falla si aparece uno nuevo y también si una de estas ya no lo usa
  * (entonces se borra de la lista). Formato: 'lang:clave'.
  */
-export const PENDING_INVEST_VIEW = new Set([
-  'es:invest.port.manage', 'en:invest.port.manage', 'pt:invest.port.manage', 'de:invest.port.manage',
-  'es:invest.port.empty', 'en:invest.port.empty', 'pt:invest.port.empty', 'de:invest.port.empty',
-  'es:invest.port.atCost', 'es:invest.state.cost', 'es:invest.card.costNote',
-  'es:invest.detail.avgCost', 'es:invest.detail.pl', 'es:invest.card.total', 'es:invest.gate.point1',
-])
+export const PENDING_INVEST_VIEW = new Set([])
 
 /** Término canónico en un idioma (cae al español). */
 export function term(id, lang = 'es') {

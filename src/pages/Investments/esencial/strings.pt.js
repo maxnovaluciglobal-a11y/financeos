@@ -1,0 +1,33 @@
+// Textos da visão essencial de Investimentos (pt). Mesmas chaves e variáveis do es.
+export default {
+  'ess.view.label': 'Visão completa',
+  'ess.view.hint': 'Acrescenta velas, indicadores (RSI, MACD, médias e bandas de Bollinger), stop e a faixa de mercado. Desligada, você vê o essencial com uma linha simples de preço.',
+  'ess.edu': 'Informação educativa, não é recomendação de investimento.',
+
+  'ess.put.title': 'O que você colocou e o que o mercado somou',
+  'ess.put.put': 'Você colocou',
+  'ess.put.putSub.contributed': 'O que você aportou: depósitos menos retiradas, mais o que comprou com dinheiro de fora.',
+  'ess.put.putSub.invested': 'O que você pagou pelas posições que tem hoje.',
+  'ess.put.gain': 'O mercado somou',
+  'ess.put.lost': 'O mercado tirou',
+  'ess.put.gainSub': '{pct} sobre o que você colocou',
+  'ess.put.value': 'Hoje vale {v}.',
+  'ess.put.parts': 'De onde vem',
+  'ess.put.part.price': 'Preço',
+  'ess.put.part.priceSub': 'Quanto mudaram os preços do que você comprou',
+  'ess.put.part.dividends': 'Dividendos',
+  'ess.put.part.dividendsSub': 'Pagamentos que empresas ou fundos fizeram a você',
+  'ess.put.part.fx': 'Dólar',
+  'ess.put.part.fxSub': 'O quanto o câmbio mexeu desde que você comprou',
+  'ess.put.partial': 'Há valores sem câmbio: não entram nestes números.',
+
+  'ess.beat.title': 'Você ganhou da inflação e do dólar?',
+  'ess.beat.titleUsd': 'Você ganhou do dólar?',
+  'ess.beat.usd.yes': 'Sim. Guardados sem investir, esses dólares continuariam valendo o que você colocou; investidos, somaram {pct}.',
+  'ess.beat.usd.no': 'Ainda não. Guardados sem investir, esses dólares valeriam o que você colocou; investidos, mudaram {pct}.',
+  'ess.beat.usd.even': 'Você ficou igual a se tivesse guardado os dólares sem investir.',
+  'ess.beat.inflation.yes': 'Sim. Você somou {pct} e a inflação do período foi {ref}.',
+  'ess.beat.inflation.no': 'Não. Você somou {pct} e a inflação do período foi {ref}.',
+  'ess.beat.inflation.even': 'Você empatou com a inflação do período ({ref}).',
+  'ess.beat.note': 'É uma foto de hoje, medida em dólares: os preços mudam todos os dias.',
+}

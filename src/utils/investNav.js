@@ -3,7 +3,8 @@
 // moyiq no enruta por URL: cada pantalla es un id de página y el historial
 // guarda { fosPage, fosDepth, fosFrom } en history.state (usePageStack.js).
 // Sobre eso, Inversiones agrega dos datos a SU entrada del historial:
-//  · invTab: la pestaña (Hoy · Portafolio · Lista · Planificar · Mercado).
+//  · invTab: la pestaña (Resumen · Portafolio · Siguiendo · Planificar ·
+//    Mercado; hasta el 20-nov-2026 'hoy' y 'lista', que siguen valiendo).
 //    Cambiar de pestaña reemplaza la entrada (como una pestaña nativa: no se
 //    apila), así Atrás desde la ficha vuelve a la pestaña de donde se vino.
 //  · invTicker: el activo de la ficha ('investAsset', pantalla empujada).
@@ -11,16 +12,20 @@
 // lado). La pestaña elegida además queda en `fos_invest_tab` (clave de la
 // cuenta, core/deviceOwner.js); el ticker de la ficha NO se guarda en el
 // dispositivo.
-// Enlaces: ?open=invest-hoy | invest-portafolio | invest-lista |
-// invest-planificar | invest-mercado (utils/deepLink.js). La search que se
+// Enlaces: ?open=invest-resumen | invest-portafolio | invest-siguiendo |
+// invest-planificar | invest-mercado (utils/deepLink.js). Los viejos
+// invest-hoy e invest-lista redirigen a Resumen y Siguiendo (LEGACY_TABS). La search que se
 // lee es la que resolvió deepLink.initialSearch() al arrancar, así el enlace
 // sobrevive a la vuelta de OAuth o del correo de confirmación.
 // F1: Portafolio tiene 4 sub-pestañas (invSub en la misma entrada del
 // historial y `fos_invest_port_tab`, también clave de la cuenta).
 import { bootInitialSearch } from './deepLink.js'
 
-export const INVEST_TABS = ['hoy', 'portafolio', 'lista', 'planificar', 'mercado']
-export const DEFAULT_TAB = 'hoy'
+export const INVEST_TABS = ['resumen', 'portafolio', 'siguiendo', 'planificar', 'mercado']
+export const DEFAULT_TAB = 'resumen'
+// Nombres anteriores (20-nov-2026, coherencia 360 I-7): enlaces, historial y
+// la pestaña guardada en el dispositivo con el nombre viejo abren la nueva.
+export const LEGACY_TABS = { hoy: 'resumen', lista: 'siguiendo' }
 export const TAB_KEY = 'fos_invest_tab'
 export const ASSET_PAGE = 'investAsset'
 export const ASSET_EVENT = 'fos:invest-asset'
@@ -31,6 +36,11 @@ export const DEFAULT_PORT_TAB = 'posiciones'
 export const PORT_TAB_KEY = 'fos_invest_port_tab'
 
 export const isTab = (t) => INVEST_TABS.includes(t)
+// Pestaña con su nombre actual: la vieja se traduce; cualquier otra cosa, null.
+export function normTab(t) {
+  if (isTab(t)) return t
+  return Object.prototype.hasOwnProperty.call(LEGACY_TABS, t) ? LEGACY_TABS[t] : null
+}
 export const isPortTab = (t) => PORT_TABS.includes(t)
 export function normAssetTicker(t) {
   const s = String(t ?? '').toUpperCase().trim()
@@ -40,19 +50,16 @@ export function normAssetTicker(t) {
 // ?open=invest-<pestaña> → pestaña, o null.
 export function tabFromOpen(open) {
   const m = /^invest-([a-z]+)$/.exec(String(open || ''))
-  return m && isTab(m[1]) ? m[1] : null
+  return m ? normTab(m[1]) : null
 }
 export function tabFromSearch(search) {
   try { return tabFromOpen(new URLSearchParams(search || '').get('open')) } catch { return null }
 }
 
 // Pestaña inicial: la de esta entrada del historial → la del enlace (una sola
-// vez por carga) → la guardada → Hoy.
+// vez por carga) → la guardada → Resumen. Los nombres viejos valen.
 export function initialTab({ state = null, linkTab = null, saved = null } = {}) {
-  if (isTab(state?.invTab)) return state.invTab
-  if (isTab(linkTab)) return linkTab
-  if (isTab(saved)) return saved
-  return DEFAULT_TAB
+  return normTab(state?.invTab) || normTab(linkTab) || normTab(saved) || DEFAULT_TAB
 }
 
 // Navegación con flechas, Inicio y Fin en la fila de pestañas (patrón APG).
@@ -73,7 +80,8 @@ let memTicker = null
 // en Panorama): se usa una vez, al montar Inversiones.
 let queued = null
 export function queueInvestTab(tab, sub = null) {
-  queued = isTab(tab) ? { tab, sub: isPortTab(sub) ? sub : null } : null
+  const tb = normTab(tab)
+  queued = tb ? { tab: tb, sub: isPortTab(sub) ? sub : null } : null
 }
 
 function readHistoryState() {
