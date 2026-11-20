@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "jsx": "react-jsx"
   },
-  "files": ["src/utils/money.js", "src/utils/recurring.js", "src/core/db/index.js", "src/core/db/migrations.js"]
+  "files": ["src/utils/money.js", "src/utils/recurring.js", "src/core/db/index.js", "src/core/db/migrations.js", "src/utils/budgets.js", "src/utils/projection.js", "src/utils/debtPayment.js"]
 }

@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/budgets.js
 // Cálculo ÚNICO del límite efectivo de presupuesto por categoría, honrando el
 // rollover opt-in (settings.budgetRollover). Compartido por la página

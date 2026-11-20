@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/projection.js
 // Proyección de fin de mes — cálculo ÚNICO compartido por el Dashboard y la
 // página Proyección (CashFlow) para que ambos muestren exactamente lo mismo.
