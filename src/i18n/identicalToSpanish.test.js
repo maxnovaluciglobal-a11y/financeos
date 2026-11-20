@@ -11,6 +11,8 @@ import { de } from './de.js'
 const ALLOWED = {
   pt: new Set([
     'mov.filter.btn', // Poda P2: "Filtrar" es igual en portugués
+    // Invest F0 (20-nov-2026): "{n} resultados" y "Gráfico de velas de {t}, últimos 6 meses" son iguales en portugués.
+    'invest.search.count.many', 'invest.chart.label',
     'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
     'refcur.source.crossEur', // rial #20: "{base} × EUR/USD Fixer", variable + nombres propios
     'conv.hist.unit', 'conv.hist.stats', // B2b: "{source}, {code} por 1 US$" y "Mín./Máx.": iguales en portugués
