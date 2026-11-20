@@ -4,7 +4,7 @@
 // y el buscador de tickers. Cada pestaña dice con honestidad qué trae cuando
 // todavía no está; Portafolio ya muestra el visor actual.
 // La pestaña vive en la entrada del historial y en fos_invest_tab (investNav).
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Hammer } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
 import { INVEST_TABS, bootTab, isTab, openAsset, rememberTab, tabKeyTarget } from '../../../utils/investNav.js'
@@ -12,6 +12,9 @@ import { demoInvestRows } from '../../../demo/demoInvest.js'
 import Portfolio from '../Portfolio.jsx'
 import TickerSearch from './TickerSearch.jsx'
 import s from './hub.module.css'
+
+// Mercado (F6) en su propio chunk: solo se baja al abrir la pestaña.
+const Market = lazy(() => import('../market/Market.jsx'))
 
 const safeStorage = {
   getItem: (k) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -51,6 +54,13 @@ export default function InvestHub({ setPage, demo = false }) {
     refs.current[next]?.focus()
   }
   const open = useCallback((ticker) => openAsset(setPage, ticker), [setPage])
+  // Desde una pestaña a otra (Mercado › "Ver lecturas de tu lista"): el foco
+  // va a la pestaña nueva para que el lector de pantalla anuncie el cambio.
+  const goTab = useCallback((k) => {
+    if (!isTab(k)) return
+    setTab(k)
+    setTimeout(() => refs.current[k]?.focus(), 0)
+  }, [])
 
   return (
     <div className={s.hub}>
@@ -69,7 +79,9 @@ export default function InvestHub({ setPage, demo = false }) {
       <div role="tabpanel" id={`invest-panel-${tab}`} aria-labelledby={`invest-tab-${tab}`} tabIndex={0}>
         {tab === 'portafolio'
           ? <div className={s.hub}><Wip id="portafolio" text={t('invest.hub.soon.portafolio')} /><Portfolio /></div>
-          : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
+          : tab === 'mercado'
+            ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.mkt.fresh.loading')}</p>}><Market demo={demo} onOpen={open} onTab={goTab} /></Suspense>
+            : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
       </div>
     </div>
   )
