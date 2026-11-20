@@ -21,6 +21,9 @@ export const UI_FLAGS = {
   // Ajustes › Registro automático. false lo apaga en producción; demo y
   // desarrollo local lo siguen mostrando. Ver docs/registro-automatico.md.
   registroAutomatico: true,
+  // Escena morada detrás del título de TODAS las pantallas (20-nov-2026,
+  // pedido de Walter). `?ui=sin-escena` la apaga en la pestaña para comparar.
+  pageScene: true,
 }
 
 export function registroAutomaticoOn({ isDemo = false, isDev = false } = {}) {
@@ -49,4 +52,24 @@ export function inicioLupaOn({ isDemo = false, isDev = false, search = '', sessi
   if (saved === '1' || saved === '0') return saved === '1'
   if (isDemo || isDev) return true
   return UI_FLAGS.inicioLupa
+}
+
+// ¿Cada pantalla abre con la escena morada? `?ui=sin-escena` / `?ui=escena`
+// lo fija en la pestaña (sessionStorage), igual que el Inicio.
+export const PAGE_SCENE_KEY = 'fos_ui_page_scene'
+export function pageSceneOn({ search = '', session = null } = {}) {
+  const ui = new URLSearchParams(search || '').get('ui')
+  if (ui === 'escena' || ui === 'sin-escena') {
+    try { session?.setItem(PAGE_SCENE_KEY, ui === 'escena' ? '1' : '0') } catch { /* modo privado */ }
+    return ui === 'escena'
+  }
+  let saved = null
+  try { saved = session?.getItem(PAGE_SCENE_KEY) ?? null } catch { saved = null }
+  if (saved === '1' || saved === '0') return saved === '1'
+  return UI_FLAGS.pageScene === true
+}
+export function pageSceneHere() {
+  let session = null
+  try { session = typeof sessionStorage !== 'undefined' ? sessionStorage : null } catch { session = null }
+  return pageSceneOn({ search: typeof location !== 'undefined' ? location.search : '', session })
 }

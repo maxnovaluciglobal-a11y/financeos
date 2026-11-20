@@ -47,7 +47,7 @@ function Sparkline({ history, color }) {
 // Aviso del cambio de método del IQ Score (FIN-2 y FIN-11, 19-oct-2026).
 const SCORE_METHOD_NOTICE_UNTIL = new Date(2026, 11, 31).getTime()
 
-export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, setPage, compact = false }) {
+export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, setPage, compact = false, linkPage = 'panorama', linkLabelKey = 'home.score.viewPanorama' }) {
   const { t } = useT()
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem(SCORE_KEY) || '[]') } catch { return [] }
@@ -86,7 +86,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
     const Tag = setPage ? 'button' : 'div'
     return (
       <Tag type={setPage ? 'button' : undefined} className={`${s.card} ${s.scoreRow} rise`} data-tour="iq-score"
-        onClick={setPage ? () => setPage('panorama') : undefined}>
+        onClick={setPage ? () => setPage(linkPage) : undefined}>
         <span className={`num ${s.scoreRowNum}`} style={{ color: healthScore.color }}>
           <CountUp value={healthScore.score} format={(v) => Math.round(v)} duration={900} overshoot />
         </span>
@@ -94,7 +94,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
           <span className={s.scoreLabel}><IconIQScore size={14} />{t('dash.health.title')}</span>
           <ScoreState level={healthScore.level} label={healthScore.label} size={14} style={{ fontSize: 'var(--t-headline)', fontWeight: 600 }} />
         </span>
-        {setPage && <span className={s.scoreRowLink}>{t('home.score.viewPanorama')}</span>}
+        {setPage && <span className={s.scoreRowLink}>{t(linkLabelKey)}</span>}
         {setPage && <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true" style={{ color: 'var(--th)' }} />}
       </Tag>
     )

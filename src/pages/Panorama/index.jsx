@@ -5,47 +5,38 @@
 // Gastos con su variación, tasa de ahorro, suscripciones, patrimonio,
 // proyección, gráficos). Patrón "Análisis" de Copilot y Monarch (E7 de la
 // propuesta). Se llega desde "Más" › Panorama y desde la línea del IQ en el
-// Inicio. Las páginas completas (Diagnóstico, Patrimonio, Proyección,
-// Reportes, Suscripciones) siguen igual y se abren desde el pie.
-import { useMemo } from 'react'
+// Inicio. 20-nov-2026 (Walter, UX-N11): índice arriba. "Tus análisis" muestra
+// cada página completa (Diagnóstico, Proyección, Patrimonio, Reportes,
+// Suscripciones, Inversiones) con su cifra clave, a un toque y sin bajar; abajo
+// queda solo lo del mes (cifras, proyección y un gráfico). Lo que antes se
+// apilaba aquí (Patrimonio, Inversiones, ritmo, barras de 6 meses y flujo)
+// vive en su propia pantalla.
 import { ChevronRight } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
 import { PageHeader, Card, CardHeader } from '../../components/ui/index.jsx'
 import ChartCard from '../../components/charts/ChartCard.jsx'
-import IncomeExpenseBar from '../../components/charts/IncomeExpenseBar.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
-import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
 import CountUp from '../../components/CountUp.jsx'
 import Money from '../../components/Money.jsx'
 import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
-import { NAV_ICONS } from '../../components/icons/Icons.jsx'
 import { useHomeData } from '../Dashboard/useHomeData.jsx'
 import { IncExpTiles } from '../Dashboard/HomeKpis.jsx'
 import ScoreCard from '../Dashboard/ScoreCard.jsx'
-import NetWorthCard from '../Dashboard/NetWorthCard.jsx'
-import InvestCard from './InvestCard.jsx'
-import PaceCard from './PaceCard.jsx'
+import AnalysisGrid from './AnalysisGrid.jsx'
 import { MonthReadingLong, ConclusionTitle } from '../Dashboard/MonthReading.jsx'
 import { useReadingText } from '../Dashboard/useMonthReading.js'
-import { barConclusion, categoryConclusion } from '../../utils/monthReading.js'
-import { monthKeys, totalForMonth } from '../../utils/chartSeries.js'
+import { categoryConclusion } from '../../utils/monthReading.js'
 import ProjectionCard from '../Dashboard/ProjectionCard.jsx'
 import CountryTool from '../Dashboard/CountryTool.jsx'
 import DonutEmpty from '../Dashboard/DonutEmpty.jsx'
-import { PANORAMA_PAGES, showProChip, ALL_ITEMS } from '../../components/layout/navConfig.js'
-import { getLicensePlan } from '../../utils/licenseValidator.js'
-import { moduleOn } from '../../utils/modules.js'
 import { currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import hs from '../Dashboard/Home.module.css'
-import ms from '../More/more.module.css'
 
 export default function Panorama({ setPage }) {
   const { t } = useT()
   const d = useHomeData()
   const { settings, sym, activeMonth, kpis, healthScore, todoItems, money, dualOn, toUSD, propFlow, flujoTotal, subMonthly } = d
-  const plan = getLicensePlan()
-  const hasData = kpis.incCount > 0 || kpis.expCount > 0
 
   const secondary = [
     ...(propFlow.has ? [{ label: t('dash.kpi.totalFlow'), color: flujoTotal >= 0 ? 'var(--pos)' : 'var(--neg)', sub: t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), raw: flujoTotal, count: true }] : []),
@@ -54,14 +45,10 @@ export default function Panorama({ setPage }) {
   ]
 
   const expected = Number(settings.estimatedMonthlyIncome) || 0
-  const links = PANORAMA_PAGES.map(id => ALL_ITEMS.find(it => it.id === id)).filter(Boolean)
 
   // Títulos que ya son la conclusión (#9), con las mismas cifras del gráfico.
   const text = useReadingText(sym)
   const catTitle = text(categoryConclusion(d.monthExpenses))
-  const barTitle = useMemo(() => barConclusion(monthKeys(6).map(key => ({
-    income: totalForMonth(d.incomes, key), expense: totalForMonth(d.expenses, key),
-  }))), [d.incomes, d.expenses])
 
   return (
     <div>
@@ -71,9 +58,13 @@ export default function Panorama({ setPage }) {
           {/* El mes en palabras: lo primero que se lee. */}
           <MonthReadingLong kpis={kpis} expenses={d.expenses} budgets={d.budgets} pending={d.pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} />
 
-          {/* IQ Score completo: número, estado, siguiente paso y factores. */}
-          <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact={false}
+          {/* IQ Score en una línea: su detalle está en Diagnóstico. */}
+          <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact
+            linkPage="coach" linkLabelKey="panorama.grid.viewDiagnosis"
             isCurrentMonth={activeMonth === currentMonth()} setPage={setPage} />
+
+          {/* Tus análisis: cada página completa a un toque, con su cifra. */}
+          <AnalysisGrid d={d} setPage={setPage} />
 
           {/* Para hacer hoy — señales del Diagnóstico + insights (Fase 05). */}
           {todoItems.length > 0 && (
@@ -87,11 +78,11 @@ export default function Panorama({ setPage }) {
                   </button>
                 )}
               />
-              {todoItems.map((item, i) => (
+              {todoItems.slice(0, 2).map((item, i) => (
                 <button key={i} type="button" onClick={() => item.page && setPage?.(item.page)}
                   style={{ display: 'flex', alignItems: 'flex-start', gap: 10, width: '100%', minHeight: 44, textAlign: 'left',
                     background: 'none', border: 'none', cursor: item.page ? 'pointer' : 'default', padding: 0,
-                    marginBottom: i < todoItems.length - 1 ? 12 : 0, font: 'inherit' }}>
+                    marginBottom: i < Math.min(todoItems.length, 2) - 1 ? 12 : 0, font: 'inherit' }}>
                   <span style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: item.color, background: `color-mix(in srgb, ${item.color} 14%, transparent)` }}>{item.icon}</span>
                   <span style={{ flex: 1, minWidth: 0 }}>
@@ -148,14 +139,6 @@ export default function Panorama({ setPage }) {
           <ProjectionCard incomes={d.incomes} expenses={d.expenses} activeMonth={activeMonth} pending={d.pendingSum}
             kpis={kpis} money={money} dualOn={dualOn} toUSD={toUSD} setPage={setPage} />
 
-          {/* Módulo Inversiones (apagado por defecto): lee el portafolio de Invest. */}
-          {moduleOn(settings, 'investments') && <InvestCard setPage={setPage} />}
-
-          <NetWorthCard goals={d.goals} debts={d.debts} incomes={d.ctx.incomes} expenses={d.ctx.expenses}
-            settings={settings} sym={sym} setPage={setPage} />
-
-          <PaceCard expenses={d.expenses} kpis={kpis} activeMonth={activeMonth} sym={sym} />
-
           <ChartCard title={<ConclusionTitle plain={t('dash.chart.cat.title')} conclusion={catTitle} />} subtitle={monthLabel(activeMonth)} minHeight={160}>
             {d.monthExpenses.some(r => Number(r?.amount) > 0)
               ? <CategoryDonut records={d.monthExpenses} sym={sym} maxCategories={6}
@@ -163,43 +146,9 @@ export default function Panorama({ setPage }) {
               : <DonutEmpty />}
           </ChartCard>
 
-          {hasData && (
-            <ChartCard title={<ConclusionTitle plain={t('dash.chart.bar.title')} conclusion={text(barTitle)} />} subtitle={t('dash.chart.bar.sub')} minHeight={180}>
-              <IncomeExpenseBar incomes={d.incomes} expenses={d.expenses} sym={sym} months={6}/>
-            </ChartCard>
-          )}
-
-          {/* Flujo del mes (solo escritorio). */}
-          {d.monthExpenses.length > 0 && (
-            <div className="fos-hide-mobile">
-              <ChartCard title={t('dash.chart.flow.title')} subtitle={t('dash.chart.flow.sub')} minHeight={220}>
-                <MoneyFlow incomes={d.monthIncomes} expenses={d.monthExpenses} subscriptions={d.subs} debts={d.debts} sym={sym}/>
-              </ChartCard>
-            </div>
-          )}
-
           {/* #03 — Herramienta fiscal del país. */}
           <CountryTool country={settings.country} setPage={setPage} />
 
-          {/* Las páginas completas del análisis. */}
-          {setPage && (
-            <section aria-labelledby="pano-detail-title" data-tour="pano-detail">
-              <h2 id="pano-detail-title" className={ms.groupTitle}>{t('panorama.detail.title')}</h2>
-              <div className={ms.list}>
-                {links.map(it => {
-                  const Ic = NAV_ICONS[it.id]
-                  return (
-                    <button key={it.id} type="button" className={ms.row} onClick={() => setPage(it.id)}>
-                      <span className={ms.rowIc} aria-hidden="true">{Ic ? <Ic size={18} /> : null}</span>
-                      <span className={ms.rowLabel}>{t(it.lb)}</span>
-                      {showProChip(it, plan) && <span className={ms.pro}>PRO</span>}
-                      <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={ms.chev} />
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-          )}
         </div>
       </div>
       <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.6, marginTop: 16 }}>

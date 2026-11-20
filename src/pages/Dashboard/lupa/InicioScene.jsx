@@ -15,7 +15,7 @@ import Money, { useMoney } from '../../../components/Money.jsx'
 import { useT } from '../../../i18n/useT.js'
 import { currencySymbol, dateLocale, fmtAmount, fmtMoney, fmtMoneyParts, fmtSignedMoney, moneyLocale } from '../../../utils/index.js'
 import { toRef } from '../../../utils/refRate.js'
-import { TOKENS_LIGHT } from '../../../styles/tokens.js'
+import { useSceneChrome } from '../../../components/layout/useSceneChrome.js'
 import LargeTitle from '../../../components/layout/LargeTitle.jsx'
 import { monthLabel } from '../../shared/constants.js'
 import HeroDetailSheet from '../HeroDetailSheet.jsx'
@@ -27,7 +27,6 @@ import { inspectLines, paceLine, shortDate, valueText } from './lupaText.js'
 import s from './scene.module.css'
 
 const ChartLupa = memo(ChartLupaRaw)
-const SCENE_COLOR = TOKENS_LIGHT['--impulso-0']
 const STEP_IDLE_MS = 6000
 
 // Partes de la cifra grande: signo, símbolo, entero y decimales (a la mitad).
@@ -59,25 +58,6 @@ function BigNumber({ parts }) {
       </Money>
     </div>
   )
-}
-
-// Marca la escena en <html> (barra superior en blanco) y pinta el theme-color
-// del mismo morado mientras la escena se ve; al salir, deja el que había.
-function useSceneChrome(ref) {
-  useEffect(() => {
-    const root = document.documentElement
-    root.dataset.scene = 'on'
-    const metas = [...document.querySelectorAll('meta[name="theme-color"]')]
-    const original = metas.map(m => m.getAttribute('content'))
-    const paint = (on) => metas.forEach((m, i) => m.setAttribute('content', on ? SCENE_COLOR : original[i]))
-    paint(true)
-    let io = null
-    if (ref.current && typeof IntersectionObserver !== 'undefined') {
-      io = new IntersectionObserver(([e]) => paint(e.isIntersecting), { rootMargin: '0px 0px -85% 0px' })
-      io.observe(ref.current)
-    }
-    return () => { io?.disconnect(); paint(false); delete root.dataset.scene }
-  }, [ref])
 }
 
 export default function InicioScene({ series, pace: paceData, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending }) {

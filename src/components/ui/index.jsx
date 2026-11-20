@@ -1,9 +1,10 @@
 // src/components/ui/index.jsx
 // Shared UI primitives
 
-import { useId, useRef, Children, cloneElement, isValidElement } from 'react'
+import { useId, useRef, useState, Children, cloneElement, isValidElement } from 'react'
 import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
+import PageScene from '../layout/PageScene.jsx'
 import Money, { MONEY_MASK } from '../Money.jsx'
 import Amount from '../Amount.jsx'
 import CategoryIcon from '../CategoryIcon.jsx'
@@ -12,7 +13,7 @@ import { useT } from '../../i18n/useT.js'
 import { Pencil, Trash2, Check } from 'lucide-react'
 import SwipeRow from './SwipeRow.jsx'
 import { MINUS } from '../../utils/index.js'
-import { UI_FLAGS } from '../../utils/uiFlags.js'
+import { UI_FLAGS, pageSceneHere } from '../../utils/uiFlags.js'
 import EmptyPreview from './EmptyPreview.jsx'
 
 export function Btn({ children, variant = 'ghost', size = 'md', onClick, disabled, style, ...rest }) {
@@ -273,7 +274,10 @@ export function SectionTitle({ children }) {
 // Encabezado único de página (UI-M8, "pagehead" de Invest): un título grande
 // (LargeTitle, con su barra compacta al hacer scroll en móvil) y UN subtítulo.
 // La barra superior ya no repite el nombre de la página.
+// Con UI_FLAGS.pageScene el título va sobre la escena morada (PageScene).
 export function PageHead({ title, sub }) {
+  const [scene] = useState(pageSceneHere)
+  if (scene) return <PageScene><LargeTitle title={title} sub={sub} /></PageScene>
   return <LargeTitle title={title} sub={sub} />
 }
 export const PageHeader = PageHead
