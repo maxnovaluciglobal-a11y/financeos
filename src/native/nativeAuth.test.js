@@ -63,6 +63,18 @@ describe('completeNativeOAuth', () => {
     expect(c.auth.setSession).not.toHaveBeenCalled()
   })
 
+  it('límite aceptado: un code ajeno durante un OAuth en curso consume la marca y falla sin dar sesión', async () => {
+    const c = client()
+    c.auth.exchangeCodeForSession.mockResolvedValueOnce({ error: { message: 'code challenge does not match previously saved code verifier' } })
+    markOAuthPending('google', { storage })
+    const r = await completeNativeOAuth(c, { code: 'ajeno' }, { storage })
+    expect(r.error).toMatch(/code verifier/)
+    expect(c.auth.setSession).not.toHaveBeenCalled()
+    const legit = await completeNativeOAuth(c, { code: 'bueno' }, { storage })
+    expect(legit.ignored).toBe(true)
+    expect(c.auth.exchangeCodeForSession).toHaveBeenCalledOnce()
+  })
+
   it('la marca vence a los 10 minutos', async () => {
     const c = client()
     const t0 = 1_800_000_000_000

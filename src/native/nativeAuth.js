@@ -17,6 +17,16 @@
 // con ?code= (PKCE: sin el verificador que guardó el cliente, el canje falla).
 // Ya no se aceptan tokens en el fragmento (#access_token=…): con eso se podía
 // dejar a la persona con la sesión iniciada en la cuenta de otro.
+//
+// Límite aceptado (revisión del paquete nativo, 19-nov-2026): si, con un OAuth
+// legítimo en curso, llega otro moyiq://auth-callback?code=X ajeno, ese enlace
+// consume la marca, cierra el navegador y el canje falla (bad_code_verifier):
+// no hay toma de sesión, pero la vuelta buena posterior se ignora y la persona ve
+// authGate.errorNativeOAuth y tiene que reintentar. Consumir la marca solo si el
+// canje sale bien no lo arregla: supabase-js (auth-js, _exchangeCodeForSession)
+// borra el verificador PKCE también cuando el canje falla, así que la vuelta buena
+// fallaría igual. Arreglarlo exigiría guardar y restaurar el verificador por fuera
+// de supabase-js; no vale el riesgo para una molestia que no es de seguridad.
 import { registerPlugin } from '@capacitor/core'
 import { AUTH_CALLBACK } from './nativeLinks.js'
 

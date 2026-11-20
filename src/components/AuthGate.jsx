@@ -47,6 +47,16 @@ export function LegalNotice({ t, lang }) {
   )
 }
 
+// NAT-5: aviso del canje fallido de Google/Apple en la app nativa (el evento lo
+// emite native/bridge.js). Fuera de la app nativa no escucha nada. Devuelve la
+// función que deja de escuchar (limpieza del efecto).
+export function listenNativeOAuthError(win, t, { setLoading, setError }) {
+  if (!isNativeApp() || !win?.addEventListener) return undefined
+  const onOAuthError = () => { setLoading(false); setError(t('authGate.errorNativeOAuth')) }
+  win.addEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
+  return () => win.removeEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
+}
+
 function friendlyError(t, raw) {
   const m = String(raw || '')
   if (isCaptchaError(m)) return t('authGate.errorCaptcha')
@@ -95,12 +105,7 @@ export default function AuthGate({ onAuthenticated }) {
   }, [])
   // NAT-5: en la app nativa, el canje del inicio con Google/Apple ocurre en
   // native/bridge.js; si falla, avisa acá para que la persona no quede sin respuesta.
-  useEffect(() => {
-    if (!isNativeApp()) return undefined
-    const onOAuthError = () => { setLoading(false); setError(t('authGate.errorNativeOAuth')) }
-    window.addEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
-    return () => window.removeEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
-  }, [t])
+  useEffect(() => listenNativeOAuthError(window, t, { setLoading, setError }), [t])
 
   async function handleSubmit() {
     const cleanEmail = email.trim()
