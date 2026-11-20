@@ -12,6 +12,7 @@
 import { useEffect, useRef } from 'react'
 import { createChart, CandlestickSeries, ColorType } from 'lightweight-charts'
 import { useT } from '../../i18n/useT.js'
+import { TOKENS_LIGHT as P } from '../../styles/tokens.js'
 
 // Colores de los tokens (--pos, --neg…) a rgb: el canvas no entiende var().
 function tokenColor(name, fallback) {
@@ -32,9 +33,9 @@ function tokenColor(name, fallback) {
 
 function palette() {
   return {
-    up: tokenColor('--pos', '#1a7f4b'),
-    down: tokenColor('--neg', '#c0362c'),
-    text: tokenColor('--th', '#5b5675'),
+    up: tokenColor('--pos', P['--green-700']),
+    down: tokenColor('--neg', P['--red-700']),
+    text: tokenColor('--th', P['--gray-600']),
     grid: tokenColor('--brd', 'rgba(0,0,0,0.08)'),
   }
 }
