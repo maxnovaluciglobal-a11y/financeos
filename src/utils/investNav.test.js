@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   INVEST_TABS, initialTab, tabFromOpen, tabFromSearch, tabKeyTarget, normAssetTicker, bootTab, rememberTab,
   openAsset, currentAssetTicker, TAB_KEY, ASSET_PAGE, __resetInvestNav,
+  assetView, rememberAssetView, ASSET_VIEW_TABS, ASSET_VIEW_RANGES,
 } from './investNav.js'
 import { pageFromSearch } from './deepLink.js'
 
@@ -68,6 +69,23 @@ describe('historial y ficha del activo', () => {
     expect(globalThis.history.state).toMatchObject({ fosPage: ASSET_PAGE, invTicker: 'AAPL' })
     expect(currentAssetTicker()).toBe('AAPL')
     expect(openAsset(setPage, 'no válido')).toBe(false)
+    delete globalThis.window
+    delete globalThis.CustomEvent
+  })
+  it('la ficha recuerda pestaña y rango en su entrada del historial; ticker nuevo arranca de cero', () => {
+    const setPage = vi.fn((p) => { globalThis.history.state = { ...(globalThis.history.state || {}), fosPage: p, fosDepth: 2 } })
+    globalThis.window = { dispatchEvent: vi.fn() }
+    globalThis.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init?.detail } }
+    openAsset(setPage, 'MSFT', { tab: 'mine' })
+    expect(assetView()).toEqual({ tab: 'mine', range: null })
+    rememberAssetView({ tab: 'fund', range: '3A' })
+    expect(globalThis.history.state).toMatchObject({ invTicker: 'MSFT', invAssetTab: 'fund', invAssetRange: '3A' })
+    rememberAssetView({ tab: 'nada', range: '9Z' })
+    expect(assetView()).toEqual({ tab: 'fund', range: '3A' })
+    openAsset(setPage, 'AAPL', { tab: 'otra' })
+    expect(assetView()).toEqual({ tab: null, range: null })
+    expect(ASSET_VIEW_TABS).toEqual(['ind', 'fund', 'mine', 'news'])
+    expect(ASSET_VIEW_RANGES).toEqual(['1M', '3M', '6M', '1A', '3A'])
     delete globalThis.window
     delete globalThis.CustomEvent
   })
