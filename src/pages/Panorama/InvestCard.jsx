@@ -15,6 +15,8 @@ import { useT } from '../../i18n/useT.js'
 import { INVEST_ORIGIN } from '../../core/investBridge.js'
 import { openInvest } from '../../core/investHandoff.js'
 import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
+import { investFullHere } from '../../utils/uiFlags.js'
+import { queueInvestTab } from '../../utils/investNav.js'
 import { aporteHandoff, fmtInvestAt, fmtUsd, monthContributions } from '../../utils/investNetWorth.js'
 import { currencySymbol, currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import hs from '../Dashboard/Home.module.css'
@@ -56,7 +58,12 @@ export default function InvestCard({ setPage } = {}) {
   const month = settings.activeMonth || currentMonth()
   const contrib = monthContributions(app.expenses, month)
 
+  // Con Inversiones completo (UI_FLAGS.investFull) el aporte se registra
+  // dentro de moyiq: Portafolio › Movimientos ofrece el depósito. Sin él,
+  // sigue el traspaso a Invest de siempre.
+  const full = investFullHere()
   function open(aporte) {
+    if (full && setPage) { queueInvestTab('portafolio', 'movimientos'); setPage('investments'); return }
     setOpening(true)
     openInvest({ aporte }).finally(() => setOpening(false))
   }
@@ -146,7 +153,7 @@ export default function InvestCard({ setPage } = {}) {
         {snapshot.excluded > 0 && <p className={s.notice}>{t(snapshot.excluded === 1 ? 'invest.card.excluded.one' : 'invest.card.excluded.many', { n: snapshot.excluded })}</p>}
         {snapshot.status === 'live' && snapshot.missing > 0 && <p className={s.notice}>{t(snapshot.missing === 1 ? 'invest.card.missing.one' : 'invest.card.missing.many', { n: snapshot.missing })}</p>}
         <Sources snapshot={snapshot} t={t} />
-        {contrib.count > 0 && (demo
+        {contrib.count > 0 && (demo && !full
           ? <a className={s.aporte} href={`${INVEST_ORIGIN}/app/`} target="_blank" rel="noopener noreferrer">{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</a>
           : <button type="button" className={s.aporte} disabled={opening} onClick={() => open(aporteHandoff(contrib, settings, rate))}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</button>
         )}
