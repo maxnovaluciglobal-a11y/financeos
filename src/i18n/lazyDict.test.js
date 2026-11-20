@@ -26,4 +26,18 @@ describe('createLazyDict', () => {
     const d = createLazyDict({ a: 'es' })
     expect(await d.load('de')).toEqual({ a: 'es' })
   })
+  it('isReady: español al instante; otro idioma al cargar o si su chunk falla', async () => {
+    let fail = true
+    const en = () => (fail ? Promise.reject(new Error('offline')) : Promise.resolve({ default: { a: 'A' } }))
+    const d = createLazyDict({ a: 'a' }, { en })
+    expect(d.isReady('es')).toBe(true)
+    expect(d.isReady('de')).toBe(true) // sin cargador: español
+    expect(d.isReady('en')).toBe(false)
+    await d.load('en')
+    expect(d.isReady('en')).toBe(true) // falló: se pinta en español
+    fail = false
+    await d.load('en')
+    expect(d.isReady('en')).toBe(true)
+    expect(d.lookup('en', 'a')).toBe('A')
+  })
 })

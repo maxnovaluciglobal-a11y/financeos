@@ -16,14 +16,15 @@ import { interpolate } from './translate.js'
 export function createLazyDict(es, loaders = {}) {
   const cache = { es }
   const pending = {}
+  const failed = {}
   function load(lang) {
     if (cache[lang]) return Promise.resolve(cache[lang])
     const loader = loaders[lang]
     if (!loader) return Promise.resolve(es)
     if (!pending[lang]) {
       pending[lang] = loader()
-        .then((mod) => { cache[lang] = mod.default || mod.strings || es; return cache[lang] })
-        .catch(() => { delete pending[lang]; return es })
+        .then((mod) => { cache[lang] = mod.default || mod.strings || es; delete failed[lang]; return cache[lang] })
+        .catch(() => { delete pending[lang]; failed[lang] = true; return es })
     }
     return pending[lang]
   }
@@ -33,7 +34,12 @@ export function createLazyDict(es, loaders = {}) {
     if (Object.prototype.hasOwnProperty.call(es, key)) return es[key]
     return null
   }
-  return { cache, load, lookup }
+  // Listo para pintar en ese idioma: ya cargó, no tiene chunk propio, o el
+  // chunk falló (queda el español en vez de una pantalla en blanco).
+  function isReady(lang) {
+    return !!cache[lang] || !loaders[lang] || !!failed[lang]
+  }
+  return { cache, load, lookup, isReady }
 }
 
 export function useLazyDict(dict) {
@@ -49,5 +55,7 @@ export function useLazyDict(dict) {
     const s = dict.lookup(lang, key)
     return s == null ? tApp(key, vars) : interpolate(s, vars)
   }
-  return { t, lang }
+  // ready: false mientras llega el chunk del idioma, para que la pantalla
+  // muestre su estado de carga y no un instante en español.
+  return { t, lang, ready: dict.isReady ? dict.isReady(lang) : true }
 }

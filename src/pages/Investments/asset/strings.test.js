@@ -11,6 +11,7 @@ import de from './strings.de.js'
 import { es as appEs } from '../../../i18n/es.js'
 import { ASSET_RANGES, ASSET_TABS, FUND_METRICS } from '../../../utils/investAsset.js'
 import { ASSET_TYPES } from '../../../core/investData.js'
+import { EXCHANGE_KEYS } from '../../../utils/investQuoteMeta.js'
 
 const L = { es, en, pt, de }
 const vars = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort()
@@ -41,6 +42,8 @@ describe('textos de la ficha del activo', () => {
       ...['high', 'low', 'mid', 'na'].map(k => `asset.rsi.zone.${k}`),
       ...ASSET_TYPES.map(k => `asset.pos.type.${k}`),
       ...['high', 'mid', 'low'].map(k => `asset.cmp.band.${k}`),
+      ...EXCHANGE_KEYS.map(k => `asset.ex.${k}`),
+      ...['live', 'delayed', 'closed', 'unknown', 'unknownAt'].map(k => `asset.fresh.${k}`),
       ...['sma200', 'sma50', 'rsi', 'macd', 'vol', 'high52', 'atr'].flatMap(k => [`asset.rd.${k}.label`, `asset.rd.${k}.range`]),
       'asset.rd.sma200.up', 'asset.rd.sma200.down', 'asset.rd.sma50.up', 'asset.rd.sma50.down',
       'asset.rd.rsi.high', 'asset.rd.rsi.low', 'asset.rd.rsi.mid',

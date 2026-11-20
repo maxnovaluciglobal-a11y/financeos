@@ -1,7 +1,10 @@
 // src/pages/Investments/Asset.jsx — ficha del activo (pantalla empujada
 // 'investAsset', Inversiones completo F3). Rehace la ficha (drawer) de Invest
 // (invest-web/app/index.html 7176-7553) como pantalla de moyiq:
-//  · cabecera con precio y cambio del día;
+//  · cabecera con precio y cambio del día, frescura del precio (Al día ·
+//    Retraso N min · Mercado cerrado · Retraso no informado) y estado de la
+//    bolsa (Invest: freshTag y marketStatusBadge); sin cotización, el último
+//    cierre de las velas rotulado como tal;
 //  · 6 acciones: agregar o editar la posición, registrar operación, seguir o
 //    dejar de seguir, alerta (acceso que avisa que llega con la pestaña Lista),
 //    comparar con SPY y compartir o copiar;
@@ -26,10 +29,11 @@ import { fmtPct } from '../../utils/index.js'
 import { assetRates, currencyOf, rateOf } from '../../utils/investValuation.js'
 import { DEFAULT_RANGE, compareWith, historyRangeFor, pickTab, rangeOf, scoreAsset, shareParts, visibleTabs } from '../../utils/investAsset.js'
 import { buildTrade } from '../../utils/investTrade.js'
+import { freshnessKey, freshnessTone, isUsEquity, marketStatus, quoteFreshness } from '../../utils/investQuoteMeta.js'
 import { demoRow, sampleCandles } from '../../demo/demoInvestAsset.js'
 import { useAssetT } from './asset/assetDict.js'
 import { useAssetData } from './asset/useAssetData.js'
-import { errorKey, fmtPx, fmtPxSigned, isCryptoTicker, localDay, pxDecimals } from './asset/format.js'
+import { errorKey, fmtClock, fmtDay, fmtPx, fmtPxSigned, isCryptoTicker, localDay, pxDecimals } from './asset/format.js'
 import ChartPanel from './asset/ChartPanel.jsx'
 import { FundamentalsPane, IndicatorsPane, MinePane, NewsPane } from './asset/Panes.jsx'
 import { CompareSheet, PositionSheet, TradeSheet } from './asset/Sheets.jsx'
@@ -47,8 +51,20 @@ function useAssetTicker() {
   return ticker
 }
 
+// Reloj de la cabecera: la frescura ("Retraso N min") avanza sola cada minuto.
+function useMinuteClock(on) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!on) return undefined
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), 60000)
+    return () => clearInterval(id)
+  }, [on])
+  return now
+}
+
 export default function InvestAsset({ setPage }) {
-  const { t } = useAssetT()
+  const { t, ready } = useAssetT()
   const app = useApp() || {}
   const toast = app.showToast || (() => {})
   const demo = !!app.settings?.isDemo
@@ -91,6 +107,7 @@ export default function InvestAsset({ setPage }) {
   const chartPhase = long ? d.hist5y.phase : d.hist1y.phase
   const type = lots[0]?.type || (demo ? demoRow(ticker)?.type : null) || (isCryptoTicker(ticker) ? 'Crypto' : 'Stock')
   const followed = (d.watch.data || []).includes(ticker)
+  const now = useMinuteClock(!!q)
 
   // Cargas por pestaña y por rango (no antes de hacer falta).
   const { need5y, needFund, needNews, needMine } = d
@@ -202,6 +219,17 @@ export default function InvestAsset({ setPage }) {
     return null
   }
 
+  // en/pt/de: hasta que llega el chunk del idioma, estado de carga (texto de la
+  // app, ya en ese idioma) en vez de un instante en español.
+  if (ticker && !ready) {
+    return (
+      <div className={s.page} aria-busy="true">
+        <PageHeader title={ticker} sub={t('invest.asset.label')} />
+        <p className={s.note} role="status">{t('invest.search.preview.loading', { t: ticker })}</p>
+      </div>
+    )
+  }
+
   if (!ticker) {
     return (
       <div className={hub.hub}>
@@ -219,6 +247,14 @@ export default function InvestAsset({ setPage }) {
   const canEdit = lots.length <= 1
   const actsId = `asset-acts-${ticker}`
 
+  // Frescura (solo precios reales: el ejemplo ya dice que es ejemplo) y bolsa.
+  const fresh = q && !demo ? quoteFreshness(q, now) : null
+  const freshK = freshnessKey(fresh)
+  const mkt = marketStatus(q, now, { usEquity: isUsEquity(ticker, ccy), crypto: isCryptoTicker(ticker, type) })
+  const exName = mkt?.exchange ? t(`asset.ex.${mkt.exchange}`) : q?.exchange || null
+  const mktText = mkt ? (exName ? t(mkt.open ? 'asset.mkt.open' : 'asset.mkt.closed', { ex: exName }) : t(mkt.open ? 'asset.mkt.anyOpen' : 'asset.mkt.anyClosed')) : exName
+  const lastRow = !q && rows1y?.length ? rows1y[rows1y.length - 1] : null
+
   return (
     <div className={s.page}>
       <PageHeader title={ticker} sub={name || t('invest.asset.label')} />
@@ -232,10 +268,32 @@ export default function InvestAsset({ setPage }) {
               {q.change != null ? t('asset.change', { amt: fmtPxSigned(q.change, ccy, { decimals: pxDecimals(q.price, ccy) }), pct: fmtPct(pctDay, { signed: true }) }) : t('invest.asset.day', { pct: fmtPct(pctDay, { signed: true }) })}
             </span>
           </div>
+        ) : d.quote.phase !== 'loading' && lastRow && score?.last ? (
+          <>
+            <div className={s.priceRow}>
+              <span className={s.price}><Money>{fmtPx(score.last, ccy)}</Money></span>
+            </div>
+            <p className={s.note} role="status">{t('asset.lastClose', { date: fmtDay(lastRow.date) })}</p>
+          </>
         ) : (
           <p className={s.note} role="status">{d.quote.phase === 'loading' ? t('invest.search.preview.loading', { t: ticker }) : t('invest.asset.noQuote')}</p>
         )}
-        <p className={s.note}>{demo ? t('asset.sample') : q ? t('asset.priceSource', { source: q.source === 'coingecko' ? 'CoinGecko' : 'Yahoo Finance' }) : null}</p>
+        {(freshK || mktText) && (
+          <ul className={s.meta}>
+            {freshK && (
+              <li className={s.tag} data-tone={freshnessTone(fresh)} title={t('asset.fresh.hint')}>
+                <span>{t(freshK, { n: fresh.minutes, time: fmtClock(fresh.time, { now }) || '—' })}</span>
+                <span className="sr-only">. {t('asset.fresh.hint')}</span>
+              </li>
+            )}
+            {mktText && (
+              <li className={s.tag} data-tone="neu">
+                <span className="sr-only">{t('asset.mkt.label')}: </span>{mktText}
+              </li>
+            )}
+          </ul>
+        )}
+        <p className={s.note}>{demo ? t('asset.sample') : q ? t('asset.priceSource', { source: q.source === 'coingecko' ? 'CoinGecko' : 'Yahoo Finance' }) : lastRow ? t('asset.priceSource', { source: 'Yahoo Finance' }) : null}</p>
       </section>
 
       <section aria-labelledby={actsId}>
@@ -283,7 +341,7 @@ export default function InvestAsset({ setPage }) {
           ))}
         </div>
         <div role="tabpanel" id="asset-panel" aria-labelledby={`asset-tab-${tab}`} tabIndex={0} className={s.panel}>
-          {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase === 'error' ? 'ready' : d.hist1y.phase} />}
+          {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase} onRetry={demo ? null : () => d.retryHistory(false)} />}
           {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} demo={demo} type={type} onRetry={() => needFund(true)} />}
           {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} onSaveStop={saveStop} />}
           {tab === 'news' && <NewsPane ticker={ticker} news={d.news} onRetry={() => needNews(true)} />}

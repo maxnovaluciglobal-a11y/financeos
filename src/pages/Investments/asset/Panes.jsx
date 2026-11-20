@@ -29,9 +29,11 @@ function readingValue(r) {
   if (v.kind === 'int') return String(Math.round(v.v))
   return null
 }
-export function IndicatorsPane({ ticker, ccy, score, phase }) {
+export function IndicatorsPane({ ticker, ccy, score, phase, onRetry }) {
   const { t } = useAssetT()
   if (phase === 'loading' || phase === 'idle') return <Loading text={t('asset.ind.loading')} />
+  // Falla de carga ≠ falta de datos: se avisa y se ofrece reintentar.
+  if (phase === 'error') return <Retry text={t('asset.ind.error', { t: ticker })} onRetry={onRetry} />
   if (!score) return <p className={s.note}>{t('asset.ind.none', { t: ticker })}</p>
   return (
     <div className={s.pane}>
