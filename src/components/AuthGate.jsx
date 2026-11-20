@@ -12,6 +12,7 @@ import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
 import { isCaptchaError } from '../core/turnstile.js'
+import { trackEvent, onceEvent } from '../utils/webAnalytics.js'
 import { authTabFromSearch, stashOpenForOAuth, stashOpenForSignup, clearSignupStash, authLinkErrorFrom, bootAuthLinkError, urlWithoutAuthError } from '../utils/deepLink.js'
 
 const LEGAL_URLS = {
@@ -70,6 +71,9 @@ export default function AuthGate({ onAuthenticated }) {
   const [showPassword, setShowPassword] = useState(false)
   // SEG-7: Turnstile en login, registro, recuperar y reenviar. Sin site key no hace nada.
   const captcha = useRef(null)
+  // WEB-N1: signup_start una sola vez por pantalla (los reintentos tras un error no cuentan otra vez).
+  const [signupStart] = useState(() => onceEvent('signup_start'))
+  const trackSignupStart = (method) => signupStart({ method })
   const captchaWidget = <Turnstile ref={captcha} action="auth" errorText={t('authGate.errorCaptcha')} />
   // C-22: aviso tras borrar la cuenta desde Ajustes (la app recarga y llega acá).
   // La marca se borra al volver a entrar, no al leerla: la app puede montar
@@ -97,7 +101,7 @@ export default function AuthGate({ onAuthenticated }) {
     clearDeletedNotice()
     setLinkError(null)
     setLoading(true)
-    if (tab === 'signup') stashOpenForSignup(window.location.search)
+    if (tab === 'signup') { stashOpenForSignup(window.location.search); trackSignupStart('email') }
     const captchaToken = await captcha.current?.getToken()
     const result = tab === 'login'
       ? await signInWithPassword(cleanEmail, password, captchaToken)
@@ -122,10 +126,12 @@ export default function AuthGate({ onAuthenticated }) {
         setEmailExists(true)
         return
       }
+      trackEvent('signup_done', { method: 'email' })
       // Confirmación de email requerida — sin sesión todavía, no se puede continuar.
       setCheckEmail(true)
       return
     }
+    if (tab === 'signup') trackEvent('signup_done', { method: 'email' })
     onAuthenticated(result.data.session.user)
   }
 
@@ -171,6 +177,7 @@ export default function AuthGate({ onAuthenticated }) {
     setError('')
     clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
+    if (tab === 'signup') trackSignupStart('google')
     const result = await signInWithGoogle()
     if (result.error) setError(friendlyError(t, result.error))
     // Éxito: signInWithGoogle redirige a Google, no hay nada más que hacer acá.
