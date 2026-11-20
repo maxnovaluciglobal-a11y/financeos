@@ -79,9 +79,11 @@ describe('createHandoff', () => {
 })
 
 describe('CORS y origen', () => {
-  it('la app y el desarrollo local pasan; el demo y lo ajeno, no', () => {
+  it('la app y la app nativa pasan; localhost de desarrollo (sin DEV_ORIGINS), el demo y lo ajeno, no', () => {
     expect(isAllowedOrigin('https://app.moyiq.app')).toBe(true)
-    expect(isAllowedOrigin('http://localhost:5173')).toBe(true)
+    expect(isAllowedOrigin('capacitor://localhost')).toBe(true)
+    expect(isAllowedOrigin('https://localhost')).toBe(true)
+    expect(isAllowedOrigin('http://localhost:5173')).toBe(false)
     expect(isAllowedOrigin('https://demo.moyiq.app')).toBe(false)
     expect(isAllowedOrigin('https://evil.example')).toBe(false)
     expect(isAllowedOrigin(null)).toBe(false)
