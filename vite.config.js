@@ -57,6 +57,8 @@ export default defineConfig({
           if (ids.some(id => id.includes('node_modules/@react-pdf/'))) return 'assets/pdf-[hash].js'
           if (ids.some(id => id.includes('node_modules/exceljs/'))) return 'assets/exceljs-[hash].js'
           if (ids.some(id => id.includes('node_modules/recharts/'))) return 'assets/charts-[hash].js'
+          // Velas de la ficha del activo (Inversiones, F0): solo al abrir la ficha.
+          if (ids.some(id => id.includes('node_modules/lightweight-charts/'))) return 'assets/tvcharts-[hash].js'
           return 'assets/[name]-[hash].js'
         }
       }
@@ -132,7 +134,7 @@ export default defineConfig({
         // system-ui (revisión Entrega 1, B1). latin-ext (unicode-range de
         // fonts.css) se baja solo si una página lo pide.
         globPatterns: ['**/*.{js,wasm,css,html,woff2}'],
-        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/email/**', '**/fonts/pdf/**', '**/screenshots/**', '**/fonts/*latin-ext*'],
+        globIgnores: ['**/pdf-*.js', '**/exceljs-*.js', '**/tvcharts-*.js', '**/email/**', '**/fonts/pdf/**', '**/screenshots/**', '**/fonts/*latin-ext*'],
         runtimeCaching: [
           {
             // Chunks JS/CSS lazy de la propia app — stale-while-revalidate

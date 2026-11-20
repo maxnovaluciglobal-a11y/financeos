@@ -12,6 +12,10 @@ describe('presupuesto de carga inicial (C-32)', () => {
     const r = checkBudget(html('<link rel="modulepreload" crossorigin href="/app/assets/pdf-C.js"><link rel="modulepreload" crossorigin href="/app/assets/charts-D.js">'), () => 1000)
     expect(r.errors[0]).toMatch(/pdf-C\.js, assets\/charts-D\.js/)
   })
+  it('falla si se precargan las velas de la ficha del activo (lightweight-charts)', () => {
+    const r = checkBudget(html('<link rel="modulepreload" crossorigin href="/app/assets/tvcharts-E.js">'), () => 1000)
+    expect(r.errors[0]).toMatch(/tvcharts-E\.js/)
+  })
   it('falla si el JS inicial pasa del tope y pasa por debajo', () => {
     expect(checkBudget(html(), () => MAX_INITIAL_GZIP).errors).toHaveLength(1)
     expect(checkBudget(html(), () => 100 * 1024).errors).toEqual([])

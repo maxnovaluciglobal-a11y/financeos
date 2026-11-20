@@ -17,7 +17,8 @@ import zlib from 'zlib'
 // finanzas coherentes, medición sin datos personales, textos en 4 idiomas)
 // suman 4 kB: con las variables de producción pasó de 252 a 256 kB.
 export const MAX_INITIAL_GZIP = 264 * 1024
-const HEAVY = /^assets\/(pdf|charts|exceljs)-/
+// tvcharts (20-nov-2026): las velas de la ficha del activo, solo con lazy().
+const HEAVY = /^assets\/(pdf|charts|exceljs|tvcharts)-/
 const LANG_CHUNK = /^(en|pt|de)-[\w-]+\.js$/
 
 // JS que el index.html carga de entrada: el <script type=module>, los modulepreload
