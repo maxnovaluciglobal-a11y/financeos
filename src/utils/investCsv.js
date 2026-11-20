@@ -25,7 +25,8 @@ const COLS = {
   fxCost: ['tipo de cambio de compra', 'fx at cost', 'fx_at_cost', 'câmbio da compra', 'wechselkurs beim kauf'],
 }
 const TYPES = { stock: 'Stock', accion: 'Stock', 'acción': 'Stock', aktie: 'Stock', 'ação': 'Stock', etf: 'ETF', crypto: 'Crypto', cripto: 'Crypto', krypto: 'Crypto', bond: 'Bond', bono: 'Bond' }
-const TICKER_RE = /^[A-Z0-9.\-^=]{1,15}$/
+// Como Invest, pero sin empezar por = - (un "ticker" =CMD es una fórmula, no un activo).
+const TICKER_RE = /^[A-Z0-9^][A-Z0-9.\-^=]{0,14}$/
 export const IMPORT_MAX_ROWS = 200
 
 export function splitLine(line, sep) {
@@ -60,7 +61,7 @@ export function parseNum(s) {
 // → { rows: [{ t, type, sh, cost, stop?, fxCost? }], errors: [{ code, line?, value? }] }
 // codes: empty · missing_columns · no_rows · ticker · shares · cost · too_many
 export function parseHoldingsCsv(text) {
-  const lines = String(text || '').replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim())
+  const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim())
   if (!lines.length) return { rows: [], errors: [{ code: 'empty' }] }
   const sep = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ','
   const head = splitLine(lines[0], sep).map(h => h.toLowerCase().replace(/\s*\([^)]*\)\s*$/, '').trim())
@@ -90,7 +91,7 @@ export function parseHoldingsCsv(text) {
 
 const r2 = (n) => (n == null || !Number.isFinite(n) ? '' : Math.round(n * 100) / 100)
 const r6 = (n) => (n == null || !Number.isFinite(n) ? '' : Math.round(n * 1e6) / 1e6)
-const BOM = '﻿'
+const BOM = '\uFEFF'
 
 // rows: positionRows(...).rows (utils/investPositions.js). labels: encabezados
 // traducidos { ticker, type, ccy, shares, entry, price, value, pnl, ret, weight,
@@ -171,7 +172,17 @@ export function parseBackup(text, { existingTickers = [] } = {}) {
     holdings.push({ t, type: TYPES[String(h.type || '').toLowerCase()] || (['Stock', 'ETF', 'Crypto', 'Bond'].includes(h.type) ? h.type : 'Stock'), sh: Number(h.sh), cost: Number(h.cost), stop: Number(h.stop) > 0 ? Number(h.stop) : null, fxCost: Number(h.fxCost) > 0 ? Number(h.fxCost) : null, note: String(h.note || '').slice(0, 500) })
   }
   const operations = (Array.isArray(d.operations) ? d.operations : []).filter(o => o && typeof o === 'object' && o.uid && o.type && o.date)
-  return { ok: true, holdings, operations, skippedHoldings: skipped }
+  // Objetivos de peso: solo tickers válidos y pesos de 0 a 100.
+  let targets = null
+  if (d.targets && typeof d.targets === 'object' && !Array.isArray(d.targets)) {
+    const tg = {}
+    for (const [k, v] of Object.entries(d.targets)) {
+      const t = String(k).toUpperCase().trim(), n = Number(v)
+      if (TICKER_RE.test(t) && Number.isFinite(n) && n >= 0 && n <= 100) tg[t] = n
+    }
+    if (Object.keys(tg).length) targets = tg
+  }
+  return { ok: true, holdings, operations, skippedHoldings: skipped, targets }
 }
 
 // Nombre de archivo con fecha local.

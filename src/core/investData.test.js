@@ -48,6 +48,8 @@ describe('validateHolding (savePos de Invest)', () => {
     expect(validateHolding({ t: 'A', sh: 1, cost: 0 }).ok).toBe(false)
     expect(validateHolding({ sh: 1, cost: 0 }, { prev: { id: 1, t: 'A', cost: 0 } }).ok).toBe(true)
     expect(validateHolding({ sh: 1, cost: 0 }, { prev: { id: 1, t: 'A', cost: 5 } }).ok).toBe(false)
+    // Una posición que nace de un bono o referido (Registrar operación).
+    expect(validateHolding({ t: 'A', sh: 1, cost: 0 }, { allowZeroCost: true }).ok).toBe(true)
   })
   it('al editar el ticker no cambia', () => {
     expect(validateHolding({ t: 'OTRO', sh: 1, cost: 1 }, { prev: { id: 1, t: 'AAPL', cost: 1 } }).value.t).toBe('AAPL')

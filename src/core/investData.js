@@ -53,7 +53,7 @@ export function normTicker(t) {
 // input: { t, type, sh, cost, stop?, fxCost?, note? }. prev: la posición que
 // se edita (o null en un alta). Costo 0 solo si la posición ya tenía 0 (nació
 // de un bono). Stop y tipo de cambio de la compra son opcionales (> 0 o null).
-export function validateHolding(input = {}, { prev = null } = {}) {
+export function validateHolding(input = {}, { prev = null, allowZeroCost = false } = {}) {
   const fields = {}
   const t = normTicker(prev ? prev.t : input.t)
   if (!t) fields.t = 'ticker_required'
@@ -63,7 +63,8 @@ export function validateHolding(input = {}, { prev = null } = {}) {
   const sh = toNum(input.sh)
   if (!(Number.isFinite(sh) && sh > 0)) fields.sh = 'shares_invalid'
   const cost = toNum(input.cost)
-  const zeroOk = cost === 0 && prev && Number(prev.cost) === 0
+  // allowZeroCost: posición que nace de un bono o referido (Invest: applyTrade).
+  const zeroOk = cost === 0 && (allowZeroCost || (prev && Number(prev.cost) === 0))
   if (!(Number.isFinite(cost) && (cost > 0 || zeroOk))) fields.cost = 'cost_invalid'
   const rawStop = input.stop
   const stop = rawStop == null || rawStop === '' ? null : pos(rawStop)
@@ -233,8 +234,8 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
         return { ok: true, data: mem.holdings }
       } catch (e) { return fail(net(e)) }
     },
-    async addHolding(input) {
-      const v = validateHolding(input)
+    async addHolding(input, { allowZeroCost = false } = {}) {
+      const v = validateHolding(input, { allowZeroCost })
       if (!v.ok) return v
       const s = await guardWrite()
       if (s.error) return fail(s.error)
