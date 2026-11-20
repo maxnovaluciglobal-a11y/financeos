@@ -3534,7 +3534,7 @@ export const en = {
     "invest.card.positions.many": "{n} positions",
     "invest.card.asOf": "as of {at}",
     "invest.hub.tabsLabel": "Investments sections",
-    "invest.hub.tab.resumen": "Overview",
+    "invest.hub.tab.resumen": "Summary",
     "invest.hub.tab.portafolio": "Portfolio",
     "invest.hub.tab.siguiendo": "Following",
     "invest.hub.tab.planificar": "Plan",
