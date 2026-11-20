@@ -3539,7 +3539,6 @@ export const en = {
     "invest.asset.label": "Asset page",
     "invest.asset.missing": "No asset selected. Search for one from Investments.",
     "invest.asset.toHub": "Go to Investments",
-    "invest.asset.soon": "Candlestick chart with 20, 50 and 200-day averages and Bollinger bands, RSI and MACD panes, fundamentals, your position, news and quarterly earnings.",
     "invest.asset.price": "Price",
     "invest.asset.day": "Today {pct}",
     "invest.asset.noQuote": "No quote for now.",

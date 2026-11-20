@@ -3538,7 +3538,6 @@ export const de = {
     "invest.asset.label": "Wertpapierseite",
     "invest.asset.missing": "Kein Wert ausgewählt. Suchen Sie einen unter Investments.",
     "invest.asset.toHub": "Zu Investments",
-    "invest.asset.soon": "Kerzenchart mit 20-, 50- und 200-Tage-Durchschnitt und Bollinger-Bändern, RSI- und MACD-Bereich, Fundamentaldaten, Ihre Position, Nachrichten und Quartalszahlen.",
     "invest.asset.price": "Kurs",
     "invest.asset.day": "Heute {pct}",
     "invest.asset.noQuote": "Derzeit kein Kurs.",
