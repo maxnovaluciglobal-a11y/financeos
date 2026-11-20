@@ -695,6 +695,7 @@ export const de = {
     'goals.kpi.savedSub': "{pct} des Gesamtziels",
     'goals.kpi.done': "Abgeschlossen",
     "goals.available.negative": "Ihre Ausgaben liegen diesen Monat über Ihren Einnahmen. Bevor Sie für Ziele zurücklegen, prüfen Sie Ihre Ausgaben.",
+    "goals.available.overSetAside": "Sie haben diesen Monat mehr zurückgelegt, als Ihnen blieb. Prüfen Sie das Zurückgelegte, bevor Sie mehr für Ihre Ziele zurücklegen.",
     "goals.available.hint": "So viel können Sie für Ihre Ziele zurücklegen.",
     "goals.available.setAside": "Diesen Monat haben Sie schon {v} für Ziele zurückgelegt.",
     'goals.toggle.close': "— Schließen",

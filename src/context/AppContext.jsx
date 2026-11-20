@@ -225,7 +225,9 @@ export function AppProvider({ children }) {
       const adv = monthAdvance(settings, currentMonth())
       if (adv) await saveSettings(adv)
       const [rules, incomes, expenses] = await Promise.all([dbGetAll('recurring'), dbGetAll('incomes'), dbGetAll('expenses')])
-      const due = dueAutoConfirmations(rules, { incomes, expenses, today: localDateStr() })
+      // Solo gastos: un apartado lleva el nombre de la meta como descripción y
+      // taparía el fijo del mismo nombre (nunca se registraría).
+      const due = dueAutoConfirmations(rules, { incomes, expenses: splitSetAsides(expenses).expenses, today: localDateStr() })
       let created = 0
       if (due.length) created = (await confirmOccurrencesInDb(due.map(o => ({ rule: o.rule, date: o.date })))).records.length
       if (upserts.length || adv || created) await rehydrate({ notLocalChange: true })

@@ -24,6 +24,8 @@
 // aritmética se hace con new Date(y, m-1, d) (nunca toISOString ni Date.parse
 // de un 'YYYY-MM-DD', que lo interpreta en UTC y corre un día en LatAm).
 
+import { isSetAside } from './setAside.js'
+
 export const FREQS = ['monthly', 'semimonthly', 'biweekly', 'weekly', 'yearly']
 export const AMOUNT_MODES = ['fixed', 'last', 'average']
 
@@ -258,7 +260,8 @@ export function amountClose(expected, actual, tol = MATCH_AMOUNT_TOLERANCE) {
 //   0          — no. La categoría sola NUNCA alcanza: un gasto cualquiera de la
 //                misma categoría no puede dar por pagado un fijo.
 export function matchStrength(rule, date, expected, record) {
-  if (!record || record.recurringId) return 0
+  // Un apartado no es gasto: nunca cubre la ocurrencia de un fijo.
+  if (!record || record.recurringId || isSetAside(record)) return 0
   const rDate = String(record.date || '')
   const days = Math.abs(diffDays(date, rDate))
   const sim = descSimilarity(rule.description, record.description ?? record.source)

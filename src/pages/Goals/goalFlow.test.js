@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   GOAL_TEMPLATE_IDS, FLOW_STEPS, fixedBuckets, draftFromTemplate, parseAmount, stepError, monthlyNeeded,
   buildGoal, applyContribution, defaultMethod, toFullFormDate, isEmergencyGoal, isGeneralGoal, normalizeName,
-  emergencySuggested, MAX_CONTRIBUTIONS,
+  emergencySuggested, MAX_CONTRIBUTIONS, availableMessageKey,
 } from './goalFlow.js'
 import { es } from '../../i18n/es.js'
 import { en } from '../../i18n/en.js'
@@ -139,5 +139,19 @@ describe('R9 Metas: textos nuevos (goals.r9.*, tour.goals.*)', () => {
     for (const d of [es, en, pt, de]) for (const k of pick(d)) expect(d[k], k).not.toMatch(/[¡!]/)
     for (const k of pick(es)) expect(es[k], k).not.toMatch(/\b(podés|tenés|querés|vos|tocá|elegí|agregá|creá|mirá)\b/i)
     for (const k of pick(de)) expect(de[k], k).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
+  })
+})
+
+describe('availableMessageKey: mensaje de la caja Te queda', () => {
+  it('positivo o cero: la ayuda de siempre', () => {
+    expect(availableMessageKey({ income: 1000, spent: 800, left: 200 })).toBe('goals.available.hint')
+    expect(availableMessageKey({ income: 1000, spent: 800, left: 0 })).toBe('goals.available.hint')
+  })
+  it('negativo por lo apartado (gastos ≤ ingresos): no culpa a los gastos', () => {
+    expect(availableMessageKey({ income: 1000, spent: 800, left: -100 })).toBe('goals.available.overSetAside')
+    expect(availableMessageKey({ income: 1000, spent: 1000, left: -50 })).toBe('goals.available.overSetAside')
+  })
+  it('negativo porque los gastos superan los ingresos', () => {
+    expect(availableMessageKey({ income: 1000, spent: 1200, left: -200 })).toBe('goals.available.negative')
   })
 })

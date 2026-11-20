@@ -695,6 +695,7 @@ export const pt = {
     'goals.kpi.savedSub': "{pct} do total",
     'goals.kpi.done': "Concluídas",
     "goals.available.negative": "Seus gastos estão maiores que suas receitas este mês. Antes de reservar para as metas, revise seus gastos.",
+    "goals.available.overSetAside": "Você reservou mais do que sobrava este mês. Revise o que reservou antes de somar mais às suas metas.",
     "goals.available.hint": "É o que você pode reservar para as suas metas.",
     "goals.available.setAside": "Este mês você já reservou {v} para metas.",
     'goals.toggle.close': "— Fechar",

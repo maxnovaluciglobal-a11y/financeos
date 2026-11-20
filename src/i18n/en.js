@@ -695,6 +695,7 @@ export const en = {
     'goals.kpi.savedSub': "{pct} of total",
     'goals.kpi.done': "Completed",
     "goals.available.negative": "Your expenses are higher than your income this month. Before setting money aside for goals, review your spending.",
+    "goals.available.overSetAside": "You set aside more than you had left this month. Review what you set aside before adding more to your goals.",
     "goals.available.hint": "This is what you can set aside for your goals.",
     "goals.available.setAside": "You already set aside {v} for goals this month.",
     'goals.toggle.close': "— Close",

@@ -131,3 +131,12 @@ export function toFullFormDate(targetDate) {
   const s = String(targetDate || '')
   return /^\d{4}-\d{2}$/.test(s) ? `${s}-01` : s
 }
+
+// Mensaje de la caja "Te queda" en Metas. `left` ya restó lo apartado: si los
+// gastos no superan los ingresos pero `left` es negativo, lo que se pasó es lo
+// apartado, no los gastos.
+/** @param {{ income: number, spent: number, left: number }} m */
+export function availableMessageKey({ income, spent, left }) {
+  if (!(left < 0)) return 'goals.available.hint'
+  return (Number(income) || 0) - (Number(spent) || 0) >= 0 ? 'goals.available.overSetAside' : 'goals.available.negative'
+}

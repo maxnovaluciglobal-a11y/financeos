@@ -12,7 +12,7 @@ import { Flag, Pencil, X } from 'lucide-react'
 import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, localDateStr, prioLabel, currencySymbol, monthYearLabel, fmtPctPoints } from '../../utils/index.js'
 import config from '../../config.js'
 import { logRejection } from '../../utils/errorLog.js'
-import { fixedBuckets, draftFromTemplate, buildGoal, applyContribution, toFullFormDate, isEmergencyGoal as isEmergencyFlagged, isGeneralGoal } from './goalFlow.js'
+import { fixedBuckets, draftFromTemplate, buildGoal, applyContribution, toFullFormDate, isEmergencyGoal as isEmergencyFlagged, isGeneralGoal, availableMessageKey } from './goalFlow.js'
 import { FixedBuckets, TemplateGrid, GoalFlowSheet, ContributionSheet, GOAL_ICONS } from './GoalSheets.jsx'
 import { listedGoals } from './goalList.js'
 import Sheet from '../../components/ui/Sheet.jsx'
@@ -311,7 +311,7 @@ export default function Goals() {
               {neg ? '−' : ''}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
             </span>
             <span style={{ fontSize:'var(--t-footnote)', color: neg ? 'var(--red)' : 'var(--th)', width:'100%' }}>
-              {neg ? t('goals.available.negative') : t('goals.available.hint')}
+              {t(availableMessageKey(month))}
               {month.setAsideGoals > 0 && <> {t('goals.available.setAside', { v: fmtMoney(month.setAsideGoals, sym) })}</>}
             </span>
           </div>

@@ -273,6 +273,14 @@ describe('auto-confirmación', () => {
     const due = dueAutoConfirmations([sal, rule()], { incomes, today: '2026-10-08' })
     expect(due.map(o => o.date)).toEqual(['2026-08-31', '2026-09-15', '2026-09-30'])
   })
+  it('un apartado con el mismo nombre no tapa el fijo (no es gasto)', () => {
+    const fondo = rule({ id: 'fe', description: 'Fondo de emergencia', category: 'Ahorro', autoConfirm: true,
+      amounts: [{ from: '2026-11', amount: 100 }], schedule: { freq: 'monthly', day: 5, anchorDate: '2026-11-05' }, startDate: '2026-11-01' })
+    const setAside = { id: 'sa1', kind: 'setAside', dest: 'goal', goalId: 'g1', description: 'Fondo de emergencia', amount: 300, date: '2026-11-05' }
+    expect(dueAutoConfirmations([fondo], { expenses: [], today: '2026-11-10' })).toHaveLength(1)
+    expect(dueAutoConfirmations([fondo], { expenses: [setAside], today: '2026-11-10' })).toHaveLength(1)
+    expect(recordMatchesOccurrence(fondo, '2026-11-05', 100, setAside)).toBe(false)
+  })
 })
 
 describe('regla desde un movimiento + detección', () => {

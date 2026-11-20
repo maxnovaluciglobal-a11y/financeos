@@ -695,6 +695,7 @@ export const es = {
     'goals.kpi.savedSub': "{pct} del total",
     'goals.kpi.done': "Completadas",
     "goals.available.negative": "Tus gastos superan tus ingresos este mes. Antes de apartar para tus metas, revisa tus gastos.",
+    "goals.available.overSetAside": "Apartaste más de lo que te quedaba este mes. Revisa lo apartado antes de sumar más a tus metas.",
     "goals.available.hint": "Es lo que puedes apartar para tus metas.",
     "goals.available.setAside": "Este mes ya apartaste {v} para metas.",
     'goals.toggle.close': "— Cerrar",

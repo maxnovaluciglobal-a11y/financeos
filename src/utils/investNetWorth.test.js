@@ -82,6 +82,16 @@ describe('monthContributions: aportes del mes', () => {
   it('sin movimientos: cero', () => {
     expect(monthContributions(undefined, '2026-10')).toEqual({ count: 0, sum: 0 })
   })
+  it('un apartado que llega en las dos listas cuenta una vez', () => {
+    const inv = { id: 'sa1', kind: 'setAside', dest: 'invest', date: '2026-11-03', amount: 100 }
+    expect(monthContributions([inv], '2026-11', [inv])).toEqual({ count: 1, sum: 100 })
+    expect(monthContributions([inv], '2026-11')).toEqual({ count: 1, sum: 100 })
+    expect(monthContributions([], '2026-11', [inv])).toEqual({ count: 1, sum: 100 })
+  })
+  it('un apartado a una meta no es aporte a Inversiones', () => {
+    const goal = { id: 'sa2', kind: 'setAside', dest: 'goal', date: '2026-11-03', amount: 80 }
+    expect(monthContributions([goal], '2026-11', [goal])).toEqual({ count: 0, sum: 0 })
+  })
 })
 
 describe('aporteHandoff', () => {
