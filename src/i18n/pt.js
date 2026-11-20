@@ -3546,6 +3546,7 @@ export const pt = {
     "invest.hoy.aporteBanner.done": "Neste mês você já o somou ao seu caixa. Você pode distribuí-lo em Planejar › Aportes.",
     "invest.hoy.aporteBanner.go": "Ir para Planejar",
     "invest.hoy.aporteBanner.close": "Agora não",
+    "invest.hoy.aporteBanner.noRate": "Sem taxa de câmbio para {ccy}: escreva o valor em USD.",
     "invest.hoy.band.label": "Valor da sua carteira",
     "invest.hoy.band.loadingOne": "{n} preço carregando",
     "invest.hoy.band.loadingMany": "{n} preços carregando",

@@ -212,6 +212,20 @@ describe('pedidos de historia agrupados', () => {
     expect(peak).toBe(3)
     expect(out).toEqual([0, 2, 4, 6, null, 10, 12, 14, 16])
   })
+  it('runLimited deja de tomar tareas apenas se cancela la corrida', async () => {
+    let ok = true
+    const ran = []
+    const tasks = Array.from({ length: 8 }, (_, i) => async () => {
+      ran.push(i)
+      await new Promise(r => setTimeout(r, 2))
+      if (i === 0) ok = false
+      return i
+    })
+    const out = await runLimited(tasks, 2, () => ok)
+    // Las 2 primeras ya estaban en curso; después de cancelar no arranca ninguna.
+    expect(ran).toEqual([0, 1])
+    expect(out.slice(2).every(v => v === undefined)).toBe(true)
+  })
 })
 
 describe('top 5, aporte y cinta', () => {

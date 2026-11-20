@@ -361,11 +361,13 @@ export function historyPlan({ holdings = [], watch = [], ccys = [], range = '1A'
 }
 
 // Corre tareas con un tope de concurrencia; cada resultado en su lugar.
-export async function runLimited(tasks, limit = 4) {
+// keepGoing() se revisa antes de cada tarea: si la corrida se canceló (cambió
+// el plan o se desmontó la pantalla), los workers dejan de tomar tareas.
+export async function runLimited(tasks, limit = 4, keepGoing = () => true) {
   const out = new Array(tasks.length)
   let next = 0
   async function worker() {
-    while (next < tasks.length) {
+    while (next < tasks.length && keepGoing()) {
       const i = next++
       try { out[i] = await tasks[i]() } catch { out[i] = null }
     }
@@ -424,6 +426,14 @@ export function aportePending(a, ops, month) {
 // Los 10 instrumentos de la cinta de Invest (MKT_SYMS); el VIX va aparte.
 export const STRIP_SYMS = ['^GSPC', '^DJI', '^IXIC', '^RUT', 'CL=F', 'GC=F', 'SI=F', 'EURUSD=X', '^TNX', 'BTC-USD']
 export const VIX_SYM = '^VIX'
+// Degradados laterales de la cinta (Invest: stripFade): a la izquierda si ya
+// se desplazó, a la derecha si queda contenido por ver. 2 px de tolerancia.
+export function stripFadeOf(el) {
+  if (!el) return { l: false, r: false }
+  const max = (Number(el.scrollWidth) || 0) - (Number(el.clientWidth) || 0)
+  const x = Number(el.scrollLeft) || 0
+  return { l: x > 2, r: max > 2 && x < max - 2 }
+}
 // Cómo se escribe cada valor (mktFmtValue): 'fx4' EUR/USD con 4 decimales,
 // 'yield' el bono en %, 'usd0' Bitcoin sin decimales, 'usd2' materias primas,
 // 'index' índices (≥ 1000 sin decimales).

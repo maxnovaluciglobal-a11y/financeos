@@ -14,12 +14,12 @@ vi.mock('../../../i18n/useT.js', () => {
 
 const { default: Hoy } = await import('./Hoy.jsx')
 const { AppContext } = await import('../../../context/AppContext.jsx')
-const { readAporte, saveAporte, APORTE_KEY } = await import('./aporteStore.js')
+const { readAporte, saveAporte, commitAporte, APORTE_KEY } = await import('./aporteStore.js')
 const demo = await import('../../../demo/demoInvestHoy.js')
 const { demoInvestSnapshot } = await import('../../../demo/demoInvest.js')
 const { portfolioTotals, currencyOf } = await import('../../../utils/investValuation.js')
 const { cashBook } = await import('../../../utils/investCash.js')
-const { historySymbol, scoreCloses, reviewToday } = await import('../../../utils/investHoy.js')
+const { historySymbol, scoreCloses, reviewToday, stripFadeOf } = await import('../../../utils/investHoy.js')
 const { RULE_DEFAULTS } = await import('../../../core/investData.js')
 
 const text = (html) => html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ')
@@ -113,6 +113,31 @@ describe('<Hoy>', () => {
     expect(out).toContain('No se pudieron cargar los datos históricos')
     expect(out).not.toContain('Calculando indicadores')
   })
+  it('el gráfico espera todas las historias: nada de serie parcial ni "Sin historial" por las que siguen cargando', () => {
+    const late = historySymbol(demo.demoHoldings()[0])
+    const out = text(render(sampleData({ historyOf: (sym, r = '1y') => (sym === late ? undefined : demo.demoHistory(sym, r)) })))
+    expect(out).toContain(es['invest.hoy.pvh.loading'])
+    expect(out).not.toContain('Sin historial en la fuente')
+    expect(out).not.toMatch(/Entre el .+ el valor pasó de/)
+  })
+  it('sin posiciones y con aportes marcados en CLP, pide los tipos de cambio (needFx)', () => {
+    const calls = []
+    const data = { ...sampleData({ holdings: [], quotes: {}, ops: [] }), sample: false }
+    const expenses = [{ inv: true, date: '2026-11-03', amount: 400000 }]
+    const settings = { currency: 'CLP', language: 'es', activeMonth: '2026-11' }
+    const out = text(renderToStaticMarkup(
+      h(AppContext.Provider, { value: { settings, expenses, showToast: () => {} } },
+        h(Hoy, { onOpen: () => {}, onTab: () => {}, useData: (o) => { calls.push(o); return data } })),
+    ))
+    expect(calls[0]).toMatchObject({ needFx: true })
+    // Sin tasa: el aviso muestra el monto en su moneda, sin un "≈ US$" inventado.
+    expect(out).toContain('Aportes de este mes en moyiq')
+    expect(out).not.toContain('≈ US$')
+    const usd = []
+    renderToStaticMarkup(h(AppContext.Provider, { value: { settings: { ...settings, currency: 'USD' }, expenses, showToast: () => {} } },
+      h(Hoy, { onOpen: () => {}, onTab: () => {}, useData: (o) => { usd.push(o); return data } })))
+    expect(usd[0]).toMatchObject({ needFx: false })
+  })
   it('error de carga con reintento', () => {
     const out = text(render(sampleData({ phase: 'error' })))
     expect(out).toContain(es['invest.card.retry'])
@@ -133,6 +158,42 @@ describe('aporte del mes', () => {
     expect(readAporte(k => store.get(k))).toBe(410.56)
     expect(saveAporte(0, () => { throw new Error('no') })).toBe(false)
     expect(readAporte(() => 'x')).toBeNull()
+  })
+  it('sin tipo de cambio (CLP) no guarda nada ni convierte 1:1: devuelve la moneda para avisar', () => {
+    const store = new Map()
+    const events = []
+    globalThis.window = { dispatchEvent: (e) => events.push(e) }
+    const r = commitAporte({ usd: null, ccy: 'CLP' }, (k, v) => store.set(k, v))
+    expect(r).toMatchObject({ ok: false, saved: false, noRate: 'CLP' })
+    expect(store.size).toBe(0)
+    expect(events).toHaveLength(0)
+  })
+  it('en el ejemplo no guarda ni avisa a Planificar', () => {
+    const store = new Map()
+    const events = []
+    globalThis.window = { dispatchEvent: (e) => events.push(e) }
+    expect(commitAporte({ usd: 750, ccy: 'USD', sample: true }, (k, v) => store.set(k, v))).toMatchObject({ ok: true, saved: false, usd: 750 })
+    expect(store.size).toBe(0)
+    expect(events).toHaveLength(0)
+  })
+  it('con monto en US$ guarda y avisa', () => {
+    const store = new Map()
+    const events = []
+    globalThis.window = { dispatchEvent: (e) => events.push(e) }
+    globalThis.CustomEvent ??= class { constructor(type, init) { this.type = type; this.detail = init?.detail } }
+    expect(commitAporte({ usd: 420.004, ccy: 'CLP' }, (k, v) => store.set(k, v))).toMatchObject({ ok: true, saved: true, usd: 420 })
+    expect(store.get(APORTE_KEY)).toBe('420')
+    expect(events[0].detail).toEqual({ usd: 420 })
+  })
+})
+
+describe('degradados de la cinta', () => {
+  it('a la derecha al inicio, a los dos lados en el medio, a la izquierda al final, ninguno si entra entera', () => {
+    expect(stripFadeOf({ scrollLeft: 0, scrollWidth: 900, clientWidth: 300 })).toEqual({ l: false, r: true })
+    expect(stripFadeOf({ scrollLeft: 200, scrollWidth: 900, clientWidth: 300 })).toEqual({ l: true, r: true })
+    expect(stripFadeOf({ scrollLeft: 599, scrollWidth: 900, clientWidth: 300 })).toEqual({ l: true, r: false })
+    expect(stripFadeOf({ scrollLeft: 0, scrollWidth: 300, clientWidth: 300 })).toEqual({ l: false, r: false })
+    expect(stripFadeOf(null)).toEqual({ l: false, r: false })
   })
 })
 

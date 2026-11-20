@@ -3546,6 +3546,7 @@ export const en = {
     "invest.hoy.aporteBanner.done": "You already added it to your cash this month. You can split it in Plan › Contributions.",
     "invest.hoy.aporteBanner.go": "Go to Plan",
     "invest.hoy.aporteBanner.close": "Not now",
+    "invest.hoy.aporteBanner.noRate": "No exchange rate for {ccy}: enter the amount in USD.",
     "invest.hoy.band.label": "Your portfolio value",
     "invest.hoy.band.loadingOne": "{n} price loading",
     "invest.hoy.band.loadingMany": "{n} prices loading",

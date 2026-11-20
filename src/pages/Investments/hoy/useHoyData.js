@@ -46,7 +46,7 @@ async function loadRates(holdings, quotes) {
 
 const EMPTY = { phase: 'loading', error: null, holdings: [], quotes: {}, quotesFailed: false, rates: {}, latam: null, stopColumn: true, watch: [], capital: null, rule: RULE_DEFAULTS, ops: [], opsMissing: false, at: null }
 
-export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '' } = {}) {
+export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '', needFx = false } = {}) {
   const fake = demo || sample
   const [base, setBase] = useState(EMPTY)
   const [hist, setHist] = useState({}) // 'SYM|range' → rows | null (falló)
@@ -110,6 +110,18 @@ export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '
     return () => { stop(); document.removeEventListener('visibilitychange', onVis) }
   }, [fake, base.holdings])
 
+  // Sin posiciones no se piden tipos de cambio; pero si hay aportes marcados en
+  // moyiq en otra moneda, el aviso necesita la tasa para pasarlos a US$ (si
+  // no, nunca se convierte 1:1). needFx lo decide la pantalla.
+  useEffect(() => {
+    if (fake || !needFx || base.phase !== 'ready' || base.holdings.length || base.latam) return undefined
+    let ok = true
+    Promise.resolve(investApi.fxLatam()).then(latam => {
+      if (ok && alive.current && latam) setBase(b => (b.latam ? b : { ...b, latam }))
+    }, () => { /* sin tasa: el aviso pide escribir el monto en US$ */ })
+    return () => { ok = false }
+  }, [fake, needFx, base.phase, base.holdings.length, base.latam])
+
   // ── Cinta y VIX ──
   useEffect(() => {
     if (fake) { setMarket({ phase: 'ready', ...demoMarket() }); return undefined }
@@ -132,7 +144,7 @@ export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '
       const closes = rows ? rows.slice(-22).map(r => r.close) : null
       sparkSession.set(sym, closes)
       if (ok && alive.current) setSparks(s => ({ ...s, [sym]: closes }))
-    }), SPARK_LIMIT)
+    }), SPARK_LIMIT, () => ok && alive.current)
     const idle = typeof requestIdleCallback === 'function' ? requestIdleCallback(run, { timeout: 1500 }) : setTimeout(run, 300)
     return () => {
       ok = false
@@ -141,11 +153,15 @@ export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '
   }, [fake, market])
 
   // ── Historias agrupadas ──
-  const ccys = useMemo(() => {
+  // Las monedas dependen de las cotizaciones, que cambian cada 5 min: con una
+  // clave estable (lista ordenada) el plan no se rehace ni cancela la corrida
+  // en curso si las monedas siguen siendo las mismas.
+  const ccyKey = useMemo(() => {
     const out = new Set()
     for (const h of base.holdings) { const c = currencyOf(h.t, base.quotes[h.t]?.currency); if (c && c !== 'USD') out.add(c) }
-    return [...out]
+    return [...out].sort().join(',')
   }, [base.holdings, base.quotes])
+  const ccys = useMemo(() => (ccyKey ? ccyKey.split(',') : []), [ccyKey])
   const plan = useMemo(
     () => (base.phase === 'loading' || base.phase === 'error' ? [] : historyPlan({ holdings: base.holdings, watch: base.watch, ccys, range, cmp })),
     [base.phase, base.holdings, base.watch, ccys, range, cmp],
@@ -163,7 +179,7 @@ export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '
     runLimited(todo.map(r => async () => {
       const rows = await investApi.history(r.sym, r.range, '1d')
       if (ok && alive.current) setHist(h => ({ ...h, [`${r.sym}|${r.range}`]: rows || null }))
-    }), HISTORY_LIMIT)
+    }), HISTORY_LIMIT, () => ok && alive.current)
     return () => { ok = false }
   // `hist` queda fuera a propósito: cada resultado nuevo no vuelve a planear.
   // eslint-disable-next-line react-hooks/exhaustive-deps

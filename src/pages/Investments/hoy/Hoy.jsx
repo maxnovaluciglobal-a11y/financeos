@@ -6,7 +6,12 @@
 // Sin posiciones: estado vacío con 3 caminos (agregar, importar, ver un ejemplo).
 // Las noticias, índices y próximos resultados viven en Mercado (otra fase); la
 // línea de régimen lleva allá.
-import { useCallback, useEffect, useMemo, useState } from 'react'
+// Decisiones frente a Invest (no se portan): ?aporte=N al entrar
+// (applyAporteParam) era el puente desde moyiq hacia otro sitio; acá el aporte
+// pasa por memoria y un evento (aporteStore.js). El evento de analítica
+// bridge_aporte tampoco: la política de privacidad dice que la app no registra
+// eventos ni clics dentro de ella.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle, ArrowDown, ArrowUp, ChevronRight, Clock, Equal, FileUp, FlaskConical, Minus, Plus, TrendingDown, TrendingUp, WifiOff } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import Sparkline from '../../../components/charts/Sparkline.jsx'
@@ -17,13 +22,13 @@ import { INVEST_ORIGIN } from '../../../core/investBridge.js'
 import { cashBook } from '../../../utils/investCash.js'
 import {
   VIX_SYM, STRIP_SYMS, aportePending, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
-  rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFormat, summarizeFreshness, topPositions, validateAporte,
+  rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFadeOf, stripFormat, summarizeFreshness, topPositions, validateAporte,
   vixLevel, withLivePoint, PVH_CMP, PVH_RANGES, REVIEW_MAX_CHIPS,
 } from '../../../utils/investHoy.js'
 import { convertHoldings, currencyOf, holdingRows, portfolioTotals, toUsd } from '../../../utils/investValuation.js'
 import { monthContributions, resolveUserRate } from '../../../utils/investNetWorth.js'
 import { currencySymbol, currentMonth, dateLocale, fmtAmount, fmtMoney, fmtPct, moneyLocale } from '../../../utils/index.js'
-import { readAporte, saveAporte } from './aporteStore.js'
+import { commitAporte, readAporte } from './aporteStore.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
 import s from './hoy.module.css'
@@ -83,13 +88,25 @@ function stripValue(sym, price) {
 function Strip({ market, sparks, sample, onTab }) {
   const { t } = useT()
   const items = STRIP_SYMS.map(sym => (market.items || []).find(it => it.sym === sym)).filter(it => it && it.price != null)
+  const ref = useRef(null)
+  const [fade, setFade] = useState({ l: false, r: false })
+  const syncFade = useCallback(() => {
+    const next = stripFadeOf(ref.current)
+    setFade(f => (f.l === next.l && f.r === next.r ? f : next))
+  }, [])
+  useEffect(() => {
+    syncFade()
+    if (typeof window === 'undefined') return undefined
+    window.addEventListener('resize', syncFade)
+    return () => window.removeEventListener('resize', syncFade)
+  }, [syncFade, items.length])
   if (market.phase === 'loading') {
     return <div className={s.strip} aria-hidden="true">{STRIP_SYMS.slice(0, 5).map(k => <span key={k} className={`${s.stripItem} ${s.skeleton}`} />)}</div>
   }
   if (!items.length) return null
   return (
     <section className={s.stripWrap} aria-label={t('invest.hoy.strip.label')}>
-      <ul className={s.strip}>
+      <ul ref={ref} className={s.strip} onScroll={syncFade} data-fade-l={fade.l || undefined} data-fade-r={fade.r || undefined}>
         {items.map(it => {
           const name = t(`invest.hoy.strip.sym.${STRIP_KEY[it.sym]}`)
           const value = stripValue(it.sym, it.price)
@@ -114,7 +131,7 @@ function Strip({ market, sparks, sample, onTab }) {
 }
 
 // ── Aviso de aportes marcados en moyiq ────────────────────────────
-function AporteBanner({ a, usd, pending, onGo, onClose, sym }) {
+function AporteBanner({ a, usd, pending, onGo, onClose, sym, noRate }) {
   const { t } = useT()
   const { m } = useMoney()
   const amount = m(fmtMoney(a.amount, sym))
@@ -126,6 +143,7 @@ function AporteBanner({ a, usd, pending, onGo, onClose, sym }) {
         <h2 id="hoy-aporte-banner" className={s.bannerTitle}>{t('invest.hoy.aporteBanner.title')}</h2>
         <p className={s.bannerBody}>{t(a.n === 1 ? 'invest.hoy.aporteBanner.one' : 'invest.hoy.aporteBanner.many', { n: a.n, amount: amount + approx })}</p>
         <p className={s.bannerBody}>{done ? t('invest.hoy.aporteBanner.done') : t('invest.hoy.aporteBanner.next')}</p>
+        {noRate && <p className={s.fieldErr} role="alert"><AlertTriangle size={14} aria-hidden="true" />{t('invest.hoy.aporteBanner.noRate', { ccy: noRate })}</p>}
       </div>
       <div className={s.bannerActs}>
         <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={onGo}>{t('invest.hoy.aporteBanner.go')}</button>
@@ -406,7 +424,14 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
   const [range, setRange] = useState(() => (PVH_RANGES.includes(readKey(RANGE_KEY)) ? readKey(RANGE_KEY) : '1A'))
   const [cmp, setCmp] = useState(() => (PVH_CMP.includes(readKey(CMP_KEY)) ? readKey(CMP_KEY) : ''))
   const [bannerOff, setBannerOff] = useState(false)
-  const d = useData({ demo, sample, range, cmp })
+  const [noRate, setNoRate] = useState(null)
+  // Aportes marcados en moyiq este mes (no dependen de Inversiones): si están
+  // en otra moneda, Hoy necesita la tasa aunque no haya posiciones.
+  const month = settings.activeMonth || currentMonth()
+  const contrib = monthContributions(app.expenses, month)
+  const ccy = String(currency || '').toUpperCase() || null
+  const needFx = !(demo || sample) && contrib.count > 0 && contrib.sum > 0 && !!ccy && ccy !== 'USD'
+  const d = useData({ demo, sample, range, cmp, needFx })
   const fake = d.sample
 
   const pickRange = (r) => { setRange(r); writeKey(RANGE_KEY, r) }
@@ -469,7 +494,10 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
       if (r === undefined) waiting = true
       else if (r) fxh[c] = f.mult === 1 ? r : r.map(x => ({ ...x, close: x.close * f.mult }))
     }
-    if (waiting && !Object.keys(hists).length) return { state: 'loading' }
+    // Hasta que no llegan TODAS las historias no se dibuja: con una serie
+    // parcial el inicio se corre, la cifra parpadea y las que siguen cargando
+    // aparecerían como "Sin historial en la fuente".
+    if (waiting) return { state: 'loading' }
     const series = buildSeries(pos.map(h => ({ t: h.t, sh: h.sh, ccy: h.ccy })), hists, fxh, { fxNow: rates, weekdaysOnly: pos.some(h => h.type !== 'Crypto') })
     // Último punto con los precios de la banda (si todas las incluidas tienen precio).
     let live = 0, allPriced = true
@@ -508,9 +536,6 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
   })), [d.ops, d.opsMissing, d.holdings, d.quotes, d.rates, ccyOf])
 
   // ── Aportes marcados en moyiq este mes ──
-  const month = settings.activeMonth || currentMonth()
-  const contrib = monthContributions(app.expenses, month)
-  const ccy = String(currency || '').toUpperCase() || null
   const aporte = contrib.count > 0 && contrib.sum > 0
     ? { amount: Math.round(contrib.sum * 100) / 100, ccy, n: contrib.count, usd: ccy === 'USD' ? contrib.sum : userRate?.rate > 0 ? Math.round((contrib.sum / userRate.rate) * 100) / 100 : null }
     : null
@@ -526,9 +551,30 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
   const vix = vixItem?.price ?? null
   const ctxDone = spy !== undefined && d.market.phase !== 'loading'
 
+  // Con monto en US$: se guarda (salvo en el ejemplo) y se va a Planificar.
   function goAporte(usd) {
-    saveAporte(usd, writeKey)
-    app.showToast?.(t('invest.hoy.aporte.toast', { v: money(usd) }))
+    const r = commitAporte({ usd, ccy, sample: fake }, writeKey)
+    if (!r.ok) return
+    setNoRate(null)
+    app.showToast?.(t('invest.hoy.aporte.toast', { v: money(r.usd) }))
+    onTab('planificar')
+  }
+  // "Ir a Planificar" del aviso: sin tipo de cambio no convierte 1:1 ni usa un
+  // monto guardado de otro mes. Avisa y lleva al formulario del aporte; si no
+  // hay formulario (sin posiciones), abre Planificar sin monto.
+  function goFromBanner() {
+    const r = commitAporte({ usd: aUsd, ccy, sample: fake }, writeKey)
+    if (r.ok) {
+      setNoRate(null)
+      app.showToast?.(t('invest.hoy.aporte.toast', { v: money(r.usd) }))
+      onTab('planificar')
+      return
+    }
+    const missing = r.noRate || ccy || '?'
+    setNoRate(missing)
+    const input = typeof document !== 'undefined' ? document.getElementById('hoy-aporte-in') : null
+    if (input) { input.focus(); return }
+    app.showToast?.(t('invest.hoy.aporteBanner.noRate', { ccy: missing }))
     onTab('planificar')
   }
   const intent = (what) => {
@@ -560,7 +606,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
   )
 
   const banner = aporte && !bannerOff
-    ? <AporteBanner a={aporte} usd={aUsd} pending={pending} sym={sym} onGo={() => goAporte(aUsd || initialAporte || aporte.amount)} onClose={() => setBannerOff(true)} />
+    ? <AporteBanner a={aporte} usd={aUsd} pending={pending} sym={sym} noRate={noRate} onGo={goFromBanner} onClose={() => setBannerOff(true)} />
     : null
 
   if (!d.holdings.length) {

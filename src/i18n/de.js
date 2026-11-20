@@ -3545,6 +3545,7 @@ export const de = {
     "invest.hoy.aporteBanner.done": "Diesen Monat haben Sie den Betrag bereits Ihrem Bargeld hinzugefügt. Sie können ihn unter Planen › Einzahlungen aufteilen.",
     "invest.hoy.aporteBanner.go": "Zu Planen",
     "invest.hoy.aporteBanner.close": "Jetzt nicht",
+    "invest.hoy.aporteBanner.noRate": "Kein Wechselkurs für {ccy}: Geben Sie den Betrag in USD ein.",
     "invest.hoy.band.label": "Wert Ihres Portfolios",
     "invest.hoy.band.loadingOne": "{n} Kurs wird geladen",
     "invest.hoy.band.loadingMany": "{n} Kurse werden geladen",

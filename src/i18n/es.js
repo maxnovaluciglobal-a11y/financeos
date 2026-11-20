@@ -3546,6 +3546,7 @@ export const es = {
     "invest.hoy.aporteBanner.done": "Este mes ya lo sumaste a tu efectivo. Puedes repartirlo en Planificar › Aportes.",
     "invest.hoy.aporteBanner.go": "Ir a Planificar",
     "invest.hoy.aporteBanner.close": "Ahora no",
+    "invest.hoy.aporteBanner.noRate": "Sin tipo de cambio para {ccy}: escribe el monto en USD.",
     "invest.hoy.band.label": "Valor de tu portafolio",
     "invest.hoy.band.loadingOne": "{n} precio cargando",
     "invest.hoy.band.loadingMany": "{n} precios cargando",
