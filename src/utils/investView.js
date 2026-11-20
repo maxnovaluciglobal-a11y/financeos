@@ -38,6 +38,7 @@ const FULL_ONLY = new Set([
   'strip', // cinta de mercado
   'review', // "Para revisar hoy" (medias y RSI)
   'movingAverages', // media de 200 días del mercado
+  'unrealized', // "Resultado (si vendieras hoy)": la esencial ya lo cuenta en "El mercado sumó"
 ])
 export function shows(view, part) {
   return isFull(view) || !FULL_ONLY.has(part)

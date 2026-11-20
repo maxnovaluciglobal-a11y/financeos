@@ -25,7 +25,7 @@ describe('vista esencial / completa', () => {
     expect(readView(s)).toBe('esencial')
   })
   it('la esencial oculta velas, indicadores, stop, cinta, lecturas y medias; nada se borra en la completa', () => {
-    for (const part of ['candles', 'indicators', 'stop', 'strip', 'review', 'movingAverages']) {
+    for (const part of ['candles', 'indicators', 'stop', 'strip', 'review', 'movingAverages', 'unrealized']) {
       expect(shows('esencial', part), part).toBe(false)
       expect(shows('completa', part), part).toBe(true)
     }

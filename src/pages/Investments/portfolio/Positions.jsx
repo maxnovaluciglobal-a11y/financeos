@@ -163,6 +163,9 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
   const { rows, totals } = pb.positions
   const showStop = shows(view, 'stop')
   const put = useMemo(() => putAndGain({ ledger: pb.opsState === 'ready' ? pb.ledger : null, totals: { ...totals, total: totals.pl } }), [pb.opsState, pb.ledger, totals])
+  // En la esencial, "El mercado sumó" (PutSummary) ya cuenta el resultado: la
+  // banda y la fila de totales no lo repiten con otro nombre.
+  const showResult = shows(view, 'unrealized') || !put
   const share = riskShare(totals.risk, pb.capital, totals.value)
   const base = useMemo(() => rebalanceBase(rows), [rows])
   const drift = targets ? driftHint(base, targets) : null
@@ -262,11 +265,11 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
           <span className={s.statValue}><Money>{fmt.money(totals.value)}</Money></span>
           {fmt.dccy !== 'USD' && <span className={s.statSub}>≈ <Money>{fmt.inCcy(totals.value, 'USD')}</Money></span>}
         </div>
-        <div className={s.stat}>
+        {showResult && <div className={s.stat}>
           <span className={s.statLabel}>{t('pf.band.pl')}</span>
           <span className={`${s.statValue} ${s.tone}`} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money></span>
           <span className={s.statSub}>{t('pf.band.plSub', { p: fmt.pct(totals.plPct, { signed: true }) })}</span>
-        </div>
+        </div>}
         {totals.dayPct != null && (
           <div className={s.stat}>
             <span className={s.statLabel}>{t('pf.band.day')}</span>
@@ -340,8 +343,10 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
         <div className={s.totalRow}>
           <strong>{t('pf.total')}</strong>
           <strong><Money>{fmt.money(totals.value)}</Money></strong>
-          <span>{t('pf.band.pl')}</span>
-          <span className={s.tone} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} size={12} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money> ({fmt.pct(totals.plPct, { signed: true })})</span>
+          {showResult && <>
+            <span>{t('pf.band.pl')}</span>
+            <span className={s.tone} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} size={12} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money> ({fmt.pct(totals.plPct, { signed: true })})</span>
+          </>}
           {showStop && <>
             <span>{t('pf.band.risk')}</span>
             <span><Money>{totals.risk > 0 ? fmt.money(-totals.risk) : fmt.money(0)}</Money></span>

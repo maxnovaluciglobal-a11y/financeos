@@ -6,15 +6,33 @@ import { en } from './en.js'
 import { pt } from './pt.js'
 import { de } from './de.js'
 import { GLOSSARY, RETIRED, PENDING_INVEST_VIEW, term } from './glossary.js'
+import assetEs from '../pages/Investments/asset/strings.es.js'
+import assetEn from '../pages/Investments/asset/strings.en.js'
+import assetPt from '../pages/Investments/asset/strings.pt.js'
+import assetDe from '../pages/Investments/asset/strings.de.js'
+import essEs from '../pages/Investments/esencial/strings.es.js'
+import essEn from '../pages/Investments/esencial/strings.en.js'
+import essPt from '../pages/Investments/esencial/strings.pt.js'
+import essDe from '../pages/Investments/esencial/strings.de.js'
+import { es as pfEs } from '../pages/Investments/portfolio/text.es.js'
+import { en as pfEn } from '../pages/Investments/portfolio/text.en.js'
+import { pt as pfPt } from '../pages/Investments/portfolio/text.pt.js'
+import { de as pfDe } from '../pages/Investments/portfolio/text.de.js'
 
 const DICTS = { es, en, pt, de }
 const LANGS = ['es', 'en', 'pt', 'de']
+// Los diccionarios por módulo de Inversiones (ficha, vista esencial,
+// Portafolio) también cuentan: la misma cifra no puede tener dos nombres.
+const MODULE_DICTS = {
+  es: [assetEs, essEs, pfEs], en: [assetEn, essEn, pfEn], pt: [assetPt, essPt, pfPt], de: [assetDe, essDe, pfDe],
+}
+const ALL = Object.fromEntries(LANGS.map(l => [l, Object.assign({}, ...MODULE_DICTS[l], DICTS[l])]))
 
 // Lo que hoy viola un sinónimo retirado, como 'lang:clave'.
 function violations() {
   const out = new Set()
   for (const r of RETIRED) {
-    for (const [k, v] of Object.entries(DICTS[r.lang])) {
+    for (const [k, v] of Object.entries(ALL[r.lang])) {
       if (r.scope && !r.scope.some(p => k.startsWith(p))) continue
       if (r.re.test(String(v))) out.add(`${r.lang}:${k}`)
     }
@@ -61,5 +79,10 @@ describe('glosario único', () => {
     expect(term('teQueda', 'pt')).toBe('Sobra este mês')
     expect(term('apartar', 'xx')).toBe('Apartar')
     expect(term('nope', 'es')).toBe('nope')
+  })
+
+  it('Portafolio en alemán trata de "Sie", como el resto de la app', () => {
+    const noVars = (v) => String(v).replace(/\{\w+\}/g, '')
+    expect(Object.entries(pfDe).filter(([, v]) => /\b(du|dein\w*|dich|dir)\b/i.test(noVars(v))).map(([k]) => k)).toEqual([])
   })
 })

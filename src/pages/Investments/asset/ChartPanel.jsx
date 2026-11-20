@@ -68,11 +68,12 @@ export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, l
   const zone = data ? rsiZone(data.rsiNow) : 'na'
   const lineLabel = sum
     ? t('asset.line.label', { t: ticker, range: rangeLong, from: fmtPx(sum.from, ccy), to: fmtPx(sum.to, ccy), pct: fmtPct(sum.pct, { signed: true }) })
-    : t('asset.chart.labelShort', { t: ticker, range: rangeLong })
+    : t('asset.line.labelShort', { t: ticker, range: rangeLong })
 
   if (simple) {
+    // Nombre corto: la descripción completa la lee una sola vez el SVG de LineChart.
     return (
-      <section className={s.chartSec} aria-label={lineLabel}>
+      <section className={s.chartSec} aria-label={t('asset.line.labelShort', { t: ticker, range: rangeLong })}>
         <div className={s.ctl}>
           <div role="group" aria-label={t('asset.range.group')} className={s.chips}>
             {ASSET_RANGES.map(x => (

@@ -3,6 +3,8 @@
 // las mismas claves y variables (esencial.test.js).
 export default {
   'ess.view.label': 'Vista completa',
+  'ess.view.off': 'Apagada',
+  'ess.view.on': 'Encendida',
   'ess.view.hint': 'Suma velas, indicadores (RSI, MACD, medias y bandas de Bollinger), stop y la cinta de mercado. Apagada, ves lo esencial con una línea simple de precio.',
   'ess.edu': 'Información educativa, no es recomendación de inversión.',
 

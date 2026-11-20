@@ -31,6 +31,9 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
     ].filter(([, v]) => v != null)
     : []
   const hasInflation = !!checks?.some(c => c.key === 'inflation')
+  // Con pérdida la etiqueta ya dice "restó" (y la flecha baja): la cifra va sin
+  // signo, para no leer "El mercado restó −50". El signo queda con "sumó".
+  const lost = g < -0.005
   return (
     <section className={s.put} aria-labelledby={`${id}-put`}>
       <h2 id={`${id}-put`} className="sr-only">{t('ess.put.title')}</h2>
@@ -41,10 +44,10 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
           <dd className={s.putSub}>{t(summary.basis === 'contributed' ? 'ess.put.putSub.contributed' : 'ess.put.putSub.invested')}</dd>
         </div>
         <div className={s.putCell}>
-          <dt className={s.putLabel}>{t(g < -0.005 ? 'ess.put.lost' : 'ess.put.gain')}</dt>
-          <dd className={`${s.putValue} ${s.tone}`} data-tone={dirOf(g)}><Arrow n={g} /><Money>{money(g, true)}</Money></dd>
+          <dt className={s.putLabel}>{t(lost ? 'ess.put.lost' : 'ess.put.gain')}</dt>
+          <dd className={`${s.putValue} ${s.tone}`} data-tone={dirOf(g)}><Arrow n={g} /><Money>{lost ? money(Math.abs(g)) : money(g, true)}</Money></dd>
           <dd className={s.putSub}>
-            {summary.pct != null ? t('ess.put.gainSub', { pct: pct(summary.pct, true) }) : null}
+            {summary.pct != null ? t('ess.put.gainSub', { pct: lost ? pct(Math.abs(summary.pct)) : pct(summary.pct, true) }) : null}
             {summary.value != null ? <> · <Money>{t('ess.put.value', { v: money(summary.value) })}</Money></> : null}
           </dd>
         </div>

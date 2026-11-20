@@ -1,6 +1,8 @@
 // Texte der Basisansicht von Investments (de). Gleiche Schlüssel und Variablen wie es.
 export default {
   'ess.view.label': 'Vollansicht',
+  'ess.view.off': 'Aus',
+  'ess.view.on': 'An',
   'ess.view.hint': 'Zeigt zusätzlich Kerzen, Indikatoren (RSI, MACD, Durchschnitte und Bollinger-Bänder), Stops und das Marktband. Ausgeschaltet sehen Sie das Wesentliche mit einer einfachen Kurslinie.',
   'ess.edu': 'Informationen zu Lernzwecken, keine Anlageempfehlung.',
 

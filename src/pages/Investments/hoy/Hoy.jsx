@@ -162,7 +162,7 @@ function AporteBanner({ a, usd, pending, onGo, onClose, sym, noRate }) {
 }
 
 // ── Banda de valor ────────────────────────────────────────────────
-function ValueBand({ T, local, money, priced }) {
+function ValueBand({ T, local, money, priced, showResult = true }) {
   const { t } = useT()
   const sub = T.missing > 0
     ? t(T.missing === 1 ? 'invest.hoy.band.loadingOne' : 'invest.hoy.band.loadingMany', { n: T.missing })
@@ -179,12 +179,12 @@ function ValueBand({ T, local, money, priced }) {
             {priced ? <><Arrow n={T.day} /><Money>{money(T.day, true)}</Money> <span>{fmtPct(T.dayPct, { signed: true })}</span></> : '—'}
           </dd>
         </div>
-        <div>
+        {showResult && <div>
           <dt>{t('invest.hoy.band.unrealized')}</dt>
           <dd data-tone={dirOf(T.total)}>
             <Arrow n={T.total} /><Money>{money(T.total, true)}</Money> <span>{t('invest.hoy.band.onCost', { pct: fmtPct(T.totalPct, { signed: true }) })}</span>
           </dd>
-        </div>
+        </div>}
       </dl>
     </section>
   )
@@ -647,7 +647,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       {banner}
 
       <div className={s.top}>
-        <ValueBand T={T} local={local} money={money} priced={T.priced > 0} />
+        {/* En la esencial, PutSummary ya dice el resultado ("El mercado sumó"): no se repite con otro nombre. */}
+        <ValueBand T={T} local={local} money={money} priced={T.priced > 0} showResult={shows(view, 'unrealized') || !put} />
         {shows(view, 'stop') && <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />}
         {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}
       </div>

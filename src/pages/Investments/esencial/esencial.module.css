@@ -7,14 +7,22 @@
   font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
 }
 .switch:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+/* Apagado: riel en --th (≥ 3:1 contra --fill, WCAG 1.4.11; --brd es
+   decorativo) y círculo blanco con borde. El estado también va en texto
+   ("Apagada"/"Encendida") y con un ícono en el círculo: no depende solo del
+   color ni de la posición. */
 .track {
-  position: relative; display: inline-block; width: 40px; height: 24px; border-radius: 999px;
-  background: var(--brd); transition: background var(--dur-press, 80ms);
+  position: relative; display: inline-block; flex: none; width: 40px; height: 24px; border-radius: 999px;
+  background: var(--th); transition: background var(--dur-press, 80ms);
 }
 .thumb {
   position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
-  background: var(--sur); box-shadow: var(--sh-1, 0 1px 2px rgba(0,0,0,.2)); transition: transform var(--dur-value-update, 200ms);
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; border: 1px solid var(--th); color: var(--th); box-sizing: border-box;
+  box-shadow: var(--sh-1, 0 1px 2px rgba(0,0,0,.2)); transition: transform var(--dur-value-update, 200ms);
 }
+.switch[aria-checked="true"] .thumb { border-color: var(--tx); color: var(--tx); }
+.switchState { font-weight: 400; color: var(--th); white-space: nowrap; }
 .switch[aria-checked="true"] .track { background: var(--tx); }
 .switch[aria-checked="true"] .thumb { transform: translateX(16px); }
 @media (prefers-reduced-motion: reduce) { .thumb, .track { transition: none; } }

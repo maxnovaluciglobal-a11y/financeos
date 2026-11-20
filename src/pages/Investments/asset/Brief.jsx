@@ -3,7 +3,7 @@
 // con lo que ya trae la API (utils/investEsencial.js: companyBrief). Lo que
 // falta no se muestra; si no hay nada, se dice.
 import { useId, useMemo } from 'react'
-import { companyBrief } from '../../../utils/investEsencial.js'
+import { companyBrief, sectorKey } from '../../../utils/investEsencial.js'
 import { fmtPct } from '../../../utils/index.js'
 import { useAssetT } from './assetDict.js'
 import { fmtNum } from './format.js'
@@ -33,6 +33,9 @@ export default function Brief({ ticker, quote, fund, rows, rowsPhase, type, pric
   if (b.risk) {
     facts.push(['risk', t(`asset.brief.risk.${b.risk.band}`), `${t(`asset.brief.risk.${b.risk.band}Text`)} ${t('asset.brief.riskBasis', { pct: fmtPct(b.risk.yearly, { decimals: 0 }) })}`])
   }
+  // Rubros conocidos, traducidos; el resto tal como viene de la fuente (en inglés).
+  const sectors = b.sector.map(x => { const k = sectorKey(x); return k ? { text: t(`asset.sector.${k}`), en: false } : { text: x, en: true } })
+  const english = !!b.what || sectors.some(x => x.en)
   return (
     <section className={s.brief} aria-labelledby={`${id}-brief`}>
       <h2 id={`${id}-brief`} className={s.h3}>{title}</h2>
@@ -40,8 +43,8 @@ export default function Brief({ ticker, quote, fund, rows, rowsPhase, type, pric
         <div className={s.briefWhat}>
           <h3 className={s.briefK}>{t('asset.brief.what')}</h3>
           {b.what && <p className={s.desc} lang="en">{b.what}</p>}
-          {b.sector.length > 0 && <p className={s.note}>{t('asset.brief.sector', { list: b.sector.join(' · ') })}</p>}
-          {b.what && <p className={s.note}>{t('asset.brief.whatLang')}</p>}
+          {sectors.length > 0 && <p className={s.note}>{t('asset.brief.sector', { list: sectors.map(x => x.text).join(' · ') })}</p>}
+          {english && <p className={s.note}>{t(b.what ? 'asset.brief.whatLang' : 'asset.brief.sourceLang')}</p>}
         </div>
       )}
       {facts.length > 0 && (

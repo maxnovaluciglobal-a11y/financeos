@@ -1,6 +1,8 @@
 // Textos da visão essencial de Investimentos (pt). Mesmas chaves e variáveis do es.
 export default {
   'ess.view.label': 'Visão completa',
+  'ess.view.off': 'Desligada',
+  'ess.view.on': 'Ligada',
   'ess.view.hint': 'Acrescenta velas, indicadores (RSI, MACD, médias e bandas de Bollinger), stop e a faixa de mercado. Desligada, você vê o essencial com uma linha simples de preço.',
   'ess.edu': 'Informação educativa, não é recomendação de investimento.',
 

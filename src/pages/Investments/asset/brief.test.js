@@ -41,9 +41,22 @@ describe('Esta empresa en 30 segundos', () => {
   it('con fundamentales y un año de precios: qué hace, tamaño, dividendos, el año y el riesgo', () => {
     const fund = { phase: 'ready', data: { source: 'fmp', description: 'Apple Inc. designs and sells phones and computers. Second sentence.', sector: 'Technology', marketCap: 3.4e12, dividendYield: 0.005 } }
     const out = text(renderToStaticMarkup(h(Brief, { ticker: 'AAPL', quote: null, fund, rows: rows(), rowsPhase: 'ready', type: 'Stock', price: null, now: NOW })))
-    for (const k of ['Esta empresa en 30 segundos', 'Qué hace', 'Apple Inc. designs and sells phones and computers.', 'Rubro: Technology', 'Muy grande', '3,4 billones', 'Paga', 'En el año', 'Riesgo']) expect(out, k).toContain(k)
+    for (const k of ['Esta empresa en 30 segundos', 'Qué hace', 'Apple Inc. designs and sells phones and computers.', 'Rubro: Tecnología', 'Muy grande', '3,4 billones', 'Paga', 'En el año', 'Riesgo']) expect(out, k).toContain(k)
     expect(out).not.toContain('Second sentence')
     expect(out).toMatch(/(Subió|Bajó) .+ Desde el último cierre de 2025/)
+  })
+  it('un fondo: sin "ETF" ni industria en jerga, y el aviso de inglés aunque no haya descripción', () => {
+    const fund = { phase: 'ready', data: { source: 'fmp', sector: 'ETF', industry: 'Large Blend', marketCap: 5e11 } }
+    const out = text(renderToStaticMarkup(h(Brief, { ticker: 'VOO', quote: null, fund, rows: null, rowsPhase: 'ready', type: 'ETF', now: NOW })))
+    expect(out).toContain('Este fondo en 30 segundos')
+    expect(out).not.toContain('Large Blend')
+    expect(out).not.toContain('Rubro')
+    const raw = text(renderToStaticMarkup(h(Brief, { ticker: 'XX', quote: null, fund: { phase: 'ready', data: { source: 'fmp', sector: 'Technology', industry: 'Consumer Electronics' } }, rows: null, rowsPhase: 'ready', type: 'Stock', now: NOW })))
+    expect(raw).toContain('Rubro: Tecnología · Consumer Electronics')
+    expect(raw).toContain(es['asset.brief.sourceLang'])
+  })
+  it('tamaño en palabras que sirven para empresa y para fondo', () => {
+    for (const k of ['mid', 'small', 'micro']) expect(es[`asset.brief.size.${k}`]).toMatch(/o$/)
   })
   it('sin datos: lo dice, no inventa', () => {
     const out = text(renderToStaticMarkup(h(Brief, { ticker: 'XYZ', quote: null, fund: { phase: 'ready', data: null }, rows: null, rowsPhase: 'error', type: 'Stock', now: NOW })))
@@ -63,6 +76,9 @@ describe('gráfico de la vista esencial', () => {
     const html = renderToStaticMarkup(h(ChartPanel, { ...props, simple: true }))
     expect(html).toContain('<path')
     expect(html).toMatch(/role="img"[^>]*aria-label="Precio de cierre de AAPL/)
+    // La descripción completa se lee una sola vez (en el SVG); la sección lleva un nombre corto.
+    expect(html.match(/Precio de cierre de AAPL/g)).toHaveLength(1)
+    expect(html).not.toContain('velas')
     for (const k of [es['asset.layer.rsi'], es['asset.layer.macd'], es['asset.legend.sma20'], es['asset.legend.bb']]) expect(html, k).not.toContain(k)
   })
   it('la vista completa sigue con las capas y la leyenda', () => {

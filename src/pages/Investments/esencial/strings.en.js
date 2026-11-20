@@ -1,6 +1,8 @@
 // Essential view texts for Investments (en). Same keys and variables as es.
 export default {
   'ess.view.label': 'Full view',
+  'ess.view.off': 'Off',
+  'ess.view.on': 'On',
   'ess.view.hint': 'Adds candles, indicators (RSI, MACD, moving averages and Bollinger bands), stops and the market ticker. Off, you see the essentials with a simple price line.',
   'ess.edu': 'Educational information, not an investment recommendation.',
 

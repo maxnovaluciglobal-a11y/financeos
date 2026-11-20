@@ -133,7 +133,9 @@ function SpyChart({ t, series, showMa = true }) {
   return (
     <figure className={s.spyFig}>
       <svg className={s.spy} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img"
-        aria-label={t('invest.mkt.spy.label', { spy: usd(last.close), ma: usd(last.ma) })}>
+        aria-label={showMa
+          ? t('invest.mkt.spy.label', { spy: usd(last.close), ma: usd(last.ma) })
+          : t('invest.mkt.spy.labelSimple', { spy: usd(last.close) })}>
         {showMa && <path d={p.ma} fill="none" stroke="var(--chart-prev)" strokeWidth="1.6" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />}
         <path d={p.price} fill="none" stroke="var(--chart-net)" strokeWidth="1.8" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       </svg>
@@ -181,12 +183,13 @@ export function Context({ t, m, essential = false }) {
           <p className={s.regime} data-tone={reg.regime || 'none'}>
             <Ic size={18} strokeWidth={2.2} aria-hidden="true" />{t(`invest.mkt.regime.${reg.regime || 'none'}`)}
           </p>
-          <p className={s.body}>{reg.regime ? t(`invest.mkt.regime.${reg.regime}.desc`) : t(reg.reason === 'short' ? 'invest.mkt.regime.short' : 'invest.mkt.regime.none.desc')}</p>
+          {/* En la esencial, sin "medias de 50 y 200 días": lo mismo en palabras simples. */}
+          <p className={s.body}>{reg.regime ? t(`invest.mkt.regime.${reg.regime}.${essential ? 'descSimple' : 'desc'}`) : t(reg.reason === 'short' ? 'invest.mkt.regime.short' : 'invest.mkt.regime.none.desc')}</p>
           {reg.regime && (
             <details className={s.meaning}>
               <summary>{t('invest.mkt.meaning.q')}</summary>
               <p>{t(`invest.mkt.meaning.${reg.regime}`)} {t('invest.mkt.meaning.note')}</p>
-              <p className={s.note}>{t('invest.mkt.rule')}</p>
+              <p className={s.note}>{t(essential ? 'invest.mkt.ruleSimple' : 'invest.mkt.rule')}</p>
             </details>
           )}
           {series ? <SpyChart t={t} series={series} showMa={!essential} /> : (reg.last != null && <p className={s.note}>{t('invest.mkt.spy.short')}</p>)}

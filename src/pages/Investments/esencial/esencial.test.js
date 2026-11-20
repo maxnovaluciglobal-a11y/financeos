@@ -76,6 +76,11 @@ describe('<PutSummary>, interruptor y aviso', () => {
     const loss = { basis: 'invested', put: 1000, gain: -50, value: 950, pct: -0.05, parts: null, partial: false }
     const out = text(renderToStaticMarkup(h(PutSummary, { summary: loss, money, pct, currency: 'CLP' })))
     expect(out).toContain('El mercado restó')
+    // Sin doble negación: "El mercado restó US$50.00", nunca "restó −US$50.00".
+    expect(out).toContain('El mercado restó US$50.00')
+    expect(out).not.toMatch(/restó\s*−/)
+    expect(out).not.toContain('−US$50.00')
+    expect(out).toContain('5.0 % sobre lo que pusiste')
     expect(out).toContain('¿Le ganaste al dólar?')
     expect(out).toContain('No, por ahora.')
     expect(out).not.toContain('inflación')
@@ -84,6 +89,9 @@ describe('<PutSummary>, interruptor y aviso', () => {
     const sw = renderToStaticMarkup(h(ViewToggle, { view: 'esencial', onChange: () => {} }))
     expect(sw).toMatch(/role="switch"[^>]*aria-checked="false"/)
     expect(renderToStaticMarkup(h(ViewToggle, { view: 'completa', onChange: () => {} }))).toMatch(/aria-checked="true"/)
+    // El estado también en palabras, no solo por color o posición.
+    expect(text(sw)).toContain('Apagada')
+    expect(text(renderToStaticMarkup(h(ViewToggle, { view: 'completa', onChange: () => {} })))).toContain('Encendida')
     expect(renderToStaticMarkup(h(EduNotice))).toMatch(/role="note"[^>]*>.*Información educativa, no es recomendación de inversión\./)
   })
 })

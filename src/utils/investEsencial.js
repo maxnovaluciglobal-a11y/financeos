@@ -142,13 +142,32 @@ export function firstSentence(text, max = 220) {
   return out.length > max ? `${out.slice(0, max - 1).replace(/\s+\S*$/, '')}…` : out
 }
 
+// Rubros que publica la fuente (en inglés) → clave del diccionario de la ficha
+// (asset.sector.<clave>). Lo que no está acá se muestra tal cual, con el aviso
+// de que viene en inglés.
+export const SECTOR_KEYS = {
+  technology: 'technology', 'information technology': 'technology',
+  healthcare: 'healthcare', 'health care': 'healthcare',
+  'financial services': 'financial', financials: 'financial', financial: 'financial',
+  'consumer cyclical': 'consumerCyclical', 'consumer discretionary': 'consumerCyclical',
+  'consumer defensive': 'consumerDefensive', 'consumer staples': 'consumerDefensive',
+  industrials: 'industrials', energy: 'energy', utilities: 'utilities',
+  'real estate': 'realEstate', 'basic materials': 'basicMaterials', materials: 'basicMaterials',
+  'communication services': 'communication',
+}
+export const sectorKey = (name) => SECTOR_KEYS[String(name || '').trim().toLowerCase()] || null
+
 // quote: cotización (investApi.quote); fund: fundamentales crudos o null;
 // rows: un año de velas; type: Stock · ETF · Crypto.
 export function companyBrief({ quote = null, fund = null, rows = null, type = 'Stock', price = null, now = Date.now() } = {}) {
   const crypto = type === 'Crypto'
   const f = hasFundamentals(fund) ? normalizeFundamentals(fund) : null
   const cap = Number(f?.marketCap) > 0 ? Number(f.marketCap) : Number(quote?.marketCap) > 0 ? Number(quote.marketCap) : null
-  const sector = [f?.sector, f?.industry].map(x => (x == null ? '' : String(x).trim())).filter(Boolean)
+  // Un fondo: sin "industria" (viene en jerga: "Large Blend") y sin el rubro
+  // "ETF", que no dice nada (el título ya dice "Este fondo").
+  const etf = type === 'ETF' || /^etf$/i.test(String(f?.sector || '').trim())
+  const sector = (etf ? [f?.sector] : [f?.sector, f?.industry])
+    .map(x => (x == null ? '' : String(x).trim())).filter(x => x && !/^etf$/i.test(x))
   let dividend = null
   if (crypto) dividend = { kind: 'crypto' }
   else if (f) dividend = Number(f.dividendYield) > 0 ? { kind: 'pays', yield: Number(f.dividendYield) } : { kind: 'none' }
