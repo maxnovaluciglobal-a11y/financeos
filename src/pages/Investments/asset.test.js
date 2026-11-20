@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sampleCandles } from './Asset.jsx'
+import { assetView, sampleCandles } from './Asset.jsx'
 
 describe('velas de ejemplo del demo', () => {
   it('deterministas por ticker, solo días hábiles y velas coherentes', () => {
@@ -13,5 +13,16 @@ describe('velas de ejemplo del demo', () => {
       expect(k.low).toBeLessThanOrEqual(Math.min(k.open, k.close))
       expect(k.low).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('qué muestra la ficha', () => {
+  it('mientras se revisa la cuenta: cargando, no "falta el activo"', () => {
+    expect(assetView({ full: true, demo: false, status: 'loading', picked: 'AAPL' })).toBe('loading')
+    expect(assetView({ full: true, demo: false, status: 'granted', picked: 'AAPL' })).toBe('ready')
+    expect(assetView({ full: true, demo: true, status: 'loading', picked: 'AAPL' })).toBe('ready')
+    expect(assetView({ full: true, demo: false, status: 'needs-profile', picked: 'AAPL' })).toBe('missing')
+    expect(assetView({ full: true, demo: false, status: 'loading', picked: null })).toBe('missing')
+    expect(assetView({ full: false, demo: true, status: 'granted', picked: 'AAPL' })).toBe('missing')
   })
 })

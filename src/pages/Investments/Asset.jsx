@@ -41,6 +41,15 @@ export function sampleCandles(ticker, days = 126, end = Date.UTC(2026, 10, 20)) 
   return out
 }
 
+// Qué muestra la ficha: 'ready' con un ticker y acceso, 'loading' mientras se
+// revisa la cuenta (antes decía por un instante "No hay un activo elegido") y
+// 'missing' en cualquier otro caso.
+export function assetView({ full, demo, status, picked }) {
+  if (!full || !picked) return 'missing'
+  if (demo || status === 'granted') return 'ready'
+  return status === 'loading' ? 'loading' : 'missing'
+}
+
 function useAssetTicker() {
   const [ticker, setTicker] = useState(currentAssetTicker)
   useEffect(() => {
@@ -60,7 +69,8 @@ export default function InvestAsset({ setPage }) {
   const { status } = useInvestAccess()
   const [full] = useState(investFullHere)
   // Misma puerta que Inversiones: sin el interruptor o sin acceso, no hay ficha.
-  const ticker = full && (demo || status === 'granted') ? picked : null
+  const view = assetView({ full, demo, status, picked })
+  const ticker = view === 'ready' ? picked : null
   const [quote, setQuote] = useState({ phase: 'loading', q: null })
   const [hist, setHist] = useState({ phase: 'loading', rows: null })
 
@@ -82,6 +92,17 @@ export default function InvestAsset({ setPage }) {
   }, [ticker, demo])
 
   const closes = useMemo(() => (hist.rows || []).slice(-30).map(r => r.close), [hist.rows])
+
+  // Mientras se revisa la cuenta, un aviso breve (no "falta el activo", que
+  // después se corrige solo).
+  if (view === 'loading') {
+    return (
+      <div className={s.hub}>
+        <PageHeader title={picked} sub={t('invest.asset.label')} />
+        <p className={s.assetNote} role="status">{t('invest.gate.loading')}</p>
+      </div>
+    )
+  }
 
   if (!ticker) {
     return (

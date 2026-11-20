@@ -13,15 +13,14 @@
 //    ya la mandan así; /api/marketbar la manda en puntos (×100) y aquí se
 //    divide (inventario 01, punto 9).
 //
-// Privacidad de las URL: todos los endpoints son GET y llevan el ticker en la
+// Privacidad de las URL: los endpoints son GET y llevan el ticker en la
 // consulta (así funciona la caché del CDN). Es lo mismo que hace el puente de
 // hoy y lo que dice invest.privacy ("solo se consultan los símbolos"). La
-// excepción es /api/news: sin tickers devuelve noticias del mercado general,
-// que es lo que se pide por defecto. Pedir noticias de los tickers propios
-// manda la LISTA del portafolio en una sola URL (queda en los registros del
-// servidor y del CDN): solo con `tickers` explícito, y la pantalla que lo use
-// tiene que decirlo. El endpoint no acepta POST; cambiarlo es trabajo de
-// invest-web (anotado en el informe de F0).
+// excepción es /api/news: pedir noticias de los tickers propios mandaría la
+// LISTA del portafolio en una sola URL (quedaría en los registros del servidor
+// y del CDN), y el PLAN lo lista entre los errores de Invest que se corrigen.
+// Por eso news() solo pide noticias del mercado general y rechaza `tickers`
+// hasta que invest-web acepte la lista por POST (requisito de F6).
 //
 // El demo (demo.moyiq.app) y el desarrollo local no están en la lista de
 // orígenes de la API: ahí la API responde 403 y este cliente devuelve null.
@@ -33,7 +32,6 @@ const CRYPTO_RE = /^[A-Z0-9-]{1,15}$/
 export const QUOTE_BATCH = 10
 export const CRYPTO_BATCH = 30
 export const FUND_BATCH = 10
-export const NEWS_MAX_TICKERS = 12
 export const HISTORY_RANGES = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y']
 export const HISTORY_INTERVALS = ['1m', '5m', '15m', '1h', '1d', '1wk', '1mo']
 
@@ -197,12 +195,11 @@ export function createInvestApi({ fetchImpl = (...a) => fetch(...a), now = () =>
         fetchedAt: d?.fetchedAt || null,
       }))
     },
-    // Sin tickers: noticias del mercado general (lo seguro). Con tickers: ver la
-    // nota de privacidad del encabezado.
-    news({ tickers = null } = {}) {
-      const list = tickers ? [...new Set(tickers.map(normTicker).filter(Boolean))].slice(0, NEWS_MAX_TICKERS) : []
-      const q = list.length ? `?tickers=${enc(list)}` : ''
-      return cached(`news:${list.join(',')}`, TTL.news, `/api/news${q}`, TIMEOUT.news, (d) => ({
+    // Solo noticias del mercado general. Con `tickers` lanza: la lista del
+    // portafolio no viaja en la URL (ver el encabezado).
+    news(opts = {}) {
+      if (opts && opts.tickers != null) throw new Error('news_tickers_need_post')
+      return cached('news:', TTL.news, '/api/news', TIMEOUT.news, (d) => ({
         items: (d?.items || []).filter(it => it && it.title && /^https?:\/\//.test(String(it.link || ''))),
         fetchedAt: d?.fetchedAt || null,
         fallback: !!d?.fallback,

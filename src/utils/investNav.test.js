@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
-  INVEST_TABS, initialTab, tabFromOpen, tabFromSearch, tabKeyTarget, normAssetTicker, bootTab, rememberTab,
+  INVEST_TABS, PORT_TABS, PORT_TAB_KEY, bootPortTab, rememberPortTab, queueInvestTab, initialTab, tabFromOpen, tabFromSearch, tabKeyTarget, normAssetTicker, bootTab, rememberTab,
   openAsset, currentAssetTicker, TAB_KEY, ASSET_PAGE, __resetInvestNav,
 } from './investNav.js'
 import { pageFromSearch } from './deepLink.js'
@@ -74,5 +74,43 @@ describe('historial y ficha del activo', () => {
   it('normAssetTicker valida como la API', () => {
     expect(normAssetTicker('^gspc')).toBe('^GSPC')
     expect(normAssetTicker('<b>')).toBeNull()
+  })
+  it('sub-pestañas de Portafolio: historial → guardada → Posiciones', () => {
+    globalThis.history = fakeHistory()
+    expect(PORT_TABS).toEqual(['posiciones', 'movimientos', 'dividendos', 'objetivos'])
+    const s = mem()
+    expect(bootPortTab({ storage: s })).toBe('posiciones')
+    rememberPortTab('dividendos', s)
+    expect(s.m.get(PORT_TAB_KEY)).toBe('dividendos')
+    expect(PORT_TAB_KEY.startsWith('fos_')).toBe(true)
+    expect(bootPortTab({ storage: mem() })).toBe('dividendos') // de la entrada del historial
+    globalThis.history = fakeHistory()
+    expect(bootPortTab({ storage: s })).toBe('dividendos')
+    rememberPortTab('x', s)
+    expect(s.m.get(PORT_TAB_KEY)).toBe('dividendos')
+  })
+  it('un destino pedido desde otra pantalla se usa una sola vez y gana', () => {
+    globalThis.history = fakeHistory()
+    globalThis.history.state = { invTab: 'lista' }
+    queueInvestTab('portafolio', 'movimientos')
+    expect(bootTab({ search: '', storage: mem() })).toBe('portafolio')
+    expect(bootPortTab({ storage: mem() })).toBe('movimientos')
+    expect(bootPortTab({ storage: mem() })).toBe('posiciones')
+    queueInvestTab('nada')
+    expect(bootTab({ search: '', storage: mem() })).toBe('portafolio') // ya quedó en el historial
+  })
+})
+
+describe('enlace que vuelve de OAuth o del correo', () => {
+  it('bootTab lee la search que resolvió initialSearch al arrancar', async () => {
+    __resetInvestNav()
+    globalThis.history = fakeHistory()
+    const deepLink = await import('./deepLink.js')
+    const store = { ...mem(), removeItem: () => {} }
+    const m = mem(); store.getItem = m.getItem; store.setItem = m.setItem
+    deepLink.stashOpenForOAuth('?open=invest-lista', store, 1000)
+    // La vuelta de Google llega sin la query; initialSearch recupera el destino.
+    expect(deepLink.initialSearch('', store, 2000, { local: mem(), hash: '' })).toBe('?open=invest-lista')
+    expect(bootTab({ storage: mem() })).toBe('lista')
   })
 })

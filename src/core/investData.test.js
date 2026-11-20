@@ -257,3 +257,23 @@ describe('privacidad', () => {
     expect(src).not.toMatch(/localStorage|sessionStorage|indexedDB/)
   })
 })
+
+describe('cambio de cuenta', () => {
+  it('vacía las cachés en memoria cuando cambia o se cierra la sesión, no en la primera', async () => {
+    const { bindAccountReset } = await import('./investData.js')
+    let cb = null
+    const unsubscribe = vi.fn()
+    const client = { auth: { onAuthStateChange: (fn) => { cb = fn; return { data: { subscription: { unsubscribe } } } } } }
+    const reset = vi.fn()
+    const stop = bindAccountReset({ client, resets: [reset] })
+    cb('INITIAL_SESSION', { user: { id: 'a' } })
+    cb('TOKEN_REFRESHED', { user: { id: 'a' } })
+    expect(reset).not.toHaveBeenCalled()
+    cb('SIGNED_IN', { user: { id: 'b' } })
+    cb('SIGNED_OUT', null)
+    expect(reset).toHaveBeenCalledTimes(2)
+    stop()
+    expect(unsubscribe).toHaveBeenCalled()
+    expect(bindAccountReset({ client: null })).toBeTypeOf('function')
+  })
+})

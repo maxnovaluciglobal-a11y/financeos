@@ -114,8 +114,9 @@ describe('marketbar, history, news y tipos de cambio', () => {
     const r = await api.news()
     expect(f.calls[0]).toBe(`${INVEST_API_ORIGIN}/api/news`)
     expect(r.items).toHaveLength(1)
-    await api.news({ tickers: ['aapl', 'AAPL', 'bad ticker'] })
-    expect(f.calls[1]).toBe(`${INVEST_API_ORIGIN}/api/news?tickers=AAPL`)
+    // La lista del portafolio nunca viaja en la URL (PLAN: errores de Invest).
+    expect(() => api.news({ tickers: ['AAPL'] })).toThrow('news_tickers_need_post')
+    expect(f.calls).toHaveLength(1)
   })
   it('fundamentals en lotes de 10 y fx-latam / fx-ars cacheados', async () => {
     const f = fakeFetch((u) => {

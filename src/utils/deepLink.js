@@ -113,6 +113,13 @@ export function initialSearch(search, storage = sessionStore(), now = Date.now()
   return result
 }
 
+// La search efectiva que se resolvió al arrancar (o null si todavía no se
+// llamó). Inversiones la usa para abrir la pestaña de ?open=invest-<pestaña>
+// también cuando el destino volvió de OAuth o del correo de confirmación.
+export function bootInitialSearch() {
+  return lastInitial ? lastInitial.result : null
+}
+
 // ¿Esta carga vuelve de Auth (OAuth de Google o enlace de un correo)?
 export function bootIsAuthReturn() {
   return isAuthReturn('', BOOT_AUTH_MARK)

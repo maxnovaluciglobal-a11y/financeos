@@ -12,7 +12,12 @@
 // cuenta, core/deviceOwner.js); el ticker de la ficha NO se guarda en el
 // dispositivo.
 // Enlaces: ?open=invest-hoy | invest-portafolio | invest-lista |
-// invest-planificar | invest-mercado (utils/deepLink.js).
+// invest-planificar | invest-mercado (utils/deepLink.js). La search que se
+// lee es la que resolvió deepLink.initialSearch() al arrancar, así el enlace
+// sobrevive a la vuelta de OAuth o del correo de confirmación.
+// F1: Portafolio tiene 4 sub-pestañas (invSub en la misma entrada del
+// historial y `fos_invest_port_tab`, también clave de la cuenta).
+import { bootInitialSearch } from './deepLink.js'
 
 export const INVEST_TABS = ['hoy', 'portafolio', 'lista', 'planificar', 'mercado']
 export const DEFAULT_TAB = 'hoy'
@@ -21,7 +26,12 @@ export const ASSET_PAGE = 'investAsset'
 export const ASSET_EVENT = 'fos:invest-asset'
 const TICKER_RE = /^[\^A-Z0-9.\-=]{1,15}$/
 
+export const PORT_TABS = ['posiciones', 'movimientos', 'dividendos', 'objetivos']
+export const DEFAULT_PORT_TAB = 'posiciones'
+export const PORT_TAB_KEY = 'fos_invest_port_tab'
+
 export const isTab = (t) => INVEST_TABS.includes(t)
+export const isPortTab = (t) => PORT_TABS.includes(t)
 export function normAssetTicker(t) {
   const s = String(t ?? '').toUpperCase().trim()
   return TICKER_RE.test(s) ? s : null
@@ -59,6 +69,12 @@ export function tabKeyTarget(key, current, tabs = INVEST_TABS) {
 // ── Navegador (no puro) ───────────────────────────────────────────
 let linkUsed = false
 let memTicker = null
+// Destino pedido desde otra pantalla de moyiq (p. ej. "Registrar el aporte"
+// en Panorama): se usa una vez, al montar Inversiones.
+let queued = null
+export function queueInvestTab(tab, sub = null) {
+  queued = isTab(tab) ? { tab, sub: isPortTab(sub) ? sub : null } : null
+}
 
 function readHistoryState() {
   try { return typeof history !== 'undefined' ? history.state : null } catch { return null }
@@ -70,7 +86,10 @@ function mergeHistoryState(patch) {
   } catch { /* historial no disponible: vale solo en memoria */ }
 }
 
-export function bootTab({ search = typeof location !== 'undefined' ? location.search : '', storage = null } = {}) {
+const bootSearch = () => bootInitialSearch() ?? (typeof location !== 'undefined' ? location.search : '')
+
+export function bootTab({ search = bootSearch(), storage = null } = {}) {
+  if (queued) { const t = queued.tab; queued = queued.sub ? { sub: queued.sub } : null; mergeHistoryState({ invTab: t }); return t }
   const linkTab = linkUsed ? null : tabFromSearch(search)
   linkUsed = true
   let saved = null
@@ -82,6 +101,22 @@ export function rememberTab(tab, storage = null) {
   if (!isTab(tab)) return
   mergeHistoryState({ invTab: tab })
   try { storage?.setItem(TAB_KEY, tab) } catch { /* modo privado: queda en el historial de la pestaña */ }
+}
+
+// Sub-pestaña de Portafolio: la pedida desde otra pantalla → la de esta
+// entrada del historial → la guardada → Posiciones.
+export function bootPortTab({ storage = null } = {}) {
+  if (queued?.sub) { const sub = queued.sub; queued = null; return sub }
+  const st = readHistoryState()?.invSub
+  if (isPortTab(st)) return st
+  let saved = null
+  try { saved = storage?.getItem(PORT_TAB_KEY) ?? null } catch { saved = null }
+  return isPortTab(saved) ? saved : DEFAULT_PORT_TAB
+}
+export function rememberPortTab(sub, storage = null) {
+  if (!isPortTab(sub)) return
+  mergeHistoryState({ invSub: sub })
+  try { storage?.setItem(PORT_TAB_KEY, sub) } catch { /* modo privado */ }
 }
 
 export function currentAssetTicker() {
@@ -102,4 +137,4 @@ export function openAsset(setPage, ticker) {
 }
 
 // Solo para pruebas.
-export function __resetInvestNav() { linkUsed = false; memTicker = null }
+export function __resetInvestNav() { linkUsed = false; memTicker = null; queued = null }

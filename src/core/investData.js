@@ -23,6 +23,7 @@
 import { authClient } from './authClient.js'
 import { holdingFromRowFull } from '../utils/investValuation.js'
 import { logRejection } from '../utils/errorLog.js'
+import { investApi } from './investApi.js'
 
 export const TICKER_RE = /^[A-Z0-9.\-^=]{1,15}$/
 export const ASSET_TYPES = ['Stock', 'ETF', 'Crypto', 'Bond']
@@ -401,3 +402,20 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
 }
 
 export const investData = createInvestData()
+
+// Al cambiar o cerrar la cuenta se vacían las cachés en memoria de los datos
+// (investData) y de la API de mercado (investApi: guarda cotizaciones por
+// ticker). Nada de esto toca el dispositivo; así la cuenta siguiente no ve ni
+// un ticker de la anterior. Devuelve la función para dejar de escuchar.
+export function bindAccountReset({ client = authClient, resets = [() => investData.clear(), () => investApi.clear()] } = {}) {
+  if (!client?.auth?.onAuthStateChange) return () => {}
+  let last
+  const { data } = client.auth.onAuthStateChange((_ev, session) => {
+    const uid = session?.user?.id || null
+    if (last !== undefined && uid !== last) for (const fn of resets) { try { fn() } catch { /* una caché que no se vacía se vacía en la próxima sesión */ } }
+    last = uid
+  })
+  return () => data?.subscription?.unsubscribe?.()
+}
+// Se engancha una vez, cuando se carga Inversiones (este módulo es diferido).
+if (typeof window !== 'undefined') bindAccountReset()
