@@ -29,3 +29,32 @@ describe('uiFlags.inicioLupa', () => {
     expect(inicioLupaOn({ session: boom })).toBe(UI_FLAGS.inicioLupa)
   })
 })
+
+describe('uiFlags.investFull (Invest completo, F0)', () => {
+  it('apagado en producción por defecto', async () => {
+    const { investFullOn } = await import('./uiFlags.js')
+    expect(UI_FLAGS.investFull).toBe(false)
+    expect(investFullOn({})).toBe(false)
+  })
+  it('encendido en el demo y en desarrollo local', async () => {
+    const { investFullOn } = await import('./uiFlags.js')
+    expect(investFullOn({ isDemo: true })).toBe(true)
+    expect(investFullOn({ isDev: true })).toBe(true)
+  })
+  it('?ui=invest-full lo enciende en la pestaña; ?ui=invest-simple lo apaga aunque sea el demo', async () => {
+    const { investFullOn, INVEST_FULL_KEY } = await import('./uiFlags.js')
+    const s = mem()
+    expect(investFullOn({ search: '?ui=invest-full', session: s })).toBe(true)
+    expect(s.m.get(INVEST_FULL_KEY)).toBe('1')
+    expect(investFullOn({ session: s })).toBe(true)
+    const d = mem()
+    expect(investFullOn({ isDemo: true, search: '?demo=true&ui=invest-simple', session: d })).toBe(false)
+    expect(investFullOn({ isDemo: true, session: d })).toBe(false)
+  })
+  it('sin almacenamiento (modo privado) no rompe', async () => {
+    const { investFullOn } = await import('./uiFlags.js')
+    const boom = { getItem() { throw new Error('x') }, setItem() { throw new Error('x') } }
+    expect(investFullOn({ search: '?ui=invest-full', session: boom })).toBe(true)
+    expect(investFullOn({ session: boom })).toBe(false)
+  })
+})

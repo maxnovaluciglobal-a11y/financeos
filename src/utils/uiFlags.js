@@ -24,6 +24,13 @@ export const UI_FLAGS = {
   // Escena morada detrás del título de TODAS las pantallas (20-nov-2026,
   // pedido de Walter). `?ui=sin-escena` la apaga en la pestaña para comparar.
   pageScene: true,
+  // Invest completo dentro de moyiq, fase F0 (20-nov-2026): Inversiones pasa a
+  // ser una sección con 5 pestañas (Hoy · Portafolio · Lista · Planificar ·
+  // Mercado), ficha del activo y buscador. APAGADO en producción hasta que
+  // Walter lo apruebe; demo y desarrollo local lo muestran. `?ui=invest-full`
+  // / `?ui=invest-simple` lo fijan en la pestaña. Apagado, Inversiones queda
+  // exactamente como antes. Ver investFullOn().
+  investFull: false,
 }
 
 export function registroAutomaticoOn({ isDemo = false, isDev = false } = {}) {
@@ -72,4 +79,28 @@ export function pageSceneHere() {
   let session = null
   try { session = typeof sessionStorage !== 'undefined' ? sessionStorage : null } catch { session = null }
   return pageSceneOn({ search: typeof location !== 'undefined' ? location.search : '', session })
+}
+
+// ¿Inversiones completo (F0+)? Mismo orden que inicioLupaOn: parámetro de
+// revisión guardado en la pestaña → demo → desarrollo local → UI_FLAGS.
+export const INVEST_FULL_KEY = 'fos_ui_invest_full'
+export function investFullOn({ isDemo = false, isDev = false, search = '', session = null } = {}) {
+  const ui = new URLSearchParams(search || '').get('ui')
+  if (ui === 'invest-full' || ui === 'invest-simple') {
+    try { session?.setItem(INVEST_FULL_KEY, ui === 'invest-full' ? '1' : '0') } catch { /* modo privado: vale solo para esta carga */ }
+    return ui === 'invest-full'
+  }
+  let saved = null
+  try { saved = session?.getItem(INVEST_FULL_KEY) ?? null } catch { saved = null }
+  if (saved === '1' || saved === '0') return saved === '1'
+  if (isDemo || isDev) return true
+  return UI_FLAGS.investFull === true
+}
+export function investFullHere() {
+  let session = null
+  try { session = typeof sessionStorage !== 'undefined' ? sessionStorage : null } catch { session = null }
+  const search = typeof location !== 'undefined' ? location.search : ''
+  let isDev = false
+  try { isDev = !!import.meta.env?.DEV } catch { isDev = false }
+  return investFullOn({ isDemo: /[?&]demo=true\b/.test(search), isDev, search, session })
 }
