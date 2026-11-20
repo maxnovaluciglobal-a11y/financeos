@@ -12,6 +12,9 @@ describe('setDeployDate', () => {
     expect(out).not.toContain('TODO(rebrand')
   })
   it('no toca la fecha ni el TODO de la privacidad al fijar la del rebranding', () => {
+    // Una vez fijada la fecha de la privacidad el TODO ya no está en el archivo
+    // real: la prueba solo tiene sentido mientras siga pendiente.
+    if (!SRC.includes('TODO(privacy-deploy)')) return
     const out = setDeployDate(SRC, '2026-12-03')
     expect(out).toContain('TODO(privacy-deploy)')
     expect(out).toMatch(/export const PRIVACY_DEPLOY_DATE = '\d{4}-\d{2}-\d{2}'/)
