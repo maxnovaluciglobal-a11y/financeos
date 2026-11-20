@@ -49,7 +49,11 @@ export default function HeroDetailSheet({ open, onClose, free, hasData, sym, sho
         </div>
       )}
 
-      {hasData && <SetAsideBlock sym={sym} onClose={onClose} />}
+      {/* Siempre montado (no atado a hasData): al quitar el último apartado de un
+          mes que solo tenía apartados, hasData pasa a false y el foco tiene que
+          caer en "Apartar dinero", no en el body. Sin apartados, el bloque
+          muestra la explicación y el botón. */}
+      <SetAsideBlock sym={sym} onClose={onClose} />
 
       {hasData && pulse && (
         <div className={`${s.detailPulse} ${s.detailBlock}`}>
