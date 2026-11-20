@@ -440,7 +440,7 @@ describe('paridad de las claves de la oferta de Pro con prueba (es/en/pt/de)', (
 
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
-    expect(base.length).toBe(12) // + billing.native.unavailable (app de tienda, 19-nov-2026)
+    expect(base.length).toBe(16) // 11 + billing.renewal.monthly, billing.renewal.noTrial, billing.renewal.annual, billing.cancelLink (LEG-N5) + billing.native.unavailable (app de tienda, 19-nov-2026)
     expect(pick(en)).toEqual(base)
     expect(pick(pt)).toEqual(base)
     expect(pick(de)).toEqual(base)

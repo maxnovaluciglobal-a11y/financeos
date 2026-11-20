@@ -1,5 +1,6 @@
 // src/pages/Dashboard/UpcomingPayments.jsx — "¿qué viene?" (M5, pieza 3).
-// Próximos pagos de los siguientes 30 días. Desde la unificación (08-oct-2026)
+// Próximos pagos de los siguientes 30 días, y antes los de este mes que ya
+// vencieron sin confirmarse, marcados "Vencido" (UX-N12). Desde la unificación (08-oct-2026)
 // salen de los movimientos fijos: cuotas de Deudas, Suscripciones y gastos
 // fijos manuales, solo los PREVISTOS (lo ya confirmado no vuelve a aparecer).
 // Fechas en hora local (dashboardModel.js).
@@ -41,7 +42,7 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
   const receivables = receivablesProp ?? ctxReceivables
   const todayStr = localDateStr()
   const { items, total, hasCollect } = useMemo(() => {
-    const payments = upcomingFromRules(rules || [], { incomes, expenses, today: todayStr, days, limit: Infinity }).items
+    const payments = upcomingFromRules(rules || [], { incomes, expenses, today: todayStr, days, limit: Infinity, includeOverdue: true }).items
     const collections = upcomingCollections(receivables || [], { today: todayStr, days })
     return { ...mergeUpcoming(payments, collections, { limit }), hasCollect: collections.length > 0 }
   },
@@ -59,7 +60,7 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
     <section className={`${s.card} rise`} aria-labelledby="home-upcoming-title">
       <div className={s.cardHead}>
         <h2 id="home-upcoming-title" className={s.cardTitle}>
-          {t(hasCollect ? 'home.upcoming.titleBoth' : 'home.upcoming.title')}
+          {t(hasCollect ? 'home.upcoming.titleBoth' : items.some(it => it.overdue) ? 'home.upcoming.titleDue' : 'home.upcoming.title')}
           {short && <span className={s.cardHintInline}> · {t('home.upcoming.hint7')}</span>}
         </h2>
         {short && setPage
@@ -75,7 +76,7 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
         <ul className={s.rows}>
           {items.map(it => {
             const p = parts(it.date, lang)
-            const when = it.date === todayStr ? t('home.upcoming.today') : it.date === tomorrowStr ? t('home.upcoming.tomorrow') : null
+            const when = it.overdue ? t('rec.status.overdue') : it.date === todayStr ? t('home.upcoming.today') : it.date === tomorrowStr ? t('home.upcoming.tomorrow') : null
             const Ic = KIND_ICON[it.kind] || ManualIcon
             return (
               <li key={it.id} className={`${s.row} ${s.payRow}`}>

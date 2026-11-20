@@ -1,3 +1,4 @@
+// @ts-check
 // src/core/sync.js
 // Sincronización opcional entre dispositivos, ligada a la licencia y a la cuenta.
 // - Identidad: hash de la licencia + sesión de la cuenta dueña (RPC sync_*).
@@ -11,10 +12,14 @@
 //   protecciones: un blob que este dispositivo no puede descifrar NUNCA se pisa
 //   (antes se subía lo local encima), y un dispositivo que nunca sincronizó y
 //   está vacío siempre toma lo remoto.
-// - Antes de aplicar datos remotos se guarda un respaldo local automático.
+// - Antes de aplicar datos remotos se guarda un respaldo local automático en
+//   el store 'backups' (PRE_SYNC_SNAPSHOT_ID), restaurable desde Ajustes. Sin
+//   esa copia no se aplica lo remoto.
+// - Estado visible (G1-N3): onSyncStatus() avisa ok / pendiente / error con un
+//   código, para que la app lo muestre y reintente al volver la conexión.
 // Diseño, migración y rollback: docs/sync-frase-de-paso.md.
 
-import { exportAllData, importAllData, DATA_STORES } from './db/index.js'
+import { exportAllData, importAllData, DATA_STORES, savePreSyncSnapshot } from './db/index.js'
 import { getLicenseKey } from '../utils/licenseValidator.js'
 import {
   encryptData, decryptData, licenseKeyHash, LICENSE_HASH_RE,
@@ -27,8 +32,10 @@ import { logClientError, logRejection } from '../utils/errorLog.js'
 const env = () => ({ url: import.meta.env.VITE_SUPABASE_URL, anon: import.meta.env.VITE_SUPABASE_ANON_KEY })
 
 const LS_ON       = 'fnos_sync_on'
-const LS_META     = 'fnos_sync_meta'          // { lastLocalChange, lastPushedAt, lastPulledAt }
-const LS_BACKUP   = 'fnos_presync_backup'     // red de seguridad antes de aplicar remoto
+// lastPushedAt es la VERSIÓN subida (marca del último cambio local), no una
+// hora; lastSyncedAt es la hora real del último sync que salió bien.
+const LS_META     = 'fnos_sync_meta'          // { lastLocalChange, lastPushedAt, lastPulledAt, lastSyncedAt }
+const LS_BACKUP   = 'fnos_presync_backup'     // copia previa al sync de versiones viejas (ya no se escribe)
 const LS_V2       = 'fnos_sync_v2'            // { k, s, i }: llave v2 de este dispositivo
 const LS_ROLLBACK = 'fnos_sync_v1_rollback'   // { blob, updatedAt, savedAt }: copia v1 previa a migrar
 
@@ -44,6 +51,40 @@ export function isSyncEnabled() { return lsGet(LS_ON) === '1' }
 export function setSyncEnabled(on) { lsSet(LS_ON, on ? '1' : '0') }
 export function syncMeta() { return lsJSON(LS_META) || {} }
 function writeMeta(patch) { lsSet(LS_META, JSON.stringify({ ...syncMeta(), ...patch })) }
+// Hora real del último sync (para "Última sincronización" y el IQ Score).
+// Metas viejas sin lastSyncedAt: la más reciente de las dos marcas.
+export function lastSyncTime(meta = syncMeta()) {
+  return meta.lastSyncedAt || Math.max(meta.lastPulledAt || 0, meta.lastPushedAt || 0) || null
+}
+// Hay cambios locales que todavía no subieron.
+export function hasPendingChanges(meta = syncMeta()) {
+  return (meta.lastLocalChange || 0) > (meta.lastPushedAt || 0)
+}
+
+// ── estado visible del sync (G1-N3) ──────────────────────────────────────────
+// state: 'idle' | 'ok' | 'pending' | 'error'; error: código (ver syncErrorCode).
+let status = { state: 'idle', error: null }
+const listeners = new Set()
+function setStatus(state, error = null) {
+  status = { state, error, at: Date.now() }
+  for (const fn of listeners) { try { fn(status) } catch { /* un oyente roto no frena el sync */ } }
+}
+export function syncStatus() {
+  if (status.state === 'idle' && isSyncEnabled() && hasPendingChanges()) return { state: 'pending', error: null }
+  return status
+}
+export function onSyncStatus(fn) { listeners.add(fn); return () => { listeners.delete(fn) } }
+// Código corto para la UI: 'offline', 'passphrase_required', 'no_session',
+// 'invalid_license', 'license_key_required', 'snapshot_failed' o 'failed'.
+export function syncErrorCode(e) {
+  const msg = String(e?.message || e || '')
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'offline'
+  if (['passphrase_required', 'no_session', 'license_key_required', 'snapshot_failed'].includes(msg)) return msg
+  if (/invalid_license/.test(msg)) return 'invalid_license'
+  if (e?.name === 'TypeError') return 'offline'   // fetch sin red
+  return 'failed'
+}
+
 export function syncAvailable() {
   const { url, anon } = env()
   return !!(url && anon && getLicenseKey())
@@ -142,13 +183,19 @@ async function guardRemote() {
 
 export async function pushNow() {
   if (!isSyncEnabled() || !syncAvailable()) return { skipped: true }
-  await guardRemote()
-  const payload = await exportAllData()
-  const blob = await encodeLocal(payload)
-  const updatedAt = syncMeta().lastLocalChange || Date.now()
-  await rawPush(blob, updatedAt)
-  writeMeta({ lastPushedAt: updatedAt })
-  return { ok: true, updatedAt }
+  try {
+    await guardRemote()
+    const payload = await exportAllData()
+    const blob = await encodeLocal(payload)
+    const updatedAt = syncMeta().lastLocalChange || Date.now()
+    await rawPush(blob, updatedAt)
+    writeMeta({ lastPushedAt: updatedAt, lastSyncedAt: Date.now() })
+    setStatus(hasPendingChanges() ? 'pending' : 'ok')
+    return { ok: true, updatedAt }
+  } catch (e) {
+    setStatus('error', syncErrorCode(e))
+    throw e
+  }
 }
 
 // ── PULL (payload remoto descifrado; null si no hay o no se puede leer) ──────
@@ -165,14 +212,23 @@ export async function pullNow() {
 export function markLocalChange() {
   writeMeta({ lastLocalChange: Date.now() })
   if (!isSyncEnabled() || !syncAvailable()) return
+  // Un error a la vista (sin conexión…) no se tapa con "pendiente".
+  if (status.state !== 'error') setStatus('pending')
   clearTimeout(pushTimer)
   pushTimer = setTimeout(() => { pushNow().catch(logRejection('sync:169')) }, 2500)
 }
 
 async function applyRemote(remote, onApplied) {
-  try { localStorage.setItem(LS_BACKUP, JSON.stringify(await exportAllData())) } catch (e) { logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'sync.preSyncBackup' }) }
+  // Sin copia previa no se reemplaza nada (G1-N4): lo local queda como estaba.
+  try { await savePreSyncSnapshot(await exportAllData()) } catch (e) {
+    logClientError({ type: 'sync', message: String(e?.name || e?.message || e), source: 'sync.preSyncBackup' })
+    throw new Error('snapshot_failed')
+  }
+  lsDel(LS_BACKUP)
   await importAllData(remote.payload)
-  writeMeta({ lastLocalChange: remote.updatedAt, lastPulledAt: Date.now(), lastPushedAt: remote.updatedAt })
+  const now = Date.now()
+  writeMeta({ lastLocalChange: remote.updatedAt, lastPulledAt: now, lastPushedAt: remote.updatedAt, lastSyncedAt: now })
+  setStatus('ok')
   if (onApplied) await onApplied()
 }
 
@@ -181,16 +237,17 @@ async function applyRemote(remote, onApplied) {
 // Devuelve { applied } o { applied:false, blocked: motivo } (sin tocar la nube).
 export async function pullAndApplyIfNewer(onApplied) {
   if (!isSyncEnabled() || !syncAvailable()) return { applied: false }
-  const raw = await remoteRaw()
+  let raw
+  try { raw = await remoteRaw() } catch (e) { setStatus('error', syncErrorCode(e)); throw e }
   if (raw.empty) { await pushNow().catch(logRejection('sync:185')); return { applied: false } }
   const d = await decodeRemote(raw)
-  if (d.blocked) return { applied: false, blocked: d.blocked }
+  if (d.blocked) { setStatus('error', d.blocked); return { applied: false, blocked: d.blocked } }
   const remote = { payload: d.payload, updatedAt: raw.updatedAt }
   const meta = syncMeta()
   const neverSynced = !meta.lastPushedAt && !meta.lastPulledAt
   const localVer = meta.lastLocalChange || 0
   if (remote.updatedAt > localVer || (neverSynced && isEmptyPayload(await exportAllData()))) {
-    await applyRemote(remote, onApplied)
+    try { await applyRemote(remote, onApplied) } catch (e) { setStatus('error', syncErrorCode(e)); throw e }
     return { applied: true }
   }
   await pushNow().catch(logRejection('sync:196'))
@@ -243,6 +300,7 @@ export async function unlockWithPassphrase(passphrase, opts) {
 // 3. Sube lo local cifrado con la frase y lo vuelve a bajar para verificarlo.
 // 4. Si la verificación falla, devuelve la copia v1 a la nube y sigue en v1.
 // La UI exige antes descargar un respaldo JSON (foto previa).
+/** @param {string} passphrase @param {{ onApplied?: Function, iterations?: number }} [opts] */
 export async function migrateToPassphrase(passphrase, { onApplied, iterations = V2_ITERATIONS } = {}) {
   checkPassphrase(passphrase)
   if (!isSyncEnabled() || !syncAvailable()) throw new Error('sync_off')
@@ -270,7 +328,7 @@ export async function migrateToPassphrase(passphrase, { onApplied, iterations = 
     throw new Error('verify_failed')
   }
   storeV2Key(key, salt, iterations)
-  writeMeta({ lastLocalChange: updatedAt, lastPushedAt: updatedAt })
+  writeMeta({ lastLocalChange: updatedAt, lastPushedAt: updatedAt, lastSyncedAt: Date.now() })
   return { ok: true }
 }
 
@@ -296,7 +354,7 @@ export async function rollbackToLicenseKey() {
   const back = await decryptData(check.blob, lic)
   if (countsOf(back) !== countsOf(local)) throw new Error('verify_failed')
   lsDel(LS_V2)
-  writeMeta({ lastLocalChange: updatedAt, lastPushedAt: updatedAt })
+  writeMeta({ lastLocalChange: updatedAt, lastPushedAt: updatedAt, lastSyncedAt: Date.now() })
   return { ok: true }
 }
 

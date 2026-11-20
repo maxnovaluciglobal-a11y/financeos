@@ -41,6 +41,7 @@ import { currentMonth, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupStatus.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
+import SyncErrorNotice from '../../components/backup/SyncErrorNotice.jsx'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
@@ -251,9 +252,9 @@ export default function Dashboard({ setPage }) {
   // y que la frase del mes: gastado/ingreso contra día/días.
   const lupaSeries = useMemo(() => {
     if (!lupa) return null
-    const sr = dailyAvailable({ incomes, expenses, activeMonth, income: kpis.totalInc, plan })
+    const sr = dailyAvailable({ incomes, expenses, activeMonth, income: kpis.totalInc, plan, pending: pendingSum })
     return sr.lastDay >= 1 ? sr : null
-  }, [lupa, incomes, expenses, activeMonth, plan, kpis.totalInc])
+  }, [lupa, incomes, expenses, activeMonth, plan, pendingSum, kpis.totalInc])
   const lupaPace = useMemo(() => paceToday(lupaSeries), [lupaSeries])
 
   // R12/R13: moneda de referencia del hero + calculadora del país.
@@ -368,6 +369,7 @@ export default function Dashboard({ setPage }) {
               por confirmar y la tasa más reciente ("Usar") están en el detalle
               del héroe, a un toque. */}
           <TodoStrip>
+              <Slot><SyncErrorNotice setPage={setPage} /></Slot>
               <Slot><FirstSteps setPage={setPage} /></Slot>
               <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>
               <Slot><BackupReminderBanner suppress={backupStepPending} /></Slot>

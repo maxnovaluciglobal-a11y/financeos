@@ -1,8 +1,11 @@
 // src/hooks/useInvestPortfolio.js — estado del módulo Inversiones para la UI.
-// Fases: off (módulo apagado) · loading (sin dato todavía) · ready · stale (hay
-// un valor guardado pero no se pudo actualizar; offline dice por qué) · error.
+// Fases: off (módulo apagado) · locked (sin perfil de inversionista o sin
+// cuenta: no se pide nada al servidor) · loading (sin dato todavía) · ready ·
+// stale (hay un valor guardado pero no se pudo actualizar; offline dice por
+// qué) · error.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
+import { useInvestAccess } from './useInvestAccess.js'
 import { loadSnapshot, readSnapshot, subscribeSnapshot } from '../core/investBridge.js'
 import { demoInvestSnapshot } from '../demo/demoInvest.js'
 import { moduleOn } from '../utils/modules.js'
@@ -18,7 +21,9 @@ export function useInvestPortfolio() {
   const { settings = {} } = useApp() || {}
   const on = moduleOn(settings, 'investments')
   const demo = !!settings.isDemo
-  const [snap, setSnap] = useState(() => (on && !demo ? readSnapshot(safeStorage) : null))
+  const access = useInvestAccess()
+  const allowed = on && (demo || access.status === 'granted')
+  const [snap, setSnap] = useState(() => (allowed && !demo ? readSnapshot(safeStorage) : null))
   const [phase, setPhase] = useState('loading')
 
   const load = useCallback((force) => {
@@ -33,21 +38,22 @@ export function useInvestPortfolio() {
   }, [])
 
   useEffect(() => {
-    if (!on || demo) return undefined
+    if (!allowed || demo) return undefined
     load(false)
     return subscribeSnapshot((s) => { setSnap(s); setPhase('ready') })
-  }, [on, demo, load])
+  }, [allowed, demo, load])
 
   const refresh = useCallback(() => load(true), [load])
   const current = useMemo(() => (demo ? demoInvestSnapshot() : snap), [demo, snap])
-  const inv = useMemo(() => (on ? investValueForUser(current, settings, readKey) : null), [on, current, settings])
-  const rate = useMemo(() => (on ? resolveUserRate(settings, current?.fx, readKey) : null), [on, current, settings])
+  const inv = useMemo(() => (allowed ? investValueForUser(current, settings, readKey) : null), [allowed, current, settings])
+  const rate = useMemo(() => (allowed ? resolveUserRate(settings, current?.fx, readKey) : null), [allowed, current, settings])
 
   return {
     on,
     demo,
-    phase: !on ? 'off' : demo ? 'ready' : phase,
-    snapshot: on ? current : null,
+    access: access.status,
+    phase: !on ? 'off' : !allowed ? 'locked' : demo ? 'ready' : phase,
+    snapshot: allowed ? current : null,
     inv,
     rate,
     refresh,

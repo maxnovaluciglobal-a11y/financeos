@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/budgets.js
 // Cálculo ÚNICO del límite efectivo de presupuesto por categoría, honrando el
 // rollover opt-in (settings.budgetRollover). Compartido por la página
@@ -81,6 +82,28 @@ export function countBudgetsExceeded({ budgets, expenses, activeMonth, settings 
   return (Array.isArray(budgets) ? budgets : []).filter(
     b => budgetStatus(spent[b.category] || 0, limits[b.category] || 0).over
   ).length
+}
+
+// Uso total del presupuesto del mes (tarjeta "Has usado el X %" del Inicio y
+// Panorama), con la misma cuenta que el anillo de Presupuestos: gasto de las
+// categorías con presupuesto contra la suma de los límites EFECTIVOS, sin topar
+// cada categoría en su límite. Antes la tarjeta topaba por categoría y usaba el
+// límite base: Ocio 200/100 y Salud 10/100 daba "55 % · Sigue así" mientras
+// Presupuestos decía 105 % y 1 excedida (auditoría 360, G2-N2; FIN-16).
+export function budgetUsage({ budgets, expenses, activeMonth, settings }) {
+  const bs = (Array.isArray(budgets) ? budgets : []).filter(b => b && b.category)
+  const limits = effectiveBudgetLimits({ budgets: bs, expenses, activeMonth, settings })
+  const spent = {}
+  ;(expenses || []).forEach(e => {
+    if (e?.date?.startsWith(activeMonth) && !e?.inv) spent[e.category] = (spent[e.category] || 0) + (Number(e.amount) || 0)
+  })
+  const cats = [...new Set(bs.map(b => b.category))]
+  const total = cats.reduce((s, c) => s + (limits[c] || 0), 0)
+  const used = cats.reduce((s, c) => s + (spent[c] || 0), 0)
+  const overCount = cats.filter(c => budgetStatus(spent[c] || 0, limits[c] || 0).over).length
+  const st = budgetStatus(used, total)
+  const level = overCount > 0 || st.over ? 'risk' : st.warn ? 'attention' : 'ok'
+  return { total, used, pct: st.pct, overCount, level }
 }
 
 // ── Presupuestos legibles de un vistazo (UI-M5) ─────────────────────────────

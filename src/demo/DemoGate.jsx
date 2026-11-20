@@ -10,7 +10,8 @@
 //
 // i18n (T02, 07-oct-2026): este gate se monta ANTES de DemoProvider, así que
 // useT() (que lee el idioma de useApp()) no sirve acá. Usa useTFor() con el
-// idioma del navegador (detectLanguage), el mismo que después recibe el demo
+// idioma del demo (currentDemoLanguage: ?lang=, ?persona=, el último elegido o
+// el del navegador), el mismo que después recibe el demo
 // como idioma inicial (demoData.js). Lo que dice el texto tiene que ser cierto:
 // registerDemoLead guarda nombre + email + consentimiento en demo_leads. Con
 // MARKETING_DOI_ENABLED, la casilla marcada además dispara el correo de doble
@@ -20,12 +21,13 @@ import { useRef, useState } from 'react'
 import { registerDemoLead } from '../utils/licenseValidator.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 import { useTFor, useLangReady } from '../i18n/useT.js'
-import { detectLanguage } from '../i18n/translate.js'
+import { currentDemoLanguage } from './demoLanguage.js'
 import { Btn } from '../components/ui/index.jsx'
 import Logo from '../components/Logo.jsx'
 import BootSplash from '../components/ui/BootSplash.jsx'
 import Turnstile from '../components/Turnstile.jsx'
 import { isNativeApp } from '../native/platform.js'
+import { trackEvent } from '../utils/webAnalytics.js'
 
 const LS_KEY = 'fnos_demo_gate_passed'
 
@@ -44,7 +46,7 @@ function markPassed() {
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
 export default function DemoGate({ onPass }) {
-  const [lang] = useState(() => detectLanguage())
+  const [lang] = useState(() => currentDemoLanguage())
   const { t } = useTFor(lang)
   const langReady = useLangReady(lang)
   const [email, setEmail]     = useState('')
@@ -68,6 +70,7 @@ export default function DemoGate({ onPass }) {
       .then(token => registerDemoLead(cleanEmail, cleanNombre, consent, lang, token))
       .finally(() => {
         markPassed()
+        trackEvent('demo_gate_pass')
         setLoading(false)
         onPass()
       })

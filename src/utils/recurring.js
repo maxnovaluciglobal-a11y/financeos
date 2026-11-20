@@ -401,6 +401,13 @@ export function buildConfirmedRecord(rule, date, { amount, today, createdAt } = 
   return { ...common, description: rule.description, method: rule.method || '', type: rule.type || 'Necesidad', subcategory: '' }
 }
 
+// Ocurrencia prevista cuya fecha ya pasó y nadie confirmó ni omitió (UX-N12):
+// se muestra "Vencido" en vez de "Previsto".
+/** @param {any} occ @param {string} today */
+export function isOverdue(occ, today) {
+  return !!occ && occ.status === 'pending' && !!today && String(occ.date || '') < today
+}
+
 // Ocurrencias de reglas con autoConfirm que ya pasaron y siguen pendientes,
 // desde el inicio de la regla (máximo `monthsBack` meses atrás) hasta hoy.
 /** @param {any[]} rules @param {{ incomes?: any[], expenses?: any[], today?: string, monthsBack?: number }} [opts] */

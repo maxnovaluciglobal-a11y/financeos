@@ -11,3 +11,11 @@
 // en main (CI: GITHUB_REF=refs/heads/main; local: rama main), con RELEASE=1
 // (lo exporta ./deploy.sh) o con PREDEPLOY=1.
 export const REBRAND_DEPLOY_DATE = '2026-11-18'
+
+// Vigencia propia de la Política de Privacidad (auditoría 360 del 19-nov-2026,
+// LEG-N1): la versión nueva suma el perfil de inversionista, comentarios y NPS,
+// Turnstile, cotizaciones, clics de Resend y los apartados de Chile, Brasil y
+// LATAM, así que no puede tener la misma fecha que la del 18-nov (snapshot en
+// `03 - Legal y Cumplimiento/versiones/`). Los otros tres textos legales siguen
+// con REBRAND_DEPLOY_DATE.
+export const PRIVACY_DEPLOY_DATE = '2026-11-20'

@@ -24,7 +24,7 @@ moyiq://add?add=gasto&monto=12500&comercio=Lider&moneda=CLP&fuente=applepay   (f
 | `add` (obligatorio) | `gasto` / `ingreso` (alias `expense`, `income`, `egreso`) | no hay alta (la URL igual se limpia) |
 | `monto` | como lo escribe el Atajo: `12500`, `$12.500`, `12,50 €`, `CLP 12.500`, `US$ 5.99`. Máx. 40 caracteres | negativo → aviso "negativo"; cero, `NaN`, `1e5`, texto o > 1e11 → "no se entiende"; dos lecturas (`4.500` en MXN) → "escríbelo" |
 | `comercio` | texto → descripción. Sin HTML, sin caracteres de control ni bidi, máx. 60 | vacío |
-| `moneda` | ISO 4217 (3 letras). Manda sobre el símbolo del monto | se usa la del símbolo o la de la cuenta |
+| `moneda` | ISO 4217 (3 letras). Manda sobre el símbolo del monto | se usa la del símbolo o la de la cuenta: `main.jsx` lee la URL antes de cargar los ajustes, así que al abrir la hoja el texto crudo (`amountText`) se vuelve a leer con la moneda de la cuenta (`reparseIntake`, ENG-N1). Así `$4.99`, `4.99` o `12,50` funcionan en USD, MXN o EUR sin cambiar el Atajo |
 | `fuente` | `applepay`, `atajo`, `widget`, `app` | `otra` |
 | `fecha` | `AAAA-MM-DD`, no futura | hoy |
 

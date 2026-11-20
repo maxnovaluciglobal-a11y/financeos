@@ -5,7 +5,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis, fmtSignedMoney, fmtPctPoints } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis, fmtSignedMoney, fmtPctPoints, localDateStr } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
@@ -27,10 +27,13 @@ import {
 import ChartTooltip, { AXIS_TICK, GRID, PREV_LINE } from '../../components/charts/ChartTooltip.jsx'
 import { totalForMonth, cumulativeByDay, prevMonthKey } from '../../utils/chartSeries.js'
 import { canShowWebCheckout } from '../../native/storePolicy.js'
+import { sumAmounts, roundCents, savingGoal, meetsSavingGoal } from '../../utils/monthFigures.js'
+import { monthPlan } from '../../utils/recurring.js'
+import { reportOverBudget, subscriptionsToDeduct } from './reportsModel.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, receivables, subscriptions: allSubs, goals: allGoals, settings } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, receivables, subscriptions: allSubs, goals: allGoals, settings, recurring: rules } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = currencySymbol(settings.currency, settings.language)
@@ -55,7 +58,7 @@ export default function Reports({ setPage }) {
       const data = {
         sym, month: activeMonth, monthLabel: monthLabel(activeMonth),
         totalIncome, totalExpense, totalSubs, totalDebt, balance, savingRate,
-        savingGoalPct: settings.savingGoalPct || 25,
+        savingGoalPct: goal * 100,
         necesidad, deseos, expByCat, trendData, overBudget,
         currency: settings.currency || 'CLP',
         netWorth: nw.hasData ? nw : null,
@@ -80,8 +83,8 @@ export default function Reports({ setPage }) {
   const mIncomes    = useMemo(() => incomes.filter(r => r.date?.startsWith(activeMonth)), [incomes, activeMonth])
   const mExpenses   = useMemo(() => expenses.filter(r => r.date?.startsWith(activeMonth)), [expenses, activeMonth])
 
-  const totalIncome  = useMemo(() => mIncomes.reduce((s,r)  => s+r.amount, 0), [mIncomes])
-  const totalExpense = useMemo(() => mExpenses.reduce((s,r) => s+r.amount, 0), [mExpenses])
+  const totalIncome  = useMemo(() => sumAmounts(mIncomes), [mIncomes])
+  const totalExpense = useMemo(() => sumAmounts(mExpenses), [mExpenses])
   const totalSubs    = useMemo(() => (Array.isArray(allSubs)?allSubs:[]).filter(s=>s?.status==='active').reduce((s,sub) => {
     const amt=Number(sub.amount)||0, f=sub.frequency||'monthly'
     if(f==='annual'||f==='anual') return s+amt/12
@@ -91,19 +94,27 @@ export default function Reports({ setPage }) {
   }, 0), [allSubs])
   // Solo deudas personales y sin duplicar cuotas ya registradas como gasto del mes
   const totalDebt    = useMemo(() => pendingDebtMonthly(allDebts, mExpenses), [allDebts, mExpenses])
-  const balance      = totalIncome - totalExpense                          // Balance neto = ingresos − gastos
-  const freeFlow     = totalIncome - totalExpense - totalDebt - totalSubs   // Disponible tras deudas y suscripciones
+  const balance      = roundCents(totalIncome - totalExpense)              // Balance neto = ingresos − gastos
+  // ENG-N6: solo las suscripciones que faltan este mes; las ya cobradas son
+  // gasto real y ya están en totalExpense.
+  const plan         = useMemo(() => monthPlan(rules || [], activeMonth, { incomes: _incAll || [], expenses: _expAll || [], today: localDateStr() }), [rules, activeMonth, _incAll, _expAll])
+  const subsPending  = useMemo(() => subscriptionsToDeduct({ plan, rules, monthlySubs: totalSubs }), [plan, rules, totalSubs])
+  const freeFlow     = roundCents(totalIncome - totalExpense - totalDebt - subsPending)   // Disponible tras deudas y suscripciones pendientes
   const savingRate   = totalIncome > 0 ? balance/totalIncome : 0  // sin floor: coincide con Coach/Advisor
-  const necesidad    = useMemo(() => mExpenses.filter(r=>r.type==='Necesidad').reduce((s,r) => s+r.amount, 0), [mExpenses])
-  const deseos       = useMemo(() => mExpenses.filter(r=>r.type==='Deseo').reduce((s,r) => s+r.amount, 0), [mExpenses])
-  const expByCat     = useMemo(() => { const m={}; mExpenses.forEach(e=>{m[e.category]=(m[e.category]||0)+e.amount}); return m }, [mExpenses])
+  const necesidad    = useMemo(() => sumAmounts(mExpenses.filter(r=>r.type==='Necesidad')), [mExpenses])
+  const deseos       = useMemo(() => sumAmounts(mExpenses.filter(r=>r.type==='Deseo')), [mExpenses])
+  const expByCat     = useMemo(() => { const m={}; mExpenses.forEach(e=>{m[e.category]=(m[e.category]||0)+(Number(e.amount)||0)}); return m }, [mExpenses])
   // Límite EFECTIVO (con rollover si está activo) — mismo cálculo que la página
   // Presupuestos. Antes usaba b.limit crudo: con rollover activo, Presupuestos
   // podía decir "dentro del límite" mientras Reportes decía "excedido" para la
   // misma categoría el mismo mes.
   const effLimits    = useMemo(() => effectiveBudgetLimits({ budgets, expenses, activeMonth, settings }), [budgets, expenses, activeMonth, settings])
-  const overBudget   = useMemo(() => budgets.filter(b=>(expByCat[b.category]||0)>(effLimits[b.category]||0)), [budgets, expByCat, effLimits])
-  const neededToSave = Math.max(0, totalIncome*(settings.savingGoalPct/100||0.25)-Math.max(0,balance))
+  const overBudget   = useMemo(() => reportOverBudget({ budgets, expByCat, limits: effLimits }), [budgets, expByCat, effLimits])
+  // V-G2-F1: la meta de ahorro es la que eligió la persona (también un 0 %).
+  const goal         = savingGoal(settings)
+  const goalPts      = goal * 100
+  const atGoal       = meetsSavingGoal(savingRate, goal)
+  const neededToSave = Math.max(0, totalIncome*goal-Math.max(0,balance))
 
   const trendData = useMemo(() => {
     const months = []
@@ -179,8 +190,8 @@ export default function Reports({ setPage }) {
         ) : null}
       </div>
       <div className="kpi-row">
-        <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+totalSubs>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />
-        <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={savingRate>=0.25?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: fmtPct((settings.savingGoalPct||25) / 100, { decimals: 0 }) })} />
+        <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+subsPending>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />
+        <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={atGoal?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: fmtPct(goal, { decimals: 0 }) })} />
         <KPI label={t('reports.kpi.income')}      value={fmtMoney(totalIncome,sym)} />
         <KPI label={t('reports.kpi.subs')} value={fmtMoney(totalSubs,sym)} color="amber" sub={t('reports.kpi.subsSub')} />
         <KPI label={t('reports.kpi.expenses')}        value={fmtMoney(totalExpense,sym)} />
@@ -312,9 +323,9 @@ export default function Reports({ setPage }) {
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           {totalIncome===0
             ? <Alert type="info">{t('reports.reco.empty')}</Alert>
-            : savingRate>=0.25
-              ? <Alert type="ok">{t('reports.reco.aboveGoal', { rate: fmtPct(savingRate), goal: fmtPctPoints(settings.savingGoalPct||25) })}</Alert>
-              : <Alert type="warn">{balance<0 ? t('reports.reco.belowGoal.reduce', { rate: fmtPct(savingRate), goal: fmtPctPoints(settings.savingGoalPct||25), v: fmtMoney(-balance+totalIncome*(settings.savingGoalPct/100||0.25),sym) }) : t('reports.reco.belowGoal.save', { rate: fmtPct(savingRate), goal: fmtPctPoints(settings.savingGoalPct||25), v: fmtMoney(neededToSave,sym) })}</Alert>
+            : atGoal
+              ? <Alert type="ok">{t('reports.reco.aboveGoal', { rate: fmtPct(savingRate), goal: fmtPctPoints(goalPts) })}</Alert>
+              : <Alert type="warn">{balance<0 ? t('reports.reco.belowGoal.reduce', { rate: fmtPct(savingRate), goal: fmtPctPoints(goalPts), v: fmtMoney(-balance+totalIncome*goal,sym) }) : t('reports.reco.belowGoal.save', { rate: fmtPct(savingRate), goal: fmtPctPoints(goalPts), v: fmtMoney(neededToSave,sym) })}</Alert>
           }
           {overBudget.length>0
             ? <Alert type="danger">{t('reports.reco.overBudget', { cats: overBudget.map(b=>catName(b.category, lang)).join(', ') })}</Alert>

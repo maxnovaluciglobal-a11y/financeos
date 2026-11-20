@@ -176,6 +176,24 @@ describe('respaldo y sync incluyen los fijos', () => {
     await db.clearAllData()
     expect(await conn.getAll('backups')).toEqual([])
   })
+
+  it('copia previa al sync: se guarda en backups, se restaura y "borrar todo" la borra (G1-N4, V-ENG-FN2)', async () => {
+    await db.dbAdd('expenses', { id: 'pre', amount: 5, date: '2026-10-09' })
+    const before = await db.exportAllData()
+    await db.savePreSyncSnapshot(before)
+    await db.savePreSyncSnapshot(before) // una sola copia: se reemplaza
+    const snaps = (await db.listSnapshots()).filter(x => x.id === db.PRE_SYNC_SNAPSHOT_ID)
+    expect(snaps).toHaveLength(1)
+    expect(snaps[0].counts.expenses).toBe(before.expenses.length)
+    await db.dbDelete('expenses', 'pre')
+    await db.restoreSnapshot(db.PRE_SYNC_SNAPSHOT_ID)
+    expect((await db.dbGetAll('expenses')).map(e => e.id)).toContain('pre')
+    expect(await db.dbGetAll('recurring')).toEqual(before.recurring)
+    localStorage.setItem(db.LEGACY_PRESYNC_KEY, JSON.stringify(before))
+    await db.clearAllData()
+    expect(await db.listSnapshots()).toEqual([])
+    expect(localStorage.getItem(db.LEGACY_PRESYNC_KEY)).toBeNull()
+  })
 })
 
 describe('restaurar la foto previa', () => {

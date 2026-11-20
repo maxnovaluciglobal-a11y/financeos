@@ -13,8 +13,10 @@ import { useT } from '../../i18n/useT.js'
 import { getLicenseKey, validateLicense, isLicenseHash } from '../../utils/licenseValidator.js'
 import {
   isSyncEnabled, syncMeta, syncAvailable, syncMode, migrateToPassphrase, rollbackToLicenseKey,
-  unlockWithPassphrase, pullAndApplyIfNewer,
+  unlockWithPassphrase, pullAndApplyIfNewer, lastSyncTime,
 } from '../../core/sync.js'
+import PreSyncRestore from './PreSyncRestore.jsx'
+import { syncStatusKey } from './syncStatusText.js'
 import { MIN_PASSPHRASE_LENGTH, normalizePassphrase } from '../../utils/syncCrypto.js'
 
 export function passphraseProblem(pass, confirm, isNew) {
@@ -66,7 +68,7 @@ function PassphraseForm({ id, isNew, busy, error, onSubmit, submitLabel, onCance
 }
 
 export default function SyncSection() {
-  const { enableSync, disableSync, exportData, rehydrate, showToast, syncBlocked, setSyncBlocked } = useApp()
+  const { enableSync, disableSync, exportData, rehydrate, showToast, syncBlocked, setSyncBlocked, syncState, runSync } = useApp()
   const { t } = useT()
   const [on, setOn] = useState(isSyncEnabled())
   const [busy, setBusy] = useState(false)
@@ -84,7 +86,8 @@ export default function SyncSection() {
   const rawLicense = hasKey && !isLicenseHash(getLicenseKey())
   const mode = syncMode()
   const meta = syncMeta()
-  const lastSync = meta.lastPushedAt || meta.lastPulledAt
+  const lastSync = lastSyncTime(meta)
+  const statusKey = on && !syncBlocked ? syncStatusKey(syncState) : null
   const lastTxt = lastSync ? new Date(lastSync).toLocaleString() : '—'
   const errText = (code) => t(code === 'wrong_key' ? 'syncPass.errWrong'
     : code === 'passphrase_too_short' ? 'syncPass.errShort'
@@ -166,6 +169,17 @@ export default function SyncSection() {
           ? <Btn variant="ghost" onClick={toggleOff} disabled={busy} aria-label={`${t('settings.sync.disable')} · ${t('settings.sync.title')}`}>{t('settings.sync.disable')}</Btn>
           : !need && <Btn variant="ghost" onClick={() => start()} disabled={busy} aria-label={`${busy ? t('settings.sync.busy') : t('settings.sync.enable')} · ${t('settings.sync.title')}`}>{busy ? t('settings.sync.busy') : t('settings.sync.enable')}</Btn>}
       </div>
+
+      {statusKey && (
+        <div role="status" style={{ ...box, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ ...sub, marginTop: 0, color: 'var(--tx)', flex: '1 1 220px' }}>{t(statusKey)}</span>
+          {syncState?.state === 'error' && (
+            <Btn variant="ghost" size="sm" disabled={busy} onClick={async () => { setBusy(true); try { await runSync() } finally { setBusy(false); refresh() } }}>
+              {t('settings.syncStatus.retry')}
+            </Btn>
+          )}
+        </div>
+      )}
 
       {!on && need === 'new_passphrase' && (
         <div style={box}>
@@ -249,6 +263,8 @@ export default function SyncSection() {
           )}
         </div>
       )}
+
+      <PreSyncRestore />
 
       <div style={{ ...sub, marginTop: 10, padding: '8px 10px', background: 'var(--fill)', borderRadius: 'var(--r)', border: 0 }}>
         <Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />

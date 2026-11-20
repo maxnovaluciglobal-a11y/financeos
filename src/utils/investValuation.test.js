@@ -21,11 +21,46 @@ describe('currencyOf (igual que Invest)', () => {
     expect(currencyOf('AAPL')).toBe('USD')
     expect(currencyOf('BTC-USD')).toBe('USD')
     expect(currencyOf('BRK-B')).toBe('USD')
-    expect(currencyOf('VOD.L')).toBeNull()
+    expect(currencyOf('XYZ.QQ')).toBeNull()
   })
-  it('los peniques no se confunden con la libra', () => {
+  it('los peniques no se confunden con la libra: 1 GBP = 100 GBp', () => {
     expect(currencyOf('VOD.L', 'GBp')).toBe('GBp')
-    expect(rateOf('GBp', { GBP: 0.8 })).toBeNull()
+    expect(rateOf('GBp', { GBP: 0.8 })).toBe(80)
+  })
+})
+
+// INV-N23: mismos casos que invest-web/test/fx.test.js.
+describe('INV-N23: monedas europeas, CAD y JPY', () => {
+  const EU = { EUR: 0.92, GBP: 0.79, CHF: 0.88, SEK: 10.5, CAD: 1.37, JPY: 150 }
+  it('infiere la moneda por el sufijo de las bolsas europeas', () => {
+    expect(currencyOf('SAP.DE')).toBe('EUR')
+    expect(currencyOf('SAN.MC')).toBe('EUR')
+    expect(currencyOf('MC.PA')).toBe('EUR')
+    expect(currencyOf('ASML.AS')).toBe('EUR')
+    expect(currencyOf('VOD.L')).toBe('GBp')
+    expect(currencyOf('NESN.SW')).toBe('CHF')
+    expect(currencyOf('VOLV-B.ST')).toBe('SEK')
+    expect(currencyOf('SHOP.TO')).toBe('CAD')
+    expect(currencyOf('7203.T')).toBe('JPY')
+  })
+  it('una acción en EUR suma al total en USD', () => {
+    const t = portfolioTotals([{ t: 'SAP.DE', sh: 10, cost: 184 }], () => ({ price: 230, changePct: 0 }), (x) => currencyOf(x, 'EUR'), EU)
+    expect(t.excluded).toBe(0)
+    expect(t.value).toBeCloseTo(2300 / 0.92, 6)
+    expect(t.cost).toBeCloseTo(1840 / 0.92, 6)
+  })
+  it('VOD.L en peniques: 7.200 GBp valen 72 GBP, no 7.200', () => {
+    const t = portfolioTotals([{ t: 'VOD.L', sh: 1, cost: 7200 }], () => null, (x) => currencyOf(x, 'GBp'), EU)
+    expect(t.value).toBeCloseTo(72 / 0.79, 6)
+  })
+  it('ZAc e ILA se derivan de ZAR e ILS; sin la mayor, quedan sin tasa', () => {
+    expect(rateOf('ZAc', { ZAR: 18 })).toBe(1800)
+    expect(rateOf('ILA', { ILS: 3.7 })).toBe(370)
+    expect(rateOf('ZAc', EU)).toBeNull()
+    expect(rateOf('GBp', {})).toBeNull()
+  })
+  it('una tasa propia de la submoneda manda sobre la derivada', () => {
+    expect(rateOf('GBp', { GBp: 81, GBP: 0.79 })).toBe(81)
   })
 })
 
@@ -82,7 +117,7 @@ describe('arsRate', () => {
 describe('holdingFromRow', () => {
   it('traduce la fila de portfolio_holdings', () => {
     expect(holdingFromRow({ ticker: 'aapl ', asset_type: 'ETF', shares: '2.5', avg_cost: '100', fx_at_cost: null }))
-      .toEqual({ t: 'AAPL', type: 'ETF', sh: 2.5, cost: 100, fxCost: null })
+      .toEqual({ id: null, t: 'AAPL', type: 'ETF', sh: 2.5, cost: 100, fxCost: null })
     expect(holdingFromRow({ ticker: 'SQM-B.SN', shares: 1, avg_cost: 1, fx_at_cost: 900 }).fxCost).toBe(900)
   })
 })
@@ -146,5 +181,60 @@ describe('buildSnapshot', () => {
     const s = JSON.stringify(buildSnapshot({ uid: 'u', holdings, quotes, rates: RATES }))
     expect(s).not.toContain('AAPL')
     expect(s).not.toContain('SQM')
+  })
+})
+
+describe('holdingRows y allocationByType', async () => {
+  const { holdingRows, allocationByType, portfolioTotals, currencyOf } = await import('./investValuation.js')
+  const holdings = [
+    { t: 'AAPL', type: 'Stock', sh: 10, cost: 100, fxCost: null },
+    { t: 'SQM-B.SN', type: 'Stock', sh: 100, cost: 40000, fxCost: 800 },
+    { t: 'BTC-USD', type: 'Crypto', sh: 0.1, cost: 50000, fxCost: null },
+    { t: 'XYZ.ZZ', type: 'Stock', sh: 1, cost: 10, fxCost: null },
+  ]
+  const quotes = { AAPL: { price: 120, changePct: 0.02 }, 'SQM-B.SN': { price: 44000, currency: 'CLP', changePct: -0.01 } }
+  const rates = { CLP: 1000 }
+  const rows = holdingRows(holdings, quotes, rates)
+  const by = Object.fromEntries(rows.map(r => [r.t, r]))
+
+  it('estado por posición: con precio, al costo y sin tipo de cambio', () => {
+    expect(by.AAPL.status).toBe('live')
+    expect(by['BTC-USD'].status).toBe('cost')
+    expect(by['XYZ.ZZ'].status).toBe('nofx')
+    expect(by['XYZ.ZZ'].valueUsd).toBeNull()
+  })
+  it('ganancia y costo al tipo de cambio de compra', () => {
+    expect(by.AAPL.plUsd).toBeCloseTo(200, 6)
+    expect(by['SQM-B.SN'].costUsd).toBeCloseTo(100 * 40000 / 800, 6)
+    expect(by['SQM-B.SN'].valueUsd).toBeCloseTo(100 * 44000 / 1000, 6)
+  })
+  it('las filas suman lo mismo que portfolioTotals', () => {
+    const T = portfolioTotals(holdings, t => quotes[t] || null, t => currencyOf(t, quotes[t]?.currency), rates)
+    const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0)
+    expect(sum('valueUsd')).toBeCloseTo(T.value, 6)
+    expect(sum('costUsd')).toBeCloseTo(T.cost, 6)
+    expect(sum('dayUsd')).toBeCloseTo(T.day, 6)
+  })
+  it('INV-N15: dos lotes del mismo ticker son dos filas con su propio id', () => {
+    const lots = [
+      holdingFromRow({ id: 11, ticker: 'AAPL', asset_type: 'Stock', shares: 1, avg_cost: 100 }),
+      holdingFromRow({ id: 12, ticker: 'AAPL', asset_type: 'Stock', shares: 2, avg_cost: 150 }),
+    ]
+    const r = holdingRows(lots, { AAPL: { price: 200, changePct: 0 } }, {})
+    expect(r.map(x => x.id).sort()).toEqual(['11', '12'])
+    expect(new Set(r.map(x => x.id)).size).toBe(2)
+    expect(r.reduce((a, x) => a + x.valueUsd, 0)).toBeCloseTo(600, 6)
+  })
+  it('INV-N15: la lista de posiciones no usa el ticker como key', async () => {
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(new URL('../pages/Investments/Portfolio.jsx', import.meta.url), 'utf8')
+    expect(src).not.toMatch(/<li key=\{r\.t\}>/)
+    expect(src).toContain('key={r.id ?? `${r.t}-${i}`}')
+  })
+  it('ordena por valor y reparte por tipo', () => {
+    expect(rows[rows.length - 1].t).toBe('XYZ.ZZ')
+    const alloc = allocationByType(rows)
+    expect(alloc.map(a => a.type).sort()).toEqual(['Crypto', 'Stock'])
+    expect(alloc.reduce((a, x) => a + x.share, 0)).toBeCloseTo(1, 6)
   })
 })

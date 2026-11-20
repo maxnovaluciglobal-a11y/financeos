@@ -15,6 +15,10 @@ import { canShowWebCheckout } from '../native/storePolicy.js'
 import { isNativeApp } from '../native/platform.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
+// UX-N4: el CTA del demo abre "Crear cuenta" (no "Iniciar sesión") y marca el origen.
+export const APP_SIGNUP_URL = `${APP_URL}?signup&ref=demo`
+// En la app nativa el CTA se queda dentro del bundle (/app/), con la misma pestaña y origen.
+export const NATIVE_SIGNUP_PATH = '/app/?signup&ref=demo'
 export const PRICING_URL = 'https://moyiq.app/#pricing'
 
 export default function DemoBanner({ onReplayTour }) {
@@ -77,7 +81,7 @@ export default function DemoBanner({ onReplayTour }) {
           <MoreHorizontal size={20} strokeWidth={1.8} aria-hidden="true" />
         </button>
 
-        <a className="fos-btn-primary demo-banner__cta" href={isNativeApp() ? '/app/' : APP_URL}>
+        <a className="fos-btn-primary demo-banner__cta" href={isNativeApp() ? NATIVE_SIGNUP_PATH : APP_SIGNUP_URL}>
           <span className="demo-banner__ctaLong">{t('demo.banner.start')}</span>
           <span className="demo-banner__ctaShort">{t('demo.banner.startShort')}</span>
         </a>

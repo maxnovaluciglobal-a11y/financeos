@@ -32,3 +32,18 @@ describe('presupuesto de carga inicial (C-32)', () => {
     expect(staticLangImports(Object.keys(chunks), f => chunks[f])).toEqual(['goals-B.js -> en-Aa1.js', 'goals-B.js -> pt-Bb_2.js'])
   })
 })
+
+// ENG-N8 (19-nov-2026): CI built without Supabase, so supabase-js was tree-shaken out and the budget
+// measured ~215 kB while production weighed ~252 of 256 kB. The CI build must see the same code.
+describe('CI mide el bundle como producción (ENG-N8)', () => {
+  // El cambio de test.yml espera en la rama ci/360-edge-typecheck: el token de
+  // gh no tiene el scope `workflow` (20-nov-2026). Al integrarla, quitar el todo.
+  it.todo('el paso npm run build de test.yml define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (pendiente: rama ci/360-edge-typecheck)')
+  it.skip('el paso npm run build de test.yml define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY', async () => {
+    const fs = await import('fs')
+    const yml = fs.readFileSync(new URL('../.github/workflows/test.yml', import.meta.url), 'utf8')
+    const step = yml.slice(yml.indexOf('- run: npm run build'), yml.indexOf('- run: npm run build') + 300)
+    expect(step).toMatch(/VITE_SUPABASE_URL: https:\/\//)
+    expect(step).toMatch(/VITE_SUPABASE_ANON_KEY: \S+/)
+  })
+})

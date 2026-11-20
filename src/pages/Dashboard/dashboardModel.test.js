@@ -175,6 +175,17 @@ describe('upcomingFromRules — próximos pagos desde los fijos', () => {
     expect(items[0].kind).toBe('debt')
     expect(total).toBe(2)
   })
+  it('UX-N12: con includeOverdue suma los previstos vencidos de este mes, primero y marcados', () => {
+    const rules = [r('arriendo', 1, 500), r('gym', 5, 35, 'subscription'), r('tarjeta', 20, 80, 'debt')]
+    const expenses = [{ id: 'x', recurringId: 'gym', occurrenceDate: '2026-10-05', amount: 35, date: '2026-10-05' }]
+    const { items } = upcomingFromRules(rules, { expenses, today: '2026-10-08', days: 7, includeOverdue: true })
+    expect(items.map(i => `${i.name}@${i.date}${i.overdue ? '!' : ''}`)).toEqual(['arriendo@2026-10-01!'])
+    const later = upcomingFromRules(rules, { expenses, today: '2026-10-08', includeOverdue: true }).items
+    expect(later[0]).toMatchObject({ name: 'arriendo', overdue: true })
+    expect(later.find(i => i.name === 'tarjeta').overdue).toBeUndefined()
+    // sin la opción, igual que antes: nada vencido
+    expect(upcomingFromRules(rules, { expenses, today: '2026-10-08', days: 7 }).items).toEqual([])
+  })
 })
 
 // FIN-13 en Inicio: la fila de presupuesto usa la misma regla en centavos que

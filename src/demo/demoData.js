@@ -246,4 +246,10 @@ export function buildDemoState(personaId, language = detectLanguage(), scenario 
   }
 }
 
+// Ingresos de un escenario hasta hoy (lo usa el selector de escenario del demo).
+export function scenarioIncomes(personaId, scenario, today = new Date()) {
+  const p = DEMO_PERSONAS[personaId] || SOFIA_PERSONA
+  return onlyUntilToday(scenario === 'exitoso' ? p.incomesGood : p.incomesHard, today)
+}
+
 export const demoPersona = (personaId) => DEMO_PERSONAS[personaId] || SOFIA_PERSONA

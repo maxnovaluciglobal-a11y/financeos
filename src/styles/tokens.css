@@ -336,8 +336,14 @@
   /* "+" y pestaña activa (nivel 3) */
   --action-bg: var(--color-action); --action-fg: var(--color-action-fg);
   --action-shadow: 0 10px 22px -10px rgb(122 33 255 / .7);
-  --tabbar-fg: var(--text-secondary);
+  /* A11Y-N3 (19-nov-2026): las etiquetas se miden contra la cápsula
+     translúcida con la escena morada detrás (contrast.test.js §3). Gris 600
+     daba 3,7:1 sobre el morado; gris 700, 6,9. El violeta de acción no llega
+     a 4,5 como texto sobre la píldora activa: la etiqueta activa va en morado
+     700 (6,8) y el ícono y la píldora siguen en violeta (objeto, ≥ 3). */
+  --tabbar-fg: var(--text-subtle);
   --tabbar-fg-active: var(--color-action);
+  --tabbar-label-active: var(--color-brand-text);
   --tabbar-pill: var(--color-action);
   --tabbar-icon-active: var(--color-action-fg);
   /* Cápsula flotante (19-nov-2026, aprobada por Walter): material translúcido
@@ -366,7 +372,11 @@
   --logo-fg: var(--gray-0);
   --action-shadow: 0 10px 22px -10px rgb(0 0 0 / .6);
   --tabbar-fg-active: var(--purple-200);   /* etiqueta activa: 8,10 sobre #2A2C31 */
-  --tabbar-bg: color-mix(in srgb, var(--color-surface-raised) 85%, transparent);
+  --tabbar-label-active: var(--purple-200);
+  /* A11Y-N3: con lima detrás, gris 400 al 85 % daba 3,86. Gris 300 y material
+     al 90 % mantienen ≥ 4,5 sobre cualquier fondo (contrast.test.js §3). */
+  --tabbar-fg: var(--text-subtle);
+  --tabbar-bg: color-mix(in srgb, var(--color-surface-raised) 90%, transparent);
   --tabbar-border: rgb(250 250 250 / .10);
   --tabbar-shadow: 0 12px 32px -6px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .3);
   --tabbar-active-bg: rgb(168 151 218 / .20);

@@ -334,3 +334,16 @@ describe('borrar un registro confirmado', () => {
     expect(dueAutoConfirmations([skipped], { expenses: [], today: '2026-10-08' })).toEqual([])
   })
 })
+
+describe('isOverdue (UX-N12)', () => {
+  it('solo un previsto con fecha anterior a hoy', async () => {
+    const { isOverdue } = await import('./recurring.js')
+    expect(isOverdue({ status: 'pending', date: '2026-11-01' }, '2026-11-19')).toBe(true)
+    expect(isOverdue({ status: 'pending', date: '2026-11-19' }, '2026-11-19')).toBe(false)
+    expect(isOverdue({ status: 'pending', date: '2026-11-25' }, '2026-11-19')).toBe(false)
+    expect(isOverdue({ status: 'confirmed', date: '2026-11-01' }, '2026-11-19')).toBe(false)
+    expect(isOverdue({ status: 'skipped', date: '2026-11-01' }, '2026-11-19')).toBe(false)
+    expect(isOverdue(null, '2026-11-19')).toBe(false)
+  })
+})
+

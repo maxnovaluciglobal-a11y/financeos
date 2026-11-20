@@ -3,6 +3,9 @@
 .pageHeader { position: relative; flex: 1 1 100%; min-width: 0; margin-bottom: 18px; }
 :global(.stack) > .pageHeader { margin-bottom: 8px; }
 .pageHeader h1 { font-size: var(--t-title-2); font-weight: 700; font-family: var(--display); letter-spacing: -0.02em; color: var(--tx); }
+/* Texto agrandado (A11Y-N1): una palabra larga ("Movimientos" al 200 %) parte
+   en vez de salirse por debajo de los botones de la barra o del borde. */
+.pageHeader h1, .pageHeader p { overflow-wrap: anywhere; hyphens: auto; }
 .pageHeader p  { font-size: var(--t-subhead); color: var(--th); font-family: var(--sans); margin-top: 5px; line-height: 1.5; }
 .sentinel { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; pointer-events: none; }
 

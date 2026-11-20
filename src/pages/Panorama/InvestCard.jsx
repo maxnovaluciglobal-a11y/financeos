@@ -1,10 +1,12 @@
 // src/pages/Panorama/InvestCard.jsx — módulo Inversiones (Opción 1 de D-08).
 // Muestra el portafolio de Invest: valor, cambio del día y total, posiciones y
 // de cuándo y de dónde es el dato. Es una estimación de solo lectura; el detalle
-// y cualquier registro viven en Invest. Nunca lleva ProGate: los datos de
-// mercado no tienen licencia comercial (INV-1).
+// de las posiciones está en la pantalla Inversiones dentro de moyiq (opción B,
+// 19-nov-2026) y registrar operaciones sigue en Invest. Nunca lleva ProGate:
+// los datos de mercado no tienen licencia comercial (INV-1). Sin perfil de
+// inversionista la tarjeta invita a activarlo y no pide datos.
 import { useState } from 'react'
-import { ExternalLink, RefreshCw } from 'lucide-react'
+import { ChevronRight, RefreshCw } from 'lucide-react'
 import Money, { useMoney } from '../../components/Money.jsx'
 import { Delta, StateTag } from '../../components/ledger/index.js'
 import { NAV_ICONS } from '../../components/icons/Icons.jsx'
@@ -43,7 +45,7 @@ function Sources({ snapshot, t }) {
   )
 }
 
-export default function InvestCard() {
+export default function InvestCard({ setPage } = {}) {
   const { t } = useT()
   const app = useApp() || {}
   const settings = app.settings || {}
@@ -59,10 +61,9 @@ export default function InvestCard() {
     openInvest({ aporte }).finally(() => setOpening(false))
   }
 
-  // El demo no tiene sesión: abre Invest como cualquier enlace, sin handoff.
-  const cta = demo
-    ? <a className={hs.btnSecondary} href={`${INVEST_ORIGIN}/app/`} target="_blank" rel="noopener noreferrer">{t('invest.card.open')}<ExternalLink size={14} strokeWidth={1.8} aria-hidden="true" /></a>
-    : <button type="button" className={hs.btnSecondary} disabled={opening} onClick={() => open(null)}>{t('invest.card.open')}<ExternalLink size={14} strokeWidth={1.8} aria-hidden="true" /></button>
+  // "Ver portafolio" abre la pantalla Inversiones dentro de moyiq (opción B).
+  const goPage = () => setPage?.('investments')
+  const cta = <button type="button" className={hs.btnSecondary} onClick={goPage}>{t('invest.card.view')}<ChevronRight size={16} strokeWidth={2} aria-hidden="true" /></button>
 
   const heading = (tag) => (
     <div className={s.head}>
@@ -74,6 +75,15 @@ export default function InvestCard() {
   )
 
   const body = () => {
+    if (phase === 'locked') {
+      return (
+        <>
+          {heading(null)}
+          <p className={s.note}>{t('invest.card.locked')}</p>
+          <div className={s.actions}><button type="button" className={hs.btnSecondary} onClick={goPage}>{t('invest.card.unlock')}<ChevronRight size={16} strokeWidth={2} aria-hidden="true" /></button></div>
+        </>
+      )
+    }
     if (!snapshot) {
       if (phase === 'error') {
         return (

@@ -6,7 +6,8 @@ import { useState, useId } from 'react'
 import { Check, Pencil, SkipForward, Undo2, ChevronDown } from 'lucide-react'
 import Money from '../Money.jsx'
 import { useT } from '../../i18n/useT.js'
-import { fmtMoney } from '../../utils/index.js'
+import { fmtMoney, localDateStr } from '../../utils/index.js'
+import { isOverdue } from '../../utils/recurring.js'
 import s from './recurring.module.css'
 
 export function dateParts(dateStr, lang) {
@@ -28,6 +29,9 @@ export default function OccurrenceRow({ occ, sym, onConfirm, onSkip, onUnskip, c
   const name = occ.rule.description
   const isIncome = occ.kind === 'income'
   const pending = occ.status === 'pending'
+  // UX-N12: un previsto con fecha pasada se marca "Vencido" con color de atención.
+  const overdue = isOverdue(occ, localDateStr())
+  const pendingLabel = t(overdue ? 'rec.status.overdue' : 'rec.status.pending')
   const signed = (v) => `${isIncome ? '+' : '−'}${fmtMoney(v, sym)}`
 
   function submitEdit(e) {
@@ -59,7 +63,7 @@ export default function OccurrenceRow({ occ, sym, onConfirm, onSkip, onUnskip, c
           <span id={`${uidEdit}-hint`} className="sr-only">{t('rec.action.moreAria', { name })}</span>
           <span className={s.meta}>
             <span className={s.tag}>{t(`rec.source.${occ.rule.source || 'manual'}`)}</span>
-            <span className={s.tag}>{t('rec.status.pending')}
+            <span className={`${s.tag} ${overdue ? s.overdue : ''}`}>{pendingLabel}
               <ChevronDown size={14} strokeWidth={1.7} aria-hidden="true" style={{ transform: editing ? 'rotate(180deg)' : 'none' }} /></span>
           </span>
         </button>
@@ -70,7 +74,7 @@ export default function OccurrenceRow({ occ, sym, onConfirm, onSkip, onUnskip, c
             <span className={s.tag}>{t(`rec.source.${occ.rule.source || 'manual'}`)}</span>
             {occ.status === 'confirmed' && <span className={s.done}>{t(occ.matched ? 'rec.status.matched' : 'rec.status.confirmed')}</span>}
             {occ.status === 'skipped' && <span>{t('rec.status.skipped')}</span>}
-            {pending && <span>{t('rec.status.pending')}</span>}
+            {pending && <span className={overdue ? s.overdue : undefined}>{pendingLabel}</span>}
           </div>
         </div>
       )}

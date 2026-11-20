@@ -14,9 +14,14 @@
 //   - píldora = ideal(hoy) − gastado(hoy): > 0 "por delante", < 0 "por detrás",
 //     pareja dentro del 2 % del ingreso (PACE_OK). Como mide a hoy, todo ingreso
 //     registrado del mes ya cuenta; un cobro que no llegó no cambia el ideal.
-//   - proyección = gastado(hoy) + promedio diario × días que faltan.
+//   - proyección = la de projectEndOfMonth (projection.js), la misma de la
+//     tarjeta Proyección: mediana diaria sin los fijos + fijos pendientes. Antes
+//     era gastado(hoy) + promedio × días que faltan, y el arriendo pagado el
+//     día 1 se extrapolaba como gasto diario (auditoría 360, ENG-N2).
 //   - disponible(d) = ingresos hasta d − gastos hasta d (para "te quedaban").
 // Quien llama ya sacó los movimientos de inversión (r.inv), como useHomeData.
+
+import { projectEndOfMonth } from './projection.js'
 
 // Mismo criterio que monthPosition (utils/monthReading.js), copiado acá para
 // que la ChartLupa no arrastre al trozo todo monthReading/dashboardModel.
@@ -34,8 +39,9 @@ export const PACE_EVEN = 0.02   // igual que PACE_OK de monthReading y `pulse`
 
 // Serie del mes. `income` = ingreso registrado del mes (kpis.totalInc); sin
 // ingreso no hay ritmo ideal. `plan` = monthPlan() del mes, para ubicar el cobro
-// previsto si todavía no se registró.
-export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now = new Date(), income = 0, plan = [] }) {
+// previsto si todavía no se registró. `pending` = pendingTotals(plan), los
+// fijos que faltan (los suma la proyección, como en la tarjeta Proyección).
+export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null }) {
   const pos = monthPosition(activeMonth, now)
   const days = pos.days
   const lastDay = pos.today
@@ -62,11 +68,13 @@ export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now =
   }
   const ref = Number(income) > 0 ? Number(income) : null
   const ideal = ref == null ? null : spentCum.map((_, d) => round2(ref * d / days))
-  const avg = lastDay > 0 ? spentCum[lastDay] / lastDay : 0
+  const projEnd = pos.mode === 'current' && lastDay < days
+    ? Math.max(spentCum[lastDay], projectEndOfMonth({ incomes, expenses, activeMonth, pending, now }).projExp)
+    : null
   return {
     mode: pos.mode, days, lastDay, income: ref,
     spent, spentCum, earned, avail, ideal,
-    projEnd: pos.mode === 'current' && lastDay < days ? round2(spentCum[lastDay] + avg * (days - lastDay)) : null,
+    projEnd,
     payday: paydayOf({ incomes, activeMonth, plan, days }),
   }
 }

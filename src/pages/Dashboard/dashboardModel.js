@@ -1,3 +1,4 @@
+// @ts-check
 // src/pages/Dashboard/dashboardModel.js — lógica pura del Inicio (M5), sin React.
 // Responde las tres preguntas del mockup M5: ¿cuánto me queda? (variación de
 // los KPIs vs. el mes anterior), ¿en qué me estoy pasando? (presupuesto por
@@ -6,6 +7,7 @@
 import { localDateStr, fmtPct } from '../../utils/index.js'
 import { budgetStatus } from '../../utils/budgets.js'
 import { addDays, monthOf, monthPlan } from '../../utils/recurring.js'
+import { roundCents, sumAmounts } from '../../utils/monthFigures.js'
 
 // ── Variación vs. mes anterior ───────────────────────────────────────────────
 // null = no hay base para comparar (el mes anterior no tiene datos o su valor es
@@ -48,6 +50,7 @@ export function deltaRateDates({ activeMonth, cutDay = null, now = new Date() })
 }
 
 // B5: variación en US$ con la tasa de CADA período. null si falta una tasa.
+/** @param {*} cur @param {*} prev @param {{ curRate?: number, prevRate?: number, invert?: boolean, hasPrev?: boolean }} [opts] */
 export function usdMonthDelta(cur, prev, { curRate, prevRate, invert = false, hasPrev = true } = {}) {
   if (!(curRate > 0) || !(prevRate > 0)) return null
   return monthDelta((Number(cur) || 0) / curRate, (Number(prev) || 0) / prevRate, { invert, hasPrev, preferAmount: true })
@@ -65,6 +68,7 @@ export function prevMonthOf(month) {
 // Nombre del mes ("septiembre", "September") en el idioma de la interfaz.
 // width 'short' → "sept", "Sep", "Sept" (sin el punto final de algunos idiomas):
 // la variación de los KPIs dice "vs. sept al día 21" en una columna angosta (UI-M7).
+/** @param {'long'|'short'|'narrow'} [width] */
 export function monthName(month, lang = 'es', width = 'long') {
   const [y, m] = String(month).split('-').map(Number)
   if (!y || !m) return ''
@@ -101,9 +105,11 @@ export function homeMonthTotals({ incomes = [], expenses = [], activeMonth, now 
     const keep = (r) => typeof r?.date === 'string' && r.date.startsWith(month) && (untilDay == null || Number(r.date.slice(8, 10)) <= untilDay)
     const inc = incomes.filter(keep)
     const exp = expenses.filter(keep)
-    const totalInc = inc.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
-    const totalExp = exp.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
-    const balance = totalInc - totalExp
+    // ENG-N5: totales y saldo redondeados a centavos; un mes cuadrado al
+    // centavo da 0, no −0,00 en rojo.
+    const totalInc = sumAmounts(inc)
+    const totalExp = sumAmounts(exp)
+    const balance = roundCents(totalInc - totalExp)
     // "Te queda" = solo lo REAL (decisión de Walter, 08-oct-2026); lo previsto
     // que falta va aparte en "Previsto pendiente".
     return { totalInc, totalExp, balance, freeFlow: balance,
@@ -160,7 +166,7 @@ export function nextOccurrence(dateStr, todayDate, { months = 1, weekly = false 
   const t0 = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
   if (base >= t0) return base
   if (weekly) {
-    const diff = Math.ceil((t0 - base) / (7 * 86400000))
+    const diff = Math.ceil((t0.getTime() - base.getTime()) / (7 * 86400000))
     const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + diff * 7)
     return d < t0 ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7) : d
   }
@@ -256,15 +262,19 @@ export const FACTOR_PAGE = {
 // Suscripciones, cuotas de deudas y gastos fijos manuales son reglas: los
 // próximos pagos son sus ocurrencias PREVISTAS (no confirmadas ni omitidas)
 // entre hoy y hoy + `days`. Lo ya registrado este mes no vuelve a aparecer.
-export function upcomingFromRules(rules, { incomes = [], expenses = [], today = new Date(), days = 30, limit = 5 } = {}) {
+// `includeOverdue` (UX-N12): suma también los previstos de este mes cuya fecha
+// ya pasó, marcados `overdue: true`; por orden de fecha quedan primero.
+export function upcomingFromRules(rules, { incomes = [], expenses = [], today = new Date(), days = 30, limit = 5, includeOverdue = false } = {}) {
   const t0 = typeof today === 'string' ? today : localDateStr(today)
   const end = addDays(t0, days)
   const months = [...new Set([monthOf(t0), monthOf(addDays(t0, 15)), monthOf(end)])]
   const out = []
   for (const ym of months) {
     for (const o of monthPlan(rules, ym, { incomes, expenses })) {
-      if (o.status !== 'pending' || o.kind !== 'expense' || o.date < t0 || o.date > end) continue
-      out.push({ id: o.key, kind: o.rule.source === 'debt' ? 'debt' : o.rule.source === 'subscription' ? 'sub' : 'manual', name: o.rule.description || '', amount: Number(o.amount) || 0, date: o.date })
+      if (o.status !== 'pending' || o.kind !== 'expense' || o.date > end) continue
+      const overdue = o.date < t0
+      if (overdue && !(includeOverdue && monthOf(o.date) === monthOf(t0))) continue
+      out.push({ id: o.key, kind: o.rule.source === 'debt' ? 'debt' : o.rule.source === 'subscription' ? 'sub' : 'manual', name: o.rule.description || '', amount: Number(o.amount) || 0, date: o.date, ...(overdue ? { overdue: true } : {}) })
     }
   }
   out.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount)

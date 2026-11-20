@@ -13,7 +13,10 @@ import zlib from 'zlib'
 // tokens --t-* en estilos en línea) y el registro automático (textos en 4
 // idiomas, alta por URL) suman ≈10 kB gzip a la entrada; aprobados por Walter.
 // Medido en Vercel: 241 → 251 kB. Margen de 5 kB para que el tope siga cuidando.
-export const MAX_INITIAL_GZIP = 256 * 1024
+// 20-nov-2026: 256 → 264. Los 58 arreglos de la auditoría 360 (sync visible,
+// finanzas coherentes, medición sin datos personales, textos en 4 idiomas)
+// suman 4 kB: con las variables de producción pasó de 252 a 256 kB.
+export const MAX_INITIAL_GZIP = 264 * 1024
 const HEAVY = /^assets\/(pdf|charts|exceljs)-/
 const LANG_CHUNK = /^(en|pt|de)-[\w-]+\.js$/
 

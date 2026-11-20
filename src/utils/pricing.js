@@ -84,3 +84,20 @@ export function checkoutFor(period, pricing = config.pricing, fallbackUrl = 'htt
   if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) return { trial: true, href: url }
   return { trial: false, href: fallbackUrl }
 }
+
+// Etiqueta del plan para el evento checkout_start (sin datos de la cuenta):
+// 'annual_trial', 'monthly_trial', o sin '_trial' si la prueba está apagada.
+export function checkoutPlan(period, pricing = config.pricing) {
+  const p = period === 'monthly' ? 'monthly' : 'annual'
+  return checkoutFor(period, pricing).trial ? `${p}_trial` : p
+}
+
+// La misma etiqueta, sacada del enlace que realmente se abre (ProGate cae al
+// link mensual con prueba si falta el anual): null si no es un link con prueba.
+export function checkoutPlanForHref(href, pricing = config.pricing) {
+  if (pricing?.trialEnabled !== true || typeof href !== 'string' || !href) return null
+  const clean = (u) => (typeof u === 'string' ? u.trim() : '')
+  if (href === clean(pricing.trialCheckoutUrlAnnual)) return 'annual_trial'
+  if (href === clean(pricing.trialCheckoutUrl)) return 'monthly_trial'
+  return null
+}

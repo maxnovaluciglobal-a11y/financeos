@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/autoEntry.js — "Gastos que se registran solos", fase 1 (19-nov-2026).
 //
 // Contrato de URL para que otra fuente (el Atajo de iOS que corre al pagar con
@@ -37,6 +38,7 @@ const SOURCES = new Set(['applepay', 'atajo', 'widget', 'app'])
 
 // Símbolos y códigos que pueden venir pegados al monto (el Atajo lo formatea
 // con la región del iPhone). "$" solo no dice qué moneda es: queda null.
+/** @type {Array<[RegExp, string]>} */
 const MARKS = [
   [/^us\$|us\$$|^u\$s|u\$s$/i, 'USD'], [/^r\$|r\$$/i, 'BRL'], [/^s\/|s\/$/i, 'PEN'],
   [/^bs\.?|bs\.?$/i, 'VES'], [/€/, 'EUR'], [/£/, 'GBP'],
@@ -107,6 +109,8 @@ export function hasIntake(search) {
  * @returns {null | { type: 'expense'|'income', amount: number|null, amountStatus: string,
  *   amountText: string, options?: number[], merchant: string, currency: string|null,
  *   source: string, date: string|null }}
+ * @param {*} search
+ * @param {{ today?: string, fallbackCurrency?: string, lang?: string }} [opts]
  */
 export function parseIntake(search, { today, fallbackCurrency = 'CLP', lang = 'es' } = {}) {
   const p = params(search)
@@ -172,6 +176,7 @@ export function takeIntake(storage, now = Date.now()) {
 // main.jsx, antes del primer render: guarda el alta para cuando la app esté
 // lista (puede faltar el login) y limpia la URL para que recargar o compartir
 // la pestaña no la repita.
+/** @param {{ location?: any, history?: any, storage?: any, now?: number, lang?: string }} [opts] */
 export function captureIntake({ location, history, storage, now = Date.now(), lang = 'es' } = {}) {
   try {
     if (!location || !hasIntake(location.search)) return null
@@ -184,11 +189,28 @@ export function captureIntake({ location, history, storage, now = Date.now(), la
   } catch { return null }
 }
 
+// ENG-N1 (auditoría 19-nov-2026): main.jsx lee la URL antes de que carguen los
+// ajustes, así que un monto sin moneda explícita ("$4.99", "12,50", "4.99") se
+// leyó con las reglas de CLP. Al abrir la hoja ya se sabe la moneda de la
+// cuenta: se vuelve a leer el texto crudo con ella. Si el alta trae su moneda
+// (parámetro `moneda` o símbolo inequívoco), se respeta lo ya leído.
+/** @param {*} intake @param {{ currency?: string, lang?: string }} [opts] */
+export function reparseIntake(intake, { currency, lang = 'es' } = {}) {
+  if (!intake || intake.currency || !intake.amountText || !/^[A-Z]{3}$/.test(currency || '')) return intake
+  const a = parseIntakeAmount(intake.amountText, { fallbackCurrency: currency, lang })
+  if (a.currency) return intake          // el texto sí traía la moneda: no cambia nada
+  const out = { ...intake, amount: a.amount, amountStatus: a.status }
+  if (a.options) out.options = a.options; else delete out.options
+  return out
+}
+
 // Qué rellena en el formulario. La moneda del alta solo se usa si es la de la
 // persona, o US$ con una tasa guardada (se escribe en "Escribir en US$").
 // note: null | 'foreign' | 'ambiguous' | 'unreadable' | 'negative' | 'missing'
-export function intakeFormValues(intake, { currency, rate = 0 } = {}) {
-  if (!intake) return null
+/** @param {*} rawIntake @param {{ currency?: string, rate?: number, lang?: string }} [opts] */
+export function intakeFormValues(rawIntake, { currency, rate = 0, lang = 'es' } = {}) {
+  if (!rawIntake) return null
+  const intake = reparseIntake(rawIntake, { currency, lang })
   const out = { type: intake.type, desc: intake.merchant || '', date: intake.date, amount: null, usd: false, note: null, code: null }
   const code = intake.currency
   if (intake.amount == null) { out.note = intake.amountStatus === 'ok' ? 'missing' : intake.amountStatus; return out }

@@ -149,7 +149,7 @@ export default function Panorama({ setPage }) {
             kpis={kpis} money={money} dualOn={dualOn} toUSD={toUSD} setPage={setPage} />
 
           {/* Módulo Inversiones (apagado por defecto): lee el portafolio de Invest. */}
-          {moduleOn(settings, 'investments') && <InvestCard />}
+          {moduleOn(settings, 'investments') && <InvestCard setPage={setPage} />}
 
           <NetWorthCard goals={d.goals} debts={d.debts} incomes={d.ctx.incomes} expenses={d.ctx.expenses}
             settings={settings} sym={sym} setPage={setPage} />

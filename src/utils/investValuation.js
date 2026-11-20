@@ -11,7 +11,20 @@
 //    de /api/fx-latam (sources[ccy] === 'fallback') no convierten activos.
 //  · Sin precio, la posición suma a su costo y no entra en "Hoy".
 
-const SUFFIX_CCY = { SN: 'CLP', SA: 'BRL', MX: 'MXN', BA: 'ARS', LM: 'PEN', CL: 'COP' }
+const SUFFIX_CCY = {
+  SN: 'CLP', SA: 'BRL', MX: 'MXN', BA: 'ARS', LM: 'PEN', CL: 'COP',
+  // INV-N23: Europa, Canadá y Japón (las tasas llegan de /api/fx-latam).
+  DE: 'EUR', F: 'EUR', BE: 'EUR', MU: 'EUR', SG: 'EUR', DU: 'EUR', HM: 'EUR', // Alemania
+  MC: 'EUR', // BME (Madrid)
+  PA: 'EUR', AS: 'EUR', BR: 'EUR', LS: 'EUR', MI: 'EUR', HE: 'EUR', VI: 'EUR', IR: 'EUR',
+  L: 'GBp', // Londres cotiza en peniques
+  SW: 'CHF', ST: 'SEK', OL: 'NOK', CO: 'DKK',
+  TO: 'CAD', V: 'CAD',
+  T: 'JPY',
+}
+
+// Submonedas de Yahoo: 100 peniques = 1 GBP, 100 cents = 1 ZAR, 100 agorot = 1 ILS.
+const MINOR_CCY = { GBp: 'GBP', ZAc: 'ZAR', ILA: 'ILS' }
 
 function normCcy(c) {
   if (c == null) return null
@@ -32,12 +45,16 @@ export function currencyOf(ticker, quoteCcy) {
   return SUFFIX_CCY[m[1]] || null
 }
 
+// GBp/ZAc/ILA: si no vino su tasa propia, se deriva de la mayor (GBP x 100).
 export function rateOf(ccy, rates) {
   const c = normCcy(ccy)
   if (!c) return null
   if (c === 'USD') return 1
   const r = rates ? Number(rates[c]) : NaN
-  return Number.isFinite(r) && r > 0 ? r : null
+  if (Number.isFinite(r) && r > 0) return r
+  const major = MINOR_CCY[c]
+  const m = major && rates ? Number(rates[major]) : NaN
+  return Number.isFinite(m) && m > 0 ? m * 100 : null
 }
 
 function fxCostOf(h) {
@@ -93,9 +110,12 @@ export function arsRate(mep, oficial) {
 }
 
 // Fila de `portfolio_holdings` → la forma que usa Invest (rowToHolding).
+// `id` (INV-N15): la tabla no tiene UNIQUE (user_id, ticker) y hay lotes repetidos
+// del mismo ticker; la lista usa el id como key. Nunca se guarda en el dispositivo.
 export function holdingFromRow(r) {
   const fx = Number(r?.fx_at_cost)
   return {
+    id: r?.id != null ? String(r.id) : null,
     t: String(r?.ticker || '').toUpperCase().trim(),
     type: r?.asset_type || '',
     sh: Number(r?.shares) || 0,
@@ -125,6 +145,59 @@ export function quoteBatches(holdings) {
     else if (QUOTE_TICKER.test(h.t)) stocks.add(h.t)
   }
   return { stocks: chunks([...stocks], QUOTE_BATCH), crypto: chunks([...crypto], CRYPTO_BATCH) }
+}
+
+// Una fila por posición para la pantalla de Inversiones (solo en memoria: nunca
+// se guarda en el dispositivo, ver buildSnapshot). Mismas reglas que
+// portfolioTotals, así la suma de las filas da el total de la tarjeta:
+//  · status 'nofx': sin tipo de cambio real → sin cifras en USD, fuera del total.
+//  · status 'cost': sin precio → vale su costo, sin ganancia ni "Hoy".
+//  · status 'live': con precio.
+// `weight` es la parte del valor contado (0–1). Orden: mayor valor primero.
+export function holdingRows(holdings, quotes = {}, rates = {}) {
+  const rows = (holdings || []).map((h) => {
+    const q = quotes[h.t] || null
+    const ccy = currencyOf(h.t, q?.currency)
+    const r = rateOf(ccy, rates)
+    const px = q && q.price > 0 ? q.price : null
+    const base = { id: h.id ?? null, t: h.t, type: h.type || '', sh: h.sh, ccy, avgCost: h.cost, price: px, name: q?.name || q?.shortName || null }
+    if (r == null) return { ...base, status: 'nofx', valueUsd: null, costUsd: null, plUsd: null, plPct: null, dayUsd: null, dayPct: null }
+    const conv = (v) => (r === 1 ? v : v / r)
+    const fc = r === 1 ? null : fxCostOf(h)
+    const costUsd = fc ? (h.sh * h.cost) / fc : conv(h.sh * h.cost)
+    const valueUsd = conv(h.sh * (px || h.cost))
+    if (!px) return { ...base, status: 'cost', valueUsd, costUsd, plUsd: null, plPct: null, dayUsd: null, dayPct: null }
+    const cp = q.changePct || 0
+    const dayUsd = conv(h.sh * (px - px / (1 + cp)))
+    return {
+      ...base,
+      status: 'live',
+      valueUsd,
+      costUsd,
+      plUsd: valueUsd - costUsd,
+      plPct: costUsd > 0 ? (valueUsd - costUsd) / costUsd : null,
+      dayUsd,
+      dayPct: cp,
+    }
+  })
+  const counted = rows.reduce((a, r) => a + (r.valueUsd || 0), 0)
+  for (const r of rows) r.weight = counted > 0 && r.valueUsd != null ? r.valueUsd / counted : null
+  return rows.sort((a, b) => (b.valueUsd ?? -1) - (a.valueUsd ?? -1))
+}
+
+// Reparto del valor contado por tipo de activo (Acción, ETF, Crypto, …).
+export function allocationByType(rows) {
+  const by = new Map()
+  let total = 0
+  for (const r of rows || []) {
+    if (r.valueUsd == null) continue
+    const k = r.type || 'Otro'
+    by.set(k, (by.get(k) || 0) + r.valueUsd)
+    total += r.valueUsd
+  }
+  return [...by.entries()]
+    .map(([type, valueUsd]) => ({ type, valueUsd, share: total > 0 ? valueUsd / total : 0 }))
+    .sort((a, b) => b.valueUsd - a.valueUsd)
 }
 
 export const SNAPSHOT_VERSION = 1

@@ -5,14 +5,16 @@ import { validateLicense, normalizeLicenseInput, setLicenseEmail, acknowledgeSta
 import { useT } from '../i18n/useT.js'
 import Turnstile from './Turnstile.jsx'
 import Logo from './Logo.jsx'
-import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, annualPerMonth, DEFAULT_BILLING_PERIOD } from '../utils/pricing.js'
+import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, checkoutPlan, annualPerMonth, DEFAULT_BILLING_PERIOD } from '../utils/pricing.js'
 import PeriodToggle from './ui/PeriodToggle.jsx'
+import RenewalNote from './ui/RenewalNote.jsx'
 import config from '../config.js'
 import { activateUrl } from '../utils/landingLinks.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 import { logRejection } from '../utils/errorLog.js'
 import { nativePlatform } from '../native/platform.js'
 import { webCheckoutAllowed } from '../native/storePolicy.js'
+import { trackEvent } from '../utils/webAnalytics.js'
 
 // Pro se ofrece con la prueba de 14 días y la elección anual/mensual, igual que la
 // landing (auditoría 360, C-03 / COM-3). Anual preseleccionado: el precio grande es
@@ -30,6 +32,7 @@ function usePlans(t, lang, period) {
 
 async function startCheckout(product, lang, period, account) {
   const url = product === 'pro' ? checkoutFor(period).href : 'https://moyiq.app/#pricing'
+  if (product === 'pro' && checkoutFor(period).trial) trackEvent('checkout_start', { plan: checkoutPlan(period) })
   window.location.href = withCheckoutLang(url, lang, account)
 }
 
@@ -247,8 +250,14 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             <PeriodToggle value={period} onChange={setPeriod} />
             <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginTop: 8 }}>
               {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', proPriceVars(lang))}{' '}
-              {t('billing.trialNote', { next: config.pricing.trialDays + 1 })}
+              {t('billing.trialNote', { next: config.pricing.trialDays + 1 })}{' '}
+              <RenewalNote period={period} />
             </div>
+          </div>
+        )}
+        {webPay && !trialOn && (
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 18 }}>
+            <RenewalNote trial={false} />
           </div>
         )}
 
@@ -270,7 +279,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
 
         {/* Demo link */}
         <div style={{ textAlign: 'center', fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
-          <a href="https://demo.moyiq.app/app/?demo=true" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--grn)', textDecoration: 'none' }}>
+          <a href="https://demo.moyiq.app/app/?demo=true" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('demo_click', { from: 'licensegate' })} style={{ color: 'var(--grn)', textDecoration: 'none' }}>
             {t('licenseGate.demoLink')}
           </a>
         </div>
