@@ -16,9 +16,9 @@ import { trialUnsubscribeTarget } from './utils/trialUnsubscribe.js'
 import AppLockGate from './components/lock/AppLockGate.jsx'
 import DbErrorScreen from './components/DbErrorScreen.jsx'
 import { usePersistedPage } from './hooks/usePersistedPage.js'
-import { pageFromSearch, initialSearch } from './utils/deepLink.js'
+import { pageFromSearch, initialSearch, bootIsAuthReturn } from './utils/deepLink.js'
 import { licenseKeyHash } from './utils/syncCrypto.js'
-import { markInternalUser } from './utils/webAnalytics.js'
+import { markInternalUser, trackOAuthSignupDone } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
@@ -148,6 +148,9 @@ function Inner() {
 
   // Analítica (C-14): las cuentas internas no se miden.
   useEffect(() => { if (session?.user?.email) markInternalUser(session.user.email) }, [session?.user?.email])
+  // WEB-N1: alta con Google (va después de markInternalUser: una cuenta interna no cuenta).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (session?.user) trackOAuthSignupDone(session.user, { authReturn: bootIsAuthReturn() }) }, [session?.user?.id])
 
   useEffect(() => {
     if (isDemo) return

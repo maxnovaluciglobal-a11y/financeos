@@ -78,6 +78,13 @@ export function annualSavingPct(pricing = config.pricing) {
 // 'monthly' cuenta como anual). Con la prueba habilitada y un link https real es
 // el link CON prueba; si no, la página de precios de la landing y sin promesa de
 // prueba (mismo criterio que proCta).
+export function checkoutFor(period, pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
+  const raw = period === 'monthly' ? pricing?.trialCheckoutUrl : pricing?.trialCheckoutUrlAnnual
+  const url = typeof raw === 'string' ? raw.trim() : ''
+  if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) return { trial: true, href: url }
+  return { trial: false, href: fallbackUrl }
+}
+
 // Etiqueta del plan para el evento checkout_start (sin datos de la cuenta):
 // 'annual_trial', 'monthly_trial', o sin '_trial' si la prueba está apagada.
 export function checkoutPlan(period, pricing = config.pricing) {
@@ -85,9 +92,12 @@ export function checkoutPlan(period, pricing = config.pricing) {
   return checkoutFor(period, pricing).trial ? `${p}_trial` : p
 }
 
-export function checkoutFor(period, pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
-  const raw = period === 'monthly' ? pricing?.trialCheckoutUrl : pricing?.trialCheckoutUrlAnnual
-  const url = typeof raw === 'string' ? raw.trim() : ''
-  if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) return { trial: true, href: url }
-  return { trial: false, href: fallbackUrl }
+// La misma etiqueta, sacada del enlace que realmente se abre (ProGate cae al
+// link mensual con prueba si falta el anual): null si no es un link con prueba.
+export function checkoutPlanForHref(href, pricing = config.pricing) {
+  if (pricing?.trialEnabled !== true || typeof href !== 'string' || !href) return null
+  const clean = (u) => (typeof u === 'string' ? u.trim() : '')
+  if (href === clean(pricing.trialCheckoutUrlAnnual)) return 'annual_trial'
+  if (href === clean(pricing.trialCheckoutUrl)) return 'monthly_trial'
+  return null
 }

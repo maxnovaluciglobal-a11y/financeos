@@ -9,11 +9,12 @@
 //
 // Eventos de conversión (WEB-N1 / BIZ-N3): trackEvent() manda con
 // window.va('event') un nombre fijo y como mucho dos propiedades cortas (el
-// límite del plan Pro): el origen de la primera visita (`src`, una etiqueta
-// como 'guia-cl', 'google.com' o 'directo') y un detalle del botón. El origen
-// se guarda solo en este dispositivo (localStorage, FIRST_TOUCH_KEY), nunca va
-// con el alta ni a la base, y no identifica a nadie: es el mismo valor para
-// todos los que llegaron por el mismo enlace.
+// límite del plan Pro): el origen de ESTA visita (`src`, una etiqueta como
+// 'guia-cl', 'google.com' o 'directo', sacada de los mismos ref, utm_* y
+// referrer que ya lleva la visita) y un detalle del botón. El origen vive solo
+// en memoria mientras la página está abierta: no se guarda en el dispositivo,
+// nunca va con el alta ni a la base, y no identifica a nadie. Con No rastrear,
+// GPC, 'va-disable' o cuenta interna no se calcula ni se manda nada.
 //
 // Tráfico interno (V-WEB-FN1): abrir la app con ?interno=1 apaga la medición en
 // este navegador ('va-disable'); ?interno=0 la vuelve a prender.
@@ -30,8 +31,6 @@ function lsGet(storage, k) { try { return storage?.getItem(k) } catch { return n
 function lsSet(storage, k, v) { try { storage?.setItem(k, v) } catch { /* sin almacenamiento: se sigue sin ello */ } }
 function lsDel(storage, k) { try { storage?.removeItem(k) } catch { /* sin almacenamiento: se sigue sin ello */ } }
 
-export const FIRST_TOUCH_KEY = 'fnos_first_touch'
-const FIRST_TOUCH_TTL_MS = 90 * 24 * 60 * 60 * 1000
 const OWN_HOSTS_RE = /(^|\.)moyiq\.app$/
 
 // Etiqueta corta y sin datos personales: minúsculas, [a-z0-9._-], 40 caracteres.
@@ -43,7 +42,8 @@ export function cleanLabel(v) {
 }
 
 // Origen de esta visita: ref, si no utm_source (+ '_' + utm_campaign), si no el
-// sitio de origen (solo el dominio y si no es de moyiq), si no 'directo'.
+// sitio de origen (solo el dominio; 'web' si es la landing moyiq.app y nada si
+// es la app o la demo), si no 'directo'.
 export function sourceFromVisit(search, referrer) {
   let q
   try { q = new URLSearchParams(search || '') } catch { q = new URLSearchParams() }
@@ -56,28 +56,29 @@ export function sourceFromVisit(search, referrer) {
   }
   try {
     const host = new URL(referrer).hostname.replace(/^www\./, '')
+    if (host === 'moyiq.app') return 'web' // viene de la landing (sin ref propio)
     if (host && !OWN_HOSTS_RE.test(host)) return cleanLabel(host)
   } catch { /* sin referrer válido */ }
   return 'directo'
 }
 
-// Guarda el origen de la primera visita (90 días). Una visita 'directo' no
-// pisa un origen real; un origen real sí reemplaza a un 'directo' guardado.
-export function captureFirstTouch({ search, referrer, storage, now = Date.now() }) {
+// Origen de la visita en curso, solo en memoria (un valor por ventana).
+const visitSources = new WeakMap()
+export function rememberVisitSource(win, search, referrer) {
+  if (!win || typeof win !== 'object') return null
   const src = sourceFromVisit(search, referrer)
-  let prev = null
-  try { prev = JSON.parse(lsGet(storage, FIRST_TOUCH_KEY) || 'null') } catch { prev = null }
-  const fresh = prev && typeof prev.src === 'string' && now - Number(prev.at) < FIRST_TOUCH_TTL_MS
-  if (fresh && (prev.src !== 'directo' || src === 'directo')) return prev.src
-  lsSet(storage, FIRST_TOUCH_KEY, JSON.stringify({ src, at: now }))
+  visitSources.set(win, src)
   return src
 }
+export function visitSource(win) {
+  return (win && typeof win === 'object' && visitSources.get(win)) || 'directo'
+}
 
-export function firstTouchSource(storage) {
-  try {
-    const v = JSON.parse(lsGet(storage, FIRST_TOUCH_KEY) || 'null')
-    return cleanLabel(v?.src) || 'directo'
-  } catch { return 'directo' }
+// No rastrear, GPC, el botón de /privacy ('va-disable') o una cuenta interna:
+// la misma condición para no mandar visitas ni eventos.
+export function isOptedOut({ nav, win, storage }) {
+  if (lsGet(storage, 'va-disable') || lsGet(storage, INTERNAL_KEY) === '1') return true
+  return nav?.doNotTrack === '1' || win?.doNotTrack === '1' || nav?.msDoNotTrack === '1' || nav?.globalPrivacyControl === true
 }
 
 // ?interno=1 / ?interno=0: marca o desmarca este navegador como de uso interno.
@@ -94,17 +95,47 @@ export function applyInternalParam(search, storage) {
 export const EVENTS = ['signup_start', 'signup_done', 'checkout_start', 'demo_click', 'demo_gate_pass']
 export function trackEvent(name, detail = {}, win = typeof window !== 'undefined' ? window : null) {
   if (!win || typeof win.va !== 'function' || !EVENTS.includes(name)) return false
-  const data = { src: firstTouchSource(lsStorage(win)) }
+  if (isOptedOut({ nav: win.navigator, win, storage: lsStorage(win) })) return false
+  const data = { src: visitSource(win) }
   const [k, v] = Object.entries(detail || {})[0] || []
   if (k && cleanLabel(v)) data[cleanLabel(k)] = cleanLabel(v)
   try { win.va('event', { name, data }); return true } catch { return false }
 }
+// Un evento que cuenta una sola vez por pantalla (signup_start en AuthGate: los
+// reintentos tras un error de captcha, de red o de correo ya usado no suman).
+export function onceEvent(name, track = trackEvent) {
+  let sent = false
+  return (detail) => {
+    if (sent) return false
+    sent = true
+    return track(name, detail)
+  }
+}
 function lsStorage(win) { try { return win.localStorage } catch { return null } }
+
+// signup_done con Google (el alta con correo se cuenta en AuthGate): al volver
+// del OAuth, una cuenta de Google recién creada (creada hace menos de 10 min y
+// con el primer inicio de sesión a menos de 1 min de la creación). Una sola vez
+// por carga de página, y solo en la carga que vuelve de Auth.
+const NEW_ACCOUNT_MS = 10 * 60 * 1000
+export function isNewGoogleAccount(user, now = Date.now()) {
+  const provider = user?.app_metadata?.provider
+  const created = Date.parse(user?.created_at || '')
+  const first = Date.parse(user?.last_sign_in_at || '')
+  if (provider !== 'google' || !Number.isFinite(created) || !Number.isFinite(first)) return false
+  return now - created >= 0 && now - created < NEW_ACCOUNT_MS && Math.abs(first - created) < 60 * 1000
+}
+let oauthSignupSent = false
+export function trackOAuthSignupDone(user, { authReturn, now = Date.now(), win } = {}) {
+  if (oauthSignupSent || !authReturn || !isNewGoogleAccount(user, now)) return false
+  oauthSignupSent = true
+  return trackEvent('signup_done', { method: 'google' }, win)
+}
+export function resetOAuthSignupForTests() { oauthSignupSent = false }
 
 export function makeBeforeSend({ nav, win, storage }) {
   return (event) => {
-    if (lsGet(storage, 'va-disable') || lsGet(storage, INTERNAL_KEY) === '1') return null
-    if (nav?.doNotTrack === '1' || win?.doNotTrack === '1' || nav?.msDoNotTrack === '1' || nav?.globalPrivacyControl === true) return null
+    if (isOptedOut({ nav, win, storage })) return null
     try {
       const u = new URL(event.url)
       for (const k of Array.from(u.searchParams.keys())) {
@@ -128,7 +159,7 @@ export function installWebAnalytics(win = typeof window !== 'undefined' ? window
   if (!win || !ANALYTICS_HOSTS.includes(win.location?.hostname)) return Promise.resolve(false)
   const storage = lsStorage(win)
   applyInternalParam(win.location?.search, storage)
-  captureFirstTouch({ search: win.location?.search, referrer: win.document?.referrer, storage })
+  if (!isOptedOut({ nav: win.navigator, win, storage })) rememberVisitSource(win, win.location?.search, win.document?.referrer)
   win.va = win.va || function () { (win.vaq = win.vaq || []).push(arguments) }
   win.va('beforeSend', makeBeforeSend({ nav: win.navigator, win, storage }))
   // Mientras Web Analytics no esté habilitado en el proyecto de Vercel, el

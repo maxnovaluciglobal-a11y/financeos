@@ -107,6 +107,11 @@ export function initialSearch(search, storage = sessionStore(), now = Date.now()
   return result
 }
 
+// ¿Esta carga vuelve de Auth (OAuth de Google o enlace de un correo)?
+export function bootIsAuthReturn() {
+  return isAuthReturn('', BOOT_AUTH_MARK)
+}
+
 function readStash(store, key, consume) {
   if (!store) return null
   try {
