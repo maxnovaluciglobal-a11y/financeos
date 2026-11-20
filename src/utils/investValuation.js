@@ -57,13 +57,39 @@ export function rateOf(ccy, rates) {
   return Number.isFinite(m) && m > 0 ? m * 100 : null
 }
 
-function fxCostOf(h) {
+// Monto en ccy → USD. null si falta la tasa o el monto no es un número (nunca 1:1).
+// En USD devuelve el mismo número, sin operar.
+export function toUsd(amount, ccy, rates) {
+  if (amount == null || !Number.isFinite(Number(amount))) return null
+  const r = rateOf(ccy, rates)
+  if (r == null) return null
+  return r === 1 ? +amount : amount / r
+}
+
+// Monto en USD → ccy (un cálculo en USD mostrado en la moneda del activo).
+export function fromUsd(amount, ccy, rates) {
+  if (amount == null || !Number.isFinite(Number(amount))) return null
+  const r = rateOf(ccy, rates)
+  if (r == null) return null
+  return r === 1 ? +amount : amount * r
+}
+
+// Monedas de activo que se muestran sin decimales (fx.js: NO_DECIMALS).
+const NO_DECIMALS = new Set(['CLP', 'COP', 'JPY', 'KRW'])
+export function decimalsFor(ccy) {
+  return NO_DECIMALS.has(normCcy(ccy)) ? 0 : 2
+}
+
+export function fxCostOf(h) {
   const f = h ? Number(h.fxCost) : NaN
   return h && h.fxCost != null && Number.isFinite(f) && f > 0 ? f : null
 }
 
 export function portfolioTotals(port, liveOf, ccyOf, rates) {
   let value = 0, cost = 0, day = 0, priced = 0, excluded = 0, counted = 0
+  // F0 (20-nov-2026): el efecto cambiario y cuántas posiciones en otra moneda
+  // tienen (o no) el tipo de cambio de la compra, igual que fx.js de Invest.
+  let fxEffect = 0, fxKnown = 0, fxUnknown = 0
   for (const h of port || []) {
     const ccy = ccyOf ? ccyOf(h.t) : currencyOf(h.t)
     const r = rateOf(ccy, rates)
@@ -72,9 +98,17 @@ export function portfolioTotals(port, liveOf, ccyOf, rates) {
     const conv = (v) => (r === 1 ? v : v / r)
     const lq = liveOf ? liveOf(h.t) : null
     const px = lq && lq.price > 0 ? lq.price : null
-    // El costo va al tipo de cambio de la compra si se conoce (FIN-12).
+    // El costo va al tipo de cambio de la compra si se conoce (FIN-12); la
+    // diferencia con el de hoy es el efecto cambiario, que se informa aparte.
     const fc = r === 1 ? null : fxCostOf(h)
-    cost += fc ? (h.sh * h.cost) / fc : conv(h.sh * h.cost)
+    if (fc) {
+      cost += (h.sh * h.cost) / fc
+      fxEffect += (h.sh * h.cost) / r - (h.sh * h.cost) / fc
+      fxKnown++
+    } else {
+      cost += conv(h.sh * h.cost)
+      if (r !== 1) fxUnknown++
+    }
     value += conv(h.sh * (px || h.cost))
     if (px) {
       priced++
@@ -89,6 +123,7 @@ export function portfolioTotals(port, liveOf, ccyOf, rates) {
     totalPct: cost > 0 ? (value - cost) / cost : 0,
     dayPct: (value - day) > 0 ? day / (value - day) : 0,
     missing: counted - priced,
+    fxEffect, fxKnown, fxUnknown,
   }
 }
 
@@ -109,6 +144,104 @@ export function arsRate(mep, oficial) {
   return oficial != null && Number.isFinite(o) && o > 0 ? o : null
 }
 
+// Posiciones convertidas a USD para los agregados (fx.js: convertHoldings).
+// rows: copias con cost/cur/stop en USD y los nativos en costN/curN/stopN, más
+// ccy, fx (tasa de hoy), fxCost y costUsdBuy (costo total al tipo de cambio de
+// la compra, null si no se conoce o si es USD). excluded: las sin tasa, sin
+// convertir, para mostrarlas aparte con "sin tipo de cambio".
+export function convertHoldings(port, ccyOf, rates) {
+  const rows = [], excluded = []
+  for (const h of port || []) {
+    const ccy = ccyOf ? ccyOf(h.t) : currencyOf(h.t)
+    const r = rateOf(ccy, rates)
+    const base = { ccy, costN: h.cost, curN: h.cur, stopN: h.stop }
+    if (r == null) { excluded.push({ ...h, ...base, fx: null }); continue }
+    const conv = (v) => (r === 1 || v == null || !Number.isFinite(v) ? v : v / r)
+    const fc = r === 1 ? null : fxCostOf(h)
+    rows.push({
+      ...h, ...base,
+      fx: r,
+      fxCost: fc,
+      costUsdBuy: fc ? (h.sh * h.cost) / fc : null,
+      cost: conv(h.cost),
+      cur: conv(h.cur),
+      stop: h.stop > 0 ? conv(h.stop) : h.stop,
+    })
+  }
+  return { rows, excluded }
+}
+
+// Suma en USD de montos en distintas monedas (fx.js: sumUsd).
+// Devuelve { total, excluded, items: [{ item, usd }] } (solo los convertidos).
+export function sumUsd(items, amountOf, ccyOf, rates) {
+  let total = 0, excluded = 0
+  const out = []
+  for (const it of items || []) {
+    const a = amountOf(it)
+    if (a == null || !Number.isFinite(Number(a))) continue
+    const usd = toUsd(a, ccyOf(it), rates)
+    if (usd == null) { excluded++; continue }
+    total += usd
+    out.push({ item: it, usd })
+  }
+  return { total, excluded, items: out }
+}
+
+// Peso argentino con la preferencia de la cuenta (UXP-8, fx.js: arsRate).
+// kind: 'MEP' (por defecto) u 'Oficial'. mep: { rate, date } de /api/fx-ars;
+// oficial: ARS por 1 USD del oficial real (Yahoo) o null. Devuelve
+// { rate, kind, fallback, date } — kind es el que se usa de verdad y fallback
+// dice que se pidió el MEP y no había — o null si no hay ninguno.
+export const ARS_KINDS = ['MEP', 'Oficial']
+export function arsRateFor(kind, mep, oficial) {
+  const m = mep ? Number(mep.rate) : NaN
+  const o = Number(oficial)
+  const okM = Number.isFinite(m) && m > 0
+  const okO = oficial != null && Number.isFinite(o) && o > 0
+  if (kind !== 'Oficial' && okM) return { rate: m, kind: 'MEP', fallback: false, date: mep.date || null }
+  if (okO) return { rate: o, kind: 'Oficial', fallback: kind !== 'Oficial', date: null }
+  if (okM) return { rate: m, kind: 'MEP', fallback: true, date: mep.date || null }
+  return null
+}
+
+// Preferencia Oficial / MEP POR CUENTA: la clave es `fos_*`, así que viaja con
+// la cuenta activa (core/deviceOwner.js) y no es del dispositivo.
+export const ARS_KIND_KEY = 'fos_invest_ars_kind'
+export function readArsKind(read = () => null) {
+  let v = null
+  try { v = read(ARS_KIND_KEY) } catch { v = null }
+  return v === 'Oficial' ? 'Oficial' : 'MEP'
+}
+
+// Tasas para convertir ACTIVOS: solo reales (realRates) y el ARS con la
+// preferencia de la cuenta. Así un monto en pesos da lo mismo de ida y de
+// vuelta en las posiciones .BA (Invest: applyArsRate).
+export function assetRates(latam, ars, kind = 'MEP') {
+  const rates = realRates(latam?.rates, latam?.sources)
+  const a = arsRateFor(kind, ars?.mep, rates.ARS)
+  if (a) rates.ARS = a.rate
+  else delete rates.ARS
+  return { rates, ars: a }
+}
+
+// Moneda de visualización: cifras en USD → la moneda elegida para mostrar.
+// A diferencia de los activos, mostrar SÍ puede usar la tasa de respaldo de
+// /api/fx-latam (Invest: FX_RATES), y lo dice: { rate, fallback }. Sin ninguna
+// tasa, null (la UI se queda en US$).
+export const DISPLAY_CCY = ['USD', 'CLP', 'MXN', 'COP', 'ARS', 'PEN']
+export function displayRate(ccy, latam, arsChoice = null) {
+  const c = normCcy(ccy)
+  if (!c || c === 'USD') return { ccy: 'USD', rate: 1, fallback: false }
+  if (c === 'ARS' && arsChoice?.rate > 0) return { ccy: c, rate: arsChoice.rate, fallback: false, kind: arsChoice.kind }
+  const r = Number(latam?.rates?.[c])
+  if (!(Number.isFinite(r) && r > 0)) return null
+  return { ccy: c, rate: r, fallback: latam?.sources?.[c] === 'fallback' }
+}
+export function toDisplay(usd, disp) {
+  if (usd == null || !Number.isFinite(Number(usd)) || !disp) return null
+  return disp.rate === 1 ? +usd : usd * disp.rate
+}
+
 // Fila de `portfolio_holdings` → la forma que usa Invest (rowToHolding).
 // `id` (INV-N15): la tabla no tiene UNIQUE (user_id, ticker) y hay lotes repetidos
 // del mismo ticker; la lista usa el id como key. Nunca se guarda en el dispositivo.
@@ -121,6 +254,17 @@ export function holdingFromRow(r) {
     sh: Number(r?.shares) || 0,
     cost: Number(r?.avg_cost) || 0,
     fxCost: r?.fx_at_cost != null && fx > 0 ? fx : null,
+  }
+}
+
+// La fila completa (F0): además del stop y la nota que la pantalla de
+// Posiciones edita. Mismo mapeo que rowToHolding de Invest.
+export function holdingFromRowFull(r) {
+  const stop = Number(r?.stop)
+  return {
+    ...holdingFromRow(r),
+    stop: r?.stop != null && stop > 0 ? stop : null,
+    note: r?.note ? String(r.note) : '',
   }
 }
 
@@ -171,6 +315,8 @@ export function holdingRows(holdings, quotes = {}, rates = {}) {
     const dayUsd = conv(h.sh * (px - px / (1 + cp)))
     return {
       ...base,
+      // Efecto cambiario de la posición (solo con el tipo de cambio de la compra).
+      fxEffectUsd: fc ? conv(h.sh * h.cost) - costUsd : null,
       status: 'live',
       valueUsd,
       costUsd,
