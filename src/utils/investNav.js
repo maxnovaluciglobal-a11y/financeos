@@ -1,0 +1,105 @@
+// src/utils/investNav.js — direcciones de Inversiones completo (F0).
+//
+// moyiq no enruta por URL: cada pantalla es un id de página y el historial
+// guarda { fosPage, fosDepth, fosFrom } en history.state (usePageStack.js).
+// Sobre eso, Inversiones agrega dos datos a SU entrada del historial:
+//  · invTab: la pestaña (Hoy · Portafolio · Lista · Planificar · Mercado).
+//    Cambiar de pestaña reemplaza la entrada (como una pestaña nativa: no se
+//    apila), así Atrás desde la ficha vuelve a la pestaña de donde se vino.
+//  · invTicker: el activo de la ficha ('investAsset', pantalla empujada).
+// history.state vive solo en esta pestaña del navegador (no se manda a ningún
+// lado). La pestaña elegida además queda en `fos_invest_tab` (clave de la
+// cuenta, core/deviceOwner.js); el ticker de la ficha NO se guarda en el
+// dispositivo.
+// Enlaces: ?open=invest-hoy | invest-portafolio | invest-lista |
+// invest-planificar | invest-mercado (utils/deepLink.js).
+
+export const INVEST_TABS = ['hoy', 'portafolio', 'lista', 'planificar', 'mercado']
+export const DEFAULT_TAB = 'hoy'
+export const TAB_KEY = 'fos_invest_tab'
+export const ASSET_PAGE = 'investAsset'
+export const ASSET_EVENT = 'fos:invest-asset'
+const TICKER_RE = /^[\^A-Z0-9.\-=]{1,15}$/
+
+export const isTab = (t) => INVEST_TABS.includes(t)
+export function normAssetTicker(t) {
+  const s = String(t ?? '').toUpperCase().trim()
+  return TICKER_RE.test(s) ? s : null
+}
+
+// ?open=invest-<pestaña> → pestaña, o null.
+export function tabFromOpen(open) {
+  const m = /^invest-([a-z]+)$/.exec(String(open || ''))
+  return m && isTab(m[1]) ? m[1] : null
+}
+export function tabFromSearch(search) {
+  try { return tabFromOpen(new URLSearchParams(search || '').get('open')) } catch { return null }
+}
+
+// Pestaña inicial: la de esta entrada del historial → la del enlace (una sola
+// vez por carga) → la guardada → Hoy.
+export function initialTab({ state = null, linkTab = null, saved = null } = {}) {
+  if (isTab(state?.invTab)) return state.invTab
+  if (isTab(linkTab)) return linkTab
+  if (isTab(saved)) return saved
+  return DEFAULT_TAB
+}
+
+// Navegación con flechas, Inicio y Fin en la fila de pestañas (patrón APG).
+export function tabKeyTarget(key, current, tabs = INVEST_TABS) {
+  const i = tabs.indexOf(current)
+  const n = tabs.length
+  if (key === 'ArrowRight') return tabs[(i + 1) % n]
+  if (key === 'ArrowLeft') return tabs[(i - 1 + n) % n]
+  if (key === 'Home') return tabs[0]
+  if (key === 'End') return tabs[n - 1]
+  return null
+}
+
+// ── Navegador (no puro) ───────────────────────────────────────────
+let linkUsed = false
+let memTicker = null
+
+function readHistoryState() {
+  try { return typeof history !== 'undefined' ? history.state : null } catch { return null }
+}
+function mergeHistoryState(patch) {
+  try {
+    if (typeof history === 'undefined') return
+    history.replaceState({ ...(history.state || {}), ...patch }, '')
+  } catch { /* historial no disponible: vale solo en memoria */ }
+}
+
+export function bootTab({ search = typeof location !== 'undefined' ? location.search : '', storage = null } = {}) {
+  const linkTab = linkUsed ? null : tabFromSearch(search)
+  linkUsed = true
+  let saved = null
+  try { saved = storage?.getItem(TAB_KEY) ?? null } catch { saved = null }
+  return initialTab({ state: readHistoryState(), linkTab, saved })
+}
+
+export function rememberTab(tab, storage = null) {
+  if (!isTab(tab)) return
+  mergeHistoryState({ invTab: tab })
+  try { storage?.setItem(TAB_KEY, tab) } catch { /* modo privado: queda en el historial de la pestaña */ }
+}
+
+export function currentAssetTicker() {
+  return normAssetTicker(readHistoryState()?.invTicker) || memTicker
+}
+
+// Abre la ficha de un ticker. setPage es el `go` de usePageStack: empuja la
+// pantalla (o no hace nada si ya estamos en la ficha) y después se anota el
+// ticker en esa misma entrada del historial.
+export function openAsset(setPage, ticker) {
+  const t = normAssetTicker(ticker)
+  if (!t || typeof setPage !== 'function') return false
+  memTicker = t
+  setPage(ASSET_PAGE)
+  mergeHistoryState({ invTicker: t })
+  try { window.dispatchEvent(new CustomEvent(ASSET_EVENT, { detail: { ticker: t } })) } catch { /* SSR/test */ }
+  return true
+}
+
+// Solo para pruebas.
+export function __resetInvestNav() { linkUsed = false; memTicker = null }

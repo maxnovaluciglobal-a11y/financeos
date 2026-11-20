@@ -11,7 +11,13 @@
 // ?open=<destino> -> id de página de la app. "upgrade" abre Modo Asesor: para quien
 // no es Pro es la pantalla de ProGate (qué incluye Pro, precio y prueba de 14 días).
 // "delete-account" (C-22) abre Ajustes con la sección de borrar la cuenta desplegada.
-const PAGE_BY_OPEN = { import: 'import', dashboard: 'dashboard', upgrade: 'advisor', 'delete-account': 'settings' }
+// Inversiones (F0, 20-nov-2026): "invest" y una por pestaña; la pestaña la lee
+// utils/investNav.js (tabFromSearch) y solo cuenta con UI_FLAGS.investFull.
+const PAGE_BY_OPEN = {
+  import: 'import', dashboard: 'dashboard', upgrade: 'advisor', 'delete-account': 'settings',
+  invest: 'investments', 'invest-hoy': 'investments', 'invest-portafolio': 'investments', 'invest-lista': 'investments',
+  'invest-planificar': 'investments', 'invest-mercado': 'investments',
+}
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
