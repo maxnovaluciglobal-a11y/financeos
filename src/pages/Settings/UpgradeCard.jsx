@@ -30,6 +30,11 @@ export default function UpgradeCard({ subStyle }) {
             <RenewalNote period={period} />
           </div>
         )}
+        {!trial && (
+          <div style={{...subStyle,marginTop:6}}>
+            <RenewalNote trial={false} />
+          </div>
+        )}
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:8,flexShrink:0,minWidth:240}}>
         {trial && <PeriodToggle value={period} onChange={setPeriod} />}

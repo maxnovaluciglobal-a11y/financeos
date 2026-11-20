@@ -2096,8 +2096,9 @@ export const de = {
     'billing.then.monthly': "Danach US$ {m} pro Monat. Jederzeit kündbar.",
     'billing.trialNote': "Karte erforderlich. Die erste Abbuchung erfolgt an Tag {next}; wenn Sie vorher kündigen, zahlen Sie nichts.",
     // LEG-N5 (360-Audit, 19.11.2026): automatische Verlängerung und Kündigungsweg neben dem Testbutton.
-    'billing.renewal.monthly': "Nach dem Testzeitraum verlängert sich das Abo automatisch und wird jeden Monat abgerechnet, bis Sie es kündigen. Sie können jederzeit online kündigen, unter Mehr › Abo verwalten.",
-    'billing.renewal.annual': "Nach dem Testzeitraum verlängert sich das Abo automatisch und wird jedes Jahr abgerechnet, bis Sie es kündigen. Sie können jederzeit online kündigen, unter Mehr › Abo verwalten.",
+    'billing.renewal.monthly': "Nach dem Testzeitraum verlängert sich das Abo automatisch und wird jeden Monat abgerechnet, bis Sie es online unter Mehr › Abo verwalten kündigen.",
+    'billing.renewal.annual': "Nach dem Testzeitraum verlängert sich das Abo automatisch und wird jedes Jahr abgerechnet, bis Sie es online unter Mehr › Abo verwalten kündigen.",
+    'billing.renewal.noTrial': "Bezahlte Tarife verlängern sich automatisch und werden in jedem Zeitraum abgerechnet, bis Sie sie online unter Mehr › Abo verwalten kündigen.",
     'billing.cancelLink': "So kündigen Sie",
     'home.kpi.left': "Diesen Monat übrig",
     'home.detail.title': "Monatsdetails",

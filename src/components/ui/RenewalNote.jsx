@@ -3,14 +3,16 @@
 // ARL y ROSCA piden decir antes del pago, de forma visible, que el plan se
 // renueva hasta que lo canceles y cómo se cancela. El enlace va a la baja en
 // línea de la landing en el idioma del usuario (utils/cancelUrl.js).
+// Sin prueba (trial=false) el botón lleva a los precios de la landing, donde se
+// elige el periodo: el aviso dice que los planes de pago se renuevan solos.
 import { useT } from '../../i18n/useT.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 
-export default function RenewalNote({ period }) {
+export default function RenewalNote({ period, trial = true }) {
   const { t, lang } = useT()
   return (
     <>
-      {t(period === 'monthly' ? 'billing.renewal.monthly' : 'billing.renewal.annual')}{' '}
+      {t(!trial ? 'billing.renewal.noTrial' : period === 'monthly' ? 'billing.renewal.monthly' : 'billing.renewal.annual')}{' '}
       <a href={cancelUrl(lang)} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
         {t('billing.cancelLink')}
       </a>

@@ -136,6 +136,11 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
           <RenewalNote period={period} />
         </p>
       )}
+      {!cta.trial && (
+        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
+          <RenewalNote trial={false} />
+        </p>
+      )}
       {preview && (
         <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', marginTop: 16, lineHeight: 1.5 }}>
           {t('pro.gate.previewNote', { days: trialDays })}

@@ -239,6 +239,11 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             </div>
           </div>
         )}
+        {!trialOn && (
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 18 }}>
+            <RenewalNote trial={false} />
+          </div>
+        )}
 
         <Turnstile ref={captcha} action="starter" errorText={t('authGate.errorCaptcha')} />
 

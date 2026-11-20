@@ -15,11 +15,14 @@ vi.mock('../i18n/useT.js', async () => {
   }
   return { useT, useTFor: useT }
 })
+// ProGate solo muestra la oferta a quien no es Pro.
+vi.mock('../hooks/usePlan.js', () => ({ usePlan: () => ({ isPro: false }) }))
 
 const { loadLang } = await import('../i18n/langCache.js')
 const { translate } = await import('../i18n/translate.js')
 const { default: LicenseGate } = await import('./LicenseGate.jsx')
 const { default: UpgradeCard } = await import('../pages/Settings/UpgradeCard.jsx')
+const { default: ProGate } = await import('./ui/ProGate.jsx')
 const { default: config } = await import('../config.js')
 
 const LANGS = ['es', 'en', 'pt', 'de']
@@ -35,6 +38,10 @@ const renderGate = (lang) => {
 const renderCard = (lang) => {
   globalThis.__TEST_LANG = lang
   return renderToStaticMarkup(createElement(UpgradeCard, { subStyle: {} }))
+}
+const renderProGate = (lang) => {
+  globalThis.__TEST_LANG = lang
+  return renderToStaticMarkup(createElement(ProGate, { featureKey: 'pro.gate.featureDefault' }, 'contenido'))
 }
 const t = (lang, key, vars) => translate(lang, key, vars)
 
@@ -106,7 +113,7 @@ describe('sin prueba en la config', () => {
 // se renueva solo hasta que se cancele, cómo se cancela, y se enlaza la baja en línea.
 describe.each(LANGS)('aviso de renovación y baja junto a la prueba · %s', (lang) => {
   const CANCEL = { es: 'https://moyiq.app/cancelar.html', en: 'https://moyiq.app/en/cancel.html', pt: 'https://moyiq.app/en/cancel.html', de: 'https://moyiq.app/en/cancel.html' }
-  for (const [name, render] of [['LicenseGate', renderGate], ['Ajustes', renderCard]]) {
+  for (const [name, render] of [['LicenseGate', renderGate], ['Ajustes', renderCard], ['ProGate', renderProGate]]) {
     it(`${name}: renovación anual hasta cancelar y enlace a la baja en línea`, () => {
       const html = render(lang)
       const out = text(html)
@@ -114,10 +121,29 @@ describe.each(LANGS)('aviso de renovación y baja junto a la prueba · %s', (lan
       expect(html).toContain(`href="${CANCEL[lang]}"`)
       expect(out).toContain(t(lang, 'billing.cancelLink'))
     })
+
+    it(`${name}: sin prueba en la config igual avisa que el plan se renueva solo, con el enlace a la baja`, () => {
+      const saved = { ...config.pricing }
+      config.pricing.trialEnabled = false
+      try {
+        const html = render(lang)
+        const out = text(html)
+        expect(out).toContain(t(lang, 'billing.renewal.noTrial'))
+        expect(out).not.toContain(t(lang, 'billing.renewal.annual'))
+        expect(html).toContain(`href="${CANCEL[lang]}"`)
+      } finally { Object.assign(config.pricing, saved) }
+    })
   }
 
-  it('los textos nombran la renovación y el lugar del portal en los dos periodos', () => {
-    for (const key of ['billing.renewal.monthly', 'billing.renewal.annual']) {
+  it('con prueba, «cancela cuando quieras» se dice una sola vez (billing.then.*), no también en el aviso', () => {
+    const out = text(renderGate(lang))
+    const once = t(lang, 'billing.then.annual', { y: ANNUAL_PRICE[lang], m: MONTHLY_PRICE[lang] }).split('. ').pop()
+    expect(out.split(once).length - 1).toBe(1)
+    expect(t(lang, 'billing.renewal.annual')).not.toMatch(/en cualquier momento|at any time|a qualquer momento|jederzeit/)
+  })
+
+  it('los textos nombran la renovación y el lugar del portal en los dos periodos y sin prueba', () => {
+    for (const key of ['billing.renewal.monthly', 'billing.renewal.annual', 'billing.renewal.noTrial']) {
       const s = t(lang, key)
       expect(s).not.toBe(key)
       expect(s).toContain(t(lang, 'menu.manageSub'))
