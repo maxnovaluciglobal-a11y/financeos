@@ -126,14 +126,34 @@ export function currentAssetTicker() {
 // Abre la ficha de un ticker. setPage es el `go` de usePageStack: empuja la
 // pantalla (o no hace nada si ya estamos en la ficha) y después se anota el
 // ticker en esa misma entrada del historial.
-export function openAsset(setPage, ticker) {
+// opts.tab: pestaña inicial de la ficha ('mine' desde Portafolio, F3).
+export function openAsset(setPage, ticker, { tab = null } = {}) {
   const t = normAssetTicker(ticker)
   if (!t || typeof setPage !== 'function') return false
   memTicker = t
   setPage(ASSET_PAGE)
-  mergeHistoryState({ invTicker: t })
+  // Ticker nuevo: la vista (pestaña y rango) arranca de cero.
+  mergeHistoryState({ invTicker: t, invAssetTab: ASSET_VIEW_TABS.includes(tab) ? tab : null, invAssetRange: null })
   try { window.dispatchEvent(new CustomEvent(ASSET_EVENT, { detail: { ticker: t } })) } catch { /* SSR/test */ }
   return true
+}
+
+// Vista de la ficha (F3): pestaña y rango en la entrada del historial, así
+// Atrás/Adelante vuelve a lo que se estaba mirando. Nada se guarda en el
+// dispositivo.
+export const ASSET_VIEW_TABS = ['ind', 'fund', 'mine', 'news']
+export const ASSET_VIEW_RANGES = ['1M', '3M', '6M', '1A', '3A']
+export function assetView(state = readHistoryState()) {
+  return {
+    tab: ASSET_VIEW_TABS.includes(state?.invAssetTab) ? state.invAssetTab : null,
+    range: ASSET_VIEW_RANGES.includes(state?.invAssetRange) ? state.invAssetRange : null,
+  }
+}
+export function rememberAssetView({ tab, range } = {}) {
+  const patch = {}
+  if (ASSET_VIEW_TABS.includes(tab)) patch.invAssetTab = tab
+  if (ASSET_VIEW_RANGES.includes(range)) patch.invAssetRange = range
+  if (Object.keys(patch).length) mergeHistoryState(patch)
 }
 
 // Solo para pruebas.

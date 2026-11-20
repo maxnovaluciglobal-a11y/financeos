@@ -3709,7 +3709,6 @@ export const es = {
     "invest.asset.label": "Ficha del activo",
     "invest.asset.missing": "No hay un activo elegido. Búscalo desde Inversiones.",
     "invest.asset.toHub": "Ir a Inversiones",
-    "invest.asset.soon": "Gráfico de velas con medias de 20, 50 y 200 días y bandas de Bollinger, capas de RSI y MACD, fundamentales, tu posición, noticias y resultados trimestrales.",
     "invest.asset.price": "Precio",
     "invest.asset.day": "Hoy {pct}",
     "invest.asset.noQuote": "Sin cotización por ahora.",

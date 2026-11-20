@@ -30,6 +30,12 @@ describe('normalización', () => {
     expect(normalizeQuote({ price: 0 })).toBeNull()
     expect(normalizeQuote({ price: 10, changePct: 0.01 }, 'aapl')).toMatchObject({ ticker: 'AAPL', price: 10, changePct: 0.01 })
   })
+  it('trae la sesión regular y la bolsa para la frescura de la ficha', () => {
+    const q = normalizeQuote({ price: 10, marketTime: 5, tradingStart: 1, tradingEnd: 9, timezone: 'America/New_York', exchange: ' NasdaqGS ' }, 'aapl')
+    expect(q).toMatchObject({ marketTime: 5, tradingStart: 1, tradingEnd: 9, timezone: 'America/New_York', exchange: 'NasdaqGS' })
+    expect(normalizeQuote({ price: 10 }, 'x')).toMatchObject({ tradingStart: null, tradingEnd: null, exchange: null })
+    expect(normalizeQuote({ price: 10, exchange: 42 }, 'x').exchange).toBeNull()
+  })
   it('normTicker valida como la API', () => {
     expect(normTicker(' aapl ')).toBe('AAPL')
     expect(normTicker('^GSPC')).toBe('^GSPC')

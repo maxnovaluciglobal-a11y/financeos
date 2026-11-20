@@ -83,6 +83,9 @@ export function normalizeQuote(q, t) {
     tradingEnd: num(q.tradingEnd),
     delayedBy: num(q.delayedBy),
     timezone: q.timezone || null,
+    // /api/quote no lo manda hoy (la ficha lo saca de la zona horaria); si
+    // llega, se muestra tal cual.
+    exchange: typeof q.exchange === 'string' && q.exchange.trim() ? q.exchange.trim().slice(0, 40) : null,
     fetchedAt: num(q.fetchedAt),
     source: q.source || null,
     name: q.name || q.shortName || null,

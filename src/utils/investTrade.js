@@ -1,4 +1,4 @@
-// src/utils/investTrade.js — "Registrar operación" (F1), puro.
+// src/utils/investTrade.js — "Registrar operación" (F1 Portafolio y F3 ficha), puro.
 //
 // Del formulario a { op, holding } con las reglas de saveTrade de Invest
 // (invest-web/app/index.html): precio × unidades llena el monto y monto ÷
@@ -140,4 +140,53 @@ export function emptyTrade(type = 'buy', prefill = {}, { today = localToday(), h
     type, ticker: '', assetType: '', mode: 'cash', currency: 'USD', price: '', qty: '', amount: '', rsi: '', note: '',
     cash: hasDeposits, date: today, source: null, ...prefill,
   }
+}
+
+// ── Ficha del activo (F3) ────────────────────────────────────────────────────
+// applyTrade (holdings.js de Invest) vive en investLedger.js; se reexporta para
+// la ficha. buildTrade: el formulario corto de compra/venta de la ficha.
+export { applyTrade }
+const EPS = 1e-7
+const toNum = (v) => (v == null || v === '' ? NaN : typeof v === 'number' ? v : parseFloat(String(v).trim().replace(',', '.')))
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+// Formulario de compra/venta de la ficha → { ok, op, adj } o { ok:false, fields }.
+// input: { type: 'buy'|'sell', price, qty, amount, date, note, rsi }.
+// holding: el lote que se ajusta (el primero del ticker, como Invest) o null.
+// ccy: moneda del activo. fx: tipo de cambio de HOY (moneda por 1 US$), que
+// solo vale si la fecha es hoy (FIN-12); con otra fecha queda desconocido.
+export function buildTrade(input = {}, { ticker, holding = null, ccy = 'USD', fx = null, today, uid, seq = 0 } = {}) {
+  const fields = {}
+  const type = input.type === 'sell' ? 'sell' : 'buy'
+  const price = toNum(input.price)
+  let qty = toNum(input.qty)
+  let amount = toNum(input.amount)
+  if (!(price > 0)) fields.price = 'price_invalid'
+  if (!(qty > 0) && !(amount > 0)) fields.qty = 'qty_or_amount_required'
+  if (input.qty !== '' && input.qty != null && !(qty > 0)) fields.qty = 'qty_invalid'
+  if (input.amount !== '' && input.amount != null && !(amount > 0)) fields.amount = 'amount_invalid'
+  if (!DATE_RE.test(String(input.date || '')) || Number.isNaN(Date.parse(`${input.date}T00:00:00Z`))) fields.date = 'date_invalid'
+  else if (today && input.date > today) fields.date = 'date_future'
+  const note = String(input.note ?? '').trim()
+  if (note.length > 500) fields.note = 'note_too_long'
+  if (!fields.price && !fields.qty && !fields.amount) {
+    if (!(qty > 0)) qty = amount / price
+    if (!(amount > 0)) amount = qty * price
+    if (type === 'sell') {
+      const have = Number(holding?.sh) || 0
+      if (!(have > 0)) fields.qty = 'sell_none'
+      else if (qty > have + EPS) fields.qty = 'sell_too_many'
+    }
+  }
+  if (Object.keys(fields).length) return { ok: false, error: 'invalid', fields }
+  const tFx = ccy && ccy !== 'USD' && input.date === today && Number(fx) > 0 ? Number(fx) : null
+  const adj = applyTrade(holding, { type, qty, price, amount, fx: tFx })
+  const rsi = Number(input.rsi)
+  const op = {
+    id: seq, uid, ticker, type, date: input.date, currency: ccy || null,
+    price, qty, amount, fx: tFx, rsi: Number.isFinite(rsi) && rsi > 0 ? Math.round(rsi) : null,
+    note, pnl: type === 'sell' && adj.pnl != null ? adj.pnl : null,
+    cash: null, reinvested: false, edited: false, source: null,
+  }
+  return { ok: true, op, adj }
 }
