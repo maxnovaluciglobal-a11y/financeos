@@ -79,6 +79,8 @@ export function normalizeQuote(q, t) {
     low52: num(q.low52),
     currency: q.currency || null,
     marketTime: num(q.marketTime),
+    tradingStart: num(q.tradingStart),
+    tradingEnd: num(q.tradingEnd),
     delayedBy: num(q.delayedBy),
     timezone: q.timezone || null,
     fetchedAt: num(q.fetchedAt),

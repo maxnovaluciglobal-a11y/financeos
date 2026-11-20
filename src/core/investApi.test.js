@@ -21,6 +21,11 @@ describe('normalización', () => {
     expect(normChangePct(null)).toBeNull()
     expect(normChangePct('x')).toBeNull()
   })
+  it('conserva el horario de la sesión (tradingStart/tradingEnd) para "Mercado cerrado"', () => {
+    const q = normalizeQuote({ price: 190, marketTime: 1763755200000, tradingStart: 1763735400000, tradingEnd: 1763758800000 }, 'AAPL')
+    expect(q).toMatchObject({ tradingStart: 1763735400000, tradingEnd: 1763758800000 })
+    expect(normalizeQuote({ price: 1 }).tradingStart).toBeNull()
+  })
   it('una cotización sin precio no existe', () => {
     expect(normalizeQuote({ price: 0 })).toBeNull()
     expect(normalizeQuote({ price: 10, changePct: 0.01 }, 'aapl')).toMatchObject({ ticker: 'AAPL', price: 10, changePct: 0.01 })
