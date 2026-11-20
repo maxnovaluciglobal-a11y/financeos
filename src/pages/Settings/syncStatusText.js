@@ -5,6 +5,11 @@ const ERROR_KEYS = new Set(['offline', 'no_session', 'invalid_license', 'snapsho
 // muestra qué hacer.
 const BLOCKED = new Set(['passphrase_required', 'wrong_key', 'corrupt', 'undecryptable', 'license_key_required'])
 
+// Bloqueo que reintentar no arregla: hay que ir a Ajustes › Datos y respaldo.
+export function isSyncBlocked(st) {
+  return st?.state === 'error' && BLOCKED.has(st?.error)
+}
+
 // Clave i18n del estado visible del sync, o null si no hay nada que decir.
 export function syncStatusKey(st) {
   const { state, error } = st || {}

@@ -369,7 +369,7 @@ export default function Dashboard({ setPage }) {
               por confirmar y la tasa más reciente ("Usar") están en el detalle
               del héroe, a un toque. */}
           <TodoStrip>
-              <Slot><SyncErrorNotice /></Slot>
+              <Slot><SyncErrorNotice setPage={setPage} /></Slot>
               <Slot><FirstSteps setPage={setPage} /></Slot>
               <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>
               <Slot><BackupReminderBanner suppress={backupStepPending} /></Slot>

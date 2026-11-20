@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { syncStatusKey, snapshotRecordCount } from './syncStatusText.js'
+import { syncStatusKey, snapshotRecordCount, isSyncBlocked } from './syncStatusText.js'
 
 describe('texto del estado del sync (G1-N3)', () => {
   it('ok o sin estado: nada que decir', () => {
@@ -14,6 +14,21 @@ describe('texto del estado del sync (G1-N3)', () => {
     expect(syncStatusKey({ state: 'error', error: 'passphrase_required' })).toBe('settings.syncStatus.blocked')
     expect(syncStatusKey({ state: 'error', error: 'wrong_key' })).toBe('settings.syncStatus.blocked')
     expect(syncStatusKey({ state: 'error', error: 'raro' })).toBe('settings.syncStatus.failed')
+  })
+})
+
+describe('bloqueos que reintentar no arregla', () => {
+  it('frase de paso o clave: lleva a Ajustes', () => {
+    for (const error of ['passphrase_required', 'wrong_key', 'corrupt', 'undecryptable', 'license_key_required']) {
+      expect(isSyncBlocked({ state: 'error', error })).toBe(true)
+    }
+  })
+  it('errores pasajeros se reintentan', () => {
+    for (const error of ['offline', 'no_session', 'snapshot_failed', 'http_500', undefined]) {
+      expect(isSyncBlocked({ state: 'error', error })).toBe(false)
+    }
+    expect(isSyncBlocked({ state: 'ok' })).toBe(false)
+    expect(isSyncBlocked(null)).toBe(false)
   })
 })
 
