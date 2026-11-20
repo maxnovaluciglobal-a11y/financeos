@@ -194,6 +194,7 @@ export function captureIntake({ location, history, storage, now = Date.now(), la
 // leyó con las reglas de CLP. Al abrir la hoja ya se sabe la moneda de la
 // cuenta: se vuelve a leer el texto crudo con ella. Si el alta trae su moneda
 // (parámetro `moneda` o símbolo inequívoco), se respeta lo ya leído.
+/** @param {*} intake @param {{ currency?: string, lang?: string }} [opts] */
 export function reparseIntake(intake, { currency, lang = 'es' } = {}) {
   if (!intake || intake.currency || !intake.amountText || !/^[A-Z]{3}$/.test(currency || '')) return intake
   const a = parseIntakeAmount(intake.amountText, { fallbackCurrency: currency, lang })
