@@ -112,7 +112,7 @@ export default function InvestAsset({ setPage }) {
         ) : (
           <p className={s.assetNote} role="status">{quote.phase === 'loading' ? t('invest.search.preview.loading', { t: ticker }) : t('invest.asset.noQuote')}</p>
         )}
-        {q && <p className={s.assetNote}>{t('invest.asset.ccy', { ccy: q.currency || 'USD' })}</p>}
+        {q && !demo && <p className={s.assetNote}>{t('invest.asset.ccy', { ccy: q.currency || 'USD' })}</p>}
       </section>
 
       <section className={s.chartBox}>
