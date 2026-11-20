@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { toSeriesData } from './CandleChart.jsx'
+import { toSeriesData, toLineData, toVolumeData, withAlpha } from './CandleChart.jsx'
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), '../..')
 function walk(dir, out = []) {
@@ -44,5 +44,18 @@ describe('CandleChart', () => {
       { time: '2026-11-18', open: 1, high: 2, low: 0.5, close: 1.5 },
       { time: '2026-11-19', open: 2, high: 3, low: 1, close: 2.5 },
     ])
+  })
+  it('capas: medias y bandas ordenadas, sin huecos ni repetidas; volumen solo positivo', () => {
+    expect(toLineData([
+      { time: '2026-11-19', value: 2 }, { time: '2026-11-18', value: '1' }, { time: '2026-11-18', value: 9 },
+      { time: '2026-11-17', value: null }, { time: 'x', value: 1 },
+    ])).toEqual([{ time: '2026-11-18', value: 1 }, { time: '2026-11-19', value: 2 }])
+    expect(toVolumeData([{ time: '2026-11-18', value: 10, up: 1 }, { time: '2026-11-19', value: 0, up: true }]))
+      .toEqual([{ time: '2026-11-18', value: 10, up: true }])
+  })
+  it('withAlpha cambia solo la opacidad', () => {
+    expect(withAlpha('rgba(1, 2, 3, 1)', 0.35)).toBe('rgba(1, 2, 3, 0.35)')
+    expect(withAlpha('rgb(10,20,30)', 0.5)).toBe('rgba(10, 20, 30, 0.5)')
+    expect(withAlpha('#fff', 0.5)).toBe('#fff')
   })
 })
