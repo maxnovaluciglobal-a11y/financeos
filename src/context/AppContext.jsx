@@ -30,6 +30,7 @@ import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
 import { applyTheme, watchSystemTheme } from '../utils/theme.js'
 import { convertColorList } from '../utils/legacyColors.js'
+import { runOnVisible } from './visibilitySync.js'
 
 export const AppContext = createContext(null)
 
@@ -285,8 +286,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const onVis = () => {
       if (document.visibilityState !== 'visible' || !hydratedRef.current) return
-      runRecurringMaintenance()
-      if (Date.now() - lastVisSyncRef.current >= VIS_SYNC_THROTTLE_MS) { lastVisSyncRef.current = Date.now(); runSync() }
+      // Primero el pull y después el mantenimiento (visibilitySync.js).
+      const shouldSync = Date.now() - lastVisSyncRef.current >= VIS_SYNC_THROTTLE_MS
+      if (shouldSync) lastVisSyncRef.current = Date.now()
+      runOnVisible({ shouldSync, runSync, runMaintenance: runRecurringMaintenance }).catch(logRejection('AppContext:onVisible'))
     }
     // Volvió la conexión: reintenta enseguida (G1-N3).
     const onOnline = () => { if (hydratedRef.current) runSync() }
