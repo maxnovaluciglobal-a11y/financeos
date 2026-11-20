@@ -1,3 +1,4 @@
+// @ts-check
 // src/utils/debtPayment.js — "Registrar pago" de una deuda, como función pura.
 //
 // La usan la página Deudas y la confirmación de la cuota (regla de fijos con
@@ -47,6 +48,11 @@ export function nextPaymentAmount(d, { month = localYM() } = {}) {
 // Deuda después de pagar `amount` (por defecto, la cuota de nextPaymentAmount).
 // En deudas en UF (Chile) baja también el saldo en UF; sin UF del día se usa la
 // implícita en la deuda (saldo en pesos / saldo en UF, que se revalúa a diario).
+/**
+ * @param {any} debt
+ * @param {number} [amount]
+ * @param {{ ufValue?: number | null, month?: string }} [opts]
+ */
 export function applyDebtPayment(debt, amount, { ufValue, month = localYM() } = {}) {
   const r = monthlyRate(debt)
   const n = interestMonths(debt, month)

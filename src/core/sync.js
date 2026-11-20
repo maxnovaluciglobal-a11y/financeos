@@ -1,3 +1,4 @@
+// @ts-check
 // src/core/sync.js
 // Sincronización opcional entre dispositivos, ligada a la licencia y a la cuenta.
 // - Identidad: hash de la licencia + sesión de la cuenta dueña (RPC sync_*).
@@ -299,6 +300,7 @@ export async function unlockWithPassphrase(passphrase, opts) {
 // 3. Sube lo local cifrado con la frase y lo vuelve a bajar para verificarlo.
 // 4. Si la verificación falla, devuelve la copia v1 a la nube y sigue en v1.
 // La UI exige antes descargar un respaldo JSON (foto previa).
+/** @param {string} passphrase @param {{ onApplied?: Function, iterations?: number }} [opts] */
 export async function migrateToPassphrase(passphrase, { onApplied, iterations = V2_ITERATIONS } = {}) {
   checkPassphrase(passphrase)
   if (!isSyncEnabled() || !syncAvailable()) throw new Error('sync_off')
