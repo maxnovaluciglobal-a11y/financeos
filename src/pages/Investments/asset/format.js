@@ -45,6 +45,19 @@ export function fmtStamp(ms, locale = moneyLocale()) {
   try { return new Date(n).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return null }
 }
 
+// Hora del último precio en la zona de la persona, 24 h ("14:05"). Si el
+// precio no es de hoy, con la fecha corta delante ("18 nov 14:05").
+export function fmtClock(ms, { now = Date.now(), locale = moneyLocale() } = {}) {
+  const n = Number(ms)
+  if (!(n > 0)) return null
+  try {
+    const d = new Date(n)
+    const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    if (d.toDateString() === new Date(now).toDateString()) return time
+    return `${d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} ${time}`
+  } catch { return null }
+}
+
 // Hoy en la zona de la persona, AAAA-MM-DD (para el campo de fecha).
 export function localDay(d = new Date()) {
   const z = (n) => String(n).padStart(2, '0')
