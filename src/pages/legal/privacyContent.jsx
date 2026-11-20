@@ -18,7 +18,7 @@
 // clásico (React.createElement), así que React tiene que estar en scope.
 import React from 'react'
 import s from './legal.module.css'
-import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
+import { PRIVACY_LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
 import { CompanyBlock, withRebrandNotice } from './companyBlock.jsx'
 
@@ -151,7 +151,7 @@ function EsBody() {
             <strong>Comentarios y encuesta (NPS):</strong> si nos escribes desde la app o respondes la
             encuesta, recibimos tu mensaje, tu puntaje, el correo de tu cuenta, la versión de la app,
             el idioma, el país y el plan y, solo si lo marcas, un registro técnico de errores en el que
-            los números se reemplazan por «#». Nos llega por correo (Resend) a nuestra bandeja de
+            los números de tres o más cifras se reemplazan por «#». Nos llega por correo (Resend) a nuestra bandeja de
             soporte (Google) para responderte. En la base guardamos solo la fecha de cada envío, para
             limitar la cantidad (los envíos de comentarios, 30 días; la encuesta, que respondiste, hasta
             que elimines la cuenta). Base: tu solicitud.
@@ -209,7 +209,8 @@ function EsBody() {
           <li>
             <strong>Cloudflare (EE. UU.):</strong> DNS del dominio, reenvío de los correos que escribes
             a nuestras direcciones @moyiq.app y Turnstile, la verificación que comprueba que no eres un
-            robot al entrar a la app, al registrarte y al enviar comentarios. Turnstile recibe tu
+            robot, entre otros, al entrar a la app, al registrarte, al recuperar el acceso y al enviar
+            comentarios o la encuesta. Turnstile recibe tu
             dirección IP y datos técnicos de tu navegador. Cloudflare actúa como encargado y, para
             mejorar esa detección de robots, como responsable propio.
           </li>
@@ -517,8 +518,8 @@ function EnBody() {
           <li>
             <strong>Feedback and survey (NPS):</strong> if you write to us from the app or answer the
             survey, we receive your message, your score, your account email, the app version, language,
-            country and plan and, only if you tick it, a technical error log in which numbers are
-            replaced with "#". It reaches our support inbox (Google) by email (Resend) so we can reply.
+            country and plan and, only if you tick it, a technical error log in which numbers of
+            three or more digits are replaced with "#". It reaches our support inbox (Google) by email (Resend) so we can reply.
             In the database we keep only the date of each submission, to limit how many are sent
             (feedback submissions, 30 days; the survey you answered, until you delete the account).
             Basis: your request.
@@ -575,7 +576,7 @@ function EnBody() {
           <li>
             <strong>Cloudflare (USA):</strong> the domain's DNS, forwarding of the emails you write to
             our @moyiq.app addresses, and Turnstile, the check that confirms you are not a bot when you
-            sign in, sign up, or send feedback. Turnstile receives your IP address and technical data
+            sign in, sign up, recover access, or send feedback or the survey, among others. Turnstile receives your IP address and technical data
             about your browser. Cloudflare acts as a processor and, to improve that bot detection, as an
             independent controller.
           </li>
@@ -881,8 +882,8 @@ function PtBody() {
           <li>
             <strong>Comentários e pesquisa (NPS):</strong> se você nos escreve pelo app ou responde à
             pesquisa, recebemos sua mensagem, sua nota, o email da sua conta, a versão do app, o idioma,
-            o país e o plano e, só se você marcar, um registro técnico de erros em que os números são
-            substituídos por «#». Isso chega por email (Resend) à nossa caixa de suporte (Google) para
+            o país e o plano e, só se você marcar, um registro técnico de erros em que os números de
+            três ou mais algarismos são substituídos por «#». Isso chega por email (Resend) à nossa caixa de suporte (Google) para
             podermos responder. No banco de dados guardamos só a data de cada envio, para limitar a
             quantidade (envios de comentários, 30 dias; a pesquisa respondida, até você excluir a
             conta). Base: sua solicitação.
@@ -940,7 +941,8 @@ function PtBody() {
           <li>
             <strong>Cloudflare (EUA):</strong> DNS do domínio, encaminhamento dos emails que você escreve
             para nossos endereços @moyiq.app e Turnstile, a verificação que confirma que você não é um
-            robô ao entrar no app, ao se cadastrar e ao enviar comentários. O Turnstile recebe seu
+            robô, entre outros, ao entrar no app, ao se cadastrar, ao recuperar o acesso e ao enviar
+            comentários ou a pesquisa. O Turnstile recebe seu
             endereço IP e dados técnicos do seu navegador. A Cloudflare atua como operadora e, para
             melhorar essa detecção de robôs, como controladora própria.
           </li>
@@ -1262,7 +1264,7 @@ function DeBody() {
             <strong>Feedback und Umfrage (NPS):</strong> Schreiben Sie uns aus der App oder beantworten
             Sie die Umfrage, erhalten wir Ihre Nachricht, Ihre Bewertung, die E-Mail-Adresse Ihres
             Kontos, App-Version, Sprache, Land und Tarif sowie, nur wenn Sie es ankreuzen, ein
-            technisches Fehlerprotokoll, in dem Zahlen durch „#“ ersetzt sind. Es erreicht unser
+            technisches Fehlerprotokoll, in dem Zahlen ab drei Ziffern durch „#“ ersetzt sind. Es erreicht unser
             Support-Postfach (Google) per E-Mail (Resend), damit wir antworten können. In der Datenbank
             speichern wir nur das Datum jeder Übermittlung, um die Anzahl zu begrenzen
             (Feedback-Übermittlungen 30 Tage; die beantwortete Umfrage bis zur Löschung des Kontos).
@@ -1380,8 +1382,9 @@ function DeBody() {
           <li><strong>Vercel Inc. (USA):</strong> Hosting von App und Website sowie anonyme Nutzungsstatistik (Abschnitt 8).</li>
           <li>
             <strong>Cloudflare, Inc. (USA):</strong> DNS der Domain, Weiterleitung der E-Mails an unsere
-            Adressen @moyiq.app und Turnstile, die Prüfung, ob ein Mensch die App nutzt, bei Anmeldung,
-            Registrierung und beim Senden von Feedback. Turnstile erhält Ihre IP-Adresse und technische
+            Adressen @moyiq.app und Turnstile, die Prüfung, ob ein Mensch die App nutzt, unter anderem bei
+            Anmeldung, Registrierung, Wiederherstellung des Zugangs und beim Senden von Feedback oder
+            der Umfrage. Turnstile erhält Ihre IP-Adresse und technische
             Daten Ihres Browsers. Cloudflare handelt als Auftragsverarbeiter und, zur Verbesserung der
             Bot-Erkennung, als eigener Verantwortlicher (Art. 6 Abs. 1 lit. f DSGVO).
           </li>
@@ -1466,7 +1469,12 @@ function DeBody() {
           <strong>Beschwerderecht:</strong> Sie haben das Recht, sich bei einer
           Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO), insbesondere in dem
           Mitgliedstaat Ihres gewöhnlichen Aufenthalts, Ihres Arbeitsplatzes oder des mutmaßlichen
-          Verstoßes – in Deutschland etwa bei der Datenschutzbehörde Ihres Bundeslandes.
+          Verstoßes – in Deutschland etwa bei der Datenschutzbehörde Ihres Bundeslandes. Außerhalb der
+          EU ist die örtliche Datenschutzbehörde zuständig: in Chile die Agencia de Protección de Datos
+          Personales, in Brasilien die ANPD, in Mexiko die Secretaría Anticorrupción y Buen Gobierno, in
+          Argentinien die Agencia de Acceso a la Información Pública (AAIP), in Peru die Autoridad
+          Nacional de Protección de Datos Personales und in Kolumbien die Superintendencia de Industria
+          y Comercio (SIC).
         </p>
       </div>
 
@@ -1545,8 +1553,8 @@ function DeBody() {
 }
 
 export const PRIVACY_CONTENT = {
-  es: { title: 'Política de Privacidad', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
-  en: { title: 'Privacy Policy', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
-  pt: { title: 'Política de Privacidade', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
-  de: { title: 'Datenschutzerklärung', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
+  es: { title: 'Política de Privacidad', sub: `${PRIVACY_LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
+  en: { title: 'Privacy Policy', sub: `${PRIVACY_LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
+  pt: { title: 'Política de Privacidade', sub: `${PRIVACY_LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
+  de: { title: 'Datenschutzerklärung', sub: `${PRIVACY_LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
 }

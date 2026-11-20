@@ -7,12 +7,12 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { REBRAND_DEPLOY_DATE } from './deployDate.js'
-import { LEGAL_EFFECTIVE_DATE, LEGAL_VERSION, LAST_UPDATED } from '../pages/legal/legalMeta.js'
+import { PRIVACY_DEPLOY_DATE, REBRAND_DEPLOY_DATE } from './deployDate.js'
+import { LEGAL_EFFECTIVE_DATE, LEGAL_VERSION, LAST_UPDATED, PRIVACY_EFFECTIVE_DATE, PRIVACY_LAST_UPDATED, PRIVACY_REPLACES, PRIVACY_VERSION } from '../pages/legal/legalMeta.js'
 import { RELEASE_NOTES } from './releaseNotes.js'
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
-const TODO = 'TODO(rebrand' // TODO(rebrand) y TODO(rebrand-deploy)
+const TODOS = ['TODO(rebrand', 'TODO(privacy-deploy'] // TODO(rebrand), TODO(rebrand-deploy) y TODO(privacy-deploy)
 
 function localBranch() {
   try { return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return '' }
@@ -57,6 +57,22 @@ describe('fecha del despliegue del rebranding', () => {
     }
   })
 
+  it('la Política de Privacidad tiene vigencia y versión propias, posteriores a la del 18-nov (LEG-N1)', () => {
+    expect(PRIVACY_DEPLOY_DATE).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(PRIVACY_EFFECTIVE_DATE).toBe(PRIVACY_DEPLOY_DATE)
+    expect(PRIVACY_VERSION).toBe(PRIVACY_DEPLOY_DATE)
+    expect(PRIVACY_REPLACES).toBe(REBRAND_DEPLOY_DATE)
+    expect(PRIVACY_EFFECTIVE_DATE > REBRAND_DEPLOY_DATE).toBe(true)
+    expect(PRIVACY_LAST_UPDATED.es).toContain(`reemplaza a la versión ${REBRAND_DEPLOY_DATE}`)
+    expect(PRIVACY_LAST_UPDATED.es).not.toBe(LAST_UPDATED.es)
+    for (const lang of ['en', 'pt', 'de']) expect(PRIVACY_LAST_UPDATED[lang]).toContain(REBRAND_DEPLOY_DATE)
+  })
+
+  it('el TODO(privacy-deploy) sigue junto a PRIVACY_DEPLOY_DATE mientras la fecha no esté fijada', () => {
+    const src = readFileSync(join(ROOT, 'src/data/deployDate.js'), 'utf8')
+    if (src.includes('TODO(privacy-deploy)')) expect(src).toMatch(/TODO\(privacy-deploy\)[^\n]*\n(?:\/\/[^\n]*\n)*export const PRIVACY_DEPLOY_DATE/)
+  })
+
   it('el candado se activa en main, con RELEASE=1 y con PREDEPLOY=1, y no en otra rama', () => {
     expect(releaseGate({}, 'rebrand/entrega-1')).toBe(false)
     expect(releaseGate({}, 'main')).toBe(true)
@@ -70,12 +86,12 @@ describe('fecha del despliegue del rebranding', () => {
     expect(readFileSync(join(ROOT, 'deploy.sh'), 'utf8')).toMatch(/^RELEASE=1 npm test/m)
   })
 
-  it.runIf(releaseGate())('release: no queda ningún TODO(rebrand…) en src/, supabase/functions/ ni public/', () => {
+  it.runIf(releaseGate())('release: no queda ningún TODO(rebrand…) ni TODO(privacy-deploy) en src/, supabase/functions/ ni public/', () => {
     const left = []
     for (const d of ['src', 'supabase/functions', 'public']) {
       for (const file of walk(join(ROOT, d))) {
         readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
-          if (line.includes(TODO)) left.push(`${relative(ROOT, file)}:${i + 1}`)
+          if (TODOS.some(t => line.includes(t))) left.push(`${relative(ROOT, file)}:${i + 1}`)
         })
       }
     }

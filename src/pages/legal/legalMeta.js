@@ -1,7 +1,7 @@
 // src/pages/legal/legalMeta.js
 // Datos comunes de las páginas legales (es/en/pt/de). Sin React ni hooks: lo
 // importan los módulos de contenido y legal.test.js en node.
-import { REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
+import { PRIVACY_DEPLOY_DATE, REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
 
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
 export const SUPPORT_EMAIL = 'support@moyiq.app'
@@ -15,8 +15,8 @@ export const LEGAL_EFFECTIVE_DATE = REBRAND_DEPLOY_DATE
 export const LEGAL_VERSION = LEGAL_EFFECTIVE_DATE.slice(0, 7)
 
 const DATE_LOCALE = { es: 'es-ES', en: 'en-US', pt: 'pt-BR', de: 'de-DE' }
-function effectiveLabel(lang) {
-  const d = new Date(`${LEGAL_EFFECTIVE_DATE}T12:00:00Z`)
+function effectiveLabel(lang, date = LEGAL_EFFECTIVE_DATE) {
+  const d = new Date(`${date}T12:00:00Z`)
   const day = new Intl.DateTimeFormat(DATE_LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d)
   return { es: `Vigente desde el ${day}`, en: `Effective ${day}`, pt: `Em vigor desde ${day}`, de: `Gültig ab ${day}` }[lang]
 }
@@ -29,6 +29,23 @@ export const LAST_UPDATED = {
   pt: effectiveLabel('pt'),
   de: effectiveLabel('de'),
 }
+
+// Política de Privacidad: vigencia propia (data/deployDate.js, PRIVACY_DEPLOY_DATE)
+// porque cambió de fondo después del 18-nov (auditoría 360, LEG-N1). La versión es
+// la fecha completa, para distinguirla de la anterior aunque caigan en el mismo mes,
+// y el encabezado cita la versión a la que reemplaza.
+export const PRIVACY_EFFECTIVE_DATE = PRIVACY_DEPLOY_DATE
+export const PRIVACY_VERSION = PRIVACY_EFFECTIVE_DATE
+export const PRIVACY_REPLACES = LEGAL_EFFECTIVE_DATE
+const REPLACES_LABEL = {
+  es: `reemplaza a la versión ${PRIVACY_REPLACES}`,
+  en: `replaces version ${PRIVACY_REPLACES}`,
+  pt: `substitui a versão ${PRIVACY_REPLACES}`,
+  de: `ersetzt die Fassung ${PRIVACY_REPLACES}`,
+}
+export const PRIVACY_LAST_UPDATED = Object.fromEntries(
+  ['es', 'en', 'pt', 'de'].map(lang => [lang, `${effectiveLabel(lang, PRIVACY_EFFECTIVE_DATE)} · ${REPLACES_LABEL[lang]}`]),
+)
 
 // Aviso del cambio de nombre, al inicio de las cuatro páginas legales.
 // "MOY IQ" aparece aquí a propósito (alias permitido en copyLint.test.js).

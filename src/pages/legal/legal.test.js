@@ -14,7 +14,8 @@ import { PRIVACY_CONTENT } from './privacyContent.jsx'
 import { TERMS_CONTENT } from './termsContent.jsx'
 import { LICENSE_CONTENT } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
-import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
+import { sanitizeLogMessage } from '../../core/feedback.js'
+import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, PRIVACY_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -57,7 +58,7 @@ describe('legal pages × languages', () => {
 
         it('renders non-empty content with the last-updated date', () => {
           expect(text.length).toBeGreaterThan(800)
-          expect(text).toContain(LAST_UPDATED[lang])
+          expect(text).toContain((page === 'privacy' ? PRIVACY_LAST_UPDATED : LAST_UPDATED)[lang])
         })
 
         it('has no exclamation marks and no emoji', () => {
@@ -168,12 +169,33 @@ describe('privacy: alineada con la landing y el código (auditoría 360, 19-nov-
     })
   }
 
-  it('es/en/pt nombran las autoridades de México, Argentina, Perú y Colombia (LEG-N8)', () => {
-    for (const lang of ['es', 'en', 'pt']) {
+  it('los 4 idiomas nombran las autoridades de México, Argentina, Perú y Colombia (LEG-N8)', () => {
+    for (const lang of LEGAL_LANGS) {
       const { text } = render('privacy', lang)
       for (const word of ['Secretaría Anticorrupción y Buen Gobierno', 'AAIP', 'Protección de Datos Personales', 'SIC']) {
         expect(text, `${lang}: ${word}`).toContain(word)
       }
+    }
+  })
+
+  it('el registro técnico dice lo que hace sanitizeLogMessage: tapa los números de 3 o más cifras', () => {
+    expect(sanitizeLogMessage('error 12 en 1234')).toBe('error 12 en #')
+    const said = { es: 'números de tres o más cifras', en: 'numbers of three or more digits', pt: 'números de três ou mais algarismos', de: 'Zahlen ab drei Ziffern' }
+    for (const lang of LEGAL_LANGS) expect(render('privacy', lang).text, lang).toContain(said[lang])
+  })
+
+  it('Turnstile: la lista de usos incluye recuperar el acceso y la encuesta y no se presenta como cerrada', () => {
+    const said = {
+      es: ['entre otros', 'al recuperar el acceso', 'la encuesta'],
+      en: ['among others', 'recover access', 'the survey'],
+      pt: ['entre outros', 'ao recuperar o acesso', 'a pesquisa'],
+      de: ['unter anderem', 'Wiederherstellung des Zugangs', 'der Umfrage'],
+    }
+    for (const lang of LEGAL_LANGS) {
+      const { text } = render('privacy', lang)
+      const i = text.indexOf('Turnstile')
+      const near = text.slice(i, i + 600)
+      for (const w of said[lang]) expect(near, `${lang}: ${w}`).toContain(w)
     }
   })
 
