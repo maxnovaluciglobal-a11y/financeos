@@ -18,5 +18,4 @@ export const REBRAND_DEPLOY_DATE = '2026-11-18'
 // LATAM, así que no puede tener la misma fecha que la del 18-nov (snapshot en
 // `03 - Legal y Cumplimiento/versiones/`). Los otros tres textos legales siguen
 // con REBRAND_DEPLOY_DATE.
-// TODO(privacy-deploy): fijar la fecha real el día del despliegue: node scripts/setDeployDate.mjs --privacy AAAA-MM-DD
-export const PRIVACY_DEPLOY_DATE = '2026-11-19'
+export const PRIVACY_DEPLOY_DATE = '2026-11-20'
