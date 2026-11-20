@@ -30,6 +30,7 @@ export default {
   'ess.beat.usd.even': 'You ended up the same as if you had kept the dollars uninvested.',
   'ess.beat.inflation.yes': 'Yes. You added {pct} and inflation over the period was {ref}.',
   'ess.beat.inflation.no': 'No. You added {pct} and inflation over the period was {ref}.',
+  'ess.beat.inflation.noLoss': 'No. You lost {pct} and inflation over the period was {ref}.',
   'ess.beat.inflation.even': 'You matched inflation over the period ({ref}).',
   'ess.beat.note': 'A snapshot of today, measured in dollars: prices change every day.',
 }

@@ -30,6 +30,7 @@ export default {
   'ess.beat.usd.even': 'Sie stehen gleich da, als hätten Sie die Dollar nicht angelegt.',
   'ess.beat.inflation.yes': 'Ja. Sie haben {pct} dazugewonnen, die Inflation im Zeitraum lag bei {ref}.',
   'ess.beat.inflation.no': 'Nein. Sie haben {pct} dazugewonnen, die Inflation im Zeitraum lag bei {ref}.',
+  'ess.beat.inflation.noLoss': 'Nein. Sie haben {pct} verloren, die Inflation im Zeitraum lag bei {ref}.',
   'ess.beat.inflation.even': 'Sie liegen gleichauf mit der Inflation im Zeitraum ({ref}).',
   'ess.beat.note': 'Eine Momentaufnahme von heute, in Dollar gemessen: Kurse ändern sich täglich.',
 }

@@ -23,7 +23,7 @@ export default {
   'asset.act.compare': 'Comparar con {b}',
   'asset.act.share': 'Compartir',
   'asset.act.more': 'Más acciones',
-  'asset.alert.soon': 'Las alertas de precio llegan con la nueva pestaña Siguiendo: van a avisarte en el teléfono aunque la app esté cerrada. Por ahora puedes seguir {t} para tenerlo a mano.',
+  'asset.alert.soon': 'Las alertas de precio van a llegar más adelante, en Siguiendo: te van a avisar en el teléfono aunque la app esté cerrada. Por ahora puedes seguir {t} para tenerlo a mano.',
   'asset.follow.added': 'Sigues {t}: lo ves en Siguiendo.',
   'asset.follow.removed': 'Dejaste de seguir {t}.',
   'asset.share.text': '{t}{name}: {price}, {pct} hoy. Visto en moyiq.',
@@ -267,7 +267,7 @@ export default {
   'asset.cmp.loading': 'Cargando el historial de {t}…',
   'asset.cmp.error': 'No se pudo cargar el historial de {t}.',
   'asset.cmp.note': 'Sin tasa libre de riesgo. Son datos históricos: no anticipan resultados.',
-  'asset.cmp.more': 'Comparar hasta 4 activos llega con la pestaña Siguiendo.',
+  'asset.cmp.more': 'Comparar hasta 4 activos va a llegar más adelante a Siguiendo.',
   // Cabecera: frescura del precio y estado de la bolsa (Invest: freshTag, marketStatusBadge).
   'asset.fresh.live': 'Al día · {time}',
   'asset.fresh.delayed': 'Retraso {n} min · {time}',

@@ -148,7 +148,7 @@ export const de = {
   'pf.exp.ops': 'CSV der Transaktionen',
   'pf.exp.opsSub': 'Ihr ganzes Bewegungsjournal',
   'pf.exp.json': 'Sicherung (JSON)',
-  'pf.exp.jsonSub': 'Positionen, Transaktionen, Beobachtet, Kapital und Ziele',
+  'pf.exp.jsonSub': 'Positionen, Transaktionen, Verfolgt, Kapital und Ziele',
 
   'pf.del.title': '{t} löschen',
   'pf.del.body': '{units} Stk. · Einstand {entry} · Kurs {price}. Ihre Transaktionen zu diesem Wertpapier werden nicht gelöscht.',

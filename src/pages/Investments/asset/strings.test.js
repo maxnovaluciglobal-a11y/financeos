@@ -62,6 +62,10 @@ describe('textos de la ficha del activo', () => {
   })
   it('la alerta avisa que llega con Siguiendo; el compartir no lleva datos de la posición', () => {
     expect(es['asset.alert.soon']).toMatch(/Siguiendo/)
+    // Lo que viene después es la función, no la pestaña (Siguiendo ya existe).
+    expect(es['asset.alert.soon']).toMatch(/más adelante/)
+    expect(es['asset.cmp.more']).toMatch(/más adelante/)
+    expect(es['asset.alert.soon']).not.toMatch(/nueva pestaña/)
     expect(vars(es['asset.share.text'])).toEqual(['name', 'pct', 'price', 't'])
   })
 })

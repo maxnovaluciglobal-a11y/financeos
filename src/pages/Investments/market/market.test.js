@@ -192,5 +192,17 @@ describe('Mercado en la vista esencial', () => {
     expect((ess.match(/class="[^"]*stripItem/g) || []).length).toBe(0)
     expect(ess).toContain(t('invest.mkt.regime.up'))
     expect(ess).toContain(t('invest.mkt.meaning.q'))
+    // "¿Qué significa para mí?" sin medias ni stops (los stops son de la vista completa).
+    expect(ess).toContain(t('invest.mkt.meaning.up.simple'))
+    expect(ess).not.toContain(t('invest.mkt.meaning.up'))
+    expect(full).toContain(t('invest.mkt.meaning.up'))
+    expect(ess).toContain(t('invest.mkt.ruleSimple'))
+    const essText = ess.replace(/<[^>]+>/g, ' ')
+    expect(essText).not.toMatch(/\bstops?\b|medias? (largas|de 200)|media de 200/i)
+  })
+  it('los textos simples no hablan de medias ni de stops', () => {
+    for (const k of ['meaning.up.simple', 'meaning.down.simple', 'meaning.mixed.simple', 'regime.shortSimple', 'spy.shortSimple']) {
+      expect(t(`invest.mkt.${k}`), k).not.toMatch(/\bstops?\b|\bmedias?\b|200/i)
+    }
   })
 })

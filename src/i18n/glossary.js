@@ -36,7 +36,7 @@ export const GLOSSARY = {
   inversiones: { es: 'Inversiones', en: 'Investments', pt: 'Investimentos', de: 'Investments', def: 'La sección de moyiq donde ves lo que invertiste', keys: ['nav.investments'] },
   resumen: { es: 'Resumen', en: 'Summary', pt: 'Resumo', de: 'Übersicht', def: 'Primera pestaña de Inversiones (reemplaza a "Hoy" como nombre de pestaña)' },
   portafolio: { es: 'Portafolio', en: 'Portfolio', pt: 'Carteira', de: 'Portfolio', def: 'Todo lo que tienes invertido', keys: ['invest.hub.tab.portafolio'] },
-  siguiendo: { es: 'Siguiendo', en: 'Following', pt: 'Seguindo', de: 'Beobachtet', def: 'Los activos que sigues sin tenerlos (reemplaza a "Lista")' },
+  siguiendo: { es: 'Siguiendo', en: 'Following', pt: 'Seguindo', de: 'Verfolgt', def: 'Los activos que sigues sin tenerlos (reemplaza a "Lista")', keys: ['invest.hub.tab.siguiendo'] },
   planificar: { es: 'Planificar', en: 'Plan', pt: 'Planejar', de: 'Planen', def: 'Aporte mensual y cómo repartirlo', keys: ['invest.hub.tab.planificar'] },
   mercado: { es: 'Mercado', en: 'Market', pt: 'Mercado', de: 'Markt', def: 'Cómo está el mercado hoy, en general', keys: ['invest.hub.tab.mercado'], cognate: true },
   aporte: { es: 'Aporte', en: 'Contribution', pt: 'Aporte', de: 'Einzahlung', def: 'Dinero que mandas a Inversiones', cognate: true },
@@ -103,7 +103,8 @@ export const RETIRED = [
   { lang: 'es', re: /\btu lista\b/i, use: 'Siguiendo' },
   { lang: 'en', re: /watchlist/i, use: 'Following' },
   { lang: 'pt', re: /\bsua lista\b/i, use: 'Seguindo' },
-  { lang: 'de', re: /Watchlist|\bIhrer Liste\b/i, use: 'Beobachtet' },
+  { lang: 'de', re: /Watchlist|\bIhrer Liste\b/i, use: 'Verfolgt' },
+  { lang: 'de', re: /\bBeobachtet\b/, use: 'Verfolgt' },
   // Resultado: sin "no realizado" sin explicar
   { lang: 'es', re: /resultado no realizado/i, use: 'Resultado (si vendieras hoy)' },
   { lang: 'en', re: /unrealized result/i, use: 'Return (if you sold today)' },

@@ -85,6 +85,14 @@ describe('<PutSummary>, interruptor y aviso', () => {
     expect(out).toContain('No, por ahora.')
     expect(out).not.toContain('inflación')
   })
+  it('pérdida contra la inflación: "Perdiste 3.0 %", nunca "Sumaste −3.0 %"', () => {
+    const loss = { basis: 'invested', put: 1000, gain: -30, value: 970, pct: -0.03, parts: null, partial: false }
+    const out = text(renderToStaticMarkup(h(PutSummary, { summary: loss, money, pct, inflation: { pct: 0.05 } })))
+    expect(out).toContain('No. Perdiste 3.0 % y la inflación del período fue +5.0 %.')
+    expect(out).not.toMatch(/Sumaste\s*−|Sumaste\s*-/)
+    const gain = text(renderToStaticMarkup(h(PutSummary, { summary: { ...loss, gain: 20, value: 1020, pct: 0.02 }, money, pct, inflation: { pct: 0.05 } })))
+    expect(gain).toContain('No. Sumaste +2.0 %')
+  })
   it('el interruptor es un switch accesible y el aviso es una nota', () => {
     const sw = renderToStaticMarkup(h(ViewToggle, { view: 'esencial', onChange: () => {} }))
     expect(sw).toMatch(/role="switch"[^>]*aria-checked="false"/)

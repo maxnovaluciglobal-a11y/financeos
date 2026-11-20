@@ -32,6 +32,7 @@ export default {
   'ess.beat.usd.even': 'Quedaste igual que si hubieras guardado los dólares sin invertir.',
   'ess.beat.inflation.yes': 'Sí. Sumaste {pct} y la inflación del período fue {ref}.',
   'ess.beat.inflation.no': 'No. Sumaste {pct} y la inflación del período fue {ref}.',
+  'ess.beat.inflation.noLoss': 'No. Perdiste {pct} y la inflación del período fue {ref}.',
   'ess.beat.inflation.even': 'Quedaste igual que la inflación del período ({ref}).',
   'ess.beat.note': 'Es una foto de hoy, medida en dólares: los precios cambian todos los días.',
 }

@@ -73,11 +73,13 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
           <ul className={s.beatList}>
             {checks.map(c => {
               const Ic = c.even ? Equal : c.beat ? Check : Minus
-              const k = `ess.beat.${c.key}.${c.even ? 'even' : c.beat ? 'yes' : 'no'}`
+              // Con pérdida, "Perdiste 3 %" en vez de "Sumaste −3 %" (sin doble negación).
+              const loss = c.key === 'inflation' && !c.even && !c.beat && c.pct < 0
+              const k = loss ? 'ess.beat.inflation.noLoss' : `ess.beat.${c.key}.${c.even ? 'even' : c.beat ? 'yes' : 'no'}`
               return (
                 <li key={c.key} className={s.beat} data-beat={c.even ? 'even' : c.beat ? 'yes' : 'no'}>
                   <Ic size={16} strokeWidth={2.4} aria-hidden="true" />
-                  <span>{t(k, { pct: pct(c.pct, true), ref: c.ref != null ? pct(c.ref, true) : '' })}</span>
+                  <span>{t(k, { pct: loss ? pct(Math.abs(c.pct)) : pct(c.pct, true), ref: c.ref != null ? pct(c.ref, true) : '' })}</span>
                 </li>
               )
             })}

@@ -184,15 +184,15 @@ export function Context({ t, m, essential = false }) {
             <Ic size={18} strokeWidth={2.2} aria-hidden="true" />{t(`invest.mkt.regime.${reg.regime || 'none'}`)}
           </p>
           {/* En la esencial, sin "medias de 50 y 200 días": lo mismo en palabras simples. */}
-          <p className={s.body}>{reg.regime ? t(`invest.mkt.regime.${reg.regime}.${essential ? 'descSimple' : 'desc'}`) : t(reg.reason === 'short' ? 'invest.mkt.regime.short' : 'invest.mkt.regime.none.desc')}</p>
+          <p className={s.body}>{reg.regime ? t(`invest.mkt.regime.${reg.regime}.${essential ? 'descSimple' : 'desc'}`) : t(reg.reason === 'short' ? (essential ? 'invest.mkt.regime.shortSimple' : 'invest.mkt.regime.short') : 'invest.mkt.regime.none.desc')}</p>
           {reg.regime && (
             <details className={s.meaning}>
               <summary>{t('invest.mkt.meaning.q')}</summary>
-              <p>{t(`invest.mkt.meaning.${reg.regime}`)} {t('invest.mkt.meaning.note')}</p>
+              <p>{t(`invest.mkt.meaning.${reg.regime}${essential ? '.simple' : ''}`)} {t('invest.mkt.meaning.note')}</p>
               <p className={s.note}>{t(essential ? 'invest.mkt.ruleSimple' : 'invest.mkt.rule')}</p>
             </details>
           )}
-          {series ? <SpyChart t={t} series={series} showMa={!essential} /> : (reg.last != null && <p className={s.note}>{t('invest.mkt.spy.short')}</p>)}
+          {series ? <SpyChart t={t} series={series} showMa={!essential} /> : (reg.last != null && <p className={s.note}>{t(essential ? 'invest.mkt.spy.shortSimple' : 'invest.mkt.spy.short')}</p>)}
         </>
       )}
       <div className={s.figs} role="group" aria-label={t('invest.mkt.figsLabel')}>
