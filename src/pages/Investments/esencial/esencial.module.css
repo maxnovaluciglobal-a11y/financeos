@@ -7,10 +7,14 @@
   font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
 }
 .switch:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
-/* Apagado: riel en --th (≥ 3:1 contra --fill, WCAG 1.4.11; --brd es
-   decorativo) y círculo blanco con borde. El estado también va en texto
-   ("Apagada"/"Encendida") y con un ícono en el círculo: no depende solo del
-   color ni de la posición. */
+/* Colores solo con tokens que cambian con el tema (src/styles/tokens.css): el
+   círculo usa --bg y el riel --th (apagado) o --tx (encendido). Contraste medido
+   (WCAG 1.4.11, ≥ 3:1), claro / oscuro sobre fondo / oscuro sobre tarjeta:
+     apagado    círculo vs riel 5,04 / 6,97 / 6,97 · riel vs --fill 4,51 / 5,94 / 4,86
+     encendido  círculo vs riel 16,8 / 16,1 / 16,1 · riel vs --fill 15,1 / 13,7 / 11,2
+     ícono      --th sobre --bg 5,04 / 6,97 · --tx sobre --bg 16,8 / 16,1
+   El estado también va en texto ("Apagada"/"Encendida") y con un ícono en el
+   círculo: no depende solo del color ni de la posición. */
 .track {
   position: relative; display: inline-block; flex: none; width: 40px; height: 24px; border-radius: 999px;
   background: var(--th); transition: background var(--dur-press, 80ms);
@@ -18,10 +22,10 @@
 .thumb {
   position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border: 1px solid var(--th); color: var(--th); box-sizing: border-box;
+  background: var(--bg); border: 1px solid var(--th); color: var(--th); box-sizing: border-box;
   box-shadow: var(--sh-1, 0 1px 2px rgba(0,0,0,.2)); transition: transform var(--dur-value-update, 200ms);
 }
-.switch[aria-checked="true"] .thumb { border-color: var(--tx); color: var(--tx); }
+.switch[aria-checked="true"] .thumb { background: var(--bg); border-color: var(--tx); color: var(--tx); }
 .switchState { font-weight: 400; color: var(--th); white-space: nowrap; }
 .switch[aria-checked="true"] .track { background: var(--tx); }
 .switch[aria-checked="true"] .thumb { transform: translateX(16px); }
