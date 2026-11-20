@@ -199,7 +199,14 @@
   .shell { grid-template-columns: 1fr; }
   .sb    { display: none; }
   /* Aire para la barra anclada (y el "+" flotante de Ingresos, R03). */
-  .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 8px); }
+  .content {
+    padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 8px);
+    /* WCAG 2.2, 2.4.11 (A11Y-N4): al enfocar o llevar a la vista un control, el
+       navegador lo deja fuera de la franja de la cápsula y del "+" (abajo) y
+       de la barra superior flotante (arriba). */
+    scroll-padding-top: calc(var(--safe-t) + var(--nav-h) + 8px);
+    scroll-padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 16px);
+  }
   /* La barra superior no ocupa una fila: flota en la línea del título grande,
      así el título arranca en la misma Y en todas las raíces (causas 6 y 7). */
   .topbar {
@@ -248,6 +255,11 @@
   backdrop-filter: var(--tabbar-blur);
   box-shadow: var(--tabbar-shadow);
   pointer-events: auto;
+  /* A11Y-N1: la cápsula es contenedor de consulta. Su letra es la de las
+     etiquetas (--t-caption), así los `em` de @container siguen el tamaño de
+     texto del usuario (Chrome Android, WebView, zoom de texto). */
+  container: tabpill / inline-size;
+  font-size: var(--t-caption);
   /* Fija durante el cambio de pantalla (causa 12). Va en la cápsula y no en
      <nav>: un view-transition-name crea una raíz de fondo (backdrop root) y el
      desenfoque de los hijos dejaba de ver el contenido de detrás. */
@@ -266,6 +278,9 @@
 }
 .tab {
   position: relative; flex: 1 1 auto; min-width: 44px;
+  /* Red de seguridad (A11Y-N1): una etiqueta más ancha que su pestaña se corta
+     con "…" dentro de ella; nunca pisa la de al lado. */
+  overflow: hidden;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; padding: 0 6px;
   background: none; border: none; border-radius: calc(var(--tabbar-radius) - 4px); cursor: pointer;
@@ -279,16 +294,29 @@
   transition: transform var(--dur-press) var(--ease-out);
 }
 .tab:active .tabIc { transform: scale(.92); }
-.tabLb { white-space: nowrap; font-size: var(--t-caption); line-height: var(--t-caption-lh); font-weight: 500; letter-spacing: -0.01em; }
+.tabLb { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-caption); line-height: var(--t-caption-lh); font-weight: 500; letter-spacing: -0.01em; }
 /* Activa: píldora rellena en tinte de acción, ícono relleno y etiqueta en
    violeta (oscuro: morado 200 sobre el tinte, revisión A1.5). */
 .tabActive { color: var(--tabbar-fg-active); background: var(--tabbar-active-bg); }
-.tabActive .tabLb { font-weight: 600; }
+.tabActive .tabLb { font-weight: 600; color: var(--tabbar-label-active); }
 .tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 /* 340 px o menos (Android chico, iPhone SE con Zoom de pantalla): no entran
    las 5 etiquetas sin tocarse ("Movimientos" y "Presupuestos"). Solo íconos;
    la etiqueta sigue en el DOM como nombre accesible del botón. */
 @media (max-width: 340px) {
+  .tabLb {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .tab { padding: 0; }
+}
+
+/* Texto agrandado (A11Y-N1): las 5 etiquetas en español suman ~26 caracteres
+   de ancho de pestaña (≈ 290 px a 11 px, lo que mide la cápsula a 390 px). Si la
+   cápsula mide menos de 25 em de su propia letra (a 100 % nunca pasa en un
+   teléfono de 341 px o más; a 110 % sí), quedan solo los íconos y la etiqueta
+   sigue en el DOM como nombre accesible del botón. */
+@container tabpill (max-width: 25em) {
   .tabLb {
     position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -392,7 +420,7 @@
 }
 @media (prefers-reduced-motion: reduce) { .backBtn { transition: none; } .backBtn:active { transform: none; } }
 @media (max-width: 700px) {
-  :global(:root[data-chrome="pushed"]) .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 24px); }
+  :global(:root[data-chrome="pushed"]) .content { padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 24px); scroll-padding-bottom: calc(var(--tabbar-h) + var(--fab-clear) + 16px); }
 }
 @media (prefers-reduced-motion: reduce) { .navBg, .navTitle { transition: none; } }
 
