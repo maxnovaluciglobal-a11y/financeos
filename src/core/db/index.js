@@ -404,9 +404,11 @@ export async function listSnapshots() {
 }
 
 // ING-13: retención de las fotos previas a migraciones. Cada foto es una copia
-// completa de los datos: se conservan solo las `keep` más recientes.
+// completa de los datos: se conservan solo las `keep` más recientes. La copia
+// previa al sync no cuenta ni se poda: es única y se reemplaza sola; si contara,
+// siempre sería la más nueva y desplazaría a la foto de la migración v4.
 export function snapshotIdsToPrune(list, keep = 2) {
-  const sorted = [...(list || [])].filter(s => s?.id).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+  const sorted = [...(list || [])].filter(s => s?.id && s.id !== PRE_SYNC_SNAPSHOT_ID).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
   return sorted.slice(keep).map(s => s.id)
 }
 
