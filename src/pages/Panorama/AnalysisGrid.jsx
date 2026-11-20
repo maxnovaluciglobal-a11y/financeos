@@ -13,7 +13,7 @@ import { ALL_ITEMS, PANORAMA_PAGES, showProChip } from '../../components/layout/
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import { moduleOn } from '../../utils/modules.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
-import { withInvest } from '../../utils/investNetWorth.js'
+import { fmtInvestAt, withInvest } from '../../utils/investNetWorth.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { fmtMoneyParts } from '../../utils/index.js'
 import s from './analysisGrid.module.css'
@@ -53,8 +53,11 @@ export default function AnalysisGrid({ d, setPage }) {
     subscriptions: subMonthly > 0
       ? { text: t('dash.kpi.perMonth', { v: whole(subMonthly, sym) }), tone: 'muted', money: true }
       : { text: t('panorama.grid.subs.none'), tone: 'muted' },
+    // I-14 y una moneda por pantalla: el valor es una estimación con fecha; sin
+    // tipo de cambio va en US$ y se dice que no suma al patrimonio del lado.
     investments: inv?.usd != null
-      ? { text: inv.amount != null ? whole(inv.amount, sym) : `US$${whole(inv.usd, '')}`, tone: 'muted', money: true, hint: t('panorama.grid.inv.hint') }
+      ? { text: inv.amount != null ? whole(inv.amount, sym) : `US$${whole(inv.usd, '')}`, tone: 'muted', money: true,
+          hint: inv.amount != null ? t('panorama.grid.inv.est', { at: fmtInvestAt(inv.at) }) : t('panorama.grid.inv.noRate') }
       : { text: t('panorama.grid.inv.open'), tone: 'muted' },
   }
 
@@ -70,7 +73,7 @@ export default function AnalysisGrid({ d, setPage }) {
           const f = figure[it.id] || { text: '', tone: 'muted' }
           const money = f.money || f.tone === 'pos' || f.tone === 'neg'
           return (
-            <button key={it.id} type="button" className={s.tile} onClick={() => setPage?.(it.id)}>
+            <button key={it.id} type="button" className={s.tile} onClick={() => setPage?.(it.id)} data-tour={it.id === 'investments' ? 'pano-invest' : undefined}>
               <span className={s.head}>
                 <span className={s.icon} aria-hidden="true">{Ic ? <Ic size={18} /> : null}</span>
                 {showProChip(it, plan) && <span className={s.pro}>PRO</span>}

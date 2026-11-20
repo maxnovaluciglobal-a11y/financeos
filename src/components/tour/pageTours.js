@@ -18,10 +18,12 @@ export const PAGE_TOURS = {
     // #10: el mes en palabras, arriba de todo.
     { id: 'pano-reading', title: 'tour.pano.reading.title', body: 'tour.pano.reading.body' },
     { id: 'iq-score',     title: 'tour.pano.score.title',  body: 'tour.pano.score.body' },
-    { id: 'pano-month',   title: 'tour.pano.month.title',  body: 'tour.pano.month.body' },
-    // Solo si el módulo está encendido: sin la tarjeta, Tour.jsx salta el paso.
-    { id: 'pano-invest',  title: 'tour.pano.invest.title', body: 'tour.pano.invest.body' },
+    // Mismo orden que la pantalla (I-3): "Tus análisis" va arriba de las
+    // cifras del mes. El paso de Inversiones apunta a su tile de la cuadrícula
+    // (I-2); con el módulo apagado no hay tile y Tour.jsx salta el paso.
     { id: 'pano-detail',  title: 'tour.pano.detail.title', body: 'tour.pano.detail.body' },
+    { id: 'pano-invest',  title: 'tour.pano.invest.title', body: 'tour.pano.invest.body' },
+    { id: 'pano-month',   title: 'tour.pano.month.title',  body: 'tour.pano.month.body' },
   ],
   movements: [
     { id: 'mov-type',  title: 'tour.mov.type.title',  body: 'movl.cal.tour.typeBody' }, // B3b: menciona el calendario
