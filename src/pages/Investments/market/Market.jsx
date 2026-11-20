@@ -22,6 +22,7 @@ import {
   regimeFrom, spyChartSeries, symName, vixGaugePct, vixZone, whenKey,
 } from '../../../utils/investMarket.js'
 import { useMarket } from './useMarket.js'
+import { shows } from '../../../utils/investView.js'
 import s from './market.module.css'
 
 // ── Formatos (idioma de la interfaz) ──
@@ -124,7 +125,7 @@ export function Strip({ t, rows, sparks, loading, onPick }) {
 
 // ── Contexto: tendencia, gráfico, VIX ──
 const REGIME_ICON = { up: TrendingUp, down: TrendingDown, mixed: ArrowLeftRight }
-function SpyChart({ t, series }) {
+function SpyChart({ t, series, showMa = true }) {
   const W = 600, H = 120
   const p = chartPaths(series, W, H)
   if (!p) return null
@@ -133,12 +134,12 @@ function SpyChart({ t, series }) {
     <figure className={s.spyFig}>
       <svg className={s.spy} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img"
         aria-label={t('invest.mkt.spy.label', { spy: usd(last.close), ma: usd(last.ma) })}>
-        <path d={p.ma} fill="none" stroke="var(--chart-prev)" strokeWidth="1.6" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
+        {showMa && <path d={p.ma} fill="none" stroke="var(--chart-prev)" strokeWidth="1.6" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />}
         <path d={p.price} fill="none" stroke="var(--chart-net)" strokeWidth="1.8" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       </svg>
       <figcaption className={s.legend}>
         <span><i className={s.keyPx} aria-hidden="true" />SPY</span>
-        <span><i className={s.keyMa} aria-hidden="true" />{t('invest.mkt.spy.ma')}</span>
+        {showMa && <span><i className={s.keyMa} aria-hidden="true" />{t('invest.mkt.spy.ma')}</span>}
         <span>{t('invest.mkt.spy.range')}</span>
       </figcaption>
     </figure>
@@ -163,7 +164,9 @@ export function VixGauge({ t, v }) {
   )
 }
 
-export function Context({ t, m }) {
+// Vista esencial: sin la media de 200 días (línea y cifra); la tendencia y su
+// explicación quedan.
+export function Context({ t, m, essential = false }) {
   const loading = m.spy.phase === 'loading'
   const reg = regimeFrom((m.spy.rows || []).map(r => r.close))
   const series = spyChartSeries(m.spy.rows)
@@ -186,7 +189,7 @@ export function Context({ t, m }) {
               <p className={s.note}>{t('invest.mkt.rule')}</p>
             </details>
           )}
-          {series ? <SpyChart t={t} series={series} /> : (reg.last != null && <p className={s.note}>{t('invest.mkt.spy.short')}</p>)}
+          {series ? <SpyChart t={t} series={series} showMa={!essential} /> : (reg.last != null && <p className={s.note}>{t('invest.mkt.spy.short')}</p>)}
         </>
       )}
       <div className={s.figs} role="group" aria-label={t('invest.mkt.figsLabel')}>
@@ -204,7 +207,7 @@ export function Context({ t, m }) {
           {z && <VixGauge t={t} v={m.vix} />}
           <span className={s.note}>{t('invest.mkt.vix.scale')}</span>
         </div>
-        <div className={s.fig}>
+        {!essential && <div className={s.fig}>
           <span className={s.figK}>{t('invest.mkt.p200.k')}</span>
           <span className={s.figV}>
             <b className={s.num} data-tone={p200 == null ? undefined : p200 >= 0 ? 'up' : 'down'}>
@@ -212,7 +215,7 @@ export function Context({ t, m }) {
             </b>{' '}
             <span className={s.muted}>{p200 == null ? t('invest.mkt.vix.none') : t(p200 >= 0 ? 'invest.mkt.p200.above' : 'invest.mkt.p200.below', { spy: usd(reg.last), ma: usd(reg.sma200) })}</span>
           </span>
-        </div>
+        </div>}
       </div>
     </section>
   )
@@ -414,7 +417,8 @@ export function Fx({ t, lang, fx, sample, kind, setKind }) {
 }
 
 // ── Vista completa ──
-export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab, filter = 'all', setFilter = () => {}, kind = 'MEP', setKind = () => {} }) {
+export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab, filter = 'all', setFilter = () => {}, kind = 'MEP', setKind = () => {}, view = 'completa' }) {
+  const essential = !shows(view, 'strip')
   const rows = marketRows(m.bar.data)
   const loading = m.bar.phase === 'loading'
   const f = feedFreshness({ at: m.bar.at, loading, failed: m.bar.phase === 'error' || m.bar.phase === 'stale', offline: m.offline, sample: m.sample })
@@ -425,10 +429,10 @@ export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab,
   return (
     <div className={s.market}>
       {m.sample && <p className={s.sample} role="note">{t('invest.mkt.sample')}</p>}
-      <Strip t={t} rows={rows} sparks={m.sparks} loading={loading} onPick={pick} />
+      {!essential && <Strip t={t} rows={rows} sparks={m.sparks} loading={loading} onPick={pick} />}
       <Head t={t} m={m} now={now} />
       <p className={s.body}>{t('invest.mkt.sub')}</p>
-      <Context t={t} m={m} />
+      <Context t={t} m={m} essential={essential} />
       <Indices t={t} rows={rows} sparks={m.sparks} phase={m.bar.phase} f={f} />
       <Earnings t={t} earn={m.earn} onOpen={onOpen} sample={m.sample} />
       <News t={t} news={m.news} filter={filter} setFilter={setFilter} sample={m.sample} />
@@ -437,13 +441,13 @@ export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab,
         <p className={s.note}>{m.sample ? t('invest.mkt.sources.sample') : t('invest.mkt.sources')}</p>
         <p className={s.note}>{t('invest.mkt.disclaimer')}</p>
         <p className={s.body}>{t('invest.mkt.foot')}</p>
-        <button type="button" className={s.btn} onClick={() => onTab?.('lista')}>{t('invest.mkt.toList')}</button>
+        <button type="button" className={s.btn} onClick={() => onTab?.('siguiendo')}>{t('invest.mkt.toList')}</button>
       </section>
     </div>
   )
 }
 
-export default function Market({ demo = false, onOpen, onTab }) {
+export default function Market({ demo = false, onOpen, onTab, view = 'esencial' }) {
   const { t, lang } = useT()
   const m = useMarket({ demo, t })
   const [filter, setFilter] = useState('all')
@@ -456,5 +460,5 @@ export default function Market({ demo = false, onOpen, onTab }) {
     const id = setInterval(() => setNow(Date.now()), 60000)
     return () => clearInterval(id)
   }, [])
-  return <MarketView t={t} lang={lang} m={m} now={now} onOpen={onOpen} onTab={onTab} filter={filter} setFilter={setFilter} kind={kind} setKind={setKind} />
+  return <MarketView t={t} lang={lang} m={m} now={now} onOpen={onOpen} onTab={onTab} filter={filter} setFilter={setFilter} kind={kind} setKind={setKind} view={view} />
 }

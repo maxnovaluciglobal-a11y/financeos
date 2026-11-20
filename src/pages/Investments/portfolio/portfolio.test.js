@@ -250,12 +250,19 @@ function fakeBook({ demo = false } = {}) {
 const actions = new Proxy({ dispCcy: 'USD' }, { get: (o, k) => (k in o ? o[k] : () => {}) })
 
 describe('pantalla Posiciones', () => {
-  const render = (demo) => {
+  const render = (demo, view = 'completa') => {
     const { t } = ptFor('es')
     const pb = fakeBook({ demo })
     const fmt = makeFmt({ disp: { ccy: 'USD', rate: 1 }, currency: 'USD', language: 'es' })
-    return renderToStaticMarkup(h(Positions, { pb, fmt, disp: { ccy: 'USD', rate: 1 }, demo, t, actions, targets: null }))
+    return renderToStaticMarkup(h(Positions, { pb, fmt, disp: { ccy: 'USD', rate: 1 }, demo, t, actions, targets: null, view }))
   }
+  it('vista esencial: Pusiste y El mercado sumó primero, sin riesgo al stop ni capital de referencia', () => {
+    const html = render(false, 'esencial')
+    expect(html.indexOf('Pusiste')).toBeGreaterThan(-1)
+    expect(html.indexOf('Pusiste')).toBeLessThan(html.indexOf('Resumen del portafolio'))
+    expect(html).not.toContain('Riesgo al stop')
+    expect(html).toContain('Supera tu límite de 25 %') // el peso sigue: no es jerga
+  })
   it('banda, filas con flecha y texto, fuentes con atribución de CoinGecko', () => {
     const html = render(false)
     expect(html).toContain('Riesgo al stop')

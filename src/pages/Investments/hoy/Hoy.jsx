@@ -1,9 +1,14 @@
-// src/pages/Investments/hoy/Hoy.jsx — pestaña Hoy de Inversiones (F2).
-// Responde "¿cómo voy y cuánto arriesgo?", en el orden de renderDash de Invest:
+// src/pages/Investments/hoy/Hoy.jsx — pestaña Resumen de Inversiones (F2; se
+// llamó "Hoy" hasta el 20-nov-2026, coherencia 360 I-7).
+// Abre con lo de la persona: "Pusiste" y "El mercado sumó" (esencial/PutSummary).
+// Después, en el orden de renderDash de Invest:
 // frescura de precios · cinta · aviso de aportes de moyiq · banda de valor ·
 // Tu riesgo hoy · Para revisar hoy · Valor en el tiempo · avisos de tipo de
 // cambio · tus 5 posiciones · efectivo y aportes · aporte del mes · régimen y VIX.
 // Sin posiciones: estado vacío con 3 caminos (agregar, importar, ver un ejemplo).
+// Vista esencial (por defecto, utils/investView.js): sin cinta, sin "Tu riesgo
+// hoy", sin "Para revisar hoy" (medias y RSI) y sin riesgo al stop en las
+// filas. Todo sigue en Vista completa.
 // Las noticias, índices y próximos resultados viven en Mercado (otra fase); la
 // línea de régimen lleva allá.
 // Decisiones frente a Invest (no se portan): ?aporte=N al entrar
@@ -28,6 +33,9 @@ import {
 import { convertHoldings, currencyOf, holdingRows, portfolioTotals, toUsd } from '../../../utils/investValuation.js'
 import { monthContributions, resolveUserRate } from '../../../utils/investNetWorth.js'
 import { currencySymbol, currentMonth, dateLocale, fmtAmount, fmtMoney, fmtPct, moneyLocale } from '../../../utils/index.js'
+import { putAndGain } from '../../../utils/investEsencial.js'
+import { shows } from '../../../utils/investView.js'
+import PutSummary from '../esencial/PutSummary.jsx'
 import { commitAporte, readAporte } from './aporteStore.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
@@ -251,7 +259,7 @@ function ReviewCard({ review, onOpen, onRetry, labelOf = (x) => x }) {
 }
 
 // ── Tus posiciones (top 5) ────────────────────────────────────────
-function TopPositions({ top, total, money, onOpen, onTab }) {
+function TopPositions({ top, total, money, onOpen, onTab, showRisk = true }) {
   const { t } = useT()
   const typeKey = (ty) => (['Stock', 'ETF', 'Crypto'].includes(ty) ? ty : 'Otro')
   return (
@@ -269,7 +277,7 @@ function TopPositions({ top, total, money, onOpen, onTab }) {
           const riskText = !rk || rk.noStop ? t('invest.hoy.top.noStop') : `${money(-rk.riskAtStop, true)}${rk.stopIsDefault ? ` ${t('invest.hoy.top.est')}` : ''}`
           return (
             <li key={r.id ?? `${r.t}-${i}`}>
-              <button type="button" className={s.topRow} onClick={() => onOpen(r.t)} aria-label={t('invest.search.open', { t: r.t })}>
+              <button type="button" className={s.topRow} data-cols={showRisk ? 4 : 3} onClick={() => onOpen(r.t)} aria-label={t('invest.search.open', { t: r.t })}>
                 <span className={s.topMain}>
                   <span className={s.topTicker}>{r.t}</span>
                   <span className={s.muted}>{[r.name, t(`invest.type.${typeKey(r.type)}`)].filter(Boolean).join(' · ')}</span>
@@ -284,12 +292,14 @@ function TopPositions({ top, total, money, onOpen, onTab }) {
                 <span className={s.topCell}>
                   <span className={s.cellLabel}>{t('invest.hoy.top.weight')}</span>
                   {r.weight != null ? fmtPct(r.weight, { decimals: 0 }) : '—'}
-                  {rk?.overLimit && <span className={s.warnTag}><AlertTriangle size={12} strokeWidth={2.4} aria-hidden="true" />{t('invest.hoy.top.over')}</span>}
+                  {showRisk && rk?.overLimit && <span className={s.warnTag}><AlertTriangle size={12} strokeWidth={2.4} aria-hidden="true" />{t('invest.hoy.top.over')}</span>}
                 </span>
-                <span className={s.topCell}>
-                  <span className={s.cellLabel}>{t('invest.hoy.top.risk')}</span>
-                  <span data-tone={rk && !rk.noStop && rk.riskAtStop > 0 ? 'down' : 'flat'} className={s.tone}><Money>{riskText}</Money></span>
-                </span>
+                {showRisk && (
+                  <span className={s.topCell}>
+                    <span className={s.cellLabel}>{t('invest.hoy.top.risk')}</span>
+                    <span data-tone={rk && !rk.noStop && rk.riskAtStop > 0 ? 'down' : 'flat'} className={s.tone}><Money>{riskText}</Money></span>
+                  </span>
+                )}
               </button>
             </li>
           )
@@ -407,14 +417,14 @@ function EmptyHoy({ onAdd, onImport, onSample }) {
 // ── Pantalla ──────────────────────────────────────────────────────
 export { usdFmt, stripValue }
 
-export default function Hoy({ demo = false, onOpen, onTab, useData = useHoyData }) {
+export default function Hoy({ demo = false, onOpen, onTab, useData = useHoyData, view = 'esencial' }) {
   const [sample, setSample] = useState(false)
   // Al entrar o salir del ejemplo se monta de nuevo: nada del ejemplo se mezcla
   // con los datos reales (ni historias ni cinta).
-  return <HoyView key={demo || sample ? 'sample' : 'live'} demo={demo} sample={sample} setSample={setSample} onOpen={onOpen} onTab={onTab} useData={useData} />
+  return <HoyView key={demo || sample ? 'sample' : 'live'} demo={demo} sample={sample} setSample={setSample} onOpen={onOpen} onTab={onTab} useData={useData} view={view} />
 }
 
-function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
+function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const { t } = useT()
   const app = useApp() || {}
   const appSettings = app.settings
@@ -540,6 +550,9 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
     ? { amount: Math.round(contrib.sum * 100) / 100, ccy, n: contrib.count, usd: ccy === 'USD' ? contrib.sum : userRate?.rate > 0 ? Math.round((contrib.sum / userRate.rate) * 100) / 100 : null }
     : null
   const aUsd = aporte ? aporteUsd(aporte) : null
+  // ── Pusiste / El mercado sumó (con el libro si está completo) ──
+  const put = useMemo(() => putAndGain({ ledger: B, totals: T }), [B, T])
+  const pctFmt = useCallback((f, signed) => fmtPct(f, { signed }), [])
   const pending = aporte ? aportePending(aporte, d.ops, month) : null
   const [saved] = useState(() => readAporte(readKey))
   const initialAporte = aUsd || saved || null
@@ -628,14 +641,15 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
           <button type="button" className={s.btn} onClick={() => setSample(false)}>{t('invest.hoy.sample.exit')}</button>
         </div>
       )}
+      <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} />
       <Freshness sample={fake} fresh={fresh} hasCrypto={hasCrypto} hasStocks={hasStocks} />
-      <Strip market={d.market} sparks={d.sparks} sample={fake} onTab={onTab} />
+      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={fake} onTab={onTab} />}
       {banner}
 
       <div className={s.top}>
         <ValueBand T={T} local={local} money={money} priced={T.priced > 0} />
-        <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />
-        <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />
+        {shows(view, 'stop') && <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />}
+        {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}
       </div>
 
       <ValueChart points={chart.pts} index={chart.index} invested={chart.invested} range={range} cmp={cmp}
@@ -650,7 +664,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
       {Math.abs(T.fxEffect) >= 0.5 && <p className={s.note} role="note"><Money>{t('invest.hoy.fx.effect', { v: money(T.fxEffect, true) })}</Money></p>}
       {T.fxUnknown > 0 && <p className={s.note} role="note">{t(T.fxUnknown === 1 ? 'invest.hoy.fx.unknownOne' : 'invest.hoy.fx.unknownMany', { n: T.fxUnknown })}</p>}
 
-      <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} />
+      <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')} />
       {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
       <AporteForm initial={initialAporte} hasMoyiq={!!aUsd} onDone={goAporte} />
       <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} />

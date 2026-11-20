@@ -12,6 +12,9 @@
 //    20/50/200 días, bandas de Bollinger, volumen y capas RSI y MACD, 5 rangos;
 //  · 4 pestañas: Indicadores, Fundamentales (12 métricas, rango de 52 semanas
 //    y resultados trimestrales), Mi posición y Noticias.
+// Vista esencial (por defecto, utils/investView.js): abre con "Esta empresa en
+// 30 segundos" (asset/Brief.jsx), una línea simple de precio y sin la pestaña
+// Indicadores ni el stop; el interruptor "Vista completa" devuelve todo.
 // El ticker vive en la entrada del historial (utils/investNav.js); la pestaña y
 // el rango también. Nada de la posición ni del ticker se guarda en el
 // dispositivo. Textos: ./asset/strings.<idioma>.js (cargados con la ficha).
@@ -37,6 +40,10 @@ import { errorKey, fmtClock, fmtDay, fmtPx, fmtPxSigned, isCryptoTicker, localDa
 import ChartPanel from './asset/ChartPanel.jsx'
 import { FundamentalsPane, IndicatorsPane, MinePane, NewsPane } from './asset/Panes.jsx'
 import { CompareSheet, PositionSheet, TradeSheet } from './asset/Sheets.jsx'
+import Brief from './asset/Brief.jsx'
+import { EduNotice, ViewToggle } from './esencial/ViewToggle.jsx'
+import { useInvestView } from './esencial/useInvestView.js'
+import { shows } from '../../utils/investView.js'
 import hub from './hub/hub.module.css'
 import s from './asset/asset.module.css'
 
@@ -79,12 +86,14 @@ export default function InvestAsset({ setPage }) {
   const demo = !!app.settings?.isDemo
   const picked = useAssetTicker()
   const { status } = useInvestAccess()
-  const [full] = useState(investFullHere)
+  const [investFull] = useState(investFullHere)
   // Misma puerta que Inversiones: sin el interruptor o sin acceso, no hay ficha.
-  const gate = assetGate({ full, demo, status, picked })
+  const gate = assetGate({ full: investFull, demo, status, picked })
   const ticker = gate === 'ready' ? picked : null
 
   const d = useAssetData(ticker, { demo })
+  const [mode, setMode] = useInvestView()
+  const full = shows(mode, 'indicators')
   const [view, setView] = useState(() => ({ tab: assetView().tab || 'ind', range: assetView().range || DEFAULT_RANGE }))
   const [layers, setLayers] = useState({ rsi: false, macd: false })
   const [sheet, setSheet] = useState(null) // 'pos' | 'trade' | 'cmp'
@@ -104,8 +113,10 @@ export default function InvestAsset({ setPage }) {
 
   const lots = d.lots.data || []
   const hasPos = lots.some(h => h.sh > 0)
-  const tab = d.lots.phase === 'loading' && view.tab === 'mine' ? 'mine' : pickTab(view.tab, hasPos)
-  const tabs = visibleTabs(hasPos || (d.lots.phase === 'loading' && view.tab === 'mine'))
+  // En la vista esencial no está la pestaña Indicadores (RSI, MACD, medias).
+  const tabs = visibleTabs(hasPos || (d.lots.phase === 'loading' && view.tab === 'mine')).filter(k => full || k !== 'ind')
+  const picked0 = d.lots.phase === 'loading' && view.tab === 'mine' ? 'mine' : pickTab(view.tab, hasPos)
+  const tab = tabs.includes(picked0) ? picked0 : tabs[0]
   const q = d.quote.data
   const ccy = currencyOf(ticker, q?.currency)
   const rows1y = d.hist1y.data
@@ -122,6 +133,10 @@ export default function InvestAsset({ setPage }) {
   // Cargas por pestaña y por rango (no antes de hacer falta).
   const { need5y, needFund, needNews, needMine } = d
   useEffect(() => { if (ticker && long) need5y() }, [ticker, long, need5y])
+  // "En 30 segundos" usa los fundamentales (qué hace, tamaño, dividendos):
+  // se piden al abrir la ficha, salvo para cripto (no tiene).
+  const crypto = isCryptoTicker(ticker, type)
+  useEffect(() => { if (ticker && !crypto) needFund() }, [ticker, crypto, needFund])
   useEffect(() => {
     if (!ticker) return
     if (tab === 'fund') needFund()
@@ -279,6 +294,8 @@ export default function InvestAsset({ setPage }) {
   return (
     <div className={s.page}>
       <PageHeader title={ticker} sub={name || t('invest.asset.label')} />
+      <ViewToggle view={mode} onChange={setMode} />
+      <EduNotice />
 
       <section aria-label={t('invest.asset.price')} className={s.head}>
         {q ? (
@@ -317,6 +334,8 @@ export default function InvestAsset({ setPage }) {
         <p className={s.note}>{demo ? t('asset.sample') : q ? t('asset.priceSource', { source: q.source === 'coingecko' ? 'CoinGecko' : 'Yahoo Finance' }) : lastRow ? t('asset.priceSource', { source: 'Yahoo Finance' }) : null}</p>
       </section>
 
+      <Brief ticker={ticker} quote={q} fund={crypto ? { phase: 'ready', data: null } : d.fund} rows={rows1y} rowsPhase={d.hist1y.phase} type={crypto ? 'Crypto' : type} price={price} now={now} />
+
       <section aria-labelledby={actsId}>
         <h2 id={actsId} className="sr-only">{t('asset.act.group', { t: ticker })}</h2>
         <div className={s.actions}>
@@ -349,7 +368,7 @@ export default function InvestAsset({ setPage }) {
 
       <ChartPanel ticker={ticker} ccy={ccy} rows={chartRows} phase={chartPhase} range={range.key}
         onRange={(k) => setView(v => ({ ...v, range: k }))} layers={layers} onLayer={(k) => setLayers(l => ({ ...l, [k]: !l[k] }))} demo={demo}
-        onRetry={demo ? null : () => d.retryHistory(long)} />
+        onRetry={demo ? null : () => d.retryHistory(long)} simple={!full} />
 
       <section>
         <div role="tablist" aria-label={t('asset.tabs.label', { t: ticker })} className={hub.tabs}>
@@ -364,7 +383,7 @@ export default function InvestAsset({ setPage }) {
         <div role="tabpanel" id="asset-panel" aria-labelledby={`asset-tab-${tab}`} tabIndex={0} className={s.panel}>
           {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase} onRetry={demo ? null : () => d.retryHistory(false)} />}
           {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} demo={demo} type={type} onRetry={() => needFund(true)} />}
-          {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} onSaveStop={saveStop} />}
+          {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} onSaveStop={saveStop} showStop={shows(mode, 'stop')} />}
           {tab === 'news' && <NewsPane ticker={ticker} news={d.news} onRetry={() => needNews(true)} />}
         </div>
       </section>

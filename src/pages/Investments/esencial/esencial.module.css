@@ -1,0 +1,57 @@
+/* Vista esencial de Inversiones (20-nov-2026): interruptor, aviso educativo y
+   "Pusiste / El mercado sumó". Objetivos de 44 px, foco visible, texto ≥ 13 px. */
+.toggleRow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.switch {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 12px 6px 6px;
+  border: 0; border-radius: 999px; background: var(--fill); color: var(--tx);
+  font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
+}
+.switch:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+.track {
+  position: relative; display: inline-block; width: 40px; height: 24px; border-radius: 999px;
+  background: var(--brd); transition: background var(--dur-press, 80ms);
+}
+.thumb {
+  position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--sur); box-shadow: var(--sh-1, 0 1px 2px rgba(0,0,0,.2)); transition: transform var(--dur-value-update, 200ms);
+}
+.switch[aria-checked="true"] .track { background: var(--tx); }
+.switch[aria-checked="true"] .thumb { transform: translateX(16px); }
+@media (prefers-reduced-motion: reduce) { .thumb, .track { transition: none; } }
+.switchLabel { white-space: nowrap; }
+.hint { flex: 1 1 220px; margin: 0; font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--th); }
+
+.edu {
+  display: flex; align-items: flex-start; gap: 6px; margin: 0; padding: 8px 12px; border-radius: 12px;
+  background: var(--fill); color: var(--tx); font-size: var(--t-footnote); line-height: var(--t-footnote-lh);
+}
+.edu svg { flex: none; margin-top: 2px; }
+
+.put {
+  display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 16px;
+  background: var(--sur); border: 0.5px solid var(--brd);
+}
+.putRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 20px; margin: 0; }
+.putCell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.putCell dd { margin: 0; }
+.putLabel { font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+.putValue {
+  font-family: var(--display); font-size: var(--t-title-2); font-weight: 700; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; color: var(--tx); overflow-wrap: anywhere;
+}
+.putSub { margin: 0; font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--th); }
+.tone { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.tone[data-tone="up"] { color: var(--pos); }
+.tone[data-tone="down"] { color: var(--neg); }
+.parts { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 0.5px solid var(--brd); }
+.h3 { margin: 0; font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+.partList { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.part { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.part dt { display: flex; flex-direction: column; min-width: 0; }
+.part dd { margin: 0; font-size: var(--t-subhead); font-weight: 600; white-space: nowrap; }
+.partName { font-size: var(--t-subhead); color: var(--tx); }
+.beatList { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.beat { display: flex; align-items: flex-start; gap: 8px; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tx); }
+.beat svg { flex: none; margin-top: 3px; }
+.beat[data-beat="yes"] svg { color: var(--pos); }
+.beat[data-beat="no"] svg { color: var(--th); }

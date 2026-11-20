@@ -179,3 +179,18 @@ describe('transiciones de estado de useMarket', () => {
     expect(off.earn.universe.defaults).toBe(true)
   })
 })
+
+describe('Mercado en la vista esencial', () => {
+  it('sin cinta ni media de 200 días; la tendencia y su explicación quedan', () => {
+    const m = { ...demoState(t, NOW), offline: false, refreshing: false, refresh: () => {}, sample: true }
+    const full = render(m)
+    const ess = render(m, { view: 'esencial' })
+    expect(full).toContain(t('invest.mkt.spy.ma'))
+    expect(full).toContain(t('invest.mkt.p200.k'))
+    expect(ess).not.toContain(t('invest.mkt.spy.ma'))
+    expect(ess).not.toContain(t('invest.mkt.p200.k'))
+    expect((ess.match(/class="[^"]*stripItem/g) || []).length).toBe(0)
+    expect(ess).toContain(t('invest.mkt.regime.up'))
+    expect(ess).toContain(t('invest.mkt.meaning.q'))
+  })
+})

@@ -137,3 +137,11 @@
 .radio input { width: 18px; height: 18px; min-height: 0; margin: 0; accent-color: var(--purple-700, currentColor); }
 .sheetActions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
 @media (prefers-reduced-motion: reduce) { .act:active { transform: none; } }
+
+/* ── Esta empresa en 30 segundos (vista esencial, 20-nov-2026) ── */
+.brief {
+  display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px;
+  background: var(--sur); border: 0.5px solid var(--brd);
+}
+.briefWhat { display: flex; flex-direction: column; gap: 4px; }
+.briefK { margin: 0; font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }

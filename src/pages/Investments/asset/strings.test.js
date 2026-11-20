@@ -60,8 +60,8 @@ describe('textos de la ficha del activo', () => {
     expect(used.length).toBeGreaterThan(50)
     expect(used.filter(k => !(k in es) && !(k in appEs))).toEqual([])
   })
-  it('la alerta avisa que llega con Lista; el compartir no lleva datos de la posición', () => {
-    expect(es['asset.alert.soon']).toMatch(/Lista/)
+  it('la alerta avisa que llega con Siguiendo; el compartir no lleva datos de la posición', () => {
+    expect(es['asset.alert.soon']).toMatch(/Siguiendo/)
     expect(vars(es['asset.share.text'])).toEqual(['name', 'pct', 'price', 't'])
   })
 })

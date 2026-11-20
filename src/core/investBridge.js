@@ -66,7 +66,25 @@ async function fetchRates(holdings, quotes, fetchImpl) {
   return { rates, at: data?.updatedAt ? Date.parse(data.updatedAt) || null : null }
 }
 
-async function fetchRaw({ client = authClient, fetchImpl = (...a) => fetch(...a) } = {}) {
+const defaultFetch = (...a) => fetch(...a)
+
+// Un solo pedido a la vez (coherencia 360 I-20): al abrir Inversiones, la
+// pantalla (fetchPortfolioDetail) y el snapshot de Panorama/Patrimonio
+// (loadSnapshot) pedían el portafolio dos veces y el total y las filas podían
+// salir de respuestas distintas. Si llega otro pedido con el mismo cliente
+// mientras uno está en vuelo, comparten la misma respuesta.
+let rawInflight = null
+function fetchRaw({ client = authClient, fetchImpl = defaultFetch } = {}) {
+  if (rawInflight && rawInflight.client === client && rawInflight.fetchImpl === fetchImpl) return rawInflight.p
+  const p = fetchRawOnce({ client, fetchImpl })
+  const entry = { client, fetchImpl, p }
+  rawInflight = entry
+  const clear = () => { if (rawInflight === entry) rawInflight = null }
+  p.then(clear, clear)
+  return p
+}
+
+async function fetchRawOnce({ client, fetchImpl }) {
   if (!client) throw new Error('auth_unavailable')
   const { data: sess } = await withTimeout(client.auth.getSession(), HOLDINGS_TIMEOUT_MS)
   const uid = sess?.session?.user?.id

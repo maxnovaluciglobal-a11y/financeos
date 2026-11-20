@@ -1,0 +1,33 @@
+// Essential view texts for Investments (en). Same keys and variables as es.
+export default {
+  'ess.view.label': 'Full view',
+  'ess.view.hint': 'Adds candles, indicators (RSI, MACD, moving averages and Bollinger bands), stops and the market ticker. Off, you see the essentials with a simple price line.',
+  'ess.edu': 'Educational information, not an investment recommendation.',
+
+  'ess.put.title': 'What you put in and what the market added',
+  'ess.put.put': 'You put in',
+  'ess.put.putSub.contributed': 'What you contributed: deposits minus withdrawals, plus purchases paid with outside money.',
+  'ess.put.putSub.invested': 'What you paid for the holdings you have today.',
+  'ess.put.gain': 'The market added',
+  'ess.put.lost': 'The market took away',
+  'ess.put.gainSub': '{pct} on what you put in',
+  'ess.put.value': 'Worth {v} today.',
+  'ess.put.parts': 'Where it comes from',
+  'ess.put.part.price': 'Price',
+  'ess.put.part.priceSub': 'How much the prices of what you bought changed',
+  'ess.put.part.dividends': 'Dividends',
+  'ess.put.part.dividendsSub': 'Payments companies or funds made to you',
+  'ess.put.part.fx': 'Dollar',
+  'ess.put.part.fxSub': 'What the exchange rate moved since you bought',
+  'ess.put.partial': 'Some amounts have no exchange rate: they are not counted in these figures.',
+
+  'ess.beat.title': 'Did you beat inflation and the dollar?',
+  'ess.beat.titleUsd': 'Did you beat the dollar?',
+  'ess.beat.usd.yes': 'Yes. Kept uninvested, those dollars would still be worth what you put in; invested, they added {pct}.',
+  'ess.beat.usd.no': 'Not for now. Kept uninvested, those dollars would be worth what you put in; invested, they changed {pct}.',
+  'ess.beat.usd.even': 'You ended up the same as if you had kept the dollars uninvested.',
+  'ess.beat.inflation.yes': 'Yes. You added {pct} and inflation over the period was {ref}.',
+  'ess.beat.inflation.no': 'No. You added {pct} and inflation over the period was {ref}.',
+  'ess.beat.inflation.even': 'You matched inflation over the period ({ref}).',
+  'ess.beat.note': 'A snapshot of today, measured in dollars: prices change every day.',
+}

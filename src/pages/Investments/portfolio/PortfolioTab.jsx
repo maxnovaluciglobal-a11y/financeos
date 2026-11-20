@@ -27,7 +27,7 @@ const safeStorage = {
   setItem: (k, v) => { try { localStorage.setItem(k, v) } catch { /* modo privado: vale para esta visita */ } },
 }
 
-export default function PortfolioTab({ setPage, demo = false }) {
+export default function PortfolioTab({ setPage, demo = false, view = 'esencial' }) {
   const { t } = usePT()
   const app = useApp() || {}
   const settings = app.settings || {}
@@ -151,7 +151,7 @@ export default function PortfolioTab({ setPage, demo = false }) {
     toast(t('pf.toast.backup'))
   }
 
-  const common = { pb, fmt, disp, demo, t, settings }
+  const common = { pb, fmt, disp, demo, t, settings, view }
   const openTrade = (prefill = {}) => setTrade({ ...prefill })
   const actions = {
     addPosition: (prefill = null) => setPos({ prev: null, prefill }),

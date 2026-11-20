@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchSnapshot, loadSnapshot, readSnapshot, SNAPSHOT_KEY, SNAPSHOT_TTL_MS } from './investBridge.js'
+import { fetchPortfolioDetail, fetchSnapshot, loadSnapshot, readSnapshot, SNAPSHOT_KEY, SNAPSHOT_TTL_MS } from './investBridge.js'
 
 const memStorage = () => {
   const m = new Map()
@@ -123,5 +123,27 @@ describe('loadSnapshot', () => {
     expect(readSnapshot(storage)).toBeNull()
     storage.setItem(SNAPSHOT_KEY, JSON.stringify({ v: 0 }))
     expect(readSnapshot(storage)).toBeNull()
+  })
+})
+
+describe('un solo pedido del portafolio a la vez (coherencia 360 I-20)', () => {
+  it('la pantalla y el snapshot que se piden juntos comparten la respuesta: total y filas cuadran', async () => {
+    const c = client({ rows })
+    const f = api([[/api\/quote/, QUOTES], [/api\/crypto/, CRYPTO], [/fx-latam/, FX]])
+    const storage = memStorage()
+    const [detail, snap] = await Promise.all([
+      fetchPortfolioDetail({ storage, client: c, fetchImpl: f }),
+      loadSnapshot({ storage, client: c, fetchImpl: f, force: true }),
+    ])
+    expect(c.from).toHaveBeenCalledTimes(1)
+    expect(snap.valueUsd).toBeCloseTo(detail.snapshot.valueUsd)
+    const sumRows = detail.rows.filter(r => r.valueUsd != null).reduce((a, r) => a + r.valueUsd, 0)
+    expect(sumRows).toBeCloseTo(detail.snapshot.valueUsd)
+  })
+  it('terminado el pedido, el siguiente vuelve a pedir', async () => {
+    const c = client({ rows: [] })
+    await fetchSnapshot({ client: c, fetchImpl: api([]) })
+    await fetchSnapshot({ client: c, fetchImpl: api([]) })
+    expect(c.from).toHaveBeenCalledTimes(2)
   })
 })
