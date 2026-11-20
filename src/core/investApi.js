@@ -81,6 +81,8 @@ export function normalizeQuote(q, t) {
     low52: num(q.low52),
     currency: q.currency || null,
     marketTime: num(q.marketTime),
+    tradingStart: num(q.tradingStart),
+    tradingEnd: num(q.tradingEnd),
     delayedBy: num(q.delayedBy),
     timezone: q.timezone || null,
     fetchedAt: num(q.fetchedAt),
@@ -232,6 +234,11 @@ export function createInvestApi({ fetchImpl = (...a) => fetch(...a), now = () =>
     },
     fxLatam: () => cached('fxLatam', TTL.fxLatam, '/api/fx-latam'),
     fxArs: () => cached('fxArs', TTL.fxArs, '/api/fx-ars'),
+    // "Actualizar" a mano: olvida lo cacheado cuyas claves empiezan con alguno
+    // de los prefijos ('marketbar', 'news:', 'history:SPY:'…), sin tocar el resto.
+    forget(...prefixes) {
+      for (const k of [...cache.keys()]) if (prefixes.some(p => k.startsWith(p))) cache.delete(k)
+    },
     // Al cambiar de cuenta o para pruebas.
     clear() { cache.clear(); inflight.clear(); stats = { requests: 0, hits: 0, failures: 0 } },
     stats: () => ({ ...stats, cached: cache.size, inflight: inflight.size }),

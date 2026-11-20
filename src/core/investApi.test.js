@@ -131,4 +131,13 @@ describe('marketbar, history, news y tipos de cambio', () => {
     api.clear()
     expect(api.stats().cached).toBe(0)
   })
+  it('forget olvida solo las claves con esos prefijos ("Actualizar" de Mercado)', async () => {
+    const f = fakeFetch((u) => (u.pathname === '/api/marketbar' ? json({ items: [] }) : json({ rates: { CLP: 950 } })))
+    const api = createInvestApi({ fetchImpl: f })
+    await api.marketbar(); await api.fxLatam()
+    api.forget('marketbar')
+    await api.marketbar(); await api.fxLatam()
+    expect(f.calls.filter(u => u.includes('marketbar'))).toHaveLength(2)
+    expect(f.calls.filter(u => u.includes('fx-latam'))).toHaveLength(1)
+  })
 })
