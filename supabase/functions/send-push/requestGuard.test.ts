@@ -20,7 +20,8 @@ describe('guardPushRequest (send-push)', () => {
   it('index.ts aplica la guarda antes de leer licencias', () => {
     const src = readFileSync(new URL('./index.ts', import.meta.url), 'utf8')
     const guard = src.indexOf('guardPushRequest(')
-    const work = src.indexOf('licenses?select=')
+    // La consulta vive en trialQuery.ts (BIZ-N4); su llamada marca el trabajo.
+    const work = src.indexOf('expiringTrialsPath(new Date())')
     expect(guard).toBeGreaterThan(0)
     expect(guard).toBeLessThan(work)
   })

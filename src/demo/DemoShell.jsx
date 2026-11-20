@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { DemoProvider, useDemo, DemoContext } from './DemoContext.jsx'
-import DemoBanner, { PRICING_URL, APP_URL } from './DemoBanner.jsx'
+import DemoBanner, { PRICING_URL, APP_SIGNUP_URL } from './DemoBanner.jsx'
 import DemoTour, { hasSeenDemoTour } from './DemoTour.jsx'
 import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
@@ -100,7 +100,7 @@ function DemoBottomCTA({ hidden }) {
           misma pestaña — el registro ya captura el lead. "Ver planes" queda como
           enlace secundario hacia la landing. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-        <a className="fos-btn-primary" href={APP_URL}
+        <a className="fos-btn-primary" href={APP_SIGNUP_URL}
           style={{ width: 'auto', fontSize: 'var(--t-body)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
           {t('demo.banner.start')}
         </a>

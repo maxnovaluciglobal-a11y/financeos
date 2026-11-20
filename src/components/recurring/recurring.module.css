@@ -38,6 +38,8 @@
 .btnSmall:hover { background: var(--fill-2); }
 .meta { display: flex; color: var(--th); flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: var(--t-footnote); color: var(--th); margin-top: 2px; }
 .tag { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+/* UX-N12: previsto con fecha pasada. */
+.overdue { color: var(--color-warn-text); font-weight: 600; }
 .done { color: var(--pos); font-weight: 600; }
 .skipped { color: var(--th); text-decoration: line-through; }
 .right { display: flex; align-items: center; gap: 2px; justify-content: flex-end; }

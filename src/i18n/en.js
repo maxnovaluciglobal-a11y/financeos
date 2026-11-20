@@ -1990,6 +1990,8 @@ export const en = {
     'onboarding.v2.step3.goTo': "Open {page}",
     'onboarding.v2.next.cashFlow': "Record this month's income: cash flow compares what comes in with what goes out.",
     'onboarding.v2.next.emergencyCushion': "Create an emergency fund goal: the cushion is measured in months of expenses covered.",
+    // UX-N6: la meta de emergencia ya existe
+    'onboarding.v2.next.emergencyCushionGrow': "Add to your emergency fund: today it covers {months} of {target} months of expenses.",
     'onboarding.v2.next.debtLoad': "Review your debts: the load compares your monthly payments with your monthly income.",
     'onboarding.v2.next.goalsProgress': "Create a goal and record how much you have saved.",
     'onboarding.v2.next.dataConsistency': "Categorize imported transactions so the analysis is accurate.",
@@ -2167,6 +2169,8 @@ export const en = {
     'home.upcoming.kind.sub': "Subscription",
     'home.upcoming.kind.collect': "Collection",
     'home.upcoming.titleBoth': "Upcoming payments and collections",
+    // UX-N12: hay previstos vencidos en la lista
+    'home.upcoming.titleDue': "Payments due",
     'home.upcoming.today': "today",
     'home.upcoming.tomorrow': "tomorrow",
     'home.upcoming.more.one': "And {n} more payment in the next 30 days.",
@@ -2744,6 +2748,8 @@ export const en = {
     'rec.status.confirmed': "Confirmed",
     'rec.status.matched': "Already recorded",
     'rec.status.skipped': "Skipped this month",
+    // UX-N12: previsto con fecha pasada
+    'rec.status.overdue': "Overdue",
     'rec.action.confirm': "Confirm",
     'rec.action.confirmAria': "Confirm {name}",
     'rec.action.moreAria': "{name}: change amount or skip",

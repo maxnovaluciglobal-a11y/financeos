@@ -1989,6 +1989,8 @@ export const de = {
     'onboarding.v2.step3.goTo': "{page} öffnen",
     'onboarding.v2.next.cashFlow': "Erfassen Sie Ihre Einnahmen des Monats: Der Cashflow vergleicht, was hereinkommt, mit dem, was hinausgeht.",
     'onboarding.v2.next.emergencyCushion': "Legen Sie ein Ziel für einen Notgroschen an: Er wird in gedeckten Monatsausgaben gemessen.",
+    // UX-N6: la meta de emergencia ya existe
+    'onboarding.v2.next.emergencyCushionGrow': "Stocken Sie Ihren Notgroschen auf: Er deckt heute {months} von {target} Monatsausgaben.",
     'onboarding.v2.next.debtLoad': "Prüfen Sie Ihre Schulden: Die Last vergleicht Ihre Monatsraten mit Ihrem Monatseinkommen.",
     'onboarding.v2.next.goalsProgress': "Legen Sie ein Ziel an und erfassen Sie, wie viel Sie schon gespart haben.",
     'onboarding.v2.next.dataConsistency': "Kategorisieren Sie importierte Buchungen, damit die Analyse genau ist.",
@@ -2166,6 +2168,8 @@ export const de = {
     'home.upcoming.kind.sub': "Abo",
     'home.upcoming.kind.collect': "Eingang",
     'home.upcoming.titleBoth': "Anstehende Zahlungen und Eingänge",
+    // UX-N12: hay previstos vencidos en la lista
+    'home.upcoming.titleDue': "Offene Zahlungen",
     'home.upcoming.today': "heute",
     'home.upcoming.tomorrow': "morgen",
     'home.upcoming.more.one': "Und {n} weitere Zahlung in den nächsten 30 Tagen.",
@@ -2743,6 +2747,8 @@ export const de = {
     'rec.status.confirmed': "Bestätigt",
     'rec.status.matched': "Bereits erfasst",
     'rec.status.skipped': "Diesen Monat ausgelassen",
+    // UX-N12: previsto con fecha pasada
+    'rec.status.overdue': "Überfällig",
     'rec.action.confirm': "Bestätigen",
     'rec.action.confirmAria': "{name} bestätigen",
     'rec.action.moreAria': "{name}: Betrag ändern oder auslassen",

@@ -44,3 +44,17 @@ describe('fila y detalle de categoría (poda P2)', () => {
     expect(parseLimit('')).toBe(null)
   })
 })
+
+describe('UX-N8: la línea de KPIs no repite el exceso que ya dice el titular', () => {
+  it('con overStated y categorías excedidas, over es null y el tono es el de la cobertura', () => {
+    const kl = kpiLine({ overCount: 3, totalBudget: 100, income: 1000, overStated: true })
+    expect(kl.over).toBe(null)
+    // la línea solo muestra la cobertura (10 % del ingreso): tono de la cobertura
+    expect(kl.tone).toBe('ok')
+    expect(kpiLine({ overCount: 3, totalBudget: 1200, income: 1000, overStated: true }).tone).toBe('risk')
+  })
+  it('sin exceso, overStated no cambia nada', () => {
+    expect(kpiLine({ overCount: 0, totalBudget: 100, income: 1000, overStated: true }).over).toEqual({ key: 'budgets.p2.kpi.overNone' })
+  })
+})
+

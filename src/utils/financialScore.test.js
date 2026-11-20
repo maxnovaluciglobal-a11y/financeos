@@ -5,7 +5,7 @@
 // factor, y los dos casos límite (score 100 y score 0) para que un cambio
 // futuro de pesos o umbrales no pase desapercibido.
 import { describe, it, expect } from 'vitest'
-import { scoreLevel, SCORE_LEVELS, calcFinancialScore, weakestFactor } from './financialScore.js'
+import { scoreLevel, SCORE_LEVELS, calcFinancialScore, weakestFactor, nextStepMessage } from './financialScore.js'
 
 const ACTIVE_MONTH = '2026-09'
 const NOW = 1_700_000_000_000 // fijo, para que los tests de "antigüedad de sync" sean deterministas
@@ -385,5 +385,29 @@ describe('calcFinancialScore — mes en curso a medio cargar (FIN-2)', () => {
     const sin = calcFinancialScore(baseInput({ incomes, expenses, activeMonth: '2026-10', now: day(2) }), rawT)
     const con = calcFinancialScore(baseInput({ incomes, expenses, activeMonth: '2026-10', now: day(2), pending: { income: 0, expense: 700000 } }), rawT)
     expect(con.breakdown[0].pts).toBeLessThan(sin.breakdown[0].pts)
+  })
+})
+
+describe('UX-N6: siguiente paso del colchón según exista la meta', () => {
+  it('sin meta de emergencia pide crearla', () => {
+    const r = calcFinancialScore(baseInput({ goals: [] }), rawT)
+    const f = r.breakdown.find(b => b.key === 'emergencyCushion')
+    expect(f.hasGoal).toBe(false)
+    expect(nextStepMessage(f).key).toBe('onboarding.v2.next.emergencyCushion')
+  })
+  it('con la meta creada invita a sumarle e informa los meses cubiertos', () => {
+    const expenses = [{ date: `${ACTIVE_MONTH}-05`, amount: 1000, category: 'Alimentación' }]
+    const goals = [{ id: 'g1', name: 'Fondo de emergencia', target: 3000, saved: 700 }]
+    const r = calcFinancialScore(baseInput({ expenses, goals }), rawT)
+    const f = r.breakdown.find(b => b.key === 'emergencyCushion')
+    expect(f.hasGoal).toBe(true)
+    const msg = nextStepMessage(f, (n) => n.toFixed(1))
+    expect(msg.key).toBe('onboarding.v2.next.emergencyCushionGrow')
+    expect(msg.vars.target).toBe(3)
+    expect(Number(msg.vars.months)).toBeGreaterThan(0)
+  })
+  it('los otros factores usan su clave de siempre', () => {
+    expect(nextStepMessage({ key: 'debtLoad', pts: 0, max: 20 })).toEqual({ key: 'onboarding.v2.next.debtLoad', vars: undefined })
+    expect(nextStepMessage(null)).toBe(null)
   })
 })

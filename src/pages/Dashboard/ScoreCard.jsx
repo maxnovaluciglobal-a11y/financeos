@@ -9,9 +9,9 @@ import { ChevronRight } from 'lucide-react'
 import CountUp from '../../components/CountUp.jsx'
 import { IconIQScore } from '../../components/icons/Icons.jsx'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
-import { SCORE_LEVELS, weakestFactor } from '../../utils/financialScore.js'
+import { SCORE_LEVELS, weakestFactor, nextStepMessage } from '../../utils/financialScore.js'
 import { useT } from '../../i18n/useT.js'
-import { localDateStr } from '../../utils/index.js'
+import { localDateStr, fmtDecimal } from '../../utils/index.js'
 import { FACTOR_PAGE, prevMonthScore, prevMonthOf } from './dashboardModel.js'
 import DeltaLine from './DeltaLine.jsx'
 import s from './Home.module.css'
@@ -103,6 +103,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
   const weakest = weakestFactor(healthScore.breakdown)
   const allMax = !weakest || weakest.pts >= weakest.max
   const page = weakest && FACTOR_PAGE[weakest.key]
+  const nextMsg = nextStepMessage(weakest, (n) => fmtDecimal(n, 1))
 
   return (
     <section className={`${s.card} rise`} data-tour="iq-score" aria-labelledby="home-score-title">
@@ -131,7 +132,7 @@ export default function ScoreCard({ healthScore, activeMonth, isCurrentMonth, se
           ) : (
             <>
               <div className={s.nextTitle}>{t('home.score.next', { factor: weakest.label })}</div>
-              <div className={s.nextSub}>{t(`onboarding.v2.next.${weakest.key}`)}</div>
+              <div className={s.nextSub}>{t(nextMsg.key, nextMsg.vars)}</div>
             </>
           )}
         </div>

@@ -10,16 +10,20 @@ import { exceedsWithTolerance } from '../../utils/budgets.js'
 // Línea de KPIs: "2 categorías excedidas · 79 % del ingreso".
 // tone: 'risk' si hay categorías excedidas o el presupuesto supera el ingreso,
 // 'warn' si usa más del 80 % del ingreso, si no 'ok'.
-export function kpiLine({ overCount = 0, totalBudget = 0, income = 0 } = {}) {
+// `overStated`: el titular de la pantalla ya dice cuántas categorías se pasaron;
+// entonces la línea no lo repite (UX-N8) y `over` queda en null.
+export function kpiLine({ overCount = 0, totalBudget = 0, income = 0, overStated = false } = {}) {
   const n = Math.max(0, Number(overCount) || 0)
-  const over = n === 0
+  const over = n > 0 && overStated ? null : n === 0
     ? { key: 'budgets.p2.kpi.overNone' }
     : { key: n === 1 ? 'budgets.p2.kpi.overOne' : 'budgets.p2.kpi.overMany', n }
   const inc = Number(income) || 0
   const total = Number(totalBudget) || 0
   const coverage = inc > 0 ? { key: 'budgets.p2.kpi.coverage', ratio: total / inc } : { key: 'budgets.p2.kpi.noIncome' }
   const overIncome = inc > 0 && exceedsWithTolerance(total, inc)
-  const tone = n > 0 || overIncome ? 'risk' : inc > 0 && total / inc > 0.8 ? 'warn' : 'ok'
+  // Sin el conteo en la línea (overStated), el tono habla solo de la cobertura.
+  const countsOver = n > 0 && over !== null
+  const tone = countsOver || overIncome ? 'risk' : inc > 0 && total / inc > 0.8 ? 'warn' : 'ok'
   return { over, coverage, tone }
 }
 
