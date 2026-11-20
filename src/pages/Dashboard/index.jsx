@@ -41,6 +41,7 @@ import { currentMonth, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupStatus.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
+import SyncErrorNotice from '../../components/backup/SyncErrorNotice.jsx'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
@@ -368,6 +369,7 @@ export default function Dashboard({ setPage }) {
               por confirmar y la tasa más reciente ("Usar") están en el detalle
               del héroe, a un toque. */}
           <TodoStrip>
+              <Slot><SyncErrorNotice setPage={setPage} /></Slot>
               <Slot><FirstSteps setPage={setPage} /></Slot>
               <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>
               <Slot><BackupReminderBanner suppress={backupStepPending} /></Slot>

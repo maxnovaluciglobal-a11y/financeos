@@ -23,7 +23,7 @@ import config from '../config.js'
 import { buildSeed, currentMonth, fmtMoneyFor, currencyDecimals } from '../utils/index.js'
 import { calcFinancialScore, weakestFactor } from '../utils/financialScore.js'
 import { ScoreState } from './ScoreState.jsx'
-import { isSyncEnabled, syncAvailable, syncMeta } from '../core/sync.js'
+import { isSyncEnabled, syncAvailable, syncMeta, lastSyncTime } from '../core/sync.js'
 import { dbAdd } from '../core/db/index.js'
 import { Wordmark } from './Logo.jsx'
 import CountUp from './CountUp.jsx'
@@ -263,7 +263,7 @@ export default function Onboarding({ onComplete }) {
       savingRate: totalInc > 0 ? (totalInc - totalExp) / totalInc : 0,
       expenses: exp, incomes: inc, debts: debts || [], goals: goals || [], activeMonth,
       syncEnabled: isSyncEnabled() && syncAvailable(),
-      lastSyncAt: meta.lastPushedAt || meta.lastPulledAt || null,
+      lastSyncAt: lastSyncTime(meta),
     }, t)
     // t cambia en cada render; el idioma es lo que importa
     // eslint-disable-next-line react-hooks/exhaustive-deps

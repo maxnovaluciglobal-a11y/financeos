@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { snapshotIdsToPrune, readOptionalStore } from './index.js'
+import { snapshotIdsToPrune, readOptionalStore, PRE_SYNC_SNAPSHOT_ID } from './index.js'
 
 describe('retención de fotos previas (ING-13)', () => {
   it('conserva las 2 más recientes', () => {
@@ -11,6 +11,15 @@ describe('retención de fotos previas (ING-13)', () => {
     ]
     expect(snapshotIdsToPrune(list).sort()).toEqual(['a', 'd'])
     expect(snapshotIdsToPrune(list, 3)).toEqual(['d'])
+  })
+  it('la copia previa al sync no desplaza a las fotos de migración', () => {
+    const list = [
+      { id: 'pre-recurring-v4', createdAt: '2026-09-01T00:00:00Z' },
+      { id: 'pre-category-unify-v5', createdAt: '2026-10-09T00:00:00Z' },
+      { id: PRE_SYNC_SNAPSHOT_ID, createdAt: '2026-11-19T00:00:00Z' },
+    ]
+    expect(snapshotIdsToPrune(list)).toEqual([])
+    expect(snapshotIdsToPrune([...list, { id: 'old', createdAt: '2026-01-01T00:00:00Z' }])).toEqual(['old'])
   })
   it('con 2 o menos no borra nada', () => {
     expect(snapshotIdsToPrune([{ id: 'x', createdAt: '1' }, { id: 'y', createdAt: '2' }])).toEqual([])

@@ -17,7 +17,7 @@ import {
 import { uid, buildSeed, setMoneyLocale, setDateLocale, localDateStr, catName, recurrenceLabel, methodLabel, currentMonth } from '../utils/index.js'
 import { dueAutoConfirmations, ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
 import { monthAdvance } from '../utils/monthAdvance.js'
-import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow, syncRequirement, setupPassphrase, unlockWithPassphrase } from '../core/sync.js'
+import { markLocalChange, pullAndApplyIfNewer, isSyncEnabled, setSyncEnabled, initialSync, pushNow, syncRequirement, setupPassphrase, unlockWithPassphrase, syncStatus, onSyncStatus } from '../core/sync.js'
 import { hapticTap } from '../utils/haptics.js'
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
@@ -30,6 +30,7 @@ import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
 import { applyTheme, watchSystemTheme } from '../utils/theme.js'
 import { convertColorList } from '../utils/legacyColors.js'
+import { runOnVisible } from './visibilitySync.js'
 
 export const AppContext = createContext(null)
 
@@ -79,6 +80,9 @@ export function reducer(state, action) {
   }
 }
 
+// Al volver a la app, como mucho un sync cada 30 s (V-ENG-FN1).
+const VIS_SYNC_THROTTLE_MS = 30_000
+
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState)
 
@@ -119,6 +123,9 @@ export function AppProvider({ children }) {
   // "cambio local". Antes sí lo hacía y un dispositivo nuevo y vacío ganaba la
   // comparación por fecha y pisaba la copia de la nube.
   const quietRef = useRef(null)
+  // Sync: motivo de bloqueo (frase de paso…) y estado visible (G1-N3).
+  const [syncBlocked, setSyncBlocked] = useState(null)
+  const [syncState, setSyncState] = useState(() => syncStatus())
   const rehydrate = useCallback(async (opts) => {
     const [incomes, expenses, budgets, debts, goals, subscriptions, recurring, settings] = await Promise.all([
       dbGetAll('incomes'), dbGetAll('expenses'), dbGetAll('budgets'),
@@ -229,6 +236,23 @@ export function AppProvider({ children }) {
     }
   }, [rehydrate, showToast, tr])
 
+  // ── Sync: baja y aplica lo de otros dispositivos, o sube lo pendiente ──────
+  // (pullAndApplyIfNewer). Una sola pasada a la vez; no-op con el sync apagado.
+  const syncingRef = useRef(false)
+  const runSync = useCallback(async () => {
+    if (!isSyncEnabled() || syncingRef.current) return
+    syncingRef.current = true
+    try {
+      const r = await pullAndApplyIfNewer(() => rehydrate({ notLocalChange: true }))
+      if (r?.applied) { showToast(tr('toast.syncedFromOther'), 'ok'); runRecurringMaintenance() }
+      if (r?.blocked) setSyncBlocked(r.blocked)
+    } catch (e) {
+      logRejection('AppContext:runSync')(e)
+    } finally {
+      syncingRef.current = false
+    }
+  }, [rehydrate, runRecurringMaintenance, showToast, tr])
+
   // ── Hydrate from DB on mount ──────────────────────────────────────────────────
   const hydratedRef = useRef(false)
   useEffect(() => {
@@ -241,14 +265,7 @@ export function AppProvider({ children }) {
         await runRecurringMaintenance()
         hydratedRef.current = true
         // Sync opcional: si está activo, baja los cambios de otros dispositivos (no-op si apagado)
-        if (isSyncEnabled()) {
-          pullAndApplyIfNewer(() => rehydrate({ notLocalChange: true }))
-            .then(r => {
-              if (r?.applied) { showToast(tr('toast.syncedFromOther'), 'ok'); runRecurringMaintenance() }
-              if (r?.blocked) setSyncBlocked(r.blocked)
-            })
-            .catch(logRejection('AppContext:220'))
-        }
+        runSync()
       } catch (e) {
         console.error('Hydration error:', e)
         // Base existente que no abre: pantalla de error bloqueante (App.jsx),
@@ -260,14 +277,37 @@ export function AppProvider({ children }) {
       }
     }
     hydrate()
-  }, [rehydrate, runRecurringMaintenance, showToast, tr])
+  }, [rehydrate, runRecurringMaintenance, runSync, showToast, tr])
 
-  // Volver a la app otro día (o en otro mes) con la pestaña abierta.
+  // Volver a la app otro día (o en otro mes) con la pestaña abierta. Con el
+  // sync activo también baja lo de otros dispositivos (V-ENG-FN1), como mucho
+  // una vez cada 30 s, y reintenta lo que no subió.
+  const lastVisSyncRef = useRef(0)
   useEffect(() => {
-    const onVis = () => { if (document.visibilityState === 'visible' && hydratedRef.current) runRecurringMaintenance() }
+    const onVis = () => {
+      if (document.visibilityState !== 'visible' || !hydratedRef.current) return
+      // Primero el pull y después el mantenimiento (visibilitySync.js).
+      const shouldSync = Date.now() - lastVisSyncRef.current >= VIS_SYNC_THROTTLE_MS
+      if (shouldSync) lastVisSyncRef.current = Date.now()
+      runOnVisible({ shouldSync, runSync, runMaintenance: runRecurringMaintenance }).catch(logRejection('AppContext:onVisible'))
+    }
+    // Volvió la conexión: reintenta enseguida (G1-N3).
+    const onOnline = () => { if (hydratedRef.current) runSync() }
     document.addEventListener('visibilitychange', onVis)
-    return () => document.removeEventListener('visibilitychange', onVis)
-  }, [runRecurringMaintenance])
+    window.addEventListener('online', onOnline)
+    return () => {
+      document.removeEventListener('visibilitychange', onVis)
+      window.removeEventListener('online', onOnline)
+    }
+  }, [runRecurringMaintenance, runSync])
+
+  // Estado del sync a la vista. Un push que choca con una copia con frase de
+  // paso bloquea igual que el pull; un sync que sale bien desbloquea.
+  useEffect(() => onSyncStatus((st) => {
+    setSyncState(st)
+    if (st.error === 'passphrase_required') setSyncBlocked('passphrase_required')
+    else if (st.state === 'ok') setSyncBlocked(null)
+  }), [])
 
   // ── Observa cambios locales → agenda push al sync (no-op si sync apagado) ──────
   useEffect(() => {
@@ -472,7 +512,6 @@ export function AppProvider({ children }) {
   // C-21 / D-05: activar el sync desde cero pide crear una frase de paso; si la
   // nube ya tiene una copia con frase, hay que escribirla. Devuelve
   // { ok:false, need } para que Ajustes muestre el formulario que corresponde.
-  const [syncBlocked, setSyncBlocked] = useState(null)
   const enableSync = useCallback(async ({ passphrase } = {}) => {
     setSyncEnabled(true)
     try {
@@ -727,7 +766,7 @@ export function AppProvider({ children }) {
     updateSettings,
     clearAll,   loadDemo,
     exportData, exportCSV,  importData,
-    enableSync, disableSync, syncBlocked, setSyncBlocked,
+    enableSync, disableSync, syncBlocked, setSyncBlocked, syncState, runSync,
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
   }), [
@@ -742,7 +781,7 @@ export function AppProvider({ children }) {
     updateSettings,
     clearAll, loadDemo,
     exportData, exportCSV, importData,
-    enableSync, disableSync, syncBlocked, setSyncBlocked,
+    enableSync, disableSync, syncBlocked, setSyncBlocked, syncState, runSync,
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
   ])

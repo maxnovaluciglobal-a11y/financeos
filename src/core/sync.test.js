@@ -17,11 +17,14 @@ globalThis.localStorage = {
 
 const STORES = ['incomes', 'expenses', 'budgets', 'debts', 'goals', 'subscriptions', 'importBatches', 'recurring']
 let local = {}
+let preSync = null          // copia previa al sync guardada en 'backups' (simulada)
+let failSnapshot = false
 const emptyLocal = () => Object.fromEntries(STORES.map((s) => [s, []]))
 vi.mock('./db/index.js', () => ({
   DATA_STORES: ['incomes', 'expenses', 'budgets', 'debts', 'goals', 'subscriptions', 'importBatches', 'recurring'],
   exportAllData: async () => JSON.parse(JSON.stringify({ ...local, settings: { currency: 'CLP' } })),
   importAllData: async (p) => { for (const s of Object.keys(local)) local[s] = Array.isArray(p[s]) ? JSON.parse(JSON.stringify(p[s])) : [] },
+  savePreSyncSnapshot: async (data) => { if (failSnapshot) throw new Error('QuotaExceededError'); preSync = JSON.parse(JSON.stringify(data)) },
 }))
 let license = 'FNOS-AAAA-BBBB-CCCC'
 vi.mock('../utils/licenseValidator.js', () => ({ getLicenseKey: () => license }))
@@ -30,13 +33,17 @@ vi.mock('./authClient.js', () => ({ authClient: { auth: { getSession: async () =
 // Servidor: una fila por hash de licencia.
 let row = null
 let corruptNextPush = false
+let netDown = false
+let pushStatus = 200
 const pushes = []
 vi.stubGlobal('fetch', vi.fn(async (url, init) => {
+  if (netDown) throw new TypeError('Failed to fetch')
   const body = JSON.parse(init.body)
   if (url.endsWith('/rpc/sync_pull')) {
     return { ok: true, json: async () => (row ? { ok: true, blob: row.blob, updated_at: row.updatedAt } : { ok: true, empty: true }) }
   }
   if (url.endsWith('/rpc/sync_push')) {
+    if (pushStatus !== 200) return { ok: false, status: pushStatus, json: async () => ({}) }
     const blob = corruptNextPush ? body.p_blob.slice(0, -8) + 'AAAAAAA=' : body.p_blob
     corruptNextPush = false
     row = { blob, updatedAt: body.p_updated_at }
@@ -59,6 +66,7 @@ const meta = (m) => localStorage.setItem('fnos_sync_meta', JSON.stringify(m))
 
 beforeEach(() => {
   mem.clear(); row = null; pushes.length = 0; corruptNextPush = false
+  preSync = null; failSnapshot = false; netDown = false; pushStatus = 200
   license = 'FNOS-AAAA-BBBB-CCCC'
   setLocal({})
   sync.setSyncEnabled(true)
@@ -82,7 +90,7 @@ describe('camino viejo (v1) sin migrar', () => {
     const r = await sync.pullAndApplyIfNewer()
     expect(r.applied).toBe(true)
     expect(local.expenses.map((e) => e.id)).toEqual(['a1', 'a2'])
-    expect(JSON.parse(localStorage.getItem('fnos_presync_backup')).expenses[0].id).toBe('old')
+    expect(preSync.expenses[0].id).toBe('old')
   })
 })
 
@@ -226,5 +234,85 @@ describe('un dispositivo sin la frase nunca sube encima de una copia con frase',
     row = { blob, updatedAt: 5 }
     await expect(sync.pushNow()).rejects.toThrow('passphrase_required')
     expect(row.blob).toBe(blob)
+  })
+})
+
+describe('copia previa al sync (G1-N4, V-ENG-FN2)', () => {
+  it('se guarda en backups y borra la copia vieja en claro de localStorage', async () => {
+    await seedRemoteV1(DATA_A, 500)
+    localStorage.setItem('fnos_presync_backup', '{"expenses":[]}')
+    setLocal({ expenses: [{ id: 'old' }] }); meta({ lastLocalChange: 100, lastPushedAt: 100 })
+    expect((await sync.pullAndApplyIfNewer()).applied).toBe(true)
+    expect(preSync.expenses.map((e) => e.id)).toEqual(['old'])
+    expect(localStorage.getItem('fnos_presync_backup')).toBeNull()
+  })
+  it('si la copia no se puede guardar, no aplica lo remoto y avisa', async () => {
+    await seedRemoteV1(DATA_A, 500)
+    setLocal({ expenses: [{ id: 'old' }] }); meta({ lastLocalChange: 100, lastPushedAt: 100 })
+    failSnapshot = true
+    await expect(sync.pullAndApplyIfNewer()).rejects.toThrow('snapshot_failed')
+    expect(local.expenses.map((e) => e.id)).toEqual(['old'])
+    expect(sync.syncStatus()).toMatchObject({ state: 'error', error: 'snapshot_failed' })
+  })
+})
+
+describe('estado visible y hora real de la última sincronización (G1-N3)', () => {
+  it('lastSyncedAt es la hora de la subida, no la del último cambio local', async () => {
+    setLocal(DATA_A); meta({ lastLocalChange: 10 })
+    const t0 = Date.now()
+    await sync.pushNow()
+    const m = sync.syncMeta()
+    expect(m.lastPushedAt).toBe(10)             // la versión no cambia de significado
+    expect(m.lastSyncedAt).toBeGreaterThanOrEqual(t0)
+    expect(sync.lastSyncTime(m)).toBe(m.lastSyncedAt)
+    expect(sync.syncStatus().state).toBe('ok')
+  })
+  it('metas viejas sin lastSyncedAt: usa la marca más reciente', () => {
+    expect(sync.lastSyncTime({ lastPushedAt: 5, lastPulledAt: 9 })).toBe(9)
+    expect(sync.lastSyncTime({})).toBeNull()
+  })
+  it('sin conexión: el push falla con "offline", avisa a los oyentes y queda pendiente', async () => {
+    setLocal(DATA_A); meta({ lastLocalChange: 10 })
+    await sync.pushNow()
+    const seen = []
+    const off = sync.onSyncStatus((st) => seen.push(st.state + ':' + (st.error || '')))
+    meta({ ...sync.syncMeta(), lastLocalChange: 20 })
+    netDown = true
+    await expect(sync.pushNow()).rejects.toThrow()
+    off()
+    expect(seen).toEqual(['error:offline'])
+    expect(sync.hasPendingChanges()).toBe(true)
+    // Volvió la conexión: el reintento (pull + push) sube lo pendiente.
+    netDown = false
+    await sync.pullAndApplyIfNewer()
+    expect(row.updatedAt).toBe(20)
+    expect(sync.hasPendingChanges()).toBe(false)
+    expect(sync.syncStatus().state).toBe('ok')
+  })
+  it('un error HTTP del servidor queda como "failed"; un cambio marca "pendiente"', async () => {
+    setLocal(DATA_A); meta({ lastLocalChange: 10 })
+    pushStatus = 500
+    await expect(sync.pushNow()).rejects.toThrow('sync_push 500')
+    expect(sync.syncStatus()).toMatchObject({ state: 'error', error: 'failed' })
+    pushStatus = 200
+    await sync.pushNow()
+    vi.useFakeTimers()
+    try {
+      sync.markLocalChange()
+      expect(sync.syncStatus().state).toBe('pending')
+    } finally { vi.clearAllTimers(); vi.useRealTimers() }
+  })
+  it('un bloqueo por frase de paso al subir se informa como error', async () => {
+    const otherKey = await crypto2.deriveV2KeyBytes(PASS, crypto2.newV2Salt(), IT)
+    row = { blob: await crypto2.encryptV2({ ...emptyLocal(), ...DATA_A }, otherKey, crypto2.newV2Salt(), IT), updatedAt: 900 }
+    setLocal(DATA_A); meta({ lastLocalChange: 10 })
+    await expect(sync.pushNow()).rejects.toThrow('passphrase_required')
+    expect(sync.syncStatus()).toMatchObject({ state: 'error', error: 'passphrase_required' })
+  })
+  it('syncErrorCode traduce los motivos', () => {
+    expect(sync.syncErrorCode(new Error('no_session'))).toBe('no_session')
+    expect(sync.syncErrorCode(new Error('invalid_license_key'))).toBe('invalid_license')
+    expect(sync.syncErrorCode(new TypeError('Failed to fetch'))).toBe('offline')
+    expect(sync.syncErrorCode(new Error('sync_pull 502'))).toBe('failed')
   })
 })
