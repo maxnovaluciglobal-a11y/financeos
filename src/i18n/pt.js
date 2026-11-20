@@ -3548,6 +3548,8 @@ export const pt = {
     "qa.discard.text": "Há um valor digitado. Descartar?",
     "qa.discard.keep": "Continuar editando",
     "qa.discard.confirm": "Descartar",
+    "qa.catSuggestedHint": "Sugerida: a última que você usou. Toque nela ou escolha outra.",
+    "qa.catPickHint": "Escolha uma categoria para salvar.",
     "settings.group.autoEntry.title": "Lançamento automático",
     "settings.group.autoEntry.desc": "Apple Pay com um Atalho e ditado por voz",
     "settings.group.autoEntry.kw": "atalho, atalhos, apple pay, wallet, voz, ditado, microfone, automático",

@@ -3548,6 +3548,8 @@ export const en = {
     "qa.discard.text": "You have an amount entered. Discard it?",
     "qa.discard.keep": "Keep editing",
     "qa.discard.confirm": "Discard",
+    "qa.catSuggestedHint": "Suggested: the last one you used. Tap it or pick another.",
+    "qa.catPickHint": "Pick a category to save.",
     "settings.group.autoEntry.title": "Automatic entry",
     "settings.group.autoEntry.desc": "Apple Pay with a Shortcut, and voice dictation",
     "settings.group.autoEntry.kw": "shortcut, shortcuts, apple pay, wallet, voice, dictation, microphone, automatic",

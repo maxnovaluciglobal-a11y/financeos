@@ -3547,6 +3547,8 @@ export const de = {
     "qa.discard.text": "Sie haben einen Betrag eingegeben. Verwerfen?",
     "qa.discard.keep": "Weiter bearbeiten",
     "qa.discard.confirm": "Verwerfen",
+    "qa.catSuggestedHint": "Vorschlag: die zuletzt genutzte. Tippen Sie sie an oder wählen Sie eine andere.",
+    "qa.catPickHint": "Wählen Sie zum Speichern eine Kategorie.",
     "settings.group.autoEntry.title": "Automatische Erfassung",
     "settings.group.autoEntry.desc": "Apple Pay mit einem Kurzbefehl und Diktat",
     "settings.group.autoEntry.kw": "kurzbefehl, kurzbefehle, apple pay, wallet, stimme, diktat, mikrofon, automatisch",

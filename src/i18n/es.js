@@ -3548,6 +3548,8 @@ export const es = {
     "qa.discard.text": "Tienes un monto escrito. ¿Lo descartas?",
     "qa.discard.keep": "Seguir editando",
     "qa.discard.confirm": "Descartar",
+    "qa.catSuggestedHint": "Sugerida: la última que usaste. Tócala o elige otra.",
+    "qa.catPickHint": "Elige una categoría para guardar.",
     "settings.group.autoEntry.title": "Registro automático",
     "settings.group.autoEntry.desc": "Apple Pay con un Atajo y dictado por voz",
     "settings.group.autoEntry.kw": "atajo, atajos, shortcut, apple pay, wallet, voz, dictado, micrófono, automático, solo",

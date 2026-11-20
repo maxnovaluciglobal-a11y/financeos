@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   ruleKey, suggestCategory, nextAutoCategory, topRepeats, fromUsd, buildUsdNote, appendNote,
   keyToKeypad, isTextEntryTarget, buildDetailedPrefill, DETAILED_PREFILL_KEY, entryMemoryValue, readEntryDate, ENTRY_MEMORY_MS,
-  closeDecision, footerSaveVisible } from './quickAdd.js'
+  closeDecision, footerSaveVisible, initialCategory, CATEGORY_PRESELECT_MS } from './quickAdd.js'
 import { KEY_BACKSPACE, KEY_DECIMAL } from './keypad.js'
 
 const rules = { jumbo: 'Alimentación', 'farmacia ahumada': 'Salud', 'farmacia cruz verde': 'Salud', uber: 'Transporte', 'uber eats': 'Alimentación', sueldo: 'Salario' }
@@ -225,5 +225,34 @@ describe('UX-N9: footerSaveVisible', () => {
   })
   it('sin el bloque compacto: fijo al pie como antes', () => {
     expect(footerSaveVisible({ stickySave: true, compact: false, showMore: true })).toBe(true)
+  })
+})
+
+describe('UX-N9: footerSaveVisible sin categoría', () => {
+  it('hoja compacta con monto y sin categoría: el del pie aparece aunque el teclado se vea', () => {
+    expect(footerSaveVisible({ stickySave: true, compact: true, showMore: true, keypadVisible: true, needsFallback: true })).toBe(true)
+    expect(footerSaveVisible({ stickySave: true, compact: true, showMore: false, keypadVisible: true, needsFallback: true })).toBe(false)
+  })
+})
+
+describe('UX-N9: initialCategory', () => {
+  const now = new Date(2026, 10, 19, 15, 0).getTime()
+  const chips = ['Vestuario', 'Alimentación']
+  it('usada hace menos de un día: preselecciona la primera de la fila', () => {
+    const records = [{ category: 'Vestuario', createdAt: new Date(now - 3 * 3600e3).toISOString() }]
+    expect(initialCategory({ chips, records, now })).toBe('Vestuario')
+  })
+  it('último uso de hace más de un día: sin preselección', () => {
+    const records = [{ category: 'Vestuario', createdAt: new Date(now - CATEGORY_PRESELECT_MS - 1).toISOString() }]
+    expect(initialCategory({ chips, records, now })).toBe('')
+  })
+  it('sin createdAt usa la fecha del movimiento', () => {
+    expect(initialCategory({ chips, records: [{ category: 'Vestuario', date: '2026-11-19' }], now })).toBe('Vestuario')
+    expect(initialCategory({ chips, records: [{ category: 'Vestuario', date: '2026-11-10' }], now })).toBe('')
+  })
+  it('sin historial o sin chips: vacía', () => {
+    expect(initialCategory({ chips, records: [], now })).toBe('')
+    expect(initialCategory({ chips: [], records: [{ category: 'X', createdAt: new Date(now).toISOString() }], now })).toBe('')
+    expect(initialCategory()).toBe('')
   })
 })

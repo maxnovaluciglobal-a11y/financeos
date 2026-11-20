@@ -10,6 +10,7 @@ import { closeDecision } from '../utils/quickAdd.js'
 import { registroAutomaticoHere } from '../utils/uiFlags.js'
 import { openQuickAdd } from './quickAddBus.js'
 import { useT } from '../i18n/useT.js'
+import { useApp } from '../context/AppContext.jsx'
 import Sheet from './ui/Sheet.jsx'
 import css from './QuickAddForm.module.css'
 // V4 (30-oct-2026): el formulario se carga al abrir la hoja (y se precarga en
@@ -27,7 +28,13 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
   // Alta que llegó por URL (main.jsx la guardó en sessionStorage, quizá antes
   // del login): al montar Shell se abre la hoja con eso escrito. Una sola vez.
   const [prefill, setPrefill] = useState(null)
+  // ENG-N1: el alta se toma recién con los ajustes reales hidratados (la moneda
+  // de la cuenta, no la que adivina el navegador al arrancar).
+  const { loading } = useApp() || {}
+  const intakeTaken = useRef(false)
   useEffect(() => {
+    if (loading || intakeTaken.current) return undefined
+    intakeTaken.current = true
     if (!registroAutomaticoHere()) return undefined
     let store = null
     try { store = sessionStorage } catch { store = null }
@@ -38,7 +45,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
     // Sin limpieza: en StrictMode el segundo montaje ya no encuentra el alta.
     setTimeout(() => openQuickAdd(intake.type), 0)
     return undefined
-  }, [])
+  }, [loading])
   // Cerrada por cualquier camino (también "Más detalles" desde Shell): el
   // próximo "+" abre vacío.
   const wasOpen = useRef(false)
@@ -47,7 +54,8 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
     wasOpen.current = open
   }, [open])
   // UX-N9: Esc, tocar el velo o deslizar con un monto escrito primero pregunta
-  // (un segundo intento descarta). Guardar cierra directo.
+  // (un segundo intento descarta). Guardar cierra directo. Si el monto cambia
+  // mientras se pregunta, la pregunta se va: el próximo cierre vuelve a preguntar.
   const dirty = useRef(false)
   const [askDiscard, setAskDiscard] = useState(false)
   const keepRef = useRef(null)
@@ -78,7 +86,7 @@ export default function QuickAdd({ open, defaultType = 'expense', onClose, onSav
       )}
       <Suspense fallback={<div style={{ minHeight: 420 }} aria-busy="true" />}>
         <QuickAddForm defaultType={defaultType} amountRef={amountRef} stickySave allowMoreDetails
-          onDirtyChange={(d) => { dirty.current = d; if (!d) setAskDiscard(false) }}
+          onDirtyChange={(d) => { dirty.current = d; setAskDiscard(false) }}
           onSaved={(type) => { onSaved?.(type); forceClose() }} prefill={open ? prefill : null} />
       </Suspense>
     </Sheet>
