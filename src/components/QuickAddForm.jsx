@@ -11,6 +11,8 @@
 //                  necesita Shell montado, así que el onboarding no lo usa)
 //   onDirtyChange(bool)  avisa si hay un monto escrito, en cada cambio del monto
 //                  (QuickAdd pregunta antes de descartarlo, UX-N9)
+//   allowSetAside  agrega "Apartar" junto a Gasto e Ingreso (F-1): mueve plata de
+//                  lo que te queda a una meta o a "Para invertir" (utils/setAside.js)
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
 import { Calendar, Check, ChevronDown, LayoutGrid, Mic, Square } from 'lucide-react'
@@ -43,6 +45,8 @@ import { parseQuickLine, lineFormPatch, findCategory } from '../utils/quickLine.
 import { spokenToLine, parseVoiceLine, speechLang } from '../utils/voiceEntry.js'
 import { intakeFormValues, isIosSafariTab } from '../utils/autoEntry.js'
 import { registroAutomaticoHere } from '../utils/uiFlags.js'
+import { goalAcceptsSetAside } from '../utils/setAside.js'
+import { moduleOn } from '../utils/modules.js'
 import { useSpeechEntry } from '../hooks/useSpeechEntry.js'
 import QuickLineField from './QuickLineField.jsx'
 import { navigateTo } from './quickAddBus.js'
@@ -127,12 +131,15 @@ function DateSegment({ date, setDate, t }) {
 
 // prefill: alta que llegó por URL (utils/autoEntry.js, el Atajo de Apple Pay).
 // Solo rellena: guardar sigue siendo un toque de la persona.
-export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, prefill = null, onDirtyChange }) {
-  const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule } = useApp() || {}
+export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, allowSetAside = false, prefill = null, onDirtyChange }) {
+  const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule, goals, addSetAside, delSetAside } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
   const { m: maskMoney } = useMoney()
-  const [type, setType] = useState(defaultType)
+  const startType = defaultType === 'setAside' && !(allowSetAside && addSetAside) ? 'expense' : defaultType
+  const [type, setType] = useState(startType)
+  const isAside = type === 'setAside'
+  const [dest, setDest] = useState('')             // Apartar: 'invest' o 'goal:<id>'
   const [amount, setAmount] = useState('')
   const [desc, setDesc] = useState('')
   const [cat, setCat] = useState('')
@@ -200,7 +207,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // retorno de foco al cerrar) la maneja Sheet.jsx.
   useEffect(() => {
     baseDate.current = (compact && UI_FLAGS.quickAddEntryMemory && readEntryDate(readStorage(ENTRY_MEMORY_KEY), todayStr(), Date.now())) || todayStr()
-    setType(defaultType); setAmount(''); setDesc(''); setCat(''); setSaving(false)
+    setType(startType); setDest(''); setAmount(''); setDesc(''); setCat(''); setSaving(false)
     setDate(baseDate.current); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
     setUsdMode(false); setSuggestedMsg(''); catManual.current = false; setAutoCat('')
@@ -209,7 +216,17 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (prefill && autoOn) applyPrefill(prefill)
     // lastMethod se lee al abrir; cambiarlo mientras el formulario está abierto no lo resetea
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey, defaultType, prefill])
+  }, [resetKey, startType, prefill])
+
+  // Apartar (F-1): destinos = metas sin completar + "Para invertir" (con
+  // Inversiones encendido). Con uno solo, queda elegido.
+  const destinations = useMemo(() => {
+    const out = (Array.isArray(goals) ? goals : []).filter(goalAcceptsSetAside)
+      .map(g => ({ value: `goal:${g.id}`, dest: 'goal', goalId: g.id, label: g.name || t('qa.setAside.goal') }))
+    if (moduleOn(settings || {}, 'investments')) out.push({ value: 'invest', dest: 'invest', goalId: null, label: t('qa.setAside.invest') })
+    return out
+  }, [goals, settings, t])
+  const destOn = destinations.find(d => d.value === dest) || (destinations.length === 1 ? destinations[0] : null)
 
   function applyPrefill(p) {
     const v = intakeFormValues(p, { currency, rate, lang })
@@ -394,8 +411,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   onDirtyRef.current = onDirtyChange
   // También en cada cambio del monto: QuickAdd retira la pregunta de descarte.
   useEffect(() => { onDirtyRef.current?.(dirty) }, [dirty, amount])
-  const canConfirm = canSave && !!cat
-  const accent = type === 'expense' ? 'var(--neg)' : 'var(--pos)'
+  const canConfirm = canSave && (isAside ? !!destOn : !!cat)
+  const accent = isAside ? 'var(--accent)' : type === 'expense' ? 'var(--neg)' : 'var(--pos)'
   const entryLocale = usdOn ? localeForCurrency('USD', lang) : moneyLocale()
   const display = formatKeypadDisplay(amount, entryLocale)
   const amountSize = display.length > 11 ? 32 : display.length > 8 ? 38 : 44
@@ -425,7 +442,25 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (w) setAmountWidth(Math.ceil(w) + 4)
   }, [display, amountSize])
 
+  // Apartar: no es un gasto (no lleva categoría ni método); resta de "Te queda".
+  async function saveSetAside() {
+    if (!canConfirm || !destOn || !addSetAside) return
+    setSaving(true)
+    try {
+      const rec = await addSetAside({ amount: amt, date: date || todayStr(), dest: destOn.dest, goalId: destOn.goalId, description: destOn.label })
+      if (!rec) { setSaving(false); showToast?.(t('qa.setAside.noRoom'), 'error'); return }
+      hapticTap()
+      showToast?.(t('qa.savedSetAside', { v: maskMoney(fmtMoney(rec.amount, sym)), dest: destOn.label }), 'ok',
+        rec.id && delSetAside ? { label: t('common.undo'), onAction: () => delSetAside(rec.id) } : null)
+      setSaving(false)
+      onSaved?.(type)
+    } catch {
+      setSaving(false)
+    }
+  }
+
   async function save() {
+    if (isAside) { await saveSetAside(); return }
     if (!canSave) return
     setSaving(true)
     const finalDesc = desc.trim() || catName(cat, lang)
@@ -539,13 +574,13 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   }, [compact])
   const footerOn = footerSaveVisible({ stickySave, compact, showMore, keypadVisible, needsFallback: canSave && !canConfirm })
   // UX-N9: la preselección se ve como sugerencia; sin categoría, se pide elegir.
-  const catSuggested = compact && !!cat && cat === autoCat
-  const catHint = catSuggested ? t('qa.catSuggestedHint') : (compact && !cat && typed > 0 ? t('qa.catPickHint') : '')
+  const catSuggested = !isAside && compact && !!cat && cat === autoCat
+  const catHint = isAside ? '' : catSuggested ? t('qa.catSuggestedHint') : (compact && !cat && typed > 0 ? t('qa.catPickHint') : '')
 
   const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
   const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
 
-  const moreDetailsLink = allowMoreDetails && type === 'expense' ? (
+  const moreDetailsLink = allowMoreDetails && type === 'expense' && !isAside ? (
     <div className={css.moreRow}>
       <button type="button" className="fos-link" onClick={openDetailed} style={{ fontSize: 'var(--t-subhead)' }}>
         {t('qa.moreDetails')}
@@ -554,7 +589,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   ) : null
 
   const saveButton = (
-    <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave} style={{ minHeight: 48 }}>
+    <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave || (isAside && !destOn)} style={{ minHeight: 48 }}>
       {saving ? '…' : t('qa.save')}
     </button>
   )
@@ -582,10 +617,10 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
 
         {/* Toggle tipo — único lugar, junto al monto, con color semántico */}
         <div style={{ display: 'flex', gap: 4, background: 'var(--sur3)', borderRadius: 'var(--r-pill)', padding: 3, marginBottom: 12 }}>
-          {[['expense', t('qa.expense')], ['income', t('qa.income')]].map(([k, lb]) => (
+          {[['expense', t('qa.expense')], ['income', t('qa.income')], ...(allowSetAside && addSetAside ? [['setAside', t('qa.setAside')]] : [])].map(([k, lb]) => (
             <button key={k} type="button" aria-pressed={type === k} onClick={() => changeType(k)}
               style={{ flex: 1, minHeight: 44, borderRadius: 'var(--r-pill)', border: 'none', cursor: 'pointer', fontSize: 'var(--t-headline)', fontWeight: 700, fontFamily: 'var(--sans)',
-                background: type === k ? 'var(--sur)' : 'transparent', color: type === k ? (k === 'expense' ? 'var(--neg)' : 'var(--pos)') : 'var(--tm)',
+                background: type === k ? 'var(--sur)' : 'transparent', color: type === k ? (k === 'expense' ? 'var(--neg)' : k === 'setAside' ? 'var(--accent)' : 'var(--pos)') : 'var(--tm)',
                 boxShadow: type === k ? 'var(--sh-1)' : 'none' }}>
               {lb}
             </button>
@@ -658,8 +693,26 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
             <div id="qa-voice-hint" className={css.voiceHint}>{t('qa.voice.privacy')}</div>
           </div>
         )}
-        {/* Chips de categoría. En la hoja, una fila que se desliza y "Todas". */}
-        {compact ? (
+        {/* Apartar: a dónde va la plata (una meta o "Para invertir"), en vez de la categoría. */}
+        {isAside ? (
+          <div className={css.aside}>
+            {destinations.length > 0 ? (
+              <div role="group" aria-label={t('qa.setAside.destLabel')} className={css.asideDests}>
+                {destinations.map(d => (
+                  <button key={d.value} type="button" className="fos-chip" aria-pressed={destOn?.value === d.value} onClick={() => setDest(d.value)}>
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className={css.asideEmpty}>
+                {t('qa.setAside.noDest')}{' '}
+                <button type="button" className="fos-link" onClick={() => navigateTo('goals')}>{t('qa.setAside.createGoal')}</button>
+              </p>
+            )}
+            <p className={css.asideHint}>{t('qa.setAside.hint')}</p>
+          </div>
+        ) : compact ? (
           <div className={css.catRow}>
             <div ref={catRowRef} role="group" aria-label={t('qa.category')} className={css.catScroll}>
               {(chips.includes(cat) || !cat ? chips : [cat, ...chips]).map(c => (
@@ -692,14 +745,14 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         </div>
 
         {/* Lo que no hace falta para registrar: a un toque, con el método a la vista */}
-        {compact && (
+        {compact && !isAside && (
           <button type="button" className={css.moreToggle} aria-expanded={moreOpen} onClick={toggleMore}>
             <span>{t('qa.moreOptions')}</span>
             {type === 'expense' && <span className={css.moreHint}>{methodLabel(method, lang)}</span>}
             <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" className={css.moreChev} data-open={moreOpen || undefined} />
           </button>
         )}
-        {showMore && (
+        {showMore && !isAside && (
           <>
           {/* #2 · Opcional: escribir como en un mensaje; lo de abajo se rellena y sigue editable */}
           <QuickLineField value={line} result={lineResult} sym={sym} onChange={(v) => applyLine(v, null, 'text')}

@@ -46,8 +46,8 @@ export function movementTotals(ops, ccyOf, toUsd) {
 // la moneda de la persona si el libro la maneja; si no, en US$ con la tasa
 // con fecha de moyiq; sin ninguna, no se propone nada (no se inventa la tasa).
 // → { amount, ccy, n, note } | null
-export function aporteOffer({ expenses, month, settings, rate, ops }) {
-  const contrib = monthContributions(expenses, month)
+export function aporteOffer({ expenses, setAsides = [], month, settings, rate, ops }) {
+  const contrib = monthContributions(expenses, month, setAsides)
   const a = aporteHandoff(contrib, settings, rate)
   if (!a) return null
   const inBook = a.ccy && CASH_CCYS.includes(a.ccy)

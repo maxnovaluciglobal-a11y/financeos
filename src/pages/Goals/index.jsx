@@ -19,12 +19,13 @@ import Sheet from '../../components/ui/Sheet.jsx'
 import { goalStatuses } from './goalStatus.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
+import { monthLeft } from '../../utils/monthLeft.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function Goals() {
-  const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, settings, deleteWithUndo, showToast } = useApp()
+  const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, setAsides, addSetAside, delSetAside, settings, deleteWithUndo, showToast } = useApp()
   const { t, lang } = useT()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // "disponible para ahorrar" personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
@@ -48,13 +49,12 @@ export default function Goals() {
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const activeMonth      = settings.activeMonth || currentMonth()
 
-  const ingresoNetoGoals = useMemo(() => {
-    return (incomes || []).filter(r => r.date?.startsWith(activeMonth)).reduce((s,r) => s+r.amount, 0)
-  }, [incomes, activeMonth])
-
-  const gastoMensualGoals = useMemo(() => {
-    return (expenses || []).filter(r => r.date?.startsWith(activeMonth)).reduce((s,r) => s+r.amount, 0)
-  }, [expenses, activeMonth])
+  // "Te queda este mes": la misma cuenta que el Inicio (utils/monthLeft.js, F-1).
+  // Antes Metas sumaba por su cuenta ("Disponible este mes para ahorrar", I-16).
+  const month = useMemo(() => monthLeft({ incomes, expenses, setAsides, month: activeMonth }), [incomes, expenses, setAsides, activeMonth])
+  const ingresoNetoGoals = month.income
+  const gastoMensualGoals = month.spent
+  const leftThisMonth = month.left
 
   // Base para la recomendación de fondo de emergencia (3 meses de gastos):
   // promedio de meses con gastos (sin dilución), o el gasto del mes / ingreso como fallback.
@@ -73,8 +73,8 @@ export default function Goals() {
   const totalTarget = useMemo(() => goals.reduce((s,g) => s+g.target, 0), [goals])
   const totalSaved  = useMemo(() => goals.reduce((s,g) => s+g.saved, 0), [goals])
   // Estado por ritmo, no por porcentaje (UI-Q5): "A tiempo" / "Atrasada".
-  const statuses = useMemo(() => goalStatuses(goals, { activeMonth, available: ingresoNetoGoals - gastoMensualGoals }),
-    [goals, activeMonth, ingresoNetoGoals, gastoMensualGoals])
+  const statuses = useMemo(() => goalStatuses(goals, { activeMonth, available: leftThisMonth }),
+    [goals, activeMonth, leftThisMonth])
 
   function openSuggestions() {
     setSuggestions(generateGoalSuggestions({ ingresoNeto:ingresoNetoGoals, gastoMensual:gastoMensualGoals, existingGoals:goals }, t))
@@ -151,16 +151,25 @@ export default function Goals() {
   }
   function openSuggestFromFlow() { setFlow(null); openSuggestions() }
 
+  // "Agregar ahorro" es Apartar a esta meta (F-1): suma al Ahorrado y sale de
+  // "Te queda" con el mismo registro que la hoja "+" (utils/setAside.js).
   async function confirmContribution(amount, method) {
     const prev = contribGoal
     const r = applyContribution(prev, amount, { method, date: localDateStr() })
     if (!r) return
-    try { await updateGoal(r.goal) } catch { return }
+    let rec = null
+    try {
+      if (addSetAside) rec = await addSetAside({ amount: r.added, date: localDateStr(), dest: 'goal', goalId: prev.id, description: prev.name, method })
+      else await updateGoal(r.goal)
+    } catch { return }
     setContribGoal(null)
     const msg = r.done
       ? t('goals.r9.toast.addedDone', { v: fmtPlain(r.added) })
       : t('goals.r9.toast.added', { v: fmtPlain(r.added), r: fmtPlain(r.remaining) })
-    showToast(msg, 'ok', { label: t('common.undo'), onAction: () => { updateGoal(prev).catch(logRejection('Goals:undoContribution')) } })
+    const undo = rec?.id && delSetAside
+      ? () => { delSetAside(rec.id).catch(logRejection('Goals:undoContribution')) }
+      : () => { updateGoal(prev).catch(logRejection('Goals:undoContribution')) }
+    showToast(msg, 'ok', { label: t('common.undo'), onAction: undo })
   }
 
   // Un solo primario Latón por pantalla (sistema-visual, regla 4; V2): "+ Nueva
@@ -282,18 +291,21 @@ export default function Goals() {
         <KPI label={t('goals.kpi.saved')} value={fmtMoney(totalSaved,sym)} color="green" sub={totalTarget>0 ? t('goals.kpi.savedSub', { pct: fmtPct(totalSaved/totalTarget) }) : '—'} />
         <KPI label={t('goals.kpi.done')}    value={goals.filter(g=>g.saved>=g.target).length} color="green" />
       </div>}
-      {/* Disponible este mes para ahorrar */}
+      {/* Te queda este mes: la misma cifra del Inicio (F-1). Es lo que puedes apartar. */}
       {(() => {
-        const disponible = ingresoNetoGoals - gastoMensualGoals
+        const disponible = leftThisMonth
         if (ingresoNetoGoals <= 0) return null
         const ok = disponible > 0
         return (
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:'var(--r)', background: ok ? 'var(--accent-bg)' : 'var(--red-bg)', border: 0, flexWrap:'wrap' }}>
-            <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{t('goals.available')}</span>
+            <span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600, color:'var(--th)'}}>{ok || disponible === 0 ? t('home.kpi.left') : t('home.kpi.short')}</span>
             <span style={{ fontSize:'var(--t-headline)', fontWeight:700, fontFamily: 'var(--num)', color: ok ? 'var(--accent)' : 'var(--red)', marginLeft:'auto' }}>
               {ok ? '' : '−'}<Money>{fmtMoney(Math.abs(disponible), sym)}</Money>
             </span>
-            {!ok && <span style={{ fontSize:'var(--t-footnote)', color:'var(--red)', width:'100%' }}>{t('goals.available.negative')}</span>}
+            <span style={{ fontSize:'var(--t-footnote)', color: ok ? 'var(--th)' : 'var(--red)', width:'100%' }}>
+              {ok ? t('goals.available.hint') : t('goals.available.negative')}
+              {month.setAsideGoals > 0 && <> {t('goals.available.setAside', { v: fmtMoney(month.setAsideGoals, sym) })}</>}
+            </span>
           </div>
         )
       })()}

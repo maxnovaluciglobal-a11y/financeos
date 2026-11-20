@@ -18,10 +18,13 @@
 //     tarjeta Proyección: mediana diaria sin los fijos + fijos pendientes. Antes
 //     era gastado(hoy) + promedio × días que faltan, y el arriendo pagado el
 //     día 1 se extrapolaba como gasto diario (auditoría 360, ENG-N2).
-//   - disponible(d) = ingresos hasta d − gastos hasta d (para "te quedaban").
+//   - disponible(d) = ingresos hasta d − gastos hasta d − apartado hasta d (para
+//     "te quedaban"): la misma cuenta de "Te queda" (utils/monthLeft.js). Lo
+//     apartado no es gasto: no sube la línea del gasto ni mueve el ritmo.
 // Quien llama ya sacó los movimientos de inversión (r.inv), como useHomeData.
 
 import { projectEndOfMonth } from './projection.js'
+import { isSetAside } from './setAside.js'
 
 // Mismo criterio que monthPosition (utils/monthReading.js), copiado acá para
 // que la ChartLupa no arrastre al trozo todo monthReading/dashboardModel.
@@ -41,12 +44,13 @@ export const PACE_EVEN = 0.02   // igual que PACE_OK de monthReading y `pulse`
 // ingreso no hay ritmo ideal. `plan` = monthPlan() del mes, para ubicar el cobro
 // previsto si todavía no se registró. `pending` = pendingTotals(plan), los
 // fijos que faltan (los suma la proyección, como en la tarjeta Proyección).
-export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null }) {
+export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null }) {
   const pos = monthPosition(activeMonth, now)
   const days = pos.days
   const lastDay = pos.today
   const earned = new Array(days + 1).fill(0)
   const spent = new Array(days + 1).fill(0)
+  const aside = new Array(days + 1).fill(0)
   const add = (arr, r) => {
     if (typeof r?.date !== 'string' || !r.date.startsWith(activeMonth)) return
     let d = dayOf(r)
@@ -56,15 +60,17 @@ export function dailyAvailable({ incomes = [], expenses = [], activeMonth, now =
     arr[d] += Number(r.amount) || 0
   }
   for (const r of incomes || []) add(earned, r)
-  for (const r of expenses || []) add(spent, r)
+  for (const r of expenses || []) add(isSetAside(r) ? aside : spent, r)
+  for (const r of setAsides || []) if (isSetAside(r)) add(aside, r)
 
   const avail = new Array(days + 1).fill(0)
   const spentCum = new Array(days + 1).fill(0)
-  let earnedCum = 0
+  let earnedCum = 0, asideCum = 0
   for (let d = 1; d <= days; d++) {
     earnedCum += earned[d]
+    asideCum += aside[d]
     spentCum[d] = round2(spentCum[d - 1] + spent[d])
-    avail[d] = round2(earnedCum - spentCum[d])
+    avail[d] = round2(earnedCum - spentCum[d] - asideCum)
   }
   const ref = Number(income) > 0 ? Number(income) : null
   const ideal = ref == null ? null : spentCum.map((_, d) => round2(ref * d / days))

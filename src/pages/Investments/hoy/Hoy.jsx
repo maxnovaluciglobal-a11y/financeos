@@ -428,7 +428,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData }) {
   // Aportes marcados en moyiq este mes (no dependen de Inversiones): si están
   // en otra moneda, Hoy necesita la tasa aunque no haya posiciones.
   const month = settings.activeMonth || currentMonth()
-  const contrib = monthContributions(app.expenses, month)
+  const contrib = monthContributions(app.expenses, month, app.setAsides)
   const ccy = String(currency || '').toUpperCase() || null
   const needFx = !(demo || sample) && contrib.count > 0 && contrib.sum > 0 && !!ccy && ccy !== 'USD'
   const d = useData({ demo, sample, range, cmp, needFx })

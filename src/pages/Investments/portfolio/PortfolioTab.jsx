@@ -188,7 +188,7 @@ export default function PortfolioTab({ setPage, demo = false }) {
 
       <div role="tabpanel" id={`pf-panel-${sub}`} aria-labelledby={`pf-tab-${sub}`} className={s.wrap}>
         {sub === 'posiciones' && <Positions {...common} actions={actions} targets={targets} />}
-        {sub === 'movimientos' && <Movements {...common} actions={actions} expenses={app.expenses} />}
+        {sub === 'movimientos' && <Movements {...common} actions={actions} expenses={app.expenses} setAsides={app.setAsides} />}
         {sub === 'dividendos' && <Dividends {...common} actions={actions} />}
         {sub === 'objetivos' && <Targets {...common} actions={actions} targets={targets} setTargets={setTargets} />}
       </div>

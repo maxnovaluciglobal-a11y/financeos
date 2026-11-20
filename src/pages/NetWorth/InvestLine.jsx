@@ -27,6 +27,13 @@ export default function InvestLine({ inv, sym }) {
         <span style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5 }}>
           {inTotal ? t('networth.investments.note', { at }) : t('networth.investments.noRate', { at })}
         </span>
+        {/* Una moneda por pantalla: la cifra va en la moneda de la persona y la
+            conversión desde US$ se dice, no se supone. */}
+        {inTotal && inv.rate?.rate > 0 && inv.rate.rate !== 1 && (
+          <span className="num" style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5 }}>
+            <Money>{t('networth.investments.conv', { usd, rate: fmtMoney(inv.rate.rate, sym) })}</Money>
+          </span>
+        )}
       </div>
     </div>
   )

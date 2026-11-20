@@ -33,6 +33,8 @@ export function useHomeData() {
   const settings = useMemo(() => ((ctx.settings && typeof ctx.settings === 'object') ? ctx.settings : {}), [ctx.settings])
   const subs     = useMemo(() => (Array.isArray(ctx.subscriptions) ? ctx.subscriptions : []), [ctx.subscriptions])
   const debts    = useMemo(() => (Array.isArray(ctx.debts) ? ctx.debts : []), [ctx.debts])
+  // Apartar (F-1): resta de "Te queda" sin contar como gasto (utils/monthLeft.js).
+  const setAsides = useMemo(() => (Array.isArray(ctx.setAsides) ? ctx.setAsides : []), [ctx.setAsides])
 
   const sym         = currencySymbol(settings.currency, settings.language)
   const activeMonth = settings.activeMonth || currentMonth()
@@ -59,9 +61,9 @@ export function useHomeData() {
   const toUSD = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
 
   const kpis = useMemo(() => {
-    const { cur, prev, prevToDate, prevCutDay } = homeMonthTotals({ incomes, expenses, activeMonth })
+    const { cur, prev, prevToDate, prevCutDay } = homeMonthTotals({ incomes, expenses, setAsides, activeMonth })
     return { ...cur, cur, prev, prevToDate, prevCutDay }
-  }, [incomes, expenses, activeMonth])
+  }, [incomes, expenses, setAsides, activeMonth])
 
   // ── Movimientos fijos del mes activo ─────────────────────────────────────
   const todayStr = localDateStr()
@@ -198,7 +200,7 @@ export function useHomeData() {
   }, [ctx.incomes, ctx.expenses, activeMonth])
 
   return {
-    ctx, settings, incomes, expenses, budgets, goals, subs, debts, sym, activeMonth,
+    ctx, settings, incomes, expenses, setAsides, budgets, goals, subs, debts, sym, activeMonth,
     refOn, refRate, bumpRate, dualOn, usdRate, money, toUSD,
     kpis, rules, plan, pendingSum, todayStr, monthExpenses, monthIncomes, subMonthly,
     insights, topSignals, healthScore, todoItems, propFlow, flujoTotal: kpis.balance + propFlow.net,

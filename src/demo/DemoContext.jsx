@@ -9,6 +9,7 @@ import { buildDemoState, pickDemoPersonaId, scenarioIncomes } from './demoData.j
 import { currentDemoLanguage, storeDemoLang } from './demoLanguage.js'
 import { setMoneyLocale, setDateLocale, fmtMoney, currencySymbol, catName, recurrenceLabel, methodLabel, localDateStr } from '../utils/index.js'
 import { reconcileRules } from '../utils/recurringSources.js'
+import { buildSetAside, goalWithSetAside, goalWithoutSetAside, setAsideRoom, splitSetAsides } from '../utils/setAside.js'
 import { splitDebts } from '../utils/debtDirection.js'
 import { planConfirmations } from '../utils/recurringConfirm.js'
 import { ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/recurring.js'
@@ -290,11 +291,38 @@ export function DemoProvider({ children }) {
     showToast(tr(scenario === 'exitoso' ? 'demo.toast.scenarioGood' : 'demo.toast.scenarioHard', { amount: fmtMoney(total, sym) }), 'ok')
   }, [showToast, tr, state.personaId, state.settings?.activeMonth, state.settings?.currency, state.settings?.language])
 
+  // Apartar (F-1): mismo contrato que AppContext, en memoria y sin el aviso de
+  // "gasto agregado" (no es un gasto).
+  const addSetAside = useCallback(({ amount, date, dest, goalId = null, description = '', method = '' }) => {
+    const goal = dest === 'goal' ? (stateRef.current.goals || []).find(g => g.id === goalId) : null
+    if (dest === 'goal' && !goal) return null
+    const amt = goal ? setAsideRoom(goal, amount) : amount
+    const rec = buildSetAside({ amount: amt, date, dest, goalId, description: description || goal?.name || '', method })
+    if (!rec) return null
+    const item = { ...rec, id: uid() }
+    dispatch({ type: 'ADD_EXPENSE', item })
+    if (goal) {
+      const next = goalWithSetAside(goal, { amount: item.amount, date: item.date, method, ref: item.id })
+      if (next) dispatch({ type: 'UPDATE_GOAL', item: next })
+    }
+    return item
+  }, [])
+  const delSetAside = useCallback((id) => {
+    const rec = (stateRef.current.expenses || []).find(r => r.id === id)
+    dispatch({ type: 'DEL_EXPENSE', id })
+    if (rec?.dest === 'goal') {
+      const next = goalWithoutSetAside((stateRef.current.goals || []).find(g => g.id === rec.goalId), rec)
+      if (next) dispatch({ type: 'UPDATE_GOAL', item: next })
+    }
+  }, [])
+  const setAsideSplit = useMemo(() => splitSetAsides(state.expenses), [state.expenses])
+
   // Mismo reparto "Debo" / "Me deben" que AppContext (utils/debtDirection.js).
   const { owe: oweDebts, owed: receivables } = useMemo(() => splitDebts(state.debts), [state.debts])
   const value = {
     ...state,
     debts: oweDebts, receivables,
+    expenses: setAsideSplit.expenses, setAsides: setAsideSplit.setAsides, addSetAside, delSetAside,
     addIncome,  delIncome,  updateIncome,
     addExpense, delExpense, updateExpense,
     addBudget,  delBudget,  updateBudget,

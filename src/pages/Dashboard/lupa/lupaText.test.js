@@ -46,16 +46,16 @@ describe('inspectLines / paceLine', () => {
   it('ritmo: delante, detrás o parejo (la misma cuenta que paceToday)', () => {
     const t = tOf(es)
     expect(paceLine({ gap: 100, even: false }, { t, fmt }).kind).toBe('ahead')
-    expect(paceLine({ gap: -100, even: false }, { t, fmt }).text).toBe('US$100.00 por encima del ritmo ideal')
+    expect(paceLine({ gap: -100, even: false }, { t, fmt }).text).toBe('US$100.00 por encima del ritmo del mes')
     expect(paceLine({ gap: 15, even: true }, { t, fmt }).kind).toBe('even')
     expect(paceLine(null, { t, fmt })).toBeNull()
   })
   it('UX-N5: gastar de más se lee "por encima" y gastar de menos "por debajo", en los 4 idiomas', () => {
-    expect(paceLine({ gap: 100, even: false }, { t: tOf(es), fmt }).text).toBe('US$100.00 por debajo del ritmo ideal')
+    expect(paceLine({ gap: 100, even: false }, { t: tOf(es), fmt }).text).toBe('US$100.00 por debajo del ritmo del mes')
     const over = { gap: -100, even: false }
-    expect(paceLine(over, { t: tOf(en), fmt }).text).toBe('US$100.00 over the ideal pace')
-    expect(paceLine(over, { t: tOf(pt), fmt }).text).toBe('US$100.00 acima do ritmo ideal')
-    expect(paceLine(over, { t: tOf(de), fmt }).text).toBe('US$100.00 über dem idealen Tempo')
+    expect(paceLine(over, { t: tOf(en), fmt }).text).toBe("US$100.00 over this month's pace")
+    expect(paceLine(over, { t: tOf(pt), fmt }).text).toBe('US$100.00 acima do ritmo do mês')
+    expect(paceLine(over, { t: tOf(de), fmt }).text).toBe('US$100.00 über dem Monatstempo')
   })
   it('fechas en el idioma de la interfaz', () => {
     expect(weekdayName('2026-11', 10, 'en-US')).toBe('Tuesday')

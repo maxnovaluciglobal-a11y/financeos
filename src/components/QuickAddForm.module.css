@@ -158,3 +158,9 @@
 .discardActions { display: flex; gap: 8px; }
 .discardActions > button { flex: 1; min-height: 44px; }
 .discardBtn { color: var(--neg); }
+
+/* Apartar (F-1): destinos en lugar de categorías */
+.aside { margin-bottom: 10px; }
+.asideDests { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 6px; }
+.asideEmpty { margin: 0 0 6px; text-align: center; font-family: var(--sans); font-size: var(--t-subhead); color: var(--tm); }
+.asideHint { margin: 0; text-align: center; font-family: var(--sans); font-size: var(--t-footnote); color: var(--tm); }

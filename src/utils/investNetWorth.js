@@ -6,6 +6,7 @@
 // registró y una meta de ahorro nunca se mezcla con el portafolio.
 import { currencySymbol, dateLocale, fmtAmount } from './index.js'
 import { refEligible, savedRate, cachedRate } from './refRate.js'
+import { isSetAside } from './setAside.js'
 
 const valid = (n) => Number.isFinite(Number(n)) && Number(n) > 0
 
@@ -53,11 +54,17 @@ export function withInvest(nw, inv) {
   }
 }
 
-// Aportes del mes: egresos marcados como inversión. `r.inv` también marca el
-// flujo de una propiedad (arriendo, dividendo de hipoteca, ver utils/personal.js):
-// eso lleva `project` y no es un aporte al portafolio; un ingreso tampoco.
-export function monthContributions(expenses, month) {
-  const list = (expenses || []).filter(r => r?.inv && !String(r.project || '').trim() && r.date?.startsWith(month))
+// Aportes del mes: lo apartado "Para invertir" desde la hoja "+" (F-1,
+// utils/setAside.js) y, como antes, los egresos marcados como inversión.
+// `r.inv` también marca el flujo de una propiedad (arriendo, dividendo de
+// hipoteca, ver utils/personal.js): eso lleva `project` y no es un aporte al
+// portafolio; un ingreso tampoco. `setAsides` es opcional (la app los separa de
+// `expenses` al leer); si vienen mezclados en `expenses` también cuentan.
+export function monthContributions(expenses, month, setAsides = []) {
+  const legacy = (r) => r?.inv && !isSetAside(r) && !String(r.project || '').trim()
+  const toInvest = (r) => isSetAside(r) && r.dest === 'invest'
+  const list = [...(expenses || []), ...(setAsides || [])]
+    .filter(r => (legacy(r) || toInvest(r)) && r.date?.startsWith(month))
   return { count: list.length, sum: list.reduce((s, r) => s + (Number(r.amount) || 0), 0) }
 }
 

@@ -24,6 +24,7 @@ import { loadLang } from '../i18n/langCache.js'
 import { requestPersistentStorage } from '../utils/storagePersist.js'
 import { toCsv } from '../utils/csvSafe.js'
 import { extraCsvRows } from '../utils/csvExtraRows.js'
+import { buildSetAside, goalWithSetAside, goalWithoutSetAside, setAsideRoom, splitSetAsides } from '../utils/setAside.js'
 import { splitDebts } from '../utils/debtDirection.js'
 import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
@@ -748,6 +749,41 @@ export function AppProvider({ children }) {
     return rule
   }, [saveRule, addIncome, addExpense])
 
+  // ── Apartar (F-1, utils/setAside.js) ─────────────────────────────────────
+  // Un apartado es un registro de la store `expenses` con kind 'setAside'; a
+  // una meta, además suma al Ahorrado con una entrada que lo referencia.
+  const goalsRef = useRef(state.goals)
+  goalsRef.current = state.goals
+  const recordsRef = useRef(state.expenses)
+  recordsRef.current = state.expenses
+  const addSetAside = useCallback(async ({ amount, date, dest, goalId = null, description = '', method = '' }) => {
+    const goal = dest === 'goal' ? (goalsRef.current || []).find(g => g.id === goalId) : null
+    if (dest === 'goal' && !goal) return null
+    const amt = goal ? setAsideRoom(goal, amount) : amount
+    const rec = buildSetAside({ amount: amt, date, dest, goalId, description: description || goal?.name || '', method })
+    if (!rec) return null
+    const item = await addExpense(rec)
+    if (goal) {
+      const next = goalWithSetAside(goal, { amount: item.amount, date: item.date, method, ref: item.id })
+      try { if (next) await updateGoal(next) } catch (e) {
+        // Sin la meta al día, el apartado no queda a medias: se quita.
+        await delExpense(item.id).catch(logRejection('AppContext:setAsideRollback'))
+        throw e
+      }
+    }
+    return item
+  }, [addExpense, updateGoal, delExpense])
+  const delSetAside = useCallback(async (id) => {
+    const rec = (recordsRef.current || []).find(r => r.id === id)
+    await delExpense(id)
+    if (rec?.dest === 'goal') {
+      const goal = (goalsRef.current || []).find(g => g.id === rec.goalId)
+      const next = goalWithoutSetAside(goal, rec)
+      if (next) await updateGoal(next)
+    }
+  }, [delExpense, updateGoal])
+  const setAsideSplit = useMemo(() => splitSetAsides(state.expenses), [state.expenses])
+
   // "Debo" / "Me deben" (D2): la store `debts` guarda los dos; la app ve
   // `debts` = solo lo que debo y `receivables` = lo que me deben, para que
   // ningún consumidor viejo cuente un cobro como deuda (utils/debtDirection.js).
@@ -756,6 +792,7 @@ export function AppProvider({ children }) {
   const value = useMemo(() => ({
     ...state,
     debts: debtSplit.owe, receivables: debtSplit.owed,
+    expenses: setAsideSplit.expenses, setAsides: setAsideSplit.setAsides, addSetAside, delSetAside,
     addIncome,  delIncome,  updateIncome,
     addExpense, delExpense,   updateExpense,
     addBudget,  delBudget,  updateBudget,
@@ -770,7 +807,7 @@ export function AppProvider({ children }) {
     showToast, dismissToast, deleteWithUndo,
     rehydrate,
   }), [
-    state, debtSplit,
+    state, debtSplit, setAsideSplit, addSetAside, delSetAside,
     addIncome, delIncome, updateIncome,
     addExpense, delExpense, updateExpense,
     addBudget, delBudget, updateBudget,

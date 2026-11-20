@@ -33,7 +33,7 @@ function opLabel(o, t) {
   return t(`pf.op.${o.type}`)
 }
 
-export default function Movements({ pb, fmt, demo, t, actions, settings, expenses }) {
+export default function Movements({ pb, fmt, demo, t, actions, settings, expenses, setAsides }) {
   const [fTicker, setFTicker] = useState('')
   const [fType, setFType] = useState('')
   const [hideAporte, setHideAporte] = useState(false)
@@ -48,8 +48,8 @@ export default function Movements({ pb, fmt, demo, t, actions, settings, expense
   const offer = useMemo(() => {
     if (pb.opsState !== 'ready') return null
     const rate = resolveUserRate(settings, { rates: pb.market.latam?.rates, at: pb.market.at })
-    return aporteOffer({ expenses, month, settings, rate, ops })
-  }, [pb.opsState, settings, pb.market.latam, pb.market.at, expenses, month, ops])
+    return aporteOffer({ expenses, setAsides, month, settings, rate, ops })
+  }, [pb.opsState, settings, pb.market.latam, pb.market.at, expenses, setAsides, month, ops])
   const hasHoldings = pb.holdings.length > 0
 
   if (pb.phase === 'loading') return <p className={s.note} role="status">{t('pf.loading')}</p>
