@@ -15,7 +15,7 @@ import { TERMS_CONTENT } from './termsContent.jsx'
 import { LICENSE_CONTENT } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
 import { sanitizeLogMessage } from '../../core/feedback.js'
-import { CANCEL_URLS, COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, PRIVACY_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
+import { COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, PRIVACY_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -251,6 +251,11 @@ describe('review completed: no draft markers left', () => {
   }
 })
 
+// Página de cancelación que nombra el texto de Términos de cada idioma (el
+// portugués cita la española). Antes venía de un CANCEL_URLS de legalMeta.js
+// que la app no usaba (C15).
+const TERMS_CANCEL_PAGE = { es: 'moyiq.app/cancelar.html', en: 'moyiq.app/en/cancel.html', pt: 'moyiq.app/cancelar.html' }
+
 describe('company identification and renewal facts', () => {
   for (const lang of LEGAL_LANGS) {
     for (const page of ['terms', 'privacy']) {
@@ -265,7 +270,7 @@ describe('company identification and renewal facts', () => {
       const { text } = render('terms', lang)
       expect(text).toMatch(/automáticamente|automatically|automaticamente|verlängert sich/)
       if (lang === 'de') expect(text).toMatch(/Verträge hier kündigen/)
-      else expect(text).toContain(CANCEL_URLS[lang].replace(/^https:\/\//, ''))
+      else expect(text).toContain(TERMS_CANCEL_PAGE[lang])
     })
   }
 })
@@ -319,5 +324,12 @@ describe('legal version (rebranding moyiq)', () => {
     expect(LAST_UPDATED.en).toMatch(/^Effective \p{L}+ \d{1,2}, \d{4}$/u)
     expect(LAST_UPDATED.pt).toMatch(/^Em vigor desde \d{1,2} de \p{L}+ de \d{4}$/u)
     expect(LAST_UPDATED.de).toMatch(/^Gültig ab \d{1,2}\. \p{L}+ \d{4}$/u)
+  })
+})
+
+describe('legalMeta sin duplicar cancelUrl (C15)', () => {
+  it('no exporta CANCEL_URLS: la fuente única es utils/cancelUrl.js', async () => {
+    const meta = await import('./legalMeta.js')
+    expect('CANCEL_URLS' in meta).toBe(false)
   })
 })

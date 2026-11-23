@@ -72,13 +72,8 @@ export const COMPANY = {
   managers: 'Walter M. La Madriz Guerra, Patricia L. Velazco Gil',
 }
 
-// Cancelación en línea por idioma (páginas de la landing). pt usa la española.
-export const CANCEL_URLS = {
-  es: 'https://moyiq.app/cancelar.html',
-  en: 'https://moyiq.app/en/cancel.html',
-  pt: 'https://moyiq.app/cancelar.html',
-  de: 'https://moyiq.app/de/kuendigen.html',
-}
+// La página de cancelación por idioma la da utils/cancelUrl.js (cancelUrl()).
+// Acá había un CANCEL_URLS sin uso que la duplicaba (C15, 23-nov-2026).
 
 // Portal de clientes de Stripe (link público de inicio de sesión; el mismo que
 // publica la landing en cancelar.html, terms y license). Menú → Ayuda →
