@@ -47,7 +47,7 @@
 /* ── Escena: banda de resumen ── */
 .band {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; padding: 18px; border-radius: 20px;
-  background: var(--gr-profundidad); color: var(--on-grad-text); box-shadow: var(--sh-2);
+  background: var(--gr-impulso); color: var(--on-grad-text); box-shadow: var(--sh-2);
 }
 @media (min-width: 720px) { .band { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .bandWide { grid-column: 1 / -1; }
@@ -59,7 +59,7 @@
 .tag { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 1px 8px; border-radius: 999px; background: var(--on-grad-chip); font-size: var(--t-caption, 12px); font-weight: 600; }
 .tone[data-tone="up"] { color: var(--pos); }
 .tone[data-tone="down"] { color: var(--neg); }
-.band .tone[data-tone="up"] { color: var(--on-grad-accent); }
+.band .tone[data-tone="up"] { color: var(--on-grad-text); } /* lima chica no llega a 4,5 sobre Impulso */
 .band .tone[data-tone="down"] { color: var(--on-grad-text); }
 
 /* ── Avisos ── */

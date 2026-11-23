@@ -10,7 +10,6 @@
   margin-bottom: var(--space-3);
   isolation: isolate;
 }
-:global([data-theme="dark"]) .scene { background: var(--gr-profundidad); }
 .inner { position: relative; padding: var(--space-5) var(--space-6) var(--space-4); }
 
 @media (max-width: 700px) {

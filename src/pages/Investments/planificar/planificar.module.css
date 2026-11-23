@@ -59,7 +59,7 @@
 .seg[aria-checked="true"] { background: var(--tx); border-color: var(--tx); color: var(--bg); font-weight: 600; }
 
 /* Resultado de la calculadora */
-.result { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 18px; background: var(--gr-profundidad); color: var(--on-grad-text); box-shadow: var(--sh-2); }
+.result { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 18px; background: var(--gr-impulso); color: var(--on-grad-text); box-shadow: var(--sh-2); }
 .resultLabel { font-size: var(--t-footnote); color: var(--on-grad-text-2); }
 .big { font-family: var(--display); font-size: clamp(28px, 8vw, 38px); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .resultText { margin: 0; font-size: var(--t-subhead); line-height: 1.5; }

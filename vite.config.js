@@ -85,7 +85,7 @@ export default defineConfig({
         categories: ['finance', 'productivity'],
         // Nivel 3: barra y arranque en morado 700 (el ícono es lupa blanca sobre
         // morado, así que el splash de Android queda continuo con el de index.html).
-        theme_color: '#3C2282', background_color: '#3C2282',
+        theme_color: '#2D1D59', background_color: '#2D1D59',
         display: 'standalone', start_url: '/app/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

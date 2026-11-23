@@ -382,7 +382,7 @@ button { cursor: pointer; font-family: var(--sans); }
 .demo-banner {
   view-transition-name: demo-banner;
   position: sticky; top: 0; z-index: 200;
-  background: var(--gr-profundidad); color: var(--on-grad-text);
+  background: var(--gr-impulso); color: var(--on-grad-text);
   box-shadow: var(--sh-2);
 }
 :root[data-theme="dark"] .demo-banner { box-shadow: 0 1px 0 var(--color-divider-strong); }
@@ -479,7 +479,7 @@ button { cursor: pointer; font-family: var(--sans); }
   left: 14px; right: 14px; bottom: calc(var(--tabbar-h) + var(--fab-clear) + 12px);
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   padding: 12px 12px 12px 16px; border-radius: var(--rl);
-  background: var(--gr-profundidad); color: var(--on-grad-text); box-shadow: var(--sh-3);
+  background: var(--gr-impulso); color: var(--on-grad-text); box-shadow: var(--sh-3);
 }
 @media (min-width: 701px) {
   .demo-bottom-cta { left: auto; right: 20px; bottom: 20px; width: min(440px, calc(100vw - 40px)); }

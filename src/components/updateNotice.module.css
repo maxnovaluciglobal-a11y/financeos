@@ -6,7 +6,7 @@
   bottom: calc(var(--tabbar-h, 0px) + 12px); /* --tabbar-h ya incluye el área segura */
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 6px 6px 6px 14px; border-radius: var(--r, 8px);
-  background: var(--color-brand-solid); color: var(--color-brand-solid-fg);
+  background: var(--color-brand-solid); background: var(--gr-impulso); color: var(--color-brand-solid-fg);
   font: 600 var(--t-subhead)/1.3 var(--sans);
 }
 .btn {

@@ -74,7 +74,7 @@
 
 .band {
   display: flex; flex-direction: column; gap: 2px; padding: 18px; border-radius: 20px;
-  background: var(--gr-profundidad); color: var(--on-grad-text); box-shadow: var(--sh-2);
+  background: var(--gr-impulso); color: var(--on-grad-text); box-shadow: var(--sh-2);
 }
 .bandLabel { font-size: var(--t-subhead); font-weight: 600; color: var(--on-grad-text-2); }
 .bandValue {
@@ -88,7 +88,7 @@
   display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 2px 0 0;
   font-size: var(--t-subhead); font-weight: 600; font-variant-numeric: tabular-nums;
 }
-.bandRow dd[data-tone="up"] { color: var(--on-grad-accent); }
+.bandRow dd[data-tone="up"] { color: var(--on-grad-text); } /* lima chica no llega a 4,5 sobre Impulso */
 .bandRow dd span { font-weight: 400; color: var(--on-grad-text-2); }
 
 /* ── Tarjetas ── */
