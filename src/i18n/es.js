@@ -3491,6 +3491,7 @@ export const es = {
     "invest.port.holdings": "Tus posiciones",
     "invest.port.refresh": "Actualizar",
     "invest.port.manage": "Registrar en la versión web de Inversiones",
+    "invest.port.manageHere": "Registrar operaciones en Portafolio",
     "invest.port.shares": "{n} unidades",
     "invest.port.share": "{p} del total",
     "invest.port.atCost": "Sin precio, a lo invertido",

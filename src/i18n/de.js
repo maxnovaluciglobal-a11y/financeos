@@ -3490,6 +3490,7 @@ export const de = {
     "invest.port.holdings": "Ihre Positionen",
     "invest.port.refresh": "Aktualisieren",
     "invest.port.manage": "In der Web-Version von Investments erfassen",
+    "invest.port.manageHere": "Transaktionen im Portfolio erfassen",
     "invest.port.shares": "{n} Stück",
     "invest.port.share": "{p} vom Gesamtwert",
     "invest.port.atCost": "Ohne Kurs, zum investierten Betrag",

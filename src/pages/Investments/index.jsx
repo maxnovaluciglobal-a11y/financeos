@@ -14,6 +14,7 @@ import { useT } from '../../i18n/useT.js'
 import { useInvestAccess } from '../../hooks/useInvestAccess.js'
 import { moduleOn } from '../../utils/modules.js'
 import { investFullHere } from '../../utils/uiFlags.js'
+import { queueInvestTab } from '../../utils/investNav.js'
 import Portfolio from './Portfolio.jsx'
 import InvestHub from './hub/InvestHub.jsx'
 import ProfileSheet from './ProfileSheet.jsx'
@@ -45,7 +46,7 @@ export default function Investments({ setPage }) {
   const settings = app.settings || {}
   const { status, saveProfile } = useInvestAccess()
   const [asking, setAsking] = useState(false)
-  const [full] = useState(investFullHere)
+  const [full, setFull] = useState(investFullHere)
   const on = moduleOn(settings, 'investments') || !!settings.isDemo
 
   async function save(answers) {
@@ -66,7 +67,12 @@ export default function Investments({ setPage }) {
     )
   }
   else if (status === 'needs-profile') body = <Gate onStart={() => setAsking(true)} />
-  else body = full ? <InvestHub setPage={setPage} demo={!!settings.isDemo} /> : <Portfolio />
+  else {
+    // Demo con la vista simple (?ui=invest-simple): "Registrar operaciones"
+    // abre Portafolio › Movimientos acá mismo, no el sitio aparte (C8).
+    const openHere = settings.isDemo ? () => { queueInvestTab('portafolio', 'movimientos'); setFull(true) } : undefined
+    body = full ? <InvestHub setPage={setPage} demo={!!settings.isDemo} /> : <Portfolio onOpenHere={openHere} />
+  }
 
   return (
     <div className={s.page}>

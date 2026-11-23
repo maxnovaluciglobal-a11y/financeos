@@ -97,7 +97,7 @@ function HoldingDetail({ row, onClose, currency }) {
   )
 }
 
-export default function Portfolio() {
+export default function Portfolio({ onOpenHere } = {}) {
   const { t } = useT()
   const app = useApp() || {}
   const settings = app.settings || {}
@@ -113,8 +113,11 @@ export default function Portfolio() {
     setOpening(true)
     openInvest({}).finally(() => setOpening(false))
   }
+  // Demo (C8 de la auditoría de branding, 23-nov-2026): el botón abría
+  // invest.moyiq.app, que sin sesión pide iniciar sesión. Ahora abre
+  // Portafolio › Movimientos de Inversiones dentro de la app (onOpenHere).
   const manageBtn = demo
-    ? <a className={s.btn} href={`${INVEST_ORIGIN}/app/`} target="_blank" rel="noopener noreferrer">{t('invest.port.manage')}<ExternalLink size={16} strokeWidth={1.8} aria-hidden="true" /></a>
+    ? (onOpenHere ? <button type="button" className={s.btn} onClick={onOpenHere}>{t('invest.port.manageHere')}</button> : null)
     : <button type="button" className={s.btn} onClick={manage} disabled={opening}>{t('invest.port.manage')}<ExternalLink size={16} strokeWidth={1.8} aria-hidden="true" /></button>
 
   const busy = phase === 'loading' || phase === 'refreshing'

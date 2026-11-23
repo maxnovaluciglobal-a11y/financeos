@@ -3491,6 +3491,7 @@ export const en = {
     "invest.port.holdings": "Your positions",
     "invest.port.refresh": "Refresh",
     "invest.port.manage": "Record in the web version of Investments",
+    "invest.port.manageHere": "Record trades in Portfolio",
     "invest.port.shares": "{n} units",
     "invest.port.share": "{p} of total",
     "invest.port.atCost": "No price, at invested",

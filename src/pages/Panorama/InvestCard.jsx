@@ -67,6 +67,10 @@ export default function InvestCard({ setPage } = {}) {
     setOpening(true)
     openInvest({ aporte }).finally(() => setOpening(false))
   }
+  function openHere() {
+    if (full) queueInvestTab('portafolio', 'movimientos')
+    setPage?.('investments')
+  }
 
   // "Ver portafolio" abre la pantalla Inversiones dentro de moyiq (opción B).
   const goPage = () => setPage?.('investments')
@@ -153,8 +157,12 @@ export default function InvestCard({ setPage } = {}) {
         {snapshot.excluded > 0 && <p className={s.notice}>{t(snapshot.excluded === 1 ? 'invest.card.excluded.one' : 'invest.card.excluded.many', { n: snapshot.excluded })}</p>}
         {snapshot.status === 'live' && snapshot.missing > 0 && <p className={s.notice}>{t(snapshot.missing === 1 ? 'invest.card.missing.one' : 'invest.card.missing.many', { n: snapshot.missing })}</p>}
         <Sources snapshot={snapshot} t={t} />
-        {contrib.count > 0 && (demo && !full
-          ? <a className={s.aporte} href={`${INVEST_ORIGIN}/app/`} target="_blank" rel="noopener noreferrer">{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</a>
+        {contrib.count > 0 && (demo
+          // Demo (C8): abre Inversiones dentro de la app, nunca el login de
+          // invest.moyiq.app. Sin setPage no hay a dónde ir: texto sin enlace.
+          ? (setPage
+            ? <button type="button" className={s.aporte} onClick={openHere}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</button>
+            : <p className={s.meta}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</p>)
           : <button type="button" className={s.aporte} disabled={opening} onClick={() => open(aporteHandoff(contrib, settings, rate))}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</button>
         )}
         <div className={s.actions}>{cta}</div>
