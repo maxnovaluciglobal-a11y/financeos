@@ -31,4 +31,8 @@ describe('manifest de la PWA (MKT-13)', () => {
     expect(urls.length).toBeGreaterThanOrEqual(2)
     for (const u of urls) expect(pageFromSearch(u), u).toBeTruthy()
   })
+  it('declara lang es, el idioma de sus textos (C20: sin él el plugin publicaba "en")', () => {
+    expect(cfg).toMatch(/lang: 'es', dir: 'ltr'/)
+    expect(cfg).toMatch(/description: 'Finanzas personales/)
+  })
 })

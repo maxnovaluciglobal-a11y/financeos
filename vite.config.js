@@ -73,9 +73,12 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'favicon.ico', 'notification-96.png'],
       manifest: {
-        // Sin `lang`: el manifest solo localiza name/short_name, que son la marca
-        // (igual en los 4 idiomas). Declarar 'es' afirmaba un idioma que la app
-        // no tiene fijo; el idioma real lo pone <html lang> en tiempo de ejecución.
+        // `lang: 'es'` explícito (C20 de la auditoría de branding, 23-nov-2026):
+        // sin él vite-plugin-pwa publica su valor por defecto, "en", aunque la
+        // descripción, los accesos directos y las capturas del manifest están en
+        // español. La interfaz sigue en el idioma del usuario (<html lang> en
+        // tiempo de ejecución); esto solo describe los textos del manifest.
+        lang: 'es', dir: 'ltr',
         name: 'moyiq', short_name: 'moyiq',
         // PRD-9: descripción, id estable y categoría para la ficha de instalación.
         id: '/app/', description: 'Finanzas personales en dos monedas, con tus datos en tu dispositivo.',
