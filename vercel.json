@@ -2,7 +2,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "https://www.moyiq.app/",
+      "destination": "https://moyiq.app/",
       "permanent": true
     },
     {
@@ -29,6 +29,11 @@
       "source": "/dashboard",
       "destination": "/app/?open=dashboard",
       "permanent": true
+    },
+    {
+      "source": "/((?!app/|api/|_vercel/|\\.well-known/|favicon\\.svg|index\\.html).+)",
+      "destination": "/app/",
+      "permanent": false
     }
   ],
   "rewrites": [

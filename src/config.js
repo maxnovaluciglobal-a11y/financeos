@@ -20,7 +20,7 @@ const config = {
     tagline:     'Tu dinero, bajo control total',
     version:     '1.5.0',
     supportEmail:'support@moyiq.app',  // Aparece en Ajustes > soporte
-    website:     'https://www.moyiq.app',
+    website:     'https://moyiq.app',
     logoText:    'MI',                  // Iniciales para favicon SVG si no hay imagen
   },
 
