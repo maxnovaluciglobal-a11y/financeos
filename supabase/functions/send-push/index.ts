@@ -19,6 +19,7 @@ import { guardPushRequest } from "./requestGuard.ts";
 import { expiringTrialsPath, trialDaysLeft } from "./trialQuery.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
 import { sendWebPush as sendPush } from "../_shared/webPush.ts";
+import { licenseSubsPath, pickPushTargets } from "./pushTargets.ts";
 
 const SUPABASE_URL   = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -59,9 +60,10 @@ Deno.serve(withErrorReporting("send-push", async (req) => {
   const expiring: { key_hash: string; trial_ends_at: string }[] = licRes.ok ? await licRes.json() : [];
 
   for (const lic of expiring) {
-    const subsRes = await sbFetch(`push_subscriptions?key_hash=eq.${lic.key_hash}&select=*`);
+    // Solo servicios Web Push y 5 por licencia, las más recientes (pushTargets.ts).
+    const subsRes = await sbFetch(licenseSubsPath(lic.key_hash));
     if (!subsRes.ok) continue;
-    const subs: { id: string; endpoint: string; p256dh: string; auth: string; last_sent_at: string | null }[] = await subsRes.json();
+    const subs = pickPushTargets(await subsRes.json() as { id: string; endpoint: string; p256dh: string; auth: string; last_sent_at: string | null }[]);
 
     for (const s of subs) {
       const sentRecently = s.last_sent_at && Date.now() - new Date(s.last_sent_at).getTime() < 20 * 3600 * 1000;

@@ -22,13 +22,21 @@
 --        · gone (404/410): se borra.
 --        · failed (400/403, 429/5xx, red): suma 1; se borra recién con 8 fallos
 --          seguidos Y el primero hace 48 h o más. Un solo 403 (por ejemplo la
---          clave VAPID del servidor mal cargada) nunca borra nada: la función
---          responde 502 mientras tanto.
+--          clave VAPID del servidor mal cargada) nunca borra nada: si el 400/403
+--          se repite en 2 o más cuentas de un mismo servicio push donde nada
+--          llegó, la función responde 502 mientras tanto.
 --   4. invest_alert_push_targets (reemplaza la de 20261120000100): solo
 --      endpoints permitidos y como mucho 5 por cuenta, las más recientes.
 --
--- No borra filas existentes (las que no pasan el filtro dejan de recibir avisos
--- de invest-alerts-check). Requiere 20261020090000 y 20261120000100.
+--   5. public.push_subscriptions_prune(), solo service_role, y se corre una vez
+--      al final de esta migración: borra las filas que ya existían con un
+--      endpoint fuera de la lista y deja cada licencia (key_hash) con sus 10
+--      suscripciones más recientes. Así send-push (recordatorios de prueba) y
+--      el tope de 10 parten de una tabla limpia, sin esperar a que la licencia
+--      guarde una suscripción nueva. send-push además filtra con la misma lista
+--      (_shared/pushEndpoint.ts) y manda a 5 por licencia como mucho.
+--
+-- Requiere 20261020090000 y 20261120000100.
 -- Test: supabase/tests/push_subscription_guard.sql (job `db` del CI).
 
 -- 1. Lista de servicios push.
@@ -157,3 +165,33 @@ comment on function public.invest_alert_push_targets(uuid[]) is
   'Inversiones F4: suscripciones push (solo servicios push conocidos, 5 por cuenta, las más recientes) de las cuentas con alertas disparadas. Solo service_role (invest-alerts-check).';
 revoke all on function public.invest_alert_push_targets(uuid[]) from public, anon, authenticated;
 grant execute on function public.invest_alert_push_targets(uuid[]) to service_role;
+
+-- 5. Limpieza de las filas que ya existían: fuera de la lista y más de 10 por licencia.
+create or replace function public.push_subscriptions_prune()
+returns integer
+language plpgsql
+volatile
+security definer
+set search_path to 'public', 'extensions'
+as $function$
+declare v_bad int; v_over int;
+begin
+  delete from public.push_subscriptions where not public.push_endpoint_allowed(endpoint);
+  get diagnostics v_bad = row_count;
+  delete from public.push_subscriptions
+   where id in (
+     select id from (
+       select id, row_number() over (partition by key_hash order by created_at desc, id) as rn
+         from public.push_subscriptions
+     ) x
+     where x.rn > 10);
+  get diagnostics v_over = row_count;
+  return v_bad + v_over;
+end;
+$function$;
+comment on function public.push_subscriptions_prune() is
+  'Borra las suscripciones push con endpoint fuera de push_endpoint_allowed y deja 10 por licencia (las más recientes). Devuelve cuántas borró. Solo service_role; la corre la migración 20261123000100.';
+revoke all on function public.push_subscriptions_prune() from public, anon, authenticated;
+grant execute on function public.push_subscriptions_prune() to service_role;
+
+select public.push_subscriptions_prune();

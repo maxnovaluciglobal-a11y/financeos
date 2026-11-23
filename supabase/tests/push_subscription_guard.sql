@@ -159,5 +159,40 @@ end
 $$;
 reset role;
 
+-- 6. Limpieza de filas viejas (push_subscriptions_prune, la corre la migración):
+--    fuera de la lista se borran y cada licencia queda con sus 10 más recientes.
+do $$
+declare hb text := 'prune-' || gen_random_uuid(); n int; eps text;
+begin
+  insert into public.licenses (key_hash, plan, status, email) values (hb, 'pro', 'active', 'push-prune@t.local');
+  insert into public.push_subscriptions (key_hash, endpoint, p256dh, auth, created_at)
+  select hb, 'https://fcm.googleapis.com/fcm/send/old-' || i, 'p', 'k', '2026-01-01'::timestamptz + i * interval '1 minute'
+    from generate_series(1, 14) i;
+  insert into public.push_subscriptions (key_hash, endpoint, p256dh, auth, created_at) values
+    (hb, 'https://10.0.0.1/internal', 'p', 'k', '2026-06-01'),
+    (hb, 'http://fcm.googleapis.com/fcm/send/plain', 'p', 'k', '2026-06-01');
+  n := public.push_subscriptions_prune();
+  -- 2 fuera de la lista + 4 sobre el tope de esta licencia + la de attacker.example (sección 4).
+  assert n >= 6, format('borró %s (esperado 6 o más)', n);
+  select count(*), string_agg(replace(endpoint, 'https://fcm.googleapis.com/fcm/send/', ''), ',' order by created_at)
+    into n, eps from public.push_subscriptions where key_hash = hb;
+  assert n = 10, format('quedaron %s en la licencia (esperado 10)', n);
+  assert eps = 'old-5,old-6,old-7,old-8,old-9,old-10,old-11,old-12,old-13,old-14', format('no quedaron las más recientes: %s', eps);
+  assert not exists (select 1 from public.push_subscriptions where not public.push_endpoint_allowed(endpoint)), 'quedó un endpoint fuera de la lista';
+  assert public.push_subscriptions_prune() = 0, 'una segunda pasada borró algo';
+end
+$$;
+set local role authenticated;
+do $$
+begin
+  begin
+    perform public.push_subscriptions_prune();
+    raise exception 'FALLA: authenticated ejecutó push_subscriptions_prune';
+  exception when insufficient_privilege then null;
+  end;
+end
+$$;
+reset role;
+
 select 'OK: push_subscription_guard.sql' as resultado;
 rollback;

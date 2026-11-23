@@ -603,6 +603,12 @@
    "authenticated": "",
    "service_role": "X"
   },
+  "public.push_subscriptions_prune()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
   "public.push_subscriptions_record(uuid[], uuid[], uuid[], timestamp with time zone)": {
    "kind": "rpc",
    "anon": "",
