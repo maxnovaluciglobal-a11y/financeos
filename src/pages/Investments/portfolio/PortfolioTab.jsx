@@ -16,6 +16,7 @@ import { makeFmt, downloadText } from './format.js'
 import { DISPLAY_CCY_KEY, initialDisplayCcy } from './view.js'
 import { usePT } from './text.js'
 import { ConfirmSheet, ImportSheet, PositionSheet, TradeSheet } from './sheets.jsx'
+import { useTargets } from './targetsStore.js'
 import Positions from './Positions.jsx'
 import Movements from './Movements.jsx'
 import Dividends from './Dividends.jsx'
@@ -45,9 +46,10 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
   const disp = useMemo(() => displayRate(dispCcy, pb.market.latam, pb.rates.ars) || { ccy: 'USD', rate: 1, fallback: false, missing: dispCcy !== 'USD' }, [dispCcy, pb.market.latam, pb.rates.ars])
   const fmt = useMemo(() => makeFmt({ disp, currency: settings.currency, language: settings.language }), [disp, settings.currency, settings.language])
 
-  // Objetivos: solo en memoria mientras Inversiones está abierta (no hay
-  // tabla para guardarlos y llevan tickers: no se guardan en el dispositivo).
-  const [targets, setTargets] = useState(null)
+  // Objetivos: solo en memoria mientras la app está abierta (no hay tabla
+  // para guardarlos y llevan tickers: no se guardan en el dispositivo).
+  // Compartidos con Planificar › Aportes (targetsStore.js).
+  const [targets, setTargets] = useTargets()
 
   // Hojas abiertas.
   const [pos, setPos] = useState(null) // { prev, prefill } | null

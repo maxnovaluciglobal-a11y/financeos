@@ -6,7 +6,7 @@
 // nada de posiciones, operaciones ni tickers se guarda en el dispositivo. En
 // el demo, la tienda de ejemplo (demo/demoInvestBook.js), también en memoria.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { investData, newOperationUid } from '../../../core/investData.js'
+import { investData, newOperationUid, RULE_DEFAULTS } from '../../../core/investData.js'
 import { investApi } from '../../../core/investApi.js'
 import { createDemoInvestStore, demoInvestFundamentals, demoInvestFx, demoInvestQuotes } from '../../../demo/demoInvestBook.js'
 import { assetRates, currencyOf, readArsKind, toUsd } from '../../../utils/investValuation.js'
@@ -21,7 +21,7 @@ const readKey = (k) => { try { return localStorage.getItem(k) } catch { return n
 
 export function usePortfolioBook({ demo = false } = {}) {
   const store = demo ? demoStoreOnce() : investData
-  const [st, setSt] = useState({ phase: 'loading', holdings: [], ops: [], opsState: 'loading', capital: null, rule: { risk: 2, limit: 25 }, error: null })
+  const [st, setSt] = useState({ phase: 'loading', holdings: [], ops: [], opsState: 'loading', capital: null, rule: RULE_DEFAULTS, error: null })
   const [mkt, setMkt] = useState({ phase: 'loading', quotes: {}, latam: null, ars: null, at: null })
   const [arsKind, setArsKindState] = useState(() => readArsKind(readKey))
   const alive = useRef(true)
@@ -55,7 +55,7 @@ export function usePortfolioBook({ demo = false } = {}) {
       ops: o.ok ? o.data : [],
       opsState: o.ok ? 'ready' : o.error === 'table_missing' ? 'missing' : 'error',
       capital: p.ok ? p.data.capital : null,
-      rule: p.ok ? p.data.rule : { risk: 2, limit: 25 },
+      rule: p.ok ? p.data.rule : RULE_DEFAULTS,
       error: null,
     })
     loadMarket(h.data)

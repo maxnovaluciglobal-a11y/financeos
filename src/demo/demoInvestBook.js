@@ -10,6 +10,9 @@
 // dividendos trimestrales de VOO y AAPL.
 import { demoInvestRows } from './demoInvest.js'
 import { DEFAULT_USD_RATES } from '../pages/shared/constants.js'
+import { DEMO_CAPITAL } from './demoInvestHoy.js'
+import { RULE_DEFAULTS, validateRiskRule } from '../core/investData.js'
+import { validatePlans } from '../utils/investPlan.js'
 
 const ISO = (d) => d.toISOString().slice(0, 10)
 // Nunca una fecha futura (el día 12 del mes actual, visto el día 5).
@@ -64,10 +67,24 @@ export function demoInvestFx() {
   return { rates, sources: Object.fromEntries(Object.keys(rates).map(k => [k, 'fallback'])), updatedAt: null }
 }
 
+// Planes guardados de ejemplo (Planificar, F5): uno de la calculadora sobre
+// VOO (precio 550 y stop 500 de la posición, capital 20.000 de Resumen, regla 1 %: 4 unidades) y el aporte mensual
+// repartido entre las posiciones del ejemplo.
+export function demoInvestPlans(now = Date.now()) {
+  const day = 86400000
+  return [
+    { id: 'pdemo01', k: 'trade', ts: now - 2 * day, name: '', t: 'VOO', ccy: 'USD', entry: 550, stop: 500, units: 4, cap: DEMO_CAPITAL, risk: 1 },
+    { id: 'pdemo02', k: 'aporte', ts: now - 9 * day, name: '', m: 400, cad: 'monthly', lad: 'even', alloc: [{ t: 'VOO', p: 60 }, { t: 'AAPL', p: 25 }, { t: 'MSFT', p: 15 }], yrs: 10, rate: 5 },
+  ]
+}
+
 export function createDemoInvestStore({ now = Date.now } = {}) {
   let holdings = demoInvestHoldings()
   let ops = demoInvestOps(now())
-  let capital = null
+  // El mismo capital de referencia que Resumen en el demo.
+  let capital = DEMO_CAPITAL
+  let rule = { ...RULE_DEFAULTS }
+  let plans = demoInvestPlans(now())
   let next = 100
   const ok = (data) => Promise.resolve({ ok: true, data })
   return {
@@ -95,8 +112,21 @@ export function createDemoInvestStore({ now = Date.now } = {}) {
     },
     async deleteOperations(uids) { const s = new Set(uids); ops = ops.filter(o => !s.has(o.uid)); return { ok: true, data: { deleted: [...s] } } },
     listWatchlist: () => ok([]),
-    getProfile: () => ok({ capital, rule: { risk: 2, limit: 25 } }),
+    getProfile: () => ok({ capital, rule: { ...rule } }),
     async setCapital(v) { capital = Number(v) > 0 ? Number(v) : null; return { ok: true, data: { capital } } },
-    clear() { holdings = demoInvestHoldings(); ops = demoInvestOps(now()); capital = null },
+    async setRiskRule(input) {
+      const v = validateRiskRule(input)
+      if (!v.ok) return v
+      rule = v.value
+      return { ok: true, data: { ...rule } }
+    },
+    getPlans: () => ok(plans.map(p => ({ ...p }))),
+    async savePlans(list) {
+      const v = validatePlans(list)
+      if (!v.ok) return { ok: false, error: v.error }
+      plans = v.list
+      return { ok: true, data: plans.map(p => ({ ...p })) }
+    },
+    clear() { holdings = demoInvestHoldings(); ops = demoInvestOps(now()); capital = DEMO_CAPITAL; rule = { ...RULE_DEFAULTS }; plans = demoInvestPlans(now()) },
   }
 }

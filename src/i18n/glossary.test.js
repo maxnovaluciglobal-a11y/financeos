@@ -22,13 +22,17 @@ import flEs from '../pages/Investments/follow/strings.es.js'
 import flEn from '../pages/Investments/follow/strings.en.js'
 import flPt from '../pages/Investments/follow/strings.pt.js'
 import flDe from '../pages/Investments/follow/strings.de.js'
+import planEs from '../pages/Investments/planificar/strings.es.js'
+import planEn from '../pages/Investments/planificar/strings.en.js'
+import planPt from '../pages/Investments/planificar/strings.pt.js'
+import planDe from '../pages/Investments/planificar/strings.de.js'
 
 const DICTS = { es, en, pt, de }
 const LANGS = ['es', 'en', 'pt', 'de']
 // Los diccionarios por módulo de Inversiones (ficha, vista esencial,
-// Portafolio, Siguiendo) también cuentan: la misma cifra no puede tener dos nombres.
+// Portafolio, Siguiendo, Planificar) también cuentan: la misma cifra no puede tener dos nombres.
 const MODULE_DICTS = {
-  es: [assetEs, essEs, pfEs, flEs], en: [assetEn, essEn, pfEn, flEn], pt: [assetPt, essPt, pfPt, flPt], de: [assetDe, essDe, pfDe, flDe],
+  es: [assetEs, essEs, pfEs, flEs, planEs], en: [assetEn, essEn, pfEn, flEn, planEn], pt: [assetPt, essPt, pfPt, flPt, planPt], de: [assetDe, essDe, pfDe, flDe, planDe],
 }
 const ALL = Object.fromEntries(LANGS.map(l => [l, Object.assign({}, ...MODULE_DICTS[l], DICTS[l])]))
 
