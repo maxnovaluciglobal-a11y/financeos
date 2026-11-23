@@ -9,7 +9,7 @@ import { Bell, Pause, Pencil, Play, Trash2 } from 'lucide-react'
 import { alertStatus, alertsSummary, parseLegacyAlerts } from '../../../utils/investAlerts.js'
 import { fmtPx, fmtStamp } from '../asset/format.js'
 import { condLabel } from './AlertSheet.jsx'
-import { pctOrDash } from './shared.js'
+import { focusLater, pctOrDash } from './shared.js'
 import s from '../portfolio/portfolio.module.css'
 import f from './follow.module.css'
 
@@ -41,13 +41,19 @@ export default function AlertsPane({ t, d, demo, push, now = Date.now(), onNew, 
   const sum = alertsSummary(list, d.quotes, now)
 
   async function del(a) {
+    const i = list.findIndex(x => x.id === a.id)
+    const next = list[i + 1] || list[i - 1] || null
     const r = await d.deleteAlert(a)
     if (!r.ok) { onErr(r.error); return }
+    // La fila (y el botón con el foco) desaparece: el foco pasa a la papelera
+    // de la fila vecina o, si era la última, al título de la sección.
+    focusLater(next ? `${id}-del-${next.id}` : `${id}-h`)
     onSay(t('fl.al.deleted'), {
       label: t('fl.undo'),
       onAction: async () => {
-        const u = await d.saveAlert(null, a)
-        if (u.ok) { if (!a.active) await d.setAlertActive(u.data, false); onSay(t('fl.al.restored')) } else onErr(u.error)
+        // Vuelve tal cual (en pausa y con su último aviso): no suena de nuevo dentro de las 24 h.
+        const u = d.restoreAlert ? await d.restoreAlert(a) : await d.saveAlert(null, a)
+        if (u.ok) onSay(t('fl.al.restored')); else onErr(u.error)
       },
     })
   }
@@ -75,7 +81,7 @@ export default function AlertsPane({ t, d, demo, push, now = Date.now(), onNew, 
   return (
     <section className={s.section} aria-labelledby={`${id}-h`}>
       <div className={s.sectionHead}>
-        <h2 id={`${id}-h`} className={s.sectionTitle}>{t('fl.al.title')}</h2>
+        <h2 id={`${id}-h`} className={s.sectionTitle} tabIndex={-1}>{t('fl.al.title')}</h2>
         {!missing && d.alerts.phase !== 'error' && <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => onNew('')}>{t('fl.al.new')}</button>}
       </div>
       <p className={s.note}>{t('fl.al.intro')}</p>
@@ -131,7 +137,7 @@ export default function AlertsPane({ t, d, demo, push, now = Date.now(), onNew, 
                     {a.active ? <Pause size={18} strokeWidth={2} aria-hidden="true" /> : <Play size={18} strokeWidth={2} aria-hidden="true" />}
                   </button>
                   <button type="button" className={s.iconBtn} onClick={() => onEdit(a)} aria-label={t('fl.al.editT', { t: a.symbol })}><Pencil size={18} strokeWidth={2} aria-hidden="true" /></button>
-                  <button type="button" className={`${s.iconBtn} ${s.btnDanger}`} onClick={() => del(a)} aria-label={t('fl.al.deleteT', { t: a.symbol })}><Trash2 size={18} strokeWidth={2} aria-hidden="true" /></button>
+                  <button type="button" id={`${id}-del-${a.id}`} className={`${s.iconBtn} ${s.btnDanger}`} onClick={() => del(a)} aria-label={t('fl.al.deleteT', { t: a.symbol })}><Trash2 size={18} strokeWidth={2} aria-hidden="true" /></button>
                 </span>
               </li>
             )

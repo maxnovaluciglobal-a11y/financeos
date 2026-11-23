@@ -49,7 +49,7 @@ import { shows } from '../../utils/investView.js'
 import AlertSheet from './follow/AlertSheet.jsx'
 import { useFollowT } from './follow/dict.js'
 import { demoAlertList, demoSaveAlert } from './follow/useFollowData.js'
-import { usePushOffer } from './follow/shared.js'
+import { pushResultText, usePushOffer } from './follow/shared.js'
 import hub from './hub/hub.module.css'
 import s from './asset/asset.module.css'
 
@@ -202,8 +202,15 @@ export default function InvestAsset({ setPage }) {
   function onAlertSaved(r, prev, value) {
     setAlertSheet(false)
     const msg = ft('fl.sheet.saved', { t: value.symbol })
-    if (push.state === 'off') toast(`${msg} ${ft('fl.push.off')}`, 'ok', { label: ft('fl.push.enable'), onAction: async () => { if (await push.enable()) toast(ft('fl.push.ok')) } })
-    else toast(msg)
+    if (push.state === 'off') {
+      toast(`${msg} ${ft('fl.push.off')}`, 'ok', {
+        label: ft('fl.push.enable'),
+        onAction: async () => { const [txt, tone] = pushResultText(await push.enable(), ft); toast(txt, tone) },
+      })
+    } else if (push.state === 'noLicense' || push.state === 'unsupported') {
+      // La alerta se guardó, pero no va a llegar al teléfono: se dice.
+      toast(`${msg} ${ft(push.state === 'noLicense' ? 'fl.push.noLicense' : 'fl.push.unsupported')}`)
+    } else toast(msg)
   }
   function compareMore() {
     setSheet(null)
@@ -425,7 +432,7 @@ export default function InvestAsset({ setPage }) {
       <CompareSheet open={sheet === 'cmp'} onClose={() => setSheet(null)} a={ticker} b={benchT} rowsA={chartRows} phaseA={chartPhase} rowsB={bench.rows} phaseB={bench.phase}
         n={range.n} rangeLabel={t(`asset.range.long.${range.key}`)} demo={demo} onMore={compareMore} />
       <AlertSheet open={alertSheet} onClose={() => setAlertSheet(false)} symbol={ticker} lockSymbol quoteOf={quoteOf}
-        avgCost={hasPos && lots.length === 1 ? lots[0].cost : null} alerts={alerts} onSave={saveAlert} onSaved={onAlertSaved} />
+        avgCost={hasPos && lots.length === 1 ? lots[0].cost : null} alerts={alerts} onSave={saveAlert} onSaved={onAlertSaved} pushState={push.state} />
     </div>
   )
 }

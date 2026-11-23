@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   INVEST_TABS, LEGACY_TABS, normTab, PORT_TABS, PORT_TAB_KEY, bootPortTab, rememberPortTab, queueInvestTab, initialTab, tabFromOpen, tabFromSearch, tabKeyTarget, normAssetTicker, bootTab, rememberTab,
   openAsset, currentAssetTicker, TAB_KEY, ASSET_PAGE, __resetInvestNav,
-  assetView, rememberAssetView, ASSET_VIEW_TABS, ASSET_VIEW_RANGES,
+  assetView, rememberAssetView, ASSET_VIEW_TABS, ASSET_VIEW_RANGES, bootFollowTab, followFromOpen, FOLLOW_TAB_KEY,
 } from './investNav.js'
 import { pageFromSearch } from './deepLink.js'
 
@@ -144,5 +144,27 @@ describe('enlace que vuelve de OAuth o del correo', () => {
     // La vuelta de Google llega sin la query; initialSearch recupera el destino.
     expect(deepLink.initialSearch('', store, 2000, { local: mem(), hash: '' })).toBe('?open=invest-siguiendo')
     expect(bootTab({ storage: mem() })).toBe('siguiendo')
+  })
+})
+
+describe('aviso de una alerta de precio (?open=invest-alertas)', () => {
+  beforeEach(() => { __resetInvestNav(); globalThis.history = fakeHistory() })
+  it('abre Siguiendo › Alertas aunque la sub-pestaña guardada sea otra', () => {
+    expect(pageFromSearch('?open=invest-alertas')).toBe('investments')
+    expect(tabFromOpen('invest-alertas')).toBe('siguiendo')
+    expect(followFromOpen('invest-alertas')).toBe('alertas')
+    expect(followFromOpen('invest-siguiendo')).toBeNull()
+    const st = mem(); st.setItem(FOLLOW_TAB_KEY, 'comparar')
+    expect(bootTab({ search: '?open=invest-alertas', storage: mem() })).toBe('siguiendo')
+    expect(bootFollowTab({ storage: st })).toBe('alertas')
+    expect(globalThis.history.state).toMatchObject({ invTab: 'siguiendo', invFollow: 'alertas' })
+  })
+  it('una vez por carga; si la entrada del historial ya tiene pestaña, manda esa', () => {
+    expect(bootTab({ search: '?open=invest-alertas', storage: mem() })).toBe('siguiendo')
+    bootFollowTab({ storage: mem() })
+    __resetInvestNav()
+    globalThis.history.state = { invTab: 'mercado' }
+    expect(bootTab({ search: '?open=invest-alertas', storage: mem() })).toBe('mercado')
+    expect(bootFollowTab({ storage: mem() })).toBe('lista')
   })
 })

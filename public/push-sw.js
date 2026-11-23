@@ -95,8 +95,17 @@ self.addEventListener('notificationclick', (event) => {
   const url = (event.notification.data && event.notification.data.url) || '/app/';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const target = new URL(url, self.location.origin).href;
       for (const client of clients) {
-        if (client.url.includes('/app/') && 'focus' in client) return client.focus();
+        if (!client.url.includes('/app/') || !('focus' in client)) continue;
+        // App ya abierta (pestaña o PWA en segundo plano): se enfoca y, si el
+        // aviso apunta a otro lugar (?open=invest-alertas), se lleva ahí. Sin
+        // esto la persona quedaba en la pantalla en la que estaba.
+        if (client.url === target || target === new URL('/app/', self.location.origin).href) return client.focus();
+        return client.focus().then((c) => {
+          const w = c || client;
+          return 'navigate' in w ? w.navigate(target).catch(() => w) : w;
+        });
       }
       if (self.clients.openWindow) return self.clients.openWindow(url);
     })

@@ -21,7 +21,7 @@ import ListPane from './ListPane.jsx'
 import AlertsPane, { PushOffer } from './AlertsPane.jsx'
 import { compareChart } from './ComparePane.jsx'
 import { __resetDemoFollow, demoAlertList, demoSaveAlert } from './useFollowData.js'
-import { alertErrorKey, pushState } from './shared.js'
+import { alertErrorKey, hasLiveSubscription, pushResultText, pushState } from './shared.js'
 
 const L = { es, en, pt, de }
 const vars = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort()
@@ -156,10 +156,27 @@ describe('piezas de Siguiendo', () => {
     expect(pushState({ demo: true })).toBe('demo')
     expect(pushState({ supported: false, hasKey: true, on: false })).toBe('unsupported')
     expect(pushState({ supported: true, hasKey: false, on: false })).toBe('noLicense')
-    expect(pushState({ supported: true, hasKey: true, on: true })).toBe('on')
-    expect(pushState({ supported: true, hasKey: true, on: false })).toBe('off')
+    expect(pushState({ supported: true, hasKey: true, on: true, permission: 'granted' })).toBe('on')
+    expect(pushState({ supported: true, hasKey: true, on: false, permission: 'granted' })).toBe('off')
+    // Permiso revocado en el navegador: vuelve a ofrecerse "Activar avisos".
+    expect(pushState({ supported: true, hasKey: true, on: true, permission: 'denied' })).toBe('off')
+    expect(pushState({ supported: true, hasKey: true, on: true, permission: 'default' })).toBe('off')
     const on = text(renderToStaticMarkup(h(PushOffer, { t, push: { state: 'on', enable: noop } })))
     expect(on).toContain(t('fl.push.on'))
+  })
+  it('la suscripción borrada en el servidor o en el navegador apaga el estado', async () => {
+    const sw = (sub) => ({ ready: Promise.resolve({ pushManager: { getSubscription: async () => sub } }) })
+    expect(await hasLiveSubscription({ sw: sw({ endpoint: 'x' }) })).toBe(true)
+    expect(await hasLiveSubscription({ sw: sw(null) })).toBe(false)
+    expect(await hasLiveSubscription({ sw: null })).toBeNull()
+    expect(await hasLiveSubscription({ sw: { ready: new Promise(() => {}) }, timeoutMs: 5 })).toBeNull()
+  })
+  it('el resultado de activar avisos siempre se cuenta (también el error)', () => {
+    expect(pushResultText({ ok: true }, t)).toEqual([t('fl.push.ok'), 'ok'])
+    expect(pushResultText({ ok: false, error: 'permission_denied' }, t)[0]).toBe(t('settings.push.permissionDenied'))
+    expect(pushResultText({ ok: false, error: 'failed' }, t)).toEqual([t('settings.push.genericError'), 'error'])
+    expect(pushResultText({ ok: false, error: 'no_license' }, t)[0]).toBe(t('fl.push.noLicense'))
+    expect(pushResultText({ ok: false, error: 'unsupported' }, t)[0]).toBe(t('fl.push.unsupported'))
   })
   it('el gráfico de Comparar parte de 0 % y comparte el eje de fechas', () => {
     const c = compareChart({ A: [{ ts: 0, pct: 0 }, { ts: 10, pct: 0.2 }], B: [{ ts: 5, pct: 0 }, { ts: 10, pct: -0.1 }] }, 100, 100, 0)

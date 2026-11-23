@@ -73,6 +73,25 @@ export function createInvestAlerts({ client = authClient, isDemo = isDemoUrl, ti
         return { ok: true, data: a }
       } catch (e) { return fail(net(e)) }
     },
+    // Deshacer un borrado: la misma alerta, activa o en pausa y con su último
+    // aviso (si no, una alerta que ya sonó hoy volvería a sonar antes de 24 h).
+    async restore(alert) {
+      const v = validateAlert(alert || {})
+      if (!v.ok) return v
+      if (mem.list && isDuplicate(mem.list, v.value)) return fail('duplicate')
+      if (mem.list && mem.list.length >= ALERT_LIMIT) return fail('limit')
+      const s = await guardWrite()
+      if (s.error) return fail(s.error)
+      const ms = alert.lastTriggeredAt ? Date.parse(alert.lastTriggeredAt) : NaN
+      const row = { user_id: s.uid, ...v.value, active: alert.active !== false, last_triggered_at: Number.isFinite(ms) ? new Date(ms).toISOString() : null }
+      try {
+        const res = await run(client.from('invest_alerts').insert(row).select(ALERT_COLUMNS))
+        if (res.error) return fail(dbError(res.error, 'save_failed'))
+        const a = fromRow(Array.isArray(res.data) ? res.data[0] : res.data)
+        if (a && mem.list) mem.list = [...mem.list, a]
+        return { ok: true, data: a }
+      } catch (e) { return fail(net(e)) }
+    },
     // Editar nivel o condición vuelve a armar la alerta (borra el último aviso).
     async update(id, input) {
       const v = validateAlert(input)

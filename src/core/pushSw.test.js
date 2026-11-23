@@ -67,3 +67,45 @@ describe('push-sw.js', () => {
     expect(SRC).not.toMatch(/Tenés|[¡!]'/)
   })
 })
+
+describe('push-sw.js: tocar el aviso', () => {
+  async function click(url, windows, { navigate = true } = {}) {
+    const listeners = {}
+    const opened = []
+    const navigated = []
+    const clients = windows.map(u => {
+      const c = { url: u, focused: false, focus: async () => { c.focused = true; return c } }
+      if (navigate) c.navigate = async (to) => { navigated.push(to); return c }
+      return c
+    })
+    const self = {
+      location: { origin: 'https://app.moyiq.app' },
+      navigator: { language: 'es' },
+      addEventListener: (n, f) => { listeners[n] = f },
+      registration: {},
+      clients: { matchAll: async () => clients, openWindow: async (u) => { opened.push(u) } },
+    }
+    new Function('self', SRC)(self)
+    let p
+    listeners.notificationclick({ notification: { close: () => {}, data: { url } }, waitUntil: (x) => { p = x } })
+    await p
+    return { opened, navigated, clients }
+  }
+  it('con la app abierta, la enfoca y la lleva al destino del aviso', async () => {
+    const r = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/'])
+    expect(r.clients[0].focused).toBe(true)
+    expect(r.navigated).toEqual(['https://app.moyiq.app/app/?open=invest-alertas'])
+    expect(r.opened).toEqual([])
+  })
+  it('un aviso sin destino propio solo enfoca; sin app abierta, abre una ventana', async () => {
+    const r = await click('/app/', ['https://app.moyiq.app/app/?x=1'])
+    expect(r.navigated).toEqual([])
+    expect(r.clients[0].focused).toBe(true)
+    const r2 = await click('/app/?open=invest-alertas', [])
+    expect(r2.opened).toEqual(['/app/?open=invest-alertas'])
+  })
+  it('sin navigate (navegador viejo) igual enfoca', async () => {
+    const r = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/'], { navigate: false })
+    expect(r.clients[0].focused).toBe(true)
+  })
+})

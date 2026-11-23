@@ -160,7 +160,10 @@ export function slicePeriod(rows, months) {
   const c = withTs(rows)
   if (!c.length) return []
   const end = new Date(c[c.length - 1].ts * 1000)
-  const from = Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - months, end.getUTCDate()) / 1000
+  // El día se limita al último del mes destino: 31-mar − 1 mes = 28/29-feb, no 3-mar.
+  const y = end.getUTCFullYear(), mo = end.getUTCMonth() - months
+  const last = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate()
+  const from = Date.UTC(y, mo, Math.min(end.getUTCDate(), last)) / 1000
   return c.filter(x => x.ts >= from - DAY / 2)
 }
 

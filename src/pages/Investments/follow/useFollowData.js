@@ -160,6 +160,18 @@ export function useFollowData({ demo = false, full = false } = {}) {
     if (r.ok) setAlerts(s => ({ ...s, list: s.list.filter(x => x.id !== a.id) }))
     return r
   }, [demo])
+  // Deshacer un borrado: vuelve tal cual estaba (pausa y último aviso incluidos).
+  const restoreAlert = useCallback(async (a) => {
+    if (demo) {
+      const st = demoStore()
+      if (!st.alerts.some(x => x.id === a.id)) st.alerts = [...st.alerts, { ...a }]
+      setAlerts({ phase: 'ready', list: st.alerts, error: null })
+      return { ok: true, demo: true, data: a }
+    }
+    const r = await investAlerts.restore(a)
+    if (r.ok) setAlerts(s => ({ ...s, phase: 'ready', list: [...s.list, r.data] }))
+    return r
+  }, [demo])
   const setAlertActive = useCallback(async (a, active) => {
     if (demo) {
       const st = demoStore()
@@ -181,7 +193,7 @@ export function useFollowData({ demo = false, full = false } = {}) {
   return {
     watch, alerts, quotes, quotesFailed, hist,
     follow, unfollow, refollow,
-    saveAlert, deleteAlert, setAlertActive, importAlerts,
+    saveAlert, deleteAlert, restoreAlert, setAlertActive, importAlerts,
     reload: () => { setHist(h => Object.fromEntries(Object.entries(h).filter(([, v]) => v != null))); setRetry(n => n + 1) },
   }
 }

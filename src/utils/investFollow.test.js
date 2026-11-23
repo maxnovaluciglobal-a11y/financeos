@@ -269,3 +269,26 @@ describe('navegación a Siguiendo', () => {
     expect(takeQueuedCompare()).toBeNull()
   })
 })
+
+describe('revisión 23-nov', () => {
+  it('slicePeriod: fin de mes no se desborda (31-mar − 1M empieza el 28-feb)', () => {
+    const days = []
+    for (let d = new Date('2026-01-15T00:00:00Z'); d <= new Date('2026-03-31T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1)) days.push(d.toISOString().slice(0, 10))
+    const rows = days.map((date, i) => ({ date, open: 1 + i, high: 1 + i, low: 1 + i, close: 1 + i, volume: 1 }))
+    const out = slicePeriod(rows, 1)
+    expect(out[0].date).toBe('2026-02-28')
+    expect(slicePeriod(rows, 2)[0].date).toBe('2026-01-31')
+  })
+  it('deshacer el borrado de una alerta la devuelve con su pausa y su último aviso', async () => {
+    const c = fakeClient()
+    const api = createInvestAlerts({ client: c, isDemo: () => false })
+    await api.list()
+    const last = '2026-11-23T10:00:00.000Z'
+    const r = await api.restore({ symbol: 'AAPL', condition: 'above', threshold: 200, active: false, lastTriggeredAt: last })
+    expect(r.ok).toBe(true)
+    expect(c.db.rows.find(x => x.id === r.data.id)).toMatchObject({ user_id: 'u1', active: false, last_triggered_at: last })
+    const r2 = await api.restore({ symbol: 'MSFT', condition: 'below', threshold: 100, lastTriggeredAt: 'basura' })
+    expect(c.db.rows.find(x => x.id === r2.data.id)).toMatchObject({ active: true, last_triggered_at: null })
+    expect(await api.restore({ symbol: 'AAPL', condition: 'above', threshold: 200 })).toEqual({ ok: false, error: 'duplicate' })
+  })
+})

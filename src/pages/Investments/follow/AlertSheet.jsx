@@ -17,7 +17,7 @@ const condLabel = (t, a, ccy) => (a.condition === 'pct_move'
   : t(`fl.al.cond.${a.condition}`, { lvl: fmtPx(a.threshold, ccy) }))
 export { condLabel }
 
-export default function AlertSheet({ open, onClose, prev = null, symbol = '', lockSymbol = false, quoteOf, avgCost = null, alerts = [], onSave, onSaved }) {
+export default function AlertSheet({ open, onClose, prev = null, symbol = '', lockSymbol = false, quoteOf, avgCost = null, alerts = [], onSave, onSaved, pushState = null }) {
   const { t } = useFollowT()
   const id = useId()
   const titleRef = useRef(null)
@@ -51,6 +51,9 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
 
   const quote = q.sym === sym ? q.data : null
   const ccy = quote?.currency || 'USD'
+  // La moneda solo se nombra cuando se conoce: mientras carga o sin precio, la
+  // etiqueta no dice USD (el nivel va en la moneda del activo).
+  const ccyKnown = q.sym === sym && q.phase === 'ready' && !!quote?.currency
   const price = Number(quote?.price) > 0 ? Number(quote.price) : null
   const pct = form.condition === 'pct_move'
   const sugg = suggestLevels({ condition: form.condition, price, avgCost, low52: quote?.low52, high52: quote?.high52 })
@@ -99,7 +102,7 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
           {err('symbol') && <p id={`${id}-symbol-err`} className={s.error}>{err('symbol')}</p>}
         </div>
 
-        <fieldset className={s.field} style={{ border: 0, margin: 0, padding: 0 }}>
+        <fieldset className={s.field} style={{ border: 0, margin: 0, padding: 0 }} aria-describedby={fields.condition ? `${id}-condition-err` : undefined}>
           <legend className={s.fieldLabel}>{t('fl.sheet.cond')}</legend>
           <div className={s.choices}>
             {ALERT_CONDITIONS.map(c => (
@@ -109,15 +112,14 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
               </label>
             ))}
           </div>
-          {err('condition') && <p className={s.error}>{err('condition')}</p>}
+          {err('condition') && <p id={`${id}-condition-err`} className={s.error}>{err('condition')}</p>}
         </fieldset>
 
         <div className={s.field}>
-          <label htmlFor={`${id}-lvl`} className={s.fieldLabel}>{pct ? t('fl.sheet.levelPct') : t('fl.sheet.level', { ccy })}</label>
+          <label htmlFor={`${id}-lvl`} className={s.fieldLabel}>{pct ? t('fl.sheet.levelPct') : ccyKnown ? t('fl.sheet.level', { ccy }) : t('fl.sheet.levelNoCcy')}</label>
           <input id={`${id}-lvl`} className={s.input} value={form.threshold} onChange={set('threshold')} inputMode="decimal" autoComplete="off"
             aria-invalid={fields.threshold ? 'true' : undefined} aria-describedby={desc('threshold', `${id}-lvl-hint`)} />
-          <p id={`${id}-lvl-hint`} className={s.hint} role="status">{hint}</p>
-          {already && <p className={s.hint}>{t('fl.sheet.hint.already')}</p>}
+          <p id={`${id}-lvl-hint`} className={s.hint} role="status">{hint}{already && <> {t('fl.sheet.hint.already')}</>}</p>
           {err('threshold') && <p id={`${id}-threshold-err`} className={s.error}>{err('threshold')}</p>}
         </div>
 
@@ -143,6 +145,7 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
           </div>
         )}
 
+        {pushState === 'off' && !prev && <p className={s.hint}>{t('fl.sheet.pushHint')}</p>}
         {msg && <p className={s.error} role="alert">{msg}</p>}
         <div className={s.actionsRow} style={{ justifyContent: 'flex-end' }}>
           <button type="button" className={s.btn} onClick={onClose}>{t('fl.sheet.cancel')}</button>

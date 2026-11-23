@@ -9,11 +9,13 @@ import { TICKER_RE, TREND_FILTERS, byTrend, followRow, trendCounts } from '../..
 import { alertsBySymbol } from '../../../utils/investAlerts.js'
 import { fmtDecimal } from '../../../utils/index.js'
 import { fmtPx } from '../asset/format.js'
-import { dirOf, pctOrDash } from './shared.js'
+import { dirOf, focusLater, pctOrDash } from './shared.js'
 import s from '../portfolio/portfolio.module.css'
 import f from './follow.module.css'
 
 const ICON = { up: ArrowUp, down: ArrowDown, flat: Equal }
+// Columnas técnicas de la Vista completa, con su explicación en la leyenda.
+const LEGEND = ['trend', 'rsi', 'macd', 'vol', 'range']
 export function Day({ v }) {
   if (v == null) return <span className={s.rowSub}>—</span>
   const dir = dirOf(v)
@@ -63,8 +65,12 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
   }
   async function remove(tk) {
     const idx = d.watch.list.indexOf(tk)
+    const si = shown.findIndex(r => r.t === tk)
+    const next = shown[si + 1]?.t || shown[si - 1]?.t || null
     const r = await d.unfollow(tk)
     if (!r.ok) { onErr(r.error); return }
+    // La fila desaparece con el botón que tenía el foco: pasa a la vecina o al título.
+    focusLater(next ? rmId(next) : `${id}-h`)
     onSay(t('fl.list.removed', { t: tk }), { label: t('fl.undo'), onAction: () => d.refollow(tk, idx) })
   }
 
@@ -78,8 +84,9 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
       </button>
     )
   }
+  const rmId = (tk) => `${id}-rm-${tk}`
   const removeBtn = (tk) => (
-    <button type="button" className={s.iconBtn} onClick={() => remove(tk)} aria-label={t('fl.row.remove', { t: tk })}>
+    <button type="button" id={rmId(tk)} className={s.iconBtn} onClick={() => remove(tk)} aria-label={t('fl.row.remove', { t: tk })}>
       <X size={18} strokeWidth={2} aria-hidden="true" />
     </button>
   )
@@ -88,7 +95,7 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
   return (
     <section className={s.section} aria-labelledby={`${id}-h`}>
       <div className={s.sectionHead}>
-        <h2 id={`${id}-h`} className={s.sectionTitle}>{t('fl.list.title')}</h2>
+        <h2 id={`${id}-h`} className={s.sectionTitle} tabIndex={-1}>{t('fl.list.title')}</h2>
       </div>
       <p className={s.note}>{full ? t('fl.list.introFull') : t('fl.list.intro')}</p>
 
@@ -159,11 +166,7 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
                 <th scope="col">{t('fl.col.asset')}</th>
                 <th scope="col">{t('fl.col.price')}</th>
                 <th scope="col">{t('fl.col.day')}</th>
-                <th scope="col" title={t('fl.col.trendHint')}>{t('fl.col.trend')}</th>
-                <th scope="col" title={t('fl.col.rsiHint')}>{t('fl.col.rsi')}</th>
-                <th scope="col" title={t('fl.col.macdHint')}>{t('fl.col.macd')}</th>
-                <th scope="col" title={t('fl.col.volHint')}>{t('fl.col.vol')}</th>
-                <th scope="col" title={t('fl.col.rangeHint')}>{t('fl.col.range')}</th>
+                {LEGEND.map(k => <th key={k} scope="col">{t(`fl.col.${k}`)}</th>)}
                 <th scope="col"><span className={s.srOnly}>{t('fl.col.actions')}</span></th>
               </tr>
             </thead>
@@ -181,9 +184,10 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
                     <td><Cell t={t} scored={r.scored} missing={missing}>{r.vol == null ? t('fl.cell.na') : pctOrDash(r.vol, { signed: true, decimals: 0 })}</Cell></td>
                     <td>
                       {r.range ? (
-                        <span className={f.range} title={t('fl.range.title', { lo: fmtPx(r.range.lo, r.ccy || 'USD'), hi: fmtPx(r.range.hi, r.ccy || 'USD') })}>
+                        <span className={f.range}>
                           <span className={f.rangeBar} aria-hidden="true"><span className={f.rangeDot} style={{ left: `${(r.range.pos * 100).toFixed(1)}%` }} /></span>
                           {t('fl.range.pos', { pct: pctOrDash(r.range.pos, { decimals: 0 }) })}
+                          <span className={s.srOnly}> ({t('fl.range.title', { lo: fmtPx(r.range.lo, r.ccy || 'USD'), hi: fmtPx(r.range.hi, r.ccy || 'USD') })})</span>
                         </span>
                       ) : <Cell t={t} scored={r.scored} missing={missing}>{t('fl.cell.na')}</Cell>}
                     </td>
@@ -195,6 +199,15 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
           </table>
         </div>
       ) : <p className={s.note}>{t('fl.filter.none')}</p>)}
+
+      {rows.length > 0 && full && (
+        // Qué significa cada columna, visible (en el teléfono no hay "title").
+        <dl className={f.legend} aria-label={t('fl.legend.label')}>
+          {LEGEND.map(k => (
+            <div key={k} className={f.legendItem}><dt className={f.legendTerm}>{t(`fl.col.${k}`)}</dt><dd>{t(`fl.col.${k}Hint`)}</dd></div>
+          ))}
+        </dl>
+      )}
 
       {rows.length > 0 && <p className={s.note}>{full ? t('fl.list.footFull') : t('fl.list.foot')} {t('fl.source')}</p>}
     </section>

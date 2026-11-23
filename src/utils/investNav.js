@@ -13,7 +13,8 @@
 // cuenta, core/deviceOwner.js); el ticker de la ficha NO se guarda en el
 // dispositivo.
 // Enlaces: ?open=invest-resumen | invest-portafolio | invest-siguiendo |
-// invest-planificar | invest-mercado (utils/deepLink.js). Los viejos
+// invest-planificar | invest-mercado | invest-alertas (Siguiendo › Alertas,
+// el aviso push de una alerta) (utils/deepLink.js). Los viejos
 // invest-hoy e invest-lista redirigen a Resumen y Siguiendo (LEGACY_TABS). La search que se
 // lee es la que resolvió deepLink.initialSearch() al arrancar, así el enlace
 // sobrevive a la vuelta de OAuth o del correo de confirmación.
@@ -54,10 +55,24 @@ export function normAssetTicker(t) {
   return TICKER_RE.test(s) ? s : null
 }
 
+// Enlaces a una sub-pestaña: ?open=invest-alertas (el aviso push de una
+// alerta de precio) abre Siguiendo › Alertas.
+export const OPEN_SUBS = { alertas: { tab: 'siguiendo', follow: 'alertas' } }
+const openName = (open) => /^invest-([a-z]+)$/.exec(String(open || ''))?.[1] ?? null
+
 // ?open=invest-<pestaña> → pestaña, o null.
 export function tabFromOpen(open) {
-  const m = /^invest-([a-z]+)$/.exec(String(open || ''))
-  return m ? normTab(m[1]) : null
+  const m = openName(open)
+  if (!m) return null
+  return Object.prototype.hasOwnProperty.call(OPEN_SUBS, m) ? OPEN_SUBS[m].tab : normTab(m)
+}
+// ?open=invest-<sub> → sub-pestaña de Siguiendo pedida por el enlace, o null.
+export function followFromOpen(open) {
+  const m = openName(open)
+  return m && Object.prototype.hasOwnProperty.call(OPEN_SUBS, m) ? OPEN_SUBS[m].follow : null
+}
+export function followFromSearch(search) {
+  try { return followFromOpen(new URLSearchParams(search || '').get('open')) } catch { return null }
 }
 export function tabFromSearch(search) {
   try { return tabFromOpen(new URLSearchParams(search || '').get('open')) } catch { return null }
@@ -106,7 +121,15 @@ const bootSearch = () => bootInitialSearch() ?? (typeof location !== 'undefined'
 export function bootTab({ search = bootSearch(), storage = null } = {}) {
   if (queued) { const t = queued.tab; queued = queued.sub ? { sub: queued.sub } : null; mergeHistoryState({ invTab: t }); return t }
   const linkTab = linkUsed ? null : tabFromSearch(search)
+  const linkFollow = linkUsed ? null : followFromSearch(search)
   linkUsed = true
+  // Como cualquier enlace: si esta entrada del historial ya tiene pestaña
+  // (recarga, Atrás), manda esa. Si no, el aviso abre Siguiendo › Alertas.
+  if (linkFollow && !normTab(readHistoryState()?.invTab)) {
+    followQueued = { sub: linkFollow, compare: null }
+    mergeHistoryState({ invTab: linkTab })
+    return linkTab
+  }
   let saved = null
   try { saved = storage?.getItem(TAB_KEY) ?? null } catch { saved = null }
   return initialTab({ state: readHistoryState(), linkTab, saved })

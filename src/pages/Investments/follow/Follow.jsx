@@ -14,7 +14,7 @@ import { shows } from '../../../utils/investView.js'
 import { demoFollowQuotes } from '../../../demo/demoInvestFollow.js'
 import { useFollowT } from './dict.js'
 import { useFollowData } from './useFollowData.js'
-import { alertErrorKey, safeStorage, usePushOffer } from './shared.js'
+import { alertErrorKey, pushResultText, safeStorage, usePushOffer } from './shared.js'
 import AlertSheet from './AlertSheet.jsx'
 import ListPane from './ListPane.jsx'
 import AlertsPane from './AlertsPane.jsx'
@@ -50,7 +50,12 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
 
   const quoteOf = useCallback(async (sym) => (demo ? demoFollowQuotes([sym])[sym] || null : (d.quotes[sym] || await investApi.quote(sym))), [demo, d.quotes])
   // La campana de Mi lista: con alertas, lleva a Alertas; sin, abre la hoja.
-  const onBell = (tk, has) => { if (has) setSub('alertas'); else setSheet({ prev: null, symbol: tk }) }
+  // Al ir a Alertas el panel de Mi lista se desmonta: el foco pasa a la pestaña.
+  const onBell = (tk, has) => {
+    if (!has) { setSheet({ prev: null, symbol: tk }); return }
+    setSub('alertas')
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => refs.current.alertas?.focus())
+  }
   async function onFollow(tk) {
     const r = await d.follow(tk)
     if (!r.ok) { sayErr(r.error); return }
@@ -58,7 +63,16 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
   }
   function onSaved(r, prev, value) {
     setSheet(null)
-    say(prev ? t('fl.sheet.updated') : t('fl.sheet.saved', { t: value.symbol }))
+    if (prev) { say(t('fl.sheet.updated')); return }
+    const msg = t('fl.sheet.saved', { t: value.symbol })
+    // Creada desde Mi lista sin avisos activos: sin push la alerta no llega.
+    if (push.state === 'off') {
+      say(`${msg} ${t('fl.push.off')}`, {
+        label: t('fl.push.enable'),
+        onAction: async () => { const [txt, tone] = pushResultText(await push.enable(), t); showToast?.(txt, tone) },
+      })
+    } else if (push.state === 'noLicense' || push.state === 'unsupported') say(`${msg} ${t(push.state === 'noLicense' ? 'fl.push.noLicense' : 'fl.push.unsupported')}`)
+    else say(msg)
   }
 
   if (!ready) return <p className={s.note} role="status">{t('invest.card.loading')}</p>
@@ -84,7 +98,7 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
       </div>
 
       <AlertSheet open={!!sheet} onClose={() => setSheet(null)} prev={sheet?.prev || null} symbol={sheet?.symbol || ''}
-        quoteOf={quoteOf} alerts={d.alerts.list} onSave={d.saveAlert} onSaved={onSaved} />
+        quoteOf={quoteOf} alerts={d.alerts.list} onSave={d.saveAlert} onSaved={onSaved} pushState={push.state} />
     </div>
   )
 }

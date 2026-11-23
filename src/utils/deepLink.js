@@ -18,6 +18,7 @@ const PAGE_BY_OPEN = {
   invest: 'investments', 'invest-resumen': 'investments', 'invest-portafolio': 'investments', 'invest-siguiendo': 'investments',
   'invest-hoy': 'investments', 'invest-lista': 'investments', // nombres de antes del 20-nov-2026: redirigen
   'invest-planificar': 'investments', 'invest-mercado': 'investments',
+  'invest-alertas': 'investments', // Siguiendo › Alertas (aviso push de una alerta de precio)
 }
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
