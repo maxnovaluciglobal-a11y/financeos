@@ -17,6 +17,7 @@
 // Secrets necesarios (Supabase → Edge Functions → Secrets):
 //   NURTURE_RESEND_API_KEY                  ← MISMO secret que usan las otras nurture — NO RESEND_API_KEY (ese devuelve 403, ver auth-email-hook/index.ts)
 //   NURTURE_FROM_EMAIL_INVEST                ← "moyiq Inversiones <invest@moyiq.app>" (el nombre lo fija brandedSender de _shared/emailSender.ts; fallback hardcodeado si no está seteado)
+//   INVEST_APP_URL                          ← opcional; base de los botones (por defecto DEFAULT_INVEST_APP_URL, Inversiones en la app). Se conservan sus utm_*
 //   CRON_SECRET                             ← mismo secreto compartido (private.get_secret('cron_secret'))
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY ← los inyecta Supabase solo
 
@@ -28,6 +29,7 @@ import {
   fetchLeadById,
   markSent,
   processWelcome,
+  DEFAULT_INVEST_APP_URL,
   type NurtureEmailConfig,
 } from "./nurtureEmailLogic.ts";
 import { secretEquals } from "../_shared/secretEquals.ts";
@@ -41,7 +43,9 @@ const config: NurtureEmailConfig = {
   resendApiKey: resolveResendApiKey((name) => Deno.env.get(name)),
   fromEmail: brandedSender(Deno.env.get("NURTURE_FROM_EMAIL_INVEST"), "invest@moyiq.app", INVEST_SENDER_NAME),
   cronSecret: Deno.env.get("CRON_SECRET"),
-  landingUrl: Deno.env.get("INVEST_LANDING_URL") ?? "https://invest.moyiq.app",
+  // C6 (23-nov-2026): los botones abren Inversiones dentro de la app. El
+  // secreto viejo INVEST_LANDING_URL (invest.moyiq.app) ya no se lee.
+  landingUrl: Deno.env.get("INVEST_APP_URL") || DEFAULT_INVEST_APP_URL,
 };
 
 function json(body: unknown, status: number, origin: string | null) {

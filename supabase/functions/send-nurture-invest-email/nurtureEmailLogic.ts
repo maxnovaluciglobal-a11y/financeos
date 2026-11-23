@@ -52,11 +52,34 @@ export interface NurtureEmailConfig {
   resendApiKey?: string;
   fromEmail: string; // "moyiq Inversiones <invest@moyiq.app>"
   cronSecret?: string;
-  landingUrl: string; // "https://invest.moyiq.app" — CTAs hacia la app de Invest
+  // Base de los botones: la sección Inversiones de la app (C6 de la auditoría
+  // de branding, 23-nov-2026). Hasta entonces apuntaban a invest.moyiq.app,
+  // el sitio aparte con su propio login. Ver investCtaUrl.
+  landingUrl: string; // DEFAULT_INVEST_APP_URL
   // Base del link de baja. La página unsubscribe.html vive en la landing de
   // moyiq (moyiq.app), no en invest-web: hasta el 18-oct-2026 el link
   // apuntaba a invest.moyiq.app/unsubscribe.html y daba 404.
   unsubscribeBaseUrl?: string;
+}
+
+// Destino por defecto de los botones (env INVEST_APP_URL en index.ts).
+export const DEFAULT_INVEST_APP_URL = "https://app.moyiq.app/app/?open=invest-resumen";
+
+// Botón de un correo: la base configurada con su ?open= (o el pedido, p. ej.
+// invest-planificar en el día 2) y el ref= del correo. Los utm_* y demás
+// parámetros que traiga la base se conservan. Base inválida: la de defecto.
+export function investCtaUrl(config: Pick<NurtureEmailConfig, "landingUrl">, ref: string, open?: string): string {
+  let url: URL;
+  try {
+    url = new URL(config.landingUrl || DEFAULT_INVEST_APP_URL);
+  } catch {
+    url = new URL(DEFAULT_INVEST_APP_URL);
+  }
+  if (open) url.searchParams.set("open", open);
+  else if (!url.searchParams.has("open")) url.searchParams.set("open", "invest-resumen");
+  url.searchParams.set("ref", ref);
+  url.hash = "";
+  return url.toString();
 }
 
 export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): string {
@@ -289,7 +312,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       <p>${profile.desc}</p>
       <p>${T.orientative}</p>
       <p>${T.welcomeBeta}</p>
-      ${emailButton("https://invest.moyiq.app/app?ref=invest-welcome", T.open)}
+      ${emailButton(investCtaUrl(config, "invest-welcome"), T.open)}
       <p style="${EMAIL_MUTED_STYLE}">${T.welcomeNote}</p>
       `);
   }
@@ -300,7 +323,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
       <p>${T.hello}</p>
       <p>${T.day2Body}</p>
       <p>${T.day2Math}</p>
-      ${emailButton("https://invest.moyiq.app/app?ref=invest-d2#position-builder", T.day2Button)}
+      ${emailButton(investCtaUrl(config, "invest-d2", "invest-planificar"), T.day2Button)}
       <p style="${EMAIL_MUTED_STYLE}">${T.day2Note}</p>
       `);
   }
@@ -313,7 +336,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
     <p>
     ${T.day5Items.map((i) => `— ${i}`).join("<br>\n    ")}</p>
     <p>${T.day5Tool}</p>
-    ${emailButton("https://invest.moyiq.app/app?ref=invest-d5", T.open)}
+    ${emailButton(investCtaUrl(config, "invest-d5"), T.open)}
     <p style="${EMAIL_MUTED_STYLE}">${T.day5Note}</p>
     `);
 }

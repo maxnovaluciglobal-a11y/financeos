@@ -12,6 +12,8 @@ import {
   type InvestLead,
   type NurtureEmailConfig,
   processWelcome,
+  DEFAULT_INVEST_APP_URL,
+  investCtaUrl,
 } from './nurtureEmailLogic.ts'
 
 const CONFIG: NurtureEmailConfig = {
@@ -20,7 +22,7 @@ const CONFIG: NurtureEmailConfig = {
   resendApiKey: 're_key',
   fromEmail: 'moyiq · Inversiones <invest@moyiq.app>',
   cronSecret: 'sekret',
-  landingUrl: 'https://invest.moyiq.app',
+  landingUrl: DEFAULT_INVEST_APP_URL,
 }
 
 const LEAD: InvestLead = { id: 'lead-1', email: 'lead@ejemplo.com', perfil: 'moderado' }
@@ -35,7 +37,7 @@ describe('renderEmail', () => {
     expect(r.subject).toContain('Moderado')
     expect(r.html).toContain('Moderado')
     expect(r.html).toContain('Abrir moyiq · Inversiones')
-    expect(r.html).toContain('https://invest.moyiq.app/app?ref=invest-welcome')
+    expect(r.html).toContain('https://app.moyiq.app/app/?open=invest-resumen&ref=invest-welcome')
     expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
   })
 
@@ -87,7 +89,8 @@ describe('renderEmail', () => {
       const r = renderEmail(mode, LEAD, CONFIG)
       expect(r.html).toContain('Herramienta educativa. No es asesoría financiera ni ejecuta órdenes.')
       expect(r.html).toMatch(/beta pública/)
-      expect(r.html).toContain('https://invest.moyiq.app/app')
+      expect(r.html).toContain('https://app.moyiq.app/app/?open=invest-')
+      expect(r.html).not.toContain('invest.moyiq.app/app')
       expect(r.html).toContain('unsubscribe.html?id=lead-1&t=invest')
     }
   })
@@ -385,5 +388,47 @@ describe('idiomas y nombre de la sección (auditoría de correos 18-nov-2026)', 
     await fetchEligibleForEmail3(CONFIG)
     expect(f.mock.calls[0][0]).toContain('select=id,email,perfil,lang&')
     expect(f.mock.calls[1][0]).toContain('select=id,email,perfil,lang&')
+  })
+})
+
+// C6 y C18 de la auditoría de branding (23-nov-2026): los botones abren
+// Inversiones dentro de la app y el del día 2 va a una pestaña que existe.
+describe('investCtaUrl', () => {
+  it('por defecto abre Inversiones › Resumen en la app con el ref del correo', () => {
+    expect(investCtaUrl(CONFIG, 'invest-welcome')).toBe('https://app.moyiq.app/app/?open=invest-resumen&ref=invest-welcome')
+    expect(investCtaUrl(CONFIG, 'invest-d5')).toBe('https://app.moyiq.app/app/?open=invest-resumen&ref=invest-d5')
+  })
+
+  it('el día 2 abre Planificar (la calculadora de posición), sin el ancla #position-builder', () => {
+    const r = renderEmail('day2', LEAD, CONFIG)
+    expect(r.html).toContain('https://app.moyiq.app/app/?open=invest-planificar&ref=invest-d2')
+    expect(r.html).not.toContain('#position-builder')
+  })
+
+  it('conserva los utm de una base configurada por env y pisa un ref viejo', () => {
+    const cfg = { landingUrl: 'https://app.moyiq.app/app/?open=invest-portafolio&utm_source=nurture&utm_medium=email&ref=viejo' }
+    const u = new URL(investCtaUrl(cfg, 'invest-d5'))
+    expect(u.searchParams.get('open')).toBe('invest-portafolio')
+    expect(u.searchParams.get('utm_source')).toBe('nurture')
+    expect(u.searchParams.get('utm_medium')).toBe('email')
+    expect(u.searchParams.getAll('ref')).toEqual(['invest-d5'])
+  })
+
+  it('una base sin ?open= recibe invest-resumen; una inválida cae al valor por defecto', () => {
+    expect(investCtaUrl({ landingUrl: 'https://staging.moyiq.app/app/' }, 'x')).toBe('https://staging.moyiq.app/app/?open=invest-resumen&ref=x')
+    expect(investCtaUrl({ landingUrl: 'no es una url' }, 'x')).toBe('https://app.moyiq.app/app/?open=invest-resumen&ref=x')
+    expect(investCtaUrl({ landingUrl: '' }, 'x')).toBe('https://app.moyiq.app/app/?open=invest-resumen&ref=x')
+  })
+
+  it('los destinos ?open= de los correos existen en la app (deepLink.js e investNav.js)', async () => {
+    const { pageFromSearch } = await import('../../../src/utils/deepLink.js')
+    const { tabFromSearch } = await import('../../../src/utils/investNav.js')
+    for (const mode of ['welcome', 'day2', 'day5'] as const) {
+      const href = /href="(https:\/\/app\.moyiq\.app[^"]+)"/.exec(renderEmail(mode, LEAD, CONFIG).html)?.[1]
+      expect(href).toBeTruthy()
+      const search = new URL(href!).search
+      expect(pageFromSearch(search)).toBe('investments')
+      expect(tabFromSearch(search)).toBe(mode === 'day2' ? 'planificar' : 'resumen')
+    }
   })
 })
