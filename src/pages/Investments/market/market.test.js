@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
+// Textos de Inversiones registrados como al entrar a la sección.
+import '../i18n/investStrings.js'
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'

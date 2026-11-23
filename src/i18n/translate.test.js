@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { translate, interpolate, detectLanguage } from './translate.js'
 import { loadLang, waitForLang } from './langCache.js'
-import { es } from './es.js'
-import { en } from './en.js'
-import { pt } from './pt.js'
-import { de } from './de.js'
+import { es } from './withSections.js'
+import { en } from './withSections.js'
+import { pt } from './withSections.js'
+import { de } from './withSections.js'
 
 describe('detectLanguage', () => {
   it.each([

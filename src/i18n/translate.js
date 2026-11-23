@@ -6,6 +6,7 @@
 
 import { es } from './es.js'
 import { langCache } from './langCache.js'
+import { sectionStrings } from './sections.js'
 
 export const SUPPORTED_LANGS = ['es', 'en', 'pt', 'de']
 
@@ -26,10 +27,11 @@ export function interpolateParts(str, vars = {}) {
 }
 
 // Usa solo lo que ya está en langCache (cargado con loadLang); si el idioma
-// todavía no terminó de cargar, cae a español.
+// todavía no terminó de cargar, cae a español. Las claves de una sección
+// diferida (sections.js) se buscan en el mismo orden: idioma activo, español.
 export function translate(lang, key, vars) {
   const dict = langCache[lang]
-  const str = dict?.[key] ?? es[key] ?? key
+  const str = dict?.[key] ?? sectionStrings[lang]?.[key] ?? es[key] ?? sectionStrings.es[key] ?? key
   return interpolate(str, vars)
 }
 

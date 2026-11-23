@@ -2,6 +2,8 @@
 // operaciones" y "N aportes" abrían invest.moyiq.app/app/, que sin sesión pide
 // iniciar sesión. Ahora abren Inversiones dentro de la app.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+// Textos de Inversiones registrados como al entrar a la sección.
+import './i18n/investStrings.js'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'node:fs'

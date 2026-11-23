@@ -19,6 +19,7 @@ import Portfolio from './Portfolio.jsx'
 import InvestHub from './hub/InvestHub.jsx'
 import ProfileSheet from './ProfileSheet.jsx'
 import s from './investments.module.css'
+import { InvestStringsGate } from './i18n/investStrings.js'
 
 function Gate({ onStart }) {
   const { t } = useT()
@@ -40,7 +41,11 @@ function Gate({ onStart }) {
 
 // `setPage` (el go de usePageStack) solo lo usa Inversiones completo para
 // abrir la ficha de un activo; apagado (UI_FLAGS.investFull) no cambia nada.
-export default function Investments({ setPage }) {
+export default function Investments(props) {
+  return <InvestStringsGate><InvestmentsPage {...props} /></InvestStringsGate>
+}
+
+function InvestmentsPage({ setPage }) {
   const { t } = useT()
   const app = useApp() || {}
   const settings = app.settings || {}

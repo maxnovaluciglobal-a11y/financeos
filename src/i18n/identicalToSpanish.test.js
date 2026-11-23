@@ -3,10 +3,10 @@
 // clave nueva idéntica al español falla acá hasta que alguien la revise y la
 // sume a la lista (o la traduzca): así no se cuela una isla en español.
 import { describe, it, expect } from 'vitest'
-import { es } from './es.js'
-import { pt } from './pt.js'
-import { en } from './en.js'
-import { de } from './de.js'
+import { es } from './withSections.js'
+import { pt } from './withSections.js'
+import { en } from './withSections.js'
+import { de } from './withSections.js'
 
 const ALLOWED = {
   pt: new Set([

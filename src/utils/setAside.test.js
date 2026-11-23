@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import {
-  isSetAside, splitSetAsides, buildSetAside, setAsideRoom, goalWithSetAside, goalWithoutSetAside,
-  monthSetAsides, goalAcceptsSetAside,
-} from './setAside.js'
+import { isSetAside, splitSetAsides, monthSetAsides } from './setAside.js'
+import { buildSetAside, setAsideRoom, goalWithSetAside, goalWithoutSetAside, goalAcceptsSetAside } from './setAsideGoal.js'
 import { monthContributions } from './investNetWorth.js'
 
 const goal = { id: 'g1', name: 'Viaje', target: 1000, saved: 900, contributions: [{ amount: 900, date: '2026-10-01' }] }

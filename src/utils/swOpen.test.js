@@ -11,7 +11,7 @@ describe('openFromMessage', () => {
     __resetInvestNav()
     globalThis.history = { state: { invTab: 'planificar', invFollow: 'lista' }, replaceState(s) { this.state = s } }
   })
-  it('invest-alertas: va a Inversiones › Siguiendo › Alertas aunque la entrada del historial tenga otra pestaña', () => {
+  it('invest-alertas: va a Inversiones › Siguiendo › Alertas aunque la entrada del historial tenga otra pestaña', async () => {
     const setPage = vi.fn()
     const seen = []
     const on = (e) => seen.push(e.detail)
@@ -19,7 +19,8 @@ describe('openFromMessage', () => {
     globalThis.window = new EventTarget()
     window.addEventListener(OPEN_EVENT, on)
     expect(openFromMessage({ type: OPEN_MESSAGE, open: 'invest-alertas' }, setPage)).toBe(true)
-    expect(setPage).toHaveBeenCalledWith('investments')
+    // investNav llega con import(): la página cambia recién con la pestaña en cola.
+    await vi.waitFor(() => expect(setPage).toHaveBeenCalledWith('investments'))
     expect(bootTab({ storage: mem() })).toBe('siguiendo')
     expect(bootFollowTab({ storage: mem() })).toBe('alertas')
     window.removeEventListener(OPEN_EVENT, on)

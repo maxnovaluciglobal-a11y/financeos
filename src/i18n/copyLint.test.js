@@ -3,10 +3,10 @@
 // y la voz de producto no los usa: solo se permiten flechas funcionales.
 // "Recurrentes" ya no nombra los fijos (término único "Fijos" / "fijo").
 import { describe, it, expect } from 'vitest'
-import { es } from './es.js'
-import { en } from './en.js'
-import { pt } from './pt.js'
-import { de } from './de.js'
+import { es } from './withSections.js'
+import { en } from './withSections.js'
+import { pt } from './withSections.js'
+import { de } from './withSections.js'
 
 const ALLOWED_GLYPHS = new Set(['↔', '⬆'])
 const pictographs = (v) => [...String(v).matchAll(/\p{Extended_Pictographic}/gu)].map(m => m[0]).filter(g => !ALLOWED_GLYPHS.has(g))

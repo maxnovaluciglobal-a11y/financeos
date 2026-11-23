@@ -37,6 +37,7 @@ import { buildTrade } from '../../utils/investTrade.js'
 import { freshnessKey, freshnessTone, isUsEquity, marketStatus, quoteFreshness } from '../../utils/investQuoteMeta.js'
 import { demoRow, sampleCandles } from '../../demo/demoInvestAsset.js'
 import { useAssetT } from './asset/assetDict.js'
+import { InvestStringsGate } from './i18n/investStrings.js'
 import { useAssetData } from './asset/useAssetData.js'
 import { errorKey, fmtClock, fmtDay, fmtPx, fmtPxSigned, isCryptoTicker, localDay, pxDecimals } from './asset/format.js'
 import ChartPanel from './asset/ChartPanel.jsx'
@@ -85,7 +86,11 @@ function useMinuteClock(on) {
   return now
 }
 
-export default function InvestAsset({ setPage }) {
+export default function InvestAsset(props) {
+  return <InvestStringsGate><InvestAssetPage {...props} /></InvestStringsGate>
+}
+
+function InvestAssetPage({ setPage }) {
   const { t, ready } = useAssetT()
   const app = useApp() || {}
   const toast = app.showToast || (() => {})

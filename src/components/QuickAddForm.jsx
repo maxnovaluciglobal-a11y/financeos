@@ -45,7 +45,7 @@ import { parseQuickLine, lineFormPatch, findCategory } from '../utils/quickLine.
 import { spokenToLine, parseVoiceLine, speechLang } from '../utils/voiceEntry.js'
 import { intakeFormValues, isIosSafariTab } from '../utils/autoEntry.js'
 import { registroAutomaticoHere } from '../utils/uiFlags.js'
-import { goalAcceptsSetAside } from '../utils/setAside.js'
+import { goalAcceptsSetAside } from '../utils/setAsideGoal.js'
 import { moduleOn } from '../utils/modules.js'
 import { useSpeechEntry } from '../hooks/useSpeechEntry.js'
 import QuickLineField from './QuickLineField.jsx'

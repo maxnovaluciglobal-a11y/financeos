@@ -11,7 +11,7 @@ import es from './strings.es.js'
 import en from './strings.en.js'
 import pt from './strings.pt.js'
 import de from './strings.de.js'
-import { es as appEs } from '../../../i18n/es.js'
+import { es as appEs } from '../../../i18n/withSections.js'
 import PutSummary from './PutSummary.jsx'
 import { EduNotice, ViewToggle } from './ViewToggle.jsx'
 

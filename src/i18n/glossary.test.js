@@ -1,10 +1,10 @@
 // Glosario único (F-1): términos canónicos en los 4 idiomas y sinónimos
 // retirados fuera de los diccionarios (benchmark/05-coherencia-360.md §4).
 import { describe, it, expect } from 'vitest'
-import { es } from './es.js'
-import { en } from './en.js'
-import { pt } from './pt.js'
-import { de } from './de.js'
+import { es } from './withSections.js'
+import { en } from './withSections.js'
+import { pt } from './withSections.js'
+import { de } from './withSections.js'
 import { GLOSSARY, RETIRED, PENDING_INVEST_VIEW, term } from './glossary.js'
 import assetEs from '../pages/Investments/asset/strings.es.js'
 import assetEn from '../pages/Investments/asset/strings.en.js'

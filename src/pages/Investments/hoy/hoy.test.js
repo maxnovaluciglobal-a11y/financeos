@@ -2,9 +2,11 @@
 // pantalla se arma completa con datos inyectados, el estado vacío trae sus 3
 // caminos y el aporte del mes guarda solo un monto.
 import { describe, it, expect, vi, afterEach } from 'vitest'
+// Textos de Inversiones registrados como al entrar a la sección.
+import '../i18n/investStrings.js'
 import { createElement as h } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { es } from '../../../i18n/es.js'
+import { es } from '../../../i18n/withSections.js'
 
 vi.mock('../../../i18n/useT.js', () => {
   const fill = (s, p = {}) => String(s).replace(/\{(\w+)\}/g, (_, k) => (k in p ? p[k] : `{${k}}`))

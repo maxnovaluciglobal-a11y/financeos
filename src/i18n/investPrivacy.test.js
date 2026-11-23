@@ -1,10 +1,10 @@
 // D19: un solo texto de privacidad de Inversiones en toda la app. Ajustes ›
 // Funciones lo repite tal cual después de su frase de presentación.
 import { describe, it, expect } from 'vitest'
-import { es } from './es.js'
-import { en } from './en.js'
-import { pt } from './pt.js'
-import { de } from './de.js'
+import { es } from './withSections.js'
+import { en } from './withSections.js'
+import { pt } from './withSections.js'
+import { de } from './withSections.js'
 
 const DICTS = { es, en, pt, de }
 

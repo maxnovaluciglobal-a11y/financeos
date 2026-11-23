@@ -24,7 +24,7 @@ import { loadLang } from '../i18n/langCache.js'
 import { requestPersistentStorage } from '../utils/storagePersist.js'
 import { toCsv } from '../utils/csvSafe.js'
 import { extraCsvRows } from '../utils/csvExtraRows.js'
-import { buildSetAside, goalWithSetAside, goalWithoutSetAside, setAsideRoom, splitSetAsides } from '../utils/setAside.js'
+import { splitSetAsides } from '../utils/setAside.js'
 import { splitDebts } from '../utils/debtDirection.js'
 import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
@@ -762,6 +762,8 @@ export function AppProvider({ children }) {
   const recordsRef = useRef(state.expenses)
   recordsRef.current = state.expenses
   const addSetAside = useCallback(async ({ amount, date, dest, goalId = null, description = '', method = '' }) => {
+    // Fuera de la carga inicial (utils/setAsideGoal.js).
+    const { buildSetAside, goalWithSetAside, setAsideRoom } = await import('../utils/setAsideGoal.js')
     const goal = dest === 'goal' ? (goalsRef.current || []).find(g => g.id === goalId) : null
     if (dest === 'goal' && !goal) return null
     const amt = goal ? setAsideRoom(goal, amount) : amount
@@ -782,6 +784,7 @@ export function AppProvider({ children }) {
   // meta no se puede actualizar, el apartado sigue entero; si el registro no
   // se puede borrar, la meta vuelve a como estaba.
   const delSetAside = useCallback(async (id) => {
+    const { goalWithoutSetAside } = await import('../utils/setAsideGoal.js')
     const rec = (recordsRef.current || []).find(r => r.id === id)
     const goal = rec?.dest === 'goal' ? (goalsRef.current || []).find(g => g.id === rec.goalId) : null
     const next = goal ? goalWithoutSetAside(goal, rec) : null

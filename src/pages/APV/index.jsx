@@ -12,6 +12,7 @@ import { calcBeneficioAPV, calcDescuentos, calcImpuestoAnual, calcGapTramo, calc
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
+import { ApvStringsGate } from './strings.js'
 import { currentMonth, fmtPctPoints } from '../../utils/index.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
@@ -20,7 +21,11 @@ const money = n => '$' + (Number(n) || 0).toLocaleString()
 // Categorías de renta del trabajo (no arriendo, inversión, etc.) para estimar el sueldo bruto
 const CATEGORIAS_TRABAJO = ['Salario', 'Sueldo', 'Freelance', 'Honorarios', 'Bono', 'Comisión']
 
-export default function APVPage() {
+export default function APVPage(props) {
+  return <ApvStringsGate><APVScreen {...props} /></ApvStringsGate>
+}
+
+function APVScreen() {
   const { settings, incomes } = useApp()
   const { t } = useT()
   const isChile = (settings.country || 'CL') === 'CL'
