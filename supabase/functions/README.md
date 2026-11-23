@@ -40,13 +40,17 @@ la cuenta, con la app cerrada.
   corrida: no se adelanta a las demás en cada corrida).
 - **Suscripciones:** `save_push_subscription` solo acepta endpoints https de
   servicios Web Push (FCM, Mozilla, `*.push.apple.com`, `*.notify.windows.com`)
-  y deja 10 por licencia. Al final de la corrida `push_subscriptions_record`
+  y deja 10 por licencia (la migración borra además las filas que ya existían
+  fuera de la lista o por encima del tope, con `push_subscriptions_prune()`).
+  `send-push` filtra con la misma lista (`_shared/pushEndpoint.ts`) y manda a 5
+  por licencia como mucho. Al final de la corrida `push_subscriptions_record`
   anota el resultado de cada dispositivo: ok vuelve a 0, 404/410 se borra, los
   demás fallos suman y se borran con 8 fallos seguidos y el primero hace 48 h
   o más. Un solo 400/403 nunca borra nada.
 - **Cuándo responde 502** (queda en `edge_function_errors` y avisa
   `uptime-alert`): errores del sistema (precios, RPC, reclamo, devolución,
-  falta de tiempo), un servicio push donde nada llegó y hubo 400/403 (puede ser
+  falta de tiempo), un proveedor push (FCM, Mozilla, Apple, WNS) donde nada
+  llegó y hubo 400/403 en 2 o más suscripciones de 2 o más cuentas (puede ser
   la clave VAPID del servidor; esos avisos se devuelven) o más de la mitad de
   los envíos fallidos (con 10 o más).
 - **Destinos:** `invest_alert_push_targets(uuid[])` (solo service role) une

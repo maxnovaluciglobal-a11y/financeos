@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
   COOLDOWN_MS, MAX_SUBS_PER_USER, activeAlertsPath, buildAlertPayload, checkedIds, chunks, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
-  pushHost, pushOutcome, quotePaths, readIdList, readQuotes, runAlertsCheck, runFailed, symbolsToQuote, type AlertRow,
+  pushProvider, pushOutcome, SYSTEMIC_MIN_SUBS, SYSTEMIC_MIN_USERS, quotePaths, readIdList, readQuotes, runAlertsCheck, runFailed, symbolsToQuote, type AlertRow,
 } from './alertLogic.ts';
 import { conditionMet as appConditionMet } from '../../../src/utils/investAlerts.js';
 
@@ -140,11 +140,13 @@ describe('qué hacer con cada respuesta push', () => {
   });
 });
 
-describe('pushHost', () => {
-  it('lee el servicio push del endpoint', () => {
-    expect(pushHost('https://web.push.apple.com/QAbc')).toBe('web.push.apple.com');
-    expect(pushHost('https://FCM.googleapis.com/fcm/send/x')).toBe('fcm.googleapis.com');
-    expect(pushHost('no es url')).toBe('?');
+describe('pushProvider', () => {
+  it('agrupa por proveedor push (WNS usa un host por nodo)', () => {
+    expect(pushProvider('https://web.push.apple.com/QAbc')).toBe('apple');
+    expect(pushProvider('https://FCM.googleapis.com/fcm/send/x')).toBe('fcm');
+    expect(pushProvider('https://wns2-par02p.notify.windows.com/w/?token=x')).toBe(pushProvider('https://db5p.notify.windows.com/w/'));
+    expect(pushProvider('no es url')).toBe('?');
+    expect([SYSTEMIC_MIN_SUBS, SYSTEMIC_MIN_USERS]).toEqual([2, 2]);
   });
 });
 
@@ -264,38 +266,65 @@ describe('runAlertsCheck (fetch simulado)', () => {
     expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_ok: ['s1'], p_failed: ['s2'], p_gone: [] });
   });
 
-  it('por servicio push: si FCM da 403 y Apple entrega, alarma y devuelve solo lo de FCM', async () => {
-    const alerts = [row({ id: 'g1', user_id: 'u1' }), row({ id: 'a1', user_id: 'u2' })];
+  it('por proveedor push: si FCM da 403 en 2 cuentas y Apple entrega, alarma y devuelve solo lo de FCM', async () => {
+    const alerts = [row({ id: 'g1', user_id: 'u1' }), row({ id: 'g2', user_id: 'u3' }), row({ id: 'a1', user_id: 'u2' })];
     const targets = [
       { user_id: 'u1', sub_id: 'sg', endpoint: 'https://fcm.googleapis.com/fcm/send/x', p256dh: 'p', auth: 'k' },
+      { user_id: 'u3', sub_id: 'sh', endpoint: 'https://fcm.googleapis.com/fcm/send/y', p256dh: 'p', auth: 'k' },
       { user_id: 'u2', sub_id: 'sa', endpoint: 'https://web.push.apple.com/QAbc', p256dh: 'p', auth: 'k' },
     ];
     const { calls, d } = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.includes('apple') ? 201 : 403 })) },
       (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, pushSystemic: true, released: 1, removedSubs: 0 });
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 2, pushSystemic: true, released: 2, removedSubs: 0 });
     expect(runFailed(r)).toBe(true);
-    expect(body(rpcCalls(calls, 'invest_alerts_release')[0]).p_ids).toEqual(['g1']);
+    expect(body(rpcCalls(calls, 'invest_alerts_release')[0]).p_ids).toEqual(['g1', 'g2']);
   });
 
-  it('un solo 403 con poco tráfico no borra nada en silencio: alarma y devuelve', async () => {
-    const alerts = [row()];
-    const { calls, d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
-      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint: 'https://web.push.apple.com/x', p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
+  it('WNS en hosts distintos cuenta como un solo proveedor: un envío que llega a uno evita la alarma por otro', async () => {
+    const alerts = [row({ id: 'w1', user_id: 'u1' }), row({ id: 'w2', user_id: 'u2' }), row({ id: 'w3', user_id: 'u3' })];
+    const targets = [
+      { user_id: 'u1', sub_id: 'w1s', endpoint: 'https://wns2-par02p.notify.windows.com/w/?token=a', p256dh: 'p', auth: 'k' },
+      { user_id: 'u2', sub_id: 'w2s', endpoint: 'https://db5p.notify.windows.com/w/?token=b', p256dh: 'p', auth: 'k' },
+      { user_id: 'u3', sub_id: 'w3s', endpoint: 'https://bn3p.notify.windows.com/w/?token=c', p256dh: 'p', auth: 'k' },
+    ];
+    const { d } = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.includes('bn3p') ? 201 : 403 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 0, invalidSubs: 1, removedSubs: 0, pushSystemic: true, released: 1 });
-    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_failed: ['s1'], p_gone: [] });
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 2, pushSystemic: false, released: 0, errors: 0 });
+    expect(runFailed(r)).toBe(false);
   });
 
-  it('varias alertas de una cuenta con su único dispositivo en 403: se devuelven todas, con un solo envío', async () => {
+  for (const endpoint of ['https://fcm.googleapis.com/fcm/send/x', 'https://wns2-par02p.notify.windows.com/w/?token=x', 'https://web.push.apple.com/x']) {
+    it(`un solo dispositivo con 403 y ningún otro envío (${new URL(endpoint).hostname}): suma el fallo, sin 502, sin devolver y sin borrar`, async () => {
+      const alerts = [row()];
+      const { calls, d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
+        (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint, p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
+      const r = await runAlertsCheck(d, NOW);
+      expect(r).toMatchObject({ sent: 0, invalidSubs: 1, removedSubs: 0, pushSystemic: false, released: 0, errors: 0 });
+      expect(runFailed(r)).toBe(false);
+      expect(rpcCalls(calls, 'invest_alerts_release')).toHaveLength(0);
+      expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_failed: ['s1'], p_gone: [] });
+    });
+  }
+
+  it('dos dispositivos de una misma cuenta con 403: tampoco es fallo del servidor', async () => {
+    const targets = ['a', 'b'].map(x => ({ user_id: 'u1', sub_id: `s${x}`, endpoint: `https://fcm.googleapis.com/fcm/send/${x}`, p256dh: 'p', auth: 'k' }));
+    const { d } = deps({ alerts: [row()], sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ invalidSubs: 2, pushSystemic: false, released: 0 });
+  });
+
+  it('varias alertas de una cuenta con su único dispositivo en 403: un solo envío, quedan marcadas y sin alarma', async () => {
     const alerts = ['x1', 'x2', 'x3'].map((id, i) => row({ id, symbol: ['AAPL', 'MSFT', 'SPY'][i], condition: 'above', threshold: 1 }));
     const sendPush = vi.fn(async () => new Response(null, { status: 403 }));
     const { calls, d } = deps({ alerts, sendPush },
       (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint: 'https://fcm.googleapis.com/fcm/send/x', p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
     expect(sendPush).toHaveBeenCalledTimes(1);
-    expect(r).toMatchObject({ claimed: 3, noDevice: 0, pushSystemic: true, released: 3 });
-    expect(body(rpcCalls(calls, 'invest_alerts_release')[0]).p_ids).toEqual(['x1', 'x2', 'x3']);
+    expect(r).toMatchObject({ claimed: 3, noDevice: 0, pushSystemic: false, released: 0, invalidSubs: 1 });
+    expect(rpcCalls(calls, 'invest_alerts_release')).toHaveLength(0);
   });
 
   it('un dispositivo que da 5xx no se vuelve a llamar en la corrida y sus alertas se devuelven', async () => {

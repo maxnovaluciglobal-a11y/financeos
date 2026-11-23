@@ -3,6 +3,9 @@
 // se manda. index.ts solo cablea (Deno.env, fetch). Probado en alertLogic.test.ts,
 // que también comprueba que la app (src/utils/investAlerts.js) decide igual.
 import { secretEquals } from "../_shared/secretEquals.ts";
+import { pushProvider } from "../_shared/pushEndpoint.ts";
+
+export { pushProvider };
 
 export type Condition = "above" | "below" | "pct_move";
 export type AlertRow = {
@@ -170,8 +173,9 @@ export function checkedIds(alerts: AlertRow[], symbols: string[]): string[] {
 //  · ok: llegó.
 //  · gone (404/410): la suscripción ya no existe; se borra al final de la corrida.
 //  · invalid (400/403): token inválido o firmado con otra clave VAPID. Suma un
-//    fallo; si en ese servicio push nada llegó, suena la alarma (puede ser la
-//    clave del servidor) y el aviso se devuelve.
+//    fallo. Si en ese proveedor push nada llegó y el 400/403 se repite en 2 o
+//    más suscripciones de 2 o más cuentas, suena la alarma (puede ser la clave
+//    del servidor) y el aviso se devuelve; un solo dispositivo roto, no.
 //  · retry (429/5xx o red): se puede reintentar; el aviso se devuelve y suma un fallo.
 //  · fail: cualquier otro 4xx; suma un fallo.
 export type PushOutcome = "ok" | "gone" | "invalid" | "retry" | "fail";
@@ -184,10 +188,10 @@ export function pushOutcome(status: number): PushOutcome {
 }
 export const retryableStatus = (status: number) => pushOutcome(status) === "retry";
 
-// Servicio push de un endpoint (para decidir si un 400/403 es del servidor).
-export function pushHost(endpoint: string): string {
-  try { return new URL(endpoint).host.toLowerCase(); } catch { return "?"; }
-}
+// Mínimo para tomar un 400/403 como fallo del servidor en un proveedor push
+// donde nada llegó: suscripciones distintas y cuentas distintas.
+export const SYSTEMIC_MIN_SUBS = 2;
+export const SYSTEMIC_MIN_USERS = 2;
 
 // ¿La corrida falló? Solo por errores del sistema (lista, precios, RPC,
 // reclamo, devolución, falta de tiempo) o si fallan más de la mitad de los
@@ -342,12 +346,13 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   // llamar: las alertas siguientes de la cuenta reusan ese resultado.
   const failedSubs = new Map<string, Exclude<PushOutcome, "ok">>();
   const okSubs = new Set<string>();
-  const okHosts = new Set<string>(); // servicios push con al menos un envío que llegó
-  const invalidHosts = new Set<string>(); // servicios push con algún 400/403
+  const okProviders = new Set<string>(); // proveedores push con al menos un envío que llegó
+  // 400/403 por proveedor: qué suscripciones y de qué cuentas.
+  const invalidBy = new Map<string, { subs: Set<string>; users: Set<string> }>();
   // Reclamos que no llegaron a ningún dispositivo por un fallo que se puede
   // reintentar (o por falta de tiempo): se devuelven a su valor anterior.
   const release: AlertRow[] = [];
-  const invalidOnly: { alert: AlertRow; hosts: string[] }[] = []; // no llegaron solo por 400/403
+  const invalidOnly: { alert: AlertRow; providers: string[] }[] = []; // no llegaron solo por 400/403
   let sendOutOfTime = false;
   const sendStart = clock();
 
@@ -369,10 +374,14 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
         let o: PushOutcome;
         try { o = pushOutcome((await d.sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, payload)).status); }
         catch { o = "retry"; }
-        if (o === "ok") { res.sent++; okSubs.add(s.sub_id); okHosts.add(pushHost(s.endpoint)); return o; }
+        if (o === "ok") { res.sent++; okSubs.add(s.sub_id); okProviders.add(pushProvider(s.endpoint)); return o; }
         res.pushFailed++;
         failedSubs.set(s.sub_id, o);
-        if (o === "invalid") invalidHosts.add(pushHost(s.endpoint));
+        if (o === "invalid") {
+          const p = pushProvider(s.endpoint);
+          const e = invalidBy.get(p) ?? { subs: new Set<string>(), users: new Set<string>() };
+          e.subs.add(s.sub_id); e.users.add(userId); invalidBy.set(p, e);
+        }
         return o;
       }));
       if (outcomes.includes("ok")) continue;
@@ -380,25 +389,28 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
       if (outcomes.includes("retry")) { release.push(alert); continue; }
       if (outcomes.every(o => o === "gone")) { res.noDevice++; continue; } // ya no hay dispositivo
       if (outcomes.includes("invalid")) {
-        invalidOnly.push({ alert, hosts: live.filter(s => failedSubs.get(s.sub_id) === "invalid").map(s => pushHost(s.endpoint)) });
+        invalidOnly.push({ alert, providers: live.filter(s => failedSubs.get(s.sub_id) === "invalid").map(s => pushProvider(s.endpoint)) });
       }
       // "fail" (otro 4xx): queda reclamada.
     }
   });
   if (sendOutOfTime) { res.outOfTime = true; res.errors++; }
 
-  // 400/403 por servicio push: si en un servicio NADA llegó y hubo 400/403, el
+  // 400/403 por proveedor push (FCM, Mozilla, Apple, WNS): si en un proveedor
+  // NADA llegó y hubo 400/403 en 2 o más suscripciones de 2 o más cuentas, el
   // problema puede ser del servidor (clave VAPID, encabezado): suena la alarma
-  // y se devuelven esos avisos. Las suscripciones nunca se borran por un solo
+  // y se devuelven esos avisos. Un solo dispositivo roto (o varios de una misma
+  // cuenta) solo suma su fallo: ni 502 ni devolución, así no hace sonar la
+  // alarma en cada corrida. Las suscripciones nunca se borran por un solo
   // 400/403: push_subscriptions_record las borra con 8 fallos seguidos y el
   // primero hace 48 h o más (migración 20261123000100).
   res.invalidSubs = [...failedSubs.values()].filter(o => o === "invalid").length;
-  const systemicHosts = [...invalidHosts].filter(h => !okHosts.has(h));
-  if (systemicHosts.length) {
+  const systemic = new Set([...invalidBy].filter(([p, e]) =>
+    !okProviders.has(p) && e.subs.size >= SYSTEMIC_MIN_SUBS && e.users.size >= SYSTEMIC_MIN_USERS).map(([p]) => p));
+  if (systemic.size) {
     res.pushSystemic = true;
     res.errors++;
-    const sys = new Set(systemicHosts);
-    release.push(...invalidOnly.filter(x => x.hosts.some(h => sys.has(h))).map(x => x.alert));
+    release.push(...invalidOnly.filter(x => x.providers.some(p => systemic.has(p))).map(x => x.alert));
   }
 
   // Resultado por dispositivo, por RPC y en tandas: ok vuelve a 0, gone
