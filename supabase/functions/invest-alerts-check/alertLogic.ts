@@ -29,6 +29,7 @@ export const SEND_BUDGET_MS = 40000; // contado desde el primer envío
 export const QUOTE_CONCURRENCY = 4; // lotes de precios en paralelo (40 lotes ≈ 10 vueltas)
 export const SEND_CONCURRENCY = 4; // cuentas atendidas en paralelo
 export const RPC_BATCH = 500; // ids por llamada a las RPC (van en el cuerpo, no en la URL)
+export const MAX_SUBS_PER_USER = 5; // dispositivos por cuenta (invest_alert_push_targets ya devuelve 5)
 
 // Solo POST y solo con el secreto del cron (x-cron-secret = CRON_SECRET). Sin
 // CORS: nadie la llama desde un navegador. OPTIONS responde 204 sin hacer nada.
@@ -167,12 +168,12 @@ export function checkedIds(alerts: AlertRow[], symbols: string[]): string[] {
 
 // Qué hacer con la respuesta del servicio push para UN dispositivo:
 //  · ok: llegó.
-//  · gone (404/410): la suscripción ya no existe; se borra en el momento.
-//  · invalid (400/403): token inválido o firmado con otra clave VAPID; no se
-//    arregla reintentando. Se borra al final de la corrida, salvo que TODOS
-//    los envíos fallen así (eso es la clave VAPID del servidor: alarma).
-//  · retry (429/5xx o red): se puede reintentar; el aviso se devuelve.
-//  · fail: cualquier otro 4xx; cuenta como fallo de envío.
+//  · gone (404/410): la suscripción ya no existe; se borra al final de la corrida.
+//  · invalid (400/403): token inválido o firmado con otra clave VAPID. Suma un
+//    fallo; si en ese servicio push nada llegó, suena la alarma (puede ser la
+//    clave del servidor) y el aviso se devuelve.
+//  · retry (429/5xx o red): se puede reintentar; el aviso se devuelve y suma un fallo.
+//  · fail: cualquier otro 4xx; suma un fallo.
 export type PushOutcome = "ok" | "gone" | "invalid" | "retry" | "fail";
 export function pushOutcome(status: number): PushOutcome {
   if (status >= 200 && status < 300) return "ok";
@@ -182,6 +183,11 @@ export function pushOutcome(status: number): PushOutcome {
   return "fail";
 }
 export const retryableStatus = (status: number) => pushOutcome(status) === "retry";
+
+// Servicio push de un endpoint (para decidir si un 400/403 es del servidor).
+export function pushHost(endpoint: string): string {
+  try { return new URL(endpoint).host.toLowerCase(); } catch { return "?"; }
+}
 
 // ¿La corrida falló? Solo por errores del sistema (lista, precios, RPC,
 // reclamo, devolución, falta de tiempo) o si fallan más de la mitad de los
@@ -331,68 +337,89 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   res.claimed = claimed.length;
   if (!claimed.length) return res;
 
-  const dead = new Set<string>(); // 404/410: borradas
-  const invalid = new Set<string>(); // 400/403: se borran al final (si no es la clave del servidor)
+  // Resultado de cada dispositivo en esta corrida. A uno que respondió bien se
+  // le manda cada alerta; uno que ya falló (o ya no existe) no se vuelve a
+  // llamar: las alertas siguientes de la cuenta reusan ese resultado.
+  const failedSubs = new Map<string, Exclude<PushOutcome, "ok">>();
+  const okSubs = new Set<string>();
+  const okHosts = new Set<string>(); // servicios push con al menos un envío que llegó
+  const invalidHosts = new Set<string>(); // servicios push con algún 400/403
   // Reclamos que no llegaron a ningún dispositivo por un fallo que se puede
   // reintentar (o por falta de tiempo): se devuelven a su valor anterior.
   const release: AlertRow[] = [];
-  const invalidOnly: AlertRow[] = []; // no llegaron solo por 400/403
+  const invalidOnly: { alert: AlertRow; hosts: string[] }[] = []; // no llegaron solo por 400/403
   let sendOutOfTime = false;
   const sendStart = clock();
 
   const byUser = new Map<string, typeof claimed>();
   for (const x of claimed) byUser.set(x.alert.user_id, [...(byUser.get(x.alert.user_id) || []), x]);
   await pool([...byUser.entries()], SEND_CONCURRENCY, async ([userId, items]) => {
+    const subs = (subsOf.get(userId) || []).slice(0, MAX_SUBS_PER_USER);
     for (const { alert, quote } of items) {
-      const subs = (subsOf.get(userId) || []).filter(s => !dead.has(s.sub_id) && !invalid.has(s.sub_id));
-      if (!subs.length) { res.noDevice++; continue; } // sin dispositivo: queda marcada (no hay a quién avisar)
-      if (clock() - sendStart > sendBudget) { sendOutOfTime = true; release.push(alert); continue; }
+      const live = subs.filter(s => failedSubs.get(s.sub_id) !== "gone");
+      if (!live.length) { res.noDevice++; continue; } // sin dispositivo: queda marcada (no hay a quién avisar)
       const payload = buildAlertPayload(alert, quote);
-      let delivered = false, retry = false, bad = false;
-      for (const s of subs) {
+      // Todos los dispositivos de la alerta a la vez; el presupuesto se mira
+      // antes de cada envío.
+      const outcomes = await Promise.all(live.map(async (s): Promise<PushOutcome | "late"> => {
+        const prior = failedSubs.get(s.sub_id);
+        if (prior) return prior;
+        if (clock() - sendStart > sendBudget) return "late";
         res.pushAttempts++;
-        let outcome: PushOutcome;
-        try { outcome = pushOutcome((await d.sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, payload)).status); }
-        catch { outcome = "retry"; }
-        if (outcome === "ok") { res.sent++; delivered = true; continue; }
+        let o: PushOutcome;
+        try { o = pushOutcome((await d.sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, payload)).status); }
+        catch { o = "retry"; }
+        if (o === "ok") { res.sent++; okSubs.add(s.sub_id); okHosts.add(pushHost(s.endpoint)); return o; }
         res.pushFailed++;
-        if (outcome === "gone") {
-          // Suscripción muerta (desinstaló o quitó el permiso): se limpia, como send-push.
-          dead.add(s.sub_id);
-          try {
-            const del = await sb(`push_subscriptions?id=eq.${encodeURIComponent(s.sub_id)}`, { method: "DELETE" });
-            if (del.ok) res.removedSubs++;
-          } catch { /* se reintenta en la próxima corrida */ }
-        } else if (outcome === "invalid") { invalid.add(s.sub_id); bad = true; }
-        else if (outcome === "retry") retry = true;
+        failedSubs.set(s.sub_id, o);
+        if (o === "invalid") invalidHosts.add(pushHost(s.endpoint));
+        return o;
+      }));
+      if (outcomes.includes("ok")) continue;
+      if (outcomes.includes("late")) { sendOutOfTime = true; release.push(alert); continue; }
+      if (outcomes.includes("retry")) { release.push(alert); continue; }
+      if (outcomes.every(o => o === "gone")) { res.noDevice++; continue; } // ya no hay dispositivo
+      if (outcomes.includes("invalid")) {
+        invalidOnly.push({ alert, hosts: live.filter(s => failedSubs.get(s.sub_id) === "invalid").map(s => pushHost(s.endpoint)) });
       }
-      if (delivered) continue;
-      if (retry) release.push(alert);
-      else if (bad) invalidOnly.push(alert);
+      // "fail" (otro 4xx): queda reclamada.
     }
   });
   if (sendOutOfTime) { res.outOfTime = true; res.errors++; }
 
-  // 400/403: si NADA llegó y hay varias, el problema es del servidor (clave
-  // VAPID): no se borra nada, se devuelven los avisos y suena la alarma. Si no,
-  // son dispositivos rotos: se borran sin alarma.
-  res.invalidSubs = invalid.size;
-  if (invalid.size) {
-    if (res.sent === 0 && invalid.size >= 3) {
-      res.pushSystemic = true;
-      res.errors++;
-      release.push(...invalidOnly);
-    } else {
-      for (const ids of chunks([...invalid], 50)) {
-        try {
-          const del = await sb(`push_subscriptions?id=in.(${ids.map(encodeURIComponent).join(",")})`, { method: "DELETE" });
-          if (del.ok) res.removedSubs += ids.length;
-        } catch { /* se reintenta en la próxima corrida */ }
-      }
-    }
+  // 400/403 por servicio push: si en un servicio NADA llegó y hubo 400/403, el
+  // problema puede ser del servidor (clave VAPID, encabezado): suena la alarma
+  // y se devuelven esos avisos. Las suscripciones nunca se borran por un solo
+  // 400/403: push_subscriptions_record las borra con 8 fallos seguidos y el
+  // primero hace 48 h o más (migración 20261123000100).
+  res.invalidSubs = [...failedSubs.values()].filter(o => o === "invalid").length;
+  const systemicHosts = [...invalidHosts].filter(h => !okHosts.has(h));
+  if (systemicHosts.length) {
+    res.pushSystemic = true;
+    res.errors++;
+    const sys = new Set(systemicHosts);
+    release.push(...invalidOnly.filter(x => x.hosts.some(h => sys.has(h))).map(x => x.alert));
   }
 
-  // Devolución por RPC, en tandas: a su valor anterior y primera en la fila.
+  // Resultado por dispositivo, por RPC y en tandas: ok vuelve a 0, gone
+  // (404/410) se borra, los demás fallos suman.
+  const gone: string[] = [], failed: string[] = [];
+  for (const [id, o] of failedSubs) {
+    if (o === "gone") gone.push(id);
+    else if (!okSubs.has(id)) failed.push(id); // si además llegó algo, cuenta como ok
+  }
+  const ok = [...okSubs].filter(id => failedSubs.get(id) !== "gone");
+  const parts = Math.max(chunks(ok).length, chunks(failed).length, chunks(gone).length);
+  for (let k = 0; k < parts; k++) {
+    const slice = (l: string[]) => l.slice(k * RPC_BATCH, (k + 1) * RPC_BATCH);
+    try {
+      const r = await rpc("push_subscriptions_record", { p_ok: slice(ok), p_failed: slice(failed), p_gone: slice(gone), p_at: at });
+      if (r.ok) res.removedSubs += Number(await r.json()) || 0;
+      else res.errors++;
+    } catch { res.errors++; }
+  }
+
+  // Devolución por RPC, en tandas: a su valor anterior (queda revisada en esta corrida).
   for (const part of chunks(release)) {
     try {
       const r = await rpc("invest_alerts_release", { p_ids: part.map(a => a.id), p_prev: part.map(a => a.last_triggered_at ?? null), p_at: at });

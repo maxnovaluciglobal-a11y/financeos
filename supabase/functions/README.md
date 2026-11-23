@@ -9,7 +9,8 @@ Cada carpeta es una función de Supabase (Deno). Reglas generales en `CLAUDE.md`
 ## invest-alerts-check (Inversiones F4, 20-nov-2026)
 
 Revisa las alertas de precio activas (`public.invest_alerts`, migraciones
-`20261120000100_invest_alerts.sql` y `20261123000000_invest_alerts_rotation.sql`) y avisa por Web Push a los dispositivos de
+`20261120000100_invest_alerts.sql`, `20261123000000_invest_alerts_rotation.sql` y
+`20261123000100_push_subscription_guard.sql`) y avisa por Web Push a los dispositivos de
 la cuenta, con la app cerrada.
 
 - **Quién la llama:** solo un scheduler, con `POST` y el header
@@ -30,21 +31,27 @@ la cuenta, con la app cerrada.
   cifrado de `send-push`). Un movimiento del día (`pct_move`) avisa una sola
   vez por sesión de mercado.
 - **Tiempos:** cada pedido tiene timeout de 8 s. Los precios tienen 35 s y los
-  envíos 40 s propios (contados desde el primer envío): lo reclamado siempre
-  tiene tiempo para mandarse. Un aviso que no llegó a ningún dispositivo por
-  la red, un 429/5xx o falta de tiempo se devuelve con
-  `invest_alerts_release` (vuelve a su valor anterior y queda primero en la
-  fila).
-- **Suscripciones rotas:** 404/410 se borran en el momento; 400/403 (token
-  inválido o firmado con otra clave VAPID) se borran al final de la corrida,
-  sin alarma. Si NADA llegó y hay 3 o más 400/403, es la clave del servidor:
-  no se borra nada, se devuelven los avisos y responde 502.
+  envíos 40 s propios (contados desde el primer envío y revisados antes de
+  cada dispositivo): lo reclamado siempre tiene tiempo para mandarse. Los
+  dispositivos de una alerta (5 como mucho) reciben el aviso a la vez; uno que
+  ya falló en la corrida no se vuelve a llamar. Un aviso que no llegó a ningún
+  dispositivo por la red, un 429/5xx o falta de tiempo se devuelve con
+  `invest_alerts_release` (vuelve a su valor anterior y queda revisado en esa
+  corrida: no se adelanta a las demás en cada corrida).
+- **Suscripciones:** `save_push_subscription` solo acepta endpoints https de
+  servicios Web Push (FCM, Mozilla, `*.push.apple.com`, `*.notify.windows.com`)
+  y deja 10 por licencia. Al final de la corrida `push_subscriptions_record`
+  anota el resultado de cada dispositivo: ok vuelve a 0, 404/410 se borra, los
+  demás fallos suman y se borran con 8 fallos seguidos y el primero hace 48 h
+  o más. Un solo 400/403 nunca borra nada.
 - **Cuándo responde 502** (queda en `edge_function_errors` y avisa
   `uptime-alert`): errores del sistema (precios, RPC, reclamo, devolución,
-  falta de tiempo, clave VAPID) o más de la mitad de los envíos fallidos (con
-  10 o más). Un dispositivo roto de una persona no dispara la alarma.
+  falta de tiempo), un servicio push donde nada llegó y hubo 400/403 (puede ser
+  la clave VAPID del servidor; esos avisos se devuelven) o más de la mitad de
+  los envíos fallidos (con 10 o más).
 - **Destinos:** `invest_alert_push_targets(uuid[])` (solo service role) une
-  cuenta → `user_entitlements.license_key` → `push_subscriptions.key_hash`. Una
+  cuenta → `user_entitlements.license_key` → `push_subscriptions.key_hash`, solo
+  con endpoints de servicios push y 5 por cuenta (los más recientes). Una
   cuenta sin licencia o sin avisos activados en ningún dispositivo no recibe el
   push; la alerta igual queda marcada y la app la muestra como alcanzada.
 - **Cuerpo opcional:** `{ "mode": "check" }` solo cuenta (alertas, símbolos,
@@ -60,13 +67,15 @@ la cuenta, con la app cerrada.
 
 ### Pasos para ponerla en marcha (no se hicieron: los hace Walter)
 
-1. Aplicar las dos migraciones, en orden (historial compartido con `invest-web`).
+1. Aplicar las tres migraciones, en orden (historial compartido con `invest-web`).
    La segunda crea las RPC `invest_alerts_mark_checked`, `invest_alerts_claim`
    e `invest_alerts_release` y cambia los grants de `invest_alerts` a grants
-   por columna: aplicarla ANTES de desplegar la función.
+   por columna; la tercera valida `save_push_subscription`, agrega
+   `push_subscriptions.fail_count` y la RPC `push_subscriptions_record`. Las
+   tres ANTES de desplegar la función.
 
    ```bash
-   for v in 20261120000100_invest_alerts 20261123000000_invest_alerts_rotation; do
+   for v in 20261120000100_invest_alerts 20261123000000_invest_alerts_rotation 20261123000100_push_subscription_guard; do
      supabase db query --linked --project-ref nelwgbcddwiaimzbcuas --workdir "$(mktemp -d)" \
        -f "$PWD/supabase/migrations/$v.sql"
      supabase migration repair --status applied "${v%%_*}" --linked --project-ref nelwgbcddwiaimzbcuas

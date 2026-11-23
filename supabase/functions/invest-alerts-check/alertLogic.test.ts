@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
-  COOLDOWN_MS, activeAlertsPath, buildAlertPayload, checkedIds, chunks, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
-  pushOutcome, quotePaths, readIdList, readQuotes, runAlertsCheck, runFailed, symbolsToQuote, type AlertRow,
+  COOLDOWN_MS, MAX_SUBS_PER_USER, activeAlertsPath, buildAlertPayload, checkedIds, chunks, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
+  pushHost, pushOutcome, quotePaths, readIdList, readQuotes, runAlertsCheck, runFailed, symbolsToQuote, type AlertRow,
 } from './alertLogic.ts';
 import { conditionMet as appConditionMet } from '../../../src/utils/investAlerts.js';
 
@@ -140,6 +140,14 @@ describe('qué hacer con cada respuesta push', () => {
   });
 });
 
+describe('pushHost', () => {
+  it('lee el servicio push del endpoint', () => {
+    expect(pushHost('https://web.push.apple.com/QAbc')).toBe('web.push.apple.com');
+    expect(pushHost('https://FCM.googleapis.com/fcm/send/x')).toBe('fcm.googleapis.com');
+    expect(pushHost('no es url')).toBe('?');
+  });
+});
+
 describe('runAlertsCheck (fetch simulado)', () => {
   type Over = Record<string, unknown> & { alerts?: AlertRow[] };
   function deps(over: Over = {}, route: (url: string, init?: RequestInit) => Response | null = () => null) {
@@ -158,7 +166,7 @@ describe('runAlertsCheck (fetch simulado)', () => {
         { user_id: 'u1', sub_id: 's1', endpoint: 'https://push/1', p256dh: 'p', auth: 'k' },
         { user_id: 'u1', sub_id: 's2', endpoint: 'https://push/2', p256dh: 'p', auth: 'k' },
       ]), { status: 200 });
-      if (url.includes('/rest/v1/push_subscriptions?id=')) return new Response(null, { status: 204 });
+      if (url.endsWith('/rest/v1/rpc/push_subscriptions_record')) return new Response(String(JSON.parse(String(init?.body)).p_gone.length), { status: 200 });
       return new Response('?', { status: 500 });
     });
     const sendPush = vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/2') ? 410 : 201 }));
@@ -181,7 +189,9 @@ describe('runAlertsCheck (fetch simulado)', () => {
     expect(body(claim)).toEqual({ p_ids: ['a1', 'a2'], p_at: new Date(NOW).toISOString() });
     expect(calls.some(c => c.init?.method === 'PATCH')).toBe(false); // ningún id en la URL
     expect(sendPush).toHaveBeenCalledTimes(2);
-    expect(calls.some(c => c.url.endsWith('push_subscriptions?id=eq.s2') && c.init?.method === 'DELETE')).toBe(true);
+    const [rec] = rpcCalls(calls, 'push_subscriptions_record');
+    expect(body(rec)).toEqual({ p_ok: ['s1'], p_failed: [], p_gone: ['s2'], p_at: new Date(NOW).toISOString() });
+    expect(calls.some(c => c.init?.method === 'DELETE')).toBe(false); // se borra por RPC
     for (const c of calls.filter(c => c.url.startsWith('https://sb.test'))) expect((c.init?.headers as Record<string, string>).Authorization).toBe('Bearer sr');
   });
 
@@ -246,12 +256,77 @@ describe('runAlertsCheck (fetch simulado)', () => {
     expect(runFailed(r2)).toBe(false);
   });
 
-  it('un 400/403 de un dispositivo borra la suscripción sin alarma', async () => {
+  it('un 400/403 de un dispositivo, con otro del mismo servicio que recibe, suma un fallo sin alarma y sin borrar', async () => {
     const { calls, d } = deps({ sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/2') ? 403 : 201 })) });
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, removedSubs: 1, errors: 0, pushSystemic: false });
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, removedSubs: 0, errors: 0, pushSystemic: false });
     expect(runFailed(r)).toBe(false);
-    expect(calls.some(c => c.url.endsWith('push_subscriptions?id=in.(s2)') && c.init?.method === 'DELETE')).toBe(true);
+    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_ok: ['s1'], p_failed: ['s2'], p_gone: [] });
+  });
+
+  it('por servicio push: si FCM da 403 y Apple entrega, alarma y devuelve solo lo de FCM', async () => {
+    const alerts = [row({ id: 'g1', user_id: 'u1' }), row({ id: 'a1', user_id: 'u2' })];
+    const targets = [
+      { user_id: 'u1', sub_id: 'sg', endpoint: 'https://fcm.googleapis.com/fcm/send/x', p256dh: 'p', auth: 'k' },
+      { user_id: 'u2', sub_id: 'sa', endpoint: 'https://web.push.apple.com/QAbc', p256dh: 'p', auth: 'k' },
+    ];
+    const { calls, d } = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.includes('apple') ? 201 : 403 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, pushSystemic: true, released: 1, removedSubs: 0 });
+    expect(runFailed(r)).toBe(true);
+    expect(body(rpcCalls(calls, 'invest_alerts_release')[0]).p_ids).toEqual(['g1']);
+  });
+
+  it('un solo 403 con poco tráfico no borra nada en silencio: alarma y devuelve', async () => {
+    const alerts = [row()];
+    const { calls, d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint: 'https://web.push.apple.com/x', p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ sent: 0, invalidSubs: 1, removedSubs: 0, pushSystemic: true, released: 1 });
+    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_failed: ['s1'], p_gone: [] });
+  });
+
+  it('varias alertas de una cuenta con su único dispositivo en 403: se devuelven todas, con un solo envío', async () => {
+    const alerts = ['x1', 'x2', 'x3'].map((id, i) => row({ id, symbol: ['AAPL', 'MSFT', 'SPY'][i], condition: 'above', threshold: 1 }));
+    const sendPush = vi.fn(async () => new Response(null, { status: 403 }));
+    const { calls, d } = deps({ alerts, sendPush },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint: 'https://fcm.googleapis.com/fcm/send/x', p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(sendPush).toHaveBeenCalledTimes(1);
+    expect(r).toMatchObject({ claimed: 3, noDevice: 0, pushSystemic: true, released: 3 });
+    expect(body(rpcCalls(calls, 'invest_alerts_release')[0]).p_ids).toEqual(['x1', 'x2', 'x3']);
+  });
+
+  it('un dispositivo que da 5xx no se vuelve a llamar en la corrida y sus alertas se devuelven', async () => {
+    const alerts = ['y1', 'y2'].map((id, i) => row({ id, symbol: ['AAPL', 'MSFT'][i], condition: 'above', threshold: 1 }));
+    const sendPush = vi.fn(async () => new Response(null, { status: 503 }));
+    const { d } = deps({ alerts, sendPush },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint: 'https://fcm.googleapis.com/a', p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(sendPush).toHaveBeenCalledTimes(1);
+    expect(r).toMatchObject({ released: 2, pushSystemic: false });
+  });
+
+  it('como mucho 5 dispositivos por cuenta, todos a la vez', async () => {
+    const targets = Array.from({ length: 8 }, (_, i) => ({ user_id: 'u1', sub_id: `s${i}`, endpoint: `https://fcm.googleapis.com/${i}`, p256dh: 'p', auth: 'k' }));
+    let inFlight = 0, peak = 0;
+    const sendPush = vi.fn(async () => { inFlight++; peak = Math.max(peak, inFlight); await new Promise(res => setTimeout(res, 5)); inFlight--; return new Response(null, { status: 201 }); });
+    const { d } = deps({ alerts: [row()], sendPush }, (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(sendPush).toHaveBeenCalledTimes(MAX_SUBS_PER_USER);
+    expect(peak).toBe(MAX_SUBS_PER_USER);
+    expect(r.sent).toBe(MAX_SUBS_PER_USER);
+  });
+
+  it('el presupuesto de envío se mira antes de cada dispositivo, no solo antes de cada alerta', async () => {
+    let t = 0;
+    const targets = Array.from({ length: 3 }, (_, i) => ({ user_id: 'u1', sub_id: `s${i}`, endpoint: `https://fcm.googleapis.com/${i}`, p256dh: 'p', auth: 'k' }));
+    const { sendPush, d } = deps({ alerts: [row()], clock: () => (t += 300), sendBudgetMs: 700, sendPush: vi.fn(async () => new Response(null, { status: 503 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(sendPush.mock.calls.length).toBeLessThan(3);
+    expect(r).toMatchObject({ outOfTime: true, released: 1 });
   });
 
   it('si TODOS los envíos dan 403 (clave VAPID del servidor), no borra nada, devuelve los avisos y avisa', async () => {
@@ -263,6 +338,7 @@ describe('runAlertsCheck (fetch simulado)', () => {
     expect(r).toMatchObject({ sent: 0, invalidSubs: 3, removedSubs: 0, pushSystemic: true, released: 3 });
     expect(runFailed(r)).toBe(true);
     expect(calls.some(c => c.init?.method === 'DELETE')).toBe(false);
+    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0]).p_gone).toEqual([]);
   });
 
   it('precios y envíos tienen presupuestos separados: lo reclamado se manda aunque los precios hayan tardado', async () => {

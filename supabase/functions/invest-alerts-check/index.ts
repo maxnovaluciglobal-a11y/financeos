@@ -8,10 +8,12 @@
 // mismos endpoints que usa la app), busca a quién avisar, marca
 // last_triggered_at por RPC (no repite antes de 24 h) y manda el aviso con el
 // mismo Web Push de send-push (_shared/webPush.ts). Si un aviso no llega a
-// ningún dispositivo por la red, un 5xx o falta de tiempo, se devuelve y queda
-// primero para la próxima corrida. Precios y envíos tienen presupuestos
-// separados (alertLogic.ts). Suscripciones con 404/410/400/403 se borran.
-// Requiere las migraciones 20261120000100 y 20261123000000 (rotación).
+// ningún dispositivo por la red, un 5xx o falta de tiempo, se devuelve a su
+// valor anterior. Precios y envíos tienen presupuestos separados
+// (alertLogic.ts). Suscripciones con 404/410 se borran; las que fallan de otra
+// forma se borran con 8 fallos seguidos en 48 h (push_subscriptions_record).
+// Requiere las migraciones 20261120000100, 20261123000000 (rotación) y
+// 20261123000100 (servicios push permitidos, fallos por suscripción).
 //   cuerpo opcional { "mode": "check" } → solo cuenta, sin marcar ni avisar.
 // Secrets: CRON_SECRET, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
 // (los mismos de send-push), INVEST_API_URL opcional (por defecto
@@ -50,7 +52,7 @@ Deno.serve(withErrorReporting("invest-alerts-check", async (req) => {
   // Con errores del sistema (precios, RPC, reclamo, devolución, falta de
   // tiempo, clave VAPID) o más de la mitad de los envíos fallidos responde 502:
   // withErrorReporting deja la fila en edge_function_errors y uptime-alert
-  // avisa. Un dispositivo roto de una persona no cuenta (se limpia solo).
+  // avisa. Un 400/403 cuenta solo si en ese servicio push nada llegó.
   const failed = runFailed(result);
   return json({ ok: !failed, mode, ...result }, failed ? 502 : 200);
 }));
