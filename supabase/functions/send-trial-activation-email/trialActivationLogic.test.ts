@@ -109,6 +109,9 @@ describe('secuencia de activación de la prueba (C-35 / COM-10)', () => {
     }
     const es = renderBillingPreview('license_trial', 'es', config);
     expect(es.html).toContain(PREVIEW_SAMPLE_KEY);
+    // C7 (23-nov-2026): el ejemplo muestra la clave como la ve el usuario, sin FNOS-.
+    expect(PREVIEW_SAMPLE_KEY).toBe('XXXX-XXXX-XXXX');
+    expect(es.html).not.toContain('FNOS');
     expect(es.html).toContain('billing.example/p');
     expect(renderBillingPreview('pro_ended', 'es', config).subject).toContain('Tus datos siguen');
     expect(renderBillingPreview('trial_ending', 'es', config).html).toContain('4,99');

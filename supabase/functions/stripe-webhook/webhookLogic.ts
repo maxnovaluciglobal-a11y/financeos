@@ -70,6 +70,14 @@ export function generateKey(): string {
   return `FNOS-${out}`;
 }
 
+// Clave tal como la ve el usuario (C7 de la auditoría de branding, 23-nov-2026):
+// sin el prefijo interno "FNOS-" de la época FinanceOS. Solo cambia la vista:
+// lo guardado, validado y cifrado sigue siendo la clave completa, y la app
+// acepta la clave con o sin prefijo (normalizeLicenseInput en LicenseGate).
+export function displayLicenseKey(key: string): string {
+  return String(key ?? "").trim().replace(/^FNOS-/i, "");
+}
+
 // ── Prueba de Pro por 14 días CON tarjeta (T10, fase 4 · 2026-10-08) ───────
 // Walter crea en Stripe dos Payment Links NUEVOS (Pro mensual y anual) con
 // trial_period_days=14 y payment_method_collection=always, y pega acá sus ids
@@ -561,7 +569,7 @@ export function renderKeyEmail(
     bodyHtml: `${emailHeading(heading)}
       ${intro}
       <p>${T.keyLabel}</p>
-      ${emailCode(key)}
+      ${emailCode(displayLicenseKey(key))}
       <p>${(attachedToAccount ? T.activatedOnAccount : T.activate)(`<a href="${appUrl}">${appUrl}</a>`)}</p>
       ${billingNote}`,
     footerHtml: billingFooter(T.privacy),

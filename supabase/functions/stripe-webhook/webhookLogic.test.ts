@@ -13,6 +13,7 @@ import {
   trialBillingFromSubscription, trialBillingFromSession, sendTrialEndingEmail, formatDateEs,
   notifyUnmappedTrialCheckout, RETIRED_PAYMENT_LINKS, handleBillingEvent, handleSubscriptionUpdated,
   periodEndFromSubscription, runOnce, handleChargeReversal, renderPaymentFailedEmail, renderProEndedEmail,
+  displayLicenseKey, renderKeyEmail,
 } from './webhookLogic.ts'
 import { resolveResendApiKey } from '../_shared/resendKey.ts'
 
@@ -373,7 +374,7 @@ describe('llamadas HTTP (fetch mockeado)', () => {
       expect(text).not.toMatch(/escribinos|podés|tenés|activá/i)
       expect(text).not.toMatch(/¡|!(?!doctype html>)/)
       expect(text).not.toMatch(/\p{Extended_Pictographic}/u)
-      expect(body.html).toContain('FNOS-X')
+      expect(body.html).not.toContain('FNOS-')
     })
   })
 
@@ -766,7 +767,7 @@ describe('T10 · email de inicio de prueba (variante de sendKeyEmail)', () => {
     expect(body.subject).toBe('Tu prueba de moyiq Pro')
     expect(body.html).toContain('23 de octubre de 2026')
     expect(body.html).toContain('US$ 4,99 al mes')
-    expect(body.html).toContain('FNOS-X')
+    expect(body.html).not.toContain('FNOS-')
     expect(body.html).toContain('support@moyiq.app')
     expect(text).not.toMatch(/¡|!(?!doctype html>)/)
     expect(text).not.toMatch(/escribinos|podés|tenés|activá|cancelá/i)
@@ -807,7 +808,7 @@ describe('idioma de los correos al cliente (licencia, prueba, fin de prueba)', (
     expect(body.subject).toBe(subject)
     expect(body.html).toContain(purchase)
     expect(body.html).toContain(renewal)
-    expect(body.html).toContain('FNOS-X')
+    expect(body.html).not.toContain('FNOS-')
     expect(body.html).toContain(`lang="${lang}"`)
   })
 
@@ -892,7 +893,8 @@ describe('C-05 · clave de Resend del correo de la licencia', () => {
     expect(call.auth).toBe('Bearer re_nurture')
     expect(call.body.from).toBe('moyiq <licencias@moyiq.app>')
     expect(call.body.to).toBe('cliente@ejemplo.com')
-    expect(call.body.html).toContain('FNOS-AAAA-BBBB-CCCC')
+    expect(call.body.html).toContain('AAAA-BBBB-CCCC')
+    expect(call.body.html).not.toContain('FNOS-')
     expect(call.body.html).toContain('https://app.moyiq.app/app/')
   })
 
@@ -1187,7 +1189,8 @@ describe('C-39 / PRD-2: Pro queda en la cuenta que inició la compra', () => {
       await sendKeyEmail('a@b.com', 'FNOS-AAAA-BBBB-CCCC', 'pro', 's', CONFIG, 'month', null, lang, true)
       const html = JSON.parse(fetchMock.mock.calls[0][1].body).html
       expect(html, lang).toContain(word)
-      expect(html).toContain('FNOS-AAAA-BBBB-CCCC')
+      expect(html).toContain('AAAA-BBBB-CCCC')
+      expect(html).not.toContain('FNOS-')
     }
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     vi.stubGlobal('fetch', fetchMock)
@@ -1212,6 +1215,37 @@ describe('markLicenseTrial (C-35 / COM-10)', () => {
     expect(await markLicenseTrial('k', 'd', null, null, CONFIG as any)).toEqual({ ok: false, error: 'http_404' })
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('down')))
     expect(await markLicenseTrial('k', 'd', null, null, CONFIG as any)).toEqual({ ok: false, error: 'network' })
+    vi.unstubAllGlobals()
+  })
+})
+
+// C7 de la auditoría de branding (23-nov-2026): el correo muestra la clave sin
+// el prefijo interno de la época FinanceOS; lo guardado sigue completo.
+describe('displayLicenseKey y la vista de la clave en el correo', () => {
+  it('quita solo el prefijo FNOS- (con o sin mayúsculas) y deja lo demás igual', () => {
+    expect(displayLicenseKey('FNOS-AAAA-BBBB-CCCC')).toBe('AAAA-BBBB-CCCC')
+    expect(displayLicenseKey(' fnos-AAAA-BBBB-CCCC ')).toBe('AAAA-BBBB-CCCC')
+    expect(displayLicenseKey('AAAA-BBBB-CCCC')).toBe('AAAA-BBBB-CCCC')
+    expect(displayLicenseKey('AAAA-FNOS-CCCC')).toBe('AAAA-FNOS-CCCC')
+  })
+  it('una clave generada sigue con prefijo (la base no cambia) y se muestra sin él', () => {
+    const key = generateKey()
+    expect(key.startsWith('FNOS-')).toBe(true)
+    expect(displayLicenseKey(key)).toMatch(/^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/)
+  })
+  it('renderKeyEmail muestra la clave sin FNOS- en el HTML y en el texto, en los 4 idiomas', () => {
+    for (const lang of ['es', 'en', 'pt', 'de'] as const) {
+      const r = renderKeyEmail('FNOS-ABCD-EFGH-JKLM', 'pro', CONFIG, 'month', null, lang)
+      expect(r.html, lang).toContain('ABCD-EFGH-JKLM')
+      expect(r.text, lang).toContain('ABCD-EFGH-JKLM')
+      expect(`${r.html} ${r.text}`, lang).not.toContain('FNOS')
+    }
+  })
+  it('la clave que se manda a issueLicense sigue siendo la completa', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await issueLicense('FNOS-AAAA-BBBB-CCCC', 'pro', 'a@b.com', 'sess_1', 'pi_1', CONFIG)
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).p_key).toBe('FNOS-AAAA-BBBB-CCCC')
     vi.unstubAllGlobals()
   })
 })

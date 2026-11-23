@@ -174,8 +174,8 @@ export async function runTrialCron(config: TrialConfig, { dryRun = false, now = 
 export const BILLING_PREVIEW_STEPS = ["license_trial", "trial_ending", "payment_failed", "pro_ended"] as const;
 export type BillingPreviewStep = typeof BILLING_PREVIEW_STEPS[number];
 export const PREVIEW_SUBJECT_PREFIX = "[Vista previa] ";
-// Clave de ejemplo con el formato real; no es una licencia.
-export const PREVIEW_SAMPLE_KEY = "FNOS-XXXX-XXXX-XXXX";
+// Clave de ejemplo con el formato que ve el usuario (sin "FNOS-", C7); no es una licencia.
+export const PREVIEW_SAMPLE_KEY = "XXXX-XXXX-XXXX";
 
 export function renderBillingPreview(step: BillingPreviewStep, lang: EmailLang, config: TrialConfig, now: number = Date.now()): RenderedEmail {
   const wcfg: WebhookConfig = {
