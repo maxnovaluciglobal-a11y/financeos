@@ -5,13 +5,16 @@
 //
 // Lee con service role (salta RLS a propósito: revisa las alertas de todas las
 // cuentas), pide los precios en lotes de 10 a la API de Invest (/api/quote, los
-// mismos endpoints que usa la app), marca last_triggered_at (no repite antes de
-// 24 h) y manda el aviso con el mismo Web Push de send-push (_shared/webPush.ts).
+// mismos endpoints que usa la app), busca a quién avisar, marca
+// last_triggered_at (no repite antes de 24 h) y manda el aviso con el mismo Web
+// Push de send-push (_shared/webPush.ts). Si un aviso no llega a ningún
+// dispositivo por la red o un 5xx, se desmarca para la próxima corrida.
+// Requiere las migraciones 20261120000100 y 20261123000000 (rotación).
 //   cuerpo opcional { "mode": "check" } → solo cuenta, sin marcar ni avisar.
 // Secrets: CRON_SECRET, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
 // (los mismos de send-push), INVEST_API_URL opcional (por defecto
 // https://invest.moyiq.app). SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los inyecta Supabase.
-import { guardAlertsRequest, runAlertsCheck } from "./alertLogic.ts";
+import { FETCH_TIMEOUT_MS, guardAlertsRequest, runAlertsCheck } from "./alertLogic.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
 import { sendWebPush } from "../_shared/webPush.ts";
 
@@ -39,8 +42,10 @@ Deno.serve(withErrorReporting("invest-alerts-check", async (req) => {
     serviceRole: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     investApiUrl: (Deno.env.get("INVEST_API_URL") || "https://invest.moyiq.app").replace(/\/$/, ""),
     fetchImpl: fetch,
-    sendPush: (sub, payload) => sendWebPush(sub, payload, vapid),
+    sendPush: (sub, payload) => sendWebPush(sub, payload, vapid, fetch, FETCH_TIMEOUT_MS),
     dryRun: mode === "check",
   });
-  return json({ ok: true, mode, ...result }, 200);
+  // Con errores (precios, envíos o devoluciones que fallaron) responde 502:
+  // withErrorReporting deja la fila en edge_function_errors y uptime-alert avisa.
+  return json({ ok: result.errors === 0, mode, ...result }, result.errors > 0 ? 502 : 200);
 }));

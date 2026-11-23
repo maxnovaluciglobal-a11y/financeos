@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
-  COOLDOWN_MS, buildAlertPayload, claimPath, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
-  quotePaths, readQuotes, runAlertsCheck, symbolsToQuote, type AlertRow,
+  COOLDOWN_MS, activeAlertsPath, buildAlertPayload, checkedIds, claimPath, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
+  quotePaths, readQuotes, runAlertsCheck, symbolsToQuote, unclaimPath, type AlertRow,
 } from './alertLogic.ts';
 import { conditionMet as appConditionMet } from '../../../src/utils/investAlerts.js';
 
@@ -87,13 +87,35 @@ describe('pedidos a la API de Invest', () => {
   });
 });
 
+describe('rotación entre cuentas', () => {
+  it('la lista sale sin las que están en espera y empieza por las menos revisadas', () => {
+    const p = activeAlertsPath(NOW);
+    expect(p).toContain('active=eq.true');
+    expect(p).toContain(`last_triggered_at.lt."${new Date(NOW - COOLDOWN_MS).toISOString()}"`);
+    expect(p).toContain('order=last_checked_at.asc.nullsfirst,created_at.asc');
+  });
+  it('reparte los símbolos por cuenta antes del tope', () => {
+    const heavy = Array.from({ length: 50 }, (_, i) => row({ id: `h${i}`, user_id: 'old', symbol: `ZZZZ${i}` }));
+    const others = [row({ id: 'n1', user_id: 'new1', symbol: 'AAPL' }), row({ id: 'n2', user_id: 'new2', symbol: 'MSFT' })];
+    const out = symbolsToQuote([...heavy, ...others], NOW, 4);
+    expect(out).toEqual(['ZZZZ0', 'AAPL', 'MSFT', 'ZZZZ1']);
+    expect(symbolsToQuote([...heavy, ...others], NOW)).toHaveLength(52);
+  });
+  it('revisadas = las de los símbolos pedidos, tengan precio o no', () => {
+    expect(checkedIds([row(), row({ id: 'b', symbol: 'ZZZZ1' }), row({ id: 'c', symbol: 'SPY' })], ['AAPL', 'ZZZZ1'])).toEqual(['a1', 'b']);
+  });
+  it('la devolución solo toca lo que marcó esta corrida', () => {
+    expect(unclaimPath(['x'], NOW)).toBe(`invest_alerts?id=in.(x)&last_triggered_at=eq."${new Date(NOW).toISOString()}"`);
+  });
+});
+
 describe('aviso push', () => {
   it('texto de respaldo en español y datos para el service worker; sin datos de la posición', () => {
     const p = buildAlertPayload(row(), { price: 251.236, changePct: 0.012, currency: 'USD' });
     expect(p.title).toBe('moyiq');
     expect(p.body).toBe('AAPL subió a 251,24. Tu nivel: 250.');
     expect(p.i18n).toEqual({ key: 'priceAlert', t: 'AAPL', cond: 'above', level: 250, price: 251.236, pct: 1.2, ccy: 'USD' });
-    expect(p.url).toBe('/app/?open=invest-siguiendo');
+    expect(p.url).toBe('/app/?open=invest-alertas');
     expect(p.tag).toBe('invest-alert-a1');
     expect(JSON.stringify(p)).not.toMatch(/user|u1|shares|cost/);
     expect(buildAlertPayload(row({ condition: 'below', threshold: 5000, symbol: 'SQM-B.SN' }), { price: 4990, currency: 'CLP' }).body).toBe('SQM-B.SN bajó a 4990 CLP. Tu nivel: 5000 CLP.');
@@ -102,14 +124,17 @@ describe('aviso push', () => {
 });
 
 describe('runAlertsCheck (fetch simulado)', () => {
-  function deps(over: Record<string, unknown> = {}) {
+  function deps(over: Record<string, unknown> = {}, route: (url: string, init?: RequestInit) => Response | null = () => null) {
     const calls: { url: string; init?: RequestInit }[] = [];
     const alerts = [row(), row({ id: 'a2', user_id: 'u2', symbol: 'MSFT', condition: 'below', threshold: 300 }), row({ id: 'a3', symbol: 'SPY', threshold: 999 })];
     const fetchImpl = vi.fn(async (url: string, init?: RequestInit) => {
       calls.push({ url, init });
+      const custom = route(url, init);
+      if (custom) return custom;
       if (url.includes('/rest/v1/invest_alerts?select=')) return new Response(JSON.stringify(alerts), { status: 200 });
       if (url.startsWith('https://invest.test/api/quote')) return new Response(JSON.stringify({ AAPL: { price: 255, changePct: 0.01 }, MSFT: { price: 299 }, SPY: { price: 600 } }), { status: 200 });
       if (url.includes('/rest/v1/invest_alerts?id=in.')) return new Response(JSON.stringify([{ id: 'a1' }, { id: 'a2' }]), { status: 200 });
+      if (url.endsWith('/rest/v1/rpc/invest_alerts_mark_checked')) return new Response('3', { status: 200 });
       if (url.endsWith('/rest/v1/rpc/invest_alert_push_targets')) return new Response(JSON.stringify([
         { user_id: 'u1', sub_id: 's1', endpoint: 'https://push/1', p256dh: 'p', auth: 'k' },
         { user_id: 'u1', sub_id: 's2', endpoint: 'https://push/2', p256dh: 'p', auth: 'k' },
@@ -124,7 +149,7 @@ describe('runAlertsCheck (fetch simulado)', () => {
   it('cotiza en lote, reclama, avisa a cada dispositivo y limpia suscripciones muertas', async () => {
     const { calls, sendPush, d } = deps();
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ alerts: 3, symbols: 3, quoted: 3, due: 2, claimed: 2, sent: 1, noDevice: 1, removedSubs: 1, errors: 0 });
+    expect(r).toMatchObject({ alerts: 3, symbols: 3, quoted: 3, checked: 3, due: 2, claimed: 2, sent: 1, noDevice: 1, removedSubs: 1, released: 0, errors: 0 });
     const quoteCalls = calls.filter(c => c.url.startsWith('https://invest.test'));
     expect(quoteCalls).toHaveLength(1);
     expect(quoteCalls[0].url).toBe('https://invest.test/api/quote?ticker=AAPL,MSFT,SPY');
@@ -142,6 +167,67 @@ describe('runAlertsCheck (fetch simulado)', () => {
     expect(r.due).toBe(2);
     expect(calls.some(c => c.init?.method === 'PATCH')).toBe(false);
     expect(sendPush).not.toHaveBeenCalled();
+  });
+
+  it('pide los destinos ANTES de reclamar; si fallan, lanza y no marca nada', async () => {
+    const { calls, sendPush, d } = deps({}, (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response('x', { status: 503 }) : null));
+    await expect(runAlertsCheck(d, NOW)).rejects.toThrow('invest_alert_push_targets 503');
+    expect(calls.some(c => c.init?.method === 'PATCH')).toBe(false);
+    expect(sendPush).not.toHaveBeenCalled();
+    const ok = deps();
+    await runAlertsCheck(ok.d, NOW);
+    const iT = ok.calls.findIndex(c => c.url.endsWith('/rpc/invest_alert_push_targets'));
+    const iC = ok.calls.findIndex(c => c.url.includes('invest_alerts?id=in.'));
+    expect(iT).toBeGreaterThan(-1);
+    expect(iT).toBeLessThan(iC);
+  });
+
+  it('un aviso que no llegó por la red o un 5xx se desmarca; uno sin dispositivo, no', async () => {
+    const { calls, d } = deps({ sendPush: vi.fn(async () => { throw new Error('net') }) });
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ claimed: 2, sent: 0, noDevice: 1, released: 1 });
+    expect(r.errors).toBeGreaterThan(0);
+    const patches = calls.filter(c => c.init?.method === 'PATCH');
+    expect(patches).toHaveLength(2); // reclamo + devolución
+    expect(patches[1].url).toContain(unclaimPath(['a1'], NOW));
+    expect(JSON.parse(String(patches[1].init?.body))).toEqual({ last_triggered_at: null });
+  });
+
+  it('un 5xx del servicio push devuelve el reclamo a su valor anterior; un 201 en otro dispositivo, no', async () => {
+    const prev = new Date(NOW - 2 * COOLDOWN_MS).toISOString();
+    const alerts = [row({ last_triggered_at: prev })];
+    const route = (url: string) => (url.includes('invest_alerts?select=') ? new Response(JSON.stringify(alerts), { status: 200 }) : null);
+    const five = deps({ sendPush: vi.fn(async () => new Response(null, { status: 503 })) }, route);
+    const r = await runAlertsCheck(five.d, NOW);
+    expect(r.released).toBe(1);
+    const back = five.calls.filter(c => c.init?.method === 'PATCH')[1];
+    expect(JSON.parse(String(back.init?.body))).toEqual({ last_triggered_at: prev });
+    const mixed = deps({ sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/1') ? 201 : 503 })) }, route);
+    const r2 = await runAlertsCheck(mixed.d, NOW);
+    expect(r2).toMatchObject({ sent: 1, released: 0 });
+  });
+
+  it('sin tiempo (presupuesto de la corrida) no manda más y desmarca lo pendiente', async () => {
+    let t = 0;
+    const { sendPush, d } = deps({ clock: () => (t += 1000), budgetMs: 1500 });
+    const r = await runAlertsCheck(d, NOW);
+    expect(r.outOfTime).toBe(true);
+    expect(sendPush).not.toHaveBeenCalled();
+    expect(r.released).toBe(1);
+  });
+
+  it('marca como revisadas las alertas de los símbolos pedidos (rotación)', async () => {
+    const { calls, d } = deps();
+    await runAlertsCheck(d, NOW);
+    const mark = calls.find(c => c.url.endsWith('/rpc/invest_alerts_mark_checked'))!;
+    expect(JSON.parse(String(mark.init?.body))).toEqual({ p_ids: ['a1', 'a2', 'a3'], p_at: new Date(NOW).toISOString() });
+    expect(calls[0].url).toContain('order=last_checked_at.asc.nullsfirst');
+  });
+
+  it('index.ts responde 5xx si hubo errores (así queda registrado) y corta los envíos push con timeout', () => {
+    const src = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
+    expect(src).toMatch(/result\.errors > 0 \? 502 : 200/);
+    expect(src).toMatch(/sendWebPush\(sub, payload, vapid, fetch, FETCH_TIMEOUT_MS\)/);
   });
 
   it('si la lista de alertas falla, lanza (el wrapper de errores la registra)', async () => {

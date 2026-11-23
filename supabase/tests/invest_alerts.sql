@@ -1,4 +1,4 @@
--- Alertas de precio de Inversiones (F4, migración 20261120000100): RLS por cuenta,
+-- Alertas de precio de Inversiones (F4, migraciones 20261120000100 y 20261123000000): RLS por cuenta,
 -- tope de 50, restricciones de la tabla, grants y la función de destinos push.
 -- Solo en la base local de prueba (scripts/test-db); todo termina en ROLLBACK.
 begin;
@@ -105,6 +105,11 @@ begin
     raise exception 'FALLA: authenticated ejecutó invest_alert_push_targets';
   exception when insufficient_privilege then null;
   end;
+  begin
+    perform public.invest_alerts_mark_checked(array[]::uuid[], now());
+    raise exception 'FALLA: authenticated ejecutó invest_alerts_mark_checked';
+  exception when insufficient_privilege then null;
+  end;
   -- Tope de 50 por cuenta (ya tiene 2).
   for i in 1..48 loop
     insert into public.invest_alerts (user_id, symbol, condition, threshold) values (current_setting('test.a')::uuid, 'QQQ', 'above', 100 + i);
@@ -132,6 +137,12 @@ begin
   assert ep = 'https://push.example/alert-a', format('destinos push: %s', ep);
   select count(*) into n from public.invest_alert_push_targets(null);
   assert n = 0, 'null devuelve destinos';
+  -- Rotación (migración 20261123000000): marca las revisadas y solo esas.
+  select public.invest_alerts_mark_checked(array_agg(id), now()) into n from public.invest_alerts where symbol = 'AAPL';
+  assert n = 1, format('mark_checked marcó %s', n);
+  select count(*) into n from public.invest_alerts where last_checked_at is not null;
+  assert n = 1, 'mark_checked tocó otras alertas';
+  assert public.invest_alerts_mark_checked(null, now()) = 0, 'null marcó alertas';
 end
 $$;
 reset role;

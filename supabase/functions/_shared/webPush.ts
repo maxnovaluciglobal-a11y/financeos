@@ -103,6 +103,7 @@ export async function sendWebPush(
   payload: unknown,
   vapid: VapidKeys,
   fetchImpl: typeof fetch = fetch,
+  timeoutMs = 0, // > 0: corta el pedido al servicio push (invest-alerts-check usa 8 s)
 ): Promise<Response> {
   const url = new URL(sub.endpoint);
   const audience = `${url.protocol}//${url.host}`;
@@ -118,5 +119,6 @@ export async function sendWebPush(
       Authorization: `vapid t=${jwt}, k=${vapid.publicKey}`,
     },
     body,
+    ...(timeoutMs > 0 ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
   });
 }

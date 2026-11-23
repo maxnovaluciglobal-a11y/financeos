@@ -8,15 +8,23 @@ Cada carpeta es una función de Supabase (Deno). Reglas generales en `CLAUDE.md`
 
 ## invest-alerts-check (Inversiones F4, 20-nov-2026)
 
-Revisa las alertas de precio activas (`public.invest_alerts`, migración
-`20261120000100_invest_alerts.sql`) y avisa por Web Push a los dispositivos de
+Revisa las alertas de precio activas (`public.invest_alerts`, migraciones
+`20261120000100_invest_alerts.sql` y `20261123000000_invest_alerts_rotation.sql`) y avisa por Web Push a los dispositivos de
 la cuenta, con la app cerrada.
 
 - **Quién la llama:** solo un scheduler, con `POST` y el header
   `x-cron-secret: <CRON_SECRET>` (el mismo secreto que usan `send-push` y
   `cron-health-alert`). Sin CORS: un navegador no puede usarla. `OPTIONS`
   responde 204 sin hacer nada; cualquier otro método, 405.
-- **Qué hace:** lee las alertas activas con service role, pide los precios en
+- **Qué hace:** lee las alertas activas fuera de la espera de 24 h, empezando
+  por las que hace más que no se revisan (`last_checked_at`), reparte los
+  símbolos por cuenta antes del tope de 400 y marca las revisadas con
+  `invest_alerts_mark_checked` (rotación: ninguna cuenta deja a otras sin
+  revisar). Pide los destinos push ANTES de reclamar (si fallan, lanza y no
+  marca nada). Cada pedido tiene timeout de 8 s y la corrida un presupuesto de
+  60 s; un aviso que no llegó a ningún dispositivo por la red, un 429/5xx o
+  falta de tiempo se desmarca para la próxima corrida. Con errores responde
+  502 (queda en `edge_function_errors`). Con service role pide los precios en
   lotes de 10 a `GET https://invest.moyiq.app/api/quote?ticker=…` (los mismos
   endpoints que usa la app, sin cabecera `Origin`, que la API acepta), marca
   `last_triggered_at` con un `PATCH` que solo reclama las alertas sin aviso en
@@ -41,12 +49,14 @@ la cuenta, con la app cerrada.
 
 ### Pasos para ponerla en marcha (no se hicieron: los hace Walter)
 
-1. Aplicar la migración (historial compartido con `invest-web`):
+1. Aplicar las dos migraciones, en orden (historial compartido con `invest-web`):
 
    ```bash
-   supabase db query --linked --project-ref nelwgbcddwiaimzbcuas --workdir "$(mktemp -d)" \
-     -f "$PWD/supabase/migrations/20261120000100_invest_alerts.sql"
-   supabase migration repair --status applied 20261120000100 --linked --project-ref nelwgbcddwiaimzbcuas
+   for v in 20261120000100_invest_alerts 20261123000000_invest_alerts_rotation; do
+     supabase db query --linked --project-ref nelwgbcddwiaimzbcuas --workdir "$(mktemp -d)" \
+       -f "$PWD/supabase/migrations/$v.sql"
+     supabase migration repair --status applied "${v%%_*}" --linked --project-ref nelwgbcddwiaimzbcuas
+   done
    ```
 
 2. Desplegar la función (desde la raíz del repo, en `main`, con el candado):

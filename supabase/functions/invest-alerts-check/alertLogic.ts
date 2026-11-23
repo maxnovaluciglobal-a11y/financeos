@@ -20,7 +20,9 @@ export const QUOTE_BATCH = 10; // /api/quote acepta hasta 10 símbolos por pedid
 export const MAX_SYMBOLS = 400; // tope por corrida (40 pedidos a la API de Invest)
 export const MAX_ALERTS = 5000;
 export const SYMBOL_RE = /^[\^A-Z0-9.=-]{1,15}$/;
-export const APP_URL = "/app/?open=invest-siguiendo";
+export const APP_URL = "/app/?open=invest-alertas"; // Siguiendo › Alertas (src/utils/investNav.js)
+export const FETCH_TIMEOUT_MS = 8000; // cada pedido a la API de Invest y a cada servicio push
+export const RUN_BUDGET_MS = 60000; // presupuesto de la corrida: después no se piden más precios ni se mandan más avisos
 
 // Solo POST y solo con el secreto del cron (x-cron-secret = CRON_SECRET). Sin
 // CORS: nadie la llama desde un navegador. OPTIONS responde 204 sin hacer nada.
@@ -35,8 +37,15 @@ export function guardAlertsRequest(
   return null;
 }
 
-export const activeAlertsPath = (limit = MAX_ALERTS) =>
-  `invest_alerts?select=id,user_id,symbol,condition,threshold,last_triggered_at&active=eq.true&order=created_at.asc&limit=${limit}`;
+// Activas y fuera de la espera de 24 h, empezando por las que hace más que no
+// se revisan (last_checked_at, migración 20261123000000): así ninguna cuenta
+// ocupa siempre los primeros lugares ni las que están en espera llenan la fila.
+export const activeAlertsPath = (now = Date.now(), limit = MAX_ALERTS) => {
+  const since = new Date(now - COOLDOWN_MS).toISOString();
+  return `invest_alerts?select=id,user_id,symbol,condition,threshold,last_triggered_at&active=eq.true` +
+    `&or=(last_triggered_at.is.null,last_triggered_at.lt."${since}")` +
+    `&order=last_checked_at.asc.nullsfirst,created_at.asc&limit=${limit}`;
+};
 
 const ts = (iso: string | null | undefined) => {
   const n = iso ? Date.parse(iso) : NaN;
@@ -68,14 +77,25 @@ export function conditionMet(condition: string, threshold: number, quote: Quote 
   return false;
 }
 
-// Símbolos a cotizar: los de alertas que no están en espera, sin repetir.
+// Símbolos a cotizar: los de alertas que no están en espera, sin repetir y
+// repartidos por cuenta (uno de cada cuenta por vuelta, en el orden de la
+// lista) antes del tope: una cuenta con 50 símbolos no deja sin lugar a otras.
 export function symbolsToQuote(alerts: AlertRow[], now: number, max = MAX_SYMBOLS): string[] {
-  const out = new Set<string>();
+  const byUser = new Map<string, string[]>();
   for (const a of alerts) {
     const s = String(a.symbol || "").toUpperCase();
     if (!SYMBOL_RE.test(s) || inCooldown(a, now)) continue;
-    out.add(s);
-    if (out.size >= max) break;
+    const list = byUser.get(a.user_id) ?? [];
+    if (!list.includes(s)) list.push(s);
+    byUser.set(a.user_id, list);
+  }
+  const queues = [...byUser.values()];
+  const out = new Set<string>();
+  for (let i = 0; out.size < max && queues.some(q => i < q.length); i++) {
+    for (const q of queues) {
+      if (i < q.length) out.add(q[i]);
+      if (out.size >= max) break;
+    }
   }
   return [...out];
 }
@@ -125,6 +145,23 @@ export function claimPath(ids: string[], now: number): string {
   return `invest_alerts?id=in.(${ids.join(",")})&active=eq.true&or=(last_triggered_at.is.null,last_triggered_at.lt."${since}")&select=id`;
 }
 
+// PATCH que devuelve un reclamo que no llegó a ningún dispositivo (red, 5xx o
+// sin tiempo): solo si la marca sigue siendo la de esta corrida.
+export function unclaimPath(ids: string[], now: number): string {
+  return `invest_alerts?id=in.(${ids.join(",")})&last_triggered_at=eq."${new Date(now).toISOString()}"`;
+}
+
+// Alertas revisadas en esta corrida: las de los símbolos que se pidieron
+// (tuvieran precio o no). Las demás siguen primeras en la fila.
+export function checkedIds(alerts: AlertRow[], symbols: string[]): string[] {
+  const set = new Set(symbols);
+  return alerts.filter(a => set.has(String(a.symbol || "").toUpperCase())).map(a => a.id);
+}
+
+// Un envío que se puede reintentar (no llegó por la red o el servicio push
+// falló): 429 y 5xx. Un 4xx distinto de 404/410 no se arregla reintentando.
+export const retryableStatus = (status: number) => status === 429 || status >= 500;
+
 const round = (n: number) => Math.round(n * 10000) / 10000;
 
 // Aviso push. El texto lo arma el service worker en el idioma del navegador
@@ -158,10 +195,20 @@ export type RunDeps = {
   fetchImpl: typeof fetch;
   sendPush: (sub: { endpoint: string; p256dh: string; auth: string }, payload: unknown) => Promise<Response>;
   dryRun?: boolean; // solo cuenta: no marca alertas ni manda avisos
+  clock?: () => number; // para el presupuesto de la corrida (tests)
+  budgetMs?: number;
+  timeoutMs?: number;
 };
 type Target = { user_id: string; sub_id: string; endpoint: string; p256dh: string; auth: string };
 
+const timeoutSignal = (ms: number) => (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal ? AbortSignal.timeout(ms) : undefined);
+
 export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
+  const clock = d.clock ?? Date.now;
+  const started = clock();
+  const budget = d.budgetMs ?? RUN_BUDGET_MS;
+  const outOfTime = () => clock() - started > budget;
+  const timeoutMs = d.timeoutMs ?? FETCH_TIMEOUT_MS;
   const sb = (path: string, init: RequestInit = {}) => d.fetchImpl(`${d.supabaseUrl}/rest/v1/${path}`, {
     ...init,
     headers: {
@@ -172,9 +219,12 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
       ...(init.headers ?? {}),
     },
   });
-  const res = { alerts: 0, symbols: 0, quoted: 0, due: 0, claimed: 0, sent: 0, noDevice: 0, removedSubs: 0, errors: 0 };
+  const res = {
+    alerts: 0, symbols: 0, quoted: 0, checked: 0, due: 0, claimed: 0, sent: 0, noDevice: 0,
+    removedSubs: 0, released: 0, outOfTime: false, errors: 0,
+  };
 
-  const listRes = await sb(activeAlertsPath());
+  const listRes = await sb(activeAlertsPath(now));
   if (!listRes.ok) throw new Error(`invest_alerts ${listRes.status}`);
   const alerts = (await listRes.json()) as AlertRow[];
   res.alerts = alerts.length;
@@ -184,9 +234,13 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
 
   // Precios en lotes de 10, sin Origin (pedido de servidor: la API lo acepta).
   const quotes: Record<string, Quote> = {};
-  for (const path of quotePaths(symbols)) {
+  const asked: string[] = [];
+  const paths = quotePaths(symbols);
+  for (let i = 0; i < paths.length; i++) {
+    if (outOfTime()) { res.outOfTime = true; break; }
+    asked.push(...symbols.slice(i * QUOTE_BATCH, (i + 1) * QUOTE_BATCH));
     try {
-      const r = await d.fetchImpl(`${d.investApiUrl}${path}`, { headers: { Accept: "application/json" } });
+      const r = await d.fetchImpl(`${d.investApiUrl}${paths[i]}`, { headers: { Accept: "application/json" }, signal: timeoutSignal(timeoutMs) });
       if (r.ok) Object.assign(quotes, readQuotes(await r.json()));
       else if (r.status !== 404) res.errors++; // 404 = ningún símbolo del lote tiene precio
     } catch { res.errors++; }
@@ -195,7 +249,25 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
 
   const due = dueAlerts(alerts, quotes, now);
   res.due = due.length;
-  if (!due.length || d.dryRun) return res;
+  if (d.dryRun) return res;
+
+  // Rotación: las revisadas pasan al final de la fila (también las sin precio).
+  const checked = checkedIds(alerts, asked);
+  if (checked.length) {
+    const mRes = await sb("rpc/invest_alerts_mark_checked", { method: "POST", body: JSON.stringify({ p_ids: checked, p_at: new Date(now).toISOString() }) });
+    if (mRes.ok) res.checked = checked.length;
+    else res.errors++;
+  }
+  if (!due.length) return res;
+
+  // A quién avisar, ANTES de reclamar: si esto falla no se marca nada y la
+  // próxima corrida lo vuelve a intentar (el wrapper registra el error).
+  const users = [...new Set(due.map(x => x.alert.user_id))];
+  const tRes = await sb("rpc/invest_alert_push_targets", { method: "POST", body: JSON.stringify({ p_user_ids: users }) });
+  if (!tRes.ok) throw new Error(`invest_alert_push_targets ${tRes.status}`);
+  const targets = (await tRes.json()) as Target[];
+  const byUser = new Map<string, Target[]>();
+  for (const t of targets) byUser.set(t.user_id, [...(byUser.get(t.user_id) || []), t]);
 
   const claimRes = await sb(claimPath(due.map(x => x.alert.id), now), {
     method: "PATCH",
@@ -207,18 +279,20 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   res.claimed = claimed.length;
   if (!claimed.length) return res;
 
-  const users = [...new Set(claimed.map(x => x.alert.user_id))];
-  const tRes = await sb("rpc/invest_alert_push_targets", { method: "POST", body: JSON.stringify({ p_user_ids: users }) });
-  const targets = tRes.ok ? ((await tRes.json()) as Target[]) : [];
-  if (!tRes.ok) res.errors++;
-  const byUser = new Map<string, Target[]>();
-  for (const t of targets) byUser.set(t.user_id, [...(byUser.get(t.user_id) || []), t]);
-
   const dead = new Set<string>();
+  // Reclamos que no llegaron a ningún dispositivo por un fallo que se puede
+  // reintentar (o por falta de tiempo): se devuelven a su valor anterior.
+  const release = new Map<string, string[]>(); // last_triggered_at anterior ('' = null) → ids
+  const toRelease = (a: AlertRow) => {
+    const k = a.last_triggered_at ?? "";
+    release.set(k, [...(release.get(k) || []), a.id]);
+  };
   for (const { alert, quote } of claimed) {
     const subs = (byUser.get(alert.user_id) || []).filter(s => !dead.has(s.sub_id));
-    if (!subs.length) { res.noDevice++; continue; }
+    if (!subs.length) { res.noDevice++; continue; } // sin dispositivo: queda marcada (no hay a quién avisar)
+    if (outOfTime()) { res.outOfTime = true; toRelease(alert); continue; }
     const payload = buildAlertPayload(alert, quote);
+    let delivered = false, retry = false;
     for (const s of subs) {
       try {
         const r = await d.sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, payload);
@@ -227,10 +301,19 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
           dead.add(s.sub_id);
           await sb(`push_subscriptions?id=eq.${s.sub_id}`, { method: "DELETE" });
           res.removedSubs++;
-        } else if (r.ok) res.sent++;
-        else res.errors++;
-      } catch { res.errors++; }
+        } else if (r.ok) { res.sent++; delivered = true; }
+        else { res.errors++; if (retryableStatus(r.status)) retry = true; }
+      } catch { res.errors++; retry = true; }
     }
+    if (!delivered && retry) toRelease(alert);
+  }
+
+  for (const [prev, ids] of release) {
+    try {
+      const r = await sb(unclaimPath(ids, now), { method: "PATCH", body: JSON.stringify({ last_triggered_at: prev || null }) });
+      if (r.ok) res.released += ids.length;
+      else res.errors++;
+    } catch { res.errors++; }
   }
   return res;
 }
