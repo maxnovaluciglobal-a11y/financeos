@@ -26,11 +26,11 @@ export const UI_FLAGS = {
   pageScene: true,
   // Invest completo dentro de moyiq, fase F0 (20-nov-2026): Inversiones pasa a
   // ser una sección con 5 pestañas (Hoy · Portafolio · Lista · Planificar ·
-  // Mercado), ficha del activo y buscador. APAGADO en producción hasta que
-  // Walter lo apruebe; demo y desarrollo local lo muestran. `?ui=invest-full`
+  // Mercado), ficha del activo y buscador. ENCENDIDO en producción desde el
+  // 23-nov-2026 (Walter: publicar todo). `?ui=invest-full`
   // / `?ui=invest-simple` lo fijan en la pestaña. Apagado, Inversiones queda
   // exactamente como antes. Ver investFullOn().
-  investFull: false,
+  investFull: true,
 }
 
 export function registroAutomaticoOn({ isDemo = false, isDev = false } = {}) {

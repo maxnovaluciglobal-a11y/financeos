@@ -31,10 +31,10 @@ describe('uiFlags.inicioLupa', () => {
 })
 
 describe('uiFlags.investFull (Invest completo, F0)', () => {
-  it('apagado en producción por defecto', async () => {
+  it('encendido en producción por defecto', async () => {
     const { investFullOn } = await import('./uiFlags.js')
-    expect(UI_FLAGS.investFull).toBe(false)
-    expect(investFullOn({})).toBe(false)
+    expect(UI_FLAGS.investFull).toBe(true)
+    expect(investFullOn({})).toBe(true)
   })
   it('encendido en el demo y en desarrollo local', async () => {
     const { investFullOn } = await import('./uiFlags.js')
@@ -55,6 +55,6 @@ describe('uiFlags.investFull (Invest completo, F0)', () => {
     const { investFullOn } = await import('./uiFlags.js')
     const boom = { getItem() { throw new Error('x') }, setItem() { throw new Error('x') } }
     expect(investFullOn({ search: '?ui=invest-full', session: boom })).toBe(true)
-    expect(investFullOn({ session: boom })).toBe(false)
+    expect(investFullOn({ session: boom })).toBe(true)
   })
 })
