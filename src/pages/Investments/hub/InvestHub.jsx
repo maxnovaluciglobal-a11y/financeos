@@ -3,7 +3,8 @@
 // ver ../index.jsx). Cinco pestañas arriba (control segmentado del patrón APG)
 // y el buscador de tickers. Resumen (F2, antes "Hoy"), Portafolio (F1:
 // portfolio/PortfolioTab.jsx) y Mercado (F6) ya son las completas; Siguiendo
-// (antes "Lista") y Planificar dicen con honestidad qué traen mientras no están.
+// Siguiendo (F4: follow/Follow.jsx, antes "Lista") también; Planificar dice
+// con honestidad qué trae mientras no está.
 // La pestaña vive en la entrada del historial y en fos_invest_tab (investNav).
 // Arriba, el interruptor "Vista completa" (esencial por defecto,
 // utils/investView.js) y el aviso educativo.
@@ -21,6 +22,8 @@ import s from './hub.module.css'
 // Resumen (F2) y Mercado (F6) en su propio chunk: solo se bajan al abrir la pestaña.
 const Hoy = lazy(() => import('../hoy/Hoy.jsx'))
 const Market = lazy(() => import('../market/Market.jsx'))
+// Siguiendo (F4), igual: Mi lista, Alertas, Descubrir y Comparar con sus textos.
+const Follow = lazy(() => import('../follow/Follow.jsx'))
 
 const safeStorage = {
   getItem: (k) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -96,7 +99,9 @@ export default function InvestHub({ setPage, demo = false }) {
             ? <PortfolioTab setPage={setPage} demo={demo} view={view} />
             : tab === 'mercado'
               ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.mkt.fresh.loading')}</p>}><Market demo={demo} onOpen={open} onTab={go} view={view} /></Suspense>
-              : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
+              : tab === 'siguiendo'
+                ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Follow demo={demo} onOpen={open} view={view} /></Suspense>
+                : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
       </div>
     </div>
   )

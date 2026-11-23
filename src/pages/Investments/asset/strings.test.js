@@ -60,12 +60,10 @@ describe('textos de la ficha del activo', () => {
     expect(used.length).toBeGreaterThan(50)
     expect(used.filter(k => !(k in es) && !(k in appEs))).toEqual([])
   })
-  it('la alerta avisa que llega con Siguiendo; el compartir no lleva datos de la posición', () => {
-    expect(es['asset.alert.soon']).toMatch(/Siguiendo/)
-    // Lo que viene después es la función, no la pestaña (Siguiendo ya existe).
-    expect(es['asset.alert.soon']).toMatch(/más adelante/)
-    expect(es['asset.cmp.more']).toMatch(/más adelante/)
-    expect(es['asset.alert.soon']).not.toMatch(/nueva pestaña/)
+  it('alertas y comparador ya están en Siguiendo (sin "más adelante"); el compartir no lleva datos de la posición', () => {
+    for (const d of Object.values(L)) expect(Object.entries(d).filter(([, v]) => /más adelante|mais adiante|come later|later in|kommt später|kommen später/i.test(v)).map(([k]) => k)).toEqual([])
+    expect('asset.alert.soon' in es).toBe(false)
+    expect(es['asset.cmp.more']).toMatch(/Siguiendo/)
     expect(vars(es['asset.share.text'])).toEqual(['name', 'pct', 'price', 't'])
   })
 })

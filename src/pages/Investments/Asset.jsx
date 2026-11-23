@@ -6,8 +6,9 @@
 //    bolsa (Invest: freshTag y marketStatusBadge); sin cotización, el último
 //    cierre de las velas rotulado como tal;
 //  · 6 acciones: agregar o editar la posición, registrar operación, seguir o
-//    dejar de seguir, alerta (acceso que avisa que llega con la pestaña Lista),
-//    comparar con SPY y compartir o copiar;
+//    dejar de seguir, crear una alerta de precio (follow/AlertSheet.jsx, en el
+//    servidor con push), comparar con SPY (y con hasta 4 en Siguiendo) y
+//    compartir o copiar;
 //  · gráfico de velas (TradingView Lightweight Charts, diferido) con medias de
 //    20/50/200 días, bandas de Bollinger, volumen y capas RSI y MACD, 5 rangos;
 //  · 4 pestañas: Indicadores, Fundamentales (12 métricas, rango de 52 semanas
@@ -25,7 +26,8 @@ import Money from '../../components/Money.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { investApi } from '../../core/investApi.js'
 import { investData, newOperationUid } from '../../core/investData.js'
-import { ASSET_EVENT, assetView, currentAssetTicker, rememberAssetView, tabKeyTarget } from '../../utils/investNav.js'
+import { ASSET_EVENT, assetView, currentAssetTicker, queueFollow, rememberAssetView, tabKeyTarget } from '../../utils/investNav.js'
+import { investAlerts } from '../../core/investAlerts.js'
 import { useInvestAccess } from '../../hooks/useInvestAccess.js'
 import { investFullHere } from '../../utils/uiFlags.js'
 import { fmtPct } from '../../utils/index.js'
@@ -44,6 +46,10 @@ import Brief from './asset/Brief.jsx'
 import { EduNotice, ViewToggle } from './esencial/ViewToggle.jsx'
 import { useInvestView } from './esencial/useInvestView.js'
 import { shows } from '../../utils/investView.js'
+import AlertSheet from './follow/AlertSheet.jsx'
+import { useFollowT } from './follow/dict.js'
+import { demoAlertList, demoSaveAlert } from './follow/useFollowData.js'
+import { usePushOffer } from './follow/shared.js'
 import hub from './hub/hub.module.css'
 import s from './asset/asset.module.css'
 
@@ -98,7 +104,10 @@ export default function InvestAsset({ setPage }) {
   const [layers, setLayers] = useState({ rsi: false, macd: false })
   const [sheet, setSheet] = useState(null) // 'pos' | 'trade' | 'cmp'
   const [closeAsk, setCloseAsk] = useState(false)
-  const [alertNote, setAlertNote] = useState(false)
+  const [alertSheet, setAlertSheet] = useState(false)
+  const [alerts, setAlerts] = useState([])
+  const ft = useFollowT().t
+  const push = usePushOffer(demo)
   const [bench, setBench] = useState({ phase: 'idle', rows: null, t: null })
   const tabRefs = useRef({})
 
@@ -106,7 +115,7 @@ export default function InvestAsset({ setPage }) {
   useEffect(() => {
     const v = assetView()
     setView({ tab: v.tab || 'ind', range: v.range || DEFAULT_RANGE })
-    setLayers({ rsi: false, macd: false }); setSheet(null); setCloseAsk(false); setAlertNote(false)
+    setLayers({ rsi: false, macd: false }); setSheet(null); setCloseAsk(false); setAlertSheet(false)
     setBench({ phase: 'idle', rows: null, t: null })
   }, [ticker])
   useEffect(() => { rememberAssetView(view) }, [view])
@@ -176,6 +185,30 @@ export default function InvestAsset({ setPage }) {
       await navigator.clipboard.writeText(text)
       toast(t('asset.share.copied', { t: ticker }))
     } catch { toast(t('asset.share.failed'), 'error') }
+  }
+
+  // ── Alerta de precio (Siguiendo › Alertas; en el servidor, con push) ──
+  async function openAlert() {
+    setAlertSheet(true)
+    if (demo) { setAlerts(demoAlertList()); return }
+    const r = await investAlerts.list()
+    setAlerts(r.ok ? r.data : [])
+  }
+  const quoteOf = useCallback(async (sym) => (sym === ticker && d.quote.data ? d.quote.data : investApi.quote(sym)), [ticker, d.quote.data])
+  async function saveAlert(prev, input) {
+    if (demo) return demoSaveAlert(prev, input)
+    return prev ? investAlerts.update(prev.id, { ...input, active: prev.active }) : investAlerts.create(input)
+  }
+  function onAlertSaved(r, prev, value) {
+    setAlertSheet(false)
+    const msg = ft('fl.sheet.saved', { t: value.symbol })
+    if (push.state === 'off') toast(`${msg} ${ft('fl.push.off')}`, 'ok', { label: ft('fl.push.enable'), onAction: async () => { if (await push.enable()) toast(ft('fl.push.ok')) } })
+    else toast(msg)
+  }
+  function compareMore() {
+    setSheet(null)
+    queueFollow({ sub: 'comparar', compare: [ticker, benchT] })
+    setPage?.('investments')
   }
 
   const benchT = compareWith(ticker)
@@ -350,7 +383,7 @@ export default function InvestAsset({ setPage }) {
           <button type="button" className={s.act} onClick={() => { setCloseAsk(false); setSheet('trade') }} disabled={d.lots.phase === 'loading'}>
             <ClipboardList size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.trade')}
           </button>
-          <button type="button" className={s.act} aria-expanded={alertNote} aria-controls={`${actsId}-alert`} onClick={() => setAlertNote(v => !v)}>
+          <button type="button" className={s.act} aria-haspopup="dialog" onClick={openAlert}>
             <Bell size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.alert')}
           </button>
           <button type="button" className={s.act} onClick={openCompare}>
@@ -361,9 +394,6 @@ export default function InvestAsset({ setPage }) {
           </button>
         </div>
         {!canEdit && <p id={`${actsId}-multi`} className={s.note}>{t('asset.pos.multi', { n: lots.length, t: ticker })}</p>}
-        <div id={`${actsId}-alert`} role="status">
-          {alertNote && <p className={s.notice}>{t('asset.alert.soon', { t: ticker })}</p>}
-        </div>
       </section>
 
       <ChartPanel ticker={ticker} ccy={ccy} rows={chartRows} phase={chartPhase} range={range.key}
@@ -393,7 +423,9 @@ export default function InvestAsset({ setPage }) {
       <TradeSheet open={sheet === 'trade'} onClose={() => { setSheet(null); setCloseAsk(false) }} ticker={ticker} ccy={ccy} holding={lots[0] || null}
         price={price} rsi={score?.rsi} onSave={saveTrade} closeAsk={closeAsk} onCloseAnswer={answerClose} />
       <CompareSheet open={sheet === 'cmp'} onClose={() => setSheet(null)} a={ticker} b={benchT} rowsA={chartRows} phaseA={chartPhase} rowsB={bench.rows} phaseB={bench.phase}
-        n={range.n} rangeLabel={t(`asset.range.long.${range.key}`)} demo={demo} />
+        n={range.n} rangeLabel={t(`asset.range.long.${range.key}`)} demo={demo} onMore={compareMore} />
+      <AlertSheet open={alertSheet} onClose={() => setAlertSheet(false)} symbol={ticker} lockSymbol quoteOf={quoteOf}
+        avgCost={hasPos && lots.length === 1 ? lots[0].cost : null} alerts={alerts} onSave={saveAlert} onSaved={onAlertSaved} />
     </div>
   )
 }

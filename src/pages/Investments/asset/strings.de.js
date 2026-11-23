@@ -20,7 +20,6 @@ export default {
   'asset.act.compare': 'Mit {b} vergleichen',
   'asset.act.share': 'Teilen',
   'asset.act.more': 'Weitere Aktionen',
-  'asset.alert.soon': 'Kursalarme kommen später, unter Verfolgt: Sie benachrichtigen Sie auf dem Handy, auch wenn die App geschlossen ist. Bis dahin können Sie {t} folgen, um es griffbereit zu haben.',
   'asset.follow.added': 'Sie folgen {t}: Sie finden es unter Verfolgt.',
   'asset.follow.removed': 'Sie folgen {t} nicht mehr.',
   'asset.share.text': '{t}{name}: {price}, {pct} heute. Gesehen in moyiq.',
@@ -255,7 +254,7 @@ export default {
   'asset.cmp.loading': 'Verlauf von {t} wird geladen …',
   'asset.cmp.error': 'Der Verlauf von {t} konnte nicht geladen werden.',
   'asset.cmp.note': 'Ohne risikofreien Zins. Es sind historische Daten: Sie sagen keine Ergebnisse voraus.',
-  'asset.cmp.more': 'Der Vergleich von bis zu 4 Werten kommt später unter Verfolgt.',
+  'asset.cmp.more': 'Bis zu 4 Werte unter Verfolgt vergleichen',
   // Cabecera: frescura del precio y estado de la bolsa (Invest: freshTag, marketStatusBadge).
   'asset.fresh.live': 'Aktuell · {time}',
   'asset.fresh.delayed': '{n} Min. Verzögerung · {time}',

@@ -19,6 +19,8 @@
 // sobrevive a la vuelta de OAuth o del correo de confirmación.
 // F1: Portafolio tiene 4 sub-pestañas (invSub en la misma entrada del
 // historial y `fos_invest_port_tab`, también clave de la cuenta).
+// F4: Siguiendo tiene 4 (invFollow y `fos_invest_follow_tab`). Desde la ficha
+// se puede pedir "Comparar" con ese activo (queueFollow, una vez, en memoria).
 import { bootInitialSearch } from './deepLink.js'
 
 export const INVEST_TABS = ['resumen', 'portafolio', 'siguiendo', 'planificar', 'mercado']
@@ -34,6 +36,11 @@ const TICKER_RE = /^[\^A-Z0-9.\-=]{1,15}$/
 export const PORT_TABS = ['posiciones', 'movimientos', 'dividendos', 'objetivos']
 export const DEFAULT_PORT_TAB = 'posiciones'
 export const PORT_TAB_KEY = 'fos_invest_port_tab'
+
+export const FOLLOW_TABS = ['lista', 'alertas', 'descubrir', 'comparar']
+export const DEFAULT_FOLLOW_TAB = 'lista'
+export const FOLLOW_TAB_KEY = 'fos_invest_follow_tab'
+export const isFollowTab = (t) => FOLLOW_TABS.includes(t)
 
 export const isTab = (t) => INVEST_TABS.includes(t)
 // Pestaña con su nombre actual: la vieja se traduce; cualquier otra cosa, null.
@@ -127,6 +134,34 @@ export function rememberPortTab(sub, storage = null) {
   try { storage?.setItem(PORT_TAB_KEY, sub) } catch { /* modo privado */ }
 }
 
+// Sub-pestaña de Siguiendo: la pedida (queueFollow) → la de esta entrada del
+// historial → la guardada → Mi lista.
+let followQueued = null
+export function queueFollow({ sub = null, compare = null } = {}) {
+  const list = Array.isArray(compare) ? compare.map(normAssetTicker).filter(Boolean).slice(0, 4) : null
+  followQueued = { sub: isFollowTab(sub) ? sub : null, compare: list && list.length ? list : null }
+  queueInvestTab('siguiendo')
+}
+// Lo pedido para Comparar (se lee una sola vez).
+export function takeQueuedCompare() {
+  const c = followQueued?.compare || null
+  if (followQueued) followQueued = { ...followQueued, compare: null }
+  return c
+}
+export function bootFollowTab({ storage = null } = {}) {
+  if (followQueued?.sub) { const sub = followQueued.sub; followQueued = { ...followQueued, sub: null }; mergeHistoryState({ invFollow: sub }); return sub }
+  const st = readHistoryState()?.invFollow
+  if (isFollowTab(st)) return st
+  let saved = null
+  try { saved = storage?.getItem(FOLLOW_TAB_KEY) ?? null } catch { saved = null }
+  return isFollowTab(saved) ? saved : DEFAULT_FOLLOW_TAB
+}
+export function rememberFollowTab(sub, storage = null) {
+  if (!isFollowTab(sub)) return
+  mergeHistoryState({ invFollow: sub })
+  try { storage?.setItem(FOLLOW_TAB_KEY, sub) } catch { /* modo privado */ }
+}
+
 export function currentAssetTicker() {
   return normAssetTicker(readHistoryState()?.invTicker) || memTicker
 }
@@ -165,4 +200,4 @@ export function rememberAssetView({ tab, range } = {}) {
 }
 
 // Solo para pruebas.
-export function __resetInvestNav() { linkUsed = false; memTicker = null; queued = null }
+export function __resetInvestNav() { linkUsed = false; memTicker = null; queued = null; followQueued = null }
