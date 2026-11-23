@@ -21,7 +21,8 @@ vi.mock('../core/auth.js', () => ({
 
 const { loadLang } = await import('../i18n/langCache.js')
 const { translate } = await import('../i18n/translate.js')
-const { default: AuthGate, legalUrls } = await import('./AuthGate.jsx')
+const { default: AuthGate, legalUrls, listenNativeOAuthError } = await import('./AuthGate.jsx')
+const { NATIVE_OAUTH_ERROR_EVENT } = await import('../native/nativeLinks.js')
 
 const render = (lang, search = '', hash = '') => {
   globalThis.__TEST_LANG = lang
@@ -83,5 +84,53 @@ describe('AuthGate: enlace vencido o ya usado (auditoría de correos 18-nov-2026
   it('sin error en la URL no muestra el aviso', () => {
     expect(render('es')).not.toContain('authgate-link-expired')
     expect(render('es', '', '#signup')).not.toContain('authgate-link-expired')
+  })
+})
+
+describe('AuthGate: botón "Ver el demo" solo en la app nativa (NAT-3)', () => {
+  afterEach(() => { delete globalThis.Capacitor })
+
+  it.each(['es', 'en', 'pt', 'de'])('%s: en la app nativa ofrece el demo sin cuenta', (lang) => {
+    globalThis.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' }
+    const html = render(lang)
+    expect(html).toContain('data-testid="authgate-native-demo"')
+    expect(html).toContain('href="/app/?demo=true"')
+    expect(html).toContain(translate(lang, 'authGate.nativeDemoBtn'))
+    expect(translate(lang, 'authGate.nativeDemoBtn')).not.toBe('authGate.nativeDemoBtn')
+    expect(translate(lang, 'authGate.errorNativeOAuth')).not.toBe('authGate.errorNativeOAuth')
+  })
+
+  it('en la web no aparece', () => {
+    expect(render('es')).not.toContain('authgate-native-demo')
+  })
+})
+
+describe('AuthGate: aviso cuando falla el inicio con Google/Apple en la app nativa (NAT-5)', () => {
+  afterEach(() => { delete globalThis.Capacitor })
+  const fakeWindow = () => new EventTarget()
+  const fire = (win) => win.dispatchEvent(new CustomEvent(NATIVE_OAUTH_ERROR_EVENT, { detail: { error: 'bad_code_verifier' } }))
+
+  it.each(['es', 'en', 'pt', 'de'])('%s: al recibir el evento del puente corta la espera y muestra el error traducido', (lang) => {
+    globalThis.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'android' }
+    const win = fakeWindow()
+    const setLoading = vi.fn()
+    const setError = vi.fn()
+    const stop = listenNativeOAuthError(win, (key) => translate(lang, key), { setLoading, setError })
+    fire(win)
+    expect(setLoading).toHaveBeenCalledWith(false)
+    const shown = setError.mock.calls[0][0]
+    expect(shown).toBe(translate(lang, 'authGate.errorNativeOAuth'))
+    expect(shown).not.toBe('authGate.errorNativeOAuth')
+    stop()
+    fire(win)
+    expect(setError).toHaveBeenCalledTimes(1)
+  })
+
+  it('en la web no escucha el evento', () => {
+    const win = fakeWindow()
+    const setError = vi.fn()
+    expect(listenNativeOAuthError(win, (k) => k, { setLoading: vi.fn(), setError })).toBeUndefined()
+    fire(win)
+    expect(setError).not.toHaveBeenCalled()
   })
 })

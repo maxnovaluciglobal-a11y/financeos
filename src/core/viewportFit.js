@@ -32,6 +32,8 @@
 // ajusta AL viewport: --app-h = innerHeight y --vp-gap = 0, la barra queda en
 // la parte visible y la franja muestra el fondo de <html>.
 
+import { isNativeApp } from '../native/platform.js'
+
 // Más que esto no es la zona segura superior: mejor no corregir.
 export const MAX_GAP = 100
 
@@ -39,7 +41,10 @@ export const MAX_GAP = 100
  * Pura: decide la corrección a partir de lo que informa el navegador.
  * @returns {{ appH: number, gap: number } | null}
  */
-export function computeViewportFit({ standalone, innerWidth, innerHeight, screenWidth, screenHeight }) {
+export function computeViewportFit({ standalone, native, innerWidth, innerHeight, screenWidth, screenHeight }) {
+  // App nativa (Capacitor): la vista web ocupa la pantalla entera, el viewport
+  // es el real y env(safe-area-inset-*) funciona. Nada de correcciones de la PWA.
+  if (native === true) return null
   if (standalone !== true) return null
   const vals = [innerWidth, innerHeight, screenWidth, screenHeight]
   if (!vals.every((n) => Number.isFinite(n) && n > 0)) return null
@@ -65,6 +70,7 @@ function readEnv(win) {
   return {
     // navigator.standalone solo existe en iOS/iPadOS: Android y TWA dan undefined.
     standalone: win.navigator?.standalone,
+    native: isNativeApp(win),
     innerWidth: win.innerWidth,
     innerHeight: win.innerHeight,
     screenWidth: win.screen?.width,

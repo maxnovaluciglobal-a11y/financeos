@@ -1,8 +1,9 @@
 // CORS de lead-submit: los formularios públicos de la landing, Invest, la app
 // y el demo + encabezados comunes de navegador (ver ../_shared/cors.ts).
-import { makeCorsHeaders } from "../_shared/cors.ts";
+import { makeCorsHeaders, NATIVE_APP_ORIGINS } from "../_shared/cors.ts";
 
 export const ALLOWED_ORIGINS = [
+  ...NATIVE_APP_ORIGINS,
   "https://moyiq.app",
   "https://www.moyiq.app",
   "https://app.moyiq.app",

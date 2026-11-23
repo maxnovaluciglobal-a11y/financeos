@@ -1,7 +1,8 @@
 // CORS de delete-account (separado de index.ts para poder testearlo).
-import { makeCorsHeaders } from "../_shared/cors.ts";
+import { makeCorsHeaders, NATIVE_APP_ORIGINS } from "../_shared/cors.ts";
 
 export const ALLOWED_ORIGINS = [
+  ...NATIVE_APP_ORIGINS,
   "https://app.moyiq.app",
 ] as const;
 

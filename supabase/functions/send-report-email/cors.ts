@@ -1,9 +1,10 @@
 // CORS de send-report-email: orígenes permitidos de esta función + encabezados comunes
 // de navegador (ver ../_shared/cors.ts). Separado de index.ts para poder
 // testearlo (index.ts lee Deno.env y no se importa desde vitest).
-import { makeCorsHeaders } from "../_shared/cors.ts";
+import { makeCorsHeaders, NATIVE_APP_ORIGINS } from "../_shared/cors.ts";
 
 export const ALLOWED_ORIGINS = [
+  ...NATIVE_APP_ORIGINS,
   "https://app.moyiq.app",
   "https://demo.moyiq.app",
 ] as const;

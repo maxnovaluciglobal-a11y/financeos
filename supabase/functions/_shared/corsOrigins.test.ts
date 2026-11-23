@@ -2,8 +2,8 @@
 // CORS de ninguna Edge Function (desconectado el 20-oct-2026; el nombre se arma
 // por partes para que `git grep` del dominio dé 0 en el repo). Solo orígenes HTTPS de
 // moyiq.app (y sus subdominios). SEC-N10: localhost ya no va en las listas de producción;
-// el desarrollo lo agrega con DEV_ORIGINS. INV-N13: invest-handoff acepta además la app
-// nativa (capacitor://localhost, https://localhost).
+// el desarrollo lo agrega con DEV_ORIGINS. INV-N13: las funciones que llama la app (incluida
+// invest-handoff) aceptan además la app nativa (capacitor://localhost, https://localhost).
 import { describe, it, expect } from 'vitest'
 import * as cancellation from '../send-cancellation-confirmation/cors.ts'
 import * as diagnostico from '../send-nurture-diagnostico-email/cors.ts'
@@ -21,6 +21,7 @@ const LEGACY = 'financeos' + 'pro'
 
 const ALL = { cancellation, diagnostico, invest, starter, optin, report, deleteAccount, feedback, leadSubmit, investHandoff }
 const VALID = /^https:\/\/([a-z0-9-]+\.)*moyiq\.app$/
+// Los dos orígenes de la app nativa (Capacitor), que suman las funciones que llama la app.
 const NATIVE = ['capacitor://localhost', 'https://localhost']
 
 describe('orígenes CORS de las Edge Functions', () => {
@@ -28,7 +29,7 @@ describe('orígenes CORS de las Edge Functions', () => {
     it(`${name}: sin el dominio anterior, sin localhost de desarrollo y solo moyiq.app`, () => {
       for (const o of mod.ALLOWED_ORIGINS) {
         expect(o).not.toContain(LEGACY)
-        if (name === 'investHandoff' && NATIVE.includes(o)) continue
+        if (NATIVE.includes(o)) continue
         expect(o).toMatch(VALID)
       }
       expect(mod.corsHeaders('http://localhost:5173')['Access-Control-Allow-Origin']).toBe(mod.FALLBACK_ORIGIN)
@@ -38,6 +39,15 @@ describe('orígenes CORS de las Edge Functions', () => {
       expect(mod.FALLBACK_ORIGIN).toMatch(/moyiq\.app$/)
     })
   }
+  it('la app nativa llega a las funciones que llama la app, no a las de la landing', () => {
+    for (const mod of [deleteAccount, feedback, leadSubmit, investHandoff, starter, optin, report]) {
+      expect(mod.ALLOWED_ORIGINS).toEqual(expect.arrayContaining(['capacitor://localhost', 'https://localhost']))
+      expect(mod.corsHeaders('capacitor://localhost')['Access-Control-Allow-Origin']).toBe('capacitor://localhost')
+    }
+    for (const mod of [cancellation, diagnostico, invest]) {
+      expect(mod.ALLOWED_ORIGINS).not.toContain('capacitor://localhost')
+    }
+  })
   it('conserva los orígenes de producción que usan la app y la landing', () => {
     expect(starter.ALLOWED_ORIGINS).toEqual(expect.arrayContaining(['https://moyiq.app', 'https://www.moyiq.app', 'https://app.moyiq.app']))
     expect(optin.ALLOWED_ORIGINS).toEqual(expect.arrayContaining(['https://app.moyiq.app', 'https://demo.moyiq.app', 'https://moyiq.app']))

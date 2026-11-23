@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { DemoProvider, useDemo, DemoContext } from './DemoContext.jsx'
-import DemoBanner, { APP_SIGNUP_URL } from './DemoBanner.jsx'
+import DemoBanner, { APP_SIGNUP_URL, NATIVE_SIGNUP_PATH } from './DemoBanner.jsx'
 import { pricingUrl } from '../utils/landingUrls.js'
 import DemoTour, { hasSeenDemoTour } from './DemoTour.jsx'
 import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
@@ -17,6 +17,8 @@ import { useT, useLangReady } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
 import { usePageStack } from '../hooks/usePageStack.js'
 import { prefetchTabs } from '../utils/prefetchTabs.js'
+import { canShowWebCheckout } from '../native/storePolicy.js'
+import { isNativeApp } from '../native/platform.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
@@ -96,19 +98,19 @@ function DemoBottomCTA({ hidden }) {
     <div className="demo-bottom-cta" role="region" aria-label={t('demo.cta.title')}>
       <div style={{ flex: 1, minWidth: 180, paddingRight: 36 }}>
         <div style={{ fontSize: 'var(--t-headline)', fontWeight: 600, fontFamily: 'var(--sans)', marginBottom: 2 }}>{t('demo.cta.title')}</div>
-        <div style={{ fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'var(--on-grad-text-2)' }}>{t('demo.cta.sub', proPriceVars(lang))}</div>
+        <div style={{ fontSize: 'var(--t-subhead)', fontFamily: 'var(--sans)', lineHeight: 1.4, color: 'var(--on-grad-text-2)' }}>{canShowWebCheckout() ? t('demo.cta.sub', proPriceVars(lang)) : t('demo.cta.subNative')}</div>
       </div>
       {/* Mismo destino y texto que el CTA del banner (T09): la app real, en la
           misma pestaña — el registro ya captura el lead. "Ver planes" queda como
           enlace secundario hacia la landing. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-        <a className="fos-btn-primary" href={APP_SIGNUP_URL}
+        <a className="fos-btn-primary" href={isNativeApp() ? NATIVE_SIGNUP_PATH : APP_SIGNUP_URL}
           style={{ width: 'auto', fontSize: 'var(--t-body)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
           {t('demo.banner.start')}
         </a>
-        <a className="demo-banner__plans" href={pricingUrl(lang)} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
+        {canShowWebCheckout() && <a className="demo-banner__plans" href={pricingUrl(lang)} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
           {t('demo.banner.plans')}
-        </a>
+        </a>}
       </div>
       <button
         type="button"

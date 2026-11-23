@@ -9,6 +9,14 @@
 // Cada función conserva su propia lista de orígenes (su cors.ts) y agrega
 // encabezados extra si los necesita (x-cron-secret para el cron).
 
+// Orígenes de la app nativa (Capacitor, repo moyiq-ios-capacitor): la vista web
+// sirve el paquete desde capacitor://localhost en iOS y https://localhost en
+// Android. Solo los suman las funciones que llama la app (no la landing).
+// NAT-16: ese origen queda fijo en capacitor.config.json (hostname localhost,
+// iosScheme capacitor, androidScheme https) y no se cambia: los datos locales
+// dependen de él. Si cambiara, actualizar esta lista y api/fixer.js.
+export const NATIVE_APP_ORIGINS = ["capacitor://localhost", "https://localhost"] as const;
+
 export const BROWSER_ALLOWED_HEADERS = ["authorization", "apikey", "content-type", "x-client-info"] as const;
 
 // SEC-N10: los orígenes de desarrollo (localhost:5173 de Vite, localhost:4323 de la landing)

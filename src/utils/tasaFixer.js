@@ -6,6 +6,7 @@
 // o la API falla — mismo patrón que tasaAR.js/tasaVE.js/indicadores.js.
 
 import { DEFAULT_USD_RATES } from '../pages/shared/constants.js'
+import { apiBase } from '../native/platform.js'
 
 const LS_KEY = 'fnos_tasa_fixer_v1'
 const TTL_MS = 6 * 60 * 60 * 1000
@@ -26,7 +27,8 @@ export async function loadFixerRates() {
   if (cached) return cached
 
   try {
-    const res = await fetch(URL)
+    // En la app nativa el origen es local: /api va al dominio real (apiBase).
+    const res = await fetch(apiBase() + URL)
     const json = await res.json()
     if (!res.ok || !json.rates) throw new Error(json.error || 'sin datos')
     const result = { rates: json.rates, ts: Date.now(), source: 'fixer' }

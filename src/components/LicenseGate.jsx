@@ -13,6 +13,8 @@ import config from '../config.js'
 import { activateUrl } from '../utils/landingLinks.js'
 import { MARKETING_DOI_ENABLED } from '../utils/marketingConsent.js'
 import { logRejection } from '../utils/errorLog.js'
+import { nativePlatform } from '../native/platform.js'
+import { webCheckoutAllowed } from '../native/storePolicy.js'
 import { trackEvent } from '../utils/webAnalytics.js'
 
 // Pro se ofrece con la prueba de 14 días y la elección anual/mensual, igual que la
@@ -38,8 +40,12 @@ async function startCheckout(product, lang, period, account) {
 export default function LicenseGate({ onActivate, userEmail, userId }) {
   const { t, lang } = useT()
   const [period, setPeriod]     = useState(DEFAULT_BILLING_PERIOD)
-  const PLANS = usePlans(t, lang, period)
-  const trialOn = checkoutFor(period).trial
+  // App de tienda (App Store 3.1.1, Play §2): sin clave de licencia, sin precio y
+  // sin checkout de Stripe. Se entra con Starter; Pro llegará con la compra de
+  // la tienda (native/storePolicy.js).
+  const webPay = webCheckoutAllowed(nativePlatform())
+  const PLANS = usePlans(t, lang, period).filter(p => webPay || p.product === 'starter')
+  const trialOn = webPay && checkoutFor(period).trial
   const [key, setKey]           = useState('')
   const [loading, setLoading]   = useState(false)
   const [buying, setBuying]     = useState(null)
@@ -140,6 +146,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--th)' }}>{t('licenseGate.version')}</div>
         </div>
 
+        {webPay && (<>
         {/* Activate */}
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 'var(--t-headline)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6, fontFamily: 'var(--display)' }}>{t('licenseGate.title')}</h1>
@@ -193,6 +200,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--th)', flexShrink: 0 }}>{t('licenseGate.dividerNoLicense')}</span>
           <div style={{ flex: 1, height: '1px', background: 'var(--brd)' }} />
         </div>
+        </>)}
 
         {/* Purchase plans */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
@@ -232,6 +240,12 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           ))}
         </div>
 
+        {!webPay && (
+          <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, margin: '-6px 0 18px' }}>
+            {t('billing.native.unavailable')}
+          </p>
+        )}
+
         {trialOn && (
           <div style={{ marginBottom: 18 }}>
             <PeriodToggle value={period} onChange={setPeriod} />
@@ -242,7 +256,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
             </div>
           </div>
         )}
-        {!trialOn && (
+        {webPay && !trialOn && (
           <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 18 }}>
             <RenewalNote trial={false} />
           </div>

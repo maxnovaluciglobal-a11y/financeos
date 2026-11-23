@@ -7,7 +7,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
-import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
+import { signUpWithPassword, signInWithPassword, signInWithGoogle, signInWithApple, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
+import { nativePlatform, isNativeApp } from '../native/platform.js'
+import { NATIVE_OAUTH_ERROR_EVENT } from '../native/nativeLinks.js'
+import { oauthProviders } from '../native/storePolicy.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
@@ -45,6 +48,16 @@ export function LegalNotice({ t, lang }) {
   )
 }
 
+// NAT-5: aviso del canje fallido de Google/Apple en la app nativa (el evento lo
+// emite native/bridge.js). Fuera de la app nativa no escucha nada. Devuelve la
+// función que deja de escuchar (limpieza del efecto).
+export function listenNativeOAuthError(win, t, { setLoading, setError }) {
+  if (!isNativeApp() || !win?.addEventListener) return undefined
+  const onOAuthError = () => { setLoading(false); setError(t('authGate.errorNativeOAuth')) }
+  win.addEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
+  return () => win.removeEventListener(NATIVE_OAUTH_ERROR_EVENT, onOAuthError)
+}
+
 function friendlyError(t, raw) {
   const m = String(raw || '')
   if (isCaptchaError(m)) return t('authGate.errorCaptcha')
@@ -58,6 +71,8 @@ function friendlyError(t, raw) {
 
 export default function AuthGate({ onAuthenticated }) {
   const { t, lang } = useT()
+  // App Store 4.8: en iOS, Google solo junto con Sign in with Apple (native/storePolicy.js).
+  const providers = oauthProviders(nativePlatform())
   const [tab, setTab] = useState(() => authTabFromSearch(window.location.search, window.location.hash)) // 'login' | 'signup' (?open=signup de un correo, ?signup de la landing)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -92,6 +107,9 @@ export default function AuthGate({ onAuthenticated }) {
       if (clean) window.history.replaceState(window.history.state, '', clean)
     } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   }, [])
+  // NAT-5: en la app nativa, el canje del inicio con Google/Apple ocurre en
+  // native/bridge.js; si falla, avisa acá para que la persona no quede sin respuesta.
+  useEffect(() => listenNativeOAuthError(window, t, { setLoading, setError }), [t])
 
   async function handleSubmit() {
     const cleanEmail = email.trim()
@@ -181,6 +199,14 @@ export default function AuthGate({ onAuthenticated }) {
     const result = await signInWithGoogle()
     if (result.error) setError(friendlyError(t, result.error))
     // Éxito: signInWithGoogle redirige a Google, no hay nada más que hacer acá.
+  }
+
+  async function handleApple() {
+    setError('')
+    clearDeletedNotice()
+    stashOpenForOAuth(window.location.search)
+    const result = await signInWithApple()
+    if (result.error) setError(friendlyError(t, result.error))
   }
 
   const s = {
@@ -379,29 +405,51 @@ export default function AuthGate({ onAuthenticated }) {
           <button type="button" role="tab" id="authgate-tab-signup" style={s.tabBtn(tab === 'signup')} aria-selected={tab === 'signup'} tabIndex={tab === 'signup' ? 0 : -1} onKeyDown={onTabKey} onClick={() => { setTab('signup'); setError('') }}>{t('authGate.tabSignup')}</button>
         </div>
 
-        <button
-          onClick={handleGoogle}
-          style={{
-            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            padding: 11, borderRadius: 8, border: 0, background: 'var(--bg)',
-            color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontWeight: 600, cursor: 'pointer', marginBottom: 14,
-            fontFamily: 'var(--sans)',
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24 24 0 0 0 0 21.56l7.98-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.9l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          {t('authGate.googleBtn')}
-        </button>
+        {providers.includes('apple') && (
+          <button
+            type="button"
+            onClick={handleApple}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              padding: 11, borderRadius: 8, border: 0, background: 'var(--tx)',
+              color: 'var(--bg)', fontSize: 'var(--t-subhead)', fontWeight: 600, cursor: 'pointer', marginBottom: 10,
+              fontFamily: 'var(--sans)',
+            }}
+          >
+            <svg width="14" height="16" viewBox="0 0 814 1000" aria-hidden="true" fill="currentColor">
+              <path d="M788 341c-6 4-108 62-108 190 0 148 130 200 134 202-1 3-21 72-69 142-43 62-88 123-156 123s-86-40-164-40c-77 0-104 41-167 41s-106-57-156-127C44 790 0 668 0 553 0 366 121 267 241 267c63 0 116 42 156 42 38 0 97-44 169-44 27 0 126 2 192 76zM554 160c31-37 53-88 53-139 0-7-1-14-2-20-50 2-110 34-146 76-28 32-55 83-55 135 0 8 1 16 2 18 3 1 9 2 14 2 45 0 101-30 134-72z"/>
+            </svg>
+            {t('authGate.appleBtn')}
+          </button>
+        )}
+        {providers.includes('google') && (
+          <button
+            type="button"
+            onClick={handleGoogle}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              padding: 11, borderRadius: 8, border: 0, background: 'var(--bg)',
+              color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontWeight: 600, cursor: 'pointer', marginBottom: 14,
+              fontFamily: 'var(--sans)',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24 24 0 0 0 0 21.56l7.98-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.9l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            {t('authGate.googleBtn')}
+          </button>
+        )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
-          <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
-          <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
-        </div>
+        {providers.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--th)' }}>{t('authGate.dividerEmail')}</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--brd)' }} />
+          </div>
+        )}
 
         <label htmlFor="authgate-email" style={s.label}>{t('authGate.emailLabel')}</label>
         <input
@@ -479,6 +527,17 @@ export default function AuthGate({ onAuthenticated }) {
         </button>
 
         {tab === 'signup' && <LegalNotice t={t} lang={lang} />}
+
+        {/* NAT-3: en la app de tienda, el demo sin cuenta (lo usa la revisión de Apple/Google). */}
+        {isNativeApp() && (
+          <a
+            href="/app/?demo=true"
+            data-testid="authgate-native-demo"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 14, borderRadius: 8, border: '1px solid var(--brd)', color: 'var(--tx)', fontSize: 'var(--t-subhead)', fontWeight: 600, fontFamily: 'var(--sans)', textDecoration: 'none' }}
+          >
+            {t('authGate.nativeDemoBtn')}
+          </a>
+        )}
 
       </div>
     </div>

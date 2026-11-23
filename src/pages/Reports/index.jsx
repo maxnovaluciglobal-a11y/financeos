@@ -27,6 +27,7 @@ import {
 } from 'recharts'
 import ChartTooltip, { AXIS_TICK, GRID, PREV_LINE } from '../../components/charts/ChartTooltip.jsx'
 import { totalForMonth, cumulativeByDay, prevMonthKey } from '../../utils/chartSeries.js'
+import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { sumAmounts, roundCents, savingGoal, meetsSavingGoal } from '../../utils/monthFigures.js'
 import { monthPlan } from '../../utils/recurring.js'
 import { reportOverBudget, subscriptionsToDeduct } from './reportsModel.js'
@@ -172,7 +173,7 @@ export default function Reports({ setPage }) {
           >
             {pdfLoading ? t('reports.pdf.generating') : t('reports.pdf.download')}
           </button>
-        ) : (
+        ) : canShowWebCheckout() ? (
           <a
             href={pricingUrl(lang)}
             target="_blank"
@@ -187,7 +188,7 @@ export default function Reports({ setPage }) {
           >
             <InlineIcon kind="pdf" size={13} />{t('reports.pdf.pro')}
           </a>
-        )}
+        ) : null}
       </div>
       <div className="kpi-row">
         <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+subsPending>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />

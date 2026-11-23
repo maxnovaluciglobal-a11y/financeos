@@ -26,11 +26,16 @@ import { Btn } from '../components/ui/index.jsx'
 import Logo from '../components/Logo.jsx'
 import BootSplash from '../components/ui/BootSplash.jsx'
 import Turnstile from '../components/Turnstile.jsx'
+import { isNativeApp } from '../native/platform.js'
 import { trackEvent } from '../utils/webAnalytics.js'
 
 const LS_KEY = 'fnos_demo_gate_passed'
 
+// App de tienda: el demo abre sin pedir nombre ni correo. App Store 5.1.1 no
+// deja exigir datos personales para algo que no los necesita, y el demo es lo
+// que usa la revisión de Apple/Google para ver la app sin cuenta.
 export function hasPassedDemoGate() {
+  if (isNativeApp()) return true
   try { return localStorage.getItem(LS_KEY) === '1' } catch { return false }
 }
 

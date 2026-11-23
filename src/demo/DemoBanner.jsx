@@ -12,10 +12,14 @@ import { useDemo } from './DemoContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { demoPersona } from './demoData.js'
 import { pricingUrl } from '../utils/landingUrls.js'
+import { canShowWebCheckout } from '../native/storePolicy.js'
+import { isNativeApp } from '../native/platform.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
 // UX-N4: el CTA del demo abre "Crear cuenta" (no "Iniciar sesión") y marca el origen.
 export const APP_SIGNUP_URL = `${APP_URL}?signup&ref=demo`
+// En la app nativa el CTA se queda dentro del bundle (/app/), con la misma pestaña y origen.
+export const NATIVE_SIGNUP_PATH = '/app/?signup&ref=demo'
 
 export default function DemoBanner({ onReplayTour }) {
   const { setScenario, personaId } = useDemo()
@@ -63,9 +67,9 @@ export default function DemoBanner({ onReplayTour }) {
           <span aria-hidden="true">↕</span>
         </button>
 
-        <a className="demo-banner__plans" href={plansUrl} target="_blank" rel="noopener noreferrer">
+        {canShowWebCheckout() && <a className="demo-banner__plans" href={plansUrl} target="_blank" rel="noopener noreferrer">
           {t('demo.banner.plans')}
-        </a>
+        </a>}
 
         {onReplayTour && (
           <button type="button" className="demo-banner__help" onClick={onReplayTour} aria-label={t('demo.tour.replay')} title={t('demo.tour.replay')}>
@@ -78,7 +82,7 @@ export default function DemoBanner({ onReplayTour }) {
           <MoreHorizontal size={20} strokeWidth={1.8} aria-hidden="true" />
         </button>
 
-        <a className="fos-btn-primary demo-banner__cta" href={APP_SIGNUP_URL}>
+        <a className="fos-btn-primary demo-banner__cta" href={isNativeApp() ? NATIVE_SIGNUP_PATH : APP_SIGNUP_URL}>
           <span className="demo-banner__ctaLong">{t('demo.banner.start')}</span>
           <span className="demo-banner__ctaShort">{t('demo.banner.startShort')}</span>
         </a>
@@ -96,9 +100,9 @@ export default function DemoBanner({ onReplayTour }) {
               {t('demo.tour.replay')}
             </button>
           )}
-          <a className="demo-banner__menuItem" href={plansUrl} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
+          {canShowWebCheckout() && <a className="demo-banner__menuItem" href={plansUrl} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
             {t('demo.banner.plans')}
-          </a>
+          </a>}
         </div>
       )}
     </aside>
