@@ -14,7 +14,8 @@ import { es as appEs } from '../../../i18n/es.js'
 import { en as appEn } from '../../../i18n/en.js'
 import { interpolate } from '../../../i18n/translate.js'
 import { makeFmt } from '../portfolio/format.js'
-import { CADENCES, LADDERS, computeSizing, readPlans, validatePlans } from '../../../utils/investPlan.js'
+import { CADENCES, LADDERS, computeSizing, readPlans, sizeInUsd, validatePlans } from '../../../utils/investPlan.js'
+import { currencyOf } from '../../../utils/investValuation.js'
 import { createDemoInvestStore, demoInvestHoldings, demoInvestPlans, demoInvestQuotes } from '../../../demo/demoInvestBook.js'
 import { DEMO_CAPITAL } from '../../../demo/demoInvestHoy.js'
 import { RULE_DEFAULTS } from '../../../core/investData.js'
@@ -259,3 +260,29 @@ describe('revisión 23-nov', () => {
   })
 })
 
+describe('revisión 23-nov (ronda 2)', () => {
+  const rule = { risk: 1, limit: 25 }
+  it('un plan abierto en la vista esencial usa su capital y su regla: mismas unidades que en la completa', () => {
+    // Plan guardado en la completa: capital 50.000, regla 2 %, entrada 100, stop 90.
+    const seedForm = { ticker: 'VOO', entry: '100', stop: '90', drop: '10', capital: '50000', risk: '2' }
+    const full = calcInputs(seedForm, { full: true, capital: 10000, rule })
+    const ess = calcInputs(seedForm, { full: false, capital: 10000, rule })
+    expect(ess).toMatchObject({ capital: 50000, riskPct: 2, planOverride: true })
+    const size = (i) => sizeInUsd({ entry: i.entry, stop: i.stop, fx: 1, capital: i.capital, riskPct: i.riskPct, limit: i.limit, ticker: 'VOO' })
+    expect(size(ess).units).toBe(size(full).units)
+    expect(size(ess).units).toBe(100)
+    // Sin plan abierto, la esencial usa los de la cuenta y no muestra la nota.
+    expect(calcInputs({ ...seedForm, capital: '', risk: '' }, { full: false, capital: 10000, rule })).toMatchObject({ capital: 10000, riskPct: 1, planOverride: false })
+    for (const l of [es, en, pt, de]) expect(vars(l['plan.calc.planRule'])).toEqual(['cap', 'pct'])
+  })
+  it('moneda desconocida: no se calcula ni se guarda como USD', () => {
+    expect(currencyOf('NPN.JO', null)).toBeNull()
+    const src = readFileSync(join(DIR, 'Calculator.jsx'), 'utf8')
+    expect(src).not.toMatch(/currencyOf\([^)]*\)\s*\|\|\s*'USD'/)
+    expect(src).toMatch(/if \(!ccy\) return \{ error: 'no-ccy' \}/)
+    for (const l of [es, en, pt, de]) {
+      expect(vars(l['plan.calc.err.no-ccy'])).toEqual(['t'])
+      expect(l['plan.calc.ccyUnknown']).toBeTruthy()
+    }
+  })
+})

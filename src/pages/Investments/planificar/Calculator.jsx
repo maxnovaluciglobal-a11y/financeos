@@ -23,24 +23,37 @@ const r2 = (n) => Math.round(n * 100) / 100
 export const ruleDecimals = (v) => (Number.isInteger(v) ? 0 : Number.isInteger(v * 10) ? 1 : 2)
 
 // Formulario → entradas de sizeInUsd según la vista.
+// form.capital y form.risk: en la Vista completa los escribe la persona; en
+// las dos los carga un plan guardado con capital o regla propios. La esencial
+// no los muestra como campos pero SÍ los usa (y lo dice con planOverride):
+// así un plan abierto da las mismas unidades en las dos vistas.
 export function calcInputs(form, { full, capital, rule }) {
   const entry = num(form.entry)
   const drop = form.drop === '' || form.drop == null ? DEFAULT_STOP_PCT * 100 : num(form.drop)
   const dropBad = !full && !(drop > 0 && drop < 100)
   const dropTyped = !full && form.drop !== '' && form.drop != null
-  const riskPct = full && form.risk !== '' ? num(form.risk) : rule.risk
+  const riskTyped = form.risk !== '' && form.risk != null
+  const riskNum = riskTyped ? num(form.risk) : NaN
+  const riskInRange = riskNum >= RISK_MIN && riskNum <= RISK_MAX
   // La regla escrita a mano en la Vista completa tiene los mismos topes que la
-  // de la cuenta (0,1 % a 10 %): fuera de eso no se calcula ni se guarda.
-  const riskBad = full && form.risk !== '' && form.risk != null && !(riskPct >= RISK_MIN && riskPct <= RISK_MAX)
+  // de la cuenta (0,1 % a 10 %): fuera de eso no se calcula ni se guarda. En la
+  // esencial una regla fuera de rango no se usa: vale la de la cuenta.
+  const riskPct = full ? (riskTyped ? riskNum : rule.risk) : (riskTyped && riskInRange ? riskNum : rule.risk)
+  const riskBad = full && riskTyped && !riskInRange
+  const capTyped = form.capital !== '' && form.capital != null
+  const capNum = capTyped ? amount(form.capital) : NaN
+  const cap = full ? (capTyped ? capNum : capital) : (capTyped && capNum > 0 ? capNum : capital)
   // Sin caída escrita, el stop queda vacío: se estima con −8 % y se marca así.
   const stop = full ? (form.stop === '' ? '' : num(form.stop)) : (dropTyped && entry > 0 && !dropBad ? stopFromDrop(entry, drop) : '')
   return {
     entry, stop, dropBad, riskBad,
-    capital: full && form.capital !== '' ? amount(form.capital) : capital,
+    capital: cap,
     riskPct,
     limit: rule.limit / 100,
     // En la esencial la caída que escribió la persona no es una estimación.
     dropTyped,
+    // Esencial con el capital o la regla del plan abierto (no los de la cuenta).
+    planOverride: !full && (cap !== capital || riskPct !== rule.risk),
   }
 }
 
@@ -68,6 +81,11 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
     const ccyOk = PLAN_CCY_RE.test(String(seed.ccy || ''))
     setQuote({ state: 'idle', t: ccyOk ? seed.t || null : null, price: null, ccy: ccyOk ? seed.ccy : null })
   }, [seed]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al llegar un plan nuevo, no al cambiar la regla
+  // Al dejar de editar el plan, la esencial vuelve al capital y la regla de la
+  // cuenta (en la completa quedan a la vista en sus campos).
+  useEffect(() => {
+    if (!editing && !full) setForm(f => (f.capital !== '' || f.risk !== '' ? { ...f, capital: '', risk: '' } : f))
+  }, [editing, full])
 
   const tk = String(form.ticker || '').toUpperCase().trim()
   // Buscar el precio al escribir el símbolo (con una pausa corta).
@@ -90,15 +108,20 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
   }, [tk, demo, quote.t])
 
   const holdingQuote = pb.market.quotes?.[tk]
-  const ccy = currencyOf(tk, quote.t === tk ? quote.ccy : holdingQuote?.currency) || 'USD'
+  // Moneda desconocida (sufijo que no conocemos y sin cotización, o todavía
+  // cargando) = no se calcula: nunca se asume USD (un .JO en ZAc daría ~1.800
+  // veces más unidades). rateOf(null) es null → sizeInUsd responde 'no-fx'.
+  const ccy = currencyOf(tk, quote.t === tk ? quote.ccy : holdingQuote?.currency)
   const fx = ccy === 'USD' ? 1 : rateOf(ccy, pb.rates.rates)
+  const ccyLabel = ccy || t('plan.calc.ccyUnknown')
   const inp = calcInputs(form, { full, capital, rule })
   const res = useMemo(() => {
     if (!tk || !(inp.entry > 0)) return { error: 'empty' }
     if (inp.dropBad) return { error: 'drop' }
     if (inp.riskBad) return { error: 'risk-range' }
+    if (!ccy) return { error: 'no-ccy' }
     return sizeInUsd({ entry: inp.entry, stop: inp.stop, fx, capital: inp.capital, riskPct: inp.riskPct, limit: inp.limit, ticker: tk })
-  }, [tk, inp.entry, inp.stop, inp.dropBad, inp.riskBad, fx, inp.capital, inp.riskPct, inp.limit])
+  }, [tk, inp.entry, inp.stop, inp.dropBad, inp.riskBad, ccy, fx, inp.capital, inp.riskPct, inp.limit])
 
   const set = (k) => (e) => {
     const v = e.target.value
@@ -121,11 +144,13 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
   const ok = !res.error
   const pctFmt = (f, d = 1) => fmt.pct(f, { decimals: d })
   const money = (usd) => m(fmt.money(usd))
-  const nat = (n) => m(fmt.native(n, ccy))
+  // Precio en la moneda del activo; sin moneda conocida, la cifra sola.
+  const natRaw = (n) => (ccy ? fmt.native(n, ccy) : fmt.units(n))
+  const nat = (n) => m(natRaw(n))
   const units = ok ? res.units : 0
   const unitsLabel = ok ? (units === 0 ? t('plan.calc.res.none') : units === 1 ? t('plan.calc.res.unit1') : t('plan.calc.res.units', { n: fmt.units(units) })) : ''
   const errText = res.error && res.error !== 'empty'
-    ? t(res.error === 'drop' ? 'plan.calc.err.drop' : `plan.calc.err.${res.error}`, { ccy, min: fmt.pct(RISK_MIN / 100, { decimals: 1 }), max: fmt.pct(RISK_MAX / 100, { decimals: 0 }) })
+    ? t(res.error === 'drop' ? 'plan.calc.err.drop' : `plan.calc.err.${res.error}`, { ccy: ccyLabel, t: tk, min: fmt.pct(RISK_MIN / 100, { decimals: 1 }), max: fmt.pct(RISK_MAX / 100, { decimals: 0 }) })
     : null
 
   return (
@@ -149,14 +174,14 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
           <input className={s.input} value={form.ticker} onChange={set('ticker')} maxLength={15} autoCapitalize="characters" autoComplete="off" spellCheck={false} placeholder={t('plan.calc.tickerPh')} />
         </label>
         <label className={s.field}>
-          <span className={s.fieldLabel}>{t('plan.calc.entry', { ccy })}</span>
+          <span className={s.fieldLabel}>{t('plan.calc.entry', { ccy: ccyLabel })}</span>
           <input className={s.input} value={form.entry} onChange={set('entry')} inputMode="decimal" autoComplete="off" aria-invalid={res.error === 'no-entry' || undefined} />
         </label>
         {full ? (
           <label className={s.field}>
-            <span className={s.fieldLabel}>{t('plan.calc.stop', { ccy })}</span>
+            <span className={s.fieldLabel}>{t('plan.calc.stop', { ccy: ccyLabel })}</span>
             <input className={s.input} value={form.stop} onChange={set('stop')} inputMode="decimal" autoComplete="off"
-              placeholder={inp.entry > 0 ? t('plan.calc.stopPh', { v: fmt.native(inp.entry * (1 - DEFAULT_STOP_PCT), ccy) }) : ''}
+              placeholder={inp.entry > 0 ? t('plan.calc.stopPh', { v: natRaw(inp.entry * (1 - DEFAULT_STOP_PCT)) }) : ''}
               aria-invalid={res.error === 'stop-not-below-price' || undefined} aria-describedby="plan-calc-stop-help" />
             <span id="plan-calc-stop-help" className={s.help}>{t('plan.calc.stopHelp')}</span>
           </label>
@@ -182,10 +207,13 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
         )}
       </div>
       {full && <p className={s.note}>{t('plan.cap.try')}</p>}
+      {inp.planOverride && (
+        <p className={s.note} role="note">{t('plan.calc.planRule', { cap: money(inp.capital), pct: pctFmt(inp.riskPct / 100, ruleDecimals(inp.riskPct)) })}</p>
+      )}
 
       <p className={s.note} aria-live="polite">
         {quote.t === tk && quote.state === 'loading' ? t('plan.calc.priceLoading')
-          : quote.t === tk && quote.state === 'ready' ? t('plan.calc.priceFrom', { t: tk, v: m(fmt.native(quote.price, ccy)) })
+          : quote.t === tk && quote.state === 'ready' ? t('plan.calc.priceFrom', { t: tk, v: nat(quote.price) })
             : quote.t === tk && quote.state === 'missing' ? t('plan.calc.priceMissing', { t: tk }) : ''}
       </p>
 
@@ -209,14 +237,14 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
               <div className={s.stats}>
                 <div className={s.stat}><span className={s.resultLabel}>{t('plan.calc.full.exposure')}</span><span className={s.statValue}><Money>{fmt.money(res.exposure)}</Money> · {pctFmt(res.exposurePct, 0)}</span></div>
                 <div className={s.stat}><span className={s.resultLabel}>{t('plan.calc.full.atStop')}</span><span className={s.statValue}><Money>{fmt.money(-res.lossAtStop)}</Money> · {pctFmt(res.lossPct, 1)}</span></div>
-                <div className={s.stat}><span className={s.resultLabel}>{t('plan.calc.full.stop')}</span><span className={s.statValue}><Money>{fmt.native(res.stopLocal, ccy)}</Money></span><span className={s.resultText2}>{t(res.stopIsEstimate ? 'plan.calc.full.stopEst' : 'plan.calc.full.stopOwn')}</span></div>
+                <div className={s.stat}><span className={s.resultLabel}>{t('plan.calc.full.stop')}</span><span className={s.statValue}><Money>{natRaw(res.stopLocal)}</Money></span><span className={s.resultText2}>{t(res.stopIsEstimate ? 'plan.calc.full.stopEst' : 'plan.calc.full.stopOwn')}</span></div>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {ok && full && ccy !== 'USD' && (
+      {ok && full && ccy && ccy !== 'USD' && (
         <p className={s.note}>{t('plan.calc.full.ccyNote', { ccy, rate: Number(fx).toLocaleString(moneyLocale(), { maximumFractionDigits: ['CLP', 'COP'].includes(ccy) ? 2 : 4 }) })}</p>
       )}
       {ok && full && res.concentration && (
@@ -231,14 +259,14 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
           <table className={s.table}>
             <caption className={s.between} style={{ captionSide: 'top', textAlign: 'left', padding: '0 0 6px' }}>
               <span className={s.strong}>{t('plan.calc.full.rTitle')}</span>
-              <span className={s.note}>{t('plan.calc.full.rSub', { r: m(fmt.native(res.entryLocal - res.stopLocal, ccy)) })}</span>
+              <span className={s.note}>{t('plan.calc.full.rSub', { r: nat(res.entryLocal - res.stopLocal) })}</span>
             </caption>
             <thead><tr><th scope="col">{t('plan.calc.full.col.scenario')}</th><th scope="col">{t('plan.calc.full.col.price')}</th><th scope="col">{t('plan.calc.full.col.result')}</th></tr></thead>
             <tbody>
               {res.rTable.map(r => (
                 <tr key={r.key}>
                   <th scope="row">{t(`plan.calc.r.${r.key}`)}</th>
-                  <td><Money>{fmt.native(r.priceLocal, ccy)}</Money></td>
+                  <td><Money>{natRaw(r.priceLocal)}</Money></td>
                   <td className={r.pnl < 0 ? s.neg : s.pos}><Money>{fmt.money(r.pnl, { signed: true })}</Money></td>
                 </tr>
               ))}
