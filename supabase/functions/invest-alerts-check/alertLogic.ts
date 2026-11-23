@@ -22,7 +22,13 @@ export const MAX_ALERTS = 5000;
 export const SYMBOL_RE = /^[\^A-Z0-9.=-]{1,15}$/;
 export const APP_URL = "/app/?open=invest-alertas"; // Siguiendo › Alertas (src/utils/investNav.js)
 export const FETCH_TIMEOUT_MS = 8000; // cada pedido a la API de Invest y a cada servicio push
-export const RUN_BUDGET_MS = 60000; // presupuesto de la corrida: después no se piden más precios ni se mandan más avisos
+// Presupuestos separados: los precios no se comen el tiempo de los envíos. Lo
+// reclamado tiene siempre su propio tramo para mandarse (o devolverse).
+export const QUOTE_BUDGET_MS = 35000; // después no se piden más lotes de precios
+export const SEND_BUDGET_MS = 40000; // contado desde el primer envío
+export const QUOTE_CONCURRENCY = 4; // lotes de precios en paralelo (40 lotes ≈ 10 vueltas)
+export const SEND_CONCURRENCY = 4; // cuentas atendidas en paralelo
+export const RPC_BATCH = 500; // ids por llamada a las RPC (van en el cuerpo, no en la URL)
 
 // Solo POST y solo con el secreto del cron (x-cron-secret = CRON_SECRET). Sin
 // CORS: nadie la llama desde un navegador. OPTIONS responde 204 sin hacer nada.
@@ -138,17 +144,18 @@ export function dueAlerts(alerts: AlertRow[], quotes: Record<string, Quote>, now
   return out;
 }
 
-// PATCH que marca el aviso SOLO si nadie lo marcó en las últimas 24 h: si dos
-// corridas se cruzan, la segunda no reclama nada y no hay aviso doble.
-export function claimPath(ids: string[], now: number): string {
-  const since = new Date(now - COOLDOWN_MS).toISOString();
-  return `invest_alerts?id=in.(${ids.join(",")})&active=eq.true&or=(last_triggered_at.is.null,last_triggered_at.lt."${since}")&select=id`;
+// Partir una lista en tandas (RPC de reclamo, devolución y rotación).
+export function chunks<T>(list: T[], size = RPC_BATCH): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
 }
 
-// PATCH que devuelve un reclamo que no llegó a ningún dispositivo (red, 5xx o
-// sin tiempo): solo si la marca sigue siendo la de esta corrida.
-export function unclaimPath(ids: string[], now: number): string {
-  return `invest_alerts?id=in.(${ids.join(",")})&last_triggered_at=eq."${new Date(now).toISOString()}"`;
+// Respuesta de una RPC `returns setof uuid`: PostgREST la manda como lista de
+// valores (["…"]) o, según la versión, como objetos { invest_alerts_claim: "…" }.
+export function readIdList(json: unknown): string[] {
+  if (!Array.isArray(json)) return [];
+  return json.map(v => (typeof v === "string" ? v : v && typeof v === "object" ? String(Object.values(v)[0] ?? "") : "")).filter(Boolean);
 }
 
 // Alertas revisadas en esta corrida: las de los símbolos que se pidieron
@@ -158,9 +165,32 @@ export function checkedIds(alerts: AlertRow[], symbols: string[]): string[] {
   return alerts.filter(a => set.has(String(a.symbol || "").toUpperCase())).map(a => a.id);
 }
 
-// Un envío que se puede reintentar (no llegó por la red o el servicio push
-// falló): 429 y 5xx. Un 4xx distinto de 404/410 no se arregla reintentando.
-export const retryableStatus = (status: number) => status === 429 || status >= 500;
+// Qué hacer con la respuesta del servicio push para UN dispositivo:
+//  · ok: llegó.
+//  · gone (404/410): la suscripción ya no existe; se borra en el momento.
+//  · invalid (400/403): token inválido o firmado con otra clave VAPID; no se
+//    arregla reintentando. Se borra al final de la corrida, salvo que TODOS
+//    los envíos fallen así (eso es la clave VAPID del servidor: alarma).
+//  · retry (429/5xx o red): se puede reintentar; el aviso se devuelve.
+//  · fail: cualquier otro 4xx; cuenta como fallo de envío.
+export type PushOutcome = "ok" | "gone" | "invalid" | "retry" | "fail";
+export function pushOutcome(status: number): PushOutcome {
+  if (status >= 200 && status < 300) return "ok";
+  if (status === 404 || status === 410) return "gone";
+  if (status === 400 || status === 403) return "invalid";
+  if (status === 429 || status >= 500) return "retry";
+  return "fail";
+}
+export const retryableStatus = (status: number) => pushOutcome(status) === "retry";
+
+// ¿La corrida falló? Solo por errores del sistema (lista, precios, RPC,
+// reclamo, devolución, falta de tiempo) o si fallan más de la mitad de los
+// envíos (con al menos 10). Un dispositivo roto de una persona no dispara la
+// alarma de uptime cada 15 minutos.
+export const PUSH_FAIL_MIN = 10;
+export function runFailed(r: { errors: number; pushAttempts: number; pushFailed: number }): boolean {
+  return r.errors > 0 || (r.pushAttempts >= PUSH_FAIL_MIN && r.pushFailed / r.pushAttempts > 0.5);
+}
 
 const round = (n: number) => Math.round(n * 10000) / 10000;
 
@@ -195,20 +225,29 @@ export type RunDeps = {
   fetchImpl: typeof fetch;
   sendPush: (sub: { endpoint: string; p256dh: string; auth: string }, payload: unknown) => Promise<Response>;
   dryRun?: boolean; // solo cuenta: no marca alertas ni manda avisos
-  clock?: () => number; // para el presupuesto de la corrida (tests)
-  budgetMs?: number;
+  clock?: () => number; // para los presupuestos (tests)
+  quoteBudgetMs?: number;
+  sendBudgetMs?: number;
   timeoutMs?: number;
 };
 type Target = { user_id: string; sub_id: string; endpoint: string; p256dh: string; auth: string };
 
 const timeoutSignal = (ms: number) => (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal ? AbortSignal.timeout(ms) : undefined);
 
+// Corre `work` sobre `items` con a lo sumo `n` a la vez.
+async function pool<T>(items: T[], n: number, work: (item: T, i: number) => Promise<void>) {
+  let next = 0;
+  const worker = async () => { while (next < items.length) { const i = next++; await work(items[i], i); } };
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, worker));
+}
+
 export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   const clock = d.clock ?? Date.now;
   const started = clock();
-  const budget = d.budgetMs ?? RUN_BUDGET_MS;
-  const outOfTime = () => clock() - started > budget;
+  const quoteBudget = d.quoteBudgetMs ?? QUOTE_BUDGET_MS;
+  const sendBudget = d.sendBudgetMs ?? SEND_BUDGET_MS;
   const timeoutMs = d.timeoutMs ?? FETCH_TIMEOUT_MS;
+  const at = new Date(now).toISOString();
   const sb = (path: string, init: RequestInit = {}) => d.fetchImpl(`${d.supabaseUrl}/rest/v1/${path}`, {
     ...init,
     headers: {
@@ -219,9 +258,10 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
       ...(init.headers ?? {}),
     },
   });
+  const rpc = (name: string, body: unknown) => sb(`rpc/${name}`, { method: "POST", body: JSON.stringify(body) });
   const res = {
-    alerts: 0, symbols: 0, quoted: 0, checked: 0, due: 0, claimed: 0, sent: 0, noDevice: 0,
-    removedSubs: 0, released: 0, outOfTime: false, errors: 0,
+    alerts: 0, symbols: 0, quoted: 0, quoteSkipped: 0, checked: 0, due: 0, claimed: 0, sent: 0, noDevice: 0,
+    pushAttempts: 0, pushFailed: 0, removedSubs: 0, invalidSubs: 0, pushSystemic: false, released: 0, outOfTime: false, errors: 0,
   };
 
   const listRes = await sb(activeAlertsPath(now));
@@ -232,86 +272,131 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   res.symbols = symbols.length;
   if (!symbols.length) return res;
 
-  // Precios en lotes de 10, sin Origin (pedido de servidor: la API lo acepta).
+  // Precios en lotes de 10, QUOTE_CONCURRENCY a la vez, sin Origin (pedido de
+  // servidor: la API lo acepta). Sin tiempo no se empiezan más lotes: esos
+  // símbolos no cuentan como revisados y siguen primeros en la fila.
   const quotes: Record<string, Quote> = {};
   const asked: string[] = [];
+  const batches = chunks(symbols, QUOTE_BATCH);
   const paths = quotePaths(symbols);
-  for (let i = 0; i < paths.length; i++) {
-    if (outOfTime()) { res.outOfTime = true; break; }
-    asked.push(...symbols.slice(i * QUOTE_BATCH, (i + 1) * QUOTE_BATCH));
+  await pool(paths, QUOTE_CONCURRENCY, async (path, i) => {
+    if (clock() - started > quoteBudget) { res.outOfTime = true; return; }
+    asked.push(...batches[i]);
     try {
-      const r = await d.fetchImpl(`${d.investApiUrl}${paths[i]}`, { headers: { Accept: "application/json" }, signal: timeoutSignal(timeoutMs) });
+      const r = await d.fetchImpl(`${d.investApiUrl}${path}`, { headers: { Accept: "application/json" }, signal: timeoutSignal(timeoutMs) });
       if (r.ok) Object.assign(quotes, readQuotes(await r.json()));
       else if (r.status !== 404) res.errors++; // 404 = ningún símbolo del lote tiene precio
     } catch { res.errors++; }
-  }
+  });
   res.quoted = Object.keys(quotes).length;
+  res.quoteSkipped = symbols.length - asked.length;
+  if (res.quoteSkipped > 0) res.errors++; // sin tiempo para todos los precios: queda registrado
 
-  const due = dueAlerts(alerts, quotes, now);
+  const askedSet = new Set(asked);
+  const due = dueAlerts(alerts.filter(a => askedSet.has(String(a.symbol || "").toUpperCase())), quotes, now);
   res.due = due.length;
   if (d.dryRun) return res;
 
   // Rotación: las revisadas pasan al final de la fila (también las sin precio).
-  const checked = checkedIds(alerts, asked);
-  if (checked.length) {
-    const mRes = await sb("rpc/invest_alerts_mark_checked", { method: "POST", body: JSON.stringify({ p_ids: checked, p_at: new Date(now).toISOString() }) });
-    if (mRes.ok) res.checked = checked.length;
-    else res.errors++;
+  for (const ids of chunks(checkedIds(alerts, asked))) {
+    try {
+      const mRes = await rpc("invest_alerts_mark_checked", { p_ids: ids, p_at: at });
+      if (mRes.ok) res.checked += ids.length;
+      else res.errors++;
+    } catch { res.errors++; }
   }
   if (!due.length) return res;
 
   // A quién avisar, ANTES de reclamar: si esto falla no se marca nada y la
   // próxima corrida lo vuelve a intentar (el wrapper registra el error).
   const users = [...new Set(due.map(x => x.alert.user_id))];
-  const tRes = await sb("rpc/invest_alert_push_targets", { method: "POST", body: JSON.stringify({ p_user_ids: users }) });
+  const tRes = await rpc("invest_alert_push_targets", { p_user_ids: users });
   if (!tRes.ok) throw new Error(`invest_alert_push_targets ${tRes.status}`);
   const targets = (await tRes.json()) as Target[];
-  const byUser = new Map<string, Target[]>();
-  for (const t of targets) byUser.set(t.user_id, [...(byUser.get(t.user_id) || []), t]);
+  const subsOf = new Map<string, Target[]>();
+  for (const t of targets) subsOf.set(t.user_id, [...(subsOf.get(t.user_id) || []), t]);
 
-  const claimRes = await sb(claimPath(due.map(x => x.alert.id), now), {
-    method: "PATCH",
-    body: JSON.stringify({ last_triggered_at: new Date(now).toISOString() }),
-  });
-  if (!claimRes.ok) throw new Error(`claim ${claimRes.status}`);
-  const claimedIds = new Set(((await claimRes.json()) as { id: string }[]).map(r => r.id));
+  // Reclamo por RPC, en tandas: solo lo que nadie avisó en 24 h (si dos
+  // corridas se cruzan, la segunda no reclama nada y no hay aviso doble). Una
+  // tanda que falla no corta las demás.
+  const claimedIds = new Set<string>();
+  for (const ids of chunks(due.map(x => x.alert.id))) {
+    try {
+      const cRes = await rpc("invest_alerts_claim", { p_ids: ids, p_at: at });
+      if (!cRes.ok) { res.errors++; continue; }
+      for (const id of readIdList(await cRes.json())) claimedIds.add(id);
+    } catch { res.errors++; }
+  }
   const claimed = due.filter(x => claimedIds.has(x.alert.id));
   res.claimed = claimed.length;
   if (!claimed.length) return res;
 
-  const dead = new Set<string>();
+  const dead = new Set<string>(); // 404/410: borradas
+  const invalid = new Set<string>(); // 400/403: se borran al final (si no es la clave del servidor)
   // Reclamos que no llegaron a ningún dispositivo por un fallo que se puede
   // reintentar (o por falta de tiempo): se devuelven a su valor anterior.
-  const release = new Map<string, string[]>(); // last_triggered_at anterior ('' = null) → ids
-  const toRelease = (a: AlertRow) => {
-    const k = a.last_triggered_at ?? "";
-    release.set(k, [...(release.get(k) || []), a.id]);
-  };
-  for (const { alert, quote } of claimed) {
-    const subs = (byUser.get(alert.user_id) || []).filter(s => !dead.has(s.sub_id));
-    if (!subs.length) { res.noDevice++; continue; } // sin dispositivo: queda marcada (no hay a quién avisar)
-    if (outOfTime()) { res.outOfTime = true; toRelease(alert); continue; }
-    const payload = buildAlertPayload(alert, quote);
-    let delivered = false, retry = false;
-    for (const s of subs) {
-      try {
-        const r = await d.sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, payload);
-        if (r.status === 404 || r.status === 410) {
+  const release: AlertRow[] = [];
+  const invalidOnly: AlertRow[] = []; // no llegaron solo por 400/403
+  let sendOutOfTime = false;
+  const sendStart = clock();
+
+  const byUser = new Map<string, typeof claimed>();
+  for (const x of claimed) byUser.set(x.alert.user_id, [...(byUser.get(x.alert.user_id) || []), x]);
+  await pool([...byUser.entries()], SEND_CONCURRENCY, async ([userId, items]) => {
+    for (const { alert, quote } of items) {
+      const subs = (subsOf.get(userId) || []).filter(s => !dead.has(s.sub_id) && !invalid.has(s.sub_id));
+      if (!subs.length) { res.noDevice++; continue; } // sin dispositivo: queda marcada (no hay a quién avisar)
+      if (clock() - sendStart > sendBudget) { sendOutOfTime = true; release.push(alert); continue; }
+      const payload = buildAlertPayload(alert, quote);
+      let delivered = false, retry = false, bad = false;
+      for (const s of subs) {
+        res.pushAttempts++;
+        let outcome: PushOutcome;
+        try { outcome = pushOutcome((await d.sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, payload)).status); }
+        catch { outcome = "retry"; }
+        if (outcome === "ok") { res.sent++; delivered = true; continue; }
+        res.pushFailed++;
+        if (outcome === "gone") {
           // Suscripción muerta (desinstaló o quitó el permiso): se limpia, como send-push.
           dead.add(s.sub_id);
-          await sb(`push_subscriptions?id=eq.${s.sub_id}`, { method: "DELETE" });
-          res.removedSubs++;
-        } else if (r.ok) { res.sent++; delivered = true; }
-        else { res.errors++; if (retryableStatus(r.status)) retry = true; }
-      } catch { res.errors++; retry = true; }
+          try {
+            const del = await sb(`push_subscriptions?id=eq.${encodeURIComponent(s.sub_id)}`, { method: "DELETE" });
+            if (del.ok) res.removedSubs++;
+          } catch { /* se reintenta en la próxima corrida */ }
+        } else if (outcome === "invalid") { invalid.add(s.sub_id); bad = true; }
+        else if (outcome === "retry") retry = true;
+      }
+      if (delivered) continue;
+      if (retry) release.push(alert);
+      else if (bad) invalidOnly.push(alert);
     }
-    if (!delivered && retry) toRelease(alert);
+  });
+  if (sendOutOfTime) { res.outOfTime = true; res.errors++; }
+
+  // 400/403: si NADA llegó y hay varias, el problema es del servidor (clave
+  // VAPID): no se borra nada, se devuelven los avisos y suena la alarma. Si no,
+  // son dispositivos rotos: se borran sin alarma.
+  res.invalidSubs = invalid.size;
+  if (invalid.size) {
+    if (res.sent === 0 && invalid.size >= 3) {
+      res.pushSystemic = true;
+      res.errors++;
+      release.push(...invalidOnly);
+    } else {
+      for (const ids of chunks([...invalid], 50)) {
+        try {
+          const del = await sb(`push_subscriptions?id=in.(${ids.map(encodeURIComponent).join(",")})`, { method: "DELETE" });
+          if (del.ok) res.removedSubs += ids.length;
+        } catch { /* se reintenta en la próxima corrida */ }
+      }
+    }
   }
 
-  for (const [prev, ids] of release) {
+  // Devolución por RPC, en tandas: a su valor anterior y primera en la fila.
+  for (const part of chunks(release)) {
     try {
-      const r = await sb(unclaimPath(ids, now), { method: "PATCH", body: JSON.stringify({ last_triggered_at: prev || null }) });
-      if (r.ok) res.released += ids.length;
+      const r = await rpc("invest_alerts_release", { p_ids: part.map(a => a.id), p_prev: part.map(a => a.last_triggered_at ?? null), p_at: at });
+      if (r.ok) res.released += part.length;
       else res.errors++;
     } catch { res.errors++; }
   }

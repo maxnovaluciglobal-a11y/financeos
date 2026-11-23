@@ -96,7 +96,7 @@
    "rls": true
   },
   "public.invest_alerts": {
-   "authenticated": "arwd",
+   "authenticated": "dr",
    "service_role": "arwd",
    "rls": true
   },
@@ -500,6 +500,24 @@
    "anon": "",
    "authenticated": "",
    "service_role": ""
+  },
+  "public.invest_alerts_claim(uuid[], timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.invest_alerts_mark_checked(uuid[], timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.invest_alerts_release(uuid[], timestamp with time zone[], timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
   },
   "public.invest_record_activity()": {
    "kind": "rpc",

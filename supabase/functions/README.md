@@ -17,21 +17,32 @@ la cuenta, con la app cerrada.
   `cron-health-alert`). Sin CORS: un navegador no puede usarla. `OPTIONS`
   responde 204 sin hacer nada; cualquier otro método, 405.
 - **Qué hace:** lee las alertas activas fuera de la espera de 24 h, empezando
-  por las que hace más que no se revisan (`last_checked_at`), reparte los
-  símbolos por cuenta antes del tope de 400 y marca las revisadas con
-  `invest_alerts_mark_checked` (rotación: ninguna cuenta deja a otras sin
-  revisar). Pide los destinos push ANTES de reclamar (si fallan, lanza y no
-  marca nada). Cada pedido tiene timeout de 8 s y la corrida un presupuesto de
-  60 s; un aviso que no llegó a ningún dispositivo por la red, un 429/5xx o
-  falta de tiempo se desmarca para la próxima corrida. Con errores responde
-  502 (queda en `edge_function_errors`). Con service role pide los precios en
-  lotes de 10 a `GET https://invest.moyiq.app/api/quote?ticker=…` (los mismos
-  endpoints que usa la app, sin cabecera `Origin`, que la API acepta), marca
-  `last_triggered_at` con un `PATCH` que solo reclama las alertas sin aviso en
-  las últimas 24 h (dos corridas cruzadas no avisan dos veces) y manda el aviso
-  con `_shared/webPush.ts` (el cifrado de `send-push`). Un movimiento del día
-  (`pct_move`) avisa una sola vez por sesión de mercado. Las suscripciones que
-  responden 404/410 se borran, como en `send-push`.
+  por las que hace más que no se revisan (`last_checked_at`, que la cuenta no
+  puede escribir: grants por columna), reparte los símbolos por cuenta antes
+  del tope de 400 y marca las revisadas con `invest_alerts_mark_checked`
+  (rotación: ninguna cuenta deja a otras sin revisar). Pide los precios en
+  lotes de 10, 4 a la vez, a `GET https://invest.moyiq.app/api/quote?ticker=…`
+  (los mismos endpoints que usa la app, sin cabecera `Origin`, que la API
+  acepta). Pide los destinos push ANTES de reclamar (si fallan, lanza y no
+  marca nada). Reclama con la RPC `invest_alerts_claim` (ids en el cuerpo, en
+  tandas de 500; solo las alertas sin aviso en las últimas 24 h: dos corridas
+  cruzadas no avisan dos veces) y manda el aviso con `_shared/webPush.ts` (el
+  cifrado de `send-push`). Un movimiento del día (`pct_move`) avisa una sola
+  vez por sesión de mercado.
+- **Tiempos:** cada pedido tiene timeout de 8 s. Los precios tienen 35 s y los
+  envíos 40 s propios (contados desde el primer envío): lo reclamado siempre
+  tiene tiempo para mandarse. Un aviso que no llegó a ningún dispositivo por
+  la red, un 429/5xx o falta de tiempo se devuelve con
+  `invest_alerts_release` (vuelve a su valor anterior y queda primero en la
+  fila).
+- **Suscripciones rotas:** 404/410 se borran en el momento; 400/403 (token
+  inválido o firmado con otra clave VAPID) se borran al final de la corrida,
+  sin alarma. Si NADA llegó y hay 3 o más 400/403, es la clave del servidor:
+  no se borra nada, se devuelven los avisos y responde 502.
+- **Cuándo responde 502** (queda en `edge_function_errors` y avisa
+  `uptime-alert`): errores del sistema (precios, RPC, reclamo, devolución,
+  falta de tiempo, clave VAPID) o más de la mitad de los envíos fallidos (con
+  10 o más). Un dispositivo roto de una persona no dispara la alarma.
 - **Destinos:** `invest_alert_push_targets(uuid[])` (solo service role) une
   cuenta → `user_entitlements.license_key` → `push_subscriptions.key_hash`. Una
   cuenta sin licencia o sin avisos activados en ningún dispositivo no recibe el
@@ -49,7 +60,10 @@ la cuenta, con la app cerrada.
 
 ### Pasos para ponerla en marcha (no se hicieron: los hace Walter)
 
-1. Aplicar las dos migraciones, en orden (historial compartido con `invest-web`):
+1. Aplicar las dos migraciones, en orden (historial compartido con `invest-web`).
+   La segunda crea las RPC `invest_alerts_mark_checked`, `invest_alerts_claim`
+   e `invest_alerts_release` y cambia los grants de `invest_alerts` a grants
+   por columna: aplicarla ANTES de desplegar la función.
 
    ```bash
    for v in 20261120000100_invest_alerts 20261123000000_invest_alerts_rotation; do
@@ -83,7 +97,9 @@ la cuenta, con la app cerrada.
    sale de Vault, nunca escrito en el SQL). Cada 15 minutos en un minuto que no
    choca con `newsletter-sync` (`*/10`) ni `uptime-check` (`*/5`), porque
    `cron_health_snapshot()` atribuye las respuestas HTTP por ventana de tiempo
-   (ver `20261031000000_cron_push_reminders_offset.sql`):
+   (ver `20261031000000_cron_push_reminders_offset.sql`). Una corrida puede
+   tardar hasta ~90 s (35 s de precios + 40 s de envíos + RPC): por eso
+   `timeout_milliseconds := 120000` (el de pg_net por defecto es 5 s):
 
    ```sql
    select cron.schedule(
@@ -96,7 +112,8 @@ la cuenta, con la app cerrada.
          'Content-Type', 'application/json',
          'x-cron-secret', coalesce(private.get_secret('cron_secret'), '')
        ),
-       body := '{}'::jsonb
+       body := '{}'::jsonb,
+       timeout_milliseconds := 120000
      );
      $$
    );

@@ -110,6 +110,32 @@ begin
     raise exception 'FALLA: authenticated ejecutó invest_alerts_mark_checked';
   exception when insufficient_privilege then null;
   end;
+  begin
+    perform public.invest_alerts_claim(array[]::uuid[], now());
+    raise exception 'FALLA: authenticated ejecutó invest_alerts_claim';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.invest_alerts_release(array[]::uuid[], array[]::timestamptz[], now());
+    raise exception 'FALLA: authenticated ejecutó invest_alerts_release';
+  exception when insufficient_privilege then null;
+  end;
+  -- Rotación: la cuenta no puede ponerse primera en la fila (grants por columna).
+  begin
+    update public.invest_alerts set last_checked_at = null where symbol = 'AAPL';
+    raise exception 'FALLA: A cambió last_checked_at';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    insert into public.invest_alerts (user_id, symbol, condition, threshold, last_checked_at) values (current_setting('test.a')::uuid, 'IBM', 'above', 1, '-infinity');
+    raise exception 'FALLA: A creó una alerta con last_checked_at propio';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    update public.invest_alerts set created_at = '2000-01-01' where symbol = 'AAPL';
+    raise exception 'FALLA: A cambió created_at';
+  exception when insufficient_privilege then null;
+  end;
   -- Tope de 50 por cuenta (ya tiene 2).
   for i in 1..48 loop
     insert into public.invest_alerts (user_id, symbol, condition, threshold) values (current_setting('test.a')::uuid, 'QQQ', 'above', 100 + i);
@@ -138,11 +164,43 @@ begin
   select count(*) into n from public.invest_alert_push_targets(null);
   assert n = 0, 'null devuelve destinos';
   -- Rotación (migración 20261123000000): marca las revisadas y solo esas.
+  update public.invest_alerts set last_checked_at = null;
   select public.invest_alerts_mark_checked(array_agg(id), now()) into n from public.invest_alerts where symbol = 'AAPL';
   assert n = 1, format('mark_checked marcó %s', n);
   select count(*) into n from public.invest_alerts where last_checked_at is not null;
   assert n = 1, 'mark_checked tocó otras alertas';
   assert public.invest_alerts_mark_checked(null, now()) = 0, 'null marcó alertas';
+  -- Una alerta nueva entra con last_checked_at (espera su turno).
+  insert into public.invest_alerts (user_id, symbol, condition, threshold) values (current_setting('test.b')::uuid, 'IBM', 'above', 1);
+  select count(*) into n from public.invest_alerts where symbol = 'IBM' and last_checked_at is null;
+  assert n = 0, 'una alerta nueva entró sin last_checked_at (se adelanta en la fila)';
+end
+$$;
+reset role;
+
+-- 4b. Reclamo y devolución por RPC (ids en el cuerpo, no en la URL).
+set local role service_role;
+do $$
+declare n int; at1 timestamptz := '2026-11-23 12:00:00+00'; prev timestamptz; ids uuid[];
+begin
+  select array_agg(id) into ids from public.invest_alerts where user_id = current_setting('test.a')::uuid and symbol = 'QQQ';
+  update public.invest_alerts set last_triggered_at = at1 - interval '30 hours' where id = ids[1];
+  update public.invest_alerts set last_triggered_at = at1 - interval '2 hours' where id = ids[2];
+  update public.invest_alerts set active = false where id = ids[3];
+  select count(*) into n from public.invest_alerts_claim(ids, at1);
+  assert n = array_length(ids, 1) - 2, format('claim reclamó %s de %s', n, array_length(ids, 1));
+  select count(*) into n from public.invest_alerts_claim(ids, at1);
+  assert n = 0, 'un segundo reclamo en la misma ventana volvió a reclamar';
+  assert (select last_triggered_at from public.invest_alerts where id = ids[2]) = at1 - interval '2 hours', 'reclamó una alerta en espera';
+  -- Devolver la 1 (con valor anterior) y la 4 (sin valor anterior); la 2 no es de esta corrida.
+  prev := at1 - interval '30 hours';
+  select public.invest_alerts_release(array[ids[1], ids[4], ids[2]], array[prev, null, null]::timestamptz[], at1) into n;
+  assert n = 2, format('release devolvió %s', n);
+  assert (select last_triggered_at from public.invest_alerts where id = ids[1]) = prev, 'no volvió al valor anterior';
+  assert (select last_triggered_at is null and last_checked_at is null from public.invest_alerts where id = ids[4]), 'la devuelta no quedó primera en la fila';
+  assert (select last_triggered_at from public.invest_alerts where id = ids[2]) = at1 - interval '2 hours', 'release tocó una alerta de otra corrida';
+  select count(*) into n from public.invest_alerts_claim(null, at1);
+  assert n = 0, 'null reclamó alertas';
 end
 $$;
 reset role;

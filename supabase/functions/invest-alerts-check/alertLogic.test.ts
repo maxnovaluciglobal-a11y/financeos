@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
-  COOLDOWN_MS, activeAlertsPath, buildAlertPayload, checkedIds, claimPath, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
-  quotePaths, readQuotes, runAlertsCheck, symbolsToQuote, unclaimPath, type AlertRow,
+  COOLDOWN_MS, activeAlertsPath, buildAlertPayload, checkedIds, chunks, conditionMet, dueAlerts, guardAlertsRequest, inCooldown,
+  pushOutcome, quotePaths, readIdList, readQuotes, runAlertsCheck, runFailed, symbolsToQuote, type AlertRow,
 } from './alertLogic.ts';
 import { conditionMet as appConditionMet } from '../../../src/utils/investAlerts.js';
 
@@ -79,11 +79,12 @@ describe('pedidos a la API de Invest', () => {
       .toEqual({ AAPL: { price: 1, changePct: 0.01, currency: 'USD', marketTime: 5 } });
     expect(readQuotes(null)).toEqual({});
   });
-  it('el PATCH reclama solo lo que nadie avisó en 24 h', () => {
-    const p = claimPath(['x', 'y'], NOW);
-    expect(p).toContain('id=in.(x,y)');
-    expect(p).toContain('active=eq.true');
-    expect(p).toContain(`last_triggered_at.lt."${new Date(NOW - COOLDOWN_MS).toISOString()}"`);
+  it('las RPC van en tandas y leen la lista de ids que devuelve PostgREST', () => {
+    expect(chunks([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
+    expect(chunks([], 2)).toEqual([]);
+    expect(readIdList(['a', 'b'])).toEqual(['a', 'b']);
+    expect(readIdList([{ invest_alerts_claim: 'a' }])).toEqual(['a']);
+    expect(readIdList(null)).toEqual([]);
   });
 });
 
@@ -104,9 +105,6 @@ describe('rotación entre cuentas', () => {
   it('revisadas = las de los símbolos pedidos, tengan precio o no', () => {
     expect(checkedIds([row(), row({ id: 'b', symbol: 'ZZZZ1' }), row({ id: 'c', symbol: 'SPY' })], ['AAPL', 'ZZZZ1'])).toEqual(['a1', 'b']);
   });
-  it('la devolución solo toca lo que marcó esta corrida', () => {
-    expect(unclaimPath(['x'], NOW)).toBe(`invest_alerts?id=in.(x)&last_triggered_at=eq."${new Date(NOW).toISOString()}"`);
-  });
 });
 
 describe('aviso push', () => {
@@ -123,110 +121,205 @@ describe('aviso push', () => {
   });
 });
 
+describe('qué hacer con cada respuesta push', () => {
+  it('ok / borrar ya / borrar al final / reintentar / fallo', () => {
+    expect(pushOutcome(201)).toBe('ok');
+    expect(pushOutcome(404)).toBe('gone');
+    expect(pushOutcome(410)).toBe('gone');
+    expect(pushOutcome(400)).toBe('invalid');
+    expect(pushOutcome(403)).toBe('invalid');
+    expect(pushOutcome(429)).toBe('retry');
+    expect(pushOutcome(503)).toBe('retry');
+    expect(pushOutcome(413)).toBe('fail');
+  });
+  it('la corrida falla por errores del sistema o por mayoría de envíos fallidos, no por un dispositivo', () => {
+    expect(runFailed({ errors: 0, pushAttempts: 1, pushFailed: 1 })).toBe(false);
+    expect(runFailed({ errors: 0, pushAttempts: 20, pushFailed: 3 })).toBe(false);
+    expect(runFailed({ errors: 0, pushAttempts: 20, pushFailed: 11 })).toBe(true);
+    expect(runFailed({ errors: 1, pushAttempts: 0, pushFailed: 0 })).toBe(true);
+  });
+});
+
 describe('runAlertsCheck (fetch simulado)', () => {
-  function deps(over: Record<string, unknown> = {}, route: (url: string, init?: RequestInit) => Response | null = () => null) {
+  type Over = Record<string, unknown> & { alerts?: AlertRow[] };
+  function deps(over: Over = {}, route: (url: string, init?: RequestInit) => Response | null = () => null) {
     const calls: { url: string; init?: RequestInit }[] = [];
-    const alerts = [row(), row({ id: 'a2', user_id: 'u2', symbol: 'MSFT', condition: 'below', threshold: 300 }), row({ id: 'a3', symbol: 'SPY', threshold: 999 })];
+    const alerts = over.alerts ?? [row(), row({ id: 'a2', user_id: 'u2', symbol: 'MSFT', condition: 'below', threshold: 300 }), row({ id: 'a3', symbol: 'SPY', threshold: 999 })];
     const fetchImpl = vi.fn(async (url: string, init?: RequestInit) => {
       calls.push({ url, init });
       const custom = route(url, init);
       if (custom) return custom;
       if (url.includes('/rest/v1/invest_alerts?select=')) return new Response(JSON.stringify(alerts), { status: 200 });
       if (url.startsWith('https://invest.test/api/quote')) return new Response(JSON.stringify({ AAPL: { price: 255, changePct: 0.01 }, MSFT: { price: 299 }, SPY: { price: 600 } }), { status: 200 });
-      if (url.includes('/rest/v1/invest_alerts?id=in.')) return new Response(JSON.stringify([{ id: 'a1' }, { id: 'a2' }]), { status: 200 });
+      if (url.endsWith('/rest/v1/rpc/invest_alerts_claim')) return new Response(JSON.stringify(JSON.parse(String(init?.body)).p_ids), { status: 200 });
+      if (url.endsWith('/rest/v1/rpc/invest_alerts_release')) return new Response('1', { status: 200 });
       if (url.endsWith('/rest/v1/rpc/invest_alerts_mark_checked')) return new Response('3', { status: 200 });
       if (url.endsWith('/rest/v1/rpc/invest_alert_push_targets')) return new Response(JSON.stringify([
         { user_id: 'u1', sub_id: 's1', endpoint: 'https://push/1', p256dh: 'p', auth: 'k' },
         { user_id: 'u1', sub_id: 's2', endpoint: 'https://push/2', p256dh: 'p', auth: 'k' },
       ]), { status: 200 });
-      if (url.includes('/rest/v1/push_subscriptions?id=eq.')) return new Response(null, { status: 204 });
+      if (url.includes('/rest/v1/push_subscriptions?id=')) return new Response(null, { status: 204 });
       return new Response('?', { status: 500 });
     });
     const sendPush = vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/2') ? 410 : 201 }));
-    return { calls, sendPush, d: { supabaseUrl: 'https://sb.test', serviceRole: 'sr', investApiUrl: 'https://invest.test', fetchImpl: fetchImpl as unknown as typeof fetch, sendPush, ...over } };
+    const { alerts: _a, ...rest } = over;
+    return { calls, sendPush, d: { supabaseUrl: 'https://sb.test', serviceRole: 'sr', investApiUrl: 'https://invest.test', fetchImpl: fetchImpl as unknown as typeof fetch, sendPush, ...rest } };
   }
+  const body = (c: { init?: RequestInit }) => JSON.parse(String(c.init?.body));
+  const rpcCalls = (calls: { url: string }[], name: string) => calls.filter(c => c.url.endsWith(`/rpc/${name}`));
 
-  it('cotiza en lote, reclama, avisa a cada dispositivo y limpia suscripciones muertas', async () => {
+  it('cotiza en lote, reclama por RPC, avisa a cada dispositivo y limpia suscripciones muertas', async () => {
     const { calls, sendPush, d } = deps();
     const r = await runAlertsCheck(d, NOW);
     expect(r).toMatchObject({ alerts: 3, symbols: 3, quoted: 3, checked: 3, due: 2, claimed: 2, sent: 1, noDevice: 1, removedSubs: 1, released: 0, errors: 0 });
+    expect(runFailed(r)).toBe(false);
     const quoteCalls = calls.filter(c => c.url.startsWith('https://invest.test'));
     expect(quoteCalls).toHaveLength(1);
     expect(quoteCalls[0].url).toBe('https://invest.test/api/quote?ticker=AAPL,MSFT,SPY');
-    const claim = calls.find(c => c.url.includes('invest_alerts?id=in.'))!;
-    expect(claim.init?.method).toBe('PATCH');
-    expect(JSON.parse(String(claim.init?.body))).toEqual({ last_triggered_at: new Date(NOW).toISOString() });
+    const [claim] = rpcCalls(calls, 'invest_alerts_claim');
+    expect(claim.init?.method).toBe('POST');
+    expect(body(claim)).toEqual({ p_ids: ['a1', 'a2'], p_at: new Date(NOW).toISOString() });
+    expect(calls.some(c => c.init?.method === 'PATCH')).toBe(false); // ningún id en la URL
     expect(sendPush).toHaveBeenCalledTimes(2);
     expect(calls.some(c => c.url.endsWith('push_subscriptions?id=eq.s2') && c.init?.method === 'DELETE')).toBe(true);
     for (const c of calls.filter(c => c.url.startsWith('https://sb.test'))) expect((c.init?.headers as Record<string, string>).Authorization).toBe('Bearer sr');
+  });
+
+  it('cientos de alertas: reclamo y rotación en tandas por el cuerpo, nunca en la URL', async () => {
+    const alerts = Array.from({ length: 1200 }, (_, i) => row({ id: `id-${i}`, user_id: `u${i % 30}`, symbol: 'AAPL', threshold: 1 }));
+    const { calls, d } = deps({ alerts });
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ due: 1200, claimed: 1200, checked: 1200 });
+    expect(rpcCalls(calls, 'invest_alerts_claim').map(c => body(c).p_ids.length)).toEqual([500, 500, 200]);
+    expect(rpcCalls(calls, 'invest_alerts_mark_checked')).toHaveLength(3);
+    for (const c of calls) expect(c.url.length).toBeLessThan(600);
+  });
+
+  it('una tanda de reclamo que falla no corta las demás', async () => {
+    let n = 0;
+    const alerts = Array.from({ length: 600 }, (_, i) => row({ id: `id-${i}`, user_id: 'u1', symbol: 'AAPL', threshold: 1 }));
+    const { d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 201 })) }, (url) => (url.endsWith('/rpc/invest_alerts_claim') && n++ === 0 ? new Response('x', { status: 500 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(r.claimed).toBe(100);
+    expect(r.errors).toBe(1);
   });
 
   it('en modo check solo cuenta: no marca ni avisa', async () => {
     const { calls, sendPush, d } = deps({ dryRun: true });
     const r = await runAlertsCheck(d, NOW);
     expect(r.due).toBe(2);
-    expect(calls.some(c => c.init?.method === 'PATCH')).toBe(false);
+    expect(calls.some(c => c.url.includes('/rpc/'))).toBe(false);
     expect(sendPush).not.toHaveBeenCalled();
   });
 
   it('pide los destinos ANTES de reclamar; si fallan, lanza y no marca nada', async () => {
     const { calls, sendPush, d } = deps({}, (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response('x', { status: 503 }) : null));
     await expect(runAlertsCheck(d, NOW)).rejects.toThrow('invest_alert_push_targets 503');
-    expect(calls.some(c => c.init?.method === 'PATCH')).toBe(false);
+    expect(rpcCalls(calls, 'invest_alerts_claim')).toHaveLength(0);
     expect(sendPush).not.toHaveBeenCalled();
     const ok = deps();
     await runAlertsCheck(ok.d, NOW);
     const iT = ok.calls.findIndex(c => c.url.endsWith('/rpc/invest_alert_push_targets'));
-    const iC = ok.calls.findIndex(c => c.url.includes('invest_alerts?id=in.'));
+    const iC = ok.calls.findIndex(c => c.url.endsWith('/rpc/invest_alerts_claim'));
     expect(iT).toBeGreaterThan(-1);
     expect(iT).toBeLessThan(iC);
   });
 
-  it('un aviso que no llegó por la red o un 5xx se desmarca; uno sin dispositivo, no', async () => {
+  it('un aviso que no llegó por la red o un 5xx se devuelve; uno sin dispositivo, no', async () => {
     const { calls, d } = deps({ sendPush: vi.fn(async () => { throw new Error('net') }) });
     const r = await runAlertsCheck(d, NOW);
     expect(r).toMatchObject({ claimed: 2, sent: 0, noDevice: 1, released: 1 });
-    expect(r.errors).toBeGreaterThan(0);
-    const patches = calls.filter(c => c.init?.method === 'PATCH');
-    expect(patches).toHaveLength(2); // reclamo + devolución
-    expect(patches[1].url).toContain(unclaimPath(['a1'], NOW));
-    expect(JSON.parse(String(patches[1].init?.body))).toEqual({ last_triggered_at: null });
+    const [rel] = rpcCalls(calls, 'invest_alerts_release');
+    expect(body(rel)).toEqual({ p_ids: ['a1'], p_prev: [null], p_at: new Date(NOW).toISOString() });
   });
 
   it('un 5xx del servicio push devuelve el reclamo a su valor anterior; un 201 en otro dispositivo, no', async () => {
     const prev = new Date(NOW - 2 * COOLDOWN_MS).toISOString();
     const alerts = [row({ last_triggered_at: prev })];
-    const route = (url: string) => (url.includes('invest_alerts?select=') ? new Response(JSON.stringify(alerts), { status: 200 }) : null);
-    const five = deps({ sendPush: vi.fn(async () => new Response(null, { status: 503 })) }, route);
+    const five = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 503 })) });
     const r = await runAlertsCheck(five.d, NOW);
     expect(r.released).toBe(1);
-    const back = five.calls.filter(c => c.init?.method === 'PATCH')[1];
-    expect(JSON.parse(String(back.init?.body))).toEqual({ last_triggered_at: prev });
-    const mixed = deps({ sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/1') ? 201 : 503 })) }, route);
+    expect(body(rpcCalls(five.calls, 'invest_alerts_release')[0]).p_prev).toEqual([prev]);
+    const mixed = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/1') ? 201 : 503 })) });
     const r2 = await runAlertsCheck(mixed.d, NOW);
     expect(r2).toMatchObject({ sent: 1, released: 0 });
+    expect(runFailed(r2)).toBe(false);
   });
 
-  it('sin tiempo (presupuesto de la corrida) no manda más y desmarca lo pendiente', async () => {
+  it('un 400/403 de un dispositivo borra la suscripción sin alarma', async () => {
+    const { calls, d } = deps({ sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/2') ? 403 : 201 })) });
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, removedSubs: 1, errors: 0, pushSystemic: false });
+    expect(runFailed(r)).toBe(false);
+    expect(calls.some(c => c.url.endsWith('push_subscriptions?id=in.(s2)') && c.init?.method === 'DELETE')).toBe(true);
+  });
+
+  it('si TODOS los envíos dan 403 (clave VAPID del servidor), no borra nada, devuelve los avisos y avisa', async () => {
+    const alerts = ['u1', 'u2', 'u3'].map((u, i) => row({ id: `v${i}`, user_id: u }));
+    const targets = ['u1', 'u2', 'u3'].map((u, i) => ({ user_id: u, sub_id: `s${i}`, endpoint: `https://push/${i}`, p256dh: 'p', auth: 'k' }));
+    const { calls, d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ sent: 0, invalidSubs: 3, removedSubs: 0, pushSystemic: true, released: 3 });
+    expect(runFailed(r)).toBe(true);
+    expect(calls.some(c => c.init?.method === 'DELETE')).toBe(false);
+  });
+
+  it('precios y envíos tienen presupuestos separados: lo reclamado se manda aunque los precios hayan tardado', async () => {
     let t = 0;
-    const { sendPush, d } = deps({ clock: () => (t += 1000), budgetMs: 1500 });
+    const slow = deps({ clock: () => t, quoteBudgetMs: 35000, sendBudgetMs: 40000 }, (url) => {
+      if (url.startsWith('https://invest.test')) t += 34000; // precios lentos, casi todo su tramo
+      return null;
+    });
+    const r = await runAlertsCheck(slow.d, NOW);
+    expect(r).toMatchObject({ claimed: 2, sent: 1, released: 0, outOfTime: false, errors: 0 });
+  });
+
+  it('sin tiempo para precios no se empiezan más lotes: esos símbolos no cuentan como revisados y queda registrado', async () => {
+    let t = 0;
+    const alerts = Array.from({ length: 30 }, (_, i) => row({ id: `q${i}`, user_id: `u${i}`, symbol: `T${i}` }));
+    const { calls, d } = deps({ alerts, clock: () => t, quoteBudgetMs: 1000 }, (url) => {
+      if (url.startsWith('https://invest.test')) { queueMicrotask(() => { t += 5000; }); return new Response('{}', { status: 200 }); }
+      return null;
+    });
+    const r = await runAlertsCheck(d, NOW);
+    // 30 símbolos = 3 lotes: entran todos en la primera vuelta (4 a la vez).
+    expect(calls.filter(c => c.url.startsWith('https://invest.test'))).toHaveLength(3);
+    expect(r.quoteSkipped).toBe(0);
+    const many = Array.from({ length: 80 }, (_, i) => row({ id: `m${i}`, user_id: `u${i}`, symbol: `M${i}` }));
+    t = 0;
+    const big = deps({ alerts: many, clock: () => t, quoteBudgetMs: 1000 }, (url) => {
+      if (url.startsWith('https://invest.test')) { queueMicrotask(() => { t += 5000; }); return new Response('{}', { status: 200 }); }
+      return null;
+    });
+    const r2 = await runAlertsCheck(big.d, NOW);
+    expect(big.calls.filter(c => c.url.startsWith('https://invest.test'))).toHaveLength(4);
+    expect(r2).toMatchObject({ quoteSkipped: 40, outOfTime: true, checked: 40 });
+    expect(runFailed(r2)).toBe(true);
+  });
+
+  it('sin tiempo para enviar, devuelve lo pendiente y queda registrado', async () => {
+    let t = 0;
+    const { sendPush, d } = deps({ clock: () => (t += 1000), sendBudgetMs: 500 });
     const r = await runAlertsCheck(d, NOW);
     expect(r.outOfTime).toBe(true);
     expect(sendPush).not.toHaveBeenCalled();
     expect(r.released).toBe(1);
+    expect(runFailed(r)).toBe(true);
   });
 
   it('marca como revisadas las alertas de los símbolos pedidos (rotación)', async () => {
     const { calls, d } = deps();
     await runAlertsCheck(d, NOW);
-    const mark = calls.find(c => c.url.endsWith('/rpc/invest_alerts_mark_checked'))!;
-    expect(JSON.parse(String(mark.init?.body))).toEqual({ p_ids: ['a1', 'a2', 'a3'], p_at: new Date(NOW).toISOString() });
+    const [mark] = rpcCalls(calls, 'invest_alerts_mark_checked');
+    expect(body(mark)).toEqual({ p_ids: ['a1', 'a2', 'a3'], p_at: new Date(NOW).toISOString() });
     expect(calls[0].url).toContain('order=last_checked_at.asc.nullsfirst');
   });
 
-  it('index.ts responde 5xx si hubo errores (así queda registrado) y corta los envíos push con timeout', () => {
+  it('index.ts responde 5xx según runFailed y corta los envíos push con timeout', () => {
     const src = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
-    expect(src).toMatch(/result\.errors > 0 \? 502 : 200/);
+    expect(src).toMatch(/const failed = runFailed\(result\)/);
+    expect(src).toMatch(/failed \? 502 : 200/);
     expect(src).toMatch(/sendWebPush\(sub, payload, vapid, fetch, FETCH_TIMEOUT_MS\)/);
   });
 
