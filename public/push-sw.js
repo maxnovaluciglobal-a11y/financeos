@@ -3,9 +3,10 @@
 // vite-plugin-pwa (vía workbox.importScripts) — NO reemplaza ni toca la lógica
 // de caché/offline existente, solo agrega estos dos eventos.
 //
-// Privacidad: el "payload" que llega acá es SIEMPRE un recordatorio de sistema
-// (texto fijo tipo "tu prueba vence en 3 días"), nunca datos financieros —
-// esos siguen cifrados de extremo a extremo y el servidor no puede leerlos.
+// Privacidad: el "payload" que llega acá es un recordatorio de sistema (texto
+// fijo tipo "tu prueba vence en 3 días") o una alerta de precio de Inversiones
+// (invest-alerts-check: símbolo, nivel y precio de mercado; nunca posiciones,
+// montos ni movimientos, que siguen cifrados o solo en el dispositivo).
 
 // Textos en el idioma del navegador. El servidor no sabe el idioma del usuario
 // (push_subscriptions no lo guarda), así que manda `i18n: { key, ...vars }` y
@@ -13,11 +14,55 @@
 // El SW no puede leer los ajustes de la app (localStorage), por eso usa
 // navigator.language — el mismo criterio del primer arranque.
 const PUSH_TEXT = {
-  es: { generic: 'Tienes una notificación nueva.', trialExpiring: (n) => `Tu prueba vence en ${n} ${n === 1 ? 'día' : 'días'}. Tus datos se quedan si decides continuar.` },
-  en: { generic: 'You have a new notification.', trialExpiring: (n) => `Your trial ends in ${n} ${n === 1 ? 'day' : 'days'}. Your data stays if you decide to continue.` },
-  pt: { generic: 'Você tem uma notificação nova.', trialExpiring: (n) => `Seu teste termina em ${n} ${n === 1 ? 'dia' : 'dias'}. Seus dados continuam se você decidir seguir.` },
-  de: { generic: 'Sie haben eine neue Benachrichtigung.', trialExpiring: (n) => `Ihre Testphase endet in ${n} ${n === 1 ? 'Tag' : 'Tagen'}. Ihre Daten bleiben erhalten, wenn Sie weitermachen.` },
+  es: {
+    generic: 'Tienes una notificación nueva.',
+    trialExpiring: (n) => `Tu prueba vence en ${n} ${n === 1 ? 'día' : 'días'}. Tus datos se quedan si decides continuar.`,
+    alertTitle: (t) => `Alerta de precio · ${t}`,
+    above: (t, p, l) => `${t} subió a ${p}. Tu nivel: ${l}.`,
+    below: (t, p, l) => `${t} bajó a ${p}. Tu nivel: ${l}.`,
+    pctMove: (t, pct, l) => `${t} se movió ${pct} % hoy. Tu aviso: ${l} % o más.`,
+  },
+  en: {
+    generic: 'You have a new notification.',
+    trialExpiring: (n) => `Your trial ends in ${n} ${n === 1 ? 'day' : 'days'}. Your data stays if you decide to continue.`,
+    alertTitle: (t) => `Price alert · ${t}`,
+    above: (t, p, l) => `${t} rose to ${p}. Your level: ${l}.`,
+    below: (t, p, l) => `${t} fell to ${p}. Your level: ${l}.`,
+    pctMove: (t, pct, l) => `${t} moved ${pct}% today. Your alert: ${l}% or more.`,
+  },
+  pt: {
+    generic: 'Você tem uma notificação nova.',
+    trialExpiring: (n) => `Seu teste termina em ${n} ${n === 1 ? 'dia' : 'dias'}. Seus dados continuam se você decidir seguir.`,
+    alertTitle: (t) => `Alerta de preço · ${t}`,
+    above: (t, p, l) => `${t} subiu para ${p}. Seu nível: ${l}.`,
+    below: (t, p, l) => `${t} caiu para ${p}. Seu nível: ${l}.`,
+    pctMove: (t, pct, l) => `${t} se moveu ${pct}% hoje. Seu alerta: ${l}% ou mais.`,
+  },
+  de: {
+    generic: 'Sie haben eine neue Benachrichtigung.',
+    trialExpiring: (n) => `Ihre Testphase endet in ${n} ${n === 1 ? 'Tag' : 'Tagen'}. Ihre Daten bleiben erhalten, wenn Sie weitermachen.`,
+    alertTitle: (t) => `Preisalarm · ${t}`,
+    above: (t, p, l) => `${t} ist auf ${p} gestiegen. Ihr Niveau: ${l}.`,
+    below: (t, p, l) => `${t} ist auf ${p} gefallen. Ihr Niveau: ${l}.`,
+    pctMove: (t, pct, l) => `${t} hat sich heute um ${pct} % bewegt. Ihr Alarm: ${l} % oder mehr.`,
+  },
 };
+const PUSH_LOCALE = { es: 'es', en: 'en-US', pt: 'pt-BR', de: 'de-DE' };
+
+// Alerta de precio (invest-alerts-check): { key: 'priceAlert', t, cond, level, price, pct, ccy }.
+function priceAlertText(T, lang, i) {
+  const t = String(i.t || '').slice(0, 15);
+  if (!t) return null;
+  const nf = (v, d = 2) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toLocaleString(PUSH_LOCALE[lang] || 'es', { maximumFractionDigits: d }) : '—';
+  };
+  const ccy = i.ccy && i.ccy !== 'USD' ? ` ${String(i.ccy).slice(0, 5)}` : '';
+  if (i.cond === 'above') return { title: T.alertTitle(t), body: T.above(t, nf(i.price) + ccy, nf(i.level) + ccy) };
+  if (i.cond === 'below') return { title: T.alertTitle(t), body: T.below(t, nf(i.price) + ccy, nf(i.level) + ccy) };
+  if (i.cond === 'pct_move') return { title: T.alertTitle(t), body: T.pctMove(t, nf(i.pct), nf(i.level)) };
+  return null;
+}
 function pushLang() {
   const base = String((self.navigator && self.navigator.language) || 'es').slice(0, 2).toLowerCase();
   return PUSH_TEXT[base] ? base : 'es';
@@ -29,6 +74,10 @@ self.addEventListener('push', (event) => {
   try { if (event.data) data = { ...data, ...event.data.json() } } catch {}
   if (data.i18n && data.i18n.key === 'trialExpiring' && Number(data.i18n.days) > 0) {
     data.body = T.trialExpiring(Number(data.i18n.days));
+  }
+  if (data.i18n && data.i18n.key === 'priceAlert') {
+    const txt = priceAlertText(T, pushLang(), data.i18n);
+    if (txt) { data.title = txt.title; data.body = txt.body; }
   }
 
   const options = {

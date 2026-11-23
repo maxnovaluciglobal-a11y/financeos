@@ -181,7 +181,7 @@ export function TradeSheet({ open, onClose, ticker, ccy, holding, price, rsi, on
 }
 
 // ── Comparar con SPY (o QQQ si el activo es SPY) ──
-export function CompareSheet({ open, onClose, a, b, rowsA, phaseA = 'ready', rowsB, phaseB, n, rangeLabel, demo }) {
+export function CompareSheet({ open, onClose, a, b, rowsA, phaseA = 'ready', rowsB, phaseB, n, rangeLabel, demo, onMore }) {
   const { t } = useAssetT()
   const titleRef = useRef(null)
   const title = t('asset.cmp.title', { a, b })
@@ -216,7 +216,8 @@ export function CompareSheet({ open, onClose, a, b, rowsA, phaseA = 'ready', row
                 </table>
               </div>
               <p className={s.body}>{band ? t('asset.cmp.corr', { r: fmtDecimal(st.corr, 2), band: t(`asset.cmp.band.${band}`) }) : t('asset.cmp.corrNone')}</p>
-              <p className={s.note}>{t('asset.cmp.note')} {t('asset.cmp.more')}</p>
+              <p className={s.note}>{t('asset.cmp.note')}</p>
+              {onMore && <Btn variant="ghost" type="button" onClick={onMore}>{t('asset.cmp.more')}</Btn>}
             </>
           )}
         <div className={s.sheetActions}><Btn variant="ghost" type="button" onClick={onClose}>{t('asset.close')}</Btn></div>

@@ -95,6 +95,11 @@
    "service_role": "arwd",
    "rls": true
   },
+  "public.invest_alerts": {
+   "authenticated": "arwd",
+   "service_role": "arwd",
+   "rls": true
+  },
   "public.invest_leads": {
    "authenticated": "r",
    "service_role": "arwd",
@@ -479,6 +484,18 @@
    "service_role": ""
   },
   "public.hash_entitlement_license_key()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
+  "public.invest_alert_push_targets(uuid[])": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.invest_alerts_cap()": {
    "kind": "trigger",
    "anon": "",
    "authenticated": "",

@@ -1,0 +1,31 @@
+/* Siguiendo (F4, 23-nov-2026). Usa la familia de Portafolio
+   (../portfolio/portfolio.module.css) y suma lo propio: chips con estado,
+   rango de 52 semanas, acciones por fila y el gráfico de Comparar.
+   Objetivos de 44 px, foco visible, texto >= 12 px. */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 14px;
+  border: 1px solid var(--brd); border-radius: 999px; background: var(--sur); color: var(--tm);
+  font: inherit; font-size: var(--t-subhead); cursor: pointer; white-space: nowrap;
+}
+.chip[aria-pressed="true"] { background: var(--tx); border-color: var(--tx); color: var(--bg); font-weight: 600; }
+.chip:disabled { cursor: default; }
+.chip:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+
+.listRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px; }
+.alertRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px 0; }
+.alertRow[data-paused="true"] .rowTitle, .alertRow[data-paused="true"] > div > span:first-child { color: var(--th); }
+.rowActs { display: inline-flex; align-items: center; gap: 0; }
+.count { margin-left: 2px; font-size: var(--t-caption, 12px); font-weight: 700; font-variant-numeric: tabular-nums; }
+.wide { min-width: 760px; }
+
+.range { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 96px; }
+.rangeBar { position: relative; display: block; width: 88px; height: 6px; border-radius: 999px; background: var(--fill); }
+.rangeDot { position: absolute; top: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--tx); transform: translateY(-50%); }
+
+.filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 0; padding: 0; border: 0; }
+.filters > div { flex: 1 1 110px; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 0 0 12px; border: 1px solid var(--brd); border-radius: 999px; background: var(--sur); font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+.swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.chartFig { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.chart { display: block; width: 100%; height: 220px; }

@@ -99,5 +99,6 @@ export function sampleNews(ticker) {
   ]
 }
 
-// Lista de ejemplo del demo: el demo empieza siguiendo SPY y QQQ.
-export const DEMO_WATCH = ['SPY', 'QQQ']
+// Lista de ejemplo del demo: el demo empieza siguiendo SPY, QQQ y NVDA (la
+// misma lista en la ficha y en Siguiendo, demoInvestFollow.js).
+export const DEMO_WATCH = ['SPY', 'QQQ', 'NVDA']

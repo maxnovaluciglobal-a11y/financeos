@@ -43,6 +43,26 @@ describe('push-sw.js', () => {
     expect(runPush('en-US', { body: 'Texto propio' }).body).toBe('Texto propio')
   })
 
+  it.each([
+    ['es-CL', 'Alerta de precio · AAPL', 'AAPL subió a 251,5. Tu nivel: 250.'],
+    ['en-US', 'Price alert · AAPL', 'AAPL rose to 251.5. Your level: 250.'],
+    ['pt-BR', 'Alerta de preço · AAPL', 'AAPL subiu para 251,5. Seu nível: 250.'],
+    ['de-DE', 'Preisalarm · AAPL', 'AAPL ist auf 251,5 gestiegen. Ihr Niveau: 250.'],
+  ])('%s: alerta de precio (invest-alerts-check)', (lang, title, body) => {
+    const n = runPush(lang, { title: 'moyiq', body: 'respaldo', i18n: { key: 'priceAlert', t: 'AAPL', cond: 'above', level: 250, price: 251.5, pct: 1, ccy: 'USD' }, tag: 'invest-alert-x', url: '/app/?open=invest-siguiendo' })
+    expect(n.title).toBe(title)
+    expect(n.body).toBe(body)
+    expect(n.tag).toBe('invest-alert-x')
+    expect(n.data.url).toBe('/app/?open=invest-siguiendo')
+  })
+
+  it('alerta en otra moneda y por movimiento del día', () => {
+    expect(runPush('es-CL', { i18n: { key: 'priceAlert', t: 'SQM-B.SN', cond: 'below', level: 40000, price: 39950, ccy: 'CLP' } }).body).toBe('SQM-B.SN bajó a 39.950 CLP. Tu nivel: 40.000 CLP.')
+    expect(runPush('en-US', { i18n: { key: 'priceAlert', t: 'NVDA', cond: 'pct_move', level: 5, price: 180, pct: -6.2 } }).body).toBe('NVDA moved -6.2% today. Your alert: 5% or more.')
+    // Una alerta incompleta queda con el texto de respaldo.
+    expect(runPush('en-US', { body: 'respaldo', i18n: { key: 'priceAlert', cond: 'above' } }).body).toBe('respaldo')
+  })
+
   it('ningún texto usa voseo ni exclamaciones', () => {
     expect(SRC).not.toMatch(/Tenés|[¡!]'/)
   })
