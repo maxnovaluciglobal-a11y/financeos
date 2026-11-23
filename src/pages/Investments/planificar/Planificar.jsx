@@ -1,0 +1,290 @@
+// src/pages/Investments/planificar/Planificar.jsx — pestaña Planificar (F5).
+// Tres partes, como Planificar de Invest (DEST en app/index.html:3503-3506):
+// Calculadora (pb), Aportes (capital) y Planes guardados (plans). Arriba, tu
+// regla de riesgo y tu capital de referencia (Invest los tenía en Ajustes):
+//  · la regla va en los metadatos de la cuenta (invest_risk_rule, decisión de
+//    Walter del 20-nov-2026), 1 % por defecto;
+//  · el capital, en profiles.capital (core/investData.js);
+//  · los planes, en los metadatos de la cuenta (invest_plans, con topes).
+// En el demo todo vive en memoria (demo/demoInvestBook.js). Nada de esto se
+// guarda en el dispositivo: llevan tickers.
+// Vista esencial: "¿Cuánto puedo perder si sale mal?" en palabras y el aporte
+// mensual; stop, R, límite por posición y escaleras, solo en Vista completa.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useApp } from '../../../context/AppContext.jsx'
+import { makeFmt } from '../portfolio/format.js'
+import { TradeSheet } from '../portfolio/sheets.jsx'
+import { usePT } from '../portfolio/text.js'
+import { usePortfolioBook } from '../portfolio/usePortfolioBook.js'
+import { useTargets } from '../portfolio/targetsStore.js'
+import { validateCapital, validateRiskRule } from '../../../core/investData.js'
+import { amount, MAX_PLANS, newPlanId, normalizePlan, removePlan, restorePlan, tradePlanFrom, upsertPlan } from '../../../utils/investPlan.js'
+import { shows } from '../../../utils/investView.js'
+import Calculator, { ruleDecimals } from './Calculator.jsx'
+import Aportes from './Aportes.jsx'
+import Plans, { planLabel } from './Plans.jsx'
+import { usePlanT } from './dict.js'
+import s from './planificar.module.css'
+
+export const PLAN_SUBS = ['calc', 'aportes', 'planes']
+const USD = { ccy: 'USD', rate: 1, fallback: false, missing: false }
+
+export function RuleCard({ t, fmt, rule, capital, view, demo, onSaveRule, onSaveCapital }) {
+  const full = shows(view, 'riskR')
+  const [open, setOpen] = useState(false)
+  const [f, setF] = useState({ risk: '', limit: '' })
+  const [errs, setErrs] = useState({})
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState(null)
+  const [cap, setCap] = useState('')
+  const [capErr, setCapErr] = useState(null)
+  const pct = (v) => fmt.pct(v / 100, { decimals: ruleDecimals(v) })
+
+  function start() { setF({ risk: String(rule.risk), limit: String(rule.limit) }); setErrs({}); setMsg(null); setOpen(true) }
+  async function save(e) {
+    e.preventDefault()
+    const v = validateRiskRule({ risk: f.risk, limit: full ? f.limit : rule.limit })
+    if (!v.ok) { setErrs(v.fields); return }
+    setBusy(true)
+    const r = await onSaveRule(v.value)
+    setBusy(false)
+    if (r.ok) { setOpen(false); setMsg(demo ? 'plan.rule.savedDemo' : 'plan.rule.saved') } else setErrs({ form: 'save' })
+  }
+  async function saveCap(e) {
+    e.preventDefault()
+    if (String(cap).trim() === '') { setCapErr('required'); return }
+    const v = validateCapital(amount(cap))
+    if (!v.ok) { setCapErr('invalid'); return }
+    setBusy(true)
+    const r = await onSaveCapital(v.value)
+    setBusy(false)
+    if (r.ok) { setCap(''); setCapErr(null) } else setCapErr('save')
+  }
+
+  return (
+    <section className={s.card} aria-labelledby="plan-rule-title">
+      <div className={s.between}>
+        <h2 id="plan-rule-title" className={s.title}>{t('plan.rule.title')}</h2>
+        {!open && <button type="button" className={s.link} onClick={start}>{t('plan.rule.edit')}</button>}
+      </div>
+      {!open && <p className={s.lead}>{full ? t('plan.rule.lineFull', { pct: pct(rule.risk), limit: pct(rule.limit) }) : t('plan.rule.line', { pct: pct(rule.risk) })}</p>}
+      {open && (
+        <form className={s.wrap} onSubmit={save} noValidate>
+          <div className={s.grid}>
+            <label className={s.field}>
+              <span className={s.fieldLabel}>{t('plan.rule.risk')}</span>
+              <input className={s.input} value={f.risk} onChange={e => { setF({ ...f, risk: e.target.value }); setErrs({}) }} inputMode="decimal" autoComplete="off" aria-invalid={!!errs.risk || undefined} aria-describedby="plan-rule-risk-help" />
+              <span id="plan-rule-risk-help" className={s.help}>{t('plan.rule.riskHelp')}</span>
+              {errs.risk && <span className={s.error}>{t(`plan.rule.err.${errs.risk}`)}</span>}
+            </label>
+            {full && (
+              <label className={s.field}>
+                <span className={s.fieldLabel}>{t('plan.rule.limit')}</span>
+                <input className={s.input} value={f.limit} onChange={e => { setF({ ...f, limit: e.target.value }); setErrs({}) }} inputMode="decimal" autoComplete="off" aria-invalid={!!errs.limit || undefined} aria-describedby="plan-rule-limit-help" />
+                <span id="plan-rule-limit-help" className={s.help}>{t('plan.rule.limitHelp')}</span>
+                {errs.limit && <span className={s.error}>{t(`plan.rule.err.${errs.limit}`)}</span>}
+              </label>
+            )}
+          </div>
+          {errs.form && <p className={s.error} role="alert">{t('plan.rule.err.save')}</p>}
+          <p className={s.note}>{t('plan.rule.where')}</p>
+          <div className={s.row}>
+            <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={busy}>{t('plan.rule.save')}</button>
+            <button type="button" className={s.btn} onClick={() => setOpen(false)}>{t('plan.rule.cancel')}</button>
+          </div>
+        </form>
+      )}
+      {msg && !open && <p className={s.ok} role="status">{t(msg)}</p>}
+
+      {capital > 0 ? (
+        <p className={s.note}>{t('plan.cap.line', { v: fmt.money(capital) })}</p>
+      ) : (
+        <form className={s.addRow} onSubmit={saveCap} noValidate>
+          <p className={s.note} style={{ gridColumn: '1 / -1' }}>{t('plan.cap.none')}</p>
+          <label className={s.field}>
+            <span className={s.fieldLabel}>{t('plan.cap.label')}</span>
+            <input className={s.input} value={cap} onChange={e => { setCap(e.target.value); setCapErr(null) }} inputMode="decimal" autoComplete="off" aria-invalid={!!capErr || undefined} />
+          </label>
+          <span />
+          <button type="submit" className={s.btn} disabled={busy}>{t('plan.cap.save')}</button>
+          {capErr && <p className={s.error} role="alert" style={{ gridColumn: '1 / -1' }}>{t(`plan.cap.err.${capErr}`)}</p>}
+        </form>
+      )}
+    </section>
+  )
+}
+
+export default function Planificar({ demo = false, view, onTab }) {
+  const { t, ready } = usePlanT()
+  const { t: tp } = usePT()
+  const app = useApp() || {}
+  const settings = app.settings || {}
+  const showToast = app.showToast
+  const toast = useCallback((msg, type = 'ok', action = null) => showToast?.(msg, type, action), [showToast])
+  const pb = usePortfolioBook({ demo })
+  const fmt = useMemo(() => makeFmt({ disp: USD, currency: settings.currency, language: settings.language }), [settings.currency, settings.language])
+  const [targets] = useTargets()
+  const [sub, setSub] = useState('calc')
+  const refs = useRef({})
+  const [rule, setRule] = useState(pb.rule)
+  const ruleTouched = useRef(false)
+  const [plans, setPlans] = useState({ phase: 'loading', list: [] })
+  const [editing, setEditing] = useState(null) // { id, k, label, name, ts }
+  const [calcSeed, setCalcSeed] = useState(null)
+  const [apSeed, setApSeed] = useState(null)
+  const [trade, setTrade] = useState(null)
+
+  // La regla llega con el perfil; si la persona ya la cambió aquí, manda la suya.
+  useEffect(() => { if (!ruleTouched.current) setRule(pb.rule) }, [pb.rule])
+
+  const store = pb.store
+  useEffect(() => {
+    let alive = true
+    Promise.resolve(store.getPlans ? store.getPlans() : { ok: true, data: [] }).then(r => {
+      if (alive) setPlans({ phase: r.ok ? 'ready' : 'error', list: r.ok ? r.data : [] })
+    })
+    return () => { alive = false }
+  }, [store])
+
+  const saveRule = useCallback(async (value) => {
+    const r = store.setRiskRule ? await store.setRiskRule(value) : { ok: false }
+    if (r.ok) { ruleTouched.current = true; setRule(r.data) }
+    return r
+  }, [store])
+  const saveCapital = useCallback(async (usd) => {
+    const r = await pb.setCapital(usd)
+    if (r.ok) toast(t('plan.cap.saved'))
+    return r
+  }, [pb, toast, t])
+
+  // Guarda la lista entera en la cuenta; devuelve true si quedó guardada.
+  const persist = useCallback(async (list) => {
+    const r = await store.savePlans(list)
+    if (!r.ok) {
+      const key = r.error === 'plans_full' || r.error === 'plans_too_big' ? `plan.pl.err.${r.error}` : 'plan.pl.err.save'
+      toast(t(key, { n: MAX_PLANS }), 'error')
+      return false
+    }
+    setPlans({ phase: 'ready', list: r.data })
+    return true
+  }, [store, toast, t])
+
+  async function savePlan(build, okKey, okVars, { asNew = false } = {}) {
+    const keep = editing && !asNew ? editing : null
+    const plan = build(keep)
+    if (!plan) { toast(t('plan.pl.err.save'), 'error'); return }
+    const next = upsertPlan(plans.list, plan)
+    if (!next.ok) { toast(t(`plan.pl.err.${next.error === 'plan_invalid' ? 'save' : next.error}`, { n: MAX_PLANS }), 'error'); return }
+    if (await persist(next.list)) {
+      setEditing({ id: plan.id, k: plan.k, name: plan.name, ts: plan.ts, label: planLabel(plan, t, fmt) })
+      toast(keep ? t('plan.pl.updated') : t(okKey, okVars))
+    }
+  }
+  const saveTradePlan = (input, sized, opts) => savePlan((keep) => tradePlanFrom({ ...input, name: keep?.name || '' }, sized, { id: keep?.id, now: Date.now() }), 'plan.calc.planSaved', { t: input.ticker }, opts)
+  const saveAportePlan = (input, opts) => savePlan((keep) => normalizePlan({ ...input, id: keep?.id || newPlanId(), k: 'aporte', ts: Date.now(), name: keep?.name || '' }), 'plan.ap.planSaved', {}, opts)
+
+  function openPlan(p) {
+    setEditing({ id: p.id, k: p.k, name: p.name, ts: p.ts, label: planLabel(p, t, fmt) })
+    if (p.k === 'trade') { setCalcSeed({ ...p }); go('calc') } else { setApSeed({ ...p }); go('aportes') }
+  }
+  async function renamePlan(p, name) {
+    const next = upsertPlan(plans.list, { ...p, name: String(name || '').trim() })
+    if (!next.ok) { toast(t('plan.pl.err.save'), 'error'); return false }
+    const ok = await persist(next.list)
+    if (ok && editing?.id === p.id) setEditing(e => ({ ...e, name, label: planLabel({ ...p, name }, t, fmt) }))
+    return ok
+  }
+  async function deletePlan(p) {
+    const r = removePlan(plans.list, p.id)
+    if (!r.ok) return
+    if (!(await persist(r.list))) return
+    if (editing?.id === p.id) setEditing(null)
+    toast(t('plan.pl.deleted'), 'ok', {
+      label: t('plan.pl.undo'),
+      onAction: async () => {
+        const back = restorePlan(r.list, r.removed, r.index)
+        if (back.ok) await persist(back.list)
+      },
+    })
+  }
+
+  function go(next) {
+    setSub(next)
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => refs.current[next]?.focus())
+  }
+  function onSubKey(e) {
+    const i = PLAN_SUBS.indexOf(sub)
+    const next = e.key === 'ArrowRight' ? PLAN_SUBS[(i + 1) % PLAN_SUBS.length]
+      : e.key === 'ArrowLeft' ? PLAN_SUBS[(i - 1 + PLAN_SUBS.length) % PLAN_SUBS.length]
+        : e.key === 'Home' ? PLAN_SUBS[0] : e.key === 'End' ? PLAN_SUBS[PLAN_SUBS.length - 1] : null
+    if (!next) return
+    e.preventDefault()
+    go(next)
+  }
+  function changeSub(next) {
+    // Cambiar de parte a mano deja de editar el plan abierto si es de otro tipo.
+    if (editing && ((next === 'calc' && editing.k !== 'trade') || (next === 'aportes' && editing.k !== 'aporte'))) setEditing(null)
+    setSub(next)
+  }
+
+  async function recordTrade(form) {
+    const r = await pb.recordTrade(form)
+    if (!r.ok) return r
+    setTrade(null)
+    const tk = r.op.ticker
+    if (r.effectFailed) toast(tp('pf.toast.effectFailed', { t: tk }), 'error')
+    else if (r.effect.kind === 'create') toast(tp('pf.toast.created', { t: tk }))
+    else if (r.effect.kind === 'lots') toast(tp('pf.toast.lots', { t: tk, n: r.effect.count }), 'error')
+    else toast(tp('pf.toast.opSaved'))
+    return r
+  }
+
+  if (!ready || pb.phase === 'loading') return <p className={s.note} role="status">{t('plan.loading')}</p>
+  if (pb.phase === 'error') {
+    return (
+      <div className={s.card} role="alert">
+        <p className={s.lead}>{t('plan.error')}</p>
+        <div className={s.row}><button type="button" className={s.btn} onClick={pb.reload}>{t('plan.retry')}</button></div>
+      </div>
+    )
+  }
+
+  const knownTickers = [...new Set(pb.holdings.map(h => h.t))]
+  const common = { pb, fmt, t, view, demo }
+  return (
+    <div className={s.wrap}>
+      {demo && <p className={s.sample}>{t('plan.sample')}</p>}
+      <div role="tablist" aria-label={t('plan.subLabel')} className={s.subtabs}>
+        {PLAN_SUBS.map(k => (
+          <button key={k} ref={el => { refs.current[k] = el }} type="button" role="tab" id={`plan-sub-${k}`}
+            aria-selected={sub === k} aria-controls={`plan-panel-${k}`} tabIndex={sub === k ? 0 : -1}
+            className={s.subtab} onClick={() => changeSub(k)} onKeyDown={onSubKey}>
+            {t(`plan.sub.${k}`)}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel" id={`plan-panel-${sub}`} aria-labelledby={`plan-sub-${sub}`} className={s.wrap}>
+        {sub !== 'planes' && <RuleCard t={t} fmt={fmt} rule={rule} capital={pb.capital} view={view} demo={demo} onSaveRule={saveRule} onSaveCapital={saveCapital} />}
+        {editing && sub !== 'planes' && (
+          <div className={s.row}><button type="button" className={s.link} onClick={() => setEditing(null)}>{t('plan.pl.stopEditing')}</button></div>
+        )}
+        {sub === 'calc' && (
+          <Calculator {...common} rule={rule} capital={pb.capital} seed={calcSeed} editing={editing?.k === 'trade' ? editing : null}
+            onSavePlan={saveTradePlan} onAddToPortfolio={(prefill) => setTrade(prefill)} />
+        )}
+        {sub === 'aportes' && (
+          <Aportes {...common} capital={pb.capital} targets={targets} seed={apSeed} editing={editing?.k === 'aporte' ? editing : null}
+            onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} />
+        )}
+        {sub === 'planes' && (
+          <Plans plans={plans} fmt={fmt} t={t} demo={demo} rates={pb.rates.rates}
+            onOpen={openPlan} onRename={renamePlan} onDelete={deletePlan} onGoCalc={() => go('calc')} />
+        )}
+      </div>
+
+      <TradeSheet open={!!trade} onClose={() => setTrade(null)} prefill={trade} onSave={recordTrade}
+        tickers={knownTickers} knownTickers={knownTickers} hasDeposits={pb.ops.some(o => o.type === 'deposit')} />
+    </div>
+  )
+}

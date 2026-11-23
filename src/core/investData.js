@@ -18,19 +18,26 @@
 // migraciones. Aquí va en los metadatos de la cuenta (auth.updateUser), donde
 // ya vive el perfil de inversionista: sigue a la persona en cualquier
 // dispositivo sin tocar el esquema. El capital sí va en profiles.capital.
+// F5 (20-nov-2026, decisión de Walter): la clave es `invest_risk_rule` y el
+// riesgo por defecto es 1 % (Invest usaba 2 %). Los planes guardados de
+// Planificar van en `invest_plans` (utils/investPlan.js: topes de cantidad y
+// tamaño, porque los metadatos viajan dentro del token de sesión).
 //
 // Respuestas: { ok: true, data } o { ok: false, error: '<código>', fields? }.
 import { authClient } from './authClient.js'
 import { holdingFromRowFull } from '../utils/investValuation.js'
 import { logRejection } from '../utils/errorLog.js'
 import { investApi } from './investApi.js'
+import { PLANS_KEY, plansPayload, readPlans, validatePlans } from '../utils/investPlan.js'
 
 export const TICKER_RE = /^[A-Z0-9.\-^=]{1,15}$/
 export const ASSET_TYPES = ['Stock', 'ETF', 'Crypto', 'Bond']
 export const OP_TYPES = ['buy', 'sell', 'deposit', 'withdrawal', 'dividend', 'bonus']
 export const NOTE_MAX = 500
-export const RULE_KEY = 'invest_rule'
-export const RULE_DEFAULTS = { risk: 2, limit: 25 }
+export const RULE_KEY = 'invest_risk_rule'
+export const RULE_DEFAULTS = { risk: 1, limit: 25 }
+// Clave de F0 (antes del 20-nov-2026): se lee si la nueva todavía no existe.
+export const LEGACY_RULE_KEY = 'invest_rule'
 export const HOLDING_COLUMNS = 'id,ticker,asset_type,shares,avg_cost,note,stop,fx_at_cost'
 const HOLDING_BASE_COLUMNS = 'id,ticker,asset_type,shares,avg_cost,note'
 export const OPERATION_COLUMNS = 'id,seq,type,ticker,op_date,currency,price,qty,amount,fx,pnl,rsi,note,cash,reinvested,edited,source'
@@ -153,7 +160,8 @@ export function newOperationUid(cryptoImpl = globalThis.crypto) {
 // Regla de riesgo (Ajustes de Invest): riesgo por operación de 0,1 % a 10 % y
 // límite de concentración de 5 % a 100 %. Lo inválido vuelve al valor por defecto.
 export function readRiskRule(user) {
-  const r = user?.user_metadata?.[RULE_KEY] || {}
+  const md = user?.user_metadata || {}
+  const r = md[RULE_KEY] || md[LEGACY_RULE_KEY] || {}
   const risk = Number(r.risk), limit = Number(r.limit)
   return {
     risk: risk >= 0.1 && risk <= 10 ? risk : RULE_DEFAULTS.risk,
@@ -396,6 +404,25 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
         const { error } = await run(client.auth.updateUser({ data: { [RULE_KEY]: v.value } }))
         if (error) return fail('save_failed')
         return { ok: true, data: v.value }
+      } catch (e) { return fail(net(e)) }
+    },
+
+    // ── Planes guardados de Planificar (metadatos de la cuenta) ──
+    async getPlans() {
+      const s = await session()
+      if (s.error) return fail(s.error)
+      return { ok: true, data: readPlans(s.user) }
+    },
+    // Reemplaza la lista entera (la pantalla la arma con upsertPlan/removePlan).
+    async savePlans(list) {
+      const v = validatePlans(list)
+      if (!v.ok) return fail(v.error)
+      const s = await guardWrite()
+      if (s.error) return fail(s.error)
+      try {
+        const { error } = await run(client.auth.updateUser({ data: { [PLANS_KEY]: plansPayload(v.list) } }))
+        if (error) return fail('save_failed')
+        return { ok: true, data: v.list }
       } catch (e) { return fail(net(e)) }
     },
     clear() { mem = { uid: null, holdings: null, holdingsAt: 0, watch: null, ops: null } },

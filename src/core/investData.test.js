@@ -236,7 +236,7 @@ describe('capital y regla de riesgo', () => {
   it('capital > 0 en profiles.capital de la propia fila', async () => {
     const c = fakeClient((q) => ({ data: q.verb === 'update' ? [{ capital: 5000 }] : { capital: 0 }, error: null }))
     const d = mk(c)
-    expect((await d.getProfile()).data).toEqual({ capital: null, rule: { risk: 2, limit: 25 } })
+    expect((await d.getProfile()).data).toEqual({ capital: null, rule: { risk: 1, limit: 25 } })
     expect((await d.setCapital(0)).fields.capital).toBe('capital_invalid')
     expect((await d.setCapital('5000')).ok).toBe(true)
     expect(c.log[1]).toMatchObject({ table: 'profiles', verb: 'update', payload: { capital: 5000 }, filters: [['eq', 'id', 'u1']] })
@@ -244,11 +244,39 @@ describe('capital y regla de riesgo', () => {
   it('regla: 0,1–10 % y 5–100 %, en los metadatos de la cuenta', async () => {
     expect(validateRiskRule({ risk: 0.05, limit: 4 }).fields).toEqual({ risk: 'risk_range', limit: 'limit_range' })
     expect(readRiskRule({ user_metadata: { [RULE_KEY]: { risk: 1.5, limit: 30 } } })).toEqual({ risk: 1.5, limit: 30 })
-    expect(readRiskRule({ user_metadata: { [RULE_KEY]: { risk: 50, limit: 'x' } } })).toEqual({ risk: 2, limit: 25 })
+    expect(RULE_KEY).toBe('invest_risk_rule')
+    expect(readRiskRule({ user_metadata: { [RULE_KEY]: { risk: 50, limit: 'x' } } })).toEqual({ risk: 1, limit: 25 })
+    expect(readRiskRule(null)).toEqual({ risk: 1, limit: 25 })
+    // La regla guardada con la clave de F0 se sigue leyendo; la nueva manda.
+    expect(readRiskRule({ user_metadata: { invest_rule: { risk: 2, limit: 40 } } })).toEqual({ risk: 2, limit: 40 })
+    expect(readRiskRule({ user_metadata: { invest_rule: { risk: 2, limit: 40 }, [RULE_KEY]: { risk: 0.5, limit: 20 } } })).toEqual({ risk: 0.5, limit: 20 })
     const c = fakeClient()
     expect((await mk(c).setRiskRule({ risk: '1,5', limit: 30 })).data).toEqual({ risk: 1.5, limit: 30 })
     expect(c.auth.updateUser).toHaveBeenCalledWith({ data: { [RULE_KEY]: { risk: 1.5, limit: 30 } } })
     expect(validateCapital('abc').ok).toBe(false)
+  })
+})
+
+describe('planes guardados (metadatos de la cuenta)', () => {
+  const plan = { id: 'pabc123', k: 'trade', ts: 1763600000000, t: 'VOO', ccy: 'USD', entry: 500, stop: 470, units: 6, cap: 20000, risk: 1 }
+  it('lee invest_plans del usuario y descarta lo que no sirve', async () => {
+    const c = fakeClient(undefined, { user: { id: 'u1', user_metadata: { invest_plans: { v: 1, list: [plan, { id: 'x', k: 'trade' }] } } } })
+    const r = await mk(c).getPlans()
+    expect(r.ok).toBe(true)
+    expect(r.data.map(p => p.id)).toEqual(['pabc123'])
+  })
+  it('guarda la lista entera con updateUser, validada', async () => {
+    const c = fakeClient()
+    const r = await mk(c).savePlans([plan])
+    expect(r.ok).toBe(true)
+    expect(c.auth.updateUser).toHaveBeenCalledWith({ data: { invest_plans: { v: 1, list: [expect.objectContaining({ id: 'pabc123', t: 'VOO' })] } } })
+    expect((await mk(c).savePlans([{ id: 'nope' }])).error).toBe('plan_invalid')
+  })
+  it('en el demo no escribe en la cuenta', async () => {
+    const c = fakeClient()
+    const d = createInvestData({ client: c, isDemo: () => true, onHoldingsChange: () => {} })
+    expect((await d.savePlans([plan])).error).toBe('demo')
+    expect(c.auth.updateUser).not.toHaveBeenCalled()
   })
 })
 
