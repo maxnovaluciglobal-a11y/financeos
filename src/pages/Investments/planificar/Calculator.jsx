@@ -12,7 +12,7 @@ import { demoInvestQuotes } from '../../../demo/demoInvestBook.js'
 import { sampleQuote } from '../../../demo/demoInvestAsset.js'
 import { num } from '../../../utils/investTrade.js'
 import { currencyOf, rateOf } from '../../../utils/investValuation.js'
-import { amount, DEFAULT_STOP_PCT, isFractional, sizeInUsd, stopFromDrop } from '../../../utils/investPlan.js'
+import { amount, DEFAULT_STOP_PCT, isFractional, PLAN_CCY_RE, RISK_MAX, RISK_MIN, sizeInUsd, stopFromDrop } from '../../../utils/investPlan.js'
 import { shows } from '../../../utils/investView.js'
 import { moneyLocale } from '../../../utils/index.js'
 import s from './planificar.module.css'
@@ -28,12 +28,16 @@ export function calcInputs(form, { full, capital, rule }) {
   const drop = form.drop === '' || form.drop == null ? DEFAULT_STOP_PCT * 100 : num(form.drop)
   const dropBad = !full && !(drop > 0 && drop < 100)
   const dropTyped = !full && form.drop !== '' && form.drop != null
+  const riskPct = full && form.risk !== '' ? num(form.risk) : rule.risk
+  // La regla escrita a mano en la Vista completa tiene los mismos topes que la
+  // de la cuenta (0,1 % a 10 %): fuera de eso no se calcula ni se guarda.
+  const riskBad = full && form.risk !== '' && form.risk != null && !(riskPct >= RISK_MIN && riskPct <= RISK_MAX)
   // Sin caída escrita, el stop queda vacío: se estima con −8 % y se marca así.
   const stop = full ? (form.stop === '' ? '' : num(form.stop)) : (dropTyped && entry > 0 && !dropBad ? stopFromDrop(entry, drop) : '')
   return {
-    entry, stop, dropBad,
+    entry, stop, dropBad, riskBad,
     capital: full && form.capital !== '' ? amount(form.capital) : capital,
-    riskPct: full && form.risk !== '' ? num(form.risk) : rule.risk,
+    riskPct,
     limit: rule.limit / 100,
     // En la esencial la caída que escribió la persona no es una estimación.
     dropTyped,
@@ -59,7 +63,10 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
       capital: seed.cap != null && seed.cap !== capital ? String(seed.cap) : '',
       risk: seed.risk != null && seed.risk !== rule.risk ? String(seed.risk) : '',
     })
-    setQuote({ state: 'idle', t: seed.t || null, price: null, ccy: seed.ccy || null })
+    // Con la moneda guardada no hace falta volver a pedir el precio; sin una
+    // válida, se vuelve a pedir (t: null) para no tomar peniques por dólares.
+    const ccyOk = PLAN_CCY_RE.test(String(seed.ccy || ''))
+    setQuote({ state: 'idle', t: ccyOk ? seed.t || null : null, price: null, ccy: ccyOk ? seed.ccy : null })
   }, [seed]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al llegar un plan nuevo, no al cambiar la regla
 
   const tk = String(form.ticker || '').toUpperCase().trim()
@@ -89,8 +96,9 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
   const res = useMemo(() => {
     if (!tk || !(inp.entry > 0)) return { error: 'empty' }
     if (inp.dropBad) return { error: 'drop' }
+    if (inp.riskBad) return { error: 'risk-range' }
     return sizeInUsd({ entry: inp.entry, stop: inp.stop, fx, capital: inp.capital, riskPct: inp.riskPct, limit: inp.limit, ticker: tk })
-  }, [tk, inp.entry, inp.stop, inp.dropBad, fx, inp.capital, inp.riskPct, inp.limit])
+  }, [tk, inp.entry, inp.stop, inp.dropBad, inp.riskBad, fx, inp.capital, inp.riskPct, inp.limit])
 
   const set = (k) => (e) => {
     const v = e.target.value
@@ -117,7 +125,7 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
   const units = ok ? res.units : 0
   const unitsLabel = ok ? (units === 0 ? t('plan.calc.res.none') : units === 1 ? t('plan.calc.res.unit1') : t('plan.calc.res.units', { n: fmt.units(units) })) : ''
   const errText = res.error && res.error !== 'empty'
-    ? t(res.error === 'drop' ? 'plan.calc.err.drop' : `plan.calc.err.${res.error}`, { ccy })
+    ? t(res.error === 'drop' ? 'plan.calc.err.drop' : `plan.calc.err.${res.error}`, { ccy, min: fmt.pct(RISK_MIN / 100, { decimals: 1 }), max: fmt.pct(RISK_MAX / 100, { decimals: 0 }) })
     : null
 
   return (
@@ -168,7 +176,7 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
             </label>
             <label className={s.field}>
               <span className={s.fieldLabel}>{t('plan.calc.risk')}</span>
-              <input className={s.input} value={form.risk} onChange={set('risk')} inputMode="decimal" autoComplete="off" placeholder={String(rule.risk)} aria-invalid={res.error === 'no-risk' || undefined} />
+              <input className={s.input} value={form.risk} onChange={set('risk')} inputMode="decimal" autoComplete="off" placeholder={String(rule.risk)} aria-invalid={res.error === 'no-risk' || res.error === 'risk-range' || undefined} aria-describedby={res.error === 'risk-range' ? 'plan-calc-err' : undefined} />
             </label>
           </>
         )}
@@ -183,7 +191,7 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
 
       <div aria-live="polite">
         {!ok ? (
-          <p className={errText ? s.error : s.note}>{errText || t('plan.calc.empty')}</p>
+          <p id="plan-calc-err" className={errText ? s.error : s.note}>{errText || t('plan.calc.empty')}</p>
         ) : (
           <div className={s.result}>
             <span className={s.resultLabel}>{full ? t('plan.calc.full.label', { t: tk, pct: pctFmt(inp.riskPct / 100, ruleDecimals(inp.riskPct)) }) : t('plan.calc.res.fits')}</span>
@@ -241,10 +249,10 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
 
       {ok && units > 0 && (
         <div className={s.row}>
-          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => onSavePlan({ ticker: tk, ccy, entry: inp.entry, stop: res.stopIsEstimate ? null : (full ? inp.stop : r2(res.stopLocal)), capital: inp.capital, risk: inp.riskPct }, res)}>
+          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => onSavePlan({ ticker: tk, ccy, entry: inp.entry, stop: res.stopIsEstimate ? null : (full ? inp.stop : res.stopLocal), capital: inp.capital, risk: inp.riskPct }, res)}>
             {editing ? t('plan.pl.update') : t('plan.calc.savePlan')}
           </button>
-          {editing && <button type="button" className={s.btn} onClick={() => onSavePlan({ ticker: tk, ccy, entry: inp.entry, stop: res.stopIsEstimate ? null : (full ? inp.stop : r2(res.stopLocal)), capital: inp.capital, risk: inp.riskPct }, res, { asNew: true })}>{t('plan.pl.saveNew')}</button>}
+          {editing && <button type="button" className={s.btn} onClick={() => onSavePlan({ ticker: tk, ccy, entry: inp.entry, stop: res.stopIsEstimate ? null : (full ? inp.stop : res.stopLocal), capital: inp.capital, risk: inp.riskPct }, res, { asNew: true })}>{t('plan.pl.saveNew')}</button>}
           <button type="button" className={s.btn} onClick={() => onAddToPortfolio({ type: 'buy', ticker: tk, price: String(inp.entry), qty: String(units), amount: String(r2(inp.entry * units)), assetType: isFractional(tk) ? 'Crypto' : '' })}>
             {t('plan.calc.add')}
           </button>

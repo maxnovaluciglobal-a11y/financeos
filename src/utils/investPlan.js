@@ -24,6 +24,7 @@
 import { sma, lastRsi } from './investIndicators.js'
 import { roundTo100 } from './investRebalance.js'
 import { num } from './investTrade.js'
+import { currencyOf } from './investValuation.js'
 
 // Un monto de dinero escrito a mano (capital, aporte mensual): "10.000" y
 // "10,000" son diez mil (grupos de miles), no 10. Lo demás, como num().
@@ -137,6 +138,9 @@ export function perContribution(monthly, cadence = 'monthly') {
 export const SUM_TOLERANCE = 0.5
 export const pctSum = (alloc) => (alloc || []).reduce((s, a) => s + (Number(a.p) || 0), 0)
 export const allocReady = (alloc) => (alloc || []).length > 0 && Math.abs(pctSum(alloc) - 100) <= SUM_TOLERANCE
+// ¿Se puede guardar este reparto tal cual? Las mismas reglas que normalizePlan
+// (cada % entre 0,1 y 100) y que sume 100: así lo guardado no cambia al reabrir.
+export const allocSaveable = (alloc) => allocReady(alloc) && (alloc || []).every(a => Number(a.p) >= 0.1 && Number(a.p) <= 100)
 
 const TICKER_RE = /^[A-Z0-9.\-^=]{1,15}$/
 export const MAX_ALLOC = 20
@@ -307,9 +311,12 @@ export const MAX_PLANS = 20
 export const MAX_PLANS_BYTES = 6000
 const NAME_MAX = 40
 const ID_RE = /^p[a-z0-9]{4,20}$/
+export const PLAN_CCY_RE = /^([A-Z]{3}|GBp|ZAc|ILA)$/
 
 const fin = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) && n >= lo && n <= hi ? n : null }
-const r6 = (n) => Math.round(n * 1e6) / 1e6
+// 6 decimales; bajo 1, 8 cifras significativas (cripto de fracciones de
+// centavo como SHIB: con 6 decimales fijos el stop se comería la caída).
+const r6 = (n) => (Math.abs(n) >= 1 ? Math.round(n * 1e6) / 1e6 : Number(n.toPrecision(8)))
 
 export function newPlanId(now = Date.now(), rnd = Math.random) {
   return `p${now.toString(36)}${Math.floor(rnd() * 36 ** 3).toString(36).padStart(3, '0')}`
@@ -331,7 +338,11 @@ export function normalizePlan(p) {
     const risk = fin(p.risk, RISK_MIN, RISK_MAX)
     if (!TICKER_RE.test(t) || entry == null || cap == null || risk == null) return null
     const stop = p.stop == null ? null : fin(p.stop, 1e-9, entry - 1e-12)
-    const ccy = /^[A-Z]{3}$/.test(String(p.ccy || '')) ? p.ccy : 'USD'
+    // Moneda del precio: códigos ISO y las submonedas de Yahoo (GBp, ZAc, ILA:
+    // Londres, Johannesburgo y Tel Aviv cotizan en centavos). Sin una válida,
+    // la del sufijo del símbolo, o null (nunca 'USD' a ciegas: con peniques
+    // tomados por dólares el riesgo sale ~100 veces más grande).
+    const ccy = PLAN_CCY_RE.test(String(p.ccy || '')) ? String(p.ccy) : currencyOf(t, null)
     const units = fin(p.units, 0, 1e12)
     return { id, k: 'trade', ts, name, t, ccy, entry: r6(entry), stop: stop == null ? null : r6(stop), units: units == null ? 0 : r6(units), cap: r6(cap), risk }
   }
@@ -403,6 +414,18 @@ export function restorePlan(list, plan, index = 0) {
   const next = [...(list || [])]
   next.splice(Math.min(index, next.length), 0, plan)
   return validatePlans(next)
+}
+
+// Un cambio puntual sobre una lista (la fresca de la cuenta, en investData).
+// → { ok, list } o { ok:false, error }. Borrar algo que ya no está no es error.
+export function applyPlanChange(list, change = {}) {
+  if (change.op === 'upsert') return upsertPlan(list, change.plan)
+  if (change.op === 'remove') {
+    const r = removePlan(list, change.id)
+    return r.ok ? validatePlans(r.list) : validatePlans(list)
+  }
+  if (change.op === 'restore') return restorePlan(list, change.plan, change.index)
+  return { ok: false, error: 'plan_invalid' }
 }
 
 // Plan de la calculadora a partir de un resultado de sizeInUsd.

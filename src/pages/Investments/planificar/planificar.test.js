@@ -19,7 +19,7 @@ import { createDemoInvestStore, demoInvestHoldings, demoInvestPlans, demoInvestQ
 import { DEMO_CAPITAL } from '../../../demo/demoInvestHoy.js'
 import { RULE_DEFAULTS } from '../../../core/investData.js'
 import Calculator, { calcInputs, ruleDecimals } from './Calculator.jsx'
-import Aportes from './Aportes.jsx'
+import Aportes, { segKeyTarget } from './Aportes.jsx'
 import Plans from './Plans.jsx'
 import { RuleCard, PLAN_SUBS } from './Planificar.jsx'
 
@@ -213,3 +213,49 @@ describe('vista esencial y completa', () => {
     expect(out).not.toMatch(/plan\.[a-z]+\./)
   })
 })
+
+describe('revisión 23-nov', () => {
+  const rule = { risk: 1, limit: 25 }
+  const fmt = makeFmt({ disp: { ccy: 'USD', rate: 1 }, currency: 'USD', language: 'es' })
+  const pb = {
+    holdings: demoInvestHoldings(), market: { quotes: demoInvestQuotes() }, rates: { rates: {} },
+    positions: { rows: [], totals: { cost: 11000, value: 12500 } }, ledger: { usesCash: true, cash: 380 },
+  }
+  it('la regla escrita a mano tiene los topes de la cuenta (0,1 % a 10 %)', () => {
+    const f = { ticker: 'VOO', entry: '550', stop: '500', drop: '', capital: '', risk: '25' }
+    expect(calcInputs(f, { full: true, capital: 20000, rule }).riskBad).toBe(true)
+    expect(calcInputs({ ...f, risk: '0,05' }, { full: true, capital: 20000, rule }).riskBad).toBe(true)
+    expect(calcInputs({ ...f, risk: '2' }, { full: true, capital: 20000, rule }).riskBad).toBe(false)
+    expect(calcInputs({ ...f, risk: '' }, { full: true, capital: 20000, rule }).riskBad).toBe(false)
+    // En la esencial la regla es la de la cuenta: nunca fuera de rango.
+    expect(calcInputs(f, { full: false, capital: 20000, rule }).riskBad).toBe(false)
+    for (const l of [es, en, pt, de]) expect(l['plan.calc.err.risk-range']).toMatch(/\{min\}.*\{max\}/)
+  })
+  it('las opciones de Aportes siguen el patrón de radios (flechas, Inicio y Fin)', () => {
+    const v = ['monthly', 'biweekly', 'weekly']
+    expect(segKeyTarget('ArrowRight', 'monthly', v)).toBe('biweekly')
+    expect(segKeyTarget('ArrowDown', 'weekly', v)).toBe('monthly')
+    expect(segKeyTarget('ArrowLeft', 'monthly', v)).toBe('weekly')
+    expect(segKeyTarget('ArrowUp', 'biweekly', v)).toBe('monthly')
+    expect(segKeyTarget('Home', 'weekly', v)).toBe('monthly')
+    expect(segKeyTarget('End', 'monthly', v)).toBe('weekly')
+    expect(segKeyTarget('Tab', 'monthly', v)).toBeNull()
+    const html = renderToStaticMarkup(h(Aportes, { pb, fmt, t: tOf(es), demo: true, view: 'esencial', capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {} }))
+    const radios = [...html.matchAll(/role="radio"[^>]*tabindex="(-?\d)"/g)].map(m => m[1])
+    expect(radios.filter(x => x === '0')).toHaveLength(1)
+  })
+  it('el demo aplica cambios puntuales a sus planes', async () => {
+    const st = createDemoInvestStore({ now: () => Date.UTC(2026, 10, 20) })
+    const [a] = (await st.getPlans()).data
+    expect((await st.updatePlans({ op: 'remove', id: a.id })).data).toHaveLength(1)
+    expect((await st.updatePlans({ op: 'restore', plan: a, index: 0 })).data).toHaveLength(2)
+    expect((await st.updatePlans({ op: 'upsert', plan: { ...a, name: 'Mi VOO' } })).data.find(p => p.id === a.id).name).toBe('Mi VOO')
+  })
+  it('un plan sin moneda conocida no muestra el precio como US$', () => {
+    const plan = { id: 'pzz12345', k: 'trade', ts: Date.UTC(2026, 10, 20), name: '', t: 'ABC.ZZ', ccy: null, entry: 12.5, stop: 11, units: 10, cap: 20000, risk: 1 }
+    const out = text(renderToStaticMarkup(h(Plans, { fmt, t: tOf(es), rates: {}, demo: false, plans: { phase: 'ready', list: [plan] }, onOpen: () => {}, onRename: async () => true, onDelete: () => {}, onGoCalc: () => {} })))
+    expect(out).toContain('sin tipo de cambio')
+    expect(out).not.toMatch(/US\$\s?12/)
+  })
+})
+

@@ -18,7 +18,7 @@ import { usePT } from '../portfolio/text.js'
 import { usePortfolioBook } from '../portfolio/usePortfolioBook.js'
 import { useTargets } from '../portfolio/targetsStore.js'
 import { validateCapital, validateRiskRule } from '../../../core/investData.js'
-import { amount, MAX_PLANS, newPlanId, normalizePlan, removePlan, restorePlan, tradePlanFrom, upsertPlan } from '../../../utils/investPlan.js'
+import { amount, applyPlanChange, MAX_PLANS, newPlanId, normalizePlan, tradePlanFrom } from '../../../utils/investPlan.js'
 import { shows } from '../../../utils/investView.js'
 import Calculator, { ruleDecimals } from './Calculator.jsx'
 import Aportes from './Aportes.jsx'
@@ -138,13 +138,18 @@ export default function Planificar({ demo = false, view, onTab }) {
   useEffect(() => { if (!ruleTouched.current) setRule(pb.rule) }, [pb.rule])
 
   const store = pb.store
-  useEffect(() => {
+  const plansSeq = useRef(0)
+  // Devuelve cómo cancelarla (al desmontar). Solo cuenta la última carga.
+  const loadPlans = useCallback(() => {
+    const my = ++plansSeq.current
     let alive = true
+    setPlans(p => (p.phase === 'ready' ? p : { phase: 'loading', list: [] }))
     Promise.resolve(store.getPlans ? store.getPlans() : { ok: true, data: [] }).then(r => {
-      if (alive) setPlans({ phase: r.ok ? 'ready' : 'error', list: r.ok ? r.data : [] })
+      if (alive && my === plansSeq.current) setPlans({ phase: r.ok ? 'ready' : 'error', list: r.ok ? r.data : [] })
     })
     return () => { alive = false }
   }, [store])
+  useEffect(() => loadPlans(), [loadPlans])
 
   const saveRule = useCallback(async (value) => {
     const r = store.setRiskRule ? await store.setRiskRule(value) : { ok: false }
@@ -157,9 +162,21 @@ export default function Planificar({ demo = false, view, onTab }) {
     return r
   }, [pb, toast, t])
 
-  // Guarda la lista entera en la cuenta; devuelve true si quedó guardada.
-  const persist = useCallback(async (list) => {
-    const r = await store.savePlans(list)
+  // Aplica un cambio puntual (upsert/remove/restore) y lo guarda en la cuenta;
+  // devuelve true si quedó guardado. El store lo aplica sobre la lista fresca
+  // de la cuenta (updatePlans), no sobre la que se cargó al abrir. Si la lista
+  // no se pudo cargar, no se guarda: se perderían los planes que ya están.
+  const persist = useCallback(async (change) => {
+    if (plans.phase !== 'ready') {
+      toast(t('plan.pl.err.notLoaded'), 'error', { label: t('plan.retry'), onAction: loadPlans })
+      return false
+    }
+    let r
+    if (store.updatePlans) r = await store.updatePlans(change)
+    else {
+      const next = applyPlanChange(plans.list, change)
+      r = next.ok ? await store.savePlans(next.list) : { ok: false, error: next.error }
+    }
     if (!r.ok) {
       const key = r.error === 'plans_full' || r.error === 'plans_too_big' ? `plan.pl.err.${r.error}` : 'plan.pl.err.save'
       toast(t(key, { n: MAX_PLANS }), 'error')
@@ -167,15 +184,13 @@ export default function Planificar({ demo = false, view, onTab }) {
     }
     setPlans({ phase: 'ready', list: r.data })
     return true
-  }, [store, toast, t])
+  }, [store, toast, t, plans, loadPlans])
 
   async function savePlan(build, okKey, okVars, { asNew = false } = {}) {
     const keep = editing && !asNew ? editing : null
     const plan = build(keep)
     if (!plan) { toast(t('plan.pl.err.save'), 'error'); return }
-    const next = upsertPlan(plans.list, plan)
-    if (!next.ok) { toast(t(`plan.pl.err.${next.error === 'plan_invalid' ? 'save' : next.error}`, { n: MAX_PLANS }), 'error'); return }
-    if (await persist(next.list)) {
+    if (await persist({ op: 'upsert', plan })) {
       setEditing({ id: plan.id, k: plan.k, name: plan.name, ts: plan.ts, label: planLabel(plan, t, fmt) })
       toast(keep ? t('plan.pl.updated') : t(okKey, okVars))
     }
@@ -188,23 +203,18 @@ export default function Planificar({ demo = false, view, onTab }) {
     if (p.k === 'trade') { setCalcSeed({ ...p }); go('calc') } else { setApSeed({ ...p }); go('aportes') }
   }
   async function renamePlan(p, name) {
-    const next = upsertPlan(plans.list, { ...p, name: String(name || '').trim() })
-    if (!next.ok) { toast(t('plan.pl.err.save'), 'error'); return false }
-    const ok = await persist(next.list)
+    const ok = await persist({ op: 'upsert', plan: { ...p, name: String(name || '').trim() } })
     if (ok && editing?.id === p.id) setEditing(e => ({ ...e, name, label: planLabel({ ...p, name }, t, fmt) }))
     return ok
   }
   async function deletePlan(p) {
-    const r = removePlan(plans.list, p.id)
-    if (!r.ok) return
-    if (!(await persist(r.list))) return
+    const index = plans.list.findIndex(x => x.id === p.id)
+    if (index < 0) return
+    if (!(await persist({ op: 'remove', id: p.id }))) return
     if (editing?.id === p.id) setEditing(null)
     toast(t('plan.pl.deleted'), 'ok', {
       label: t('plan.pl.undo'),
-      onAction: async () => {
-        const back = restorePlan(r.list, r.removed, r.index)
-        if (back.ok) await persist(back.list)
-      },
+      onAction: () => persist({ op: 'restore', plan: p, index }),
     })
   }
 
@@ -279,7 +289,7 @@ export default function Planificar({ demo = false, view, onTab }) {
         )}
         {sub === 'planes' && (
           <Plans plans={plans} fmt={fmt} t={t} demo={demo} rates={pb.rates.rates}
-            onOpen={openPlan} onRename={renamePlan} onDelete={deletePlan} onGoCalc={() => go('calc')} />
+            onOpen={openPlan} onRename={renamePlan} onDelete={deletePlan} onGoCalc={() => go('calc')} onRetry={loadPlans} />
         )}
       </div>
 

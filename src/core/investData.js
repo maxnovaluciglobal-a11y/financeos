@@ -28,7 +28,7 @@ import { authClient } from './authClient.js'
 import { holdingFromRowFull } from '../utils/investValuation.js'
 import { logRejection } from '../utils/errorLog.js'
 import { investApi } from './investApi.js'
-import { PLANS_KEY, plansPayload, readPlans, validatePlans } from '../utils/investPlan.js'
+import { PLANS_KEY, applyPlanChange, plansPayload, readPlans, validatePlans } from '../utils/investPlan.js'
 
 export const TICKER_RE = /^[A-Z0-9.\-^=]{1,15}$/
 export const ASSET_TYPES = ['Stock', 'ETF', 'Crypto', 'Bond']
@@ -423,6 +423,24 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
         const { error } = await run(client.auth.updateUser({ data: { [PLANS_KEY]: plansPayload(v.list) } }))
         if (error) return fail('save_failed')
         return { ok: true, data: v.list }
+      } catch (e) { return fail(net(e)) }
+    },
+    // Cambio puntual ({ op: 'upsert', plan } | { op: 'remove', id } |
+    // { op: 'restore', plan, index }) sobre la lista FRESCA de la cuenta
+    // (getUser va al servidor; la sesión en caché puede ser vieja): así otro
+    // dispositivo o una carga fallida no pisan los planes que ya están.
+    async updatePlans(change) {
+      const s = await guardWrite()
+      if (s.error) return fail(s.error)
+      try {
+        const { data, error: readErr } = await run(client.auth.getUser())
+        if (readErr || !data?.user?.id) return fail('load_failed')
+        if (data.user.id !== s.uid) return fail('session_required')
+        const next = applyPlanChange(readPlans(data.user), change)
+        if (!next.ok) return fail(next.error)
+        const { error } = await run(client.auth.updateUser({ data: { [PLANS_KEY]: plansPayload(next.list) } }))
+        if (error) return fail('save_failed')
+        return { ok: true, data: next.list }
       } catch (e) { return fail(net(e)) }
     },
     clear() { mem = { uid: null, holdings: null, holdingsAt: 0, watch: null, ops: null } },

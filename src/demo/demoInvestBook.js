@@ -12,7 +12,7 @@ import { demoInvestRows } from './demoInvest.js'
 import { DEFAULT_USD_RATES } from '../pages/shared/constants.js'
 import { DEMO_CAPITAL } from './demoInvestHoy.js'
 import { RULE_DEFAULTS, validateRiskRule } from '../core/investData.js'
-import { validatePlans } from '../utils/investPlan.js'
+import { applyPlanChange, validatePlans } from '../utils/investPlan.js'
 
 const ISO = (d) => d.toISOString().slice(0, 10)
 // Nunca una fecha futura (el día 12 del mes actual, visto el día 5).
@@ -123,6 +123,12 @@ export function createDemoInvestStore({ now = Date.now } = {}) {
     getPlans: () => ok(plans.map(p => ({ ...p }))),
     async savePlans(list) {
       const v = validatePlans(list)
+      if (!v.ok) return { ok: false, error: v.error }
+      plans = v.list
+      return { ok: true, data: plans.map(p => ({ ...p })) }
+    },
+    async updatePlans(change) {
+      const v = applyPlanChange(plans, change)
       if (!v.ok) return { ok: false, error: v.error }
       plans = v.list
       return { ok: true, data: plans.map(p => ({ ...p })) }

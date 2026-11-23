@@ -15,11 +15,12 @@ import { runLimited } from '../../../utils/investHoy.js'
 import { num } from '../../../utils/investTrade.js'
 import { rebalanceBase } from '../../../utils/investRebalance.js'
 import {
-  CADENCES, DEFAULT_PROJ, LADDERS, addAlloc, allocByDrift, allocReady, equalAlloc, ladderReading, ladderSplit,
+  CADENCES, DEFAULT_PROJ, LADDERS, addAlloc, allocByDrift, allocReady, allocSaveable, equalAlloc, ladderReading, ladderSplit,
   amount as amountOf, pctSum, perContribution, projectContributions, splitAmount,
 } from '../../../utils/investPlan.js'
 import { shows } from '../../../utils/investView.js'
-import { rememberPortTab } from '../../../utils/investNav.js'
+import { rememberPortTab, tabKeyTarget } from '../../../utils/investNav.js'
+import { currencyOf } from '../../../utils/investValuation.js'
 import { moneyLocale } from '../../../utils/index.js'
 import { APORTE_EVENT, readAporte } from '../hoy/aporteStore.js'
 import s from './planificar.module.css'
@@ -28,13 +29,31 @@ const readKey = (k) => { try { return localStorage.getItem(k) } catch { return n
 const safeStore = { setItem: (k, v) => { try { localStorage.setItem(k, v) } catch { /* modo privado: queda en el historial */ } } }
 const LADDER_KEYS = Object.keys(LADDERS)
 
+// Grupo de opciones con el patrón ARIA de radios: una sola parada de Tab (la
+// opción elegida) y las flechas, Inicio y Fin cambian la opción y el foco.
+export function segKeyTarget(key, current, values) {
+  const k = key === 'ArrowDown' ? 'ArrowRight' : key === 'ArrowUp' ? 'ArrowLeft' : key
+  return tabKeyTarget(k, values.includes(current) ? current : values[0], values)
+}
+
 function Segs({ label, id, value, options, onChange }) {
+  const refs = useRef({})
+  const values = options.map(o => o.value)
+  const sel = values.includes(value) ? value : values[0]
+  function onKey(e) {
+    const next = segKeyTarget(e.key, value, values)
+    if (next == null) return
+    e.preventDefault()
+    onChange(next)
+    refs.current[next]?.focus()
+  }
   return (
     <div className={s.field}>
       <span className={s.fieldLabel} id={id}>{label}</span>
       <div className={s.segs} role="radiogroup" aria-labelledby={id}>
         {options.map(o => (
-          <button key={o.value} type="button" role="radio" aria-checked={value === o.value} className={s.seg} onClick={() => onChange(o.value)}>{o.label}</button>
+          <button key={o.value} ref={el => { refs.current[o.value] = el }} type="button" role="radio" aria-checked={value === o.value}
+            tabIndex={sel === o.value ? 0 : -1} className={s.seg} onClick={() => onChange(o.value)} onKeyDown={onKey}>{o.label}</button>
         ))}
       </div>
     </div>
@@ -127,6 +146,16 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
   const prErr = !pr.ok ? Object.entries(pr.fields).find(([k]) => k !== 'monthly' || amount > 0 || monthly !== '') : null
 
   const perOne = cad !== 'monthly' ? perContribution(amount, cad) : null
+  // Solo se guarda lo que se va a ver igual al reabrir: proyección válida
+  // (años y rendimiento) y cada % del reparto dentro de las reglas.
+  const projBad = !pr.ok && (pr.fields.years || pr.fields.rate)
+  const saveBlock = projBad ? 'proj' : !allocSaveable(cleanAlloc) ? 'alloc' : null
+  const planInput = { m: amount, cad, lad, alloc: cleanAlloc, yrs: num(proj.years), rate: num(proj.rate) }
+  // La media móvil sale de los cierres: va en la moneda del activo, no en US$.
+  const smaTxt = (tk, v) => {
+    const c = currencyOf(tk, pb.market?.quotes?.[tk]?.currency)
+    return c ? fmt.native(v, c) : Number(v).toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })
+  }
 
   return (
     <>
@@ -210,11 +239,12 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
         )}
         {split.ok && (
           <div className={s.row}>
-            <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => onSavePlan({ m: amount, cad, lad, alloc: cleanAlloc, yrs: num(proj.years), rate: num(proj.rate) })}>{editing ? t('plan.pl.update') : t('plan.ap.savePlan')}</button>
-            {editing && <button type="button" className={s.btn} onClick={() => onSavePlan({ m: amount, cad, lad, alloc: cleanAlloc, yrs: num(proj.years), rate: num(proj.rate) }, { asNew: true })}>{t('plan.pl.saveNew')}</button>}
+            <button type="button" className={`${s.btn} ${s.btnPrimary}`} disabled={!!saveBlock} aria-describedby={saveBlock ? 'plan-ap-save-block' : undefined} onClick={() => onSavePlan(planInput)}>{editing ? t('plan.pl.update') : t('plan.ap.savePlan')}</button>
+            {editing && <button type="button" className={s.btn} disabled={!!saveBlock} aria-describedby={saveBlock ? 'plan-ap-save-block' : undefined} onClick={() => onSavePlan(planInput, { asNew: true })}>{t('plan.pl.saveNew')}</button>}
             <button type="button" className={s.btn} onClick={() => onDeposit({ type: 'deposit', amount: String(amount), currency: 'USD', source: source === 'month' ? 'moyiq' : null })}>{t('plan.ap.deposit')}</button>
           </div>
         )}
+        {split.ok && saveBlock && <p id="plan-ap-save-block" className={s.error}>{t(`plan.ap.saveBlock.${saveBlock}`)}</p>}
         <p className={s.note}>{t('plan.ap.foot')}</p>
       </section>
 
@@ -252,7 +282,7 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
                           <>
                             <td>{r.rsi != null ? Math.round(r.rsi) : '—'}</td>
                             {r.tramos.map(tr => (
-                              <td key={tr.n} className={tr.below ? s.strong : undefined} title={tr.sma != null ? t('plan.lad.smaTip', { n: tr.n, v: m(fmt.money(tr.sma)) }) : undefined}>
+                              <td key={tr.n} className={tr.below ? s.strong : undefined} title={tr.sma != null ? t('plan.lad.smaTip', { n: tr.n, v: m(smaTxt(r.t, tr.sma)) }) : undefined}>
                                 {tr.amount == null ? '—' : <><Money>{fmt.money(tr.amount)}</Money>{tr.below && <><span aria-hidden="true"> ·</span><span className={s.srOnly}> ({t('plan.lad.below')})</span></>}</>}
                               </td>
                             ))}

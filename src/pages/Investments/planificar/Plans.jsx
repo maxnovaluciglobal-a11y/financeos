@@ -19,7 +19,7 @@ function dateOf(ts) {
   try { return new Date(ts).toLocaleDateString(moneyLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return '' }
 }
 
-export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, onDelete, onGoCalc }) {
+export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, onDelete, onGoCalc, onRetry }) {
   const { m } = useMoney()
   const [renaming, setRenaming] = useState(null) // { id, name }
 
@@ -28,7 +28,12 @@ export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, on
     <>
       <h2 id="plan-pl-title" className={s.title}>{t('plan.pl.title')}</h2>
       <p className={s.note}>{demo ? t('plan.pl.whereDemo') : t('plan.pl.where', { n: MAX_PLANS })}</p>
-      {plans.phase === 'error' && <p className={s.error} role="alert">{t('plan.pl.err.load')}</p>}
+      {plans.phase === 'error' && (
+        <div role="alert">
+          <p className={s.error}>{t('plan.pl.err.load')}</p>
+          {onRetry && <div className={s.row}><button type="button" className={s.btn} onClick={onRetry}>{t('plan.retry')}</button></div>}
+        </div>
+      )}
     </>
   )
   if (!plans.list.length) {
@@ -62,7 +67,9 @@ export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, on
           if (p.k === 'trade') {
             const fx = rateOf(p.ccy, rates)
             const risk = planRisk(p, fx)
-            const base = { units: fmt.units(p.units), entry: m(fmt.native(p.entry, p.ccy)) }
+            // Sin moneda conocida, el precio va sin símbolo (nunca como US$).
+            const entry = p.ccy ? fmt.native(p.entry, p.ccy) : Number(p.entry).toLocaleString(moneyLocale(), { maximumFractionDigits: 6 })
+            const base = { units: fmt.units(p.units), entry: m(entry) }
             line = risk ? t('plan.pl.trade.line', { ...base, loss: m(fmt.money(-risk.usd)), pct: fmt.pct(risk.pct, { decimals: 1 }), cap: m(fmt.money(p.cap)) }) : t('plan.pl.trade.lineNoFx', base)
             if (risk?.estimated) line += ` · ${t('plan.pl.trade.stopEst')}`
           } else {

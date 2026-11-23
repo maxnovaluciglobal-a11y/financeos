@@ -272,10 +272,29 @@ describe('planes guardados (metadatos de la cuenta)', () => {
     expect(c.auth.updateUser).toHaveBeenCalledWith({ data: { invest_plans: { v: 1, list: [expect.objectContaining({ id: 'pabc123', t: 'VOO' })] } } })
     expect((await mk(c).savePlans([{ id: 'nope' }])).error).toBe('plan_invalid')
   })
+  it('updatePlans aplica el cambio sobre la lista FRESCA de la cuenta (otro dispositivo, carga fallida)', async () => {
+    const other = { ...plan, id: 'pother99', ts: plan.ts + 5, t: 'MSFT' }
+    const c = fakeClient(undefined, { user: { id: 'u1', user_metadata: {} } })
+    // La sesión en caché no tiene planes; el servidor (getUser) ya tiene el de otro dispositivo.
+    c.auth.getUser = vi.fn(async () => ({ data: { user: { id: 'u1', user_metadata: { invest_plans: { v: 1, list: [other] } } } }, error: null }))
+    const r = await mk(c).updatePlans({ op: 'upsert', plan })
+    expect(r.ok).toBe(true)
+    expect(r.data.map(p => p.id).sort()).toEqual(['pabc123', 'pother99'])
+    expect(c.auth.updateUser).toHaveBeenCalledWith({ data: { invest_plans: { v: 1, list: expect.arrayContaining([expect.objectContaining({ id: 'pother99' }), expect.objectContaining({ id: 'pabc123' })]) } } })
+    const rm = await mk(c).updatePlans({ op: 'remove', id: 'pother99' })
+    expect(rm.data).toEqual([])
+  })
+  it('updatePlans no guarda si no puede leer la lista de la cuenta', async () => {
+    const c = fakeClient(undefined, { user: { id: 'u1', user_metadata: {} } })
+    c.auth.getUser = vi.fn(async () => ({ data: { user: null }, error: { message: 'x' } }))
+    expect((await mk(c).updatePlans({ op: 'upsert', plan })).error).toBe('load_failed')
+    expect(c.auth.updateUser).not.toHaveBeenCalled()
+  })
   it('en el demo no escribe en la cuenta', async () => {
     const c = fakeClient()
     const d = createInvestData({ client: c, isDemo: () => true, onHoldingsChange: () => {} })
     expect((await d.savePlans([plan])).error).toBe('demo')
+    expect((await d.updatePlans({ op: 'upsert', plan })).error).toBe('demo')
     expect(c.auth.updateUser).not.toHaveBeenCalled()
   })
 })

@@ -7,7 +7,7 @@ import {
   ladderReading, ladderSplit, LADDERS, LEGACY_LADDERS, MIN_CLOSES,
   projectContributions, validateProjection,
   normalizePlan, readPlans, validatePlans, upsertPlan, removePlan, restorePlan, tradePlanFrom, planRisk,
-  plansBytes, newPlanId, MAX_PLANS, MAX_PLANS_BYTES, PLANS_KEY,
+  plansBytes, newPlanId, MAX_PLANS, MAX_PLANS_BYTES, PLANS_KEY, applyPlanChange, allocSaveable,
 } from './investPlan.js'
 
 describe('computeSizing (igual que Invest)', () => {
@@ -284,5 +284,44 @@ describe('montos escritos a mano', () => {
     expect(amount('2.5')).toBe(2.5)
     expect(amount('400')).toBe(400)
     expect(amount('')).toBeNaN()
+  })
+})
+
+describe('revisión 23-nov: moneda, redondeo y cambios puntuales', () => {
+  const base = { id: 'pabc1234', k: 'trade', ts: 1763600000000, t: 'VOD.L', entry: 250, stop: 230, units: 395, cap: 10000, risk: 1 }
+  it('acepta GBp/ZAc/ILA y nunca toma peniques por dólares', () => {
+    expect(normalizePlan({ ...base, ccy: 'GBp' }).ccy).toBe('GBp')
+    expect(normalizePlan({ ...base, t: 'NPN.JO', ccy: 'ZAc' }).ccy).toBe('ZAc')
+    // Moneda inválida: la del sufijo del símbolo, o null; nunca 'USD' a ciegas.
+    expect(normalizePlan({ ...base, ccy: 'gbp!' }).ccy).toBe('GBp')
+    expect(normalizePlan({ ...base, t: 'ABC.ZZ', ccy: null }).ccy).toBeNull()
+    expect(normalizePlan({ ...base, t: 'AAPL', ccy: undefined }).ccy).toBe('USD')
+    // Con la tasa de GBp (GBP × 100) el riesgo del plan es 1 %, no 79 %.
+    const p = normalizePlan({ ...base, ccy: 'GBp' })
+    const risk = planRisk(p, 0.79 * 100)
+    expect(risk.pct).toBeCloseTo(0.01, 3)
+    expect(planRisk(p, null)).toBeNull()
+  })
+  it('precios bajo 1 guardan 8 cifras significativas (SHIB, DOGE)', () => {
+    const p = normalizePlan({ ...base, t: 'SHIB-USD', ccy: 'USD', entry: 0.000012345, stop: 0.000009876, units: 1e8 })
+    expect(p.entry).toBe(0.000012345)
+    expect(p.stop).toBe(0.000009876)
+    const q = normalizePlan({ ...base, t: 'X', ccy: 'USD', entry: 0.35, stop: 0.322 })
+    expect(q.stop).toBe(0.322)
+    expect(normalizePlan({ ...base, ccy: 'GBp', entry: 1234.5678912 }).entry).toBe(1234.567891)
+  })
+  it('applyPlanChange: upsert, remove (aunque ya no esté) y restore sobre la lista dada', () => {
+    const a = normalizePlan({ ...base, ccy: 'GBp' })
+    const b = normalizePlan({ ...base, id: 'pdef5678', ts: base.ts + 1, t: 'VOO', ccy: 'USD' })
+    expect(applyPlanChange([a], { op: 'upsert', plan: b }).list.map(p => p.id)).toEqual(['pdef5678', 'pabc1234'])
+    expect(applyPlanChange([a, b], { op: 'remove', id: 'pabc1234' }).list.map(p => p.id)).toEqual(['pdef5678'])
+    expect(applyPlanChange([b], { op: 'remove', id: 'pabc1234' }).ok).toBe(true)
+    expect(applyPlanChange([b], { op: 'restore', plan: a, index: 1 }).list).toHaveLength(2)
+    expect(applyPlanChange([b], { op: 'x' }).ok).toBe(false)
+  })
+  it('allocSaveable: suma 100 y cada % de 0,1 o más', () => {
+    expect(allocSaveable([{ t: 'A', p: 60 }, { t: 'B', p: 40 }])).toBe(true)
+    expect(allocSaveable([{ t: 'A', p: 99.95 }, { t: 'B', p: 0.05 }])).toBe(false)
+    expect(allocSaveable([{ t: 'A', p: 50 }])).toBe(false)
   })
 })
