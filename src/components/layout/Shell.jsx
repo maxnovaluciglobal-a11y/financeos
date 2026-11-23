@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
+import { helpUrl } from '../../utils/landingUrls.js'
 import s from './shell.module.css'
 import { BackupStatusBadge } from '../backup/BackupStatus.jsx'
 import QuickAdd from '../QuickAdd.jsx'
@@ -34,7 +35,7 @@ const SHOW_FIRMA = true
 
 export default function Shell({ page, setPage, onBack, backTo, children }) {
   const { settings, updateSettings, incomes, expenses, showToast } = useApp()
-  const { t } = useT()
+  const { t, lang } = useT()
   // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
   const isDark = useResolvedTheme(settings.theme) === 'dark'
 
@@ -250,7 +251,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
             <button type="button" onClick={() => navigate('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
             <button type="button" onClick={() => navigate('terms')} className={s.legalLink}>{t('nav.legal.terms')}</button>
             <button type="button" onClick={() => navigate('disclaimer')} className={s.legalLink}>{t('nav.legal.disclaimer')}</button>
-            <a href='https://moyiq.app/ayuda.html' target='_blank' className={s.legalLink} style={{textDecoration:'none'}}>{t('nav.legal.help')}</a>
+            <a href={helpUrl(lang)} target='_blank' rel='noopener noreferrer' className={s.legalLink} style={{textDecoration:'none'}}>{t('nav.legal.help')}</a>
           </div>
           {SHOW_FIRMA && (
             <div style={{ display:'flex', justifyContent:'center', padding:'8px 0 2px' }}

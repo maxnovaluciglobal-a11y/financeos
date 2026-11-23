@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles } from 'lucide-react'
 import { useT } from '../../i18n/useT.js'
+import { helpUrl } from '../../utils/landingUrls.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { moreSections, showProChip } from '../../components/layout/navConfig.js'
 import { requestSettingsSub } from '../Settings/settingsIndex.js'
@@ -82,7 +83,7 @@ function RowIcon({ it }) {
 
 export default function More({ setPage }) {
   const { settings, updateSettings } = useApp()
-  const { t } = useT()
+  const { t, lang } = useT()
   // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
   const isDark = useResolvedTheme(settings.theme) === 'dark'
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -161,7 +162,7 @@ export default function More({ setPage }) {
         <button type="button" onClick={() => setPage('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
         <button type="button" onClick={() => setPage('terms')} className={s.legalLink}>{t('nav.legal.terms')}</button>
         <button type="button" onClick={() => setPage('disclaimer')} className={s.legalLink}>{t('nav.legal.disclaimer')}</button>
-        <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noreferrer" className={s.legalLink}>{t('nav.legal.help')}</a>
+        <a href={helpUrl(lang)} target="_blank" rel="noreferrer" className={s.legalLink}>{t('nav.legal.help')}</a>
       </div>
 
       <div className={s.version}>

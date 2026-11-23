@@ -3,6 +3,7 @@
 // (fuente única). Las claves i18n llevan el "US$" y reciben {m}/{y} ya formateados:
 // es/pt/de -> "4,99", en -> "4.99".
 import config from '../config.js'
+import { PRICING_URLS, isPricingUrl, pricingUrl } from './landingUrls.js'
 
 const LANG_NUMBER_LOCALE = { es: 'es-ES', en: 'en-US', pt: 'pt-BR', de: 'de-DE' }
 
@@ -33,6 +34,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // precargado (prefilled_email): stripe-webhook deja Pro activado en esa cuenta y
 // el usuario no pega la clave a mano. Sin cuenta, queda como antes.
 export function withCheckoutLang(url, lang, account = null) {
+  // La página de planes de la landing (sin prueba disponible) va en el idioma
+  // de la interfaz, como cancelUrl() (C14).
+  if (isPricingUrl(url)) return pricingUrl(lang)
   if (typeof url !== 'string' || !/^https:\/\/buy\.stripe\.com\//.test(url)) return url
   if (!['es', 'en', 'pt', 'de'].includes(lang)) return url
   try {
@@ -49,7 +53,7 @@ export function withCheckoutLang(url, lang, account = null) {
   } catch { return url }
 }
 
-export function proCta(pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
+export function proCta(pricing = config.pricing, fallbackUrl = PRICING_URLS.es) {
   const url = typeof pricing?.trialCheckoutUrl === 'string' ? pricing.trialCheckoutUrl.trim() : ''
   if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) {
     return { trial: true, href: url, labelKey: 'pro.gate.trialCta' }
@@ -78,7 +82,7 @@ export function annualSavingPct(pricing = config.pricing) {
 // 'monthly' cuenta como anual). Con la prueba habilitada y un link https real es
 // el link CON prueba; si no, la página de precios de la landing y sin promesa de
 // prueba (mismo criterio que proCta).
-export function checkoutFor(period, pricing = config.pricing, fallbackUrl = 'https://moyiq.app/#pricing') {
+export function checkoutFor(period, pricing = config.pricing, fallbackUrl = PRICING_URLS.es) {
   const raw = period === 'monthly' ? pricing?.trialCheckoutUrl : pricing?.trialCheckoutUrlAnnual
   const url = typeof raw === 'string' ? raw.trim() : ''
   if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) return { trial: true, href: url }

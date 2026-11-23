@@ -60,7 +60,9 @@ describe('withCheckoutLang (idioma del correo de licencia vía client_reference_
     expect(withCheckoutLang('https://buy.stripe.com/abc', 'en')).toBe('https://buy.stripe.com/abc?client_reference_id=lang_en')
   })
   it('no toca otras URLs, idiomas desconocidos ni un client_reference_id existente', () => {
-    expect(withCheckoutLang('https://moyiq.app/#pricing', 'en')).toBe('https://moyiq.app/#pricing')
+    // C14: la página de planes de la landing sí cambia al idioma de la interfaz.
+    expect(withCheckoutLang('https://moyiq.app/#pricing', 'en')).toBe('https://moyiq.app/en/#pricing')
+    expect(withCheckoutLang('https://moyiq.app/', 'en')).toBe('https://moyiq.app/')
     expect(withCheckoutLang('https://buy.stripe.com/abc', 'fr')).toBe('https://buy.stripe.com/abc')
     expect(withCheckoutLang('https://buy.stripe.com/abc?client_reference_id=x', 'de')).toBe('https://buy.stripe.com/abc?client_reference_id=x')
   })

@@ -5,6 +5,7 @@ import { validateLicense, normalizeLicenseInput, setLicenseEmail, acknowledgeSta
 import { useT } from '../i18n/useT.js'
 import Turnstile from './Turnstile.jsx'
 import Logo from './Logo.jsx'
+import { pricingUrl } from '../utils/landingUrls.js'
 import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, checkoutPlan, annualPerMonth, DEFAULT_BILLING_PERIOD } from '../utils/pricing.js'
 import PeriodToggle from './ui/PeriodToggle.jsx'
 import RenewalNote from './ui/RenewalNote.jsx'
@@ -29,7 +30,7 @@ function usePlans(t, lang, period) {
 }
 
 async function startCheckout(product, lang, period, account) {
-  const url = product === 'pro' ? checkoutFor(period).href : 'https://moyiq.app/#pricing'
+  const url = product === 'pro' ? checkoutFor(period).href : pricingUrl(lang)
   if (product === 'pro' && checkoutFor(period).trial) trackEvent('checkout_start', { plan: checkoutPlan(period) })
   window.location.href = withCheckoutLang(url, lang, account)
 }

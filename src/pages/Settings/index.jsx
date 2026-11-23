@@ -35,6 +35,7 @@ import { getSession } from '../../core/auth.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import config from '../../config.js'
 import { useT } from '../../i18n/useT.js'
+import { helpUrl } from '../../utils/landingUrls.js'
 
 const ICONS = {
   profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles, autoEntry: Zap,
@@ -46,7 +47,7 @@ const scrollRoot = () => document.querySelector('[data-scroll-root]')
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 export default function Settings() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
   const [autoOpenDelete] = useState(() => typeof window !== 'undefined' && wantsDeleteAccount(initialSearch(window.location.search)))
   // Subpantalla abierta: la de history.state (recarga, o volver desde otra
@@ -279,7 +280,7 @@ export default function Settings() {
         {t('settings.support.line')}{' '}
         <a href="mailto:support@moyiq.app" style={{color:'var(--tx)'}}>support@moyiq.app</a>
         {' · '}{t('settings.support.time')}{' · '}
-        <a href="https://moyiq.app/ayuda.html" target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
+        <a href={helpUrl(lang)} target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
       </p>
       <div style={{padding:'10px 12px',background: 'var(--fill)',borderRadius:'var(--r)',border: 0,fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.7,marginTop:8}}>
         {t('settings.footer')}

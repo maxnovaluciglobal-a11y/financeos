@@ -4,6 +4,7 @@ import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { pdf } from '@react-pdf/renderer'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
+import { pricingUrl } from '../../utils/landingUrls.js'
 import { KPI, Card, CardHeader, Alert, Empty, PageHeader } from '../../components/ui/index.jsx'
 import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortName, catName, subLabel, currencySymbol, fmtAxis, fmtSignedMoney, fmtPctPoints, localDateStr } from '../../utils/index.js'
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
@@ -173,7 +174,7 @@ export default function Reports({ setPage }) {
           </button>
         ) : (
           <a
-            href="https://moyiq.app/#pricing"
+            href={pricingUrl(lang)}
             target="_blank"
             rel="noopener noreferrer"
             style={{

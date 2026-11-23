@@ -11,16 +11,17 @@ import { MoreHorizontal } from 'lucide-react'
 import { useDemo } from './DemoContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { demoPersona } from './demoData.js'
+import { pricingUrl } from '../utils/landingUrls.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
 // UX-N4: el CTA del demo abre "Crear cuenta" (no "Iniciar sesión") y marca el origen.
 export const APP_SIGNUP_URL = `${APP_URL}?signup&ref=demo`
-export const PRICING_URL = 'https://moyiq.app/#pricing'
 
 export default function DemoBanner({ onReplayTour }) {
   const { setScenario, personaId } = useDemo()
   const persona = demoPersona(personaId)
-  const { t } = useT()
+  const { t, lang } = useT()
+  const plansUrl = pricingUrl(lang)
   const [scenario, setLocal] = useState('exitoso')
   const [menuOpen, setMenuOpen] = useState(false)
   const menuId = useId()
@@ -62,7 +63,7 @@ export default function DemoBanner({ onReplayTour }) {
           <span aria-hidden="true">↕</span>
         </button>
 
-        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer">
+        <a className="demo-banner__plans" href={plansUrl} target="_blank" rel="noopener noreferrer">
           {t('demo.banner.plans')}
         </a>
 
@@ -95,7 +96,7 @@ export default function DemoBanner({ onReplayTour }) {
               {t('demo.tour.replay')}
             </button>
           )}
-          <a className="demo-banner__menuItem" href={PRICING_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
+          <a className="demo-banner__menuItem" href={plansUrl} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
             {t('demo.banner.plans')}
           </a>
         </div>

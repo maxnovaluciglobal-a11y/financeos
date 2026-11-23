@@ -4,7 +4,8 @@
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { DemoProvider, useDemo, DemoContext } from './DemoContext.jsx'
-import DemoBanner, { PRICING_URL, APP_SIGNUP_URL } from './DemoBanner.jsx'
+import DemoBanner, { APP_SIGNUP_URL } from './DemoBanner.jsx'
+import { pricingUrl } from '../utils/landingUrls.js'
 import DemoTour, { hasSeenDemoTour } from './DemoTour.jsx'
 import DemoGate, { hasPassedDemoGate } from './DemoGate.jsx'
 import Shell from '../components/layout/Shell.jsx'
@@ -105,7 +106,7 @@ function DemoBottomCTA({ hidden }) {
           style={{ width: 'auto', fontSize: 'var(--t-body)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
           {t('demo.banner.start')}
         </a>
-        <a className="demo-banner__plans" href={PRICING_URL} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
+        <a className="demo-banner__plans" href={pricingUrl(lang)} target="_blank" rel="noopener noreferrer" style={{ padding: '0 8px' }}>
           {t('demo.banner.plans')}
         </a>
       </div>
