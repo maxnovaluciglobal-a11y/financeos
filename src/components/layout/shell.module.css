@@ -29,7 +29,6 @@
   border-bottom: 0.5px solid var(--brd);
   margin-bottom: 6px;
 }
-.logoSub  { font-size: var(--t-footnote); color: var(--th); font-family: var(--sans); margin-top: 3px; }
 
 .sec {
   font-size: var(--t-footnote); font-weight: 600; font-family: var(--sans); color: var(--th);

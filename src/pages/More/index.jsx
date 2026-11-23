@@ -165,7 +165,7 @@ export default function More({ setPage }) {
       </div>
 
       <div className={s.version}>
-        moyiq v1.5 · MAXNOVA &amp; LUCI Global LLC<br />
+        moyiq · MAXNOVA &amp; LUCI Global LLC<br />
         <span className={s.versionLock}><Lock size={12} strokeWidth={1.7} aria-hidden="true" />{t('nav.noServerTag')}</span>
       </div>
     </div>

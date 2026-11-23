@@ -233,7 +233,6 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
       <nav className={s.sb}>
         <div className={s.logo}>
           <Logo size={19} />
-          <div className={s.logoSub}>v1.5</div>
         </div>
 
         <NavItems onNavigate={navigate} />
@@ -260,7 +259,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
             </div>
           )}
           <div className={s.appVersion}>
-            moyiq v1.5 · MAXNOVA & LUCI Global LLC<br/>
+            moyiq · MAXNOVA & LUCI Global LLC<br/>
             <span><Lock size={12} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 5, flexShrink: 0 }} />{t('nav.noServerTag')}</span>
           </div>
           <div style={{marginTop:6}}><BackupStatusBadge compact /></div>
