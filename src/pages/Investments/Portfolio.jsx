@@ -1,17 +1,18 @@
 // src/pages/Investments/Portfolio.jsx — el portafolio dentro de moyiq (opción B).
 // Valor, cambio del día y total, reparto por tipo y una fila por posición con
 // su detalle. Las filas se traen al abrir la pantalla y viven solo en memoria
-// (core/investBridge.js → fetchPortfolioDetail). Registrar operaciones sigue
-// en Invest: este es un visor de solo lectura.
+// (core/investBridge.js → fetchPortfolioDetail). Es un visor de solo lectura:
+// registrar operaciones se hace en Portafolio › Movimientos de Inversiones
+// completo, dentro de la app (onOpenHere). invest.moyiq.app/app ya no existe
+// (redirige a la app desde el 23-nov-2026).
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, Equal, ExternalLink, RefreshCw } from 'lucide-react'
+import { ArrowDown, ArrowUp, Equal, RefreshCw } from 'lucide-react'
 import Money from '../../components/Money.jsx'
 import Sheet from '../../components/ui/Sheet.jsx'
 import { StateTag } from '../../components/ledger/index.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { fetchPortfolioDetail, INVEST_ORIGIN } from '../../core/investBridge.js'
-import { openInvest } from '../../core/investHandoff.js'
 import { demoInvestRows } from '../../demo/demoInvest.js'
 import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
 import { allocationByType } from '../../utils/investValuation.js'
@@ -105,20 +106,12 @@ export default function Portfolio({ onOpenHere } = {}) {
   const { demo, snapshot, inv, rate } = useInvestPortfolio()
   const { rows, phase, reload } = useDetail(demo)
   const [selected, setSelected] = useState(null)
-  const [opening, setOpening] = useState(false)
   const sym = currencySymbol(settings.currency, settings.language)
 
-  function manage() {
-    if (demo) return
-    setOpening(true)
-    openInvest({}).finally(() => setOpening(false))
-  }
-  // Demo (C8 de la auditoría de branding, 23-nov-2026): el botón abría
-  // invest.moyiq.app, que sin sesión pide iniciar sesión. Ahora abre
-  // Portafolio › Movimientos de Inversiones dentro de la app (onOpenHere).
-  const manageBtn = demo
-    ? (onOpenHere ? <button type="button" className={s.btn} onClick={onOpenHere}>{t('invest.port.manageHere')}</button> : null)
-    : <button type="button" className={s.btn} onClick={manage} disabled={opening}>{t('invest.port.manage')}<ExternalLink size={16} strokeWidth={1.8} aria-hidden="true" /></button>
+  // C8 y C6 de la auditoría de branding (23-nov-2026): el botón abría
+  // invest.moyiq.app/app. Ahora, con cuenta o en el demo, abre Portafolio ›
+  // Movimientos de Inversiones dentro de la app (onOpenHere).
+  const manageBtn = onOpenHere ? <button type="button" className={s.btn} onClick={onOpenHere}>{t('invest.port.manageHere')}</button> : null
 
   const busy = phase === 'loading' || phase === 'refreshing'
   const empty = (rows && rows.length === 0) || snapshot?.status === 'empty'
@@ -239,8 +232,8 @@ export default function Portfolio({ onOpenHere } = {}) {
       )}
 
       <div className={s.actions}>
-        {empty && !demo
-          ? <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={manage} disabled={opening}>{t('invest.port.addFirst')}<ExternalLink size={16} strokeWidth={1.8} aria-hidden="true" /></button>
+        {empty && !demo && onOpenHere
+          ? <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={onOpenHere}>{t('invest.port.addFirst')}</button>
           : manageBtn}
       </div>
 

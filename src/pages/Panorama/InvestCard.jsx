@@ -2,10 +2,11 @@
 // Muestra el portafolio de Invest: valor, cambio del día y total, posiciones y
 // de cuándo y de dónde es el dato. Es una estimación de solo lectura; el detalle
 // de las posiciones está en la pantalla Inversiones dentro de moyiq (opción B,
-// 19-nov-2026) y registrar operaciones sigue en Invest. Nunca lleva ProGate:
+// 19-nov-2026), igual que registrar operaciones y aportes (Portafolio ›
+// Movimientos; invest.moyiq.app/app redirige a la app desde el 23-nov-2026).
+// Nunca lleva ProGate:
 // los datos de mercado no tienen licencia comercial (INV-1). Sin perfil de
 // inversionista la tarjeta invita a activarlo y no pide datos.
-import { useState } from 'react'
 import { ChevronRight, RefreshCw } from 'lucide-react'
 import Money, { useMoney } from '../../components/Money.jsx'
 import { Delta, StateTag } from '../../components/ledger/index.js'
@@ -13,11 +14,9 @@ import { NAV_ICONS } from '../../components/icons/Icons.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { INVEST_ORIGIN } from '../../core/investBridge.js'
-import { openInvest } from '../../core/investHandoff.js'
 import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
-import { investFullHere } from '../../utils/uiFlags.js'
 import { queueInvestTab } from '../../utils/investNav.js'
-import { aporteHandoff, fmtInvestAt, fmtUsd, monthContributions } from '../../utils/investNetWorth.js'
+import { fmtInvestAt, fmtUsd, monthContributions } from '../../utils/investNetWorth.js'
 import { currencySymbol, currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import hs from '../Dashboard/Home.module.css'
 import s from './investCard.module.css'
@@ -52,23 +51,17 @@ export default function InvestCard({ setPage } = {}) {
   const app = useApp() || {}
   const settings = app.settings || {}
   const { demo, phase, snapshot, inv, rate, refresh, offline } = useInvestPortfolio()
-  const [opening, setOpening] = useState(false)
 
   const sym = currencySymbol(settings.currency, settings.language)
   const month = settings.activeMonth || currentMonth()
   const contrib = monthContributions(app.expenses, month, app.setAsides)
 
-  // Con Inversiones completo (UI_FLAGS.investFull) el aporte se registra
-  // dentro de moyiq: Portafolio › Movimientos ofrece el depósito. Sin él,
-  // sigue el traspaso a Invest de siempre.
-  const full = investFullHere()
-  function open(aporte) {
-    if (full && setPage) { queueInvestTab('portafolio', 'movimientos'); setPage('investments'); return }
-    setOpening(true)
-    openInvest({ aporte }).finally(() => setOpening(false))
-  }
+  // Los aportes del mes se registran dentro de moyiq: Portafolio ›
+  // Movimientos ofrece el depósito (aporteOffer). Antes, sin Inversiones
+  // completo, se abría invest.moyiq.app/app con el aporte en el fragmento (C6,
+  // 23-nov-2026).
   function openHere() {
-    if (full) queueInvestTab('portafolio', 'movimientos')
+    queueInvestTab('portafolio', 'movimientos')
     setPage?.('investments')
   }
 
@@ -157,13 +150,11 @@ export default function InvestCard({ setPage } = {}) {
         {snapshot.excluded > 0 && <p className={s.notice}>{t(snapshot.excluded === 1 ? 'invest.card.excluded.one' : 'invest.card.excluded.many', { n: snapshot.excluded })}</p>}
         {snapshot.status === 'live' && snapshot.missing > 0 && <p className={s.notice}>{t(snapshot.missing === 1 ? 'invest.card.missing.one' : 'invest.card.missing.many', { n: snapshot.missing })}</p>}
         <Sources snapshot={snapshot} t={t} />
-        {contrib.count > 0 && (demo
-          // Demo (C8): abre Inversiones dentro de la app, nunca el login de
-          // invest.moyiq.app. Sin setPage no hay a dónde ir: texto sin enlace.
-          ? (setPage
-            ? <button type="button" className={s.aporte} onClick={openHere}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</button>
-            : <p className={s.meta}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</p>)
-          : <button type="button" className={s.aporte} disabled={opening} onClick={() => open(aporteHandoff(contrib, settings, rate))}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</button>
+        {contrib.count > 0 && (setPage
+          // Con cuenta o en el demo (C8, C6): abre Portafolio › Movimientos
+          // dentro de la app. Sin setPage no hay a dónde ir: texto sin enlace.
+          ? <button type="button" className={s.aporte} onClick={openHere}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</button>
+          : <p className={s.meta}>{t(contrib.count === 1 ? 'invest.aportes.one' : 'invest.aportes.many', { n: contrib.count })}</p>
         )}
         <div className={s.actions}>{cta}</div>
       </>

@@ -73,9 +73,10 @@ function InvestmentsPage({ setPage }) {
   }
   else if (status === 'needs-profile') body = <Gate onStart={() => setAsking(true)} />
   else {
-    // Demo con la vista simple (?ui=invest-simple): "Registrar operaciones"
-    // abre Portafolio › Movimientos acá mismo, no el sitio aparte (C8).
-    const openHere = settings.isDemo ? () => { queueInvestTab('portafolio', 'movimientos'); setFull(true) } : undefined
+    // Vista simple (?ui=invest-simple), con cuenta o en el demo: "Registrar
+    // operaciones" abre Portafolio › Movimientos acá mismo (C8, C6). El sitio
+    // aparte (invest.moyiq.app/app) redirige a la app desde el 23-nov-2026.
+    const openHere = () => { queueInvestTab('portafolio', 'movimientos'); setFull(true) }
     body = full ? <InvestHub setPage={setPage} demo={!!settings.isDemo} /> : <Portfolio onOpenHere={openHere} />
   }
 

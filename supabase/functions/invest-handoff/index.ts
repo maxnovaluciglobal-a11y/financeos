@@ -2,7 +2,10 @@
 // Deploy: supabase functions deploy invest-handoff --project-ref nelwgbcddwiaimzbcuas --use-api --no-verify-jwt
 // verify_jwt=false (supabase/config.toml): el JWT se verifica acá contra Auth,
 // así el preflight y un token vencido reciben una respuesta con CORS.
-// Frontend: src/core/investHandoff.js → POST con Authorization: Bearer <sesión>.
+// SIN USO desde el 23-nov-2026: invest.moyiq.app/app redirige a la app
+// (app.moyiq.app/app/?open=invest-resumen) y el cliente src/core/investHandoff.js
+// se borró. Sigue desplegada a propósito; no borrarla sin OK de Walter.
+// Frontend (hasta el 23-nov-2026): POST con Authorization: Bearer <sesión>.
 // Respuesta: { ok, token_hash, uid }, con Cache-Control: no-store.
 // Errores: 403 origin_not_allowed · 401 session_required · 422 no_email · 502 link_failed.
 // El token nunca se escribe en un log ni en el reporte de errores.
