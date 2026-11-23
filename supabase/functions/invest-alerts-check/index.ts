@@ -11,7 +11,8 @@
 // ningún dispositivo por la red, un 5xx o falta de tiempo, se devuelve a su
 // valor anterior. Precios y envíos tienen presupuestos separados
 // (alertLogic.ts). Suscripciones con 404/410 se borran; las que fallan de otra
-// forma se borran con 8 fallos seguidos en 48 h (push_subscriptions_record).
+// forma se borran con 8 fallos seguidos en 48 h (push_subscriptions_record);
+// un 400/403 suma solo si algún envío llegó al mismo servicio push.
 // Requiere las migraciones 20261120000100, 20261123000000 (rotación) y
 // 20261123000100 (servicios push permitidos, fallos por suscripción).
 //   cuerpo opcional { "mode": "check" } → solo cuenta, sin marcar ni avisar.
@@ -53,6 +54,9 @@ Deno.serve(withErrorReporting("invest-alerts-check", async (req) => {
   // tiempo, clave VAPID) o más de la mitad de los envíos fallidos responde 502:
   // withErrorReporting deja la fila en edge_function_errors y uptime-alert
   // avisa. Un 400/403 cuenta solo si en ese servicio push nada llegó.
+  // 400/403 en un servicio push donde nada llegó: no suma fallos (no hay prueba
+  // de que el dispositivo esté roto), pero queda en el log.
+  if (result.invalidUnconfirmed) console.warn(`invest-alerts-check: ${result.invalidUnconfirmed} suscripción(es) con 400/403 sin ningún envío entregado en su servicio push (no suman fallo)`);
   const failed = runFailed(result);
   return json({ ok: !failed, mode, ...result }, failed ? 502 : 200);
 }));

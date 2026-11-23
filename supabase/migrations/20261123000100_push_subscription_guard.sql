@@ -20,11 +20,14 @@
 --      push_subscriptions_record(ok[], failed[], gone[], at), solo service_role:
 --        · ok: vuelve a 0.
 --        · gone (404/410): se borra.
---        · failed (400/403, 429/5xx, red): suma 1; se borra recién con 8 fallos
---          seguidos Y el primero hace 48 h o más. Un solo 403 (por ejemplo la
---          clave VAPID del servidor mal cargada) nunca borra nada: si el 400/403
---          se repite en 2 o más cuentas de un mismo servicio push donde nada
---          llegó, la función responde 502 mientras tanto.
+--        · failed (429/5xx, red, otro 4xx, y 400/403 solo si en esa corrida
+--          llegó algún envío al mismo servicio push): suma 1; se borra recién
+--          con 8 fallos seguidos Y el primero hace 48 h o más. Un 400/403 en un
+--          servicio push donde nada llegó (por ejemplo la clave VAPID del
+--          servidor mal cargada) no viene en failed: la función lo registra sin
+--          sumar, y si se repite en 2 o más cuentas responde 502. La app vuelve
+--          a llamar a save_push_subscription al abrir (una vez por sesión), que
+--          pone fail_count en 0.
 --   4. invest_alert_push_targets (reemplaza la de 20261120000100): solo
 --      endpoints permitidos y como mucho 5 por cuenta, las más recientes.
 --

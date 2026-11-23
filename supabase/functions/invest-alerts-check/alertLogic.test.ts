@@ -177,6 +177,12 @@ describe('runAlertsCheck (fetch simulado)', () => {
   }
   const body = (c: { init?: RequestInit }) => JSON.parse(String(c.init?.body));
   const rpcCalls = (calls: { url: string }[], name: string) => calls.filter(c => c.url.endsWith(`/rpc/${name}`));
+  // Todo lo que se mandó a push_subscriptions_record (sin nada que anotar no se llama).
+  const recorded = (calls: { url: string; init?: RequestInit }[]) => {
+    const all = { p_ok: [] as string[], p_failed: [] as string[], p_gone: [] as string[] };
+    for (const c of rpcCalls(calls, 'push_subscriptions_record')) for (const k of ['p_ok', 'p_failed', 'p_gone'] as const) all[k].push(...body(c)[k]);
+    return all;
+  };
 
   it('cotiza en lote, reclama por RPC, avisa a cada dispositivo y limpia suscripciones muertas', async () => {
     const { calls, sendPush, d } = deps();
@@ -261,7 +267,7 @@ describe('runAlertsCheck (fetch simulado)', () => {
   it('un 400/403 de un dispositivo, con otro del mismo servicio que recibe, suma un fallo sin alarma y sin borrar', async () => {
     const { calls, d } = deps({ sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.endsWith('/2') ? 403 : 201 })) });
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, removedSubs: 0, errors: 0, pushSystemic: false });
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 1, invalidUnconfirmed: 0, removedSubs: 0, errors: 0, pushSystemic: false });
     expect(runFailed(r)).toBe(false);
     expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_ok: ['s1'], p_failed: ['s2'], p_gone: [] });
   });
@@ -276,9 +282,11 @@ describe('runAlertsCheck (fetch simulado)', () => {
     const { calls, d } = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.includes('apple') ? 201 : 403 })) },
       (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 1, invalidSubs: 2, pushSystemic: true, released: 2, removedSubs: 0 });
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 2, invalidUnconfirmed: 2, pushSystemic: true, released: 2, removedSubs: 0 });
     expect(runFailed(r)).toBe(true);
     expect(body(rpcCalls(calls, 'invest_alerts_release')[0]).p_ids).toEqual(['g1', 'g2']);
+    // Que Apple entregue no prueba nada sobre FCM: los 403 de FCM no suman.
+    expect(recorded(calls)).toEqual({ p_ok: ['sa'], p_failed: [], p_gone: [] });
   });
 
   it('WNS en hosts distintos cuenta como un solo proveedor: un envío que llega a uno evita la alarma por otro', async () => {
@@ -288,23 +296,25 @@ describe('runAlertsCheck (fetch simulado)', () => {
       { user_id: 'u2', sub_id: 'w2s', endpoint: 'https://db5p.notify.windows.com/w/?token=b', p256dh: 'p', auth: 'k' },
       { user_id: 'u3', sub_id: 'w3s', endpoint: 'https://bn3p.notify.windows.com/w/?token=c', p256dh: 'p', auth: 'k' },
     ];
-    const { d } = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.includes('bn3p') ? 201 : 403 })) },
+    const { calls, d } = deps({ alerts, sendPush: vi.fn(async (sub: { endpoint: string }) => new Response(null, { status: sub.endpoint.includes('bn3p') ? 201 : 403 })) },
       (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 1, invalidSubs: 2, pushSystemic: false, released: 0, errors: 0 });
+    expect(r).toMatchObject({ sent: 1, invalidSubs: 2, invalidUnconfirmed: 0, pushSystemic: false, released: 0, errors: 0 });
     expect(runFailed(r)).toBe(false);
+    // WNS entregó en esta corrida: los 403 de WNS sí suman.
+    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0]).p_failed.sort()).toEqual(['w1s', 'w2s']);
   });
 
   for (const endpoint of ['https://fcm.googleapis.com/fcm/send/x', 'https://wns2-par02p.notify.windows.com/w/?token=x', 'https://web.push.apple.com/x']) {
-    it(`un solo dispositivo con 403 y ningún otro envío (${new URL(endpoint).hostname}): suma el fallo, sin 502, sin devolver y sin borrar`, async () => {
+    it(`un solo dispositivo con 403 y ningún otro envío (${new URL(endpoint).hostname}): lo registra sin sumar el fallo, sin 502, sin devolver y sin borrar`, async () => {
       const alerts = [row()];
       const { calls, d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
         (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify([{ user_id: 'u1', sub_id: 's1', endpoint, p256dh: 'p', auth: 'k' }]), { status: 200 }) : null));
       const r = await runAlertsCheck(d, NOW);
-      expect(r).toMatchObject({ sent: 0, invalidSubs: 1, removedSubs: 0, pushSystemic: false, released: 0, errors: 0 });
+      expect(r).toMatchObject({ sent: 0, invalidSubs: 1, invalidUnconfirmed: 1, removedSubs: 0, pushSystemic: false, released: 0, errors: 0 });
       expect(runFailed(r)).toBe(false);
       expect(rpcCalls(calls, 'invest_alerts_release')).toHaveLength(0);
-      expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_failed: ['s1'], p_gone: [] });
+      expect(recorded(calls)).toEqual({ p_ok: [], p_failed: [], p_gone: [] });
     });
   }
 
@@ -313,7 +323,27 @@ describe('runAlertsCheck (fetch simulado)', () => {
     const { d } = deps({ alerts: [row()], sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
       (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ invalidSubs: 2, pushSystemic: false, released: 0 });
+    expect(r).toMatchObject({ invalidSubs: 2, invalidUnconfirmed: 2, pushSystemic: false, released: 0 });
+  });
+
+  it('clave VAPID mal cargada con pocas cuentas: corrida tras corrida, ningún 403 suma fallos ni borra la suscripción', async () => {
+    const targets = [{ user_id: 'u1', sub_id: 's1', endpoint: 'https://fcm.googleapis.com/fcm/send/x', p256dh: 'p', auth: 'k' }];
+    for (let run = 0; run < 10; run++) {
+      const { calls, d } = deps({ alerts: [row()], sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
+        (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+      const r = await runAlertsCheck(d, NOW + run * 15 * 60 * 1000);
+      expect(r).toMatchObject({ invalidUnconfirmed: 1, removedSubs: 0, pushSystemic: false });
+      expect(recorded(calls)).toEqual({ p_ok: [], p_failed: [], p_gone: [] });
+    }
+  });
+
+  it('404/410 se sigue borrando aunque nada haya llegado al proveedor', async () => {
+    const targets = [{ user_id: 'u1', sub_id: 's1', endpoint: 'https://fcm.googleapis.com/fcm/send/x', p256dh: 'p', auth: 'k' }];
+    const { calls, d } = deps({ alerts: [row()], sendPush: vi.fn(async () => new Response(null, { status: 410 })) },
+      (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
+    const r = await runAlertsCheck(d, NOW);
+    expect(r).toMatchObject({ invalidUnconfirmed: 0, removedSubs: 1 });
+    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0])).toMatchObject({ p_failed: [], p_gone: ['s1'] });
   });
 
   it('varias alertas de una cuenta con su único dispositivo en 403: un solo envío, quedan marcadas y sin alarma', async () => {
@@ -364,10 +394,10 @@ describe('runAlertsCheck (fetch simulado)', () => {
     const { calls, d } = deps({ alerts, sendPush: vi.fn(async () => new Response(null, { status: 403 })) },
       (url) => (url.endsWith('/rpc/invest_alert_push_targets') ? new Response(JSON.stringify(targets), { status: 200 }) : null));
     const r = await runAlertsCheck(d, NOW);
-    expect(r).toMatchObject({ sent: 0, invalidSubs: 3, removedSubs: 0, pushSystemic: true, released: 3 });
+    expect(r).toMatchObject({ sent: 0, invalidSubs: 3, invalidUnconfirmed: 3, removedSubs: 0, pushSystemic: true, released: 3 });
     expect(runFailed(r)).toBe(true);
     expect(calls.some(c => c.init?.method === 'DELETE')).toBe(false);
-    expect(body(rpcCalls(calls, 'push_subscriptions_record')[0]).p_gone).toEqual([]);
+    expect(recorded(calls)).toEqual({ p_ok: [], p_failed: [], p_gone: [] });
   });
 
   it('precios y envíos tienen presupuestos separados: lo reclamado se manda aunque los precios hayan tardado', async () => {

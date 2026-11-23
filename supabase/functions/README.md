@@ -46,7 +46,11 @@ la cuenta, con la app cerrada.
   por licencia como mucho. Al final de la corrida `push_subscriptions_record`
   anota el resultado de cada dispositivo: ok vuelve a 0, 404/410 se borra, los
   demás fallos suman y se borran con 8 fallos seguidos y el primero hace 48 h
-  o más. Un solo 400/403 nunca borra nada.
+  o más. Un 400/403 suma solo si en esa corrida llegó algún envío al mismo
+  proveedor push (prueba de que la clave VAPID sirve); si nada llegó a ese
+  proveedor, se registra en `invalidUnconfirmed` y no suma, así una clave mal
+  cargada nunca borra suscripciones sanas. La app vuelve a guardar su
+  suscripción al abrir (una vez por sesión), lo que pone el contador en 0.
 - **Cuándo responde 502** (queda en `edge_function_errors` y avisa
   `uptime-alert`): errores del sistema (precios, RPC, reclamo, devolución,
   falta de tiempo), un proveedor push (FCM, Mozilla, Apple, WNS) donde nada

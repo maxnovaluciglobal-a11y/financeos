@@ -173,9 +173,12 @@ export function checkedIds(alerts: AlertRow[], symbols: string[]): string[] {
 //  · ok: llegó.
 //  · gone (404/410): la suscripción ya no existe; se borra al final de la corrida.
 //  · invalid (400/403): token inválido o firmado con otra clave VAPID. Suma un
-//    fallo. Si en ese proveedor push nada llegó y el 400/403 se repite en 2 o
-//    más suscripciones de 2 o más cuentas, suena la alarma (puede ser la clave
-//    del servidor) y el aviso se devuelve; un solo dispositivo roto, no.
+//    fallo solo si en esa corrida llegó algún envío al mismo proveedor push
+//    (prueba de que la clave del servidor sirve y el problema es el
+//    dispositivo). Si en ese proveedor nada llegó, se registra
+//    (invalidUnconfirmed) sin sumar el fallo. Si además el 400/403 se repite en
+//    2 o más suscripciones de 2 o más cuentas, suena la alarma (puede ser la
+//    clave del servidor) y el aviso se devuelve; un solo dispositivo roto, no.
 //  · retry (429/5xx o red): se puede reintentar; el aviso se devuelve y suma un fallo.
 //  · fail: cualquier otro 4xx; suma un fallo.
 export type PushOutcome = "ok" | "gone" | "invalid" | "retry" | "fail";
@@ -271,7 +274,7 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   const rpc = (name: string, body: unknown) => sb(`rpc/${name}`, { method: "POST", body: JSON.stringify(body) });
   const res = {
     alerts: 0, symbols: 0, quoted: 0, quoteSkipped: 0, checked: 0, due: 0, claimed: 0, sent: 0, noDevice: 0,
-    pushAttempts: 0, pushFailed: 0, removedSubs: 0, invalidSubs: 0, pushSystemic: false, released: 0, outOfTime: false, errors: 0,
+    pushAttempts: 0, pushFailed: 0, removedSubs: 0, invalidSubs: 0, invalidUnconfirmed: 0, pushSystemic: false, released: 0, outOfTime: false, errors: 0,
   };
 
   const listRes = await sb(activeAlertsPath(now));
@@ -400,10 +403,14 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
   // NADA llegó y hubo 400/403 en 2 o más suscripciones de 2 o más cuentas, el
   // problema puede ser del servidor (clave VAPID, encabezado): suena la alarma
   // y se devuelven esos avisos. Un solo dispositivo roto (o varios de una misma
-  // cuenta) solo suma su fallo: ni 502 ni devolución, así no hace sonar la
-  // alarma en cada corrida. Las suscripciones nunca se borran por un solo
-  // 400/403: push_subscriptions_record las borra con 8 fallos seguidos y el
-  // primero hace 48 h o más (migración 20261123000100).
+  // cuenta): ni 502 ni devolución, así no hace sonar la alarma en cada corrida.
+  // El 400/403 suma un fallo a la suscripción SOLO si en esta corrida llegó
+  // algún envío al mismo proveedor (la clave del servidor sirve: el problema es
+  // el dispositivo). Si en ese proveedor nada llegó no hay prueba de que el
+  // dispositivo esté roto (con pocas cuentas, una clave VAPID mal cargada no
+  // llega al mínimo de la alarma): se registra en invalidUnconfirmed y no suma,
+  // así push_subscriptions_record (8 fallos seguidos y el primero hace 48 h o
+  // más, migración 20261123000100) nunca borra suscripciones sanas por eso.
   res.invalidSubs = [...failedSubs.values()].filter(o => o === "invalid").length;
   const systemic = new Set([...invalidBy].filter(([p, e]) =>
     !okProviders.has(p) && e.subs.size >= SYSTEMIC_MIN_SUBS && e.users.size >= SYSTEMIC_MIN_USERS).map(([p]) => p));
@@ -415,10 +422,13 @@ export async function runAlertsCheck(d: RunDeps, now = Date.now()) {
 
   // Resultado por dispositivo, por RPC y en tandas: ok vuelve a 0, gone
   // (404/410) se borra, los demás fallos suman.
+  const providerOf = new Map(targets.map(t => [t.sub_id, pushProvider(t.endpoint)]));
   const gone: string[] = [], failed: string[] = [];
   for (const [id, o] of failedSubs) {
     if (o === "gone") gone.push(id);
-    else if (!okSubs.has(id)) failed.push(id); // si además llegó algo, cuenta como ok
+    else if (okSubs.has(id)) continue; // si además llegó algo, cuenta como ok
+    else if (o === "invalid" && !okProviders.has(providerOf.get(id) ?? "")) res.invalidUnconfirmed++; // sin prueba: no suma
+    else failed.push(id);
   }
   const ok = [...okSubs].filter(id => failedSubs.get(id) !== "gone");
   const parts = Math.max(chunks(ok).length, chunks(failed).length, chunks(gone).length);

@@ -6,6 +6,7 @@ import { getLicenseKey } from '../utils/licenseValidator.js'
 import { licenseKeyHash } from '../utils/syncCrypto.js'
 import { authClient } from './authClient.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
+import { refreshPushSubscription } from './pushRefresh.js'
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -67,6 +68,31 @@ export async function enablePush() {
 
   try { localStorage.setItem(LS_ON, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
   return { ok: true }
+}
+
+// Al abrir la app: vuelve a guardar la suscripción de este dispositivo (una vez
+// por sesión, ver pushRefresh.js). No lanza; los errores quedan en el log.
+export async function refreshPushOnOpen() {
+  try {
+    return await refreshPushSubscription({
+      supported: pushSupported,
+      enabled: isPushEnabled,
+      permission: () => (typeof Notification !== 'undefined' ? Notification.permission : 'default'),
+      getSubscription: async () => (await navigator.serviceWorker.ready).pushManager.getSubscription(),
+      save: async (json) => {
+        const key = getLicenseKey()
+        if (!key || !SUPABASE_URL || !SUPABASE_ANON) return { ok: false, error: 'no_license' }
+        return rpc('save_push_subscription', {
+          p_key: await licenseKeyHash(key), p_endpoint: json.endpoint, p_p256dh: json.keys.p256dh, p_auth: json.keys.auth,
+        })
+      },
+      setEnabled: (on) => { try { localStorage.setItem(LS_ON, on ? '1' : '0') } catch { /* almacenamiento no disponible */ } },
+      session: typeof sessionStorage !== 'undefined' ? sessionStorage : null,
+    })
+  } catch (e) {
+    logClientError({ type: 'swallowed', message: String(e?.message || e), source: 'push.refresh' })
+    return 'error'
+  }
 }
 
 export async function disablePush() {

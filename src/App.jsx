@@ -5,7 +5,7 @@ import LicenseGate from './components/LicenseGate.jsx'
 import AuthGate from './components/AuthGate.jsx'
 import { isLicenseActive, isStarterAcknowledged, getServerEntitlement, validateLicense, acknowledgeStarter, getLicenseKey } from './utils/licenseValidator.js'
 import { readDeviceOwner, readLegacyUid, planAccountSwitch, applyAccountSwitch, hasVault, legacyBagLicenseKey } from './core/deviceOwner.js'
-import { disablePush, isPushEnabled } from './core/push.js'
+import { disablePush, isPushEnabled, refreshPushOnOpen } from './core/push.js'
 import { getSession, onAuthChange, syncUserLang } from './core/auth.js'
 import { AppProvider, useApp } from './context/AppContext.jsx'
 import Shell from './components/layout/Shell.jsx'
@@ -223,6 +223,15 @@ function Inner() {
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per signed-in user id on purpose: session.user changes identity on every token refresh and setOwnerStatus is recreated each render, so depending on them would re-run the account-switch check (server call, possible reload) repeatedly
   }, [session?.user?.id])
+
+  // Push: con la cuenta ya confirmada en este dispositivo, vuelve a guardar la
+  // suscripción (una vez por sesión, en segundo plano: no frena la carga).
+  const ownerOk = !!session?.user?.id && owner.uid === session.user.id && owner.status === 'ok'
+  useEffect(() => {
+    if (isDemo || !ownerOk) return
+    refreshPushOnOpen()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerOk])
 
   useEffect(() => {
     if (isDemo) return
