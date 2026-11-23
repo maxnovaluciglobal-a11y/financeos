@@ -185,6 +185,22 @@ export function rememberFollowTab(sub, storage = null) {
   try { storage?.setItem(FOLLOW_TAB_KEY, sub) } catch { /* modo privado */ }
 }
 
+// Destino pedido con la app YA abierta (aviso push tocado, src/utils/swOpen.js):
+// deja en cola la pestaña (y la sub-pestaña de Siguiendo) y avisa con
+// OPEN_EVENT a Inversiones y Siguiendo si están montadas, que la toman sin
+// recargar. Si no lo están, la toman al montar (bootTab / bootFollowTab).
+export const OPEN_EVENT = 'fos:invest-open'
+export function openInvestLink(open) {
+  const tab = tabFromOpen(open)
+  if (!tab) return false
+  const follow = followFromOpen(open)
+  if (follow) queueFollow({ sub: follow })
+  else queueInvestTab(tab)
+  linkUsed = true // el enlace de arranque ya no manda
+  try { window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: { tab, follow } })) } catch { /* SSR/test */ }
+  return true
+}
+
 export function currentAssetTicker() {
   return normAssetTicker(readHistoryState()?.invTicker) || memTicker
 }

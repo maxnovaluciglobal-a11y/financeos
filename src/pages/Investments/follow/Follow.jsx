@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useApp } from '../../../context/AppContext.jsx'
 import { investApi } from '../../../core/investApi.js'
-import { FOLLOW_TABS, bootFollowTab, rememberFollowTab, tabKeyTarget } from '../../../utils/investNav.js'
+import { FOLLOW_TABS, OPEN_EVENT, bootFollowTab, rememberFollowTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { shows } from '../../../utils/investView.js'
 import { demoFollowQuotes } from '../../../demo/demoInvestFollow.js'
 import { useFollowT } from './dict.js'
@@ -33,6 +33,12 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
   const [sheet, setSheet] = useState(null) // { prev, symbol }
   const refs = useRef({})
   useEffect(() => { rememberFollowTab(sub, safeStorage) }, [sub])
+  // Aviso push tocado con Siguiendo ya abierta: la sub-pestaña pedida (Alertas).
+  useEffect(() => {
+    const onOpen = (e) => { if (e.detail?.follow) setSub(bootFollowTab({ storage: safeStorage })) }
+    window.addEventListener(OPEN_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_EVENT, onOpen)
+  }, [])
 
   const say = useCallback((msg, action = null) => showToast?.(msg, 'ok', action), [showToast])
   const sayErr = useCallback((code) => {

@@ -23,6 +23,7 @@ import { usePageStack } from './hooks/usePageStack.js'
 import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
 import { useState, useEffect } from 'react'
+import { listenSwOpen } from './utils/swOpen.js'
 import { logClientError, logRejection } from './utils/errorLog.js'
 import { useLangReady } from './i18n/useT.js'
 
@@ -95,6 +96,9 @@ function Inner() {
   // R14: setPage apila en el historial (atrás del navegador/Android/iOS).
   // Las páginas siguen recibiendo setPage(id) como siempre.
   const { go: setPage, back: goBack, backTo } = usePageStack(page, setPageState)
+  // Aviso push tocado con la app abierta: el service worker pide el destino
+  // por mensaje y se va ahí sin recargar (utils/swOpen.js, public/push-sw.js).
+  useEffect(() => listenSwOpen(setPage), [setPage])
   // PRD-4: con Pro, abrir una pantalla marca su paso de la checklist de Pro.
   const { isPro } = usePlan()
   useEffect(() => {

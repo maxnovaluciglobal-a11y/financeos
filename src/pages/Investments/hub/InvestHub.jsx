@@ -12,7 +12,7 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Hammer } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
-import { INVEST_TABS, bootTab, isTab, normTab, openAsset, rememberTab, tabKeyTarget } from '../../../utils/investNav.js'
+import { INVEST_TABS, OPEN_EVENT, bootTab, isTab, normTab, openAsset, rememberTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
 import PortfolioTab from '../portfolio/PortfolioTab.jsx'
 import TickerSearch from './TickerSearch.jsx'
@@ -57,6 +57,13 @@ export default function InvestHub({ setPage, demo = false }) {
     const onPop = (e) => { const tb = normTab(e.state?.invTab); if (tb) setTab(tb) }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  // Aviso push tocado con Inversiones ya abierta (utils/swOpen.js): la pestaña
+  // pedida, sin recargar.
+  useEffect(() => {
+    const onOpen = () => setTab(bootTab({ storage: safeStorage }))
+    window.addEventListener(OPEN_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_EVENT, onOpen)
   }, [])
 
   function onKey(e) {

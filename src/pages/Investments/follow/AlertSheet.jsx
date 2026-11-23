@@ -8,13 +8,17 @@ import Sheet from '../../../components/ui/Sheet.jsx'
 import { ALERT_CONDITIONS, conditionMet, normSymbol, suggestLevels, validateAlert, SYMBOL_RE } from '../../../utils/investAlerts.js'
 import { fmtDecimal } from '../../../utils/index.js'
 import { fmtPx } from '../asset/format.js'
+import { currencyOf } from '../../../utils/investValuation.js'
 import { useFollowT } from './dict.js'
 import { alertErrorKey, pctOrDash } from './shared.js'
 import s from '../portfolio/portfolio.module.css'
 
+// Precio en la moneda del activo. Sin moneda conocida (sufijo que no conocemos
+// y sin cotización) va la cifra sola: nunca "US$" para un nivel en BRL o GBp.
+export const pxOrPlain = (n, ccy) => (ccy ? fmtPx(n, ccy) : n == null || !Number.isFinite(Number(n)) ? '—' : fmtDecimal(n, Math.abs(Number(n)) > 0 && Math.abs(Number(n)) < 1 ? 4 : 2))
 const condLabel = (t, a, ccy) => (a.condition === 'pct_move'
   ? t('fl.al.cond.pct_move', { pct: pctOrDash(a.threshold / 100) })
-  : t(`fl.al.cond.${a.condition}`, { lvl: fmtPx(a.threshold, ccy) }))
+  : t(`fl.al.cond.${a.condition}`, { lvl: pxOrPlain(a.threshold, ccy) }))
 export { condLabel }
 
 export default function AlertSheet({ open, onClose, prev = null, symbol = '', lockSymbol = false, quoteOf, avgCost = null, alerts = [], onSave, onSaved, pushState = null }) {
@@ -50,9 +54,11 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
   }, [open, sym, quoteOf])
 
   const quote = q.sym === sym ? q.data : null
-  const ccy = quote?.currency || 'USD'
-  // La moneda solo se nombra cuando se conoce: mientras carga o sin precio, la
-  // etiqueta no dice USD (el nivel va en la moneda del activo).
+  // Moneda de la cotización o, sin ella, la del sufijo del símbolo (.SA, .L…);
+  // null si no se sabe: nunca se supone USD.
+  const ccy = currencyOf(sym, quote?.currency)
+  // La moneda solo se nombra en la etiqueta cuando la confirma la cotización:
+  // mientras carga o sin precio, dice "en la moneda del activo".
   const ccyKnown = q.sym === sym && q.phase === 'ready' && !!quote?.currency
   const price = Number(quote?.price) > 0 ? Number(quote.price) : null
   const pct = form.condition === 'pct_move'
@@ -66,7 +72,7 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
   else if (q.phase === 'loading' || q.sym !== sym) hint = t('fl.sheet.hint.loading', { t: sym })
   else if (!price) hint = t('fl.sheet.hint.noPrice', { t: sym })
   else if (pct) hint = t('fl.sheet.hint.pct', { t: sym, pct: pctOrDash(quote.changePct, { signed: true }) })
-  else hint = t(`fl.sheet.hint.${form.condition}`, { t: sym, px: fmtPx(price, ccy) })
+  else hint = t(`fl.sheet.hint.${form.condition}`, { t: sym, px: pxOrPlain(price, ccy) })
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
   async function submit(e) {
@@ -129,7 +135,7 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
             <div className={s.actionsRow} role="group" aria-labelledby={`${id}-sugg`}>
               {sugg.map(x => (
                 <button key={`${x.kind}-${x.value}`} type="button" className={s.btn} onClick={() => setForm(f => ({ ...f, threshold: String(x.value) }))}>
-                  {t(`fl.sugg.${x.kind}`, { v: x.kind === 'pct' ? fmtDecimal(x.value, 0) : fmtPx(x.value, ccy) })}
+                  {t(`fl.sugg.${x.kind}`, { v: x.kind === 'pct' ? fmtDecimal(x.value, 0) : pxOrPlain(x.value, ccy) })}
                 </button>
               ))}
             </div>

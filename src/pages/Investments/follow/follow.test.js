@@ -152,6 +152,17 @@ describe('piezas de Siguiendo', () => {
     expect(missing).toContain(t('fl.al.missing'))
     expect(missing).not.toContain(t('fl.al.new'))
   })
+  it('Alertas sin cotización: la moneda sale del sufijo y nunca se supone US$', () => {
+    const push = { state: 'off', busy: false, error: null, enable: noop }
+    const list = [
+      { id: 'x1', symbol: 'PETR4.SA', condition: 'above', threshold: 38, active: true, last_triggered_at: null, created_at: '2026-11-20T00:00:00Z' },
+      { id: 'x2', symbol: 'ABC.ZZ', condition: 'below', threshold: 12.5, active: true, last_triggered_at: null, created_at: '2026-11-20T00:00:00Z' },
+    ]
+    const html = text(renderToStaticMarkup(h(AlertsPane, { t, d: data({ alerts: { phase: 'ready', list, error: null }, quotes: {}, quotesFailed: true }), demo: false, push, onNew: noop, onEdit: noop, onSay: noop, onErr: noop })))
+    expect(html).toMatch(/PETR4\.SA · Sube a BRL\s?38/)
+    expect(html).toMatch(/ABC\.ZZ · Baja a 12[,.]50/)
+    expect(html).not.toContain('US$')
+  })
   it('el estado de push sigue el flujo de Ajustes (licencia, navegador, demo)', () => {
     expect(pushState({ demo: true })).toBe('demo')
     expect(pushState({ supported: false, hasKey: true, on: false })).toBe('unsupported')

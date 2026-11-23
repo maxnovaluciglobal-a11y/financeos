@@ -7,8 +7,9 @@
 import { useId, useRef, useState } from 'react'
 import { Bell, Pause, Pencil, Play, Trash2 } from 'lucide-react'
 import { alertStatus, alertsSummary, parseLegacyAlerts } from '../../../utils/investAlerts.js'
-import { fmtPx, fmtStamp } from '../asset/format.js'
-import { condLabel } from './AlertSheet.jsx'
+import { fmtStamp } from '../asset/format.js'
+import { currencyOf } from '../../../utils/investValuation.js'
+import { condLabel, pxOrPlain } from './AlertSheet.jsx'
 import { focusLater, pctOrDash } from './shared.js'
 import s from '../portfolio/portfolio.module.css'
 import f from './follow.module.css'
@@ -118,13 +119,15 @@ export default function AlertsPane({ t, d, demo, push, now = Date.now(), onNew, 
           {list.map(a => {
             const q = d.quotes[a.symbol] || null
             const st = alertStatus(a, q, now)
-            const ccy = q?.currency || 'USD'
+            // Sin cotización, la moneda sale del sufijo (PETR4.SA → BRL); si no se
+            // sabe, el nivel va sin símbolo (nunca US$ por defecto).
+            const ccy = currencyOf(a.symbol, q?.currency)
             return (
               <li key={a.id} className={`${s.item} ${f.alertRow}`} data-paused={a.active ? undefined : 'true'}>
                 <div className={s.rowMain}>
                   <span className={s.rowTitle}>{a.symbol} · {condLabel(t, a, ccy)}</span>
                   <span className={s.rowSub}>
-                    {st.price != null ? t('fl.al.now', { px: fmtPx(st.price, ccy) }) : t('fl.al.noPrice')}
+                    {st.price != null ? t('fl.al.now', { px: pxOrPlain(st.price, ccy) }) : t('fl.al.noPrice')}
                     {a.active && st.reached && <> · <strong className={s.tone} data-tone="up">{t('fl.al.reached')}</strong></>}
                     {a.active && !st.reached && st.gap != null && <> · {t('fl.al.gap', { pct: pctOrDash(st.gap) })}</>}
                     {a.condition === 'pct_move' && st.moved != null && <> · {t('fl.al.moved', { pct: pctOrDash(st.moved, { signed: true }) })}</>}

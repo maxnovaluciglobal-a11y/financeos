@@ -69,13 +69,16 @@ describe('push-sw.js', () => {
 })
 
 describe('push-sw.js: tocar el aviso', () => {
-  async function click(url, windows, { navigate = true } = {}) {
+  async function click(url, windows, { navigate = true, answer } = {}) {
     const listeners = {}
     const opened = []
     const navigated = []
+    const messages = []
     const clients = windows.map(u => {
       const c = { url: u, focused: false, focus: async () => { c.focused = true; return c } }
       if (navigate) c.navigate = async (to) => { navigated.push(to); return c }
+      // answer: la app contesta { ok } por el MessageChannel; undefined = app sin listener.
+      if (answer !== undefined) c.postMessage = (msg, [port]) => { messages.push(msg); if (answer !== null) port.postMessage({ ok: answer }) }
       return c
     })
     const self = {
@@ -89,7 +92,7 @@ describe('push-sw.js: tocar el aviso', () => {
     let p
     listeners.notificationclick({ notification: { close: () => {}, data: { url } }, waitUntil: (x) => { p = x } })
     await p
-    return { opened, navigated, clients }
+    return { opened, navigated, clients, messages }
   }
   it('con la app abierta, la enfoca y la lleva al destino del aviso', async () => {
     const r = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/'])
@@ -103,6 +106,18 @@ describe('push-sw.js: tocar el aviso', () => {
     expect(r.clients[0].focused).toBe(true)
     const r2 = await click('/app/?open=invest-alertas', [])
     expect(r2.opened).toEqual(['/app/?open=invest-alertas'])
+  })
+  it('con la app que escucha, va al destino por mensaje y NO recarga (aunque la URL ya sea la del aviso)', async () => {
+    const r = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/?open=invest-alertas'], { answer: true })
+    expect(r.messages).toEqual([{ type: 'moyiq-open', open: 'invest-alertas' }])
+    expect(r.navigated).toEqual([])
+    expect(r.clients[0].focused).toBe(true)
+  })
+  it('la URL de la ventana ya es la del aviso y la app no contesta: igual navega', async () => {
+    const r = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/?open=invest-alertas'], { answer: false })
+    expect(r.navigated).toEqual(['https://app.moyiq.app/app/?open=invest-alertas'])
+    const r2 = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/?open=invest-alertas'])
+    expect(r2.navigated).toEqual(['https://app.moyiq.app/app/?open=invest-alertas'])
   })
   it('sin navigate (navegador viejo) igual enfoca', async () => {
     const r = await click('/app/?open=invest-alertas', ['https://app.moyiq.app/app/'], { navigate: false })

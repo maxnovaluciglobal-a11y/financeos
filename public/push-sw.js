@@ -90,21 +90,38 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
+// Le pide a una ventana abierta de la app que vaya al destino del aviso SIN
+// recargar (no se pierde lo que estaba a medio llenar). La app contesta por el
+// MessageChannel (src/utils/swOpen.js); sin respuesta en 1 s, false.
+function askClientToOpen(client, open) {
+  return new Promise((resolve) => {
+    if (typeof MessageChannel === 'undefined' || typeof client.postMessage !== 'function') { resolve(false); return; }
+    const ch = new MessageChannel();
+    const done = (ok) => { clearTimeout(timer); try { ch.port1.close(); } catch (e) { /* ya cerrado */ } resolve(ok); };
+    const timer = setTimeout(() => done(false), 1000);
+    ch.port1.onmessage = (e) => done(!!(e.data && e.data.ok));
+    try { client.postMessage({ type: 'moyiq-open', open }, [ch.port2]); } catch (e) { done(false); }
+  });
+}
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = (event.notification.data && event.notification.data.url) || '/app/';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      const target = new URL(url, self.location.origin).href;
+      const target = new URL(url, self.location.origin);
+      const open = target.searchParams.get('open');
       for (const client of clients) {
         if (!client.url.includes('/app/') || !('focus' in client)) continue;
         // App ya abierta (pestaña o PWA en segundo plano): se enfoca y, si el
-        // aviso apunta a otro lugar (?open=invest-alertas), se lleva ahí. Sin
-        // esto la persona quedaba en la pantalla en la que estaba.
-        if (client.url === target || target === new URL('/app/', self.location.origin).href) return client.focus();
+        // aviso apunta a un lugar (?open=invest-alertas), se lleva ahí SIEMPRE,
+        // aunque la URL de la ventana ya sea esa (la app navega por estado y no
+        // la cambia). Primero sin recargar (mensaje); si la app no contesta,
+        // navigate() como respaldo.
         return client.focus().then((c) => {
           const w = c || client;
-          return 'navigate' in w ? w.navigate(target).catch(() => w) : w;
+          if (!open) return w;
+          return askClientToOpen(w, open).then((ok) => (ok || !('navigate' in w) ? w : w.navigate(target.href).catch(() => w)));
         });
       }
       if (self.clients.openWindow) return self.clients.openWindow(url);
