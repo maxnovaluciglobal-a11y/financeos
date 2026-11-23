@@ -20,7 +20,7 @@ begin
   insert into public.licenses (key_hash, plan, status, email) values (public.fnos_license_id(ha), 'pro', 'active', 'alert-a@t.local');
   insert into public.user_entitlements (user_id, plan, license_key) values (a, 'pro', ha);
   insert into public.push_subscriptions (key_hash, endpoint, p256dh, auth) values
-    (public.fnos_license_id(ha), 'https://push.example/alert-a', 'p', 'k');
+    (public.fnos_license_id(ha), 'https://fcm.googleapis.com/fcm/send/alert-a', 'p', 'k');
   perform set_config('test.a', a::text, true);
   perform set_config('test.b', b::text, true);
 end
@@ -160,7 +160,7 @@ begin
   get diagnostics n = row_count;
   assert n = 1, 'service_role no pudo marcar el aviso';
   select string_agg(endpoint, ',') into ep from public.invest_alert_push_targets(array[current_setting('test.a')::uuid, current_setting('test.b')::uuid]);
-  assert ep = 'https://push.example/alert-a', format('destinos push: %s', ep);
+  assert ep = 'https://fcm.googleapis.com/fcm/send/alert-a', format('destinos push: %s', ep);
   select count(*) into n from public.invest_alert_push_targets(null);
   assert n = 0, 'null devuelve destinos';
   -- Rotación (migración 20261123000000): marca las revisadas y solo esas.
@@ -197,7 +197,7 @@ begin
   select public.invest_alerts_release(array[ids[1], ids[4], ids[2]], array[prev, null, null]::timestamptz[], at1) into n;
   assert n = 2, format('release devolvió %s', n);
   assert (select last_triggered_at from public.invest_alerts where id = ids[1]) = prev, 'no volvió al valor anterior';
-  assert (select last_triggered_at is null and last_checked_at is null from public.invest_alerts where id = ids[4]), 'la devuelta no quedó primera en la fila';
+  assert (select last_triggered_at is null and last_checked_at = at1 from public.invest_alerts where id = ids[4]), 'la devuelta no quedó revisada en esa corrida (se adelanta en la fila)';
   assert (select last_triggered_at from public.invest_alerts where id = ids[2]) = at1 - interval '2 hours', 'release tocó una alerta de otra corrida';
   select count(*) into n from public.invest_alerts_claim(null, at1);
   assert n = 0, 'null reclamó alertas';

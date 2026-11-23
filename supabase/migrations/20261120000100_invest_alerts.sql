@@ -15,6 +15,8 @@
 --      cuentas. push_subscriptions se ata a la licencia (key_hash = id HMAC de
 --      la clave, migración 20261020090000) y la cuenta llega a la licencia por
 --      user_entitlements, igual que fnos_caller_owns_license. Solo service_role.
+--      La migración 20261123000100 la reemplaza: solo servicios push conocidos
+--      y 5 por cuenta.
 --
 -- Nada a anon. Al borrar la cuenta (delete-account borra auth.users) las
 -- alertas se van por ON DELETE CASCADE.

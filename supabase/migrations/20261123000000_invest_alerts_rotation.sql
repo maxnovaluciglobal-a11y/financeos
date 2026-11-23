@@ -23,8 +23,9 @@
 --          nadie avisó en las últimas 24 h; devuelve los ids reclamados.
 --        · invest_alerts_release(uuid[], timestamptz[], timestamptz): devuelve
 --          un reclamo que no llegó a ningún dispositivo a su valor anterior
---          (solo si la marca sigue siendo la de esa corrida) y lo pone primero
---          en la fila (last_checked_at = null) para la próxima corrida.
+--          (solo si la marca sigue siendo la de esa corrida). Queda revisada
+--          en esa corrida (last_checked_at = p_at), no primera en la fila: un
+--          aviso que falla siempre no se adelanta a las demás en cada corrida.
 --
 -- No cambia filas existentes ni políticas. Requiere 20261120000100.
 
@@ -87,7 +88,7 @@ as $function$
   with back as (
     update public.invest_alerts a
        set last_triggered_at = x.prev,
-           last_checked_at = null
+           last_checked_at = p_at
       from unnest(coalesce(p_ids, '{}'::uuid[]), coalesce(p_prev, '{}'::timestamptz[])) as x(id, prev)
      where a.id = x.id
        and a.last_triggered_at = p_at

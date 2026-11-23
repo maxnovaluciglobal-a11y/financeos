@@ -597,6 +597,18 @@
    "authenticated": "",
    "service_role": "X"
   },
+  "public.push_endpoint_allowed(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.push_subscriptions_record(uuid[], uuid[], uuid[], timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
   "public.register_demo_lead(text, text, boolean, text)": {
    "kind": "rpc",
    "anon": "",
