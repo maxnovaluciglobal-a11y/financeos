@@ -25,29 +25,35 @@ export function profileAnswers(profile) {
 export const SUPPORT_EMAIL = 'support@moyiq.app'
 
 export const ERASE_STEPS = [...ERASE_TABLES, PLANS_STEP]
-const NOTHING = new Set(['session_required', 'auth_unavailable', 'network', 'timeout'])
+const NOTHING_KEY = new Set(['session_required', 'auth_unavailable', 'network'])
 const GAP = new Set(['not_deleted', 'denied'])
 
-// Resultado de investErase.eraseAll() → qué decir.
-//  ok · demo · nothing (no se borró nada: sesión, cuenta o red antes de
-//  enviar cualquier borrado) · partial.
-// En partial: lo borrado, lo que quedó sin confirmar (se envió y no hubo
-// respuesta: puede que el servidor lo haya borrado), lo que no se borró y los
-// pasos sin permiso (hueco de RLS).
+// Resultado de investErase.eraseAll() → qué decir, siempre lo cierto:
+//  · ok · demo;
+//  · nothing: no se borró nada y nada quedó sin confirmar (sesión, cuenta, sin
+//    servidor desde el principio, o el servidor rechazó cada paso). errorKey
+//    dice por qué; gap, los pasos sin permiso (hueco de RLS);
+//  · unsure: no se confirmó ningún borrado, pero al menos un pedido salió sin
+//    respuesta ("puede que se haya borrado una parte");
+//  · partial: se borró una parte de verdad.
+// En unsure y partial: lo borrado, lo que quedó sin confirmar, lo que no se
+// borró y los pasos sin permiso.
 export function eraseOutcome(r) {
   if (r?.ok) return { kind: 'ok' }
   if (r?.error === 'demo') return { kind: 'demo' }
-  const done = [...(r?.done || []), ...(r?.skipped || [])]
+  const done = r?.done || []
   const all = r?.failed || []
   const unsure = all.filter(f => f.sent).map(f => f.step)
-  if (!done.length && !unsure.length && NOTHING.has(r?.error)) {
-    return { kind: 'nothing', errorKey: `is.del.err.${r.error === 'timeout' ? 'network' : r.error}` }
+  const gap = all.filter(f => GAP.has(f.error)).map(f => f.step)
+  if (!done.length && !unsure.length) {
+    const e = r?.error === 'timeout' ? 'network' : r?.error
+    return { kind: 'nothing', errorKey: `is.del.err.${NOTHING_KEY.has(e) ? e : 'failed'}`, gap }
   }
   return {
-    kind: 'partial',
-    done: (r?.done || []),
+    kind: done.length ? 'partial' : 'unsure',
+    done,
     unsure,
     failed: all.filter(f => !f.sent).map(f => f.step),
-    gap: all.filter(f => GAP.has(f.error)).map(f => f.step),
+    gap,
   }
 }

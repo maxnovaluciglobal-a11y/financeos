@@ -453,5 +453,5 @@ export default {
   "invest.aportes.one": "1 contribution this month · Review in Investments",
   "invest.aportes.many": "{n} contributions this month · Review in Investments",
   "invest.legal": "Educational tool. It is not financial advice or a recommendation to buy or sell. Investing involves risk of loss. We are not a broker and do not execute orders.",
-  "invest.privacy": "Your investment positions are stored on our server so you can see them on any device. To fetch prices, only the symbols are looked up. Your transactions stay only on your phone.",
+  "invest.privacy": "Your holdings, activity, the assets you follow, your alerts, your reference capital and your plans are stored in your account on our server, so you can see them on any device. Your personal finances stay on your device. To fetch prices, only the symbols are looked up.",
 }

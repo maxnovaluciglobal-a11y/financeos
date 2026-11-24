@@ -453,5 +453,5 @@ export default {
   "invest.aportes.one": "1 Einzahlung diesen Monat · In Investments prüfen",
   "invest.aportes.many": "{n} Einzahlungen diesen Monat · In Investments prüfen",
   "invest.legal": "Bildungswerkzeug. Keine Finanzberatung und keine Kauf- oder Verkaufsempfehlung. Geldanlagen sind mit Verlustrisiken verbunden. Wir sind kein Broker und führen keine Aufträge aus.",
-  "invest.privacy": "Ihre Anlagepositionen werden auf unserem Server gespeichert, damit Sie sie auf jedem Gerät sehen können. Für die Kurse werden nur die Symbole abgefragt. Ihre Buchungen bleiben nur auf Ihrem Telefon.",
+  "invest.privacy": "Ihre Positionen, Bewegungen, die Werte, die Sie verfolgen, Ihre Alarme, Ihr Referenzkapital und Ihre Pläne werden in Ihrem Konto auf unserem Server gespeichert, damit Sie sie auf jedem Gerät sehen können. Ihre persönlichen Finanzen bleiben auf Ihrem Gerät. Für die Kurse werden nur die Symbole abgefragt.",
 }

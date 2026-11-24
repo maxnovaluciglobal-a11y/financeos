@@ -81,6 +81,7 @@ export default {
   'is.del.err.session_required': 'Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an und versuchen Sie es noch einmal: Es wurde nichts gelöscht.',
   'is.del.err.auth_unavailable': 'Ihr Konto ist gerade nicht erreichbar: Es wurde nichts gelöscht.',
   'is.del.err.network': 'Keine Verbindung zum Server: Es wurde nichts gelöscht. Prüfen Sie das Netz und versuchen Sie es erneut.',
+  'is.del.err.failed': 'Das Löschen hat nicht geklappt: Es wurde nichts gelöscht. Versuchen Sie es später erneut.',
   'is.del.partial': 'Nur ein Teil wurde gelöscht. Versuchen Sie es erneut: Bereits Gelöschtes wird nicht wiederholt.',
   'is.del.unsureHead': 'Die Verbindung brach beim Löschen ab: Möglicherweise wurde ein Teil gelöscht. Versuchen Sie es erneut: Bereits Gelöschtes wird nicht wiederholt.',
   'is.del.unsure': 'Nicht bestätigt: {list}.',

@@ -78,21 +78,33 @@ describe('Ajustes › Inversiones: lógica', () => {
   it('eraseOutcome: ok, demo, nada borrado por sesión o red, y borrado parcial con hueco de permisos', () => {
     expect(eraseOutcome({ ok: true, done: ERASE_STEPS })).toEqual({ kind: 'ok' })
     expect(eraseOutcome({ ok: false, error: 'demo' })).toEqual({ kind: 'demo' })
-    expect(eraseOutcome({ ok: false, error: 'session_required', done: [], failed: [] })).toEqual({ kind: 'nothing', errorKey: 'is.del.err.session_required' })
+    expect(eraseOutcome({ ok: false, error: 'session_required', done: [], failed: [] })).toEqual({ kind: 'nothing', errorKey: 'is.del.err.session_required', gap: [] })
     expect(eraseOutcome({ ok: false, error: 'timeout', done: [], failed: ERASE_STEPS.map(step => ({ step, error: 'not_tried' })) }).errorKey).toBe('is.del.err.network')
     const p = eraseOutcome({ ok: false, error: 'partial', done: ['invest_alerts', PLANS_STEP], skipped: [], failed: [{ step: 'watchlist', error: 'not_deleted' }, { step: 'portfolio_holdings', error: 'delete_failed' }] })
     expect(p).toEqual({ kind: 'partial', done: ['invest_alerts', PLANS_STEP], unsure: [], failed: ['watchlist', 'portfolio_holdings'], gap: ['watchlist'] })
     // Corte de red a mitad: se dice lo que sí se borró.
     expect(eraseOutcome({ ok: false, error: 'network', done: ['invest_alerts'], failed: [{ step: 'watchlist', error: 'network' }] }).kind).toBe('partial')
   })
+  it('eraseOutcome: sin nada borrado ni sin confirmar nunca dice "se borró solo una parte"', () => {
+    // Fetch caído desde el principio (forma real tras investErase): nada intentado.
+    const down = eraseOutcome({ ok: false, error: 'network', done: [], skipped: [], failed: ERASE_STEPS.map(step => ({ step, error: 'not_tried' })) })
+    expect(down).toEqual({ kind: 'nothing', errorKey: 'is.del.err.network', gap: [] })
+    // El servidor rechazó cada paso: nada borrado, con el motivo y el hueco de permisos.
+    const all = eraseOutcome({ ok: false, error: 'partial', done: [], skipped: ['invest_operations'], failed: [{ step: 'invest_alerts', error: 'denied' }, { step: 'watchlist', error: 'delete_failed' }] })
+    expect(all).toEqual({ kind: 'nothing', errorKey: 'is.del.err.failed', gap: ['invest_alerts'] })
+    for (const d of Object.values(L)) expect(d['is.del.err.failed']).toBeTruthy()
+    expect(es['is.del.err.failed']).toMatch(/no se borró nada/)
+    expect(es['is.del.partial']).toMatch(/Se borró solo una parte/)
+  })
   it('eraseOutcome: si un DELETE salió y no hubo respuesta, nunca dice "no se borró nada"', () => {
     const notTried = ERASE_STEPS.slice(1).map(step => ({ step, error: 'not_tried' }))
     for (const error of ['timeout', 'network']) {
       const o = eraseOutcome({ ok: false, error, done: [], skipped: [], failed: [{ step: 'invest_alerts', error, sent: true }, ...notTried] })
-      expect(o.kind).toBe('partial')
+      expect(o.kind).toBe('unsure')
       expect(o.unsure).toEqual(['invest_alerts'])
       expect(o.failed).toEqual(ERASE_STEPS.slice(1))
     }
+    expect(eraseOutcome({ ok: false, error: 'network', done: ['invest_alerts'], failed: [{ step: 'watchlist', error: 'network', sent: true }] }).kind).toBe('partial')
   })
   it('el aviso de "sin confirmar" existe y no dice que no se borró nada', () => {
     for (const d of Object.values(L)) {

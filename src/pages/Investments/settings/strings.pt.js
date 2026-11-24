@@ -81,6 +81,7 @@ export default {
   'is.del.err.session_required': 'Sua sessão expirou. Entre de novo e tente outra vez: nada foi apagado.',
   'is.del.err.auth_unavailable': 'Não há conexão com sua conta neste momento: nada foi apagado.',
   'is.del.err.network': 'Sem conexão com o servidor: nada foi apagado. Verifique a rede e tente de novo.',
+  'is.del.err.failed': 'Não foi possível apagar: nada foi apagado. Tente de novo daqui a pouco.',
   'is.del.partial': 'Só uma parte foi apagada. Tente de novo: o que já foi apagado não se repete.',
   'is.del.unsureHead': 'A conexão caiu enquanto apagava: pode ser que uma parte tenha sido apagada. Tente de novo: o que já foi apagado não se repete.',
   'is.del.unsure': 'Sem confirmação: {list}.',

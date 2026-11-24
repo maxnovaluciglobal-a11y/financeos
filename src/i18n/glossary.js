@@ -104,6 +104,9 @@ export const RETIRED = [
   { lang: 'es', re: /\btu lista\b/i, use: 'Siguiendo' },
   { lang: 'en', re: /watchlist/i, use: 'Following' },
   { lang: 'pt', re: /\bsua lista\b/i, use: 'Seguindo' },
+  { lang: 'es', re: /lista de seguimiento/i, use: 'los activos que sigues' },
+  { lang: 'pt', re: /lista de acompanhamento/i, use: 'os ativos que você segue' },
+  { lang: 'de', re: /Beobachtungsliste/i, use: 'die Werte, die Sie verfolgen' },
   { lang: 'de', re: /Watchlist|\bIhrer Liste\b/i, use: 'Verfolgt' },
   { lang: 'de', re: /\bBeobachtet\b/, use: 'Verfolgt' },
   // Resultado: sin "no realizado" sin explicar

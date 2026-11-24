@@ -81,6 +81,7 @@ export default {
   'is.del.err.session_required': 'Your session expired. Sign in again and try again: nothing was deleted.',
   'is.del.err.auth_unavailable': 'Your account cannot be reached right now: nothing was deleted.',
   'is.del.err.network': 'No connection to the server: nothing was deleted. Check your network and try again.',
+  'is.del.err.failed': 'It could not be deleted: nothing was deleted. Try again in a while.',
   'is.del.partial': 'Only part of it was deleted. Try again: what was already deleted is not repeated.',
   'is.del.unsureHead': 'The connection dropped while deleting: part of it may have been deleted. Try again: what was already deleted is not repeated.',
   'is.del.unsure': 'Not confirmed: {list}.',

@@ -54,11 +54,16 @@ describe('Ayuda de Inversiones: textos', () => {
     expect(a).toMatch(/servidor/)
     expect(a).toMatch(/Solo tú, con tu sesión iniciada/)
     expect(a).toMatch(/no en el dispositivo/)
-    for (const w of ['posiciones', 'movimientos', 'lista', 'alertas', 'capital']) expect(a).toContain(w)
+    for (const w of ['posiciones', 'movimientos', 'los activos que sigues', 'alertas', 'capital']) expect(a).toContain(w)
+    expect(a).not.toMatch(/lista de seguimiento/)
     expect(a).toMatch(/exportar/)
     expect(a).toMatch(/eliminar/i)
-    // La sincronización opcional sube una copia cifrada de las finanzas.
-    expect(a).toMatch(/sincronización.*copia cifrada/)
+    // Las finanzas personales siguen en el dispositivo; la sincronización se
+    // remite a la política de privacidad, sin prometer un cifrado que la copia
+    // v1 (llave derivada de la licencia) no tiene.
+    expect(a).toMatch(/finanzas personales siguen en tu dispositivo/)
+    expect(a).toMatch(/Política de privacidad/)
+    for (const d of Object.values(L)) expect(d['hlp.a.where']).not.toMatch(/cifrad|encrypt|criptograf|verschlüssel|no podemos leer|cannot read|não conseguimos|nicht lesen/i)
     // Sin jerga técnica (el detalle queda en la política de privacidad).
     for (const d of Object.values(L)) expect(d['hlp.a.where']).not.toMatch(/RLS|Supabase/)
   })

@@ -305,10 +305,15 @@ export function EraseBlock({ t, demo, erase = eraser.eraseAll, onErased = null }
           {res && (
             <div className={s.result} data-tone={res.kind === 'demo' ? 'info' : undefined} role="alert">
               {res.kind === 'demo' && <p>{t('is.del.demo')}</p>}
-              {res.kind === 'nothing' && <p>{t(res.errorKey)}</p>}
-              {res.kind === 'partial' && (
+              {res.kind === 'nothing' && (
                 <>
-                  <p>{t(res.unsure.length && !res.done.length ? 'is.del.unsureHead' : 'is.del.partial')}</p>
+                  <p>{t(res.errorKey)}</p>
+                  {res.gap.length > 0 && <p>{t('is.del.gap', { list: list(res.gap), email: SUPPORT_EMAIL })}</p>}
+                </>
+              )}
+              {(res.kind === 'partial' || res.kind === 'unsure') && (
+                <>
+                  <p>{t(res.kind === 'unsure' ? 'is.del.unsureHead' : 'is.del.partial')}</p>
                   {res.done.length > 0 && <p>{t('is.del.partialDone', { list: list(res.done) })}</p>}
                   {res.unsure.length > 0 && <p>{t('is.del.unsure', { list: list(res.unsure) })}</p>}
                   {res.failed.length > 0 && <p>{t('is.del.partialFail', { list: list(res.failed) })}</p>}

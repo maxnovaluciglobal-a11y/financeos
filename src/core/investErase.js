@@ -16,11 +16,25 @@
 // Sin borrados a medias en silencio: después de cada DELETE se cuenta lo que
 // queda (un DELETE sin política RLS no da error, borra 0 filas). Lo que no se
 // pudo borrar vuelve en `failed` con su motivo; se puede repetir sin riesgo
-// (lo ya borrado vuelve a dar 0 filas). Un corte de red o de sesión frena los
-// pasos que faltan, que vuelven como 'not_tried'.
-// El tiempo agotado no cancela el pedido: si el DELETE (o el cambio de los
-// planes) ya salió y no llegó respuesta, el servidor pudo haberlo hecho. Ese
-// paso vuelve con `sent: true` para no decir "no se borró nada".
+// (lo ya borrado vuelve a dar 0 filas).
+//
+// Cortes de red. postgrest-js y auth-js NO lanzan cuando falla el fetch:
+// resuelven { data: null, error: { message: 'TypeError: Failed to fetch',
+// code: '' } } con status 0 (auth-js: AuthRetryableFetchError). isNetworkError()
+// lo reconoce (y también AbortError, el tiempo agotado y el dispositivo sin
+// red) y se trata igual que un corte: se frenan los pasos que faltan, que
+// vuelven como 'not_tried'. Antes del primer borrado se hace una consulta de
+// prueba: si el servidor no responde, no se envió nada y se dice "no se borró
+// nada". Si el pedido ya había salido y no llegó respuesta, el servidor pudo
+// haberlo hecho: ese paso vuelve con `sent: true` ("sin confirmar").
+//
+// Lo que se limpia al terminar:
+//  · las cachés en memoria (`resets`), si al menos un paso del servidor se hizo
+//    o quedó sin confirmar: así las otras pestañas vuelven a pedir los datos y
+//    no muestran lo ya borrado;
+//  · lo que vive solo en el dispositivo (LOCAL_KEYS: el aporte del mes no se
+//    vuelve a armar), solo si todos los pasos del servidor se completaron. Si
+//    no, queda para el reintento.
 // Respuesta: { ok, error?, done: [tabla], skipped: [tabla], failed: [{ step, error, sent? }] }.
 import { authClient } from './authClient.js'
 import { isMissingTable } from './investData.js'
@@ -44,30 +58,54 @@ const isDemoUrl = () => { try { return /[?&]demo=true\b/.test(window.location.se
 const defaultStorage = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null } catch { return null } }
 const STOP = new Set(['network', 'timeout', 'session_required'])
 
+const NET_MSG = /failed to fetch|fetch failed|networkerror|network request failed|load failed|err_internet_disconnected|err_network|aborted|abort/i
+const isOffline = () => { try { return typeof navigator !== 'undefined' && navigator.onLine === false } catch { return false } }
+
+// ¿El error es de red (no hubo respuesta HTTP)? `status` es el de la
+// respuesta de supabase-js (0 o ausente cuando falló el fetch).
+export function isNetworkError(err, status) {
+  if (!err) return false
+  if (err.name === 'AbortError' || err.name === 'AuthRetryableFetchError' || err.name === 'TypeError') return true
+  // Un error de Postgres o de PostgREST siempre trae su código: hubo respuesta.
+  if (err.code !== '' && err.code != null) return false
+  if (NET_MSG.test(String(err.message || ''))) return true
+  if (!status && !err.status) return true
+  return isOffline()
+}
+
 // Error de PostgREST → código corto. 42501: sin permiso (falta la política o el grant).
-function dbCode(err) {
+function dbCode(err, status) {
+  if (err?.message === 'timeout') return 'timeout'
+  if (isNetworkError(err, status)) return 'network'
   if (err?.code === '42501' || /permission denied|row-level security/i.test(String(err?.message || ''))) return 'denied'
   if (err?.code === 'PGRST301' || /JWT|jwt expired/i.test(String(err?.message || ''))) return 'session_required'
   return 'delete_failed'
 }
 
-export function createInvestErase({ client = authClient, isDemo = isDemoUrl, timeoutMs = TIMEOUT_MS, storage = defaultStorage, resets = [] } = {}) {
+export function createInvestErase({ client = authClient, isDemo = isDemoUrl, timeoutMs = TIMEOUT_MS, storage = defaultStorage, resets = [], offline = isOffline } = {}) {
   const run = (q) => withTimeout(q, timeoutMs)
   const net = (e) => (e?.message === 'timeout' ? 'timeout' : 'network')
 
-  function clearLocal() {
+  function clearDevice() {
     const st = typeof storage === 'function' ? storage() : storage
     for (const k of LOCAL_KEYS) { try { st?.removeItem(k) } catch { /* modo privado: no había nada guardado */ } }
+  }
+  function resetCaches() {
     for (const fn of resets) { try { fn() } catch { /* una caché en memoria se vacía al recargar */ } }
   }
+  const countLeft = (table, uid) => client.from(table).select('user_id', { count: 'exact', head: true }).eq('user_id', uid)
 
   async function eraseTable(table, uid, markSent) {
     const q = client.from(table).delete().eq('user_id', uid)
     markSent()
     const res = await run(q)
-    if (res?.error) return isMissingTable(res.error) ? 'missing' : dbCode(res.error)
-    const left = await run(client.from(table).select('user_id', { count: 'exact', head: true }).eq('user_id', uid))
-    if (left?.error) return isMissingTable(left.error) ? 'missing' : 'verify_failed'
+    if (res?.error) return isMissingTable(res.error) ? 'missing' : dbCode(res.error, res.status)
+    const left = await run(countLeft(table, uid))
+    if (left?.error) {
+      if (isMissingTable(left.error)) return 'missing'
+      const c = dbCode(left.error, left.status)
+      return c === 'network' || c === 'timeout' ? c : 'verify_failed'
+    }
     return Number(left?.count) > 0 ? 'not_deleted' : 'ok'
   }
 
@@ -76,16 +114,27 @@ export function createInvestErase({ client = authClient, isDemo = isDemoUrl, tim
       const out = { done: [], skipped: [], failed: [] }
       if (isDemo()) return { ok: false, error: 'demo', ...out }
       if (!client) return { ok: false, error: 'auth_unavailable', ...out }
+      const steps = [...ERASE_TABLES, PLANS_STEP]
+      const noneTried = (error) => ({ ok: false, error, ...out, failed: steps.map(step => ({ step, error: 'not_tried' })) })
+      if (offline()) return noneTried('network')
       let uid
       try {
-        const { data } = await run(client.auth.getSession())
+        const { data, error } = await run(client.auth.getSession())
+        if (error && isNetworkError(error, error.status)) return { ok: false, error: 'network', ...out }
         uid = data?.session?.user?.id || null
       } catch (e) { return { ok: false, error: net(e), ...out } }
       if (!uid) return { ok: false, error: 'session_required', ...out }
 
-      const steps = [...ERASE_TABLES, PLANS_STEP]
+      // Consulta de prueba (solo lectura): sin servidor no se envía ningún borrado.
+      try {
+        const probe = await run(countLeft(ERASE_TABLES[0], uid))
+        const code = probe?.error && !isMissingTable(probe.error) ? dbCode(probe.error, probe.status) : null
+        if (code === 'network' || code === 'timeout' || code === 'session_required') return noneTried(code)
+      } catch (e) { return noneTried(net(e)) }
+
       let stopped = null
       for (const step of steps) {
+        if (!stopped && offline()) stopped = 'network'
         if (stopped) { out.failed.push({ step, error: 'not_tried' }); continue }
         let r
         let sent = false
@@ -95,7 +144,11 @@ export function createInvestErase({ client = authClient, isDemo = isDemoUrl, tim
             const q = client.auth.updateUser({ data: { [PLANS_KEY]: plansPayload([]) } })
             markSent()
             const { error } = await run(q)
-            r = error ? dbCode(error) === 'session_required' ? 'session_required' : 'save_failed' : 'ok'
+            if (!error) r = 'ok'
+            else {
+              const c = dbCode(error, error.status)
+              r = c === 'network' || c === 'timeout' || c === 'session_required' ? c : 'save_failed'
+            }
           } else r = await eraseTable(step, uid, markSent)
         } catch (e) { r = net(e) }
         if (r === 'ok') out.done.push(step)
@@ -106,10 +159,9 @@ export function createInvestErase({ client = authClient, isDemo = isDemoUrl, tim
           if (STOP.has(r)) stopped = r
         }
       }
-      // Lo del dispositivo se borra solo si se intentaron todos los pasos del
-      // servidor. Tras un corte queda: el aporte del mes vive solo aquí y no se
-      // vuelve a armar, y la persona va a reintentar.
-      if (!stopped) clearLocal()
+      const touched = out.done.length > 0 || out.failed.some(f => f.sent)
+      if (!out.failed.length) clearDevice()
+      if (touched || !out.failed.length) resetCaches()
       if (out.failed.length) return { ok: false, error: stopped || 'partial', ...out }
       return { ok: true, ...out }
     },

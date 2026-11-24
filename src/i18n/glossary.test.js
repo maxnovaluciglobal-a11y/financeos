@@ -26,13 +26,25 @@ import planEs from '../pages/Investments/planificar/strings.es.js'
 import planEn from '../pages/Investments/planificar/strings.en.js'
 import planPt from '../pages/Investments/planificar/strings.pt.js'
 import planDe from '../pages/Investments/planificar/strings.de.js'
+import hlpEs from '../pages/Investments/help/strings.es.js'
+import hlpEn from '../pages/Investments/help/strings.en.js'
+import hlpPt from '../pages/Investments/help/strings.pt.js'
+import hlpDe from '../pages/Investments/help/strings.de.js'
+import isEs from '../pages/Investments/settings/strings.es.js'
+import isEn from '../pages/Investments/settings/strings.en.js'
+import isPt from '../pages/Investments/settings/strings.pt.js'
+import isDe from '../pages/Investments/settings/strings.de.js'
 
 const DICTS = { es, en, pt, de }
 const LANGS = ['es', 'en', 'pt', 'de']
 // Los diccionarios por módulo de Inversiones (ficha, vista esencial,
-// Portafolio, Siguiendo, Planificar) también cuentan: la misma cifra no puede tener dos nombres.
+// Portafolio, Siguiendo, Planificar, Ayuda y Ajustes › Inversiones) también
+// cuentan: la misma cifra no puede tener dos nombres.
 const MODULE_DICTS = {
-  es: [assetEs, essEs, pfEs, flEs, planEs], en: [assetEn, essEn, pfEn, flEn, planEn], pt: [assetPt, essPt, pfPt, flPt, planPt], de: [assetDe, essDe, pfDe, flDe, planDe],
+  es: [assetEs, essEs, pfEs, flEs, planEs, hlpEs, isEs],
+  en: [assetEn, essEn, pfEn, flEn, planEn, hlpEn, isEn],
+  pt: [assetPt, essPt, pfPt, flPt, planPt, hlpPt, isPt],
+  de: [assetDe, essDe, pfDe, flDe, planDe, hlpDe, isDe],
 }
 const ALL = Object.fromEntries(LANGS.map(l => [l, Object.assign({}, ...MODULE_DICTS[l], DICTS[l])]))
 
@@ -96,6 +108,17 @@ describe('glosario único', () => {
       for (const l of ['en', 'pt', 'de']) expect(DICTS[l][k], `${l}:${k}`).toBeTypeOf('string')
     }
     expect(Object.values(Object.fromEntries(esKeys.map(k => [k, de[k]]))).filter(v => /\b(du|dein\w*|dich|dir)\b/i.test(v))).toEqual([])
+  })
+
+  it('la Ayuda y Ajustes › Inversiones entran en el control (sin "lista de seguimiento")', () => {
+    for (const l of LANGS) for (const d of [MODULE_DICTS[l][5], MODULE_DICTS[l][6]]) expect(Object.keys(d).length).toBeGreaterThan(10)
+    expect(hlpEs['hlp.a.where']).toContain('los activos que sigues')
+    expect(hlpEn['hlp.a.where']).toContain('the assets you follow')
+    expect(hlpPt['hlp.a.where']).toContain('os ativos que você segue')
+    expect(hlpDe['hlp.a.where']).toContain('die Werte, die Sie verfolgen')
+    for (const r of RETIRED.filter(x => /seguimiento|acompanhamento|Beobachtungsliste|watchlist/i.test(x.re.source))) {
+      for (const d of [MODULE_DICTS[r.lang][5], MODULE_DICTS[r.lang][6]]) for (const v of Object.values(d)) expect(r.re.test(String(v)), v).toBe(false)
+    }
   })
 
   it('term() da el canónico y cae al español', () => {

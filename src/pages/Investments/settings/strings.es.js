@@ -84,6 +84,7 @@ export default {
   'is.del.err.session_required': 'Tu sesión venció. Inicia sesión de nuevo y vuelve a intentarlo: no se borró nada.',
   'is.del.err.auth_unavailable': 'No hay conexión con tu cuenta en este momento: no se borró nada.',
   'is.del.err.network': 'Sin conexión con el servidor: no se borró nada. Revisa la red y vuelve a intentarlo.',
+  'is.del.err.failed': 'No se pudo borrar: no se borró nada. Vuelve a intentarlo en un rato.',
   'is.del.partial': 'Se borró solo una parte. Vuelve a intentarlo: lo que ya se borró no se repite.',
   'is.del.unsureHead': 'Se cortó la conexión mientras se borraba: puede que se haya borrado una parte. Vuelve a intentarlo: lo que ya se borró no se repite.',
   'is.del.unsure': 'Sin confirmar: {list}.',

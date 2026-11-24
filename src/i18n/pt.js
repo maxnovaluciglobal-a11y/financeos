@@ -3348,7 +3348,7 @@ export const pt = {
     "tour.pano.detail.body": "Cada análise com todo o detalhe: Diagnóstico, Patrimônio, Projeção, Relatórios, Assinaturas e, se você ativou, Investimentos.",
     "nav.investments": "Investimentos",
     "settings.features.investments": "Investimentos",
-    "settings.features.investments.sub": "Adiciona a seção Investimentos com seu portfólio, que também aparece no Panorama e no Patrimônio líquido. Suas posições ficam na sua conta, no nosso servidor, para que você possa vê-las em qualquer dispositivo. Para buscar preços, só os símbolos são enviados. Esta função não envia seus movimentos.",
+    "settings.features.investments.sub": "Adiciona a seção Investimentos com seu portfólio, que também aparece no Panorama e no Patrimônio líquido. Suas posições, movimentos, os ativos que você segue, seus alertas, seu capital de referência e seus planos ficam na sua conta, no nosso servidor, para que você possa vê-los em qualquer dispositivo. Suas finanças pessoais continuam no seu dispositivo. Para buscar preços, só os símbolos são consultados.",
     "tour.pano.invest.title": "Seu portfólio de Investimentos",
     "tour.pano.invest.body": "O valor estimado das suas posições e de quando é o dado. É informação, não consultoria de investimentos.",
     "networth.investments.disclaimer": "Orientativo — calculado com o que você registra no moyiq e, à parte, com a estimativa do seu portfólio em Investimentos. Não inclui saldos bancários, outros investimentos nem ativos que você não tenha adicionado.",
