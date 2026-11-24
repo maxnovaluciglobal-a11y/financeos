@@ -440,7 +440,7 @@ export const de = {
     'subs.form.edit': "Abo bearbeiten",
     'subs.form.new': "Neues Abo",
     'subs.form.name': "Name",
-    'subs.form.namePh': "Netflix, Spotify…",
+    'subs.form.namePh': "Streaming, Musik…",
     'subs.form.amount': "Betrag",
     'subs.form.category': "Kategorie",
     'subs.form.freq': "Frequenz",
@@ -617,7 +617,7 @@ export const de = {
     'mov.addExpense': "Einmalige Ausgabe",
     'mov.addExpenseDesc': "Supermarkt, Tanken, Miete",
     'mov.addSub': "Feste Zahlung",
-    'mov.addSubDesc': "Netflix, Fitnessstudio, Versicherung, Claude",
+    'mov.addSubDesc': "Streaming, Fitnessstudio, Versicherung, Apps",
     'mov.chart.top': "Top-Ausgaben des Monats",
     'mov.chart.byCat': "Verteilung nach Kategorie",
     'mov.alert.dup': "Sie haben {n} Abos in „{cat}“. Prüfen Sie, ob alle nötig sind.",
@@ -668,7 +668,7 @@ export const de = {
     'mov.form.saveExp': "Ausgabe speichern",
     'mov.form.subTitle': "Neue feste Zahlung",
     'mov.form.name': "Name",
-    'mov.form.namePh': "z. B.: Netflix",
+    'mov.form.namePh': "z. B.: Video-Streaming",
     'mov.form.amountSimple': "Betrag",
     'mov.form.freq': "Frequenz",
     'mov.form.nextPay': "Nächste Zahlung",
@@ -3487,4 +3487,10 @@ export const de = {
     // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
     'settings.license.label@native': "Ihr Tarif: {plan}",
     'settings.license.sub@native': "Gilt für Ihr Konto auf allen Ihren Geräten.",
+    // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
+    'settings.group.notifications.desc@native': "Hinweise der App",
+    'settings.group.plan.demo@native': "In der Demo gibt es keinen Tarif zu verwalten.",
+    'settings.group.advanced.desc@native': "Beispieldaten, Fehlerprotokoll und Einführung",
+    'settings.group.advanced.kw@native': "Demo, Beispiel, Testdaten, Diagnose, Fehler, Protokoll, Support, Onboarding, Assistent, Willkommen",
+    'settings.group.plan.kw@native': "Tarif, Pro, Starter, Abo, kündigen",
 }

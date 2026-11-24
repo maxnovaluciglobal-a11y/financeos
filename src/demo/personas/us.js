@@ -63,12 +63,12 @@ function monthlyFixed(prefix, ym, v) {
     exp(`${prefix}-net`,    ym,  9, 'Internet',                 60.00, 'Servicios',    'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-phone`,  ym,  9, 'Phone plan',               45.00, 'Servicios',    'Crédito',       'Necesidad', 'Mensual'),
     exp(`${prefix}-carins`, ym, 14, 'Car insurance',           148.00, 'Transporte',   'Crédito',       'Necesidad', 'Mensual'),
-    exp(`${prefix}-gro1`,   ym,  4, 'Groceries — H-E-B',        v.gro1, 'Alimentación', 'Débito',       'Necesidad'),
-    exp(`${prefix}-gro2`,   ym, 18, 'Groceries — H-E-B',        v.gro2, 'Alimentación', 'Débito',       'Necesidad'),
+    exp(`${prefix}-gro1`,   ym,  4, 'Groceries',        v.gro1, 'Alimentación', 'Débito',       'Necesidad'),
+    exp(`${prefix}-gro2`,   ym, 18, 'Groceries',        v.gro2, 'Alimentación', 'Débito',       'Necesidad'),
     exp(`${prefix}-gas1`,   ym,  8, 'Gas',                      v.gas1, 'Transporte',  'Crédito',       'Necesidad'),
     exp(`${prefix}-gas2`,   ym, 22, 'Gas',                      v.gas2, 'Transporte',  'Crédito',       'Necesidad'),
-    exp(`${prefix}-nflx`,   ym, 11, 'Netflix',                  15.49, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
-    exp(`${prefix}-spot`,   ym, 11, 'Spotify',                  11.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
+    exp(`${prefix}-nflx`,   ym, 11, 'Video streaming',                  15.49, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
+    exp(`${prefix}-spot`,   ym, 11, 'Music streaming',                  11.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
   ]
 }
 
@@ -81,7 +81,7 @@ export const US_EXPENSES = [
   exp('us-e0-shoes',  M0, 19, 'Work shoes',               74.99, 'Ropa',         'Crédito', 'Necesidad'),
 
   ...monthlyFixed('us-e1', M1, { elec: 131.08, water: 49.80, gro1: 104.33, gro2: 121.57, gas1: 39.90, gas2: 44.12 }),
-  exp('us-e1-target', M1, 20, 'Target — household items', 63.18, 'Otros',        'Débito',  'Necesidad'),
+  exp('us-e1-target', M1, 20, 'Household items', 63.18, 'Otros',        'Débito',  'Necesidad'),
   ...monthlyFixed('us-e2', M2, { elec: 149.95, water: 55.12, gro1: 98.76, gro2: 109.04, gas1: 42.65, gas2: 37.80 }),
   exp('us-e2-dentist', M2, 12, 'Dentist — cleaning co-pay', 40.00, 'Salud',      'Débito',  'Necesidad'),
   ...monthlyFixed('us-e3', M3, { elec: 162.40, water: 51.03, gro1: 117.21, gro2: 92.38, gas1: 45.10, gas2: 40.25 }),
@@ -129,10 +129,10 @@ const sub = (id, name, category, amount, dd, paymentMethod, notes = '') =>
   ({ id, name, category, amount, currency: 'USD', frequency: 'monthly', nextPaymentDate: day(M0, dd), paymentMethod, status: 'active', notes, createdAt: '2026-01-01', updatedAt: '2026-01-01' })
 
 export const US_SUBSCRIPTIONS = [
-  sub('us-sub1', 'Netflix',          'Streaming',      15.49, 11, 'Visa'),
-  sub('us-sub2', 'Spotify',          'Música',         11.99, 11, 'Visa'),
-  sub('us-sub3', 'Amazon Prime',     'Delivery',       14.99,  7, 'Visa'),
-  sub('us-sub4', 'iCloud+ 200 GB',   'Almacenamiento',  2.99, 23, 'Apple Pay'),
+  sub('us-sub1', 'Video streaming',          'Streaming',      15.49, 11, 'Visa'),
+  sub('us-sub2', 'Music streaming',          'Música',         11.99, 11, 'Visa'),
+  sub('us-sub3', 'Shopping membership',     'Delivery',       14.99,  7, 'Visa'),
+  sub('us-sub4', 'Cloud storage 200 GB',   'Almacenamiento',  2.99, 23, 'Apple Pay'),
   sub('us-sub5', 'Gym membership',   'Gimnasio',       34.99,  5, 'Debit card'),
 ]
 

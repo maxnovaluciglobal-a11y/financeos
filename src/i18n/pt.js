@@ -440,7 +440,7 @@ export const pt = {
     'subs.form.edit': "Editar assinatura",
     'subs.form.new': "Nova assinatura",
     'subs.form.name': "Nome",
-    'subs.form.namePh': "Netflix, Spotify…",
+    'subs.form.namePh': "Streaming, música…",
     'subs.form.amount': "Valor",
     'subs.form.category': "Categoria",
     'subs.form.freq': "Frequência",
@@ -617,7 +617,7 @@ export const pt = {
     'mov.addExpense': "Gasto único",
     'mov.addExpenseDesc': "Supermercado, gasolina, aluguel",
     'mov.addSub': "Pagamento fixo",
-    'mov.addSubDesc': "Netflix, academia, seguro, Claude",
+    'mov.addSubDesc': "Streaming, academia, seguro, apps",
     'mov.chart.top': "Maiores despesas do mês",
     'mov.chart.byCat': "Distribuição por categoria",
     'mov.alert.dup': "Você tem {n} assinaturas em \"{cat}\". Verifique se todas são necessárias.",
@@ -668,7 +668,7 @@ export const pt = {
     'mov.form.saveExp': "Salvar gasto",
     'mov.form.subTitle': "Novo pagamento fixo",
     'mov.form.name': "Nome",
-    'mov.form.namePh': "Ex: Netflix",
+    'mov.form.namePh': "Ex: streaming de vídeo",
     'mov.form.amountSimple': "Valor",
     'mov.form.freq': "Frequência",
     'mov.form.nextPay': "Próximo pagamento",
@@ -3488,4 +3488,10 @@ export const pt = {
     // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
     'settings.license.label@native': "Seu plano: {plan}",
     'settings.license.sub@native': "Acompanha a sua conta, em todos os seus dispositivos.",
+    // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
+    'settings.group.notifications.desc@native': "Avisos do app",
+    'settings.group.plan.demo@native': "Na demonstração não há plano para gerenciar.",
+    'settings.group.advanced.desc@native': "Dados de exemplo, registro de erros e guia inicial",
+    'settings.group.advanced.kw@native': "demo, exemplo, dados de teste, diagnóstico, erros, registro, suporte, onboarding, assistente, boas-vindas",
+    'settings.group.plan.kw@native': "plano, pro, starter, assinatura, cancelar",
 }

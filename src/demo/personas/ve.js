@@ -98,29 +98,29 @@ function monthlyFixed(prefix, ym, v) {
     exp(`${prefix}-dig`,    ym, 10, 'Plan Digitel',                         8, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
     exp(`${prefix}-mov`,    ym, 10, 'Recarga Movilnet — línea de mamá',     3, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
     exp(`${prefix}-luz`,    ym, 12, 'Corpoelec — luz',                   v.luz, 'Servicios',   'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
-    exp(`${prefix}-merc1`,  ym,  3, 'Mercado — Central Madeirense',     v.m1, 'Alimentación', 'Débito',        'Necesidad'),
+    exp(`${prefix}-merc1`,  ym,  3, 'Mercado — supermercado',     v.m1, 'Alimentación', 'Débito',        'Necesidad'),
     exp(`${prefix}-feria`,  ym, 11, 'Verduras — feria de Coche',        v.feria, 'Alimentación', 'Efectivo',   'Necesidad', 'Único', 'Pagado en US$ efectivo'),
-    exp(`${prefix}-merc2`,  ym, 17, 'Mercado — Gama',                   v.m2, 'Alimentación', 'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
+    exp(`${prefix}-merc2`,  ym, 17, 'Mercado — automercado',                   v.m2, 'Alimentación', 'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
     exp(`${prefix}-pas`,    ym,  2, 'Pasajes — Metro y camionetica',      18, 'Transporte',   'Efectivo',      'Necesidad', 'Mensual'),
     exp(`${prefix}-mama`,   ym, 25, 'Ayuda a mamá en Barquisimeto',        20, 'Otros',        'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
-    exp(`${prefix}-nflx`,   ym,  7, 'Netflix',                           5.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual', 'Cobrado en US$'),
-    exp(`${prefix}-spot`,   ym,  7, 'Spotify',                           3.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual', 'Cobrado en US$'),
+    exp(`${prefix}-nflx`,   ym,  7, 'Streaming de video',                           5.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual', 'Cobrado en US$'),
+    exp(`${prefix}-spot`,   ym,  7, 'Música en streaming',                           3.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual', 'Cobrado en US$'),
   ]
 }
 
 export const VE_EXPENSES = [
   ...monthlyFixed('ve-e0', M0, { luz: 4.20, m1: 58, feria: 24, m2: 31 }),
   exp('ve-e0-nevera', M0, 13, 'Reparación de la nevera (compresor)', 70, 'Vivienda',     'Efectivo',      'Necesidad', 'Único', 'Imprevisto'),
-  exp('ve-e0-farma',  M0, 16, 'Farmatodo — medicinas',               14, 'Salud',        'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
-  exp('ve-e0-ridery', M0, 19, 'Ridery — regreso de noche',             7, 'Transporte',   'Billetera digital', 'Necesidad'),
-  exp('ve-e0-cine',   M0, 20, 'Cine en el Sambil',                     9, 'Entretención', 'Débito',        'Deseo'),
+  exp('ve-e0-farma',  M0, 16, 'Farmacia — medicinas',               14, 'Salud',        'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
+  exp('ve-e0-ridery', M0, 19, 'Taxi por app — regreso de noche',             7, 'Transporte',   'Billetera digital', 'Necesidad'),
+  exp('ve-e0-cine',   M0, 20, 'Cine en el centro comercial',                     9, 'Entretención', 'Débito',        'Deseo'),
 
   ...monthlyFixed('ve-e1', M1, { luz: 3.90, m1: 55, feria: 22, m2: 28 }),
   exp('ve-e1-gas',    M1, 14, 'Bombona de gas',                        6, 'Servicios',    'Efectivo',      'Necesidad'),
   exp('ve-e1-arepa',  M1, 21, 'Arepera con amigas',                   12, 'Alimentación', 'Transferencia', 'Deseo',     'Único', 'Pago Móvil'),
   ...monthlyFixed('ve-e2', M2, { luz: 4.40, m1: 61, feria: 25, m2: 26 }),
   exp('ve-e2-cel',    M2, 9, 'Celular Samsung A15 — inicial Cashea', 64, 'Tecnología',   'Transferencia', 'Necesidad', 'Único', 'Inicial del 40 %; el resto en cuotas sin intereses'),
-  exp('ve-e2-farma',  M2, 23, 'Farmatodo — medicinas',               11, 'Salud',        'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
+  exp('ve-e2-farma',  M2, 23, 'Farmacia — medicinas',               11, 'Salud',        'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
   ...monthlyFixed('ve-e3', M3, { luz: 4.10, m1: 57, feria: 23, m2: 30 }),
   exp('ve-e3-gas',    M3, 15, 'Bombona de gas',                        6, 'Servicios',    'Efectivo',      'Necesidad'),
   exp('ve-e3-ropa',   M3, 20, 'Zapatos para el trabajo',              25, 'Ropa',         'Débito',        'Necesidad'),
@@ -164,9 +164,9 @@ const sub = (id, name, category, usd, dd, paymentMethod, notes = 'Cobrado en US$
   ({ id, name, category, amount: bs(usd, M0), currency: 'VES', frequency: 'monthly', nextPaymentDate: day(M0, dd), paymentMethod, status: 'active', notes, createdAt: '2026-01-01', updatedAt: '2026-01-01' })
 
 export const VE_SUBSCRIPTIONS = [
-  sub('ve-sub1', 'Netflix',           'Streaming',      5.99,  7, 'Tarjeta internacional'),
-  sub('ve-sub2', 'Spotify',           'Música',         3.99,  7, 'Tarjeta internacional'),
-  sub('ve-sub3', 'Google One 100 GB', 'Almacenamiento', 1.99, 22, 'Tarjeta internacional'),
+  sub('ve-sub1', 'Streaming de video',           'Streaming',      5.99,  7, 'Tarjeta internacional'),
+  sub('ve-sub2', 'Música en streaming',           'Música',         3.99,  7, 'Tarjeta internacional'),
+  sub('ve-sub3', 'Nube 100 GB', 'Almacenamiento', 1.99, 22, 'Tarjeta internacional'),
 ]
 
 // Ajustes propios de la persona: la tasa BCV del mes guardada como tasa de

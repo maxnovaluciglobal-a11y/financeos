@@ -440,7 +440,7 @@ export const en = {
     'subs.form.edit': "Edit subscription",
     'subs.form.new': "New subscription",
     'subs.form.name': "Name",
-    'subs.form.namePh': "Netflix, Spotify…",
+    'subs.form.namePh': "Streaming, music…",
     'subs.form.amount': "Amount",
     'subs.form.category': "Category",
     'subs.form.freq': "Frequency",
@@ -617,7 +617,7 @@ export const en = {
     'mov.addExpense': "One-off expense",
     'mov.addExpenseDesc': "Groceries, gas, rent",
     'mov.addSub': "Recurring payment",
-    'mov.addSubDesc': "Netflix, gym, insurance, Claude",
+    'mov.addSubDesc': "Streaming, gym, insurance, apps",
     'mov.chart.top': "Top expenses this month",
     'mov.chart.byCat': "Breakdown by category",
     'mov.alert.dup': "You have {n} subscriptions in \"{cat}\". Check whether all are needed.",
@@ -668,7 +668,7 @@ export const en = {
     'mov.form.saveExp': "Save expense",
     'mov.form.subTitle': "New recurring payment",
     'mov.form.name': "Name",
-    'mov.form.namePh': "E.g. Netflix",
+    'mov.form.namePh': "E.g. video streaming",
     'mov.form.amountSimple': "Amount",
     'mov.form.freq': "Frequency",
     'mov.form.nextPay': "Next payment",
@@ -3488,4 +3488,10 @@ export const en = {
     // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
     'settings.license.label@native': "Your plan: {plan}",
     'settings.license.sub@native': "It goes with your account, on all your devices.",
+    // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
+    'settings.group.notifications.desc@native': "App notices",
+    'settings.group.plan.demo@native': "There is no plan to manage in the demo.",
+    'settings.group.advanced.desc@native': "Sample data, error log and initial guide",
+    'settings.group.advanced.kw@native': "demo, sample, test data, diagnostics, errors, log, support, onboarding, wizard, welcome",
+    'settings.group.plan.kw@native': "plan, pro, starter, subscription, cancel",
 }

@@ -440,7 +440,7 @@ export const es = {
     'subs.form.edit': "Editar suscripción",
     'subs.form.new': "Nueva suscripción",
     'subs.form.name': "Nombre",
-    'subs.form.namePh': "Netflix, Spotify…",
+    'subs.form.namePh': "Streaming, música…",
     'subs.form.amount': "Monto",
     'subs.form.category': "Categoría",
     'subs.form.freq': "Frecuencia",
@@ -617,7 +617,7 @@ export const es = {
     'mov.addExpense': "Gasto único",
     'mov.addExpenseDesc': "Supermercado, bencina, arriendo",
     'mov.addSub': "Pago fijo",
-    'mov.addSubDesc': "Netflix, gimnasio, seguro, Claude",
+    'mov.addSubDesc': "Streaming, gimnasio, seguro, apps",
     'mov.chart.top': "Top gastos del mes",
     'mov.chart.byCat': "Distribución por categoría",
     'mov.alert.dup': "Tienes {n} suscripciones en \"{cat}\". Revisa si todas son necesarias.",
@@ -668,7 +668,7 @@ export const es = {
     'mov.form.saveExp': "Guardar gasto",
     'mov.form.subTitle': "Nuevo pago fijo",
     'mov.form.name': "Nombre",
-    'mov.form.namePh': "Ej: Netflix",
+    'mov.form.namePh': "Ej: streaming de video",
     'mov.form.amountSimple': "Monto",
     'mov.form.freq': "Frecuencia",
     'mov.form.nextPay': "Próximo pago",
@@ -3488,4 +3488,10 @@ export const es = {
     // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
     'settings.license.label@native': "Tu plan: {plan}",
     'settings.license.sub@native': "Va con tu cuenta, en todos tus dispositivos.",
+    // App de tienda (Capacitor): variantes @native (i18n/translate.js), revisión pre-tiendas 23-nov-2026.
+    'settings.group.notifications.desc@native': "Avisos de la app",
+    'settings.group.plan.demo@native': "En el demo no hay plan que administrar.",
+    'settings.group.advanced.desc@native': "Datos de ejemplo, registro de errores y guía inicial",
+    'settings.group.advanced.kw@native': "demo, ejemplo, datos de prueba, diagnóstico, errores, registro, soporte, onboarding, asistente, bienvenida",
+    'settings.group.plan.kw@native': "plan, pro, starter, suscripción, cancelar",
 }

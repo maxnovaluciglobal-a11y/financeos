@@ -46,11 +46,11 @@ function monthlyFixed(prefix, ym, v) {
     exp(`${prefix}-rfb`,    ym, 15, 'Rundfunkbeitrag',            18.36, 'Servicios',    'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-dt`,     ym,  1, 'Deutschlandticket',          63.00, 'Transporte',   'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-hpv`,    ym,  1, 'Haftpflichtversicherung',     6.25, 'Otros',        'Débito',        'Necesidad', 'Mensual'),
-    exp(`${prefix}-rewe`,   ym,  4, 'Einkauf REWE',               v.rewe, 'Alimentación', 'Débito',       'Necesidad'),
-    exp(`${prefix}-lidl`,   ym, 17, 'Wocheneinkauf Lidl',         v.lidl, 'Alimentación', 'Débito',       'Necesidad'),
+    exp(`${prefix}-rewe`,   ym,  4, 'Einkauf Supermarkt',               v.rewe, 'Alimentación', 'Débito',       'Necesidad'),
+    exp(`${prefix}-lidl`,   ym, 17, 'Wocheneinkauf',         v.lidl, 'Alimentación', 'Débito',       'Necesidad'),
     exp(`${prefix}-gym`,    ym,  2, 'Fitnessstudio',              29.90, 'Salud',        'Débito',        'Deseo',     'Mensual'),
-    exp(`${prefix}-nflx`,   ym,  8, 'Netflix',                    13.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
-    exp(`${prefix}-spot`,   ym,  8, 'Spotify',                    11.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
+    exp(`${prefix}-nflx`,   ym,  8, 'Video-Streaming',                    13.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
+    exp(`${prefix}-spot`,   ym,  8, 'Musik-Streaming',                    11.99, 'Entretención', 'Crédito',       'Deseo',     'Mensual'),
   ]
 }
 
@@ -100,11 +100,11 @@ const sub = (id, name, category, amount, dd, paymentMethod, notes = '') =>
   ({ id, name, category, amount, currency: 'EUR', frequency: 'monthly', nextPaymentDate: day(M0, dd), paymentMethod, status: 'active', notes, createdAt: '2026-01-01', updatedAt: '2026-01-01' })
 
 export const DE_SUBSCRIPTIONS = [
-  sub('de-sub1', 'Netflix',          'Streaming',      13.99,  8, 'Kreditkarte'),
-  sub('de-sub2', 'Spotify',          'Música',         11.99,  8, 'Kreditkarte'),
+  sub('de-sub1', 'Video-Streaming',          'Streaming',      13.99,  8, 'Kreditkarte'),
+  sub('de-sub2', 'Musik-Streaming',          'Música',         11.99,  8, 'Kreditkarte'),
   sub('de-sub3', 'Fitnessstudio',    'Gimnasio',       29.90,  2, 'Lastschrift'),
-  sub('de-sub4', 'Amazon Prime',     'Delivery',        8.99, 21, 'Kreditkarte'),
-  sub('de-sub5', 'iCloud+ 200 GB',   'Almacenamiento',  2.99, 26, 'Apple Pay'),
+  sub('de-sub4', 'Versand-Abo',     'Delivery',        8.99, 21, 'Kreditkarte'),
+  sub('de-sub5', 'Cloud-Speicher 200 GB',   'Almacenamiento',  2.99, 26, 'Apple Pay'),
 ]
 
 export const DE_PERSONA = {
