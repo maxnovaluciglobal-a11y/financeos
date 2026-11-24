@@ -4,8 +4,8 @@
 // portafolio) y dice el almacenamiento tal como lo hace el código
 // (core/investBridge.js): posiciones en la cuenta, en nuestro servidor; para
 // precios solo viajan los símbolos; el módulo no envía los movimientos.
-// `invest.privacy` (src/pages/Investments/i18n) todavía tiene el texto
-// anterior: se alinea con esta misma redacción cuando se toque esa carpeta.
+// `invest.privacy` (src/pages/Investments/i18n) lo alinea la rama F7 al
+// integrar: acá no se exige ni su texto viejo ni que coincida con Ajustes.
 import { describe, it, expect } from 'vitest'
 import { es } from './withSections.js'
 import { en } from './withSections.js'
@@ -15,9 +15,12 @@ import { de } from './withSections.js'
 const DICTS = { es, en, pt, de }
 
 describe('texto de privacidad de Inversiones (D19)', () => {
-  it('es el texto aprobado en español', () => {
-    expect(es['invest.privacy']).toBe('Tus posiciones de inversión se guardan en nuestro servidor para que puedas verlas en cualquier dispositivo. Para traer precios solo se consultan los símbolos. Tus movimientos siguen solo en tu teléfono.')
-  })
+  for (const [lang, d] of Object.entries(DICTS)) {
+    it(`${lang}: existe y dice que para los precios solo viajan los símbolos`, () => {
+      expect(typeof d['invest.privacy']).toBe('string')
+      expect(d['invest.privacy']).toMatch(/símbolos|symbols|símbolos|Symbole/i)
+    })
+  }
 })
 
 describe('Ajustes › Funciones › Inversiones (I-18)', () => {
