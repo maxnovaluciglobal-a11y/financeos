@@ -2,6 +2,7 @@
 // Datos comunes de las páginas legales (es/en/pt/de). Sin React ni hooks: lo
 // importan los módulos de contenido y legal.test.js en node.
 import { PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
+import { STORE_BUILD } from '../../native/storeBuild.js'
 
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
 export const SUPPORT_EMAIL = 'support@moyiq.app'
@@ -78,4 +79,4 @@ export const COMPANY = {
 // Portal de clientes de Stripe (link público de inicio de sesión; el mismo que
 // publica la landing en cancelar.html, terms y license). Menú → Ayuda →
 // Gestionar suscripción (LEG-12).
-export const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/6oU9AM8Ht3aggzi8qZfnO00'
+export const STRIPE_PORTAL_URL = STORE_BUILD ? '' : 'https://billing.stripe.com/p/login/6oU9AM8Ht3aggzi8qZfnO00'

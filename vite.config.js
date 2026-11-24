@@ -12,7 +12,8 @@ const DPL = process.env.VERCEL_SKEW_PROTECTION_ENABLED === '1' ? (process.env.VE
 
 export default defineConfig({
   base: '/app/',
-  define: { __VERCEL_DPL__: JSON.stringify(DPL) },
+  // AND-5 (ronda 3): MOYIQ_STORE_BUILD=1 en la compilación de las tiendas (src/native/storeBuild.js).
+  define: { __VERCEL_DPL__: JSON.stringify(DPL), __STORE_BUILD__: JSON.stringify(process.env.MOYIQ_STORE_BUILD === '1') },
   resolve: {
     // V4: la app no usa Realtime ni Storage de Supabase, pero supabase-js los
     // importa siempre (~87 kB minificados, ~23 kB gzip, con phoenix e iceberg-js)

@@ -27,6 +27,7 @@ import { listenSwOpen } from './utils/swOpen.js'
 import { logClientError, logRejection } from './utils/errorLog.js'
 import { useLangReady } from './i18n/useT.js'
 import { storePage } from './native/storePolicy.js'
+import { STORE_BUILD } from './native/storeBuild.js'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -63,8 +64,9 @@ const License       = lazy(() => import('./pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
 const More          = lazy(() => import('./pages/More/index.jsx'))
 const Panorama      = lazy(() => import('./pages/Panorama/index.jsx'))
-const Investments   = lazy(() => import('./pages/Investments/index.jsx'))
-const InvestAsset   = lazy(() => import('./pages/Investments/Asset.jsx'))
+// AND-5: la compilación de las tiendas no incluye Inversiones (oculta en la app de tienda).
+const Investments   = STORE_BUILD ? null : lazy(() => import('./pages/Investments/index.jsx'))
+const InvestAsset   = STORE_BUILD ? null : lazy(() => import('./pages/Investments/Asset.jsx'))
 const NpsPrompt     = lazy(() => import('./components/NpsPrompt.jsx'))
 // V4 (30-oct-2026): el onboarding solo lo ve una cuenta nueva: fuera del JS inicial.
 const Onboarding    = lazy(() => import('./components/Onboarding.jsx'))
@@ -324,8 +326,8 @@ function Inner() {
       case 'import':        return <ImportCSV setPage={setPage} />
       case 'more':          return <More setPage={setPage} />
       case 'panorama':      return <Panorama setPage={setPage} />
-      case 'investments':   return <Investments setPage={setPage} />
-      case 'investAsset':   return <InvestAsset setPage={setPage} />
+      case 'investments':   return Investments ? <Investments setPage={setPage} /> : <Dashboard setPage={setPage}/>
+      case 'investAsset':   return InvestAsset ? <InvestAsset setPage={setPage} /> : <Dashboard setPage={setPage}/>
       default:              return <Dashboard setPage={setPage}/>
     }
   }

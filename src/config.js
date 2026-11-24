@@ -5,6 +5,8 @@
 // No toques ningún otro archivo a menos que quieras cambiar lógica de negocio.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { STORE_BUILD } from './native/storeBuild.js'
+
 const config = {
 
   // ── IDENTIDAD ──────────────────────────────────────────────────────────────
@@ -227,8 +229,9 @@ const config = {
   pricing: {
     proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
     trialEnabled: true,
-    trialCheckoutUrl: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
-    trialCheckoutUrlAnnual: 'https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05',
+    // AND-5: la compilación de las tiendas no vende ni enlaza a Stripe (storeBuild.js).
+    trialCheckoutUrl: STORE_BUILD ? '' : 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
+    trialCheckoutUrlAnnual: STORE_BUILD ? '' : 'https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05',
   },
 
 }

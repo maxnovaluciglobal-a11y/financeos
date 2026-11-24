@@ -6,11 +6,14 @@
 import { Suspense, lazy } from 'react'
 import { useT } from '../../i18n/useT.js'
 import { ssub } from './settingsUi.jsx'
+import { STORE_BUILD } from '../../native/storeBuild.js'
 
-const InvestSettings = lazy(() => import('../Investments/settings/InvestSettings.jsx'))
+// AND-5: fuera de la compilación de las tiendas (Inversiones está oculta allí).
+const InvestSettings = STORE_BUILD ? null : lazy(() => import('../Investments/settings/InvestSettings.jsx'))
 
 export default function InvestScreen({ setPage, isDemo, onOpenFeatures }) {
   const { t } = useT()
+  if (!InvestSettings) return null
   return (
     <Suspense fallback={<p role="status" style={{ ...ssub, margin: '12px 0' }}>{t('settings.inv.loading')}</p>}>
       <InvestSettings setPage={setPage} isDemo={isDemo} onOpenFeatures={onOpenFeatures} />

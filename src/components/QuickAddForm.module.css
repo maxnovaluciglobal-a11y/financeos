@@ -63,9 +63,9 @@
 }
 .catScroll::-webkit-scrollbar { display: none; }
 /* AND-11: borde desvanecido donde hay más chips (no un corte en seco) */
-.catScroll[data-fade="end"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
-.catScroll[data-fade="start"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); }
-.catScroll[data-fade="both"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+.catScroll[data-fade="end"] { -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent); mask-image: linear-gradient(to right, black calc(100% - 28px), transparent); }
+.catScroll[data-fade="start"] { -webkit-mask-image: linear-gradient(to left, black calc(100% - 28px), transparent); mask-image: linear-gradient(to left, black calc(100% - 28px), transparent); }
+.catScroll[data-fade="both"] { -webkit-mask-image: linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent); }
 .catChip { flex: 0 0 auto; scroll-snap-align: start; white-space: nowrap; }
 /* UX-N9: preselección (la última usada) como sugerencia hasta que se toque */
 .catChip.catChip[data-suggested] {
