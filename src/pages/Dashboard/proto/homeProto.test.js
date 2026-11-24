@@ -16,6 +16,9 @@ describe('homeProtoVariant', () => {
     expect(s.getItem(HOME_PROTO_KEY)).toBe('b')
     expect(homeProtoVariant({ search: '', session: s })).toBe('b')
   })
+  it('d (mezcla de B y C) también es una variante', () => {
+    expect(homeProtoVariant({ search: '?home=d', session: memSession() })).toBe('d')
+  })
   it('home=off (o un valor desconocido) vuelve al Inicio de siempre y olvida la variante', () => {
     const s = memSession()
     homeProtoVariant({ search: '?home=c', session: s })

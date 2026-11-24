@@ -17,6 +17,11 @@
 //                   barra de 5 vuelve en cuanto se sale del Inicio.
 //   C "Asistente" — A + "Pregúntale a moyiq": preguntas fijas que se responden
 //                   en el teléfono con reglas (askAnswers.js), sin servidor ni IA.
+//   D "Mezcla"    — pedida por Walter tras ver A/B/C (24-nov): de C la cabecera
+//                   con el asistente, el gráfico (compacto, sin ejes) y la
+//                   tarjeta de preguntas; de B los 4 botones redondos DENTRO del
+//                   bloque (encaje), las tarjetas de Ingresos/Gastos y la barra
+//                   de 3 pestañas con el "+" aparte.
 // Cifras: las mismas fuentes que el Inicio (useHomeData → homeMonthTotals /
 // monthLeft, useIqScore, dailyAvailable/paceToday, monthPace). Nada nuevo.
 
@@ -113,7 +118,7 @@ function Header({ variant, activeMonth, healthScore, onMonth, onIq, onAsk, t, la
       </div>
       <div className={p.headerEnd}>
         <IqChip healthScore={healthScore} onOpen={onIq} t={t} />
-        {variant === 'c'
+        {variant === 'c' || variant === 'd'
           ? (
             <button type="button" className={p.iconBtn} onClick={onAsk} aria-label={t('home.proto.ask.title')} aria-haspopup="dialog">
               <span className={p.askAvatar} aria-hidden="true"><Isotipo size={15} decorative style={{ color: 'var(--purple-700)' }} /></span>
@@ -132,7 +137,7 @@ function Header({ variant, activeMonth, healthScore, onMonth, onIq, onAsk, t, la
 // ── Botones redondos (patrón Rial: círculo de 56 px + etiqueta) ────────────
 function RoundActions({ items, t, tone }) {
   return (
-    <nav className={`${p.round} ${tone === 'float' ? p.roundFloat : ''}`} aria-label={t('dash.quick.title')}>
+    <nav className={`${p.round} ${tone === 'float' ? p.roundFloat : ''} ${tone === 'inset' ? p.roundInset : ''}`} aria-label={t('dash.quick.title')}>
       {items.map(a => (
         <button key={a.key} type="button" className={p.roundBtn} onClick={a.run}>
           <span className={`${p.roundIc} ${a.strong ? p.roundIcStrong : ''}`}><a.Ic size={22} strokeWidth={1.9} aria-hidden="true" /></span>
@@ -330,6 +335,8 @@ export default function HomeProto({ variant = 'a', setPage }) {
   const sceneRef = useRef(null)
   const chartRef = useRef(null)
   useSceneChrome(sceneRef)
+  const tabs3 = variant === 'b' || variant === 'd'   // barra de 3 pestañas
+  const asks = variant === 'c' || variant === 'd'    // Pregúntale a moyiq
 
   // La barra superior del Shell (título compacto, ? y ojo) se esconde en el
   // teléfono: la cabecera nueva ya lleva logo, mes, IQ y ayuda, y el ojo va
@@ -379,10 +386,10 @@ export default function HomeProto({ variant = 'a', setPage }) {
   const onDay = useCallback((d, mode) => setInspect(mode === 'rest' ? null : d), [])
   const onTap = useCallback((d) => { setSheetDay(d); setDaySheet(true) }, [])
   const valueTextOf = useCallback((d) => valueText({ series, day: d, activeMonth, t, fmt, locale }), [series, activeMonth, t, fmt, locale])
-  const axis = useMemo(() => series ? [
+  const axis = useMemo(() => series && variant !== 'd' ? [
     { key: 's', day: 1, text: shortDate(activeMonth, 1, locale) },
     { key: 'e', day: series.days, align: 'end', text: shortDate(activeMonth, series.days, locale) },
-  ] : null, [series, activeMonth, locale])
+  ] : null, [series, activeMonth, locale, variant])
 
   const looking = inspect != null && series && !(series.mode === 'current' && inspect === series.lastDay)
   const value = looking ? series.spentCum[inspect] : free
@@ -450,14 +457,16 @@ export default function HomeProto({ variant = 'a', setPage }) {
       </div>
 
       {variant !== 'b' && hasData && series && (
-        <div className={p.chart}>
+        <div className={`${p.chart} ${variant === 'd' ? p.chartD : ''}`}>
           <ChartLupa ref={chartRef} series={series} hold={daySheet}
             label={t('home.lupa.aria', { month: monthLabel(activeMonth) })}
             valueTextOf={valueTextOf} axis={axis} onDay={onDay} onTap={onTap} />
         </div>
       )}
 
-      {variant !== 'b' && (
+      {variant === 'd' && <RoundActions items={actionsB} t={t} tone="inset" />}
+
+      {(variant === 'a' || variant === 'c') && (
         <div className={p.pair}>
           {[
             { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, filter: 'income', sign: '+' },
@@ -479,9 +488,9 @@ export default function HomeProto({ variant = 'a', setPage }) {
       {hero}
 
       <div className={p.below}>
-        <RoundActions items={variant === 'b' ? actionsB : actionsA} t={t} tone={variant === 'b' ? 'float' : undefined} />
+        {variant !== 'd' && <RoundActions items={variant === 'b' ? actionsB : actionsA} t={t} tone={variant === 'b' ? 'float' : undefined} />}
 
-        {variant === 'b' && (
+        {tabs3 && (
           <div className={p.cards}>
             {[
               { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, n: cur.incCount, filter: 'income', sign: '+', cls: p.cardInc },
@@ -496,7 +505,7 @@ export default function HomeProto({ variant = 'a', setPage }) {
           </div>
         )}
 
-        {variant === 'c' && <AskCard onAsk={ask} t={t} />}
+        {asks && <AskCard onAsk={ask} t={t} />}
 
         <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
 
@@ -516,7 +525,7 @@ export default function HomeProto({ variant = 'a', setPage }) {
         <ScoreCard healthScore={healthScore} activeMonth={activeMonth} compact isCurrentMonth={isCurrent} setPage={setPage} />
       </div>
 
-      {variant === 'b' && <BottomBarB setPage={setPage} t={t} />}
+      {tabs3 && <BottomBarB setPage={setPage} t={t} />}
 
       <MonthSheet open={monthOpen} onClose={() => setMonthOpen(false)} activeMonth={activeMonth} onPick={pickMonth} t={t} />
 
@@ -533,7 +542,7 @@ export default function HomeProto({ variant = 'a', setPage }) {
           onClose={() => { setDaySheet(false); chartRef.current?.rest() }} />
       )}
 
-      {variant === 'c' && (
+      {asks && (
         <AskSheet open={askOpen} q={askQ} onQ={setAskQ} onClose={() => setAskOpen(false)} sym={sym} lang={lang} setPage={setPage} t={t}
           data={{ kpis, monthExpenses, activeMonth }} />
       )}

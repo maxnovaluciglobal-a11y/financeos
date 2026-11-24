@@ -7,7 +7,8 @@
 /* ── Cromo: sin barra superior del Shell en el teléfono (la cabecera es esta) ── */
 @media (max-width: 700px) {
   :global(:root[data-home-proto]) :global([data-shell-topbar]) { display: none; }
-  :global(:root[data-home-proto="b"]) :global([data-shell-tabbar]) { display: none; }
+  :global(:root[data-home-proto="b"]) :global([data-shell-tabbar]),
+  :global(:root[data-home-proto="d"]) :global([data-shell-tabbar]) { display: none; }
 }
 
 .root { --hero-pad: 18px; }
@@ -313,3 +314,15 @@
 .chipsSheet { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .chipSheet { flex-shrink: 1; white-space: normal; text-align: left; padding: 8px var(--space-4); }
 .ansSource { margin: var(--space-4) 0 0; font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--th); }
+
+/* ── D: mezcla de B y C ──────────────────────────────────────────────────
+   Gráfico compacto (sin ejes: los días restantes ya dicen dónde está el mes;
+   la ChartLupa mide ≈138 px con 24 px de aire para la lupa, ≈114 px de dibujo)
+   y los 4 botones redondos dentro del bloque, en blanco sobre Impulso. */
+.chartD { margin-top: -18px; }
+.roundInset { margin: var(--space-2) -6px var(--space-1); padding-top: var(--space-2); box-shadow: inset 0 1px 0 var(--on-grad-chip); }
+.roundInset .roundIc { background: var(--on-grad-text); color: var(--purple-700); box-shadow: 0 6px 16px -6px rgb(30 16 68 / .45); }
+.roundInset .roundLb { color: var(--on-grad-text); font-weight: 600; }
+.roundInset .roundBtn:focus-visible .roundIc { outline-color: var(--on-grad-accent); }
+:global([data-theme="dark"]) .roundInset .roundIc { background: var(--on-grad-chip); color: var(--on-grad-text); box-shadow: inset 0 0 0 1px var(--on-grad-track); }
+[data-variant="d"] .hero { padding-bottom: var(--space-3); }

@@ -1,14 +1,14 @@
 // src/pages/Dashboard/proto/homeProto.js — interruptor de los prototipos del
 // Inicio v2 (24-nov-2026, rama proto/home-v2, para que Walter los compare en el
-// teléfono). `?home=a|b|c` elige una variante y la recuerda en la pestaña
+// teléfono). `?home=a|b|c|d` elige una variante y la recuerda en la pestaña
 // (sessionStorage), así sobrevive a ir a Movimientos y volver; `?home=off` (o
 // cualquier otro valor) vuelve al Inicio de siempre. Sin el parámetro y sin
 // nada guardado, el Inicio es el de producción, sin cambios.
 
 export const HOME_PROTO_KEY = 'fos_home_proto'
-export const HOME_PROTO_VARIANTS = Object.freeze(['a', 'b', 'c'])
+export const HOME_PROTO_VARIANTS = Object.freeze(['a', 'b', 'c', 'd'])
 
-/** Variante activa ('a' | 'b' | 'c') o null. Pura: recibe search y storage. */
+/** Variante activa ('a' | 'b' | 'c' | 'd') o null. Pura: recibe search y storage. */
 export function homeProtoVariant({ search = '', session = null } = {}) {
   let q = null
   try { q = new URLSearchParams(search).get('home') } catch { q = null }
