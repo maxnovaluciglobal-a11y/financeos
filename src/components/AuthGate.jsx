@@ -11,6 +11,7 @@ import { signUpWithPassword, signInWithPassword, signInWithGoogle, signInWithApp
 import { nativePlatform, isNativeApp } from '../native/platform.js'
 import { NATIVE_OAUTH_ERROR_EVENT } from '../native/nativeLinks.js'
 import { oauthProviders } from '../native/storePolicy.js'
+import { hasNetworkForOAuth } from '../native/connectivity.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
@@ -215,9 +216,10 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleGoogle() {
     setError('')
-    // AND-14: sin conexión, avisar antes de abrir el navegador de Google/Apple
-    // (si no, se abre una página de "sin internet" sin explicación).
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) { setError(t('authGate.errorNetwork')); return }
+    // AND-14 / R3-1: sin conexión, avisar antes de abrir el navegador de Google/Apple
+    // (si no, se abre una página de "sin internet" sin explicación). En la app
+    // nativa no alcanza con navigator.onLine: ver native/connectivity.js.
+    if (!(await hasNetworkForOAuth())) { setError(t('authGate.errorNetwork')); return }
     clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
     if (tab === 'signup') trackSignupStart('google')
@@ -228,9 +230,10 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleApple() {
     setError('')
-    // AND-14: sin conexión, avisar antes de abrir el navegador de Google/Apple
-    // (si no, se abre una página de "sin internet" sin explicación).
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) { setError(t('authGate.errorNetwork')); return }
+    // AND-14 / R3-1: sin conexión, avisar antes de abrir el navegador de Google/Apple
+    // (si no, se abre una página de "sin internet" sin explicación). En la app
+    // nativa no alcanza con navigator.onLine: ver native/connectivity.js.
+    if (!(await hasNetworkForOAuth())) { setError(t('authGate.errorNetwork')); return }
     clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
     const result = await signInWithApple()

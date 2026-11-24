@@ -15,6 +15,7 @@
 //                      las barras, cambio de tema del sistema y "Guardar como"
 //                      (saveFile.js). En iOS no existe y todo sigue igual.
 //   Browser            vuelta del inicio con Google/Apple (nativeAuth.js)
+//   Network            ¿hay red antes de abrir Google/Apple? (connectivity.js)
 //   Keyboard           se configura en capacitor.config (resize nativo)
 import { registerPlugin, SystemBars, SystemBarsStyle } from '@capacitor/core'
 import { parseNativeUrl, NATIVE_OAUTH_ERROR_EVENT } from './nativeLinks.js'
