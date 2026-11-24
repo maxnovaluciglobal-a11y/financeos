@@ -13,7 +13,7 @@ import { fmtMoney as fmtMoneyRaw, fmtPct, currentMonth, localMonthStr, localDate
 import config from '../../config.js'
 import { logRejection } from '../../utils/errorLog.js'
 import { fixedBuckets, draftFromTemplate, buildGoal, applyContribution, toFullFormDate, isEmergencyGoal as isEmergencyFlagged, isGeneralGoal, availableMessageKey } from './goalFlow.js'
-import { FixedBuckets, TemplateGrid, GoalFlowSheet, ContributionSheet, GOAL_ICONS } from './GoalSheets.jsx'
+import { FixedBuckets, TemplateGrid, GoalFlowSheet, ContributionSheet, InvestOverlapNote, GOAL_ICONS } from './GoalSheets.jsx'
 import { listedGoals } from './goalList.js'
 import Sheet from '../../components/ui/Sheet.jsx'
 import { goalStatuses, paceBudget } from './goalStatus.js'
@@ -24,6 +24,8 @@ import { monthPlan } from '../../utils/recurring.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
+import { portfolioInNetWorth } from '../../utils/investNetWorth.js'
 
 export default function Goals() {
   const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, setAsides, addSetAside, delSetAside, settings, deleteWithUndo, showToast, recurring } = useApp()
@@ -49,6 +51,11 @@ export default function Goals() {
   const { m } = useMoney()
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
   const activeMonth      = settings.activeMonth || currentMonth()
+  // I-17: si el portafolio suma al patrimonio, el "Ahorrado" que ya está
+  // invertido se contaría dos veces. Hasta las metas vinculadas (F9), se avisa
+  // al editar la meta, al crearla y al apartar.
+  const { inv } = useInvestPortfolio()
+  const investOverlap = portfolioInNetWorth(inv)
 
   // "Te queda este mes": la misma cuenta que el Inicio (utils/monthLeft.js, F-1).
   // Antes Metas sumaba por su cuenta ("Disponible este mes para ahorrar", I-16).
@@ -231,6 +238,7 @@ export default function Goals() {
                 </SheetSelect>
               </div>
             </div>
+            {investOverlap && <InvestOverlapNote t={t} />}
             <div style={{display:'flex',gap:8}}>
               <Btn variant="primary" size="xs" onClick={()=>saveEdit(g)}>{t('goals.edit.save')}</Btn>
               <Btn variant="ghost"   size="xs" onClick={()=>{setEditingId(null);setEditForm({})}}>{t('common.cancel')}</Btn>
@@ -346,6 +354,7 @@ export default function Goals() {
             <FormGroup label={t('goals.form.date')}><input type="date" value={f.targetDate} onChange={e=>setF(p=>({...p,targetDate:e.target.value}))} /></FormGroup>
             <FormGroup label={t('goals.form.priority')}><SheetSelect value={f.priority} onChange={e=>setF(p=>({...p,priority:e.target.value}))}>{['Alta','Media','Baja'].map(p=><option key={p} value={p}>{prioLabel(p, lang)}</option>)}</SheetSelect></FormGroup>
           </FormRow>
+          {investOverlap && <InvestOverlapNote t={t} style={{ marginBottom: 10 }} />}
           <div style={{display:'flex',gap:8}}>
             <Btn id="goal-new-submit" variant="primary" onClick={submit}>{t('goals.form.submit')}</Btn>
             <Btn variant="ghost"   onClick={() => setShow(false)}>{t('common.cancel')}</Btn>
@@ -436,7 +445,7 @@ export default function Goals() {
       {contribGoal && (
         <ContributionSheet key={contribGoal.id} goal={contribGoal} onClose={closeContrib} onConfirm={confirmContribution}
           t={t} lang={lang} fmt={fmtPlain} currency={settings.currency || 'CLP'}
-          methods={config.paymentMethods} lastPaymentMethod={settings.lastPaymentMethod} />
+          methods={config.paymentMethods} lastPaymentMethod={settings.lastPaymentMethod} investOverlap={investOverlap} />
       )}
     </div>
   )

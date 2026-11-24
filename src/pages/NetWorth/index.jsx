@@ -11,7 +11,7 @@ import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, PageHeader, Empty } from '../../components/ui/index.jsx'
 import { fmtMoney as fmtMoneyRaw, currencySymbol } from '../../utils/index.js'
 import { calcNetWorth } from '../../utils/netWorth.js'
-import { withInvest } from '../../utils/investNetWorth.js'
+import { netWorthOverlapNote, withInvest } from '../../utils/investNetWorth.js'
 import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
 import InvestLine from './InvestLine.jsx'
 import CountUp from '../../components/CountUp.jsx'
@@ -67,6 +67,12 @@ export default function NetWorth() {
               <Row label={t('networth.propsPositive')} value={Math.max(0, propertiesNet)} sym={sym} color="var(--grn)" />
               <Row label={t('networth.receivables')} value={receivablesPending} sym={sym} color="var(--grn)" />
               {inv && <InvestLine inv={inv} sym={sym} />}
+              {/* I-17: metas y portafolio suman al mismo total; hasta las metas vinculadas (F9), se dice. */}
+              {netWorthOverlapNote({ savedInGoals }, inv) && (
+                <div data-testid="networth-invest-overlap" style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', lineHeight: 1.5, padding: '2px 0 4px' }}>
+                  {t('networth.investments.overlap')}
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: '.5px solid var(--brd)' }}>
                 <span style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{t('networth.totalAssets')}</span>
                 <span style={{ fontSize: 'var(--t-subhead)', fontWeight: 700, fontFamily: 'var(--num)', color: 'var(--grn)' }}><Money>{fmtMoney(totalActivos, sym)}</Money></span>

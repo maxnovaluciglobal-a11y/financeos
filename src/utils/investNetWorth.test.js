@@ -113,3 +113,44 @@ describe('fmtUsd', () => {
     expect(fmtUsd(-3, 'CLP')).toMatch(/^US\$3/)
   })
 })
+
+// I-17 (benchmark/05-coherencia-360): metas y portafolio suman al mismo
+// patrimonio; mientras no haya metas vinculadas (F9) se avisa.
+import { portfolioInNetWorth, netWorthOverlapNote } from './investNetWorth.js'
+import { demoInvestSnapshot } from '../demo/demoInvest.js'
+import { buildDemoState } from '../demo/demoData.js'
+
+describe('aviso de doble conteo metas + Inversiones (I-17)', () => {
+  it('módulo apagado o sin acceso (inv null): no hay aviso', () => {
+    expect(portfolioInNetWorth(null)).toBe(false)
+    expect(portfolioInNetWorth(undefined)).toBe(false)
+    expect(netWorthOverlapNote({ savedInGoals: 500 }, null)).toBe(false)
+  })
+  it('sin tasa con fecha el portafolio no suma al total: no hay aviso', () => {
+    const inv = investValueForUser(snap, { currency: 'ARS' }, none)
+    expect(inv.amount).toBeNull()
+    expect(withInvest(calcNetWorth({ goals: [{ saved: 100 }] }), inv).investInTotal).toBe(false)
+    expect(portfolioInNetWorth(inv)).toBe(false)
+  })
+  it('con el portafolio sumado al patrimonio: aviso en Metas y, si hay ahorro en metas, en Patrimonio', () => {
+    const inv = investValueForUser(snap, { currency: 'CLP' }, none)
+    expect(portfolioInNetWorth(inv)).toBe(true)
+    const nw = withInvest(calcNetWorth({ goals: [{ saved: 100 }] }), inv)
+    expect(nw.investInTotal).toBe(true)
+    expect(netWorthOverlapNote(nw, inv)).toBe(true)
+    expect(netWorthOverlapNote(withInvest(calcNetWorth({ goals: [] }), inv), inv)).toBe(false)
+  })
+  it('el aviso coincide con investInTotal de withInvest', () => {
+    for (const settings of [{ currency: 'USD' }, { currency: 'CLP' }, { currency: 'ARS' }, { currency: '' }]) {
+      const inv = investValueForUser(snap, settings, none)
+      expect(portfolioInNetWorth(inv), JSON.stringify(settings)).toBe(withInvest(calcNetWorth({}), inv).investInTotal)
+    }
+  })
+  it('demo US: la meta "Roth IRA" y el portafolio de ejemplo suman juntos, así que el aviso se ve', () => {
+    const st = buildDemoState('us', 'en')
+    const inv = investValueForUser(demoInvestSnapshot(), st.settings, none)
+    const nw = withInvest(calcNetWorth({ goals: st.goals }), inv)
+    expect(st.goals.some(g => /Roth IRA/.test(g.name) && g.saved > 0)).toBe(true)
+    expect(netWorthOverlapNote(nw, inv)).toBe(true)
+  })
+})

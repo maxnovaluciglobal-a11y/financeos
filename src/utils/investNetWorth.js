@@ -3,7 +3,12 @@
 //
 // La línea "Inversiones" es una estimación con fecha y va aparte de Metas: no
 // toca `calcNetWorth`, así Reportes y el PDF siguen con lo que la persona
-// registró y una meta de ahorro nunca se mezcla con el portafolio.
+// registró. Pero `withInvest` SÍ suma el portafolio al mismo total que el
+// "Ahorrado" de las metas, y nada impide que una meta (p. ej. "Roth IRA")
+// registre a mano dinero que ya está en Inversiones: ese dinero se contaría dos
+// veces (I-17, benchmark/05-coherencia-360). Hasta que existan las metas
+// vinculadas (fase F9), `portfolioInNetWorth` decide cuándo avisarlo en Metas
+// y en Patrimonio.
 import { currencySymbol, dateLocale, fmtAmount } from './index.js'
 import { refEligible, savedRate, cachedRate } from './refRate.js'
 import { isSetAside, uniqueSetAsides } from './setAside.js'
@@ -40,6 +45,18 @@ export function investValueForUser(snapshot, settings, read) {
     at: snapshot.pricesAt || snapshot.at,
     status: snapshot.status,
   }
+}
+
+// I-17: ¿el portafolio entra al patrimonio? Solo con módulo encendido, acceso y
+// tasa con fecha (`inv.amount`; useInvestPortfolio da `inv` null si no). Sin
+// tasa la línea va aparte en US$ y no suma: no hay doble conteo que avisar.
+export function portfolioInNetWorth(inv) {
+  return inv != null && inv.amount != null && Number.isFinite(Number(inv.amount))
+}
+
+// Patrimonio: la nota de una línea va solo si además hay ahorro en metas.
+export function netWorthOverlapNote(nw, inv) {
+  return portfolioInNetWorth(inv) && (Number(nw?.savedInGoals) || 0) > 0
 }
 
 export function withInvest(nw, inv) {

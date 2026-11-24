@@ -3352,6 +3352,8 @@ export const es = {
     "networth.investments.note": "Valor al {at} · cambia con el mercado",
     "networth.investments.noRate": "Al {at} · sin tipo de cambio con fecha, no suma al total",
     "networth.investments.conv": "{usd} a {rate} por US$",
+    "networth.investments.overlap": "Si parte del ahorro en metas ya está en Inversiones, aquí se cuenta dos veces.",
+    "goals.investOverlap": "Si este dinero ya está en Inversiones, no lo cuentes también aquí: el patrimonio lo sumaría dos veces.",
     "invest.asset.label": "Ficha del activo",
     "mov.more": "Más opciones",
     "mov.more.detailed": "Gasto detallado",

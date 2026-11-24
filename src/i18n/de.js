@@ -3351,6 +3351,8 @@ export const de = {
     "networth.investments.note": "Wert vom {at} · ändert sich mit dem Markt",
     "networth.investments.noRate": "Stand {at} · kein datierter Wechselkurs, nicht in der Summe enthalten",
     "networth.investments.conv": "{usd} zu {rate} je US$",
+    "networth.investments.overlap": "Wenn ein Teil der Ersparnisse in Zielen schon in Investments liegt, wird er hier doppelt gezählt.",
+    "goals.investOverlap": "Wenn dieses Geld schon in Investments liegt, zählen Sie es hier nicht noch einmal: Das Nettovermögen würde es doppelt zählen.",
     "invest.asset.label": "Wertpapierseite",
     "mov.more": "Weitere Optionen",
     "mov.more.detailed": "Detaillierte Ausgabe",

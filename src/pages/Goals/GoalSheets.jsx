@@ -195,7 +195,7 @@ export function GoalFlowSheet({ flow, setFlow, onClose, onPickTemplate, onCreate
 }
 
 // ── Aporte desde una hoja (#43) ──────────────────────────────────────────────
-export function ContributionSheet({ goal, onClose, onConfirm, t, lang, fmt, currency, methods, lastPaymentMethod }) {
+export function ContributionSheet({ goal, onClose, onConfirm, t, lang, fmt, currency, methods, lastPaymentMethod, investOverlap = false }) {
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState(() => defaultMethod(goal, methods, lastPaymentMethod))
   const [busy, setBusy] = useState(false)
@@ -230,8 +230,16 @@ export function ContributionSheet({ goal, onClose, onConfirm, t, lang, fmt, curr
         <SheetSelect id="goal-add-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...input, padding: '8px 10px' }}>
           {methods.map(m => <option key={m} value={m}>{methodLabel(m, lang)}</option>)}
         </SheetSelect>
+        {/* I-17: con el portafolio sumado al patrimonio, lo que ya está invertido no se aparta aquí otra vez. */}
+        {investOverlap && <InvestOverlapNote t={t} style={{ margin: '12px 0 0' }} />}
         <button type="submit" className="fos-btn-primary" style={primaryFull} disabled={n <= 0 || busy}>{t('goals.r9.add.submit')}</button>
       </form>
     </Sheet>
   )
+}
+
+// I-17 (benchmark/05-coherencia-360): nota tranquila, sin color de alerta.
+// Se muestra cuando portfolioInNetWorth(inv) (utils/investNetWorth.js).
+export function InvestOverlapNote({ t, style }) {
+  return <p data-testid="goal-invest-overlap" style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', lineHeight: 1.5, margin: 0, ...style }}>{t('goals.investOverlap')}</p>
 }
