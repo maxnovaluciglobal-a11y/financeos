@@ -5,30 +5,25 @@
 // se reparte entre tus símbolos (a mano, parejo entre tus posiciones o hacia
 // tus objetivos sin vender) y "¿Cuánto podrías tener?" con un rendimiento
 // supuesto que eliges tú. Repartir el capital no es un indicador técnico.
-// Vista completa: además la escalera de compra sobre las medias de 20, 50,
-// 100 y 200 días con el RSI, como Invest (la esencial lo dice en una línea).
+// La escalera por tramos sobre las medias de 20, 50, 100 y 200 días vive solo
+// en Planificar › Oportunidades (decisión de Walter del 24-nov-2026): aquí, un
+// enlace "Repartir por tramos según tus medias →" en las dos vistas.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
-import { investApi } from '../../../core/investApi.js'
-import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
-import { runLimited } from '../../../utils/investHoy.js'
 import { num } from '../../../utils/investTrade.js'
 import { rebalanceBase } from '../../../utils/investRebalance.js'
 import {
-  CADENCES, DEFAULT_PROJ, LADDERS, addAlloc, allocByDrift, allocReady, allocSaveable, equalAlloc, ladderReading, ladderSplit,
+  CADENCES, DEFAULT_PROJ, addAlloc, allocByDrift, allocReady, allocSaveable, equalAlloc,
   amount as amountOf, pctSum, perContribution, projectContributions, splitAmount,
 } from '../../../utils/investPlan.js'
-import { shows } from '../../../utils/investView.js'
 import { rememberPortTab, tabKeyTarget } from '../../../utils/investNav.js'
-import { currencyOf } from '../../../utils/investValuation.js'
 import { moneyLocale } from '../../../utils/index.js'
 import { APORTE_EVENT, readAporte } from '../hoy/aporteStore.js'
 import s from './planificar.module.css'
 
 const readKey = (k) => { try { return localStorage.getItem(k) } catch { return null } }
 const safeStore = { setItem: (k, v) => { try { localStorage.setItem(k, v) } catch { /* modo privado: queda en el historial */ } } }
-const LADDER_KEYS = Object.keys(LADDERS)
 
 // Grupo de opciones con el patrón ARIA de radios: una sola parada de Tab (la
 // opción elegida) y las flechas, Inicio y Fin cambian la opción y el foco.
@@ -61,8 +56,7 @@ function Segs({ label, id, value, options, onChange }) {
   )
 }
 
-export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed, editing, onSavePlan, onDeposit, onTab, arriveUsd = null }) {
-  const full = shows(view, 'ladder')
+export default function Aportes({ pb, fmt, t, capital, targets, seed, editing, onSavePlan, onDeposit, onTab, onGoOpp = null, arriveUsd = null }) {
   const { m } = useMoney()
   const [monthly, setMonthly] = useState('')
   const [amountErr, setAmountErr] = useState(null)
@@ -71,13 +65,12 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
   const [alloc, setAlloc] = useState([])
   const [add, setAdd] = useState({ t: '', p: '', err: null })
   const [preset, setPreset] = useState(null) // mensaje del último "Partir de"
-  const [lad, setLad] = useState('even')
-  const [ladState, setLadState] = useState({ phase: 'idle', readings: {}, key: '' })
+  // La escalera de un plan guardado se conserva tal cual (ya no se elige aquí).
+  const [lad, setLad] = useState('half200')
   const [proj, setProj] = useState({ years: String(DEFAULT_PROJ.years), rate: String(DEFAULT_PROJ.rate), initial: '' })
   // El monto que trae "Repartir" de Resumen manda sobre el guardado (en el
   // ejemplo no se guarda: solo viaja así).
   const [monthAporte, setMonthAporte] = useState(() => arriveUsd || readAporte(readKey))
-  const run = useRef(0)
 
   // El aporte del mes que Resumen pasa a Planificar (hoy/aporteStore.js).
   useEffect(() => {
@@ -95,7 +88,7 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
     setMonthly(String(seed.m)); setSource(null); setCad(seed.cad); setLad(seed.lad)
     setAlloc(seed.alloc.map(a => ({ ...a })))
     setProj(p => ({ ...p, years: String(seed.yrs), rate: String(seed.rate) }))
-    setPreset(null); setLadState({ phase: 'idle', readings: {}, key: '' })
+    setPreset(null)
   }, [seed])
 
   const amount = amountOf(monthly)
@@ -130,21 +123,6 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
   const split = splitAmount(amount, cleanAlloc)
   const sum = pctSum(cleanAlloc)
   const pctTxt = (p) => `${Number(p).toLocaleString(moneyLocale(), { maximumFractionDigits: 1 })} %`
-  const ladRes = ladState.phase === 'ready' && ladState.key === cleanAlloc.map(a => a.t).join(',') ? ladderSplit(amount, cleanAlloc, ladState.readings, lad) : null
-
-  async function calcLadder() {
-    if (!split.ok) return
-    const my = ++run.current
-    const tickers = cleanAlloc.map(a => a.t)
-    setLadState({ phase: 'loading', readings: {}, key: tickers.join(',') })
-    const api = demo ? demoMarketApi : investApi
-    const rows = await runLimited(tickers.map(tk => async () => await api.history(tk, '1y', '1d')), 4, () => my === run.current)
-    if (my !== run.current) return
-    const readings = {}
-    tickers.forEach((tk, i) => { readings[tk] = rows[i] ? ladderReading(rows[i].map(r => r.close)) : null })
-    const allFailed = rows.every(r => r == null)
-    setLadState({ phase: allFailed ? 'error' : 'ready', readings, key: tickers.join(','), sample: rows.some(isSample) })
-  }
 
   const pr = projectContributions({ monthly: amount, years: num(proj.years), rate: num(proj.rate), initial: proj.initial === '' ? 0 : amountOf(proj.initial) })
   const prErr = !pr.ok ? Object.entries(pr.fields).find(([k]) => k !== 'monthly' || amount > 0 || monthly !== '') : null
@@ -155,11 +133,6 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
   const projBad = !pr.ok && (pr.fields.years || pr.fields.rate)
   const saveBlock = projBad ? 'proj' : !allocSaveable(cleanAlloc) ? 'alloc' : null
   const planInput = { m: amount, cad, lad, alloc: cleanAlloc, yrs: num(proj.years), rate: num(proj.rate) }
-  // La media móvil sale de los cierres: va en la moneda del activo, no en US$.
-  const smaTxt = (tk, v) => {
-    const c = currencyOf(tk, pb.market?.quotes?.[tk]?.currency)
-    return c ? fmt.native(v, c) : Number(v).toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })
-  }
 
   return (
     <>
@@ -250,62 +223,11 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
         )}
         {split.ok && saveBlock && <p id="plan-ap-save-block" className={s.error}>{t(`plan.ap.saveBlock.${saveBlock}`)}</p>}
         <p className={s.note}>{t('plan.ap.foot')}</p>
-        {!full && <p className={s.note}>{t('plan.ap.ladderHint')}</p>}
+        {onGoOpp
+          ? <button type="button" className={s.link} onClick={onGoOpp}>{t('plan.ap.ladderHint')}</button>
+          : <p className={s.note}>{t('plan.ap.ladderHint')}</p>}
       </section>
 
-      {full && (
-        <section className={s.card} aria-labelledby="plan-lad-title">
-          <h2 id="plan-lad-title" className={s.title}>{t('plan.lad.title')}</h2>
-          <p className={s.lead}>{t('plan.lad.intro')}</p>
-          <Segs label={t('plan.lad.label')} id="plan-lad-kind" value={lad} onChange={setLad}
-            options={LADDER_KEYS.map(k => ({ value: k, label: t(`plan.lad.${k}`) }))} />
-          <div className={s.row}>
-            <button type="button" className={s.btn} onClick={calcLadder} disabled={!split.ok || ladState.phase === 'loading'}>
-              {ladState.phase === 'loading' ? t('plan.lad.loading') : t('plan.lad.calc')}
-            </button>
-          </div>
-          <div aria-live="polite">
-            {ladState.phase === 'error' && <p className={s.error}>{t('plan.lad.error')}</p>}
-            {!ladRes && ladState.phase !== 'error' && ladState.phase !== 'loading' && split.ok && <p className={s.note}>{t('plan.lad.pending')}</p>}
-            {ladRes?.ok && (
-              <div className={s.tableWrap}>
-                <table className={s.table}>
-                  <thead>
-                    <tr>
-                      <th scope="col">{t('plan.ap.res.col.ticker')}</th>
-                      <th scope="col">{t('plan.ap.res.col.amount')}</th>
-                      <th scope="col">{t('plan.lad.rsi')}</th>
-                      {(LADDERS[lad] || LADDERS.even).map((w, i) => <th key={i} scope="col">{t('plan.lad.col', { n: [20, 50, 100, 200][i], w: pctTxt(w * 100) })}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ladRes.rows.map(r => (
-                      <tr key={r.t}>
-                        <th scope="row">{r.t}</th>
-                        <td><Money>{fmt.money(r.amount)}</Money></td>
-                        {r.noHistory ? <td colSpan={5} style={{ textAlign: 'left' }}>{t('plan.lad.noHistory')}</td> : (
-                          <>
-                            <td>{r.rsi != null ? Math.round(r.rsi) : '—'}</td>
-                            {r.tramos.map(tr => (
-                              <td key={tr.n} className={tr.below ? s.strong : undefined} title={tr.sma != null ? t('plan.lad.smaTip', { n: tr.n, v: m(smaTxt(r.t, tr.sma)) }) : undefined}>
-                                {tr.amount == null ? '—' : <><Money>{fmt.money(tr.amount)}</Money>{tr.below && <><span aria-hidden="true"> ·</span><span className={s.srOnly}> ({t('plan.lad.below')})</span></>}</>}
-                              </td>
-                            ))}
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot><tr><td>{t('plan.ap.res.total')}</td><td><Money>{fmt.money(ladRes.total)}</Money></td></tr></tfoot>
-                </table>
-              </div>
-            )}
-            {ladRes?.ok && ladRes.rows.some(r => r.reassigned) && <p className={s.note}>{t('plan.lad.reassigned')}</p>}
-            {ladRes?.ok && ladState.sample && <p className={s.note}>{t('plan.sampleData')}</p>}
-          </div>
-          <p className={s.note}>{t('plan.lad.foot')}</p>
-        </section>
-      )}
 
       <section className={s.card} aria-labelledby="plan-proj-title">
         <h2 id="plan-proj-title" className={s.title}>{t('plan.proj.title')}</h2>

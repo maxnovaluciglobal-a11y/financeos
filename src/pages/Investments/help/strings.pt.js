@@ -31,7 +31,7 @@ export default {
   'hlp.q.cash': 'O que é o caixa?',
   'hlp.a.cash': 'É o saldo dos depósitos, retiradas e operações que você registra em Carteira › Movimentos. Os depósitos o aumentam e as retiradas o diminuem; uma compra o diminui, e uma venda ou um dividendo o aumenta quando você escolhe passá-los pelo seu caixa.\n\n"Total aportado" são seus depósitos menos suas retiradas, mais as compras que você registrou fora do caixa. Não é o saldo do seu banco nem da sua corretora: é o que você registra aqui.',
   'hlp.q.tramos': 'Como funcionam os aportes em faixas?',
-  'hlp.a.tramos': 'Em Planejar › Aportes mensais você reparte seu aporte do mês entre seus símbolos. Para cada um, pode dividir a parte dele em faixas sobre as médias móveis de 20, 50, 100 e 200 dias: cada faixa é a parte do valor atribuída a uma média.\n\nUm ponto marca se o preço de hoje está nessa média ou abaixo dela. É uma forma organizada de escalonar aportes, não uma indicação de quando comprar.',
+  'hlp.a.tramos': 'Em Planejar › Suas faixas, «Distribuir meu capital» reparte um valor entre seus ativos e divide a parte de cada um em 4 faixas, uma por média móvel (20, 50, 100 e 200 dias). Por padrão, 10/15/25/50 %.\n\nUma faixa se cumpre hoje se o preço está na média ou abaixo dela e, com a condição de RSI ligada (padrão), se o RSI de 14 dias está entre 30 e 45. É um cálculo com as suas próprias regras, não uma recomendação de investimento.',
 
   'hlp.g.alerts': 'Alertas de preço',
   'hlp.q.alertsHow': 'Como funcionam os alertas?',

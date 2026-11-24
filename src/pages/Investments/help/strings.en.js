@@ -31,7 +31,7 @@ export default {
   'hlp.q.cash': 'What is cash?',
   'hlp.a.cash': 'It is the balance of the deposits, withdrawals and trades you record in Portfolio › Activity. Deposits raise it and withdrawals lower it; a purchase lowers it, and a sale or a dividend raises it when you choose to run it through your cash.\n\n"Total contributed" is your deposits minus your withdrawals, plus the purchases you recorded outside your cash. It is not the balance at your bank or your broker: it is what you record here.',
   'hlp.q.tramos': 'How do tiered contributions work?',
-  'hlp.a.tramos': 'In Plan › Contributions you split your monthly contribution among your symbols. For each one you can divide its share into tiers on its 20, 50, 100 and 200-day moving averages: each tier is the part of the amount assigned to one average.\n\nA dot marks whether today\'s price is at or below that average. It is an orderly way to stagger contributions, not a signal of when to buy.',
+  'hlp.a.tramos': 'In Plan › Your tranches, “Split my capital” splits an amount across your assets and divides each share into 4 tranches, one per moving average (20, 50, 100 and 200 days). By default, 10/15/25/50 %.\n\nA tranche is met today if the price is at or below its average and, with the RSI condition on (the default), if the 14-day RSI is between 30 and 45. It is a calculation with your own rules, not an investment recommendation.',
 
   'hlp.g.alerts': 'Price alerts',
   'hlp.q.alertsHow': 'How do alerts work?',

@@ -1,0 +1,61 @@
+/* Planificar › Oportunidades (Inversiones v2). Misma familia que Planificar:
+   tarjetas de 18 px, campos de 44 px, cifras tabulares. El estado de cada
+   tramo va con ícono + palabra (nunca solo color). */
+.edu { display: flex; gap: 6px; align-items: flex-start; margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--fill); font-size: var(--t-footnote); line-height: 1.5; color: var(--tx); }
+.edu svg { flex: 0 0 auto; margin-top: 3px; }
+
+.group { display: flex; flex-direction: column; gap: 8px; }
+.groupTitle { margin: 4px 0 0; font-size: var(--t-footnote); font-weight: 600; color: var(--th); }
+.assets { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
+.asset { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 0.5px solid var(--brd); }
+.asset:first-child { border-top: 0; padding-top: 4px; }
+.assetHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.ticker { padding: 0; border: 0; background: none; font: inherit; font-size: var(--t-callout); font-weight: 700; color: var(--tx); cursor: pointer; min-height: 32px; }
+button.ticker { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+button.ticker:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 4px; }
+span.ticker { cursor: default; min-height: 0; }
+.name { font-size: var(--t-footnote); color: var(--th); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+.price { margin-left: auto; font-size: var(--t-footnote); color: var(--tm); font-variant-numeric: tabular-nums; }
+.sig { margin: 0; font-size: var(--t-subhead); line-height: 1.45; color: var(--tx); }
+.sigHead { font-weight: 600; }
+.sigTail { color: var(--tm); }
+
+/* Escalera: 4 celdas, una por media */
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.cell { display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 12px; background: var(--fill); border: 1px solid transparent; min-width: 0; }
+.cellTop { display: inline-flex; align-items: center; gap: 4px; font-size: var(--t-footnote); font-weight: 600; color: var(--tm); }
+.cellDist { font-size: var(--t-caption, 12px); color: var(--th); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell[data-st="hit"] { background: color-mix(in srgb, var(--color-accent) 14%, var(--sur)); border-color: var(--color-accent); }
+.cell[data-st="hit"] .cellTop, .cell[data-st="hit"] .cellDist { color: var(--tx); }
+.cell[data-st="none"] { opacity: .7; border-style: dashed; border-color: var(--brd); background: transparent; }
+
+.how { font-size: var(--t-footnote); color: var(--tm); }
+.how summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--tx); }
+.how summary:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 6px; }
+.how > p, .how > div { margin: 0 0 8px; }
+
+.segSub { font-weight: 400; opacity: .8; font-variant-numeric: tabular-nums; }
+.check { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; font-size: var(--t-footnote); line-height: 1.5; color: var(--tx); cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--color-accent); }
+
+/* Resultado */
+.result { display: flex; flex-direction: column; gap: 12px; }
+.statBig { font-family: var(--display); font-size: clamp(20px, 5.5vw, 26px); }
+.num { font-variant-numeric: tabular-nums; }
+.plan { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.planRow { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 14px; border: 0.5px solid var(--brd); }
+.planHead { display: flex; align-items: baseline; gap: 10px; margin: 0; font-size: var(--t-subhead); color: var(--tm); }
+.planHead .num { margin-left: auto; font-weight: 700; color: var(--tx); }
+.tramos { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.tramo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 0; border-top: 0.5px solid var(--brd); font-size: var(--t-footnote); }
+.tramoName { color: var(--tx); }
+.tramo .num { text-align: right; font-weight: 600; color: var(--tx); }
+.tramoState { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 4px; color: var(--th); }
+.tramo[data-st="today"] .tramoState { color: var(--tx); font-weight: 600; }
+.math { display: flex; flex-direction: column; gap: 6px; }
+.mathList { margin: 0 0 4px; padding-left: 18px; font-size: var(--t-footnote); line-height: 1.55; color: var(--tm); font-variant-numeric: tabular-nums; }
+
+@media (min-width: 760px) {
+  .tramo { grid-template-columns: minmax(0, 1.2fr) 120px minmax(0, 1.4fr); }
+  .tramoState { grid-column: auto; }
+}

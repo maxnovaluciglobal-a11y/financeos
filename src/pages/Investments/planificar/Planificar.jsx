@@ -12,7 +12,7 @@
 // mensual y el reparto de tu capital disponible; stop, R, límite por posición
 // y la escalera de medias móviles, solo en Vista completa. "Repartir" en
 // Resumen abre Aportes con el monto (investNav.queuePlanAporte).
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useApp } from '../../../context/AppContext.jsx'
 import { makeFmt } from '../portfolio/format.js'
 import { TradeSheet } from '../portfolio/sheets.jsx'
@@ -28,8 +28,12 @@ import Aportes from './Aportes.jsx'
 import Plans, { planLabel } from './Plans.jsx'
 import { usePlanT } from './dict.js'
 import s from './planificar.module.css'
+import { takeOppQueue } from '../oportunidades/queue.js'
 
-export const PLAN_SUBS = ['calc', 'aportes', 'planes']
+// Oportunidades (Inversiones v2): su propio chunk, con sus textos.
+const Oportunidades = lazy(() => import('../oportunidades/Oportunidades.jsx'))
+
+export const PLAN_SUBS = ['calc', 'oportunidades', 'aportes', 'planes']
 const USD = { ccy: 'USD', rate: 1, fallback: false, missing: false }
 
 export function RuleCard({ t, fmt, rule, capital, view, demo, onSaveRule, onSaveCapital }) {
@@ -117,7 +121,7 @@ export function RuleCard({ t, fmt, rule, capital, view, demo, onSaveRule, onSave
   )
 }
 
-export default function Planificar({ demo = false, view, onTab }) {
+export default function Planificar({ demo = false, view, onTab, onOpen }) {
   const { t, ready } = usePlanT()
   const { t: tp } = usePT()
   const app = useApp() || {}
@@ -127,7 +131,8 @@ export default function Planificar({ demo = false, view, onTab }) {
   const pb = usePortfolioBook({ demo })
   const fmt = useMemo(() => makeFmt({ disp: USD, currency: settings.currency, language: settings.language }), [settings.currency, settings.language])
   const [targets] = useTargets()
-  const [arrival] = useState(takePlanQueue)
+  // Lo pedido desde Resumen: Oportunidades (queue.js) o Aportes (investNav).
+  const [arrival] = useState(() => { const o = takeOppQueue(); const a = takePlanQueue(); return o || a })
   const [sub, setSub] = useState(() => arrival?.sub || 'calc')
   const refs = useRef({})
   const [rule, setRule] = useState(pb.rule)
@@ -279,17 +284,23 @@ export default function Planificar({ demo = false, view, onTab }) {
       </div>
 
       <div role="tabpanel" id={`plan-panel-${sub}`} aria-labelledby={`plan-sub-${sub}`} className={s.wrap}>
-        {sub !== 'planes' && <RuleCard t={t} fmt={fmt} rule={rule} capital={pb.capital} view={view} demo={demo} onSaveRule={saveRule} onSaveCapital={saveCapital} />}
-        {editing && sub !== 'planes' && (
+        {sub !== 'planes' && sub !== 'oportunidades' && <RuleCard t={t} fmt={fmt} rule={rule} capital={pb.capital} view={view} demo={demo} onSaveRule={saveRule} onSaveCapital={saveCapital} />}
+        {editing && sub !== 'planes' && sub !== 'oportunidades' && (
           <div className={s.row}><button type="button" className={s.link} onClick={() => setEditing(null)}>{t('plan.pl.stopEditing')}</button></div>
         )}
         {sub === 'calc' && (
           <Calculator {...common} rule={rule} capital={pb.capital} seed={calcSeed} editing={editing?.k === 'trade' ? editing : null}
             onSavePlan={saveTradePlan} onAddToPortfolio={(prefill) => setTrade(prefill)} />
         )}
+        {sub === 'oportunidades' && (
+          <Suspense fallback={<p className={s.note} role="status">{t('plan.loading')}</p>}>
+            <Oportunidades pb={pb} fmt={fmt} demo={demo} capital={pb.capital} targets={targets} arriveUsd={arrival?.sub === 'oportunidades' ? arrival.usd : null}
+              focus={arrival?.sub === 'oportunidades' ? arrival.focus : null} onTab={onTab} onOpen={onOpen} onDeposit={(prefill) => setTrade(prefill)} />
+          </Suspense>
+        )}
         {sub === 'aportes' && (
           <Aportes {...common} capital={pb.capital} targets={targets} seed={apSeed} editing={editing?.k === 'aporte' ? editing : null}
-            onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} arriveUsd={arrival?.usd || null} />
+            onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} onGoOpp={() => go('oportunidades')} arriveUsd={arrival?.sub === 'aportes' ? arrival.usd || null : null} />
         )}
         {sub === 'planes' && (
           <Plans plans={plans} fmt={fmt} t={t} demo={demo} rates={pb.rates.rates}
