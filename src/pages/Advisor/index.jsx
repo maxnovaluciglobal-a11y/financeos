@@ -10,7 +10,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtSignedMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints, localDateStr } from '../../utils/index.js'
+import { prioLabel, fmtMoney, fmtSignedMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints, localDateStr } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -21,6 +21,7 @@ import config from '../../config.js'
 import { useNetWorth } from '../../hooks/useNetWorth.js'
 import { useIqScore } from '../../hooks/useIqScore.js'
 import { monthSavingRate } from '../../utils/monthLeft.js'
+import { upcomingFromRules } from '../Dashboard/dashboardModel.js'
 import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { monthDebtLoad, personalDebts } from '../../utils/personal.js'
@@ -30,6 +31,13 @@ import { COACH_CONFIG } from '../../data/coachRules.js'
 import { findEmergencyGoal } from '../../utils/emergencyGoal.js'
 import { monthLabel } from '../shared/constants.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+
+// M4 (QA): fechas como en Deudas ("Dec 12, 2026"), no en ISO.
+function fmtDayMonthYear(iso) {
+  const [y, m, d] = String(iso || '').slice(0, 10).split('-').map(Number)
+  if (!y || !m || !d) return ''
+  try { return new Date(y, m - 1, d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return String(iso) }
+}
 
 // ── SEMÁFORO — reglas de cálculo ─────────────────────────────────────────────
 // Verde:    condición saludable
@@ -113,13 +121,16 @@ function calcAlerts(metrics, t) {
   if (deseosRatio > 0.35 && metrics.mIncome > 0)
     alerts.push({ type: 'warn', text: t('adv.alert.wants', { pct: fmtPct(deseosRatio) }) })
 
-  const urgentDebts = metrics.debts.filter(d => {
-    if (!d.dueDate) return false
-    const days = (new Date(d.dueDate) - new Date()) / (1000 * 60 * 60 * 24)
-    return days >= 0 && days <= 10
-  })
-  if (urgentDebts.length > 0)
-    alerts.push({ type: 'warn', text: t('adv.alert.dueSoon', { n: urgentDebts.length, names: urgentDebts.map(d => d.creditor).join(', ') }) })
+  // M5 (QA): las cuotas salen del plan de fijos (las mismas de "Próximos
+  // pagos" del Inicio), no de la fecha guardada en la deuda: así entran la
+  // tarjeta que vence este mes y la cuota del auto ya vencida.
+  const dueList = metrics.debtDue || []
+  const overdue = dueList.filter(i => i.overdue)
+  const soon = dueList.filter(i => !i.overdue)
+  if (overdue.length > 0)
+    alerts.push({ type: 'danger', text: t('adv.alert.overdue', { n: overdue.length, names: overdue.map(i => i.name).join(', ') }) })
+  if (soon.length > 0)
+    alerts.push({ type: 'warn', text: t('adv.alert.dueSoon', { n: soon.length, names: soon.map(i => i.name).join(', ') }) })
 
   const emergencyGoal = findEmergencyGoal(metrics.goals)
   if (!emergencyGoal)
@@ -394,9 +405,11 @@ export default function Advisor() {
   const goalsProgress = goals.map(g => ({ ...g, pct: g.target > 0 ? g.saved / g.target : 0 }))
   const avgGoalPct = goalsProgress.length > 0 ? goalsProgress.reduce((s, g) => s + g.pct, 0) / goalsProgress.length : 0
 
+  const debtDue = useMemo(() => upcomingFromRules(rules || [], { incomes: _incAll || [], expenses: _expAll || [], today: localDateStr(), days: 10, limit: Infinity, includeOverdue: true })
+    .items.filter(i => i.kind === 'debt'), [rules, _incAll, _expAll])
   const metrics = useMemo(
-    () => ({ savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym }),
-    [savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym],
+    () => ({ savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym, debtDue }),
+    [savingRate, mIncome, mExpense, mBalance, totalDebt, debtRatio, goals, budgets, overBudgetCount, monthExpenses, debts, sym, debtDue],
   )
   const signals = useMemo(() => calcTrafficLight(metrics, t), [metrics, t])
   const alerts  = useMemo(() => calcAlerts(metrics, t),       [metrics, t])
@@ -425,19 +438,17 @@ export default function Advisor() {
   return (
     <ProGate featureKey="nav.advisorMode">
     <div className="stack">
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-        {/* Encabezado único (UI-M8); la etiqueta "Vista profesional" va en tipo
-            oración y en Inter (UI-Q6), no en mayúsculas. */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <PageHeader title={t('adv.title')} sub={t('adv.sub', { month: monthLabel(activeMonth) })} />
-          <span style={{
-            display: 'inline-block', marginTop: -10, fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600,
-            background: 'var(--grn-bg)', color: 'var(--grn)', padding: '2px 8px', borderRadius: 'var(--rs)',
-          }}>
-            {t('adv.badge')}
-          </span>
-        </div>
+      {/* Header: el título (escena morada en el teléfono) va primero y solo;
+          la etiqueta y el mes, debajo. Dentro de un flex con el selector, la
+          escena quedaba a media pantalla y tapaba el "‹ Más" (QA I10). */}
+      <PageHeader title={t('adv.title')} sub={t('adv.sub', { month: monthLabel(activeMonth) })} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <span style={{
+          display: 'inline-block', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', fontWeight: 600,
+          background: 'var(--grn-bg)', color: 'var(--grn)', padding: '2px 8px', borderRadius: 'var(--rs)',
+        }}>
+          {t('adv.badge')}
+        </span>
         <SheetSelect
           aria-label={t('common.month')}
           value={activeMonth}
@@ -570,7 +581,7 @@ export default function Advisor() {
                         <div style={{ height: '100%', width: `${Math.min(pct * 100, 100)}%`, background: 'var(--grn)', borderRadius: 2 }} />
                       </div>
                       <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 3 }}>
-                        {t('adv.debts.paidDue', { pct: fmtPct(pct), d: d.dueDate || '—' })}
+                        {t('adv.debts.paidDue', { pct: fmtPct(pct), d: fmtDayMonthYear(d.dueDate) || '—' })}
                       </div>
                     </div>
                   )
@@ -598,7 +609,7 @@ export default function Advisor() {
                         <div style={{ height: '100%', width: `${pct * 100}%`, background: goalDisplayColor(g.color, isDark) || 'var(--grn)', borderRadius: 3 }} />
                       </div>
                       <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
-                        {t('adv.goals.line', { pct: fmtPct(pct), d: g.targetDate || '—', p: g.priority || '—' })}
+                        {t('adv.goals.line', { pct: fmtPct(pct), d: fmtDayMonthYear(g.targetDate) || '—', p: g.priority ? prioLabel(g.priority, lang) : '—' })}
                       </div>
                     </div>
                   )
