@@ -12,7 +12,10 @@ import { investStringsReady, loadInvestStrings } from './investStrings.js'
 // Fuera de pages/Investments, pero solo se pintan dentro de la sección.
 // InvestCard (Panorama) hoy no se monta en ningún lado: si vuelve a Panorama,
 // el test de importaciones lo marca y sus claves tienen que volver a es.js.
-const ONLY_INVEST = ['utils/investMarket.js', 'demo/demoMarket.js', 'demo/demoMarketApi.js', 'components/charts/CandleChart.jsx', 'pages/Panorama/InvestCard.jsx']
+// demo/demoInvestSnapshot.js: lo carga con import() dinámico el hook del
+// patrimonio (useInvestPortfolio) y no pinta textos; usa demoMarketApi solo
+// para cotizaciones y tipos de cambio.
+const ONLY_INVEST = ['demo/demoInvestSnapshot.js', 'utils/investMarket.js', 'demo/demoMarket.js', 'demo/demoMarketApi.js', 'components/charts/CandleChart.jsx', 'pages/Panorama/InvestCard.jsx']
 const SRC = fileURLToPath(new URL('../../..', import.meta.url))
 function walk(dir, out = []) {
   for (const f of readdirSync(dir)) {
