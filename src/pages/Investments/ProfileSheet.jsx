@@ -7,9 +7,11 @@ import { useT } from '../../i18n/useT.js'
 import { answersComplete, PROFILE_QUESTIONS } from '../../utils/investProfile.js'
 import s from './investments.module.css'
 
-export default function ProfileSheet({ open, onClose, onSave }) {
+// initial: respuestas de antes (editar desde Ajustes › Inversiones, F7);
+// saveLabel: texto del botón (por defecto "Activar Inversiones").
+export default function ProfileSheet({ open, onClose, onSave, initial = null, saveLabel = null }) {
   const { t } = useT()
-  const [answers, setAnswers] = useState({})
+  const [answers, setAnswers] = useState(() => (initial && typeof initial === 'object' ? { ...initial } : {}))
   const [ack, setAck] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -53,7 +55,7 @@ export default function ProfileSheet({ open, onClose, onSave }) {
         </label>
         {error && <p className={s.formError} role="alert">{error}</p>}
         <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={saving} aria-disabled={!ready}>
-          {saving ? t('invest.profile.saving') : t('invest.profile.save')}
+          {saving ? t('invest.profile.saving') : saveLabel || t('invest.profile.save')}
         </button>
       </form>
     </Sheet>

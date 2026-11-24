@@ -11,7 +11,7 @@ import { normalize } from '../../components/ui/listboxKeys.js'
 
 // Secciones de la raíz, en orden. Cada una agrupa filas (ids de SETTINGS_GROUPS).
 export const SETTINGS_SECTIONS = [
-  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'features', 'autoEntry'] },
+  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'features', 'investments', 'autoEntry'] },
   { id: 'dataSec', title: 'settings.section.dataSec', groups: ['data', 'security', 'notifications'] },
   { id: 'more',    title: 'settings.section.more',    groups: ['plan', 'advanced', 'danger'] },
 ]
@@ -43,6 +43,16 @@ export const SETTINGS_GROUPS = [
     { id: 'properties', label: 'settings.features.properties' },
     { id: 'advisor',    label: 'settings.features.advisor' },
     { id: 'investments', label: 'settings.features.investments' },
+  ] },
+  // Inversiones (F7, 23-nov-2026): solo con el módulo encendido (index.jsx).
+  // La pantalla es diferida (InvestScreen.jsx → Investments/settings).
+  { id: 'investments', items: [
+    { id: 'invProfile', label: 'settings.inv.profile' },
+    { id: 'invRule',    label: 'settings.inv.rule' },
+    { id: 'invAlerts',  label: 'settings.inv.alerts', kw: 'settings.inv.alerts.kw' },
+    { id: 'invData',    label: 'settings.inv.data', kw: 'settings.inv.data.kw' },
+    { id: 'invDelete',  label: 'settings.inv.erase' },
+    { id: 'invHelp',    label: 'settings.inv.help' },
   ] },
   // Gastos que se registran solos (19-nov-2026, uiFlags.registroAutomatico).
   { id: 'autoEntry', items: [

@@ -298,7 +298,7 @@ function Inner() {
       case 'networth':      return <NetWorth />
       case 'cashflow':      return <CashFlow setPage={setPage}/>
       case 'reports':       return <Reports setPage={setPage}/>
-      case 'settings':      return <Settings />
+      case 'settings':      return <Settings setPage={setPage} />
       case 'privacy':       return <Privacy />
       case 'terms':         return <Terms />
       case 'license':       return <License />

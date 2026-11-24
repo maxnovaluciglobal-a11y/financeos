@@ -95,6 +95,10 @@ describe('Ayuda de Inversiones: pantalla', () => {
     const html = renderToStaticMarkup(h(HelpBody, { t: tFor(en) }))
     expect(html).not.toMatch(/Inversiones|Cerrar|¿/)
   })
+  it('el correo de soporte es el mismo en la ayuda y en Ajustes › Inversiones', async () => {
+    const { SUPPORT_EMAIL } = await import('../settings/model.js')
+    expect(HELP_EMAIL).toBe(SUPPORT_EMAIL)
+  })
   it('se carga con lazy() desde el hub (no viaja en el chunk de Inversiones)', () => {
     const hub = read('../hub/InvestHub.jsx')
     expect(hub).toMatch(/lazy\(\(\) => import\('\.\.\/help\/InvestHelp\.jsx'\)\)/)

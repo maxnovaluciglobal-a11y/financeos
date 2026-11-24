@@ -19,8 +19,8 @@ const tEs = tFor(es)
 const tEn = tFor(en)
 
 describe('Ajustes: grupos (R10)', () => {
-  it('las 11 filas (10 de R10 + Funciones de la poda P3), en orden, y cada una en una sola sección', () => {
-    expect(GROUP_IDS).toEqual(['profile', 'currency', 'appearance', 'templates', 'features', 'autoEntry', 'data', 'security', 'notifications', 'plan', 'advanced', 'danger'])
+  it('las filas (10 de R10 + Funciones de la poda P3 + Inversiones de F7), en orden, y cada una en una sola sección', () => {
+    expect(GROUP_IDS).toEqual(['profile', 'currency', 'appearance', 'templates', 'features', 'investments', 'autoEntry', 'data', 'security', 'notifications', 'plan', 'advanced', 'danger'])
     const inSections = SETTINGS_SECTIONS.flatMap(s => s.groups)
     expect(inSections).toEqual(GROUP_IDS)
   })
@@ -34,7 +34,8 @@ describe('Ajustes: grupos (R10)', () => {
   })
 
   it('cada ajuste de adentro tiene su data-setting en la subpantalla', () => {
-    const all = readdirSync(here).filter(f => f.endsWith('.jsx')).map(src).join('\n')
+    // Ajustes › Inversiones vive en el chunk de Inversiones (InvestScreen.jsx la monta con lazy()).
+    const all = [...readdirSync(here).filter(f => f.endsWith('.jsx')).map(src), src('../Investments/settings/InvestSettings.jsx')].join('\n')
     for (const g of SETTINGS_GROUPS) for (const it of g.items) {
       expect(all.includes(`id="${it.id}"`) || all.includes(`data-setting="${it.id}"`), `${g.id}.${it.id}`).toBe(true)
     }
@@ -91,7 +92,9 @@ describe('searchSettings', () => {
     const r = searchSettings('oscuro', tEs)
     expect(r.some(x => x.groupId === 'appearance')).toBe(true)
     const csv = searchSettings('csv', tEs)
-    expect(csv.find(x => x.kind === 'item')).toMatchObject({ groupId: 'data', itemId: 'csv' })
+    expect(csv.find(x => x.kind === 'item' && x.groupId === 'data')).toMatchObject({ groupId: 'data', itemId: 'csv' })
+    // F7: también exportar de Inversiones (la fila se oculta en index.jsx si el módulo está apagado).
+    expect(csv.some(x => x.kind === 'item' && x.groupId === 'investments' && x.itemId === 'invData')).toBe(true)
     const dual = searchSettings('equivalente usd', tEs)
     expect(dual.some(x => x.kind === 'item' && x.itemId === 'dual')).toBe(true)
   })
@@ -140,5 +143,21 @@ describe('abrir una subpantalla desde otra página', () => {
     expect(takePendingSub(st)).toBeNull()
     requestSettingsSub('nada', st)
     expect(takePendingSub(st)).toBeNull()
+  })
+})
+
+describe('Ajustes › Inversiones (F7)', () => {
+  it('la fila y su búsqueda solo se muestran con el módulo encendido (o en el demo)', () => {
+    const root = src('index.jsx')
+    expect(root).toMatch(/investOn \|\| id !== 'investments'/)
+    expect(root).toMatch(/moduleOn\(appSettings \|\| \{\}, 'investments'\)/)
+    const off = SETTINGS_GROUPS.filter(g => g.id !== 'investments')
+    expect(searchSettings('eliminar mis datos de inversiones', tEs, off)).toEqual([])
+    expect(searchSettings('eliminar mis datos de inversiones', tEs).some(r => r.itemId === 'invDelete')).toBe(true)
+  })
+  it('la pantalla se carga con lazy() (no viaja en el chunk de Ajustes)', () => {
+    const screen = src('InvestScreen.jsx')
+    expect(screen).toMatch(/lazy\(\(\) => import\('\.\.\/Investments\/settings\/InvestSettings\.jsx'\)\)/)
+    expect(src('index.jsx')).not.toMatch(/from '\.\.\/Investments\//)
   })
 })

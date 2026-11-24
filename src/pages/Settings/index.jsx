@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   UserRound, Coins, Palette, LayoutTemplate, DatabaseBackup, ShieldCheck, Bell,
-  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles, Zap } from 'lucide-react'
+  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles, Zap, ChartLine } from 'lucide-react'
 import { PageHeader } from '../../components/ui/index.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
@@ -17,8 +17,11 @@ import ProfileScreen from './ProfileScreen.jsx'
 import CurrencyScreen from './CurrencyScreen.jsx'
 import AppearanceScreen from './AppearanceScreen.jsx'
 import FeaturesScreen from './FeaturesScreen.jsx'
+import InvestScreen from './InvestScreen.jsx'
 import AutoEntryScreen from './AutoEntryScreen.jsx'
 import { registroAutomaticoHere } from '../../utils/uiFlags.js'
+import { moduleOn } from '../../utils/modules.js'
+import { useApp } from '../../context/AppContext.jsx'
 import DataScreen from './DataScreen.jsx'
 import NotificationsScreen from './NotificationsScreen.jsx'
 import PlanScreen from './PlanScreen.jsx'
@@ -38,7 +41,7 @@ import { useT } from '../../i18n/useT.js'
 import { helpUrl } from '../../utils/landingUrls.js'
 
 const ICONS = {
-  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles, autoEntry: Zap,
+  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles, investments: ChartLine, autoEntry: Zap,
   data: DatabaseBackup, security: ShieldCheck, notifications: Bell, plan: CreditCard,
   advanced: SlidersHorizontal, danger: TriangleAlert,
 }
@@ -46,8 +49,11 @@ const ICONS = {
 const scrollRoot = () => document.querySelector('[data-scroll-root]')
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-export default function Settings() {
+// setPage: el go de usePageStack (App.jsx); Ajustes › Inversiones lo usa para
+// llevar a Planificar, Siguiendo › Alertas, Portafolio o Privacidad.
+export default function Settings({ setPage } = {}) {
   const { t, lang } = useT()
+  const { settings: appSettings } = useApp() || {}
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
   const [autoOpenDelete] = useState(() => typeof window !== 'undefined' && wantsDeleteAccount(initialSearch(window.location.search)))
   // Subpantalla abierta: la de history.state (recarga, o volver desde otra
@@ -136,6 +142,15 @@ export default function Settings() {
     return () => announceSubBack(null)
   }, [sub])
 
+  // De una subpantalla a otra (Inversiones apagado → Funciones): reemplaza la
+  // entrada del historial, así "atrás" sigue volviendo a la raíz de Ajustes.
+  function switchSub(id) {
+    if (!groupById(id)) return
+    try { history.replaceState(withSub(history.state, id), '') } catch { /* history no disponible */ }
+    setSub(id)
+    setFocusItem(null)
+  }
+
   function closeSub() {
     if (subFromState(history.state)) { history.back(); return }
     setSub(null)
@@ -186,6 +201,7 @@ export default function Settings() {
           {sub === 'currency'      && <CurrencyScreen />}
           {sub === 'appearance'    && <AppearanceScreen />}
           {sub === 'features'      && <FeaturesScreen />}
+          {sub === 'investments'   && <InvestScreen setPage={setPage} isDemo={isDemo} onOpenFeatures={() => switchSub('features')} />}
           {sub === 'autoEntry'     && <AutoEntryScreen />}
           {sub === 'templates'     && (
             <Setting id="templates" style={{ paddingTop: 10 }}>
@@ -208,7 +224,9 @@ export default function Settings() {
 
   // Registro automático apagado (uiFlags): sin fila ni resultados de búsqueda.
   const autoOn = registroAutomaticoHere()
-  const visibleGroup = (id) => autoOn || id !== 'autoEntry'
+  // Inversiones (F7): fila y búsqueda solo con el módulo encendido (o en el demo).
+  const investOn = moduleOn(appSettings || {}, 'investments') || !!appSettings?.isDemo
+  const visibleGroup = (id) => (autoOn || id !== 'autoEntry') && (investOn || id !== 'investments')
   const results = searchSettings(query, t, SETTINGS_GROUPS.filter(g => visibleGroup(g.id)))
   const showUpgradeHint = !isDemo && getLicensePlan() !== 'pro'
 

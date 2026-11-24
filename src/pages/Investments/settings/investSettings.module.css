@@ -1,0 +1,55 @@
+/* Ajustes › Inversiones (F7). Mismo ritmo que las demás subpantallas de
+   Ajustes (settingsUi.jsx): bloques separados por una línea, textos ≥ 13 px,
+   botones de 44 px como mínimo y foco visible. */
+.wrap { display: flex; flex-direction: column; }
+.block { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-bottom: 0.5px solid var(--brd); }
+.block:last-of-type { border-bottom: none; }
+.blockTitle { margin: 0; font-size: var(--t-headline); line-height: var(--t-headline-lh); font-weight: 600; color: var(--tx); }
+.blockTitle[data-tone="danger"] { color: var(--red); }
+.note { margin: 0; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--th); }
+.note:empty { display: none; }
+.notice {
+  margin: 8px 0 4px; padding: 10px 12px; border-radius: var(--r); background: var(--fill);
+  font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tx);
+}
+.warn {
+  margin: 0; padding: 10px 12px; border-radius: var(--r); background: var(--warn-bg);
+  font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--warn); font-weight: 600;
+}
+.error { margin: 0; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--neg); }
+.ok { margin: 0; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--pos); }
+.facts { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.fact { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.fact dt { font-size: var(--t-subhead); color: var(--th); }
+.fact dd { margin: 0; font-size: var(--t-subhead); color: var(--tx); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px;
+  border: 0.5px solid var(--brd2); border-radius: var(--r); background: var(--sur2); color: var(--tx);
+  font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
+}
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn:focus-visible, .btnLink:focus-visible, .input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.btnPrimary { border-color: transparent; background: var(--btn-primary-bg, var(--tx)); color: var(--btn-primary-fg, var(--bg)); }
+.btnDanger { color: var(--red); border-color: var(--red); background: transparent; }
+.btnDangerSolid { border-color: transparent; background: var(--btn-danger-bg); color: var(--btn-danger-fg); }
+.btnLink {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; border: 0; background: none;
+  color: var(--blu); font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.foot { margin: 14px 0 0; font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--th); }
+
+/* Hoja de confirmación del borrado */
+.sheet { display: flex; flex-direction: column; gap: 10px; }
+.sheetTitle { margin: 0; font-family: var(--display); font-size: var(--t-title-2); line-height: var(--t-title-2-lh); font-weight: 700; color: var(--tx); }
+.list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tx); }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.fieldLabel { font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+.input {
+  min-height: 44px; padding: 10px 12px; border: 1px solid var(--field-brd, var(--brd2)); border-radius: var(--r);
+  background: var(--sur); color: var(--tx); font: inherit; font-size: var(--t-callout); letter-spacing: .04em;
+}
+.input[aria-invalid="true"] { border-color: var(--neg); }
+.result { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--r); background: var(--neg-bg); color: var(--tx); }
+.result p { margin: 0; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); }
