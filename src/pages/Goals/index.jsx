@@ -20,12 +20,13 @@ import { goalStatuses, paceBudget } from './goalStatus.js'
 import { generateGoalSuggestions, totalMonthlyContribution } from '../../utils/goalSuggestions.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { monthLeft } from '../../utils/monthLeft.js'
+import { monthPlan } from '../../utils/recurring.js'
 import { isEmergencyGoalName } from '../../utils/emergencyGoal.js'
 import Money, { useMoney } from '../../components/Money.jsx'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
 export default function Goals() {
-  const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, setAsides, addSetAside, delSetAside, settings, deleteWithUndo, showToast } = useApp()
+  const { goals, addGoal, delGoal, updateGoal, incomes: _incAll, expenses: _expAll, setAsides, addSetAside, delSetAside, settings, deleteWithUndo, showToast, recurring } = useApp()
   const { t, lang } = useT()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // "disponible para ahorrar" personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
@@ -51,7 +52,12 @@ export default function Goals() {
 
   // "Te queda este mes": la misma cuenta que el Inicio (utils/monthLeft.js, F-1).
   // Antes Metas sumaba por su cuenta ("Disponible este mes para ahorrar", I-16).
-  const month = useMemo(() => monthLeft({ incomes, expenses, setAsides, month: activeMonth }), [incomes, expenses, setAsides, activeMonth])
+  // UX-N2: también descuenta los gastos fijos que faltan; el plan se arma igual
+  // que en el Inicio (useHomeData), con las listas completas.
+  const todayIso = localDateStr()
+  const plan = useMemo(() => monthPlan(Array.isArray(recurring) ? recurring : [], activeMonth, { incomes: _incAll || [], expenses: _expAll || [], today: todayIso }),
+    [recurring, activeMonth, _incAll, _expAll, todayIso])
+  const month = useMemo(() => monthLeft({ incomes, expenses, setAsides, month: activeMonth, plan, today: todayIso }), [incomes, expenses, setAsides, activeMonth, plan, todayIso])
   const ingresoNetoGoals = month.income
   const gastoMensualGoals = month.spent
   const leftThisMonth = month.left
@@ -313,6 +319,7 @@ export default function Goals() {
             <span style={{ fontSize:'var(--t-footnote)', color: neg ? 'var(--red)' : 'var(--th)', width:'100%' }}>
               {t(availableMessageKey(month))}
               {month.setAsideGoals > 0 && <> {t('goals.available.setAside', { v: fmtMoney(month.setAsideGoals, sym) })}</>}
+              {month.pendingFixed > 0 && <> {t('home.kpi.pendingFixed', { v: fmtMoney(month.pendingFixed, sym) })}.</>}
             </span>
           </div>
         )

@@ -1,11 +1,12 @@
 // src/pages/Dashboard/HeroDetailSheet.jsx — todo lo que dejó la tarjeta "Te queda"
 // al pasar de 12 a 5 elementos (causa 9, 31-oct-2026): a un toque, nada perdido.
-// La variación contra el mes anterior, el ritmo, "Previsto pendiente · Revisar",
+// La variación contra el mes anterior, el ritmo, "Previsto pendiente · Revisar"
+// (UX-N2: su gasto ya está descontado de "Te queda"; lo dice una nota),
 // la tasa con su fecha, el interruptor de moneda y "Editar tasa". El detalle
 // completo sigue en Panorama.
 import { ChevronRight } from 'lucide-react'
 import Sheet from '../../components/ui/Sheet.jsx'
-import Money from '../../components/Money.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 import Amount from '../../components/Amount.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
@@ -18,8 +19,9 @@ import { RefSwitch, RefRow, fmtRef } from './RefCurrency.jsx'
 import s from './Home.module.css'
 import r from '../../components/recurring/recurring.module.css'
 
-export default function HeroDetailSheet({ open, onClose, free, hasData, sym, showRef, refc, delta, prevMonth, cutDay, deltaFormat, pulse, pending, onReviewPending, dual, sub, onPanorama }) {
+export default function HeroDetailSheet({ open, onClose, free, hasData, sym, showRef, refc, delta, prevMonth, cutDay, deltaFormat, pulse, pending, pendingFixed = 0, onReviewPending, dual, sub, onPanorama }) {
   const { t, lang } = useT()
+  const { m } = useMoney()
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={t('home.detail.title')} maxWidth={440}>
       <h2 className={s.sheetTitle}>{t('home.detail.title')}</h2>
@@ -34,6 +36,7 @@ export default function HeroDetailSheet({ open, onClose, free, hasData, sym, sho
         )}
         {hasData && <DeltaLine delta={delta} prevMonth={prevMonth} untilDay={cutDay} sym={sym} formatAmount={deltaFormat} />}
         {hasData && <div className={s.kpiSub}>{sub}</div>}
+        {hasData && pendingFixed > 0 && <div className={`num ${s.kpiSub}`}>{t('home.kpi.pendingFixed', { v: m(showRef ? fmtRef(toRef(pendingFixed, refc.rate.rate), lang) : fmtMoney(pendingFixed, sym)) })}</div>}
         {dual && <div className={s.kpiDual}>{dual}</div>}
       </div>
 
@@ -46,6 +49,12 @@ export default function HeroDetailSheet({ open, onClose, free, hasData, sym, sho
             {pending.income > 0 && <Money>+{fmtMoney(pending.income, sym)}</Money>}
           </span>
           {onReviewPending && <button type="button" className={r.reviewLink} onClick={() => { onClose(); onReviewPending() }}>{t('rec.pending.review')} →</button>}
+          {/* UX-N2: el gasto previsto ya salió de "Te queda"; el ingreso previsto, no. */}
+          {(pendingFixed > 0 || pending.income > 0) && (
+            <span className={s.kpiSub} style={{ flexBasis: '100%' }}>
+              {[pendingFixed > 0 && t('rec.pending.noteExp'), pending.income > 0 && t('rec.pending.noteInc')].filter(Boolean).join(' ')}
+            </span>
+          )}
         </div>
       )}
 

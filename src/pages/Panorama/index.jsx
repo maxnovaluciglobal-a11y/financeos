@@ -39,7 +39,9 @@ export default function Panorama({ setPage }) {
   const { settings, sym, activeMonth, kpis, healthScore, todoItems, money, dualOn, toUSD, propFlow, flujoTotal, subMonthly } = d
 
   const secondary = [
-    ...(propFlow.has ? [{ label: t('dash.kpi.totalFlow'), color: flujoTotal >= 0 ? 'var(--pos)' : 'var(--neg)', sub: t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }), raw: flujoTotal, count: true }] : []),
+    ...(propFlow.has ? [{ label: t('dash.kpi.totalFlow'), color: flujoTotal >= 0 ? 'var(--pos)' : 'var(--neg)', sub: [t('dash.kpi.personalPlusProps', { v: `${propFlow.net >= 0 ? '+' : '−'}${money(Math.abs(propFlow.net))}` }),
+      // UX-N2: lo personal es "Te queda", que ya descuenta los fijos por pagar.
+      kpis.pendingFixed > 0 && t('home.kpi.pendingFixed', { v: money(kpis.pendingFixed) })].filter(Boolean).join(' · '), raw: flujoTotal, count: true }] : []),
     { label: t('dash.kpi.savingRate'), value: fmtPct(kpis.savingRate), color: kpis.savingRate >= 0.2 ? 'var(--pos)' : kpis.savingRate >= 0 ? 'var(--warn)' : 'var(--neg)', sub: t('dash.kpi.ofIncome') },
     { label: t('dash.kpi.subs'), value: t('dash.kpi.perMonth', { v: money(subMonthly) }), color: 'var(--tx)', sub: t('dash.kpi.perYear', { v: money(subMonthly * 12) }), page: 'subscriptions' },
   ]

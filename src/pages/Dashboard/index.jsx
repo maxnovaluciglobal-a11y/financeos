@@ -252,9 +252,9 @@ export default function Dashboard({ setPage }) {
   // y que la frase del mes: gastado/ingreso contra día/días.
   const lupaSeries = useMemo(() => {
     if (!lupa) return null
-    const sr = dailyAvailable({ incomes, expenses, setAsides, activeMonth, income: kpis.totalInc, plan, pending: pendingSum })
+    const sr = dailyAvailable({ incomes, expenses, setAsides, activeMonth, income: kpis.totalInc, plan, pending: pendingSum, pendingFixed: kpis.pendingFixed })
     return sr.lastDay >= 1 ? sr : null
-  }, [lupa, incomes, expenses, setAsides, activeMonth, plan, pendingSum, kpis.totalInc])
+  }, [lupa, incomes, expenses, setAsides, activeMonth, plan, pendingSum, kpis.totalInc, kpis.pendingFixed])
   const lupaPace = useMemo(() => paceToday(lupaSeries), [lupaSeries])
 
   // R12/R13: moneda de referencia del hero + calculadora del país.

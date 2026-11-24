@@ -99,21 +99,24 @@ export function budgetState(spent, limit) {
 // comparación usa el mes anterior HASTA EL MISMO DÍA (prevToDate); con un mes
 // cerrado, el mes anterior completo. `now` se inyecta para poder probarlo.
 // "Te queda" sale de monthLeft (utils/monthLeft.js), la única cuenta de la app
-// (F-1): ingresos − gastos − apartado, solo lo REAL (decisión de Walter,
-// 08-oct-2026); lo previsto que falta va aparte en "Previsto pendiente".
-export function homeMonthTotals({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date() }) {
+// (F-1): ingresos − gastos − apartado − fijos por pagar (UX-N2, 23-nov-2026).
+// `plan` = monthPlan() del mes activo; solo el mes activo completo descuenta
+// fijos (el anterior está cerrado y los cortes por día son solo lo real).
+// `leftReal` = lo registrado, para comparar contra el mes anterior.
+export function homeMonthTotals({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date(), plan = null }) {
   const [y, mo] = String(activeMonth).split('-').map(Number)
   const prevMo = prevMonthOf(activeMonth)
-  const totals = (month, untilDay = null) => {
+  const totals = (month, untilDay = null, monthPlanOf = null) => {
     // ENG-N5: totales y saldo redondeados a centavos; un mes cuadrado al
     // centavo da 0, no −0,00 en rojo.
-    const m = monthLeft({ incomes, expenses, setAsides, month, untilDay })
+    const m = monthLeft({ incomes, expenses, setAsides, month, untilDay, plan: monthPlanOf, today: now })
     return { totalInc: m.income, totalExp: m.spent, setAside: m.setAside,
              setAsideGoals: m.setAsideGoals, setAsideInvest: m.setAsideInvest,
+             pendingFixed: m.pendingFixed, pendingFixedCount: m.pendingFixedCount, leftReal: m.leftReal,
              balance: m.left, freeFlow: m.left, savingRate: m.savingRate,
              incCount: m.incCount, expCount: m.expCount, setAsideCount: m.setAsideCount }
   }
-  const cur = totals(activeMonth)
+  const cur = totals(activeMonth, null, plan)
   const prev = totals(prevMo)
   const isCurrent = now.getFullYear() === y && now.getMonth() + 1 === mo
   const prevCutDay = isCurrent ? now.getDate() : null

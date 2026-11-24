@@ -511,9 +511,11 @@ export default function Movements({ setPage }) {
   const navExpenses = useMemo(() => (view === 'cal' ? [...expenses, { date: `${shiftMonth(currentMonth(), 1)}-01` }] : expenses), [view, expenses])
 
   // "Te queda este mes": la misma cuenta que el Inicio (utils/monthLeft.js, F-1):
-  // ingresos − gastos personales − apartado, solo lo real, sin inversión 💼.
-  const left = useMemo(() => monthLeft({ incomes, expenses: monthExp, setAsides: ctx.setAsides, month: activeMonth }),
-    [incomes, monthExp, ctx.setAsides, activeMonth])
+  // ingresos − gastos personales − apartado − fijos por pagar (UX-N2), sin
+  // inversión 💼. "Fijos por confirmar" muestra el previsto completo del mes;
+  // en el mes en curso (y en uno futuro) su gasto ya está descontado.
+  const left = useMemo(() => monthLeft({ incomes, expenses: monthExp, setAsides: ctx.setAsides, month: activeMonth, plan, today: todayStr2 }),
+    [incomes, monthExp, ctx.setAsides, activeMonth, plan, todayStr2])
   const balance      = left.left
 
   // Datos para gráficos — solo gastos REGISTRADOS del mes. Antes se sumaban
@@ -695,10 +697,12 @@ export default function Movements({ setPage }) {
             sub={invInc > 0 ? t('mov.kpi.invTag', { v: fmtL(invInc) }) : undefined} />
           <KPI label={t('mov.kpi.totalOut')} value={fmtL(totalExp)}
             sub={invExp > 0 ? t('mov.kpi.invTag', { v: fmtL(invExp) }) : undefined} />
-          <KPI label={t('rec.mov.pendingKpi')} value={fmtL(pendingFixed)} color="amber" sub={t('rec.mov.pendingSub')} />
+          <KPI label={t('rec.mov.pendingKpi')} value={fmtL(pendingFixed)} color="amber" sub={t(left.pendingFixed > 0 ? 'rec.mov.pendingSubDeducted' : 'rec.mov.pendingSub')} />
           <KPI label={balance < 0 ? t('home.kpi.short') : t('home.kpi.left')} value={fmtL(balance)} color={balance >= 0 ? 'green' : 'red'}
             alert={balance < 0 ? t('ui.state.overdrawn') : undefined}
-            sub={left.setAside > 0 ? t('mov.kpi.setAsideSub', { v: fmtL(left.setAside) }) : (invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
+            sub={(left.pendingFixed > 0 || left.setAside > 0)
+              ? [left.pendingFixed > 0 && t('home.kpi.pendingFixed', { v: fmtL(left.pendingFixed) }), left.setAside > 0 && t('mov.kpi.setAsideSub', { v: fmtL(left.setAside) })].filter(Boolean).join(' · ')
+              : (invInc > 0 || invExp > 0) ? t('mov.kpi.personalExcl') : t('rec.mov.realOnly')} />
         </div>
 
         {/* Banner impacto anual suscripciones */}

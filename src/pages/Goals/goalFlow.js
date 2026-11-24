@@ -132,11 +132,15 @@ export function toFullFormDate(targetDate) {
   return /^\d{4}-\d{2}$/.test(s) ? `${s}-01` : s
 }
 
-// Mensaje de la caja "Te queda" en Metas. `left` ya restó lo apartado: si los
-// gastos no superan los ingresos pero `left` es negativo, lo que se pasó es lo
-// apartado, no los gastos.
-/** @param {{ income: number, spent: number, left: number }} m */
-export function availableMessageKey({ income, spent, left }) {
+// Mensaje de la caja "Te queda" en Metas. `left` ya restó lo apartado y los
+// fijos por pagar (UX-N2): si los gastos no superan los ingresos pero `left` es
+// negativo, lo que se pasó es lo apartado o, si eso tampoco, los fijos que faltan.
+/** @param {{ income: number, spent: number, left: number, setAside?: number, pendingFixed?: number }} m */
+export function availableMessageKey({ income, spent, left, setAside, pendingFixed }) {
   if (!(left < 0)) return 'goals.available.hint'
-  return (Number(income) || 0) - (Number(spent) || 0) >= 0 ? 'goals.available.overSetAside' : 'goals.available.negative'
+  const real = (Number(income) || 0) - (Number(spent) || 0)
+  if (real < 0) return 'goals.available.negative'
+  // Sin el desglose (llamadas viejas), lo que se pasó es lo apartado.
+  if (setAside == null && pendingFixed == null) return 'goals.available.overSetAside'
+  return real - (Number(setAside) || 0) < 0 ? 'goals.available.overSetAside' : 'goals.available.pendingFixed'
 }

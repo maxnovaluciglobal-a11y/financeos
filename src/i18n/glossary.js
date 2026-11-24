@@ -21,7 +21,8 @@ export const GLOSSARY = {
   // ── El mes ────────────────────────────────────────────────────────────────
   ingresos: { es: 'Ingresos', en: 'Income', pt: 'Receitas', de: 'Einnahmen', def: 'Dinero que entró este mes', keys: ['mov.kpi.income'] },
   gastos: { es: 'Gastos', en: 'Expenses', pt: 'Despesas', de: 'Ausgaben', def: 'Dinero que salió por consumo o pagos', keys: ['mov.kpi.totalOut'] },
-  teQueda: { es: 'Te queda este mes', en: 'Left this month', pt: 'Sobra este mês', de: 'Diesen Monat übrig', def: 'Ingresos − gastos − apartado (solo lo registrado; utils/monthLeft.js)', keys: ['home.kpi.left'] },
+  teQueda: { es: 'Te queda este mes', en: 'Left this month', pt: 'Sobra este mês', de: 'Diesen Monat übrig', def: 'Ingresos − gastos − apartado − fijos por pagar (UX-N2, 23-nov-2026; utils/monthLeft.js)', keys: ['home.kpi.left'] },
+  fijosPorPagar: { es: 'fijos por pagar', en: 'recurring bills to pay', pt: 'contas fixas a pagar', de: 'offene feste Ausgaben', def: 'Gastos fijos del mes en curso que todavía no se registraron (previstos, sin los omitidos ni las reglas de inversión). "Te queda" ya los descuenta', keys: ['home.kpi.pendingFixed', 'home.kpi.leftSub'] },
   teFalta: { es: 'Te falta este mes', en: 'Short this month', pt: 'Falta este mês', de: 'Diesen Monat im Minus', def: 'Lo mismo que "Te queda", cuando da negativo', keys: ['home.kpi.short'] },
   apartar: { es: 'Apartar', en: 'Set aside', pt: 'Reservar', de: 'Zurücklegen', def: 'Mover dinero de lo que te queda a una meta o a Para invertir. No es un gasto', keys: ['qa.setAside', 'goals.r9.add.submit', 'goals.r9.bucket.add'] },
   apartado: { es: 'Apartado', en: 'Set aside', pt: 'Reservado', de: 'Zurückgelegt', def: 'Lo que apartaste este mes', keys: ['qa.savedSetAside'] },

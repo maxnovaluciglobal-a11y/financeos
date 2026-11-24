@@ -3,6 +3,8 @@
 // cifra "Te queda" gigante y la ChartLupa del mes debajo; el resto del Inicio
 // sigue abajo, sobre la superficie tranquila. Mismas cifras que HomeKpis:
 // kpis.freeFlow, el detalle (HeroDetailSheet) y la línea Ingresos · Gastos.
+// La variación contra el mes anterior compara lo registrado (leftReal) con lo
+// registrado: el mes anterior a la misma fecha no tiene fijos por pagar.
 //
 // La escena llega hasta la barra de estado (iOS instalada con
 // black-translucent; en Android y TWA el theme-color toma el mismo morado
@@ -159,6 +161,8 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
                 <span>{sub}</span>
               </p>
             )}
+            {/* UX-N2: la cifra ya descuenta los fijos que faltan; se dice cuánto. */}
+            {!looking && hasData && cur.pendingFixed > 0 && <p className={`num ${s.dual}`}>{t('home.kpi.pendingFixed', { v: fmt(cur.pendingFixed) })}</p>}
             {!looking && dualOn && !refc && hasData && <p className={s.dual}>{toUSD(free)}</p>}
           </div>
 
@@ -204,7 +208,7 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
       </div>
 
       <HeroDetailSheet open={detailOpen} onClose={() => setDetailOpen(false)} free={free} hasData={hasData} sym={sym}
-        showRef={showRef} refc={refc} delta={deltaOf(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} cutDay={cutDay}
+        showRef={showRef} refc={refc} delta={deltaOf(cur.leftReal ?? free, prev.freeFlow, { hasPrev: prevHasData })} pendingFixed={cur.pendingFixed} prevMonth={prevMonth} cutDay={cutDay}
         deltaFormat={usdOn ? usdFmt : showRef ? (d) => (d > 0 ? '+' : d < 0 ? '−' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined}
         pulse={pulse} pending={pending} onReviewPending={onReviewPending} dual={!refc && dualOn && hasData ? toUSD(free) : null}
         sub={subParts.join(' · ')} onPanorama={onOpen ? () => onOpen('panorama') : undefined} />

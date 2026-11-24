@@ -95,8 +95,8 @@ describe('monthReading · prioridad: una frase, la más útil', () => {
   })
   it('fijos pendientes', () => {
     const r = read({ incomes: [inc('2026-10-01', 1000)], expenses: ten, pending: { count: 3, expense: 200, income: 0 } })
-    expect(say(r.short)).toBe('Faltan 3 pagos fijos por $200 este mes.')
-    expect(say(read({ incomes: [inc('2026-10-01', 1000)], expenses: ten, pending: { count: 1, expense: 50, income: 0 } }).short)).toBe('Falta un pago fijo por $50 este mes.')
+    expect(say(r.short)).toBe('Faltan 3 pagos fijos por $200 este mes; ya están descontados de lo que te queda.')
+    expect(say(read({ incomes: [inc('2026-10-01', 1000)], expenses: ten, pending: { count: 1, expense: 50, income: 0 } }).short)).toBe('Falta un pago fijo por $50 este mes; ya está descontado de lo que te queda.')
   })
   it('categoría que más subió, en % o en monto según el país', () => {
     const prev = [exp('2026-09-03', 30), exp('2026-09-04', 20)]

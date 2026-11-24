@@ -60,17 +60,19 @@ export function useHomeData() {
   const money = useCallback((n) => m(fmtSignedMoney(n, sym)), [m, sym])
   const toUSD = (n) => `≈ ${m(`US$${((Number(n) || 0) / usdRate).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })}`)}`
 
-  const kpis = useMemo(() => {
-    const { cur, prev, prevToDate, prevCutDay } = homeMonthTotals({ incomes, expenses, setAsides, activeMonth })
-    return { ...cur, cur, prev, prevToDate, prevCutDay }
-  }, [incomes, expenses, setAsides, activeMonth])
-
   // ── Movimientos fijos del mes activo ─────────────────────────────────────
   const todayStr = localDateStr()
   const rules = useMemo(() => (Array.isArray(ctx.recurring) ? ctx.recurring : []), [ctx.recurring])
   const plan = useMemo(() => monthPlan(rules, activeMonth, { incomes: ctx.incomes || [], expenses: ctx.expenses || [], today: todayStr }),
     [rules, activeMonth, ctx.incomes, ctx.expenses, todayStr])
   const pendingSum = useMemo(() => pendingTotals(plan), [plan])
+
+  // "Te queda" descuenta los fijos de gasto que faltan (UX-N2): por eso el plan
+  // va antes que los KPIs.
+  const kpis = useMemo(() => {
+    const { cur, prev, prevToDate, prevCutDay } = homeMonthTotals({ incomes, expenses, setAsides, activeMonth, plan })
+    return { ...cur, cur, prev, prevToDate, prevCutDay }
+  }, [incomes, expenses, setAsides, activeMonth, plan])
 
   const monthExpenses = useMemo(() => expenses.filter(r => r?.date?.startsWith(activeMonth)), [expenses, activeMonth])
   const monthIncomes  = useMemo(() => incomes.filter(r => r?.date?.startsWith(activeMonth)), [incomes, activeMonth])

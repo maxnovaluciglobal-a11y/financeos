@@ -154,4 +154,10 @@ describe('availableMessageKey: mensaje de la caja Te queda', () => {
   it('negativo porque los gastos superan los ingresos', () => {
     expect(availableMessageKey({ income: 1000, spent: 1200, left: -200 })).toBe('goals.available.negative')
   })
+  it('UX-N2: negativo por los fijos por pagar (ni gastos ni apartado se pasaron)', () => {
+    expect(availableMessageKey({ income: 1000, spent: 800, setAside: 100, pendingFixed: 300, left: -200 })).toBe('goals.available.pendingFixed')
+    // Si lo apartado ya se pasó solo, el mensaje es ese.
+    expect(availableMessageKey({ income: 1000, spent: 800, setAside: 300, pendingFixed: 50, left: -150 })).toBe('goals.available.overSetAside')
+    expect(availableMessageKey({ income: 1000, spent: 1200, setAside: 0, pendingFixed: 50, left: -250 })).toBe('goals.available.negative')
+  })
 })

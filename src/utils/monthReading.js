@@ -98,7 +98,10 @@ export function monthReading({ activeMonth, now = new Date(), totals, expenses =
   const pos = monthPosition(activeMonth, now)
   const { cur, prev, prevToDate, prevCutDay } = totals
   const moves = (cur.incCount || 0) + (cur.expCount || 0)
-  const spent = cur.totalExp, income = cur.totalInc, balance = cur.freeFlow
+  // Las frases hablan de gastos contra ingresos: usan lo registrado (leftReal).
+  // Los fijos que faltan tienen su propia frase (reading.pending*), que dice
+  // que "Te queda" ya los descuenta (UX-N2).
+  const spent = cur.totalExp, income = cur.totalInc, balance = cur.leftReal ?? cur.freeFlow
   const prevKey = prevMonthOf(activeMonth)
   const facts = []
   const add = (l) => { if (l) facts.push(l) }

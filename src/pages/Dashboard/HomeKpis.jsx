@@ -2,13 +2,14 @@
 // Ingresos · Gastos · Te queda este mes, cada uno con su variación vs. el mes
 // anterior (DeltaLine). "Te queda" absorbe la card héroe anterior (veredicto
 // del mes + Anillo Vivo): es el mismo disponible real que mostraba MonthVerdict
-// Desde los movimientos fijos (08-oct-2026) "Te queda" es SOLO lo real
-// (ingresos − gastos registrados); lo previsto que falta va en "Previsto
-// pendiente", dentro del detalle de la tarjeta (HeroDetailSheet.jsx).
+// Desde UX-N2 (23-nov-2026) "Te queda" también descuenta los gastos fijos que
+// faltan (utils/monthLeft.js); una línea dice cuánto. Lo previsto completo
+// sigue en "Previsto pendiente", dentro del detalle (HeroDetailSheet.jsx).
+// La variación compara lo registrado (leftReal) contra lo registrado.
 import { useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import CountUp from '../../components/CountUp.jsx'
-import Money from '../../components/Money.jsx'
+import Money, { useMoney } from '../../components/Money.jsx'
 import Amount from '../../components/Amount.jsx'
 import LivingRing from '../../components/LivingRing.jsx'
 import { ScoreState } from '../../components/ScoreState.jsx'
@@ -97,6 +98,7 @@ function openMovements(onOpen, filter) {
 
 export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse, daysLeft, pending, onReviewPending, onOpen, refc, children }) {
   const { t, lang } = useT()
+  const { m } = useMoney()
   const [detailOpen, setDetailOpen] = useState(false)
   const { cur } = kpis
   // Un mes con solo apartados también tiene datos: hay que poder verlos y quitarlos.
@@ -141,6 +143,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                 <div className={s.kpiSub} style={{ fontSize: 'var(--t-body)', color: 'var(--tm)' }}>{t('verdict.noData')}</div>
               )}
               {hasData && daysLeft > 0 && <div className={s.kpiSub}>{t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft })}</div>}
+              {hasData && cur.pendingFixed > 0 && <div className={`num ${s.kpiSub}`}>{t('home.kpi.pendingFixed', { v: m(showRef ? fmtRef(toRef(cur.pendingFixed, refc.rate.rate), lang) : fmtMoney(cur.pendingFixed, sym)) })}</div>}
             </div>
             {hasData && pulse && (
               <div className={s.ring}>
@@ -161,7 +164,7 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
 
       </div>
       <HeroDetailSheet open={detailOpen} onClose={() => setDetailOpen(false)} free={free} hasData={hasData} sym={sym}
-        showRef={showRef} refc={refc} delta={deltaOf(free, prev.freeFlow, { hasPrev: prevHasData })} prevMonth={prevMonth} cutDay={cutDay}
+        showRef={showRef} refc={refc} delta={deltaOf(cur.leftReal ?? free, prev.freeFlow, { hasPrev: prevHasData })} pendingFixed={cur.pendingFixed} prevMonth={prevMonth} cutDay={cutDay}
         deltaFormat={usdOn ? usdFmt : showRef ? (d) => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtRef(toRef(Math.abs(d), refc.rate.rate), lang) : undefined}
         pulse={pulse} pending={pending} onReviewPending={onReviewPending} dual={!refc && dualOn && hasData ? toUSD(free) : null}
         sub={subParts.join(' · ')} onPanorama={onOpen ? () => onOpen('panorama') : undefined} />

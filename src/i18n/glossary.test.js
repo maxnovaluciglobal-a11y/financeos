@@ -83,6 +83,21 @@ describe('glosario único', () => {
     expect(fixed).toEqual([])
   })
 
+  it('UX-N2: "Te queda" explica los fijos por pagar en los 4 idiomas, con el monto y sin voseo', () => {
+    for (const l of LANGS) {
+      expect(DICTS[l]['home.kpi.pendingFixed'], l).toContain('{v}')
+      expect(DICTS[l]['home.kpi.leftSub'].toLowerCase(), l).toContain(GLOSSARY.fijosPorPagar[l].toLowerCase())
+    }
+    expect(GLOSSARY.teQueda.def).toMatch(/fijos por pagar/)
+    const esKeys = ['home.kpi.pendingFixed', 'home.kpi.leftSub', 'rec.pending.noteExp', 'rec.pending.noteInc', 'rec.mov.pendingSubDeducted', 'goals.available.pendingFixed', 'reading.pendingOne', 'reading.pendingMany']
+    for (const k of esKeys) {
+      expect(es[k], k).toBeTypeOf('string')
+      expect(es[k], k).not.toMatch(/\b(podés|tenés|querés|vos|revisá|mirá|pagá)\b/i)
+      for (const l of ['en', 'pt', 'de']) expect(DICTS[l][k], `${l}:${k}`).toBeTypeOf('string')
+    }
+    expect(Object.values(Object.fromEntries(esKeys.map(k => [k, de[k]]))).filter(v => /\b(du|dein\w*|dich|dir)\b/i.test(v))).toEqual([])
+  })
+
   it('term() da el canónico y cae al español', () => {
     expect(term('teQueda', 'pt')).toBe('Sobra este mês')
     expect(term('apartar', 'xx')).toBe('Apartar')

@@ -21,6 +21,14 @@
 //   - disponible(d) = ingresos hasta d − gastos hasta d − apartado hasta d (para
 //     "te quedaban"): la misma cuenta de "Te queda" (utils/monthLeft.js). Lo
 //     apartado no es gasto: no sube la línea del gasto ni mueve el ritmo.
+//   - UX-N2 (23-nov-2026): "Te queda" descuenta los fijos de gasto que faltan.
+//     En el mes en curso, disponible(hoy) también los descuenta (`pendingFixed`
+//     = monthLeft().pendingFixed), para que "te queda" de la lupa y de la hoja
+//     del día sea la cifra grande. Los días pasados quedan como lo registrado
+//     ("te quedaban" es historia: ese día el fijo todavía no se había pagado).
+//     La línea del gasto NO los suma (no son gasto todavía); la proyección ya
+//     los incluía (projectEndOfMonth con `pending`), así que el punto final
+//     proyectado y la cifra grande cuentan los mismos fijos.
 // Quien llama ya sacó los movimientos de inversión (r.inv), como useHomeData.
 
 import { projectEndOfMonth } from './projection.js'
@@ -44,7 +52,8 @@ export const PACE_EVEN = 0.02   // igual que PACE_OK de monthReading y `pulse`
 // ingreso no hay ritmo ideal. `plan` = monthPlan() del mes, para ubicar el cobro
 // previsto si todavía no se registró. `pending` = pendingTotals(plan), los
 // fijos que faltan (los suma la proyección, como en la tarjeta Proyección).
-export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null }) {
+// `pendingFixed` = monthLeft().pendingFixed: lo que "Te queda" ya descuenta.
+export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null, pendingFixed = 0 }) {
   const pos = monthPosition(activeMonth, now)
   const days = pos.days
   const lastDay = pos.today
@@ -73,13 +82,15 @@ export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], ac
     spentCum[d] = round2(spentCum[d - 1] + spent[d])
     avail[d] = round2(earnedCum - spentCum[d] - asideCum)
   }
+  const fixed = pos.mode === 'current' ? Math.max(0, Number(pendingFixed) || 0) : 0
+  if (fixed > 0) for (let d = Math.max(1, lastDay); d <= days; d++) avail[d] = round2(avail[d] - fixed)
   const ref = Number(income) > 0 ? Number(income) : null
   const ideal = ref == null ? null : spentCum.map((_, d) => round2(ref * d / days))
   const projEnd = pos.mode === 'current' && lastDay < days
     ? Math.max(spentCum[lastDay], projectEndOfMonth({ incomes, expenses, activeMonth, pending, now }).projExp)
     : null
   return {
-    mode: pos.mode, days, lastDay, income: ref,
+    mode: pos.mode, days, lastDay, income: ref, pendingFixed: fixed,
     spent, spentCum, earned, avail, ideal,
     projEnd,
     payday: paydayOf({ incomes, activeMonth, plan, days }),

@@ -74,12 +74,14 @@ const HARD_INCOMES = [
   ...PAST_INCOMES,
 ]
 
-// Mes bueno: las dos bodegas, un trabajo extra y la remesa.
+// Mes bueno: las dos bodegas, un trabajo extra y la remesa. El trabajo extra
+// alcanza para los fijos que faltan (cuotas, la ayuda a mamá): desde UX-N2
+// "Te queda" los descuenta, y el mes bueno tiene que verse bueno.
 const GOOD_INCOMES = [
   ...salaryMonth('ve-ix0', M0),
   bodega('ve-ix0-b1', M0, 6, 'Bodega La Esquina', 100),
   bodega('ve-ix0-b2', M0, 9, 'Abasto Don Manuel', 80),
-  { id: d('ve-ix0-x'), date: day(M0, 14), source: 'Cierre contable de una ferretería', amount: bs(70, M0), category: 'Freelance', recurrence: 'Único', notes: usdNote(70, M0, 'por Binance (USDT)') },
+  { id: d('ve-ix0-x'), date: day(M0, 14), source: 'Cierre contable de dos ferreterías', amount: bs(160, M0), category: 'Freelance', recurrence: 'Único', notes: usdNote(160, M0, 'por Binance (USDT)') },
   remesa('ve-ix0-r', M0, 18),
   ...PAST_INCOMES,
 ]

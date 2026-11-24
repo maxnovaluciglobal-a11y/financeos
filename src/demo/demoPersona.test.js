@@ -4,14 +4,21 @@ import { M0 } from './demoDates.js'
 import config from '../config.js'
 import { monthPlan, pendingTotals } from '../utils/recurring.js'
 import { isEmergencyGoalName } from '../utils/emergencyGoal.js'
-import { currencyDecimals, CATS_EXPENSE, CATS_INCOME } from '../utils/index.js'
+import { currencyDecimals, CATS_EXPENSE, CATS_INCOME, localDateStr } from '../utils/index.js'
+import { monthLeft } from '../utils/monthLeft.js'
 
 const sum = (rows, k = 'amount') => rows.reduce((s, r) => s + (Number(r[k]) || 0), 0)
 const inMonth = (rows) => rows.filter(r => r.date?.startsWith(M0))
-// "Te queda este mes" del Inicio (decisión de Walter, 08-oct-2026): solo lo
-// real (ingresos − gastos); lo previsto va aparte en "Previsto pendiente".
+// Saldo real del mes (ingresos − gastos registrados). Desde UX-N2
+// (23-nov-2026) "Te queda" del Inicio además descuenta los fijos por pagar:
+// teQueda() es esa cifra, con la misma cuenta de la app (utils/monthLeft.js).
 const leftThisMonth = (state) => sum(inMonth(state.incomes)) - sum(inMonth(state.expenses))
 const pendingExpense = (state) => pendingTotals(monthPlan(state.recurring, M0, state)).expense
+const teQueda = (state) => {
+  const personal = (rows) => rows.filter(r => !r.inv)
+  const plan = monthPlan(state.recurring, M0, { incomes: state.incomes, expenses: state.expenses, today: localDateStr() })
+  return monthLeft({ incomes: personal(state.incomes), expenses: personal(state.expenses), month: M0, plan, today: localDateStr() })
+}
 
 describe('selección de persona del demo por idioma', () => {
   it('en → EE. UU. en USD, de → Alemania en EUR, es/pt → Sofía en COP', () => {
@@ -56,6 +63,12 @@ describe.each(Object.keys(DEMO_PERSONAS))('persona %s', (id) => {
   it('mes bueno con saldo real positivo; en el difícil no alcanza para los fijos que faltan', () => {
     expect(leftThisMonth(good)).toBeGreaterThan(0)
     expect(leftThisMonth(hard) - pendingExpense(hard)).toBeLessThan(0)
+  })
+  it('UX-N2: en el mes bueno "Te queda" sigue positivo después de los fijos por pagar; en el difícil, no', () => {
+    const g = teQueda(good)
+    expect(g.left).toBeGreaterThan(0)
+    expect(g.left).toBeCloseTo(g.leftReal - g.pendingFixed, 2)
+    expect(teQueda(hard).left).toBeLessThan(0)
   })
   it('muestra fijos: sueldo o ingreso fijo, arriendo, suscripciones y cuotas, con algo previsto', () => {
     const kinds = new Set(good.recurring.map(r => r.source))
