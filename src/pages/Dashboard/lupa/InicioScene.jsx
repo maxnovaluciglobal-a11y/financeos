@@ -157,7 +157,7 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
               : <p className={s.noData}>{t('verdict.noData')}</p>}
             {hasData && (
               <p className={`num ${s.sub}`} data-lupa="sub">
-                {pace && <span className={pace.kind === 'behind' ? s.paceChip : s.paceKey}>{pace.text}</span>}
+                {pace && <span className={pace.kind === 'behind' || pace.kind === 'fixed' ? s.paceChip : s.paceKey}>{pace.text}</span>}
                 <span>{sub}</span>
               </p>
             )}

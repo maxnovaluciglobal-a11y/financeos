@@ -153,10 +153,10 @@ export default function HomeKpis({ kpis, activeMonth, sym, dualOn, toUSD, pulse,
                   color={pulse.color}
                   centerValue="" centerLabel="" footLabel=""
                   size={72}
-                  ariaLabel={t('pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })}
+                  ariaLabel={t(pulse.ariaKey || 'pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })}
                 />
                 {/* El ritmo con ícono + palabra, no solo el color del anillo (T15) */}
-                <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={13} style={{ fontSize: 'var(--t-footnote)' }} />
+                <ScoreState level={pulse.level} label={t(pulse.labelKey || `pulse.${pulse.level}`)} size={13} style={{ fontSize: 'var(--t-footnote)' }} />
               </div>
             )}
           </div>

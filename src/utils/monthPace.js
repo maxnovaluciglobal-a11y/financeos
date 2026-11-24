@@ -21,6 +21,11 @@
 //   ritmo      = variable / disponible − día / días
 //   nivel: 'risk' si "te queda" < 0 (te pasaste) · 'ok' si el ritmo ≤ 2 puntos
 //          · 'attention' hasta 10 puntos · 'risk' por encima.
+//   Caso aparte (`cause: 'fixed'`): fijos + apartado se llevan TODO el ingreso
+//   (disponible ≤ 0). No hay ritmo que medir (ratio = Infinity) y el problema
+//   no es el gasto: si el gasto variable cabe en lo que quedaba antes de los
+//   fijos por pagar, el nivel es 'attention' con su propio texto ("Los fijos
+//   y lo apartado superan tu ingreso"); si ni eso, 'risk' por el gasto.
 // Así el veredicto nunca dice "vas bien" con "Te queda" en negativo, y el
 // arriendo pagado el día 1 no cuenta como gasto rápido (ENG-N4, decisión 13:
 // "contra el ingreso sin fijos"): el fijo se reserva entero desde el día 1.
@@ -59,16 +64,22 @@ export function paceVerdict({ income = 0, spent = 0, setAside = 0, pendingFixed 
   const used = r2(sp - paid)
   const left = r2(pool - used)
   const elapsed = Math.min(1, today / days)
-  const ratio = pool > 0 ? used / pool : (used > 0 ? Infinity : 0)
-  const over = pool > 0 ? ratio - elapsed : (left < 0 ? Infinity : 0)
-  const level = left < 0 ? 'risk'
-    : pool <= 0 ? 'attention'
+  const fixedExceed = pool <= 0
+  const ratio = fixedExceed ? Infinity : used / pool
+  const over = fixedExceed ? Infinity : ratio - elapsed
+  // Lo libre antes de los fijos por pagar: si el gasto variable cabe ahí, la
+  // causa del rojo son los fijos, no el ritmo del gasto.
+  const freeBeforePending = r2(inc - aside - paid)
+  const cause = fixedExceed && used <= Math.max(0, freeBeforePending) ? 'fixed'
+    : left < 0 || (!fixedExceed && over > PACE_OK) ? 'spending' : null
+  const level = cause === 'fixed' ? 'attention'
+    : left < 0 ? 'risk'
       : over <= PACE_OK ? 'ok' : over <= PACE_HIGH ? 'attention' : 'risk'
   return {
     reference: 'income',
     income: inc, pool, used, left, fixedPaid: paid, pendingFixed: pend, setAside: aside,
     today, days, mode, elapsed,
-    ratio, over, level,
+    ratio, over, level, cause, fixedExceed,
     even: level === 'ok' && Math.abs(over) <= PACE_OK,
     // Lo que se podía haber gastado a hoy menos lo gastado (> 0: por debajo del ritmo).
     gap: r2(Math.max(0, pool) * elapsed - used),

@@ -68,9 +68,9 @@ export default function HeroDetailSheet({ open, onClose, free, hasData, sym, sho
         <div className={`${s.detailPulse} ${s.detailBlock}`}>
           <LivingRing spentRatio={pulse.spentRatio} elapsedRatio={pulse.elapsedRatio} color={pulse.color}
             centerValue="" centerLabel="" footLabel="" size={72}
-            ariaLabel={t('pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })} />
+            ariaLabel={t(pulse.ariaKey || 'pulse.aria', { spent: fmtPctPoints(Math.round(pulse.spentRatio * 100)), elapsed: fmtPctPoints(Math.round(pulse.elapsedRatio * 100)) })} />
           <div className={s.detailPulseText}>
-            <ScoreState level={pulse.level} label={t(`pulse.${pulse.level}`)} size={14} style={{ fontSize: '.875rem' }} />
+            <ScoreState level={pulse.level} label={t(pulse.labelKey || `pulse.${pulse.level}`)} size={14} style={{ fontSize: '.875rem' }} />
             <span className={s.detailLegend}>{t('ring.legend')}</span>
           </div>
         </div>

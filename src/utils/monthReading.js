@@ -172,13 +172,17 @@ export function monthReading({ activeMonth, now = new Date(), totals, expenses =
   const daily = pos.today > 0 ? (verdict ? verdict.used : spent) / pos.today : 0
   const fits = verdict ? Math.max(0, verdict.pool) / pos.days : income / pos.days
   const paceSentence = (() => {
-    if (!verdict || verdict.level === 'ok' || balance < 0 || few) return null
+    // Sin nada libre (fijos y apartado se llevan el ingreso) no hay ritmo que
+    // decir: lo dice reading.fixedExceed, abajo.
+    if (!verdict || verdict.level === 'ok' || verdict.fixedExceed || balance < 0 || few) return null
     if (amountOnly) return line('reading.pace.highAmount', { daily: money(daily), diff: money(daily - fits), left: lf })
-    // Sin nada libre (fijos y apartado se llevan el ingreso) no hay porcentaje que decir.
-    if (!Number.isFinite(verdict.ratio)) return null
     return line('reading.pace.high', { elapsed: pct(elapsed), used: pct(verdict.ratio), left: lf })
   })()
   add(paceSentence)
+  // I-22: el mismo caso que el anillo y la Lupa muestran como "Los fijos y lo
+  // apartado superan tu ingreso" (cause 'fixed'). Con saldo registrado
+  // negativo ya lo dice reading.negative.
+  if (verdict?.cause === 'fixed' && balance >= 0) add(line('reading.fixedExceed'))
 
   if (near[0]) add(line('reading.near', { cat: cat(near[0].category), used: pct(near[0].ratio), left: lf }))
   if (pendCount > 0 && pendExp > 0) add(line(pendCount === 1 ? 'reading.pendingOne' : 'reading.pendingMany', { n: pendCount, amount: money(pendExp) }))

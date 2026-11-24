@@ -74,7 +74,7 @@ describe('paridad entre pantallas: cifras clave del mes', () => {
   // llamada) dicen lo mismo, también con apartados y fijos pagados y por pagar.
   it('ritmo: Inicio (anillo y Lupa) y Panorama dan el mismo veredicto, con apartados y fijos', () => {
     const r = rng(2)
-    let withFixed = 0, withAside = 0, risks = 0, oks = 0
+    let withFixed = 0, withAside = 0, risks = 0, oks = 0, fixedCases = 0
     for (let i = 0; i < CASES; i++) {
       const today = 4 + Math.floor(r() * 24)
       const now = new Date(2026, 10, today, 12)
@@ -89,7 +89,7 @@ describe('paridad entre pantallas: cifras clave del mes', () => {
         const rent = cents(r, income * 0.4)
         rules.push(fixedRule('r-rent', 1, rent))
         expenses.push({ id: 'e-rent', date: d(1), amount: rent, category: 'Vivienda', recurringId: 'r-rent', occurrenceDate: d(1) })
-        rules.push(fixedRule('r-gym', 29, cents(r, income * 0.15)))
+        rules.push(fixedRule('r-gym', 29, cents(r, income * (r() < 0.15 ? 0.9 : 0.15))))
         withFixed++
       }
       const setAsides = r() < 0.5 ? [{ id: 's1', kind: 'setAside', dest: r() < 0.5 ? 'goal' : 'invest', amount: cents(r, income * 0.3), date: d(1 + Math.floor(r() * today)) }] : []
@@ -105,17 +105,23 @@ describe('paridad entre pantallas: cifras clave del mes', () => {
       expect(lupa.gap).toBeCloseTo(ring.gap, 1)
       // Mismo "te queda" que el héroe.
       expect(ring.left).toBeCloseTo(kp.cur.freeFlow, 2)
-      // Nunca "vas bien" con "Te queda" en negativo.
-      if (kp.cur.freeFlow < 0) expect(ring.level).toBe('risk')
+      // Nunca "vas bien" con "Te queda" en negativo: "te pasaste" o, si la
+      // causa son los fijos, su propio aviso.
+      if (kp.cur.freeFlow < 0) expect(ring.level).toBe(ring.cause === 'fixed' ? 'attention' : 'risk')
       // Panorama (y la frase del Inicio): monthReading con las mismas cifras.
       const reading = monthReading({ activeMonth: MONTH, now, totals: cur, expenses, rows: [], pending: null })
       const keys = reading.facts.map(f => f.key)
       const balanceOk = kp.cur.leftReal >= 0
       const early = keys.includes('reading.early')
-      if (!early && balanceOk) {
+      // Fijos + apartado se llevan todo: el mismo caso en el anillo, la Lupa y la frase.
+      expect(lupa.cause).toBe(ring.cause)
+      if (balanceOk) expect(keys.includes('reading.fixedExceed'), `caso ${i}`).toBe(ring.cause === 'fixed')
+      if (ring.fixedExceed) expect(keys.some(k => k.startsWith('reading.pace.'))).toBe(false)
+      if (!early && balanceOk && !ring.fixedExceed) {
         expect(keys.includes('reading.pace.ok'), `caso ${i}`).toBe(ring.level === 'ok')
-        if (Number.isFinite(ring.ratio)) expect(keys.includes('reading.pace.high'), `caso ${i}`).toBe(ring.level !== 'ok')
+        expect(keys.includes('reading.pace.high'), `caso ${i}`).toBe(ring.level !== 'ok')
       }
+      if (ring.cause === 'fixed') fixedCases++
       if (ring.level === 'risk') risks++
       if (ring.level === 'ok') oks++
     }
@@ -124,6 +130,7 @@ describe('paridad entre pantallas: cifras clave del mes', () => {
     expect(withAside).toBeGreaterThan(CASES * 0.3)
     expect(risks).toBeGreaterThan(50)
     expect(oks).toBeGreaterThan(50)
+    expect(fixedCases).toBeGreaterThan(20)
   })
 
   it('"Te queda" es la misma cifra que el disponible de la Lupa y un mes cuadrado al centavo da 0', () => {

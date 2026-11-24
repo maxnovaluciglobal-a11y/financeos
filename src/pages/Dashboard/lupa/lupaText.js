@@ -43,6 +43,8 @@ export function inspectLines({ series, day, activeMonth, t, fmt, locale }) {
 // `pace` = paceToday(): ideal(hoy) − gastado(hoy), la misma cuenta que el anillo.
 export function paceLine(pace, { t, fmt }) {
   if (!pace) return null
+  // I-22: fijos + apartado se llevan todo el ingreso; no hay ritmo que medir.
+  if (pace.cause === 'fixed') return { kind: 'fixed', text: t('pulse.fixed') }
   const gap = pace.gap
   if (pace.even) return { kind: 'even', text: t('home.lupa.pace.even') }
   return gap > 0

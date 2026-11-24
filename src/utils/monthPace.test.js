@@ -44,6 +44,31 @@ describe('paceVerdict', () => {
     expect(v.level).toBe('risk')
     expect(v.even).toBe(false)
   })
+  it('fijos + apartado se llevan todo el ingreso, sin gasto variable: causa "fijos", sin ritmo (revisión, caso 1)', () => {
+    // Ingreso 1.000; arriendo 800 pagado; 300 de fijos por pagar; día 10.
+    const v = at({ income: 1000, spent: 800, fixedPaid: 800, pendingFixed: 300 })
+    expect(v.pool).toBe(-100)
+    expect(v.used).toBe(0)
+    expect(v.fixedExceed).toBe(true)
+    expect(v.ratio).toBe(Infinity)
+    expect(v.cause).toBe('fixed')
+    expect(v.level).toBe('attention')
+  })
+  it('fijos por pagar mayores que lo libre, gasto variable chico: "fijos", no "gasto muy rápido" (caso 2)', () => {
+    const v = paceVerdict({ income: 1000, spent: 30, pendingFixed: 1100, today: 28, days: 30 })
+    expect(v.left).toBe(-130)
+    expect(v.cause).toBe('fixed')
+    expect(v.level).toBe('attention')
+  })
+  it('si el gasto variable no cabía ni antes de los fijos por pagar, es gasto: "te pasaste"', () => {
+    // Fijos 900 pagados + 300 por pagar; 200 variables, y antes de los por pagar solo quedaban 100 libres.
+    const v = at({ income: 1000, spent: 1100, fixedPaid: 900, pendingFixed: 300 })
+    expect(v.fixedExceed).toBe(true)
+    expect(v.cause).toBe('spending')
+    expect(v.level).toBe('risk')
+    // Con disponible > 0 y "te queda" < 0, también es gasto.
+    expect(at({ income: 1000, spent: 600, pendingFixed: 500 })).toMatchObject({ cause: 'spending', level: 'risk' })
+  })
   it('sin ingreso y con gasto: te pasaste; sin nada: no hay veredicto; mes futuro: tampoco', () => {
     expect(at({ income: 0, spent: 50 }).level).toBe('risk')
     expect(at({})).toBeNull()
@@ -120,4 +145,45 @@ describe('el ritmo de Presupuestos nombra su referencia', () => {
       }
     })
   }
+})
+
+describe('caso "fijos" igual en anillo, Lupa y frase del mes (Inicio y Panorama)', () => {
+  const tOf = (d) => (k, vars = {}) => String(d[k] ?? k).replace(/\{(\w+)\}/g, (_, n) => vars[n] ?? '')
+  const fmt = { money: (n) => `$${n}`, usd: (n) => `US$${n}`, pct: (n) => `${Math.round(n * 100)} %`, cat: (c) => c, month: (m) => m }
+  const rule = (id, day, amount) => ({ id, kind: 'expense', source: 'manual', description: id, category: 'Vivienda', amountMode: 'fixed',
+    amounts: [{ from: '2026-01', amount }], schedule: { freq: 'monthly', day, anchorDate: `2026-01-${String(day).padStart(2, '0')}` },
+    startDate: '2026-01-01', autoConfirm: false, paused: false, skipped: [] })
+  // Caso 1 de la revisión: ingreso 1.000, arriendo 800 pagado y vinculado, 300 por pagar, día 10.
+  const incomes = [{ id: 'i', date: '2026-11-01', amount: 1000 }]
+  const expenses = [
+    { id: 'rent', date: '2026-11-01', amount: 800, category: 'Vivienda', recurringId: 'r-rent', occurrenceDate: '2026-11-01' },
+  ]
+  const plan = monthPlan([rule('r-rent', 1, 800), rule('r-gym', 28, 300)], M, { incomes, expenses, today: '2026-11-10' })
+  const kp = homeMonthTotals({ incomes, expenses, activeMonth: M, now: NOW, plan })
+  it('el anillo, la Lupa y la frase dicen "fijos", nunca "se gastó el 0 %" ni "$0 por día"', async () => {
+    const { renderReading } = await import('./monthReading.js')
+    const { paceLine } = await import('../pages/Dashboard/lupa/lupaText.js')
+    const v = monthPace(kp.cur, M, NOW)
+    expect(v.cause).toBe('fixed')
+    const lupa = paceToday(dailyAvailable({ incomes, expenses, activeMonth: M, now: NOW, income: kp.cur.totalInc, plan, pendingFixed: kp.cur.pendingFixed, fixedPaid: kp.cur.fixedPaid }))
+    expect(lupa).toMatchObject({ cause: 'fixed', level: 'attention' })
+    expect(paceLine(lupa, { t: tOf(es), fmt: (n) => `$${n}` })).toEqual({ kind: 'fixed', text: 'Los fijos y lo apartado superan tu ingreso' })
+    for (const country of ['CL', 'VE']) {
+      const r = monthReading({ activeMonth: M, now: NOW, totals: kp, expenses, rows: [], country })
+      const keys = r.facts.map(f => f.key)
+      expect(keys).toContain('reading.fixedExceed')
+      expect(keys).not.toContain('reading.pace.high')
+      expect(keys).not.toContain('reading.pace.highAmount')
+      expect(keys).not.toContain('reading.perDay')
+      expect(r.facts.map(f => renderReading(f, { t: tOf(es), fmt })).join(' ')).not.toMatch(/ 0 %|\$0 por día/)
+    }
+  })
+  it('los textos nuevos existen en los 4 idiomas, con la misma variable en el aria', () => {
+    for (const d of [es, en, pt, de]) {
+      for (const k of ['reading.fixedExceed', 'pulse.fixed', 'pulse.ariaFixed']) expect(typeof d[k], k).toBe('string')
+      expect(d['pulse.ariaFixed']).toContain('{elapsed}')
+      expect(d['pulse.ariaFixed']).not.toContain('{spent}')
+    }
+    expect(es['reading.fixedExceed']).toBe('Los fijos y lo apartado se llevan todo tu ingreso de este mes.')
+  })
 })

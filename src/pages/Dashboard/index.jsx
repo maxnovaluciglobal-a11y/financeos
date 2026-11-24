@@ -241,7 +241,10 @@ export default function Dashboard({ setPage }) {
     if (!v) return { daysLeft, level: null }
     const color = SCORE_LEVELS[v.level].color
     const spentRatio = Number.isFinite(v.ratio) ? Math.max(0, v.ratio) : 1
-    return { spentRatio, elapsedRatio: v.elapsed, color, level: v.level, daysLeft, verdict: v }
+    // Fijos + apartado se llevan todo el ingreso: texto y aria propios (no es "gasto rápido").
+    const fixed = v.cause === 'fixed'
+    return { spentRatio, elapsedRatio: v.elapsed, color, level: v.level, daysLeft, verdict: v,
+             labelKey: fixed ? 'pulse.fixed' : `pulse.${v.level}`, ariaKey: fixed ? 'pulse.ariaFixed' : 'pulse.aria' }
   }, [incomes, expenses, kpis, activeMonth])
 
   // Entrega 1.5: gasto acumulado del mes contra el ritmo ideal. La píldora

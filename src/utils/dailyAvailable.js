@@ -134,7 +134,7 @@ export function paceToday(series) {
   const v = paceVerdict({ income: series.income, spent: series.spentCum[d], setAside: series.setAside,
     pendingFixed: series.pendingFixedAll, fixedPaid: series.fixedPaid, today: d, days: series.days, mode: series.mode })
   if (!v) return null
-  return { gap: v.gap, over: v.over, even: v.even, level: v.level }
+  return { gap: v.gap, over: v.over, even: v.even, level: v.level, cause: v.cause }
 }
 
 // ── Geometría (unidades del viewBox) ────────────────────────────────────────
