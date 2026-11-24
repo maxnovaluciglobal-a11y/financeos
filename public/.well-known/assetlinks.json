@@ -14,5 +14,18 @@
       "package_name": "com.moyiq.app.twa",
       "sha256_cert_fingerprints": ["B4:3F:0C:1B:7E:19:64:4F:D9:F8:A5:3F:C0:DA:BD:FC:FD:E5:44:BA:E8:B9:09:2F:8E:E8:17:1C:C7:0A:88:5F"]
     }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.moyiq",
+      "sha256_cert_fingerprints": [
+        "7C:2E:1B:CF:60:A6:BF:C9:CC:30:9C:55:BC:C6:CF:BB:1F:46:E4:7F:CD:A9:07:24:76:4F:84:4F:4E:0A:51:D3",
+        "96:51:BB:0A:68:77:98:5C:5C:5E:0B:F1:69:79:86:BF:E6:E6:D0:77:21:99:DA:87:C3:CF:6A:E4:56:AE:E3:E2",
+        "1A:82:83:F2:82:EF:E9:55:07:D1:A1:06:B5:DE:59:AF:D6:12:73:93:49:D3:B3:6D:03:0A:1A:B8:F7:F3:AC:9F",
+        "46:70:FD:39:7E:3B:40:49:31:F7:F4:CB:BA:1A:8E:72:78:35:F2:13:70:F0:B4:78:95:69:A7:B8:EB:5C:A1:4A"
+      ]
+    }
   }
 ]

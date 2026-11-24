@@ -26,3 +26,26 @@ describe('assetlinks.json (OPS-7)', () => {
     }
   })
 })
+
+// AND-6: la app nativa de la tienda (package app.moyiq, Play App Signing) abre
+// enlaces de app.moyiq.app solo si el dominio declara las huellas de Play.
+// Huellas leídas de Play Console → Integridad de la app → Firma de apps (24-nov-2026).
+const PLAY_SIGNING_CERT = '7C:2E:1B:CF:60:A6:BF:C9:CC:30:9C:55:BC:C6:CF:BB:1F:46:E4:7F:CD:A9:07:24:76:4F:84:4F:4E:0A:51:D3'
+const PLAY_SIGNING_CERT_CURRENT = '96:51:BB:0A:68:77:98:5C:5C:5E:0B:F1:69:79:86:BF:E6:E6:D0:77:21:99:DA:87:C3:CF:6A:E4:56:AE:E3:E2'
+const NATIVE_UPLOAD_CERT = '46:70:FD:39:7E:3B:40:49:31:F7:F4:CB:BA:1A:8E:72:78:35:F2:13:70:F0:B4:78:95:69:A7:B8:EB:5C:A1:4A'
+
+describe('assetlinks.json (AND-6, app nativa app.moyiq)', () => {
+  it('declara app.moyiq con las huellas de Play App Signing y de subida', () => {
+    const nativa = links.find((l) => l.target?.package_name === 'app.moyiq')
+    expect(nativa).toBeTruthy()
+    expect(nativa.relation).toEqual(['delegate_permission/common.handle_all_urls'])
+    expect(nativa.target.namespace).toBe('android_app')
+    expect(nativa.target.sha256_cert_fingerprints).toEqual(
+      expect.arrayContaining([PLAY_SIGNING_CERT, PLAY_SIGNING_CERT_CURRENT, NATIVE_UPLOAD_CERT])
+    )
+  })
+  it('mantiene las entradas de la TWA', () => {
+    const pkgs = links.map((l) => l.target.package_name)
+    expect(pkgs).toEqual(expect.arrayContaining(['app.moyiq.app.twa', 'com.moyiq.app.twa']))
+  })
+})
