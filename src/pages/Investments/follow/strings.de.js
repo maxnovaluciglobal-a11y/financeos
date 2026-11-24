@@ -117,7 +117,7 @@ export default {
   'fl.push.busy': 'Wird aktiviert…',
   'fl.push.on': 'Die Hinweise sind auf diesem Gerät aktiv.',
   'fl.push.ok': 'Erledigt: Die Alarme erreichen jetzt dieses Gerät.',
-  'fl.push.noLicense': 'Hinweise auf dem Handy brauchen eine aktive Lizenz. Ohne sie bleiben Ihre Alarme gespeichert, und Sie sehen hier, welche erfüllt sind.',
+  'fl.push.noLicense': 'Hinweise auf diesem Gerät brauchen eine aktive moyiq-Lizenz. Ohne sie bleiben Ihre Alarme gespeichert, und Sie sehen hier, welche erfüllt sind.',
   'fl.push.unsupported': 'Dieser Browser kann keine Hinweise empfangen. Ihre Alarme bleiben gespeichert, und Sie sehen hier, welche erfüllt sind.',
   'fl.push.demo': 'In der Demo werden keine Hinweise aktiviert.',
 

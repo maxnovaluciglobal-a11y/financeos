@@ -29,20 +29,25 @@ const NOTHING = new Set(['session_required', 'auth_unavailable', 'network', 'tim
 const GAP = new Set(['not_deleted', 'denied'])
 
 // Resultado de investErase.eraseAll() → qué decir.
-//  ok · demo · nothing (no se borró nada: sesión, cuenta o red) · partial.
-// En partial: lo borrado, lo que no, y los pasos sin permiso (hueco de RLS).
+//  ok · demo · nothing (no se borró nada: sesión, cuenta o red antes de
+//  enviar cualquier borrado) · partial.
+// En partial: lo borrado, lo que quedó sin confirmar (se envió y no hubo
+// respuesta: puede que el servidor lo haya borrado), lo que no se borró y los
+// pasos sin permiso (hueco de RLS).
 export function eraseOutcome(r) {
   if (r?.ok) return { kind: 'ok' }
   if (r?.error === 'demo') return { kind: 'demo' }
   const done = [...(r?.done || []), ...(r?.skipped || [])]
-  const failed = (r?.failed || []).map(f => f.step)
-  if (!done.length && NOTHING.has(r?.error)) {
+  const all = r?.failed || []
+  const unsure = all.filter(f => f.sent).map(f => f.step)
+  if (!done.length && !unsure.length && NOTHING.has(r?.error)) {
     return { kind: 'nothing', errorKey: `is.del.err.${r.error === 'timeout' ? 'network' : r.error}` }
   }
   return {
     kind: 'partial',
     done: (r?.done || []),
-    failed,
-    gap: (r?.failed || []).filter(f => GAP.has(f.error)).map(f => f.step),
+    unsure,
+    failed: all.filter(f => !f.sent).map(f => f.step),
+    gap: all.filter(f => GAP.has(f.error)).map(f => f.step),
   }
 }

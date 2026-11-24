@@ -95,22 +95,57 @@ describe('Eliminar mis datos de Inversiones (F7)', () => {
     expect(r.skipped).toEqual(['invest_operations'])
   })
 
-  it('un corte de red frena el resto y lo marca como no intentado; lo local igual se borra', async () => {
+  it('un corte de red frena el resto y lo marca como no intentado; lo local queda para el reintento', async () => {
     let n = 0
     const c = fakeClient(q => { if (q.verb === 'delete' && ++n === 2) throw new Error('fetch failed'); return { count: 0, error: null } })
-    const storage = memStorage({ [SNAPSHOT_KEY]: '{}' })
-    const r = await mk(c, { storage }).eraseAll()
+    const storage = memStorage({ [SNAPSHOT_KEY]: '{}', [APORTE_KEY]: '100' })
+    const reset = vi.fn()
+    const r = await mk(c, { storage, resets: [reset] }).eraseAll()
     expect(r.ok).toBe(false)
     expect(r.error).toBe('network')
     expect(r.done).toEqual(['invest_alerts'])
     expect(r.failed).toEqual([
-      { step: 'watchlist', error: 'network' },
+      { step: 'watchlist', error: 'network', sent: true },
       { step: 'invest_operations', error: 'not_tried' },
       { step: 'portfolio_holdings', error: 'not_tried' },
       { step: PLANS_STEP, error: 'not_tried' },
     ])
     expect(c.auth.updateUser).not.toHaveBeenCalled()
-    expect(storage.m.has(SNAPSHOT_KEY)).toBe(false)
+    // El aporte del mes vive solo en el dispositivo: no se borra a medias.
+    expect(storage.m.get(SNAPSHOT_KEY)).toBe('{}')
+    expect(storage.m.get(APORTE_KEY)).toBe('100')
+    expect(reset).not.toHaveBeenCalled()
+  })
+
+  it('tiempo agotado después de enviar el DELETE: el paso queda "enviado" (pudo borrarse) y lo local no se toca', async () => {
+    const c = fakeClient(q => (q.verb === 'delete' ? new Promise(r => setTimeout(() => r({ error: null }), 50)) : { count: 0, error: null }))
+    const storage = memStorage({ [SNAPSHOT_KEY]: '{}', [APORTE_KEY]: '100' })
+    const r = await mk(c, { storage, timeoutMs: 10 }).eraseAll()
+    expect(r).toMatchObject({ ok: false, error: 'timeout', done: [] })
+    expect(r.failed[0]).toEqual({ step: 'invest_alerts', error: 'timeout', sent: true })
+    expect(r.failed.slice(1).map(f => f.error)).toEqual(['not_tried', 'not_tried', 'not_tried', 'not_tried'])
+    expect(c.log.filter(q => q.verb === 'delete').map(q => q.table)).toEqual(['invest_alerts'])
+    expect(storage.m.get(APORTE_KEY)).toBe('100')
+  })
+
+  it('tiempo agotado en el conteo después de un DELETE sin error: también queda "enviado"', async () => {
+    const c = fakeClient(q => (q.verb === 'select' ? new Promise(() => {}) : { error: null }))
+    const r = await mk(c, { timeoutMs: 10 }).eraseAll()
+    expect(r.failed[0]).toEqual({ step: 'invest_alerts', error: 'timeout', sent: true })
+  })
+
+  it('un rechazo sin respuesta de red en los planes también queda "enviado"', async () => {
+    const c = fakeClient(undefined, { update: async () => { throw new Error('fetch failed') } })
+    const r = await mk(c).eraseAll()
+    expect(r.done).toEqual(ERASE_TABLES)
+    expect(r.failed).toEqual([{ step: PLANS_STEP, error: 'network', sent: true }])
+  })
+
+  it('si se intentaron todos los pasos (aunque uno falle sin corte), lo local se borra', async () => {
+    const c = fakeClient(q => (q.verb === 'delete' && q.table === 'watchlist' ? { error: { code: '42501', message: 'permission denied' } } : { count: 0, error: null }))
+    const storage = memStorage({ [APORTE_KEY]: '100' })
+    await mk(c, { storage }).eraseAll()
+    expect(storage.m.has(APORTE_KEY)).toBe(false)
   })
 
   it('sin sesión no toca nada', async () => {

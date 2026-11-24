@@ -170,6 +170,7 @@ export const es = {
   'pf.toast.effectFailed': 'La operación se guardó, pero la posición de {t} no se pudo ajustar. Revísala en Posiciones.',
   'pf.toast.exported': 'Archivo descargado',
   'pf.toast.backup': 'Copia descargada: guárdala donde quieras',
+  'pf.toast.backupErr': 'No se pudo leer la lista de activos que sigues: la copia no se descargó. Vuelve a intentarlo.',
 
   'pf.err.ticker_required': 'Escribe el ticker.',
   'pf.err.ticker_invalid': 'Ese ticker no es válido.',

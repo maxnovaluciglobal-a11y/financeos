@@ -169,6 +169,7 @@ export const de = {
   'pf.toast.effectFailed': 'Die Transaktion wurde gespeichert, aber die Position {t} konnte nicht angepasst werden. Prüfen Sie sie unter Positionen.',
   'pf.toast.exported': 'Datei heruntergeladen',
   'pf.toast.backup': 'Sicherung heruntergeladen: Bewahren Sie sie auf, wo Sie möchten',
+  'pf.toast.backupErr': 'Die Werte, die Sie verfolgen, konnten nicht gelesen werden: Die Sicherung wurde nicht heruntergeladen. Versuchen Sie es erneut.',
 
   'pf.err.ticker_required': 'Geben Sie den Ticker ein.',
   'pf.err.ticker_invalid': 'Dieser Ticker ist ungültig.',

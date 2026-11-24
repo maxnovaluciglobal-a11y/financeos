@@ -81,14 +81,36 @@ describe('Ajustes › Inversiones: lógica', () => {
     expect(eraseOutcome({ ok: false, error: 'session_required', done: [], failed: [] })).toEqual({ kind: 'nothing', errorKey: 'is.del.err.session_required' })
     expect(eraseOutcome({ ok: false, error: 'timeout', done: [], failed: ERASE_STEPS.map(step => ({ step, error: 'not_tried' })) }).errorKey).toBe('is.del.err.network')
     const p = eraseOutcome({ ok: false, error: 'partial', done: ['invest_alerts', PLANS_STEP], skipped: [], failed: [{ step: 'watchlist', error: 'not_deleted' }, { step: 'portfolio_holdings', error: 'delete_failed' }] })
-    expect(p).toEqual({ kind: 'partial', done: ['invest_alerts', PLANS_STEP], failed: ['watchlist', 'portfolio_holdings'], gap: ['watchlist'] })
+    expect(p).toEqual({ kind: 'partial', done: ['invest_alerts', PLANS_STEP], unsure: [], failed: ['watchlist', 'portfolio_holdings'], gap: ['watchlist'] })
     // Corte de red a mitad: se dice lo que sí se borró.
     expect(eraseOutcome({ ok: false, error: 'network', done: ['invest_alerts'], failed: [{ step: 'watchlist', error: 'network' }] }).kind).toBe('partial')
+  })
+  it('eraseOutcome: si un DELETE salió y no hubo respuesta, nunca dice "no se borró nada"', () => {
+    const notTried = ERASE_STEPS.slice(1).map(step => ({ step, error: 'not_tried' }))
+    for (const error of ['timeout', 'network']) {
+      const o = eraseOutcome({ ok: false, error, done: [], skipped: [], failed: [{ step: 'invest_alerts', error, sent: true }, ...notTried] })
+      expect(o.kind).toBe('partial')
+      expect(o.unsure).toEqual(['invest_alerts'])
+      expect(o.failed).toEqual(ERASE_STEPS.slice(1))
+    }
+  })
+  it('el aviso de "sin confirmar" existe y no dice que no se borró nada', () => {
+    for (const d of Object.values(L)) {
+      expect(d['is.del.unsure']).toContain('{list}')
+      expect(d['is.del.unsureHead']).toBeTruthy()
+    }
+    expect(es['is.del.unsureHead']).toMatch(/puede que se haya borrado una parte/)
+    expect(es['is.del.unsureHead']).not.toMatch(/no se borró nada/)
     expect(ERASE_STEPS).toEqual([...ERASE_TABLES, PLANS_STEP])
   })
 })
 
 describe('Ajustes › Inversiones: pantalla', () => {
+  it('la copia JSON de Ajustes no se descarga sin la lista de seguimiento', () => {
+    const src = read('./InvestSettings.jsx')
+    expect(src).toMatch(/if \(f\.error\) \{ setMsg\(\{ err: true, text: t\('is\.data\.backupErr'\) \}\)/)
+    expect(es['is.data.backupErr']).toMatch(/no se descargó/)
+  })
   it('reutiliza exports.js, usePushOffer, ProfileSheet, investErase y la ayuda diferida', () => {
     const src = read('./InvestSettings.jsx')
     expect(src).toContain("from '../portfolio/exports.js'")

@@ -6,6 +6,7 @@ import { holdingsCsv, operationsCsv, backupJson, exportName } from '../../../uti
 import { sortOpsDesc } from '../../../utils/investLedger.js'
 import { investData } from '../../../core/investData.js'
 import { downloadText } from './format.js'
+import { getTargets } from './targetsStore.js'
 
 export const csvLabels = (t) => ({
   ticker: t('pf.csv.h.ticker'), type: t('pf.csv.h.type'), ccy: t('pf.csv.h.ccy'), shares: t('pf.csv.h.shares'), entry: t('pf.csv.h.entry'),
@@ -24,9 +25,15 @@ export const positionsFile = (pb, t, now = new Date()) =>
   ({ name: `${exportName('moyiq-inversiones', now)}.csv`, text: holdingsCsv(pb.positions.rows, csvLabels(t)), mime: 'text/csv;charset=utf-8' })
 export const operationsFile = (pb, t, now = new Date()) =>
   ({ name: `${exportName('moyiq-operaciones', now)}.csv`, text: operationsCsv(sortOpsDesc(pb.ops).reverse(), opLabels(t)), mime: 'text/csv;charset=utf-8' })
-export async function backupFile({ pb, targets = null, demo = false, listWatchlist = () => investData.listWatchlist(), now = new Date() }) {
-  const w = demo ? { ok: true, data: [] } : await listWatchlist()
-  const text = backupJson({ holdings: pb.holdings, operations: pb.ops, watchlist: w.ok ? w.data : [], capital: pb.capital, targets })
+// Copia JSON. Los objetivos de Portafolio salen de targetsStore si quien llama
+// no los pasa (Ajustes no los tiene a mano). Si no se pudo leer la lista de
+// seguimiento, no se arma una copia incompleta que parezca completa: vuelve
+// { error: 'watchlist' } y quien llama lo avisa.
+export async function backupFile({ pb, targets = getTargets(), demo = false, listWatchlist = () => investData.listWatchlist(), now = new Date() }) {
+  let w
+  try { w = demo ? { ok: true, data: [] } : await listWatchlist() } catch { w = { ok: false } }
+  if (!w?.ok) return { error: 'watchlist' }
+  const text = backupJson({ holdings: pb.holdings, operations: pb.ops, watchlist: w.data || [], capital: pb.capital, targets: targets ?? null })
   return { name: `${exportName('moyiq-inversiones-copia', now)}.json`, text, mime: 'application/json' }
 }
 

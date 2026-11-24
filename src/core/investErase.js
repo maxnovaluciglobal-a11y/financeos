@@ -18,7 +18,10 @@
 // pudo borrar vuelve en `failed` con su motivo; se puede repetir sin riesgo
 // (lo ya borrado vuelve a dar 0 filas). Un corte de red o de sesión frena los
 // pasos que faltan, que vuelven como 'not_tried'.
-// Respuesta: { ok, error?, done: [tabla], skipped: [tabla], failed: [{ step, error }] }.
+// El tiempo agotado no cancela el pedido: si el DELETE (o el cambio de los
+// planes) ya salió y no llegó respuesta, el servidor pudo haberlo hecho. Ese
+// paso vuelve con `sent: true` para no decir "no se borró nada".
+// Respuesta: { ok, error?, done: [tabla], skipped: [tabla], failed: [{ step, error, sent? }] }.
 import { authClient } from './authClient.js'
 import { isMissingTable } from './investData.js'
 import { PLANS_KEY, plansPayload } from '../utils/investPlan.js'
@@ -58,8 +61,10 @@ export function createInvestErase({ client = authClient, isDemo = isDemoUrl, tim
     for (const fn of resets) { try { fn() } catch { /* una caché en memoria se vacía al recargar */ } }
   }
 
-  async function eraseTable(table, uid) {
-    const res = await run(client.from(table).delete().eq('user_id', uid))
+  async function eraseTable(table, uid, markSent) {
+    const q = client.from(table).delete().eq('user_id', uid)
+    markSent()
+    const res = await run(q)
     if (res?.error) return isMissingTable(res.error) ? 'missing' : dbCode(res.error)
     const left = await run(client.from(table).select('user_id', { count: 'exact', head: true }).eq('user_id', uid))
     if (left?.error) return isMissingTable(left.error) ? 'missing' : 'verify_failed'
@@ -83,21 +88,28 @@ export function createInvestErase({ client = authClient, isDemo = isDemoUrl, tim
       for (const step of steps) {
         if (stopped) { out.failed.push({ step, error: 'not_tried' }); continue }
         let r
+        let sent = false
+        const markSent = () => { sent = true }
         try {
           if (step === PLANS_STEP) {
-            const { error } = await run(client.auth.updateUser({ data: { [PLANS_KEY]: plansPayload([]) } }))
+            const q = client.auth.updateUser({ data: { [PLANS_KEY]: plansPayload([]) } })
+            markSent()
+            const { error } = await run(q)
             r = error ? dbCode(error) === 'session_required' ? 'session_required' : 'save_failed' : 'ok'
-          } else r = await eraseTable(step, uid)
+          } else r = await eraseTable(step, uid, markSent)
         } catch (e) { r = net(e) }
         if (r === 'ok') out.done.push(step)
         else if (r === 'missing') out.skipped.push(step)
         else {
-          out.failed.push({ step, error: r })
+          // Sin respuesta después de enviar: no sabemos si el servidor lo hizo.
+          out.failed.push(sent && (r === 'network' || r === 'timeout') ? { step, error: r, sent: true } : { step, error: r })
           if (STOP.has(r)) stopped = r
         }
       }
-      // Lo del dispositivo se borra siempre: se vuelve a armar desde el servidor.
-      clearLocal()
+      // Lo del dispositivo se borra solo si se intentaron todos los pasos del
+      // servidor. Tras un corte queda: el aporte del mes vive solo aquí y no se
+      // vuelve a armar, y la persona va a reintentar.
+      if (!stopped) clearLocal()
       if (out.failed.length) return { ok: false, error: stopped || 'partial', ...out }
       return { ok: true, ...out }
     },

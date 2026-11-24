@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { backupFile, operationsFile, positionsFile } from './exports.js'
+import { setTargetsValue, __resetTargets } from './targetsStore.js'
 import { ptFor } from './text.js'
 import { parseBackup } from '../../../utils/investCsv.js'
 
@@ -31,6 +32,21 @@ describe('exports.js', () => {
     expect(f.name).toBe('moyiq-inversiones-copia-2026-11-23.json')
     expect(JSON.parse(f.text).watchlist).toEqual(['AAPL'])
     expect(parseBackup(f.text).ok).toBe(true)
+  })
+
+  it('sin la lista de seguimiento (error o red) no arma una copia incompleta', async () => {
+    expect(await backupFile({ pb, listWatchlist: async () => ({ ok: false, error: 'network' }), now })).toEqual({ error: 'watchlist' })
+    expect(await backupFile({ pb, listWatchlist: async () => { throw new Error('x') }, now })).toEqual({ error: 'watchlist' })
+  })
+
+  it('sin targets explícitos lleva los objetivos de Portafolio (targetsStore), como pide Ajustes', async () => {
+    const listWatchlist = async () => ({ ok: true, data: [] })
+    setTargetsValue({ VOO: 60 })
+    try {
+      const f = await backupFile({ pb, listWatchlist, now })
+      expect(JSON.parse(f.text).targets).toEqual({ VOO: 60 })
+      expect(JSON.parse((await backupFile({ pb, targets: null, listWatchlist, now })).text).targets ?? null).toBe(null)
+    } finally { __resetTargets() }
   })
 
   it('en el demo no pide la lista al servidor', async () => {

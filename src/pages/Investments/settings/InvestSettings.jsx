@@ -163,10 +163,16 @@ function BookBlocks({ t, demo, go, alerts = null }) {
   const [msg, setMsg] = useState(null)
   const ready = pb.phase === 'ready' || pb.phase === 'refreshing'
 
-  function done(f) { download(f); setMsg(t('is.data.exported', { name: f.name })) }
+  function done(f) { download(f); setMsg({ text: t('is.data.exported', { name: f.name }) }) }
   function exportOps() {
-    if (!pb.ops.length) { setMsg(t('is.data.noOps')); return }
+    if (!pb.ops.length) { setMsg({ text: t('is.data.noOps') }); return }
     done(operationsFile(pb, tp))
+  }
+  // Sin la lista de seguimiento no se descarga: la copia parecería completa.
+  async function exportBackup() {
+    const f = await backupFile({ pb, demo })
+    if (f.error) { setMsg({ err: true, text: t('is.data.backupErr') }); return }
+    done(f)
   }
 
   return (
@@ -198,9 +204,10 @@ function BookBlocks({ t, demo, go, alerts = null }) {
         <div className={s.actions}>
           <button type="button" className={s.btn} disabled={!ready} onClick={() => done(positionsFile(pb, tp))}>{t('is.data.positions')}</button>
           <button type="button" className={s.btn} disabled={!ready} onClick={exportOps}>{t('is.data.ops')}</button>
-          <button type="button" className={s.btn} disabled={!ready} onClick={async () => done(await backupFile({ pb, demo }))}>{t('is.data.backup')}</button>
+          <button type="button" className={s.btn} disabled={!ready} onClick={exportBackup}>{t('is.data.backup')}</button>
         </div>
-        <p className={s.note} role="status">{msg || ''}</p>
+        <p className={s.note} role="status">{msg && !msg.err ? msg.text : ''}</p>
+        {msg?.err && <p className={s.error} role="alert">{msg.text}</p>}
         <p className={s.note}>{t('is.data.importNote')}</p>
         <div className={s.actions}>
           <button type="button" className={s.btnLink} onClick={() => go(() => queueInvestTab('portafolio', 'posiciones'))}>{t('is.data.import')}</button>
@@ -301,8 +308,9 @@ export function EraseBlock({ t, demo, erase = eraser.eraseAll, onErased = null }
               {res.kind === 'nothing' && <p>{t(res.errorKey)}</p>}
               {res.kind === 'partial' && (
                 <>
-                  <p>{t('is.del.partial')}</p>
+                  <p>{t(res.unsure.length && !res.done.length ? 'is.del.unsureHead' : 'is.del.partial')}</p>
                   {res.done.length > 0 && <p>{t('is.del.partialDone', { list: list(res.done) })}</p>}
+                  {res.unsure.length > 0 && <p>{t('is.del.unsure', { list: list(res.unsure) })}</p>}
                   {res.failed.length > 0 && <p>{t('is.del.partialFail', { list: list(res.failed) })}</p>}
                   {res.gap.length > 0 && <p>{t('is.del.gap', { list: list(res.gap), email: SUPPORT_EMAIL })}</p>}
                 </>

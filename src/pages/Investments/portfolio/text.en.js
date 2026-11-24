@@ -169,6 +169,7 @@ export const en = {
   'pf.toast.effectFailed': 'The transaction was saved, but the {t} holding could not be adjusted. Check it in Holdings.',
   'pf.toast.exported': 'File downloaded',
   'pf.toast.backup': 'Backup downloaded: keep it wherever you like',
+  'pf.toast.backupErr': 'The assets you follow could not be read: the backup was not downloaded. Try again.',
 
   'pf.err.ticker_required': 'Enter the ticker.',
   'pf.err.ticker_invalid': 'That ticker is not valid.',

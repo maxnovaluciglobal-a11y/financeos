@@ -10,6 +10,10 @@ import es from './strings.es.js'
 import en from './strings.en.js'
 import pt from './strings.pt.js'
 import de from './strings.de.js'
+import appEs from '../i18n/strings.es.js'
+import appEn from '../i18n/strings.en.js'
+import appPt from '../i18n/strings.pt.js'
+import appDe from '../i18n/strings.de.js'
 import { interpolate } from '../../../i18n/translate.js'
 import { HELP_GROUPS, HELP_EMAIL } from './dict.js'
 import { HelpBody } from './InvestHelp.jsx'
@@ -45,15 +49,43 @@ describe('Ayuda de Inversiones: textos', () => {
     expect(all.length).toBe(16)
     for (const q of ['fresh', 'ma', 'rsi', 'macd', 'calc', 'stop', 'cash', 'tramos', 'where', 'ai', 'free', 'alertsHow', 'alertsOld']) expect(all).toContain(q)
   })
-  it('dice con exactitud dónde viven los datos: cuenta, servidor y RLS; no en el dispositivo', () => {
+  it('dice con exactitud dónde viven los datos, en lenguaje llano: cuenta y servidor, no el dispositivo', () => {
     const a = es['hlp.a.where']
     expect(a).toMatch(/servidor/)
-    expect(a).toMatch(/RLS/)
+    expect(a).toMatch(/Solo tú, con tu sesión iniciada/)
     expect(a).toMatch(/no en el dispositivo/)
     for (const w of ['posiciones', 'movimientos', 'lista', 'alertas', 'capital']) expect(a).toContain(w)
     expect(a).toMatch(/exportar/)
     expect(a).toMatch(/eliminar/i)
-    for (const d of [en, pt, de]) expect(d['hlp.a.where']).toMatch(/RLS/)
+    // La sincronización opcional sube una copia cifrada de las finanzas.
+    expect(a).toMatch(/sincronización.*copia cifrada/)
+    // Sin jerga técnica (el detalle queda en la política de privacidad).
+    for (const d of Object.values(L)) expect(d['hlp.a.where']).not.toMatch(/RLS|Supabase/)
+  })
+  it('las etiquetas de frescura que cita la ayuda son las que muestra la app, en cada idioma', () => {
+    const app = { es: appEs, en: appEn, pt: appPt, de: appDe }
+    for (const [lang, d] of Object.entries(L)) {
+      const shown = Object.entries(app[lang]).filter(([k]) => k.startsWith('invest.hoy.fresh.'))
+        .map(([, v]) => String(v).split(' · ')[0].replace('{n}', 'N'))
+      const cited = [...d['hlp.a.fresh'].matchAll(/["„]([^"“]+)["“]/g)].map(m => m[1])
+      expect(cited.length, lang).toBe(5)
+      for (const c of cited) expect(shown, `${lang}: ${c}`).toContain(c)
+    }
+  })
+  it('el buscador y "Vista completa" están debajo de las pestañas (como en el hub)', () => {
+    const hub = read('../hub/InvestHub.jsx')
+    expect(hub.indexOf('role="tablist"')).toBeLessThan(hub.indexOf('<ViewToggle'))
+    expect(hub.indexOf('role="tablist"')).toBeLessThan(hub.indexOf('<TickerSearch'))
+    const below = { es: 'debajo de las pestañas', en: 'below the tabs', pt: 'abaixo das abas', de: 'unter den Tabs' }
+    for (const [lang, d] of Object.entries(L)) {
+      for (const k of ['hlp.a.views', 'hlp.a.asset']) expect(d[k], `${lang} ${k}`).toContain(below[lang])
+    }
+  })
+  it('alertas: cada 15 minutos y licencia para los avisos en cualquier dispositivo, no solo el teléfono', () => {
+    for (const d of Object.values(L)) {
+      expect(d['hlp.a.alertsHow']).toMatch(/15/)
+      for (const k of ['hlp.a.alertsHow', 'hlp.a.free']) expect(d[k], k).not.toMatch(/teléfono|phone|celular|Telefon/)
+    }
   })
   it('alertas: funcionan con la app cerrada y las de invest.moyiq.app no se trasladaron', () => {
     expect(es['hlp.a.alertsHow']).toMatch(/app esté cerrada/)

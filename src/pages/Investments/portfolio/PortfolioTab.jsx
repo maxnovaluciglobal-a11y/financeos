@@ -135,7 +135,9 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
     toast(t('pf.toast.exported'))
   }
   async function exportBackup() {
-    download(await backupFile({ pb, targets, demo }))
+    const f = await backupFile({ pb, targets, demo })
+    if (f.error) { toast(t('pf.toast.backupErr'), 'error'); return }
+    download(f)
     toast(t('pf.toast.backup'))
   }
 
