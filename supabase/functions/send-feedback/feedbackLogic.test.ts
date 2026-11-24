@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { parseFeedback, claimFeedback, claimNps, sendFeedbackEmail, renderFeedbackEmail, MAX_MESSAGE } from './feedbackLogic.ts'
-import { corsHeaders, ALLOWED_ORIGINS, FALLBACK_ORIGIN, captchaExempt } from './cors.ts'
+import * as feedbackCors from './cors.ts'
+const { corsHeaders, ALLOWED_ORIGINS, FALLBACK_ORIGIN } = feedbackCors
 
 const CONFIG = { supabaseUrl: 'https://p.supabase.co', serviceRole: 'srv', resendApiKey: 're', supportEmail: 'support@moyiq.app', fromEmail: 'moyiq <hola@moyiq.app>' }
 afterEach(() => { vi.unstubAllGlobals() })
@@ -78,12 +79,12 @@ describe('CORS de send-feedback', () => {
   })
 })
 
-describe('send-feedback: Turnstile y la app de tienda (V-NAT FN-1)', () => {
-  it('exime solo los orígenes de la app nativa', () => {
-    expect(captchaExempt('capacitor://localhost')).toBe(true)
-    expect(captchaExempt('https://localhost')).toBe(true)
-    for (const o of ['https://app.moyiq.app', 'https://demo.moyiq.app', 'http://localhost:5173', 'https://localhost.evil.com', '', null, undefined]) {
-      expect(captchaExempt(o)).toBe(false)
-    }
+describe('send-feedback: Turnstile también para la app de tienda (captcha nativo, 24-nov-2026)', () => {
+  it('ya no hay exención por origen', async () => {
+    expect('captchaExempt' in feedbackCors).toBe(false)
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(new URL('./index.ts', import.meta.url), 'utf8')
+    expect(src).not.toMatch(/native_app|captchaExempt/)
+    expect(src).toMatch(/checkTurnstile\(/)
   })
 })

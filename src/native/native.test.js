@@ -22,7 +22,7 @@ describe('platform', () => {
     expect(apiBase(web)).toBe('')
     expect(apiBase(cap('ios'))).toBe('https://app.moyiq.app')
     expect(authEmailRedirect(web)).toBe('https://app.moyiq.app/app/')
-    expect(authEmailRedirect({ ...cap('android'), location: { origin: 'https://localhost', pathname: '/app/' } })).toBe(PUBLIC_APP_URL)
+    expect(authEmailRedirect({ ...cap('android'), location: { origin: 'https://native.moyiq.app', pathname: '/app/' } })).toBe(PUBLIC_APP_URL)
   })
 })
 

@@ -19,8 +19,9 @@
 
 export const config = { runtime: 'edge' };
 
-// + app nativa (Capacitor): capacitor://localhost en iOS, https://localhost en Android.
-const ALLOWED_ORIGINS = ['https://app.moyiq.app', 'https://demo.moyiq.app', 'https://moyiq.app', 'capacitor://localhost', 'https://localhost'];
+// + app nativa (Capacitor): capacitor://native.moyiq.app en iOS, https://native.moyiq.app en
+// Android (src/native/platform.js › NATIVE_APP_ORIGINS; hasta el 24-nov-2026 era localhost).
+const ALLOWED_ORIGINS = ['https://app.moyiq.app', 'https://demo.moyiq.app', 'https://moyiq.app', 'capacitor://native.moyiq.app', 'https://native.moyiq.app'];
 
 // Every currency DEFAULT_USD_RATES covers, plus USD itself as the pivot.
 // EUR is deliberately NOT requested: it's the (forced, free-tier) base

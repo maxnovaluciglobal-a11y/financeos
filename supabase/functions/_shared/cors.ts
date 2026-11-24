@@ -10,12 +10,15 @@
 // encabezados extra si los necesita (x-cron-secret para el cron).
 
 // Orígenes de la app nativa (Capacitor, repo moyiq-ios-capacitor): la vista web
-// sirve el paquete desde capacitor://localhost en iOS y https://localhost en
-// Android. Solo los suman las funciones que llama la app (no la landing).
-// NAT-16: ese origen queda fijo en capacitor.config.json (hostname localhost,
-// iosScheme capacitor, androidScheme https) y no se cambia: los datos locales
-// dependen de él. Si cambiara, actualizar esta lista y api/fixer.js.
-export const NATIVE_APP_ORIGINS = ["capacitor://localhost", "https://localhost"] as const;
+// sirve el paquete desde capacitor://native.moyiq.app en iOS y
+// https://native.moyiq.app en Android. Solo los suman las funciones que llama la
+// app (no la landing). Hasta el 24-nov-2026 el hostname era localhost; se cambió
+// a un subdominio de moyiq.app para que corra el widget de Turnstile (captcha de
+// Supabase Auth). Debe coincidir con capacitor.config.json (server.hostname),
+// src/native/platform.js (NATIVE_APP_ORIGINS), api/fixer.js e invest-web
+// api/_lib/origin.js. Los datos locales dependen de ese origen: no cambiarlo
+// después de publicar la app sin una migración probada.
+export const NATIVE_APP_ORIGINS = ["capacitor://native.moyiq.app", "https://native.moyiq.app"] as const;
 
 export const BROWSER_ALLOWED_HEADERS = ["authorization", "apikey", "content-type", "x-client-info"] as const;
 

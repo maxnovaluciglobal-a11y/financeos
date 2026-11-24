@@ -114,7 +114,7 @@ export async function signInWithApple() {
 }
 
 // En la app nativa el inicio con un proveedor no puede volver a
-// capacitor://localhost: se abre en el navegador del sistema y vuelve por
+// capacitor://native.moyiq.app: se abre en el navegador del sistema y vuelve por
 // moyiq://auth-callback (native/nativeAuth.js).
 async function signInWithProvider(provider) {
   if (!authClient) return { error: 'auth_not_configured' }

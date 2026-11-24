@@ -134,6 +134,28 @@ login no manda `captchaToken`. CSP: `script-src` y `frame-src` con `https://chal
    Probar: un POST a `lead-submit` sin token → 403; uno directo a `/rest/v1/rpc/register_*`
    con la clave publicable → 401/42501.
 
+## App de tienda (iOS y Android, Capacitor) — desde el 24-nov-2026
+
+Con el captcha de Supabase Auth prendido, la app nativa también tiene que mandar el token
+(si no, alta, inicio con contraseña y recuperar contraseña fallan con `captcha_failed`).
+La vista web de la app se sirve con el hostname **`native.moyiq.app`**
+(`capacitor.config.json` del repo `moyiq-ios-capacitor`: `server.hostname`), es decir
+`capacitor://native.moyiq.app` (iOS) y `https://native.moyiq.app` (Android). Como el widget
+`moyiq-forms` tiene el hostname `moyiq.app` y Cloudflare autoriza sus subdominios, el widget
+corre dentro de la app **sin tocar Cloudflare** (probado en el emulador de Android y en el
+Simulador de iOS: token válido y `POST /auth/v1/token` → 200).
+
+- `native.moyiq.app` nunca se resuelve por DNS: Capacitor sirve el paquete local con ese nombre.
+  No usar `app.moyiq.app`: la vista web interceptaría las llamadas a `https://app.moyiq.app/api`.
+- `Turnstile.jsx › defaultSiteKey`: en nativo solo hay widget si el hostname es
+  `native.moyiq.app` (con otro, Cloudflare lo rechaza y el login esperaría 10 s un token).
+- La compilación de tienda hornea la site key pública: `scripts/build-web.mjs` del repo nativo la
+  pone por defecto y falla si el paquete no la trae.
+- `send-feedback` ya no exime a la app nativa (la exención por `Origin` se podía falsificar).
+- CORS: `NATIVE_APP_ORIGINS` (`supabase/functions/_shared/cors.ts`, `src/native/platform.js`),
+  `api/fixer.js` e invest-web `api/_lib/origin.js` llevan los dos orígenes nuevos; los de
+  `localhost` se quitaron.
+
 ## Login (SEG-7): CAPTCHA de Supabase Auth
 
 Supabase Auth soporta Turnstile de forma nativa. **No está prendido**: si se prende antes de

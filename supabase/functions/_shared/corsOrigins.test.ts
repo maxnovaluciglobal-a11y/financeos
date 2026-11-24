@@ -3,7 +3,8 @@
 // por partes para que `git grep` del dominio dé 0 en el repo). Solo orígenes HTTPS de
 // moyiq.app (y sus subdominios). SEC-N10: localhost ya no va en las listas de producción;
 // el desarrollo lo agrega con DEV_ORIGINS. INV-N13: las funciones que llama la app (incluida
-// invest-handoff) aceptan además la app nativa (capacitor://localhost, https://localhost).
+// invest-handoff) aceptan además la app nativa (capacitor://native.moyiq.app, https://native.moyiq.app;
+// hasta el 24-nov-2026, capacitor://localhost y https://localhost, que ya no se aceptan).
 import { describe, it, expect } from 'vitest'
 import * as cancellation from '../send-cancellation-confirmation/cors.ts'
 import * as diagnostico from '../send-nurture-diagnostico-email/cors.ts'
@@ -22,7 +23,8 @@ const LEGACY = 'financeos' + 'pro'
 const ALL = { cancellation, diagnostico, invest, starter, optin, report, deleteAccount, feedback, leadSubmit, investHandoff }
 const VALID = /^https:\/\/([a-z0-9-]+\.)*moyiq\.app$/
 // Los dos orígenes de la app nativa (Capacitor), que suman las funciones que llama la app.
-const NATIVE = ['capacitor://localhost', 'https://localhost']
+const NATIVE = ['capacitor://native.moyiq.app', 'https://native.moyiq.app']
+const OLD_NATIVE = ['capacitor://localhost', 'https://localhost']
 
 describe('orígenes CORS de las Edge Functions', () => {
   for (const [name, mod] of Object.entries(ALL)) {
@@ -41,11 +43,19 @@ describe('orígenes CORS de las Edge Functions', () => {
   }
   it('la app nativa llega a las funciones que llama la app, no a las de la landing', () => {
     for (const mod of [deleteAccount, feedback, leadSubmit, investHandoff, starter, optin, report]) {
-      expect(mod.ALLOWED_ORIGINS).toEqual(expect.arrayContaining(['capacitor://localhost', 'https://localhost']))
-      expect(mod.corsHeaders('capacitor://localhost')['Access-Control-Allow-Origin']).toBe('capacitor://localhost')
+      expect(mod.ALLOWED_ORIGINS).toEqual(expect.arrayContaining(NATIVE))
+      for (const o of NATIVE) expect(mod.corsHeaders(o)['Access-Control-Allow-Origin']).toBe(o)
     }
     for (const mod of [cancellation, diagnostico, invest]) {
-      expect(mod.ALLOWED_ORIGINS).not.toContain('capacitor://localhost')
+      for (const o of NATIVE) expect(mod.ALLOWED_ORIGINS).not.toContain(o)
+    }
+  })
+  it('el origen nativo viejo (localhost) ya no está en ninguna lista', () => {
+    for (const mod of Object.values(ALL)) {
+      for (const o of OLD_NATIVE) {
+        expect(mod.ALLOWED_ORIGINS).not.toContain(o)
+        expect(mod.corsHeaders(o)['Access-Control-Allow-Origin']).toBe(mod.FALLBACK_ORIGIN)
+      }
     }
   })
   it('conserva los orígenes de producción que usan la app y la landing', () => {
@@ -88,12 +98,13 @@ describe('SEC-N10: orígenes de desarrollo por DEV_ORIGINS', () => {
 })
 
 describe('INV-N13: invest-handoff acepta la app nativa', () => {
-  it('capacitor://localhost y https://localhost reciben su propio origen', () => {
+  it('capacitor://native.moyiq.app y https://native.moyiq.app reciben su propio origen', () => {
     for (const o of NATIVE) {
       expect(investHandoff.isAllowedOrigin(o)).toBe(true)
       expect(investHandoff.corsHeaders(o)['Access-Control-Allow-Origin']).toBe(o)
     }
     expect(investHandoff.isAllowedOrigin('capacitor://evil')).toBe(false)
     expect(investHandoff.isAllowedOrigin('http://localhost')).toBe(false)
+    for (const o of OLD_NATIVE) expect(investHandoff.isAllowedOrigin(o)).toBe(false)
   })
 })

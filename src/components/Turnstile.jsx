@@ -9,15 +9,22 @@
 //      errorText={t('authGate.errorCaptcha')}
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { TURNSTILE_SITE_KEY, loadTurnstile, createTokenBox } from '../core/turnstile.js'
-import { isNativeApp } from '../native/platform.js'
+import { isNativeApp, NATIVE_APP_HOSTNAME } from '../native/platform.js'
 
 // errorText: texto ya traducido (authGate.errorCaptcha). Va por prop porque DemoGate se monta
 // antes de AppProvider y traduce con useTFor, no con useT.
-// App de tienda: sin widget. Su origen (capacitor://localhost, https://localhost)
-// no es un hostname del widget, y el login quedaba esperando 10 s un token que
-// nunca llegaba (V-NAT FN-1). send-feedback exime ese origen (cors.ts ›
-// captchaExempt); Supabase Auth no pide captcha.
-export const defaultSiteKey = (win = globalThis) => (isNativeApp(win) ? '' : TURNSTILE_SITE_KEY)
+// App de tienda (captcha nativo, 24-nov-2026): la vista web se sirve como
+// capacitor://native.moyiq.app / https://native.moyiq.app, un subdominio del
+// widget, así que el widget corre igual que en la web (Supabase Auth exige el
+// token desde que el captcha está prendido). Si la app corriera con otro
+// hostname (recarga en vivo contra el servidor de desarrollo), Cloudflare
+// rechazaría el widget: sin clave, en vez de esperar 10 s un token que no llega.
+export function defaultSiteKey(win = globalThis, key = TURNSTILE_SITE_KEY) {
+  if (!isNativeApp(win)) return key
+  let host = ''
+  try { host = win.location?.hostname || '' } catch { host = '' }
+  return host === NATIVE_APP_HOSTNAME ? key : ''
+}
 const Turnstile = forwardRef(function Turnstile({ action, errorText, siteKey = defaultSiteKey(), showError = false }, ref) {
   const boxRef = useRef(null)
   const widgetId = useRef(null)

@@ -23,9 +23,19 @@ export function nativePlatform(win = globalThis) {
   } catch { return 'web' }
 }
 
-// Dominio público de la app: en la app nativa el origen es capacitor://localhost
-// (iOS) o https://localhost (Android), así que los enlaces que salen de la app
-// (correos de auth, /api de Vercel) tienen que ir al dominio real.
+// Origen de la vista web en la app nativa (capacitor.config.json del repo
+// moyiq-ios-capacitor: server.hostname "native.moyiq.app", iosScheme capacitor,
+// androidScheme https). Es un subdominio de moyiq.app para que el widget de
+// Turnstile `moyiq-forms` (hostname moyiq.app con subdominios) funcione dentro
+// de la app (captcha de Supabase Auth, 24-nov-2026). NO es app.moyiq.app: ese
+// hostname lo interceptaría la vista web y las llamadas a /api no saldrían.
+// Nunca se resuelve por DNS: Capacitor sirve el paquete local con ese nombre.
+export const NATIVE_APP_HOSTNAME = 'native.moyiq.app'
+export const NATIVE_APP_ORIGINS = [`capacitor://${NATIVE_APP_HOSTNAME}`, `https://${NATIVE_APP_HOSTNAME}`]
+
+// Dominio público de la app: el origen nativo no existe fuera del dispositivo,
+// así que los enlaces que salen de la app (correos de auth, /api de Vercel)
+// tienen que ir al dominio real.
 export const PUBLIC_APP_ORIGIN = 'https://app.moyiq.app'
 export const PUBLIC_APP_URL = `${PUBLIC_APP_ORIGIN}/app/`
 

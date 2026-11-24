@@ -43,4 +43,16 @@ describe('CORS de /api/fixer (C-24)', () => {
     expect(src).not.toMatch(new RegExp('financeos' + 'pro'))
     expect(src).toContain("'https://app.moyiq.app'")
   })
+
+  it('acepta el origen de la app nativa (native.moyiq.app) y ya no el viejo localhost', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { NATIVE_APP_ORIGINS } = await import('../src/native/platform.js')
+    const src = readFileSync(new URL('./fixer.js', import.meta.url), 'utf8')
+    const shared = readFileSync(new URL('../supabase/functions/_shared/cors.ts', import.meta.url), 'utf8')
+    for (const o of NATIVE_APP_ORIGINS) {
+      expect(src).toContain(`'${o}'`)
+      expect(shared).toContain(`"${o}"`)
+    }
+    expect(src).not.toMatch(/'(capacitor|https):\/\/localhost'/)
+  })
 })

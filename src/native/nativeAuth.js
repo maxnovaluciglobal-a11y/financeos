@@ -1,7 +1,7 @@
 // src/native/nativeAuth.js — inicio con Google/Apple dentro de la app nativa.
 //
 // Google bloquea el inicio de sesión dentro de vistas web embebidas, y la vuelta
-// de Supabase no puede apuntar a capacitor://localhost. Por eso:
+// de Supabase no puede apuntar al origen local (capacitor://native.moyiq.app). Por eso:
 //   1. signInWithOAuth con skipBrowserRedirect y redirectTo moyiq://auth-callback
 //      (cliente con flowType 'pkce', ver core/authClient.js);
 //   2. la URL del proveedor se abre con @capacitor/browser (SFSafariViewController

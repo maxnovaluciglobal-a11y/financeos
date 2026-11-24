@@ -72,9 +72,16 @@ describe('Ayuda y Turnstile en la app de tienda', () => {
     expect(appHelpHref('es', true)).toBe(SUPPORT_MAILTO)
     expect(appHelpHref('es', false)).toMatch(/^https:\/\/moyiq\.app\//)
   })
-  it('sin widget de Turnstile en nativo', () => {
-    expect(defaultSiteKey(cap('android'))).toBe('')
-    expect(defaultSiteKey(cap('ios'))).toBe('')
+  it('Turnstile en nativo solo con el origen native.moyiq.app (captcha de Supabase Auth)', () => {
+    const at = (p, origin) => ({ ...cap(p), location: new URL(origin) })
+    const K = '0xSITEKEY'
+    expect(defaultSiteKey(at('android', 'https://native.moyiq.app/app/'), K)).toBe(K)
+    expect(defaultSiteKey(at('ios', 'capacitor://native.moyiq.app/app/'), K)).toBe(K)
+    expect(defaultSiteKey({ location: new URL('https://app.moyiq.app/app/') }, K)).toBe(K)
+    // Otro hostname (recarga en vivo, compilación vieja): Cloudflare rechazaría el widget.
+    expect(defaultSiteKey(at('android', 'https://localhost/app/'), K)).toBe('')
+    expect(defaultSiteKey(at('ios', 'capacitor://localhost/app/'), K)).toBe('')
+    expect(defaultSiteKey(cap('ios'), K)).toBe('')
   })
 })
 
