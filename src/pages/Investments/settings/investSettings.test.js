@@ -35,7 +35,8 @@ describe('Ajustes › Inversiones: textos', () => {
   })
   it('cada estado de avisos y cada paso del borrado tiene su texto', () => {
     for (const d of Object.values(L)) {
-      for (const st of ['on', 'off', 'blocked', 'unsupported', 'noLicense', 'demo']) expect(d[`is.al.${st}`], st).toBeTruthy()
+      for (const st of ['on', 'off', 'blocked', 'unsupported', 'noLicense', 'demo']) expect(d[`is.al.s.${st}`], st).toBeTruthy()
+      for (const st of ['blocked', 'unsupported', 'noLicense', 'demo']) expect(d[`is.al.${st}`], st).toBeTruthy()
       for (const st of ERASE_STEPS) expect(d[`is.del.step.${st}`], st).toBeTruthy()
       for (const e of ['session_required', 'auth_unavailable', 'network']) expect(d[`is.del.err.${e}`], e).toBeTruthy()
     }

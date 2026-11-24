@@ -69,11 +69,16 @@
   font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer; align-self: flex-start;
 }
 
-/* ── Fila de vista y Ayuda (F7) ── */
-.toolRow { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.toolRow > :first-child { flex: 1 1 auto; min-width: 0; }
+/* ── Fila de vista y Ayuda (F7) ──
+   El interruptor y "Ayuda" en la misma fila; la explicación del interruptor
+   (el <p> de ViewToggle) debajo, a todo el ancho. */
+.toolRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; }
+.toolRow > :first-child { display: contents; }
+.toolRow > :first-child > button { grid-column: 1; grid-row: 1; justify-self: start; }
+.toolRow > :first-child > p { grid-column: 1 / -1; grid-row: 2; }
 .helpBtn {
-  flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px;
+  grid-column: 2; grid-row: 1;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px;
   border: 0; border-radius: var(--r-pill, 999px); background: var(--fill); color: var(--tx); font: inherit;
   font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
 }

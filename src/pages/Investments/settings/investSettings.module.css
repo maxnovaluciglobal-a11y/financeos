@@ -53,3 +53,4 @@
 .input[aria-invalid="true"] { border-color: var(--neg); }
 .result { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--r); background: var(--neg-bg); color: var(--tx); }
 .result p { margin: 0; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); }
+.result[data-tone="info"] { background: var(--fill); }

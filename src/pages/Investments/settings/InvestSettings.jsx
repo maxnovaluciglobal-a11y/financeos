@@ -84,13 +84,13 @@ function Screen({ setPage, onOpenFeatures, isDemo = false }) {
 
       {hasAccount && <ProfileBlock t={t} lang={lang} demo={demo} access={access} />}
       {(status === 'granted' || demo)
-        ? <BookBlocks key={epoch} t={t} demo={demo} go={go} />
+        ? <BookBlocks key={epoch} t={t} demo={demo} go={go} alerts={<AlertsBlock t={t} demo={demo} go={go} />} />
         : hasAccount && (
           <Block id="invRule" title={t('settings.inv.rule')}>
             <p className={s.note}>{t('is.rule.locked')}</p>
           </Block>
         )}
-      {hasAccount && <AlertsBlock t={t} demo={demo} go={go} />}
+      {status === 'needs-profile' && !demo && <AlertsBlock t={t} demo={demo} go={go} />}
       {hasAccount && <EraseBlock t={t} demo={demo} onErased={() => setEpoch(n => n + 1)} />}
 
       <Block id="invHelp" title={t('settings.inv.help')}>
@@ -152,7 +152,8 @@ function ProfileBlock({ t, lang, demo, access }) {
 }
 
 // Regla, capital y exportar: usan los datos del portafolio (una sola carga).
-function BookBlocks({ t, demo, go }) {
+// `alerts` va entre los dos, en el orden de la pantalla.
+function BookBlocks({ t, demo, go, alerts = null }) {
   const pb = usePortfolioBook({ demo })
   const { t: tp } = usePT()
   const app = useApp() || {}
@@ -189,6 +190,8 @@ function BookBlocks({ t, demo, go }) {
         </div>
       </Block>
 
+      {alerts}
+
       <Block id="invData" title={t('settings.inv.data')}>
         <p className={s.note}>{t('is.data.intro')}</p>
         {pb.phase === 'error' && <p className={s.error} role="alert">{t('is.data.err')}</p>}
@@ -219,8 +222,9 @@ function AlertsBlock({ t, demo, go }) {
     <Block id="invAlerts" title={t('settings.inv.alerts')}>
       <p className={s.note}>{t('is.al.intro')}</p>
       <dl className={s.facts}>
-        <div className={s.fact}><dt>{t('is.al.state')}</dt><dd data-push={view}>{t(`is.al.${view}`)}</dd></div>
+        <div className={s.fact}><dt>{t('is.al.state')}</dt><dd data-push={view}>{t(`is.al.s.${view}`)}</dd></div>
       </dl>
+      {view !== 'on' && view !== 'off' && <p className={s.note}>{t(`is.al.${view}`)}</p>}
       <div className={s.actions}>
         {view === 'off' && (
           <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={enable} disabled={push.busy} aria-busy={push.busy || undefined}>
@@ -292,7 +296,7 @@ export function EraseBlock({ t, demo, erase = eraser.eraseAll, onErased = null }
           </label>
           {mismatch && <p id={`${id}-err`} className={s.error} role="alert">{t('is.del.mismatch', { word: local })}</p>}
           {res && (
-            <div className={s.result} role="alert">
+            <div className={s.result} data-tone={res.kind === 'demo' ? 'info' : undefined} role="alert">
               {res.kind === 'demo' && <p>{t('is.del.demo')}</p>}
               {res.kind === 'nothing' && <p>{t(res.errorKey)}</p>}
               {res.kind === 'partial' && (
