@@ -165,6 +165,19 @@ export function queueFollow({ sub = null, compare = null } = {}) {
   followQueued = { sub: isFollowTab(sub) ? sub : null, compare: list && list.length ? list : null }
   queueInvestTab('siguiendo')
 }
+// Planificar › Aportes pedido desde Resumen ("Repartir" el aporte del mes):
+// abre esa parte con el monto (también en el ejemplo, donde no se guarda).
+// Se lee una sola vez.
+let planQueued = null
+export function queuePlanAporte(usd = null) {
+  const v = Math.round(Number(usd) * 100) / 100
+  planQueued = { sub: 'aportes', usd: v > 0 ? v : null }
+}
+export function takePlanQueue() {
+  const q = planQueued
+  planQueued = null
+  return q
+}
 // Lo pedido para Comparar (se lee una sola vez).
 export function takeQueuedCompare() {
   const c = followQueued?.compare || null
@@ -239,4 +252,4 @@ export function rememberAssetView({ tab, range } = {}) {
 }
 
 // Solo para pruebas.
-export function __resetInvestNav() { linkUsed = false; memTicker = null; queued = null; followQueued = null }
+export function __resetInvestNav() { linkUsed = false; memTicker = null; queued = null; followQueued = null; planQueued = null }

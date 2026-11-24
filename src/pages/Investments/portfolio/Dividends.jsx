@@ -19,7 +19,7 @@ export default function Dividends({ pb, fmt, demo, t, actions }) {
   const f = pb.funds
   const proj = useMemo(() => projectDividends({ rows: pb.positions.rows, fundamentals: f.data, ops: pb.ops, toUsd: pb.toUsd }), [pb.positions.rows, f.data, pb.ops, pb.toUsd])
   const max = Math.max(0, ...proj.months.map(x => x.usd))
-  const srcNames = demo ? [] : fundamentalSources(f.data)
+  const srcNames = demo && (f.sample || f.sample == null) ? [] : fundamentalSources(f.data)
 
   if (pb.phase === 'loading') return <p className={s.note} role="status">{t('pf.loading')}</p>
   if (!pb.holdings.length) {

@@ -11,7 +11,7 @@ import { useApp } from '../../../context/AppContext.jsx'
 import { investApi } from '../../../core/investApi.js'
 import { FOLLOW_TABS, OPEN_EVENT, bootFollowTab, rememberFollowTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { shows } from '../../../utils/investView.js'
-import { demoFollowQuotes } from '../../../demo/demoInvestFollow.js'
+import { demoMarketApi } from '../../../demo/demoMarketApi.js'
 import { useFollowT } from './dict.js'
 import { useFollowData } from './useFollowData.js'
 import { alertErrorKey, pushResultText, safeStorage, usePushOffer } from './shared.js'
@@ -54,7 +54,7 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
     refs.current[next]?.focus()
   }
 
-  const quoteOf = useCallback(async (sym) => (demo ? demoFollowQuotes([sym])[sym] || null : (d.quotes[sym] || await investApi.quote(sym))), [demo, d.quotes])
+  const quoteOf = useCallback(async (sym) => (d.quotes[sym] || await (demo ? demoMarketApi : investApi).quote(sym)), [demo, d.quotes])
   // La campana de Mi lista: con alertas, lleva a Alertas; sin, abre la hoja.
   // Al ir a Alertas el panel de Mi lista se desmonta: el foco pasa a la pestaña.
   const onBell = (tk, has) => {
@@ -95,6 +95,7 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
         ))}
       </div>
       {demo && <p className={s.sample}>{t('fl.sample')}</p>}
+      {(d.quotesSample || d.histSample) && <p className={s.sample} role="note">{t('fl.sampleData')}</p>}
 
       <div role="tabpanel" id={`fl-panel-${sub}`} aria-labelledby={`fl-tab-${sub}`}>
         {sub === 'lista' && <ListPane t={t} d={d} full={full} demo={demo} onOpen={onOpen} onAlert={onBell} onSay={say} onErr={sayErr} />}

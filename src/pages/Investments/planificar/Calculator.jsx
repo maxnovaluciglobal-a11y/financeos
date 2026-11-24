@@ -8,8 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import { investApi } from '../../../core/investApi.js'
-import { demoInvestQuotes } from '../../../demo/demoInvestBook.js'
-import { sampleQuote } from '../../../demo/demoInvestAsset.js'
+import { demoMarketApi } from '../../../demo/demoMarketApi.js'
 import { num } from '../../../utils/investTrade.js'
 import { currencyOf, rateOf } from '../../../utils/investValuation.js'
 import { amount, DEFAULT_STOP_PCT, isFractional, PLAN_CCY_RE, RISK_MAX, RISK_MIN, sizeInUsd, stopFromDrop } from '../../../utils/investPlan.js'
@@ -96,11 +95,11 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
       setQuote({ state: 'loading', t: tk, price: null, ccy: null })
       let q = null
       try {
-        q = demo ? (demoInvestQuotes()[tk] || sampleQuote(tk)) : await investApi.quote(tk, { crypto: isFractional(tk) })
+        q = await (demo ? demoMarketApi : investApi).quote(tk, { crypto: isFractional(tk) })
       } catch { q = null }
       if (my !== seq.current) return
       const price = Number(q?.price) > 0 ? Number(q.price) : null
-      setQuote({ state: price ? 'ready' : 'missing', t: tk, price, ccy: q?.currency || null })
+      setQuote({ state: price ? 'ready' : 'missing', t: tk, price, ccy: q?.currency || null, sample: !!q?.sample })
       if (price) setForm(f => (f.entry === '' || auto.current ? { ...f, entry: String(price) } : f))
       if (price) auto.current = true
     }, 450)
@@ -215,6 +214,7 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
         {quote.t === tk && quote.state === 'loading' ? t('plan.calc.priceLoading')
           : quote.t === tk && quote.state === 'ready' ? t('plan.calc.priceFrom', { t: tk, v: nat(quote.price) })
             : quote.t === tk && quote.state === 'missing' ? t('plan.calc.priceMissing', { t: tk }) : ''}
+        {quote.t === tk && quote.state === 'ready' && quote.sample ? ` ${t('plan.sampleData')}` : ''}
       </p>
 
       <div aria-live="polite">

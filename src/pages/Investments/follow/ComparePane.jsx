@@ -12,7 +12,7 @@ import {
 } from '../../../utils/investFollow.js'
 import { takeQueuedCompare } from '../../../utils/investNav.js'
 import { fmtDecimal } from '../../../utils/index.js'
-import { demoFollowHistory } from '../../../demo/demoInvestFollow.js'
+import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
 import { pctOrDash } from './shared.js'
 import s from '../portfolio/portfolio.module.css'
 import f from './follow.module.css'
@@ -53,10 +53,10 @@ export default function ComparePane({ t, demo, full, initial = null }) {
   useEffect(() => {
     const todo = wanted.filter(tk => !(`${tk}:${p.range}` in hist))
     if (!todo.length) return undefined
-    if (demo) { setHist(h => ({ ...h, ...Object.fromEntries(todo.map(tk => [`${tk}:${p.range}`, demoFollowHistory(tk, p.range)])) })); return undefined }
+    const api = demo ? demoMarketApi : investApi
     const n = ++run.current
     runLimited(todo.map(tk => async () => {
-      const rows = await investApi.history(tk, p.range, '1d')
+      const rows = await api.history(tk, p.range, '1d')
       if (n === run.current) setHist(h => ({ ...h, [`${tk}:${p.range}`]: rows || null }))
     }), 3, () => n === run.current)
     return undefined
@@ -66,6 +66,8 @@ export default function ComparePane({ t, demo, full, initial = null }) {
 
   const byT = useMemo(() => Object.fromEntries(wanted.map(tk => [tk, hist[`${tk}:${p.range}`] || null])), [wanted, hist, p.range])
   const loading = wanted.some(tk => !(`${tk}:${p.range}` in hist))
+  // Demo: alguna serie cayó al ejemplo (la API no respondió).
+  const sampleRows = Object.values(byT).some(isSample)
   const cmp = useMemo(() => compareSet(tickers, byT, period), [tickers, byT, period])
   const refSeries = useMemo(() => {
     if (!ref || tickers.includes(REF) || !byT[REF]) return null
@@ -215,6 +217,7 @@ export default function ComparePane({ t, demo, full, initial = null }) {
               {cmp.pairs.length > 0 && <p className={s.note}>{t('fl.cmp.corrNote')}</p>}
             </>
           )}
+          {sampleRows && <p className={s.note} role="note">{t('fl.sampleData')}</p>}
           <p className={s.note}>{t('fl.cmp.past')} {t('fl.cmp.foot')}</p>
         </>
       )}

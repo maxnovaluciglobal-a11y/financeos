@@ -35,7 +35,8 @@ import { assetRates, currencyOf, rateOf } from '../../utils/investValuation.js'
 import { DEFAULT_RANGE, compareWith, historyRangeFor, pickTab, rangeOf, scoreAsset, shareParts, visibleTabs } from '../../utils/investAsset.js'
 import { buildTrade } from '../../utils/investTrade.js'
 import { freshnessKey, freshnessTone, isUsEquity, marketStatus, quoteFreshness } from '../../utils/investQuoteMeta.js'
-import { demoRow, sampleCandles } from '../../demo/demoInvestAsset.js'
+import { demoRow } from '../../demo/demoInvestAsset.js'
+import { demoMarketApi, isSample } from '../../demo/demoMarketApi.js'
 import { useAssetT } from './asset/assetDict.js'
 import { InvestStringsGate } from './i18n/investStrings.js'
 import { useAssetData } from './asset/useAssetData.js'
@@ -140,6 +141,9 @@ function InvestAssetPage({ setPage }) {
   const long = range.n > 252
   const chartRows = long ? d.hist5y.data : rows1y
   const chartPhase = long ? d.hist5y.phase : d.hist1y.phase
+  // Qué es de ejemplo (demo sin respuesta de la API): cada pieza por separado.
+  const chartSample = !!(long ? d.hist5y.sample : d.hist1y.sample)
+  const quoteSample = !!d.quote.sample
   const type = lots[0]?.type || (demo ? demoRow(ticker)?.type : null) || (isCryptoTicker(ticker) ? 'Crypto' : 'Stock')
   const followed = (d.watch.data || []).includes(ticker)
   const now = useMinuteClock(!!q)
@@ -199,7 +203,7 @@ function InvestAssetPage({ setPage }) {
     const r = await investAlerts.list()
     setAlerts(r.ok ? r.data : [])
   }
-  const quoteOf = useCallback(async (sym) => (sym === ticker && d.quote.data ? d.quote.data : investApi.quote(sym)), [ticker, d.quote.data])
+  const quoteOf = useCallback(async (sym) => (sym === ticker && d.quote.data ? d.quote.data : (demo ? demoMarketApi : investApi).quote(sym)), [ticker, d.quote.data, demo])
   async function saveAlert(prev, input) {
     if (demo) return demoSaveAlert(prev, input)
     return prev ? investAlerts.update(prev.id, { ...input, active: prev.active }) : investAlerts.create(input)
@@ -228,9 +232,8 @@ function InvestAssetPage({ setPage }) {
     setSheet('cmp')
     const want = long ? '5y' : '1y'
     if (bench.t === `${benchT}:${want}` && bench.phase === 'ready') return
-    if (demo) { const c = sampleCandles(benchT); setBench({ phase: 'ready', rows: long ? c : c.slice(-252), t: `${benchT}:${want}` }); return }
     setBench({ phase: 'loading', rows: null, t: `${benchT}:${want}` })
-    investApi.history(benchT, historyRangeFor(view.range), '1d').then(rows => setBench({ phase: rows ? 'ready' : 'error', rows, t: `${benchT}:${want}` }))
+    ;(demo ? demoMarketApi : investApi).history(benchT, historyRangeFor(view.range), '1d').then(rows => setBench({ phase: rows ? 'ready' : 'error', rows, t: `${benchT}:${want}`, sample: isSample(rows) }))
   }
 
   async function savePosition(value) {
@@ -329,7 +332,7 @@ function InvestAssetPage({ setPage }) {
   const actsId = `asset-acts-${ticker}`
 
   // Frescura (solo precios reales: el ejemplo ya dice que es ejemplo) y bolsa.
-  const fresh = q && !demo ? quoteFreshness(q, now) : null
+  const fresh = q && !quoteSample ? quoteFreshness(q, now) : null
   const freshK = freshnessKey(fresh)
   const mkt = marketStatus(q, now, { usEquity: isUsEquity(ticker, ccy), crypto: isCryptoTicker(ticker, type) })
   const exName = mkt?.exchange ? t(`asset.ex.${mkt.exchange}`) : q?.exchange || null
@@ -376,7 +379,7 @@ function InvestAssetPage({ setPage }) {
             )}
           </ul>
         )}
-        <p className={s.note}>{demo ? t('asset.sample') : q ? t('asset.priceSource', { source: q.source === 'coingecko' ? 'CoinGecko' : 'Yahoo Finance' }) : lastRow ? t('asset.priceSource', { source: 'Yahoo Finance' }) : null}</p>
+        <p className={s.note}>{quoteSample ? t('asset.sample') : q ? t('asset.priceSource', { source: q.source === 'coingecko' ? 'CoinGecko' : 'Yahoo Finance' }) : lastRow ? t('asset.priceSource', { source: 'Yahoo Finance' }) : null}</p>
       </section>
 
       <Brief ticker={ticker} quote={q} fund={crypto ? { phase: 'ready', data: null } : d.fund} rows={rows1y} rowsPhase={d.hist1y.phase} type={crypto ? 'Crypto' : type} price={price} now={now} />
@@ -409,8 +412,8 @@ function InvestAssetPage({ setPage }) {
       </section>
 
       <ChartPanel ticker={ticker} ccy={ccy} rows={chartRows} phase={chartPhase} range={range.key}
-        onRange={(k) => setView(v => ({ ...v, range: k }))} layers={layers} onLayer={(k) => setLayers(l => ({ ...l, [k]: !l[k] }))} demo={demo}
-        onRetry={demo ? null : () => d.retryHistory(long)} simple={!full} />
+        onRange={(k) => setView(v => ({ ...v, range: k }))} layers={layers} onLayer={(k) => setLayers(l => ({ ...l, [k]: !l[k] }))} demo={chartSample}
+        onRetry={() => d.retryHistory(long)} simple={!full} />
 
       <section>
         <div role="tablist" aria-label={t('asset.tabs.label', { t: ticker })} className={hub.tabs}>
@@ -423,9 +426,9 @@ function InvestAssetPage({ setPage }) {
           ))}
         </div>
         <div role="tabpanel" id="asset-panel" aria-labelledby={`asset-tab-${tab}`} tabIndex={0} className={s.panel}>
-          {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase} onRetry={demo ? null : () => d.retryHistory(false)} />}
-          {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} demo={demo} type={type} onRetry={() => needFund(true)} />}
-          {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} onSaveStop={saveStop} showStop={shows(mode, 'stop')} />}
+          {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase} onRetry={() => d.retryHistory(false)} />}
+          {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} demo={!!(d.fund.sample || d.earn.sample)} type={type} onRetry={() => needFund(true)} />}
+          {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} priceSample={quoteSample} onSaveStop={saveStop} showStop={shows(mode, 'stop')} />}
           {tab === 'news' && <NewsPane ticker={ticker} news={d.news} onRetry={() => needNews(true)} />}
         </div>
       </section>
@@ -435,7 +438,7 @@ function InvestAssetPage({ setPage }) {
       <TradeSheet open={sheet === 'trade'} onClose={() => { setSheet(null); setCloseAsk(false) }} ticker={ticker} ccy={ccy} holding={lots[0] || null}
         price={price} rsi={score?.rsi} onSave={saveTrade} closeAsk={closeAsk} onCloseAnswer={answerClose} />
       <CompareSheet open={sheet === 'cmp'} onClose={() => setSheet(null)} a={ticker} b={benchT} rowsA={chartRows} phaseA={chartPhase} rowsB={bench.rows} phaseB={bench.phase}
-        n={range.n} rangeLabel={t(`asset.range.long.${range.key}`)} demo={demo} onMore={compareMore} />
+        n={range.n} rangeLabel={t(`asset.range.long.${range.key}`)} demo={chartSample || !!bench.sample} onMore={compareMore} />
       <AlertSheet open={alertSheet} onClose={() => setAlertSheet(false)} symbol={ticker} lockSymbol quoteOf={quoteOf}
         avgCost={hasPos && lots.length === 1 ? lots[0].cost : null} alerts={alerts} onSave={saveAlert} onSaved={onAlertSaved} pushState={push.state} />
     </div>

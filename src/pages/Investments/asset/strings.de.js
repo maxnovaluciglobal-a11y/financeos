@@ -1,6 +1,7 @@
 // Texte der Wertpapierseite (Investments F3), Deutsch (Sie-Form). Gleiche Schlüssel und Variablen wie strings.es.js.
 export default {
   'asset.sample': 'Beispieldaten: keine echten Zahlen.',
+  'asset.mine.demo': 'Beispielposition: Stückzahl und Kosten sind erfunden; der Kurs ist echt.',
   'asset.retry': 'Erneut versuchen',
   'asset.close': 'Schließen',
   'asset.cancel': 'Abbrechen',

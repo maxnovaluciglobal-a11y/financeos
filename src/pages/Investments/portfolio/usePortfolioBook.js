@@ -4,11 +4,14 @@
 // RLS por auth.uid()), cotizaciones y tipos de cambio de la API de Invest
 // (core/investApi.js). TODO vive en memoria mientras la pantalla está abierta:
 // nada de posiciones, operaciones ni tickers se guarda en el dispositivo. En
-// el demo, la tienda de ejemplo (demo/demoInvestBook.js), también en memoria.
+// el demo, la tienda de ejemplo (demo/demoInvestBook.js), también en memoria,
+// valorada a precios reales (demo/demoMarketApi.js); si la API no responde,
+// precios de ejemplo y `market.sample` para rotularlos.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { investData, newOperationUid, RULE_DEFAULTS } from '../../../core/investData.js'
 import { investApi } from '../../../core/investApi.js'
-import { createDemoInvestStore, demoInvestFundamentals, demoInvestFx, demoInvestQuotes } from '../../../demo/demoInvestBook.js'
+import { createDemoInvestStore, demoInvestFx } from '../../../demo/demoInvestBook.js'
+import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
 import { assetRates, currencyOf, readArsKind, toUsd } from '../../../utils/investValuation.js'
 import { positionRows, quoteLists } from '../../../utils/investPositions.js'
 import { book } from '../../../utils/investLedger.js'
@@ -19,8 +22,9 @@ const demoStoreOnce = () => (demoStore = demoStore || createDemoInvestStore())
 
 const readKey = (k) => { try { return localStorage.getItem(k) } catch { return null } }
 
-export function usePortfolioBook({ demo = false } = {}) {
+export function usePortfolioBook({ demo = false, demoApi = demoMarketApi } = {}) {
   const store = demo ? demoStoreOnce() : investData
+  const api = demo ? demoApi : investApi
   const [st, setSt] = useState({ phase: 'loading', holdings: [], ops: [], opsState: 'loading', capital: null, rule: RULE_DEFAULTS, error: null })
   const [mkt, setMkt] = useState({ phase: 'loading', quotes: {}, latam: null, ars: null, at: null })
   const [arsKind, setArsKindState] = useState(() => readArsKind(readKey))
@@ -28,21 +32,25 @@ export function usePortfolioBook({ demo = false } = {}) {
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
 
   const loadMarket = useCallback(async (holdings) => {
-    if (demo) { setMkt({ phase: 'ready', quotes: demoInvestQuotes(), latam: demoInvestFx(), ars: null, at: Date.now() }); return }
     setMkt(m => ({ ...m, phase: m.at ? 'refreshing' : 'loading' }))
     const { stocks, crypto } = quoteLists(holdings)
-    const [q, c, latam] = await Promise.all([
-      stocks.length ? investApi.quotes(stocks) : {},
-      crypto.length ? investApi.crypto(crypto) : {},
-      investApi.fxLatam(),
+    const [q, c, fx] = await Promise.all([
+      stocks.length ? api.quotes(stocks) : {},
+      crypto.length ? api.crypto(crypto) : {},
+      api.fxLatam(),
     ])
     const quotes = { ...q, ...c }
+    // Demo sin tipos de cambio reales: los fijos de moyiq marcados como
+    // respaldo (se muestran en otra moneda, no convierten activos).
+    const latam = demo && isSample(fx) ? demoInvestFx() : fx
     const needsArs = holdings.some(h => currencyOf(h.t, quotes[h.t]?.currency) === 'ARS')
-    const ars = needsArs || readKey('fos_invest_display_ccy') === 'ARS' ? await investApi.fxArs() : null
+    const arsRaw = needsArs || readKey('fos_invest_display_ccy') === 'ARS' ? await api.fxArs() : null
+    const ars = demo && isSample(arsRaw) ? null : arsRaw
     if (!alive.current) return
     const asked = stocks.length + crypto.length
-    setMkt({ phase: asked && !Object.keys(quotes).length ? 'error' : 'ready', quotes, latam, ars, at: Date.now() })
-  }, [demo])
+    const sample = Object.values(quotes).some(x => x?.sample)
+    setMkt({ phase: asked && !Object.keys(quotes).length ? 'error' : 'ready', quotes, latam, ars, at: Date.now(), sample })
+  }, [api, demo])
 
   const load = useCallback(async ({ force = false } = {}) => {
     setSt(s => ({ ...s, phase: s.phase === 'ready' ? 'refreshing' : 'loading' }))
@@ -161,13 +169,13 @@ export function usePortfolioBook({ demo = false } = {}) {
     const tickers = [...new Set(st.holdings.filter(h => h.type !== 'Crypto').map(h => h.t))].sort()
     const key = tickers.join(',')
     if (!force && funds.key === key && (funds.phase === 'ready' || funds.phase === 'loading')) return
-    if (demo) { setFunds({ phase: 'ready', data: demoInvestFundamentals(), key }); return }
     setFunds({ phase: 'loading', data: {}, key })
-    const data = tickers.length ? await investApi.fundamentals(tickers) : {}
+    const data = tickers.length ? { ...(await api.fundamentals(tickers)) } : {}
+    const sample = Object.values(data).some(x => x?.sample)
     // Cripto no paga dividendos: no cuenta como "sin respuesta".
     for (const h of st.holdings) if (h.type === 'Crypto') data[h.t] = { dividendYield: null }
-    if (alive.current) setFunds({ phase: tickers.length && !Object.keys(data).some(t => tickers.includes(t)) ? 'error' : 'ready', data, key })
-  }, [st.holdings, demo, funds.key, funds.phase])
+    if (alive.current) setFunds({ phase: tickers.length && !Object.keys(data).some(t => tickers.includes(t)) ? 'error' : 'ready', data, key, sample })
+  }, [st.holdings, api, funds.key, funds.phase])
 
   return {
     demo, store,

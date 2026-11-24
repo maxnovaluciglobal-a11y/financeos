@@ -175,6 +175,7 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
       </div>
 
       {demo && <p className={s.sample}>{t('pf.sample')}</p>}
+      {demo && pb.market.sample && <p className={s.sample} role="note">{t('pf.sampleData')}</p>}
 
       <div role="tabpanel" id={`pf-panel-${sub}`} aria-labelledby={`pf-tab-${sub}`} className={s.wrap}>
         {sub === 'posiciones' && <Positions {...common} actions={actions} targets={targets} />}

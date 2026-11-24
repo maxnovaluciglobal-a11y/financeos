@@ -1,6 +1,7 @@
 // src/demo/demoMarket.js — datos de ejemplo de la pestaña Mercado en el demo.
-// La API de Invest no acepta el origen del demo (403): todo esto es ficticio,
-// determinista y se rotula "Datos de ejemplo". Coherente con demoInvestRows
+// El demo muestra datos reales (demo/demoMarketApi.js); esto es el RESPALDO
+// de cada pieza cuando la API no responde, y la fuente fija de las pruebas.
+// Todo es ficticio, determinista y se rotula "Datos de ejemplo". Coherente con demoInvestRows
 // (Bitcoin a US$ 84.000, VOO a US$ 550 → S&P 500 cerca de 6.030 y SPY de 600;
 // AAPL y MSFT publican resultados; BTC-USD no, es cripto; VOO es un ETF).
 import { DEFAULT_USD_RATES } from '../pages/shared/constants.js'

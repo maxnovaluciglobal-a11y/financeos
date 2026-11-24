@@ -8,8 +8,10 @@
 //  · los planes, en los metadatos de la cuenta (invest_plans, con topes).
 // En el demo todo vive en memoria (demo/demoInvestBook.js). Nada de esto se
 // guarda en el dispositivo: llevan tickers.
-// Vista esencial: "¿Cuánto puedo perder si sale mal?" en palabras y el aporte
-// mensual; stop, R, límite por posición y escaleras, solo en Vista completa.
+// Vista esencial: "¿Cuánto puedo perder si sale mal?" en palabras, el aporte
+// mensual y el reparto de tu capital disponible; stop, R, límite por posición
+// y la escalera de medias móviles, solo en Vista completa. "Repartir" en
+// Resumen abre Aportes con el monto (investNav.queuePlanAporte).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useApp } from '../../../context/AppContext.jsx'
 import { makeFmt } from '../portfolio/format.js'
@@ -20,6 +22,7 @@ import { useTargets } from '../portfolio/targetsStore.js'
 import { validateCapital, validateRiskRule } from '../../../core/investData.js'
 import { amount, applyPlanChange, MAX_PLANS, newPlanId, normalizePlan, tradePlanFrom } from '../../../utils/investPlan.js'
 import { shows } from '../../../utils/investView.js'
+import { takePlanQueue } from '../../../utils/investNav.js'
 import Calculator, { ruleDecimals } from './Calculator.jsx'
 import Aportes from './Aportes.jsx'
 import Plans, { planLabel } from './Plans.jsx'
@@ -124,7 +127,8 @@ export default function Planificar({ demo = false, view, onTab }) {
   const pb = usePortfolioBook({ demo })
   const fmt = useMemo(() => makeFmt({ disp: USD, currency: settings.currency, language: settings.language }), [settings.currency, settings.language])
   const [targets] = useTargets()
-  const [sub, setSub] = useState('calc')
+  const [arrival] = useState(takePlanQueue)
+  const [sub, setSub] = useState(() => arrival?.sub || 'calc')
   const refs = useRef({})
   const [rule, setRule] = useState(pb.rule)
   const ruleTouched = useRef(false)
@@ -285,7 +289,7 @@ export default function Planificar({ demo = false, view, onTab }) {
         )}
         {sub === 'aportes' && (
           <Aportes {...common} capital={pb.capital} targets={targets} seed={apSeed} editing={editing?.k === 'aporte' ? editing : null}
-            onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} />
+            onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} arriveUsd={arrival?.usd || null} />
         )}
         {sub === 'planes' && (
           <Plans plans={plans} fmt={fmt} t={t} demo={demo} rates={pb.rates.rates}

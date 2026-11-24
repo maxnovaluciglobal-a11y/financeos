@@ -170,7 +170,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
   const base = useMemo(() => rebalanceBase(rows), [rows])
   const drift = targets ? driftHint(base, targets) : null
   const alloc = allocation(rows)
-  const src = priceSources(rows, pb.market.quotes, { demo })
+  const src = priceSources(rows, pb.market.quotes, { demo: demo && pb.market.sample !== false })
   const foreign = rows.some(r => r.ccy && r.ccy !== 'USD')
   const top = totals.top
   const topRow = top ? rows.find(r => r.t === top.t) : null
@@ -212,7 +212,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
           {DISPLAY_CCY.map(c => <option key={c} value={c}>{c}</option>)}
         </SheetSelect>
       </div>
-      {!demo && (
+      {(!demo || pb.market.sample === false) && (
         <button type="button" className={s.iconBtn} onClick={pb.reload} disabled={busy} aria-label={t('pf.refresh')}>
           <RefreshCw size={18} aria-hidden="true" className={busy ? s.spin : undefined} />
         </button>

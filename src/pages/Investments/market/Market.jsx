@@ -76,7 +76,7 @@ export function sessionText(t, ses, now) {
 
 function Head({ t, m, now }) {
   const ses = nyseSession(now)
-  const f = feedFreshness({ at: m.bar.at, loading: m.bar.phase === 'loading', failed: m.bar.phase === 'error' || m.bar.phase === 'stale', offline: m.offline, sample: m.sample })
+  const f = feedFreshness({ at: m.bar.at, loading: m.bar.phase === 'loading', failed: m.bar.phase === 'error' || m.bar.phase === 'stale', offline: m.offline, sample: samplePart(m, 'bar') })
   return (
     <section className={s.head} aria-label={t('invest.mkt.session.label')}>
       <div className={s.headText}>
@@ -193,6 +193,7 @@ export function Context({ t, m, essential = false }) {
             </details>
           )}
           {series ? <SpyChart t={t} series={series} showMa={!essential} /> : (reg.last != null && <p className={s.note}>{t(essential ? 'invest.mkt.spy.shortSimple' : 'invest.mkt.spy.short')}</p>)}
+          {samplePart(m, 'spy') && !samplePart(m, 'bar') && <p className={s.note}>{t('invest.chart.sample')}</p>}
         </>
       )}
       <div className={s.figs} role="group" aria-label={t('invest.mkt.figsLabel')}>
@@ -419,27 +420,32 @@ export function Fx({ t, lang, fx, sample, kind, setKind }) {
   )
 }
 
+// ¿Esta pieza es de ejemplo? En el demo cada una cae sola al ejemplo si la
+// API no responde (useMarket → parts); sin `parts`, todo o nada.
+export const samplePart = (m, k) => !!m.sample && (m.parts ? !!m.parts[k] : true)
+
 // ── Vista completa ──
 export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab, filter = 'all', setFilter = () => {}, kind = 'MEP', setKind = () => {}, view = 'completa' }) {
   const essential = !shows(view, 'strip')
   const rows = marketRows(m.bar.data)
   const loading = m.bar.phase === 'loading'
-  const f = feedFreshness({ at: m.bar.at, loading, failed: m.bar.phase === 'error' || m.bar.phase === 'stale', offline: m.offline, sample: m.sample })
+  const f = feedFreshness({ at: m.bar.at, loading, failed: m.bar.phase === 'error' || m.bar.phase === 'stale', offline: m.offline, sample: samplePart(m, 'bar') })
   const pick = useCallback((sym) => {
     const el = typeof document !== 'undefined' ? document.getElementById(`mkt-row-${sym.replace(/[^A-Z0-9]/gi, '')}`) : null
     if (el) { el.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); el.focus?.({ preventScroll: true }) }
   }, [])
   return (
     <div className={s.market}>
+      {m.demo && !(m.parts && Object.values(m.parts).every(Boolean)) && <p className={s.sample} role="note">{t('invest.mkt.demoLive')}</p>}
       {m.sample && <p className={s.sample} role="note">{t('invest.mkt.sample')}</p>}
       {!essential && <Strip t={t} rows={rows} sparks={m.sparks} loading={loading} onPick={pick} />}
       <Head t={t} m={m} now={now} />
       <p className={s.body}>{t('invest.mkt.sub')}</p>
       <Context t={t} m={m} essential={essential} />
       <Indices t={t} rows={rows} sparks={m.sparks} phase={m.bar.phase} f={f} />
-      <Earnings t={t} earn={m.earn} onOpen={onOpen} sample={m.sample} />
-      <News t={t} news={m.news} filter={filter} setFilter={setFilter} sample={m.sample} />
-      <Fx t={t} lang={lang} fx={m.fx} sample={m.sample} kind={kind} setKind={setKind} />
+      <Earnings t={t} earn={m.earn} onOpen={onOpen} sample={samplePart(m, 'earn')} />
+      <News t={t} news={m.news} filter={filter} setFilter={setFilter} sample={samplePart(m, 'news')} />
+      <Fx t={t} lang={lang} fx={m.fx} sample={samplePart(m, 'fx')} kind={kind} setKind={setKind} />
       <section className={s.foot} aria-label={t('invest.mkt.sources.label')}>
         <p className={s.note}>{m.sample ? t('invest.mkt.sources.sample') : t('invest.mkt.sources')}</p>
         <p className={s.note}>{t('invest.mkt.disclaimer')}</p>

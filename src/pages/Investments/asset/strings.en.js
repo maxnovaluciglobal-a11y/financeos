@@ -1,6 +1,7 @@
 // Asset page strings (Investments F3), English. Same keys and variables as strings.es.js.
 export default {
   'asset.sample': 'Sample data: these are not real figures.',
+  'asset.mine.demo': 'Sample position: the units and the cost are made up; the price is real.',
   'asset.retry': 'Try again',
   'asset.close': 'Close',
   'asset.cancel': 'Cancel',

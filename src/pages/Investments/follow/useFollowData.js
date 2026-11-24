@@ -9,14 +9,18 @@
 //  · historias de un año: SOLO en Vista completa (tendencia, RSI, MACD,
 //    volumen, 52 semanas), una por símbolo y de a 3 en paralelo (runLimited,
 //    Invest liQueue), compartidas con la ficha por la caché de investApi.
-// Demo: nada sale a la red; todo viene de demo/demoInvestFollow.js.
+// Demo: la lista y las alertas son de ejemplo (demo/demoInvestFollow.js, en
+// memoria); precios e historias son reales (demo/demoMarketApi.js) y, si no
+// responden, de ejemplo y rotulados (quotesSample, histSample).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { investApi } from '../../../core/investApi.js'
 import { investData } from '../../../core/investData.js'
 import { investAlerts } from '../../../core/investAlerts.js'
 import { runLimited } from '../../../utils/investHoy.js'
 import { isDuplicate, validateAlert } from '../../../utils/investAlerts.js'
-import { DEMO_WATCH, demoAlerts, demoFollowHistory, demoFollowQuotes } from '../../../demo/demoInvestFollow.js'
+import { DEMO_WATCH, demoAlerts } from '../../../demo/demoInvestFollow.js'
+import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
+import { roundLevel } from '../../../utils/investAlerts.js'
 
 const REFRESH_MS = 5 * 60 * 1000
 const HISTORY_LIMIT = 3
@@ -24,6 +28,18 @@ const HISTORY_LIMIT = 3
 // Estado del demo compartido entre visitas a la pestaña (memoria de la página).
 let demoState = null
 const demoStore = () => (demoState ||= { watch: [...DEMO_WATCH], alerts: demoAlerts() })
+// Las alertas de ejemplo se arman sobre precios de ejemplo; con el primer
+// precio real se recalculan sobre él (5 % arriba, 5 % abajo), salvo las que
+// la persona ya tocó, para que no queden a una distancia absurda.
+const DEMO_ANCHOR = { 'demo-al-1': 1.05, 'demo-al-2': 0.95 }
+export function anchorDemoAlerts(alerts, quotes) {
+  return alerts.map(a => {
+    const k = DEMO_ANCHOR[a.id]
+    const px = quotes?.[a.symbol]
+    if (!k || a.anchored || !px || px.sample || !(px.price > 0)) return a
+    return { ...a, threshold: roundLevel(px.price * k), anchored: true }
+  })
+}
 // Las alertas del demo, también para la ficha del activo (misma memoria).
 export const demoAlertList = () => demoStore().alerts
 export function demoSaveAlert(prev, input) {
@@ -31,12 +47,13 @@ export function demoSaveAlert(prev, input) {
   if (!v.ok) return v
   const st = demoStore()
   if (isDuplicate(st.alerts, v.value, prev?.id || null)) return { ok: false, error: 'duplicate' }
-  const a = { ...(prev || {}), id: prev?.id || `demo-al-${Date.now()}`, ...v.value, active: true, lastTriggeredAt: null, createdAt: prev?.createdAt || new Date().toISOString() }
+  const a = { ...(prev || {}), id: prev?.id || `demo-al-${Date.now()}`, anchored: true, ...v.value, active: true, lastTriggeredAt: null, createdAt: prev?.createdAt || new Date().toISOString() }
   st.alerts = prev ? st.alerts.map(x => (x.id === prev.id ? a : x)) : [...st.alerts, a]
   return { ok: true, data: a, demo: true }
 }
 
-export function useFollowData({ demo = false, full = false } = {}) {
+export function useFollowData({ demo = false, full = false, demoApi = demoMarketApi } = {}) {
+  const api = demo ? demoApi : investApi
   const [watch, setWatch] = useState({ phase: 'loading', list: [], error: null })
   const [alerts, setAlerts] = useState({ phase: 'loading', list: [], error: null })
   const [quotes, setQuotes] = useState({})
@@ -68,15 +85,19 @@ export function useFollowData({ demo = false, full = false } = {}) {
   const symKey = symbols.join(',')
   const fetchQuotes = useCallback(async (list) => {
     if (!list.length) return
-    if (demo) { setQuotes(q => ({ ...q, ...demoFollowQuotes(list) })); return }
-    const r = await investApi.quotes(list)
+    const r = await api.quotes(list)
     if (!alive.current) return
     setQuotesFailed(Object.keys(r).length === 0)
     setQuotes(q => ({ ...q, ...r }))
-  }, [demo])
+    if (demo) {
+      const st = demoStore()
+      const next = anchorDemoAlerts(st.alerts, r)
+      if (next.some((a, i) => a !== st.alerts[i])) { st.alerts = next; setAlerts({ phase: 'ready', list: next, error: null }) }
+    }
+  }, [api, demo])
   useEffect(() => { fetchQuotes(symKey ? symKey.split(',') : []) }, [symKey, fetchQuotes])
   useEffect(() => {
-    if (demo || !symKey) return undefined
+    if (!symKey) return undefined
     let id = null
     const tick = () => { if (document.visibilityState === 'visible') fetchQuotes(symKey.split(',')) }
     const start = () => { if (!id) id = setInterval(tick, REFRESH_MS) }
@@ -85,7 +106,7 @@ export function useFollowData({ demo = false, full = false } = {}) {
     start()
     document.addEventListener('visibilitychange', onVis)
     return () => { stop(); document.removeEventListener('visibilitychange', onVis) }
-  }, [demo, symKey, fetchQuotes])
+  }, [symKey, fetchQuotes])
 
   // Historias: solo en Vista completa y solo de lo que se sigue.
   const watchKey = watch.list.join(',')
@@ -93,16 +114,15 @@ export function useFollowData({ demo = false, full = false } = {}) {
     if (!full || !watchKey) return undefined
     const todo = watchKey.split(',').filter(t => !(t in hist))
     if (!todo.length) return undefined
-    if (demo) { setHist(h => ({ ...h, ...Object.fromEntries(todo.map(t => [t, demoFollowHistory(t)])) })); return undefined }
     let ok = true
     runLimited(todo.map(t => async () => {
-      const rows = await investApi.history(t, '1y', '1d')
+      const rows = await api.history(t, '1y', '1d')
       if (ok && alive.current) setHist(h => ({ ...h, [t]: rows || null }))
     }), HISTORY_LIMIT, () => ok && alive.current)
     return () => { ok = false }
   // `hist` queda fuera a propósito: cada resultado nuevo no vuelve a planear.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [full, watchKey, demo, retry])
+  }, [full, watchKey, api, retry])
 
   // ── Lista ──
   const follow = useCallback(async (ticker) => {
@@ -190,8 +210,10 @@ export function useFollowData({ demo = false, full = false } = {}) {
     return r
   }, [demo, loadAlerts])
 
+  const quotesSample = Object.values(quotes).some(q => q?.sample)
+  const histSample = Object.values(hist).some(isSample)
   return {
-    watch, alerts, quotes, quotesFailed, hist,
+    watch, alerts, quotes, quotesFailed, hist, quotesSample, histSample,
     follow, unfollow, refollow,
     saveAlert, deleteAlert, restoreAlert, setAlertActive, importAlerts,
     reload: () => { setHist(h => Object.fromEntries(Object.entries(h).filter(([, v]) => v != null))); setRetry(n => n + 1) },

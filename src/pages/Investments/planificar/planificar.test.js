@@ -173,18 +173,26 @@ describe('vista esencial y completa', () => {
     // En la completa se puede probar otro capital y otra regla sin guardarlos.
     expect(calcInputs({ ...f, capital: '10.000', risk: '2' }, { full: true, capital: 20000, rule })).toMatchObject({ capital: 10000, riskPct: 2 })
   })
-  it('aportes: escalera y capital sin invertir solo en Vista completa; la proyección con su advertencia en las dos', () => {
+  it('aportes: el capital disponible en las dos vistas; la escalera solo en la completa (la esencial lo dice en una línea)', () => {
     const base = { capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {} }
     const ess = render(Aportes, { ...base, view: 'esencial' })
     expect(ess).toContain('Tu aporte mensual')
     expect(ess).toContain('¿Cuánto podrías tener?')
     expect(ess).toContain('No es una garantía')
     expect(ess).toContain('Para invertir')
+    // Repartir el capital no es un indicador técnico: también en la esencial.
+    expect(ess).toContain('Usar tu capital sin invertir')
     expect(ess).not.toContain('Escalera sobre medias móviles')
-    expect(ess).not.toContain('capital sin invertir')
+    expect(ess).toContain(es['plan.ap.ladderHint'])
     const full = render(Aportes, { ...base, view: 'completa' })
     expect(full).toContain('Escalera sobre medias móviles')
     expect(full).toContain('Usar tu capital sin invertir')
+    expect(full).not.toContain(es['plan.ap.ladderHint'])
+  })
+  it('aportes: lo que trae Repartir de Resumen se usa como monto (también en el ejemplo)', () => {
+    const base = { capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {} }
+    const html = render(Aportes, { ...base, view: 'esencial', arriveUsd: 750 })
+    expect(html).toContain('Usar el aporte de este mes (US$750,00)')
   })
   it('regla: en palabras en la esencial; con el límite por posición en la completa', () => {
     const p = { t: tOf(es), fmt, rule: { risk: 1.5, limit: 25 }, capital: 20000, demo: true, onSaveRule: async () => ({ ok: true }), onSaveCapital: async () => ({ ok: true }) }

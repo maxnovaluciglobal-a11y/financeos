@@ -11,12 +11,15 @@
 //    URL de noticias");
 //  · /api/fx-latam y /api/fx-ars.
 // Se refresca cada 5 min solo con la pestaña visible, y con el botón.
-// En el demo, datos de ejemplo (la API no acepta ese origen).
+// En el demo, los mismos pedidos reales (demo/demoMarketApi.js) sobre el
+// portafolio de ejemplo; cada pieza que no responde cae a su cifra de ejemplo
+// y se rotula sola (`parts`). demoState() queda para las pruebas.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { investApi as defaultApi } from '../../../core/investApi.js'
 import { investData as defaultData } from '../../../core/investData.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
 import { demoEarnings, demoFx, demoMarketBar, demoMonth, demoNews, demoSpyHistory } from '../../../demo/demoMarket.js'
+import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
 import { MKT_SYMS, VIX_SYM, cleanNews, earningsUniverse, earningsWindow, monthCloses, runLimited, vixFromBar } from '../../../utils/investMarket.js'
 
 export const REFRESH_MS = 5 * 60 * 1000
@@ -37,6 +40,16 @@ export const INITIAL = {
   earn: { phase: 'loading', result: null, universe: null },
   news: { phase: 'loading', items: [] },
   fx: { phase: 'loading', latam: null, ars: null },
+  // Qué piezas son cifras de ejemplo (demo sin respuesta de la API).
+  parts: { bar: false, spy: false, earn: false, news: false, fx: false },
+}
+const ALL_SAMPLE = { bar: true, spy: true, earn: true, news: true, fx: true }
+
+// El portafolio de ejemplo como fuente de posiciones (sin lista).
+const ok = (data) => Promise.resolve({ ok: true, data })
+export const demoMarketData = {
+  listHoldings: () => ok(demoInvestRows().map(r => ({ t: r.t, type: r.type }))),
+  listWatchlist: () => ok([]),
 }
 
 // Estado completo del demo (también lo usan las pruebas de la vista).
@@ -52,6 +65,7 @@ export function demoState(t = (k) => k, at = Date.now()) {
     bar: { phase: 'ready', data: bar, at }, vix: vixFromBar(bar), spy: { phase: 'ready', rows: demoSpyHistory() }, sparks,
     earn: { phase: 'ready', result, universe }, news: { phase: 'ready', items: cleanNews(demoNews(t || ((k) => k))) },
     fx: { phase: 'ready', ...demoFx() },
+    parts: ALL_SAMPLE,
   }
 }
 
@@ -79,7 +93,9 @@ export async function vixOf(api, b, { quick = false } = {}) {
   return h?.length ? h[h.length - 1].close : null
 }
 // Universo (portafolio + lista, en memoria) y fechas de resultados, de a 4.
-export async function loadEarningsWith(api, data, at) {
+// `fallback` (demo): si NINGUNA fecha respondió, todas salen del ejemplo; si
+// respondió alguna, las que faltan cuentan como fallidas (como en la app).
+export async function loadEarningsWith(api, data, at, { fallback = null } = {}) {
   let holdings = [], watch = []
   try {
     const [h, w] = await Promise.all([data.listHoldings(), data.listWatchlist()])
@@ -87,13 +103,20 @@ export async function loadEarningsWith(api, data, at) {
     if (w?.ok) watch = w.data || []
   } catch { /* sin sesión o sin red: empresas de referencia */ }
   const universe = earningsUniverse({ holdings, watch })
-  const replies = await runLimited(universe.tickers, 4, async (tk) => ({ ticker: tk, data: await api.earnings(tk) }))
-  return { earn: { phase: 'ready', result: earningsWindow(replies, at()), universe } }
+  let replies = await runLimited(universe.tickers, 4, async (tk) => ({ ticker: tk, data: await api.earnings(tk) }))
+  let sample = false
+  if (fallback && replies.length && replies.every(r => !r.data || !r.data.source)) {
+    replies = await Promise.all(universe.tickers.map(async (tk) => ({ ticker: tk, data: (await fallback(tk)) || { nextDate: null, source: 'sample' } })))
+    sample = true
+  }
+  return { earn: { phase: 'ready', result: earningsWindow(replies, at()), universe }, sample }
 }
 
 const systemNow = () => Date.now()
 
-export function useMarket({ demo = false, t, api = defaultApi, data = defaultData, now: nowProp = systemNow } = {}) {
+export function useMarket({ demo = false, api: liveApi = defaultApi, data: liveData = defaultData, demoApi = demoMarketApi, now: nowProp = systemNow } = {}) {
+  const api = demo ? demoApi : liveApi
+  const data = demo ? demoMarketData : liveData
   // El reloj va por ref: una función nueva en cada render no debe rehacer los
   // loaders (eso relanzaría la carga en cada render).
   const nowRef = useRef(nowProp)
@@ -104,46 +127,57 @@ export function useMarket({ demo = false, t, api = defaultApi, data = defaultDat
   const [refreshing, setRefreshing] = useState(false)
   const alive = useRef(true)
   const set = useCallback((patch) => { if (alive.current) setSt(s => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) })) }, [])
-  const tRef = useRef(t)
-  useEffect(() => { tRef.current = t }, [t])
 
-  const loadDemo = useCallback(() => { set(demoState(tRef.current, now())) }, [now, set])
-
+  const part = (k, v) => (s) => ({ parts: { ...s.parts, [k]: !!v } })
+  // Minigráficos: en el demo, el de ejemplo solo acompaña a la cinta de
+  // ejemplo (nunca una línea inventada junto a un precio real).
+  const barSample = useRef(false)
   const loadSparks = useCallback(async () => {
     const todo = MKT_SYMS.map(s => s.sym)
     await runLimited(todo, 3, async (sym) => {
       const rows = await api.history(sym, '1mo', '1d')
-      const c = monthCloses(rows)
+      const c = monthCloses(rows) || (demo && barSample.current ? demoMonth(sym) : null)
       set(s => ({ sparks: { ...s.sparks, [sym]: c || null } }))
     })
-  }, [api, set])
+  }, [api, demo, set])
 
-  const loadEarnings = useCallback(async () => { set(await loadEarningsWith(api, data, now)) }, [api, data, now, set])
+  const loadEarnings = useCallback(async () => {
+    const r = await loadEarningsWith(api, data, now, { fallback: demo ? (tk) => demoEarnings(now())[tk] || null : null })
+    set(s => ({ earn: r.earn, ...part('earn', r.sample)(s) }))
+  }, [api, data, demo, now, set])
 
   const loadLive = useCallback(async ({ quick = false } = {}) => {
     const bar = api.marketbar().then(async (b) => {
       const vix = await vixOf(api, b, { quick })
-      set(prev => barState(prev, b, vix, now()))
+      if (demo) barSample.current = isSample(b)
+      set(prev => ({ ...barState(prev, b, vix, now()), ...(b ? part('bar', isSample(b))(prev) : {}) }))
+      // Cinta de ejemplo: sus minigráficos de ejemplo (los reales no llegaron).
+      if (demo && isSample(b)) set(s => ({ sparks: Object.fromEntries(MKT_SYMS.map(x => [x.sym, s.sparks[x.sym] || demoMonth(x.sym)])) }))
     })
-    const news = api.news().then(n => set(prev => newsState(prev, n)))
+    const news = api.news().then(n => set(prev => ({ ...newsState(prev, n), ...(n ? part('news', isSample(n))(prev) : {}) })))
     if (quick) { await Promise.all([bar, news]); return }
-    const spy = api.history('SPY', '2y', '1d').then(rows => set(spyState(rows)))
-    const fx = Promise.all([api.fxLatam(), api.fxArs()]).then(([latam, ars]) => set(fxState(latam, ars)))
+    const spy = api.history('SPY', '2y', '1d').then(rows => set(s => ({ ...spyState(rows), ...part('spy', isSample(rows))(s) })))
+    const fx = Promise.all([api.fxLatam(), api.fxArs()]).then(([latam, ars]) => {
+      // Demo: si una de las dos fuentes cayó al ejemplo, la tabla entera es de
+      // ejemplo (una sola fila de ejemplo entre tasas reales no se distingue).
+      const sample = demo && (isSample(latam) || isSample(ars))
+      if (sample) { const f = demoFx(); latam = f.latam; ars = f.ars }
+      set(s => ({ ...fxState(latam, ars), ...part('fx', sample)(s) }))
+    })
     await Promise.all([bar, news, spy, fx, loadEarnings()])
-  }, [api, loadEarnings, now, set])
+  }, [api, demo, loadEarnings, now, set])
 
   useEffect(() => {
     alive.current = true
-    if (demo) { loadDemo(); return () => { alive.current = false } }
     loadLive()
     const cancelIdle = idle(() => { loadSparks() })
     return () => { alive.current = false; cancelIdle() }
-  }, [demo, loadDemo, loadLive, loadSparks])
+  }, [loadLive, loadSparks])
 
   // Refresco cada 5 min con la pestaña visible; al volver a la pestaña o a la
   // red, uno enseguida (la caché de investApi evita pedidos de más).
   useEffect(() => {
-    if (demo || typeof window === 'undefined') return undefined
+    if (typeof window === 'undefined') return undefined
     const tick = () => { if (!document.hidden && !isOffline()) loadLive({ quick: true }) }
     const id = setInterval(tick, REFRESH_MS)
     const onVis = () => { if (!document.hidden) tick() }
@@ -158,14 +192,14 @@ export function useMarket({ demo = false, t, api = defaultApi, data = defaultDat
       window.removeEventListener('online', onOnline)
       window.removeEventListener('offline', onOffline)
     }
-  }, [demo, loadLive])
+  }, [loadLive])
 
   const refresh = useCallback(async () => {
-    if (demo) { loadDemo(); return }
     setRefreshing(true)
     api.forget('marketbar', 'news:', 'history:SPY:', 'history:^VIX:', 'fxLatam', 'fxArs')
     try { await loadLive() } finally { if (alive.current) setRefreshing(false) }
-  }, [api, demo, loadDemo, loadLive])
+  }, [api, loadLive])
 
-  return { ...st, offline, refreshing, refresh, sample: demo }
+  // sample: alguna pieza es de ejemplo; demo: el portafolio es de ejemplo.
+  return { ...st, offline, refreshing, refresh, demo, sample: Object.values(st.parts).some(Boolean) }
 }

@@ -7,6 +7,7 @@ import Sheet from '../../../components/ui/Sheet.jsx'
 import SheetSelect from '../../../components/ui/SheetSelect.jsx'
 import { ChoiceGroup } from '../../../components/ui/index.jsx'
 import { investApi } from '../../../core/investApi.js'
+import { demoMarketApi } from '../../../demo/demoMarketApi.js'
 import { currencyOf, rateOf } from '../../../utils/investValuation.js'
 import { crossFill, CASH_CCYS, localToday } from '../../../utils/investTrade.js'
 import { parseHoldingsCsv, parseBackup, IMPORT_MAX_ROWS } from '../../../utils/investCsv.js'
@@ -89,10 +90,10 @@ export function PositionSheet({ open, onClose, prev, prefill, onSave, rates, dem
   const ticker = String(f.t || '').toUpperCase().trim()
   // Precio actual como referencia (descarta respuestas viejas, como Invest).
   useEffect(() => {
-    if (!open || demo || prev || !/^[\^A-Z0-9.\-=]{1,15}$/.test(ticker)) { setPx(null); return undefined }
+    if (!open || prev || !/^[\^A-Z0-9.\-=]{1,15}$/.test(ticker)) { setPx(null); return undefined }
     let alive = true
     const id = setTimeout(() => {
-      investApi.quote(ticker, { crypto: f.type === 'Crypto' }).then(q => { if (alive) setPx(q) })
+      (demo ? demoMarketApi : investApi).quote(ticker, { crypto: f.type === 'Crypto' }).then(q => { if (alive) setPx(q) })
     }, 350)
     return () => { alive = false; clearTimeout(id) }
   }, [open, ticker, f.type, demo, prev])

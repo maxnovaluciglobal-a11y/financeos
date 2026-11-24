@@ -11,7 +11,7 @@ import { runLimited } from '../../../utils/investHoy.js'
 import {
   DEFAULT_FILTERS, DISCOVER_LISTS, DISCOVER_MAX, TREND_FILTERS, applyFilters, discoverCsv, discoverList, followRow, parseTickers,
 } from '../../../utils/investFollow.js'
-import { demoFollowHistory, demoFollowQuotes } from '../../../demo/demoInvestFollow.js'
+import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
 import { fmtPx } from '../asset/format.js'
 import { downloadText } from '../portfolio/format.js'
 import { Day, rsiText } from './ListPane.jsx'
@@ -25,20 +25,19 @@ export function useDiscover(demo) {
   const load = useCallback(async (key, tickers) => {
     const n = ++run.current
     setSt({ key, tickers, quotes: {}, hist: {}, phase: 'loading' })
-    if (demo) {
-      setSt({ key, tickers, quotes: demoFollowQuotes(tickers), hist: Object.fromEntries(tickers.map(t => [t, demoFollowHistory(t)])), phase: 'ready' })
-      return
-    }
-    const quotes = await investApi.quotes(tickers)
+    const api = demo ? demoMarketApi : investApi
+    const quotes = await api.quotes(tickers)
     if (n !== run.current) return
     setSt(x => ({ ...x, quotes }))
     await runLimited(tickers.map(t => async () => {
-      const rows = await investApi.history(t, '1y', '1d')
+      const rows = await api.history(t, '1y', '1d')
       if (n === run.current) setSt(x => ({ ...x, hist: { ...x.hist, [t]: rows || null } }))
     }), 3, () => n === run.current)
     if (n === run.current) setSt(x => ({ ...x, phase: 'ready' }))
   }, [demo])
-  return { ...st, load }
+  // Demo: algo cayó al ejemplo (la API no respondió).
+  const sample = Object.values(st.quotes).some(q => q?.sample) || Object.values(st.hist).some(isSample)
+  return { ...st, sample, load }
 }
 
 export default function DiscoverPane({ t, full, demo, watch, onOpen, onFollow, onSay }) {
@@ -167,6 +166,7 @@ export default function DiscoverPane({ t, full, demo, watch, onOpen, onFollow, o
             </div>
           ) : <p className={s.note}>{t('fl.disc.none')}</p>}
           {failed.length > 0 && <p className={s.note}>{t('fl.disc.failed', { list: failed.join(', ') })}</p>}
+          {dz.sample && <p className={s.note} role="note">{t('fl.sampleData')}</p>}
           <p className={s.note}>{t('fl.disc.yearHint')} {t('fl.source')}</p>
         </>
       )}

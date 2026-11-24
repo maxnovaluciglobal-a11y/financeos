@@ -7,6 +7,7 @@
 // símbolo) y terminan EXACTAMENTE en el precio de ejemplo, así el gráfico
 // acaba en la cifra de arriba. Nada se pide a la red ni se guarda.
 import { demoInvestRows } from './demoInvest.js'
+import { RULE_DEFAULTS } from '../core/investData.js'
 
 // Stops de ejemplo: dos posiciones con stop y dos sin (la columna existe).
 const DEMO_STOPS = { VOO: 510, MSFT: 330 }
@@ -16,6 +17,19 @@ export const DEMO_VIX = 16.4
 
 export function demoHoldings() {
   return demoInvestRows().map((r, i) => ({ id: `demo-${i + 1}`, t: r.t, type: r.type, sh: r.sh, cost: r.avgCost, fxCost: null, stop: DEMO_STOPS[r.t] ?? null, note: '' }))
+}
+
+// Las posiciones de ejemplo con la forma de core/investData.js (solo lectura):
+// el demo de Hoy usa el mismo camino que la app y precios reales.
+export function demoHoyStore() {
+  const ok = (data) => Promise.resolve({ ok: true, data })
+  return {
+    listHoldings: () => ok(demoHoldings()),
+    listWatchlist: () => ok([...DEMO_WATCH]),
+    getProfile: () => ok({ capital: DEMO_CAPITAL, rule: RULE_DEFAULTS }),
+    listOperations: () => ok(demoOperations()),
+    columns: () => ({ stop: true, fx: true }),
+  }
 }
 
 export function demoQuotes() {

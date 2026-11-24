@@ -40,7 +40,7 @@ export function macdText(t, r) {
   return r.macd.fading ? t('fl.macd.fading', { s: sgn }) : sgn
 }
 
-export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onErr }) {
+export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) {
   const id = useId()
   const [input, setInput] = useState('')
   const [err, setErr] = useState(null)
@@ -124,7 +124,7 @@ export default function ListPane({ t, d, full, demo, onOpen, onAlert, onSay, onE
           <p className={s.note}>{t('fl.list.empty.body')}</p>
         </div>
       )}
-      {rows.length > 0 && d.quotesFailed && !demo && <p className={s.note} role="status" data-tone="warn">{t('fl.list.noQuotes')}</p>}
+      {rows.length > 0 && d.quotesFailed && <p className={s.note} role="status" data-tone="warn">{t('fl.list.noQuotes')}</p>}
 
       {rows.length > 0 && full && (
         <div className={s.actionsRow} role="group" aria-label={t('fl.filter.label')}>

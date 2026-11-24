@@ -22,8 +22,10 @@
 // Por eso news() solo pide noticias del mercado general y rechaza `tickers`
 // hasta que invest-web acepte la lista por POST (requisito de F6).
 //
-// El demo (demo.moyiq.app) y el desarrollo local no están en la lista de
-// orígenes de la API: ahí la API responde 403 y este cliente devuelve null.
+// El demo (demo.moyiq.app y app.moyiq.app/app/?demo=true) usa este mismo
+// cliente a través de demo/demoMarketApi.js, con respaldo de ejemplo si algo
+// falla. El desarrollo local (localhost) no está en la lista de orígenes de la
+// API: ahí responde 403 y este cliente devuelve null.
 
 export const INVEST_API_ORIGIN = (import.meta.env?.VITE_INVEST_URL || 'https://invest.moyiq.app').replace(/\/$/, '')
 

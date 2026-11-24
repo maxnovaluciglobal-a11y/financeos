@@ -2,13 +2,14 @@
 // Inversiones (combobox del patrón APG: flechas, Enter, Esc).
 // Universo: portafolio y lista de la persona (se piden al enfocar, no antes)
 // más los tickers conocidos de tickerSearch.js. Vista previa del precio con
-// /api/quote (investApi, caché en memoria). En el demo la API no acepta el
-// origen, así que no se consulta y se dice.
+// /api/quote (investApi, caché en memoria). En el demo, la misma cotización
+// real (demo/demoMarketApi.js); si solo hay la de ejemplo, no se muestra.
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
 import { useMoney } from '../../../components/Money.jsx'
 import { investApi } from '../../../core/investApi.js'
+import { demoMarketApi } from '../../../demo/demoMarketApi.js'
 import { investData } from '../../../core/investData.js'
 import { decimalsFor } from '../../../utils/investValuation.js'
 import { fmtAmount, fmtPct } from '../../../utils/index.js'
@@ -58,12 +59,11 @@ export default function TickerSearch({ onOpen, demo = false, demoTickers = [] })
   // Vista previa con espera corta: no se pide nada mientras se escribe.
   useEffect(() => {
     if (!open || !target) { setPreview(null); return undefined }
-    if (demo) { setPreview({ t: target, phase: 'demo' }); return undefined }
     if (typeof navigator !== 'undefined' && navigator.onLine === false) { setPreview({ t: target, phase: 'offline' }); return undefined }
     let alive = true
     setPreview({ t: target, phase: 'loading' })
     const timer = setTimeout(() => {
-      investApi.quote(target).then((q) => { if (alive) setPreview({ t: target, phase: q ? 'ok' : 'none', q }) })
+      ;(demo ? demoMarketApi : investApi).quote(target).then((q) => { if (alive) setPreview({ t: target, phase: q ? (q.sample ? 'demo' : 'ok') : 'none', q }) })
     }, 350)
     return () => { alive = false; clearTimeout(timer) }
   }, [target, open, demo])

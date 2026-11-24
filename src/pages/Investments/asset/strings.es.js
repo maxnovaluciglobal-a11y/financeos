@@ -3,6 +3,7 @@
 // y variables (asset/strings.test.js).
 export default {
   'asset.sample': 'Datos de ejemplo: no son cifras reales.',
+  'asset.mine.demo': 'Posición de ejemplo: las unidades y el costo son inventados; el precio es real.',
   'asset.retry': 'Reintentar',
   'asset.close': 'Cerrar',
   'asset.cancel': 'Cancelar',

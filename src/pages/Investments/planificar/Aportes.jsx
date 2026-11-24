@@ -1,16 +1,17 @@
 // src/pages/Investments/planificar/Aportes.jsx — Planificar › Aportes (F5).
 // Invest: renderCapital (app/index.html:8496-8598), CAP_LADDERS, repartoPorDesvio,
 // capImportFromPortfolio y la cadencia (inventario 04 §2 y §C6-C10).
-// Vista esencial: el aporte mensual, cómo se reparte entre tus símbolos (a
-// mano, parejo entre tus posiciones o hacia tus objetivos sin vender) y
-// "¿Cuánto podrías tener?" con un rendimiento supuesto que eliges tú.
-// Vista completa: además el capital sin invertir como monto y la escalera de
-// compra sobre las medias de 20, 50, 100 y 200 días con el RSI, como Invest.
+// Vista esencial: el aporte mensual o tu capital sin invertir como monto, cómo
+// se reparte entre tus símbolos (a mano, parejo entre tus posiciones o hacia
+// tus objetivos sin vender) y "¿Cuánto podrías tener?" con un rendimiento
+// supuesto que eliges tú. Repartir el capital no es un indicador técnico.
+// Vista completa: además la escalera de compra sobre las medias de 20, 50,
+// 100 y 200 días con el RSI, como Invest (la esencial lo dice en una línea).
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import { investApi } from '../../../core/investApi.js'
-import { demoHistory } from '../../../demo/demoInvestHoy.js'
+import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
 import { runLimited } from '../../../utils/investHoy.js'
 import { num } from '../../../utils/investTrade.js'
 import { rebalanceBase } from '../../../utils/investRebalance.js'
@@ -60,7 +61,7 @@ function Segs({ label, id, value, options, onChange }) {
   )
 }
 
-export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed, editing, onSavePlan, onDeposit, onTab }) {
+export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed, editing, onSavePlan, onDeposit, onTab, arriveUsd = null }) {
   const full = shows(view, 'ladder')
   const { m } = useMoney()
   const [monthly, setMonthly] = useState('')
@@ -73,7 +74,9 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
   const [lad, setLad] = useState('even')
   const [ladState, setLadState] = useState({ phase: 'idle', readings: {}, key: '' })
   const [proj, setProj] = useState({ years: String(DEFAULT_PROJ.years), rate: String(DEFAULT_PROJ.rate), initial: '' })
-  const [monthAporte, setMonthAporte] = useState(() => readAporte(readKey))
+  // El monto que trae "Repartir" de Resumen manda sobre el guardado (en el
+  // ejemplo no se guarda: solo viaja así).
+  const [monthAporte, setMonthAporte] = useState(() => arriveUsd || readAporte(readKey))
   const run = useRef(0)
 
   // El aporte del mes que Resumen pasa a Planificar (hoy/aporteStore.js).
@@ -134,12 +137,13 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
     const my = ++run.current
     const tickers = cleanAlloc.map(a => a.t)
     setLadState({ phase: 'loading', readings: {}, key: tickers.join(',') })
-    const rows = await runLimited(tickers.map(tk => async () => (demo ? demoHistory(tk, '1y') : await investApi.history(tk, '1y', '1d'))), 4, () => my === run.current)
+    const api = demo ? demoMarketApi : investApi
+    const rows = await runLimited(tickers.map(tk => async () => await api.history(tk, '1y', '1d')), 4, () => my === run.current)
     if (my !== run.current) return
     const readings = {}
     tickers.forEach((tk, i) => { readings[tk] = rows[i] ? ladderReading(rows[i].map(r => r.close)) : null })
-    const allFailed = !demo && rows.every(r => r == null)
-    setLadState({ phase: allFailed ? 'error' : 'ready', readings, key: tickers.join(',') })
+    const allFailed = rows.every(r => r == null)
+    setLadState({ phase: allFailed ? 'error' : 'ready', readings, key: tickers.join(','), sample: rows.some(isSample) })
   }
 
   const pr = projectContributions({ monthly: amount, years: num(proj.years), rate: num(proj.rate), initial: proj.initial === '' ? 0 : amountOf(proj.initial) })
@@ -171,7 +175,7 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
         {amountErr && <p id="plan-ap-amount-err" className={s.error}>{t(`plan.ap.err.${amountErr}`)}</p>}
         <div className={s.row}>
           {monthAporte > 0 && <button type="button" className={s.link} onClick={() => pickAmount(monthAporte, 'month')}>{t('plan.ap.fromMonth', { v: m(fmt.money(monthAporte)) })}</button>}
-          {full && free > 0 && <button type="button" className={s.link} onClick={() => pickAmount(free, 'capital')}>{t('plan.ap.fromCapital', { v: m(fmt.money(free)) })}</button>}
+          {free > 0 && <button type="button" className={s.link} onClick={() => pickAmount(free, 'capital')}>{t('plan.ap.fromCapital', { v: m(fmt.money(free)) })}</button>}
           {cash > 0 && <button type="button" className={s.link} onClick={() => pickAmount(cash, 'cash')}>{t('plan.ap.fromCash', { v: m(fmt.money(cash)) })}</button>}
         </div>
         {source === 'capital' && <p className={s.note}>{t('plan.ap.fromCapitalNote', { v: m(fmt.money(amount)) })}</p>}
@@ -246,6 +250,7 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
         )}
         {split.ok && saveBlock && <p id="plan-ap-save-block" className={s.error}>{t(`plan.ap.saveBlock.${saveBlock}`)}</p>}
         <p className={s.note}>{t('plan.ap.foot')}</p>
+        {!full && <p className={s.note}>{t('plan.ap.ladderHint')}</p>}
       </section>
 
       {full && (
@@ -296,6 +301,7 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
               </div>
             )}
             {ladRes?.ok && ladRes.rows.some(r => r.reassigned) && <p className={s.note}>{t('plan.lad.reassigned')}</p>}
+            {ladRes?.ok && ladState.sample && <p className={s.note}>{t('plan.sampleData')}</p>}
           </div>
           <p className={s.note}>{t('plan.lad.foot')}</p>
         </section>

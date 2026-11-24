@@ -1,6 +1,7 @@
 // Textos da página do ativo (Investimentos F3), português. Mesmas chaves e variáveis de strings.es.js.
 export default {
   'asset.sample': 'Dados de exemplo: não são valores reais.',
+  'asset.mine.demo': 'Posição de exemplo: as unidades e o custo são inventados; o preço é real.',
   'asset.retry': 'Tentar de novo',
   'asset.close': 'Fechar',
   'asset.cancel': 'Cancelar',

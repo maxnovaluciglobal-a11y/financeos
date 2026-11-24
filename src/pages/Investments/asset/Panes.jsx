@@ -184,7 +184,7 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
 }
 
 // ── Mi posición ──
-export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo, onSaveStop, showStop = true }) {
+export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo, priceSample = demo, onSaveStop, showStop = true }) {
   const { t } = useAssetT()
   const id = useId()
   const limit = profile.data?.limit ?? 25
@@ -208,7 +208,7 @@ export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo
   const plTone = m.pl == null ? undefined : m.pl >= 0 ? 'pos' : 'neg'
   return (
     <div className={s.pane}>
-      {demo && <p className={s.sampleTag}>{t('asset.sample')}</p>}
+      {demo && <p className={s.sampleTag}>{t(priceSample ? 'asset.sample' : 'asset.mine.demo')}</p>}
       <h3 className="sr-only">{t('asset.mine.title', { t: ticker })}</h3>
       <dl className={s.facts}>
         <div><dt>{t('asset.mine.units')}</dt><dd className={s.num}><Money>{fmtUnits(m.sh)}</Money></dd></div>

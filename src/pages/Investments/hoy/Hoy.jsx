@@ -37,6 +37,7 @@ import { putAndGain } from '../../../utils/investEsencial.js'
 import { shows } from '../../../utils/investView.js'
 import PutSummary from '../esencial/PutSummary.jsx'
 import { commitAporte, readAporte } from './aporteStore.js'
+import { queuePlanAporte } from '../../../utils/investNav.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
 import s from './hoy.module.css'
@@ -443,6 +444,11 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const needFx = !(demo || sample) && contrib.count > 0 && contrib.sum > 0 && !!ccy && ccy !== 'USD'
   const d = useData({ demo, sample, range, cmp, needFx })
   const fake = d.sample
+  // El demo valora el portafolio de ejemplo a precios reales: cada pieza dice
+  // si es de ejemplo (sin esos datos, como antes: todo de ejemplo).
+  const pricesSample = d.quotesSample ?? fake
+  const histSample = d.historySample ?? fake
+  const stripSample = d.market?.sample ?? fake
 
   const pickRange = (r) => { setRange(r); writeKey(RANGE_KEY, r) }
   const pickCmp = (c) => { setCmp(c); writeKey(CMP_KEY, c) }
@@ -529,7 +535,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const chartNotes = []
   if (chart.state === 'ready' || chart.state === 'short') {
     chartNotes.push(t('invest.hoy.pvh.note.what'))
-    chartNotes.push(fake ? t('invest.chart.sample') : t('invest.hoy.pvh.note.source'))
+    chartNotes.push(histSample ? t('invest.chart.sample') : t('invest.hoy.pvh.note.source'))
     chartNotes.push(t('invest.hoy.pvh.note.usd'))
     if (chart.series?.fxApprox?.length) chartNotes.push(t('invest.hoy.pvh.note.fxApprox', { list: chart.series.fxApprox.join(', ') }))
     if (chart.series?.missing?.length) chartNotes.push(t('invest.hoy.pvh.note.missing', { list: chart.series.missing.join(', ') }))
@@ -570,6 +576,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
     if (!r.ok) return
     setNoRate(null)
     app.showToast?.(t('invest.hoy.aporte.toast', { v: money(r.usd) }))
+    queuePlanAporte(r.usd)
     onTab('planificar')
   }
   // "Ir a Planificar" del aviso: sin tipo de cambio no convierte 1:1 ni usa un
@@ -580,6 +587,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
     if (r.ok) {
       setNoRate(null)
       app.showToast?.(t('invest.hoy.aporte.toast', { v: money(r.usd) }))
+      queuePlanAporte(r.usd)
       onTab('planificar')
       return
     }
@@ -608,10 +616,11 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
 
   const footer = (
     <div className={s.footer}>
-      {fake && <p className={s.muted}>{t('invest.chart.sample')}</p>}
+      {demo && !pricesSample && <p className={s.muted}>{t('invest.demo.live')}</p>}
+      {fake && pricesSample && <p className={s.muted}>{t('invest.chart.sample')}</p>}
       <div className={s.links}>
         <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer">{t('invest.card.sourcesLink')}</a>
-        {!fake && hasCrypto && <a href="https://www.coingecko.com/en/api" target="_blank" rel="noopener noreferrer">Powered by CoinGecko API</a>}
+        {!pricesSample && hasCrypto && <a href="https://www.coingecko.com/en/api" target="_blank" rel="noopener noreferrer">Powered by CoinGecko API</a>}
       </div>
       <p className={s.muted}>{t('invest.privacy')}</p>
       <p className={s.muted}>{t('invest.legal')}</p>
@@ -642,8 +651,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
         </div>
       )}
       <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} />
-      <Freshness sample={fake} fresh={fresh} hasCrypto={hasCrypto} hasStocks={hasStocks} />
-      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={fake} onTab={onTab} />}
+      <Freshness sample={pricesSample} fresh={fresh} hasCrypto={hasCrypto} hasStocks={hasStocks} />
+      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} onTab={onTab} />}
       {banner}
 
       <div className={s.top}>
