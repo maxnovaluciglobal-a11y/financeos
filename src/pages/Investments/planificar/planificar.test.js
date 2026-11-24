@@ -42,7 +42,7 @@ describe('textos de Planificar', () => {
       'plan.sub.calc', 'plan.rule.cancel', 'plan.calc.titleFull', 'plan.calc.tickerPh', 'plan.calc.capital', 'plan.calc.full.stop',
       'plan.calc.full.col.result', 'plan.calc.r.r1', 'plan.calc.r.r2', 'plan.calc.r.r3', 'plan.calc.res.units',
       'plan.ap.cad.monthly', 'plan.ap.cad.weekly', 'plan.ap.res.col.pct', 'plan.lad.loading', 'plan.pl.trade.stopEst', 'plan.pl.kind.trade',
-      'plan.calc.stop', 'plan.ap.deposit', 'plan.pl.open',
+      'plan.calc.stop', 'plan.ap.deposit', 'plan.pl.open', 'plan.sub.oportunidades',
     ])
     expect(Object.keys(es).filter(k => !same.has(k) && pt[k] === es[k])).toEqual([])
   })

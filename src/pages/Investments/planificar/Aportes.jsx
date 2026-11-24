@@ -61,7 +61,7 @@ function Segs({ label, id, value, options, onChange }) {
   )
 }
 
-export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed, editing, onSavePlan, onDeposit, onTab, arriveUsd = null }) {
+export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed, editing, onSavePlan, onDeposit, onTab, onGoOpp = null, arriveUsd = null }) {
   const full = shows(view, 'ladder')
   const { m } = useMoney()
   const [monthly, setMonthly] = useState('')
@@ -250,7 +250,12 @@ export default function Aportes({ pb, fmt, t, view, demo, capital, targets, seed
         )}
         {split.ok && saveBlock && <p id="plan-ap-save-block" className={s.error}>{t(`plan.ap.saveBlock.${saveBlock}`)}</p>}
         <p className={s.note}>{t('plan.ap.foot')}</p>
-        {!full && <p className={s.note}>{t('plan.ap.ladderHint')}</p>}
+        {!full && (
+          <div className={s.row}>
+            <p className={s.note}>{t('plan.ap.ladderHint')}</p>
+            {onGoOpp && <button type="button" className={s.link} onClick={onGoOpp}>{t('plan.ap.goOpp')}</button>}
+          </div>
+        )}
       </section>
 
       {full && (

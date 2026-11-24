@@ -126,7 +126,7 @@ export default function InvestHub({ setPage, demo = false }) {
               : tab === 'siguiendo'
                 ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Follow demo={demo} onOpen={open} view={view} /></Suspense>
                 : tab === 'planificar'
-                  ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Planificar demo={demo} view={view} onTab={go} /></Suspense>
+                  ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Planificar demo={demo} view={view} onTab={go} onOpen={open} /></Suspense>
                   : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
       </div>
     </div>

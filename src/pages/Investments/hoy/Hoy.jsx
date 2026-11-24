@@ -26,7 +26,7 @@ import { useT } from '../../../i18n/useT.js'
 import { INVEST_ORIGIN } from '../../../core/investBridge.js'
 import { cashBook } from '../../../utils/investCash.js'
 import {
-  VIX_SYM, STRIP_SYMS, aportePending, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
+  VIX_SYM, STRIP_SYMS, aportePending, historySymbol, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
   rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFadeOf, stripFormat, summarizeFreshness, topPositions, validateAporte,
   vixLevel, withLivePoint, PVH_CMP, PVH_RANGES, REVIEW_MAX_CHIPS,
 } from '../../../utils/investHoy.js'
@@ -41,6 +41,9 @@ import { queuePlanAporte } from '../../../utils/investNav.js'
 import { isSample } from '../../../demo/demoMarketApi.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
+import OppTeaser from '../oportunidades/OppTeaser.jsx'
+import { queueOpp } from '../oportunidades/queue.js'
+import { uninvested } from '../oportunidades/capital.js'
 import s from './hoy.module.css'
 
 const readKey = (k) => { try { return localStorage.getItem(k) } catch { return null } }
@@ -607,6 +610,16 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
     onTab('portafolio')
   }
 
+  // ── Oportunidades según tus medias (Inversiones v2): las historias de 1 año
+  // que Resumen ya pidió; "Ver" y "Repartir" abren Planificar › Oportunidades.
+  const oppItems = []
+  for (const h of d.holdings) {
+    if (oppItems.some(x => x.t === h.t)) continue
+    oppItems.push({ t: h.t, label: h.t, crypto: h.type === 'Crypto', rows: d.historyOf(historySymbol(h), '1y') })
+  }
+  const oppFree = uninvested(d.capital, T.cost)
+  const goOpp = (split = false) => { queueOpp({ usd: split && oppFree > 0 ? oppFree : null, focus: split ? 'split' : null }); onTab('planificar') }
+
   // ── Estados de carga y error ──
   if (d.phase === 'loading') return <p className={s.muted} role="status">{t('invest.card.loading')}</p>
   if (d.phase === 'error') {
@@ -679,6 +692,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       {T.fxUnknown > 0 && <p className={s.note} role="note">{t(T.fxUnknown === 1 ? 'invest.hoy.fx.unknownOne' : 'invest.hoy.fx.unknownMany', { n: T.fxUnknown })}</p>}
 
       <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')} />
+      <OppTeaser items={oppItems} free={oppFree} money={money} onSee={() => goOpp(false)} onSplit={() => goOpp(true)} />
       {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
       <AporteForm initial={initialAporte} hasMoyiq={!!aUsd} onDone={goAporte} />
       <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} sample={ctxSample} />
