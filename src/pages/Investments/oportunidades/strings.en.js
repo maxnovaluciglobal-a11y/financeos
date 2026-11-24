@@ -77,7 +77,9 @@ export default {
   'opp.lad.long': 'More weight on the long averages',
   'opp.lad.half200': 'Half on the 200-day average',
   'opp.lad.weights': 'Tranches {w}',
-  'opp.cap.rsiRule': 'Also require an RSI between 30 and 45 (the condition of the first Capital Plan)',
+  'opp.cap.rsiRule': 'Require an RSI between 30 and 45 (your July model)',
+  'opp.cap.rsiHelpOn': 'On: a tranche counts as met only if the price is at or below its average and the 14-day RSI is also between 30 and 45 (inclusive). Without RSI data, it does not count.',
+  'opp.cap.rsiHelpOff': 'Off: a tranche counts as met as soon as the price is at or below its average; the RSI is not checked.',
 
   'opp.res.title': 'Split of {v}',
   'opp.res.today': 'Meets your rule today',
@@ -91,6 +93,7 @@ export default {
   'opp.res.st.today': 'Met today',
   'opp.res.st.wait': 'Waiting: the price is {p} above the average',
   'opp.res.st.rsi': 'Price at or below the average, but the RSI ({v}) is outside 30–45',
+  'opp.res.st.rsiNone': 'Price at or below the average, but no RSI data: not counted as met',
   'opp.res.st.none': 'No average: its share went to the other tranches',
   'opp.res.reassigned': 'A tranche without an average gets no money: its share is split across the other tranches of the same asset.',
   'opp.res.moves': 'Averages change every day: what waits today may be met tomorrow, and the other way round.',

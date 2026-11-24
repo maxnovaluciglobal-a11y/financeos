@@ -18,7 +18,8 @@ import { LADDERS, splitAmount, splitCents } from '../../../utils/investPlan.js'
 import { SMAS, rsiRuleOk } from './signals.js'
 
 export const LADDER_KEYS = Object.keys(LADDERS)
-export const DEFAULT_LADDER = 'even'
+// Por defecto, el modelo original de Walter (10/15/25/50, decisión del 24-nov-2026).
+export const DEFAULT_LADDER = 'half200'
 const cents = (v) => Math.round(Number(v) * 100)
 
 /**
@@ -29,7 +30,10 @@ const cents = (v) => Math.round(Number(v) * 100)
  *               tramos: [{ n, tramo, w, amount, sma, dist, hit, rsiBlocked, state }] | null }] }
  * state: 'today' (se cumple) | 'wait' (espera) | 'none' (sin media).
  */
-export function planCapital({ amount, alloc, readings = {}, ladder = DEFAULT_LADDER, rsiRule = false } = {}) {
+// La condición de RSI 30–45 va ENCENDIDA por defecto (modelo de julio de
+// Walter, decisión del 24-nov-2026); sin dato de RSI, el tramo no se cumple.
+export const DEFAULT_RSI_RULE = true
+export function planCapital({ amount, alloc, readings = {}, ladder = DEFAULT_LADDER, rsiRule = DEFAULT_RSI_RULE } = {}) {
   const base = splitAmount(amount, alloc)
   if (!base.ok) return base
   const w = LADDERS[ladder] || LADDERS[DEFAULT_LADDER]
@@ -47,11 +51,11 @@ export function planCapital({ amount, alloc, readings = {}, ladder = DEFAULT_LAD
     let rt = 0, rw = 0
     const tramos = SMAS.map((n, i) => {
       const m = rd.smas[i] || {}
-      if (m.value == null) return { n, tramo: i + 1, w: w[i], amount: null, sma: null, dist: null, hit: false, rsiBlocked: false, state: 'none' }
+      if (m.value == null) return { n, tramo: i + 1, w: w[i], amount: null, sma: null, dist: null, hit: false, rsiBlocked: false, rsiMissing: false, state: 'none' }
       const pc = cents(parts[i])
       const today = m.hit && !blocked
       if (today) rt += pc; else rw += pc
-      return { n, tramo: i + 1, w: w[i], amount: pc / 100, sma: m.value, dist: m.dist, hit: !!m.hit, rsiBlocked: !!m.hit && blocked, state: today ? 'today' : 'wait' }
+      return { n, tramo: i + 1, w: w[i], amount: pc / 100, sma: m.value, dist: m.dist, hit: !!m.hit, rsiBlocked: !!m.hit && blocked, rsiMissing: !!m.hit && blocked && rd.rsi == null, state: today ? 'today' : 'wait' }
     })
     todayC += rt; waitC += rw
     return { ...r, today: rt / 100, wait: rw / 100, noData: 0, reading: rd, reassigned: avail.some(x => x === 0), tramos }

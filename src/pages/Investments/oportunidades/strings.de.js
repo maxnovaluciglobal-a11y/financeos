@@ -77,7 +77,9 @@ export default {
   'opp.lad.long': 'Mehr Gewicht auf den langen Durchschnitten',
   'opp.lad.half200': 'Die Hälfte auf den 200-Tage-Durchschnitt',
   'opp.lad.weights': 'Tranchen {w}',
-  'opp.cap.rsiRule': 'Zusätzlich einen RSI zwischen 30 und 45 verlangen (die Bedingung der ersten Version des Kapitalplans)',
+  'opp.cap.rsiRule': 'RSI zwischen 30 und 45 verlangen (Ihr Modell vom Juli)',
+  'opp.cap.rsiHelpOn': 'An: Eine Tranche gilt nur als erfüllt, wenn der Kurs auf oder unter ihrem Durchschnitt liegt und zusätzlich der 14-Tage-RSI zwischen 30 und 45 liegt (einschließlich). Ohne RSI-Wert zählt sie nicht.',
+  'opp.cap.rsiHelpOff': 'Aus: Eine Tranche gilt als erfüllt, sobald der Kurs auf oder unter ihrem Durchschnitt liegt; der RSI wird nicht geprüft.',
 
   'opp.res.title': 'Aufteilung von {v}',
   'opp.res.today': 'Erfüllt heute Ihre Regel',
@@ -91,6 +93,7 @@ export default {
   'opp.res.st.today': 'Heute erfüllt',
   'opp.res.st.wait': 'Wartet: Der Kurs liegt {p} über dem Durchschnitt',
   'opp.res.st.rsi': 'Kurs auf oder unter dem Durchschnitt, aber der RSI ({v}) liegt außerhalb von 30–45',
+  'opp.res.st.rsiNone': 'Kurs auf oder unter dem Durchschnitt, aber kein RSI-Wert: zählt nicht als erfüllt',
   'opp.res.st.none': 'Kein Durchschnitt: Sein Anteil ging an die anderen Tranchen',
   'opp.res.reassigned': 'Eine Tranche ohne Durchschnitt erhält kein Geld: Ihr Anteil wird auf die anderen Tranchen desselben Werts verteilt.',
   'opp.res.moves': 'Durchschnitte ändern sich täglich: Was heute wartet, kann morgen erfüllt sein, und umgekehrt.',

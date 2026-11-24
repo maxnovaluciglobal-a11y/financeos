@@ -81,7 +81,9 @@ export default {
   'opp.lad.long': 'Más peso en las medias largas',
   'opp.lad.half200': 'Mitad en la media de 200 días',
   'opp.lad.weights': 'Tramos {w}',
-  'opp.cap.rsiRule': 'Además, exigir RSI entre 30 y 45 (la condición de la primera versión del Plan de Capital)',
+  'opp.cap.rsiRule': 'Exigir RSI entre 30 y 45 (tu modelo de julio)',
+  'opp.cap.rsiHelpOn': 'Encendido: un tramo cuenta como cumplido solo si el precio está en o bajo su media y, además, el RSI de 14 días está entre 30 y 45 (incluidos). Sin dato de RSI, no se cuenta.',
+  'opp.cap.rsiHelpOff': 'Apagado: un tramo cuenta como cumplido solo con que el precio esté en o bajo su media; el RSI no se mira.',
 
   'opp.res.title': 'Reparto de {v}',
   'opp.res.today': 'Cumple hoy tu regla',
@@ -95,6 +97,7 @@ export default {
   'opp.res.st.today': 'Cumple hoy',
   'opp.res.st.wait': 'Espera: el precio está {p} sobre la media',
   'opp.res.st.rsi': 'Precio en o bajo la media, pero el RSI ({v}) está fuera de 30–45',
+  'opp.res.st.rsiNone': 'Precio en o bajo la media, pero sin dato de RSI: no se cuenta como cumplido',
   'opp.res.st.none': 'Sin media: su parte pasó a los otros tramos',
   'opp.res.reassigned': 'Un tramo sin media no recibe dinero: su parte se reparte entre los otros tramos del mismo activo.',
   'opp.res.moves': 'Las medias cambian cada día: lo que hoy espera puede cumplirse mañana, y al revés.',

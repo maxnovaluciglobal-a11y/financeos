@@ -77,7 +77,9 @@ export default {
   'opp.lad.long': 'Mais peso nas médias longas',
   'opp.lad.half200': 'Metade na média de 200 dias',
   'opp.lad.weights': 'Parcelas {w}',
-  'opp.cap.rsiRule': 'Exigir também RSI entre 30 e 45 (a condição da primeira versão do Plano de Capital)',
+  'opp.cap.rsiRule': 'Exigir RSI entre 30 e 45 (seu modelo de julho)',
+  'opp.cap.rsiHelpOn': 'Ligado: uma parcela conta como cumprida só se o preço está na média ou abaixo dela e, além disso, o RSI de 14 dias está entre 30 e 45 (inclusive). Sem dado de RSI, não conta.',
+  'opp.cap.rsiHelpOff': 'Desligado: uma parcela conta como cumprida bastando o preço estar na média ou abaixo dela; o RSI não é considerado.',
 
   'opp.res.title': 'Distribuição de {v}',
   'opp.res.today': 'Cumpre hoje a sua regra',
@@ -91,6 +93,7 @@ export default {
   'opp.res.st.today': 'Cumpre hoje',
   'opp.res.st.wait': 'Espera: o preço está {p} acima da média',
   'opp.res.st.rsi': 'Preço na média ou abaixo, mas o RSI ({v}) está fora de 30–45',
+  'opp.res.st.rsiNone': 'Preço na média ou abaixo, mas sem dado de RSI: não conta como cumprida',
   'opp.res.st.none': 'Sem média: a parte dela foi para as outras parcelas',
   'opp.res.reassigned': 'Uma parcela sem média não recebe dinheiro: a parte dela é dividida entre as outras parcelas do mesmo ativo.',
   'opp.res.moves': 'As médias mudam todos os dias: o que hoje espera pode se cumprir amanhã, e o contrário.',

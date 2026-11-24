@@ -14,7 +14,7 @@ import { es as appEs } from '../../../i18n/withSections.js'
 import { en as appEn } from '../../../i18n/withSections.js'
 import { interpolate } from '../../../i18n/translate.js'
 import { makeFmt } from '../portfolio/format.js'
-import { CADENCES, LADDERS, computeSizing, readPlans, sizeInUsd, validatePlans } from '../../../utils/investPlan.js'
+import { CADENCES, computeSizing, readPlans, sizeInUsd, validatePlans } from '../../../utils/investPlan.js'
 import { currencyOf } from '../../../utils/investValuation.js'
 import { createDemoInvestStore, demoInvestHoldings, demoInvestPlans, demoInvestQuotes } from '../../../demo/demoInvestBook.js'
 import { DEMO_CAPITAL } from '../../../demo/demoInvestHoy.js'
@@ -41,7 +41,7 @@ describe('textos de Planificar', () => {
     const same = new Set([
       'plan.sub.calc', 'plan.rule.cancel', 'plan.calc.titleFull', 'plan.calc.tickerPh', 'plan.calc.capital', 'plan.calc.full.stop',
       'plan.calc.full.col.result', 'plan.calc.r.r1', 'plan.calc.r.r2', 'plan.calc.r.r3', 'plan.calc.res.units',
-      'plan.ap.cad.monthly', 'plan.ap.cad.weekly', 'plan.ap.res.col.pct', 'plan.lad.loading', 'plan.pl.trade.stopEst', 'plan.pl.kind.trade',
+      'plan.ap.cad.monthly', 'plan.ap.cad.weekly', 'plan.ap.res.col.pct', 'plan.pl.trade.stopEst', 'plan.pl.kind.trade',
       'plan.calc.stop', 'plan.ap.deposit', 'plan.pl.open', 'plan.sub.oportunidades',
     ])
     expect(Object.keys(es).filter(k => !same.has(k) && pt[k] === es[k])).toEqual([])
@@ -60,7 +60,6 @@ describe('textos de Planificar', () => {
   })
   it('avisos educativos donde hay datos de mercado y proyecciones', () => {
     expect(es['plan.calc.foot']).toMatch(/no una instrucción ni una recomendación de inversión/)
-    expect(es['plan.lad.foot']).toMatch(/no como instrucciones de compra ni recomendación de inversión/)
     expect(es['plan.proj.warn']).toMatch(/^No es una garantía/)
     expect(es['plan.dataNote']).toMatch(/posible retraso/)
     expect(es['plan.calc.title']).toBe('¿Cuánto puedo perder si sale mal?')
@@ -69,7 +68,6 @@ describe('textos de Planificar', () => {
     const need = [
       ...PLAN_SUBS.map(k => `plan.sub.${k}`),
       ...CADENCES.map(c => `plan.ap.cad.${c}`),
-      ...Object.keys(LADDERS).map(k => `plan.lad.${k}`),
       ...['no-entry', 'no-capital', 'no-risk', 'stop-not-below-price', 'drop', 'no-fx'].map(k => `plan.calc.err.${k}`),
       ...['stop', 'r1', 'r2', 'r3'].map(k => `plan.calc.r.${k}`),
       ...['ticker_required', 'ticker_invalid', 'pct_range', 'too_many'].map(k => `plan.ap.alloc.err.${k}`),
@@ -173,21 +171,18 @@ describe('vista esencial y completa', () => {
     // En la completa se puede probar otro capital y otra regla sin guardarlos.
     expect(calcInputs({ ...f, capital: '10.000', risk: '2' }, { full: true, capital: 20000, rule })).toMatchObject({ capital: 10000, riskPct: 2 })
   })
-  it('aportes: el capital disponible en las dos vistas; la escalera solo en la completa (la esencial lo dice en una línea)', () => {
-    const base = { capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {} }
-    const ess = render(Aportes, { ...base, view: 'esencial' })
-    expect(ess).toContain('Tu aporte mensual')
-    expect(ess).toContain('¿Cuánto podrías tener?')
-    expect(ess).toContain('No es una garantía')
-    expect(ess).toContain('Para invertir')
-    // Repartir el capital no es un indicador técnico: también en la esencial.
-    expect(ess).toContain('Usar tu capital sin invertir')
-    expect(ess).not.toContain('Escalera sobre medias móviles')
-    expect(ess).toContain(es['plan.ap.ladderHint'])
-    const full = render(Aportes, { ...base, view: 'completa' })
-    expect(full).toContain('Escalera sobre medias móviles')
-    expect(full).toContain('Usar tu capital sin invertir')
-    expect(full).not.toContain(es['plan.ap.ladderHint'])
+  it('aportes: el capital disponible en las dos vistas; la escalera ya no está aquí, solo el enlace a Oportunidades (decisión del 24-nov-2026)', () => {
+    const base = { capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {}, onGoOpp: () => {} }
+    for (const view of ['esencial', 'completa']) {
+      const html = render(Aportes, { ...base, view })
+      expect(html).toContain('Tu aporte mensual')
+      expect(html).toContain('¿Cuánto podrías tener?')
+      expect(html).toContain('Usar tu capital sin invertir')
+      expect(html).not.toContain('Escalera sobre medias móviles')
+      expect(html).not.toContain('Calcular los tramos')
+      expect(html).toContain('Repartir por tramos según tus medias')
+    }
+    expect(Object.keys(es).filter(k => k.startsWith('plan.lad.'))).toEqual([])
   })
   it('aportes: lo que trae Repartir de Resumen se usa como monto (también en el ejemplo)', () => {
     const base = { capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {} }

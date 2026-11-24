@@ -26,7 +26,7 @@ import { moneyLocale } from '../../../utils/index.js'
 import { num } from '../../../utils/investTrade.js'
 import { logRejection } from '../../../utils/errorLog.js'
 import { segKeyTarget } from '../planificar/Aportes.jsx'
-import { LADDER_KEYS, DEFAULT_LADDER, driftMath, planCapital, uninvested } from './capital.js'
+import { LADDER_KEYS, DEFAULT_LADDER, DEFAULT_RSI_RULE, driftMath, planCapital, uninvested } from './capital.js'
 import { joinList, signalKey } from './signals.js'
 import { useReadings } from './useReadings.js'
 import { useOppT } from './dict.js'
@@ -154,7 +154,7 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
   const [method, setMethod] = useState(() => (hasTargets ? 'targets' : 'equal'))
   const [manual, setManual] = useState(null) // [{ t, p }] al editar a mano
   const [lad, setLadState] = useState(() => { const v = safe.get(LADDER_PREF); return LADDERS[v] ? v : DEFAULT_LADDER })
-  const [rsiRule, setRsiRule] = useState(false)
+  const [rsiRule, setRsiRule] = useState(DEFAULT_RSI_RULE)
   const capRef = useRef(null)
   const setLad = (v) => { setLadState(v); safe.set(LADDER_PREF, v) }
 
@@ -268,11 +268,12 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
         )}
 
         <Radios label={t('opp.cap.within')} id="opp-within" value={lad} onChange={setLad}
-          options={LADDER_KEYS.map(k => ({ value: k, label: t(`opp.lad.${k}`), sub: wTxt(k) }))} />
+          options={[DEFAULT_LADDER, ...LADDER_KEYS.filter(k => k !== DEFAULT_LADDER)].map(k => ({ value: k, label: t(`opp.lad.${k}`), sub: wTxt(k) }))} />
         <label className={s.check}>
-          <input type="checkbox" checked={rsiRule} onChange={e => setRsiRule(e.target.checked)} style={{ width: 16, height: 16, flexShrink: 0 }} />
+          <input type="checkbox" checked={rsiRule} onChange={e => setRsiRule(e.target.checked)} aria-describedby="opp-rsi-help" style={{ width: 16, height: 16, flexShrink: 0 }} />
           <span>{t('opp.cap.rsiRule')}</span>
         </label>
+        <p id="opp-rsi-help" className={p.note}>{t(rsiRule ? 'opp.cap.rsiHelpOn' : 'opp.cap.rsiHelpOff')}</p>
 
         <div aria-live="polite">
           {!plan.ok ? (
@@ -318,7 +319,8 @@ function Result({ plan, t, fmt, m, pending, pctTxt, lad, rsiRule, method, math, 
                   {r.tramos.map(tr => {
                     const st = tr.state === 'none' ? t('opp.res.st.none')
                       : tr.state === 'today' ? t('opp.res.st.today')
-                        : tr.rsiBlocked ? t('opp.res.st.rsi', { v: Math.round(r.reading.rsi ?? 0) })
+                        : tr.rsiMissing ? t('opp.res.st.rsiNone')
+                          : tr.rsiBlocked ? t('opp.res.st.rsi', { v: Math.round(r.reading.rsi) })
                           : t('opp.res.st.wait', { p: fmt.pct(Math.abs(tr.dist || 0), { decimals: 1 }) })
                     return (
                       <li key={tr.n} className={s.tramo} data-st={tr.state}>

@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
 import { readSignal, signalKey, rsiRuleOk, summarize, joinList, SMAS, MIN_CLOSES } from './signals.js'
-import { planCapital, driftMath, uninvested, LADDER_KEYS } from './capital.js'
+import { planCapital, driftMath, uninvested, LADDER_KEYS, DEFAULT_LADDER, DEFAULT_RSI_RULE } from './capital.js'
 import { queueOpp, takeOppQueue } from './queue.js'
 import { allocByDrift } from '../../../utils/investPlan.js'
 import es from './strings.es.js'
@@ -105,12 +105,20 @@ describe('planCapital: reparto exacto', () => {
     }
   })
   it('pesos de la escalera y estado de cada tramo', () => {
-    const r = planCapital({ amount: 1000, alloc: [{ t: 'A', p: 100 }], readings: { A: hitAll }, ladder: 'half200' })
+    const r = planCapital({ amount: 1000, alloc: [{ t: 'A', p: 100 }], readings: { A: hitAll }, ladder: 'half200', rsiRule: false })
     expect(r.rows[0].tramos.map(x => x.amount)).toEqual([100, 150, 250, 500])
     expect(r.today).toBe(1000)
     const w = planCapital({ amount: 1000, alloc: [{ t: 'A', p: 100 }], readings: { A: above }, ladder: 'even' })
     expect(w.rows[0].tramos.every(x => x.state === 'wait')).toBe(true)
     expect(w.wait).toBe(1000)
+  })
+  it('por defecto, el modelo original de Walter: 10/15/25/50 (decisión del 24-nov-2026); las otras dos siguen', () => {
+    expect(DEFAULT_LADDER).toBe('half200')
+    expect(LADDER_KEYS).toEqual(expect.arrayContaining(['even', 'long', 'half200']))
+    const r = planCapital({ amount: 1000, alloc: [{ t: 'A', p: 100 }], readings: { A: hitAll }, rsiRule: false })
+    expect(r.rows[0].tramos.map(x => x.amount)).toEqual([100, 150, 250, 500])
+    const bad = planCapital({ amount: 1000, alloc: [{ t: 'A', p: 100 }], readings: { A: hitAll }, ladder: 'nope', rsiRule: false })
+    expect(bad.rows[0].tramos.map(x => x.amount)).toEqual([100, 150, 250, 500])
   })
   it('sin la media de 200: su parte va a los otros tramos del activo', () => {
     const r = planCapital({ amount: 900, alloc: [{ t: 'A', p: 100 }], readings: { A: short }, ladder: 'even' })
@@ -119,10 +127,30 @@ describe('planCapital: reparto exacto', () => {
     expect(r.rows[0].tramos[3].state).toBe('none')
   })
   it('sin historia: el monto queda entero como "sin lectura"', () => {
-    const r = planCapital({ amount: 500, alloc: [{ t: 'A', p: 60 }, { t: 'Z', p: 40 }], readings: { A: hitAll, Z: null } })
+    const r = planCapital({ amount: 500, alloc: [{ t: 'A', p: 60 }, { t: 'Z', p: 40 }], readings: { A: hitAll, Z: null }, rsiRule: false })
     expect(r.noData).toBe(200)
     expect(r.rows[1].tramos).toBeNull()
     expect(r.today).toBe(300)
+  })
+  it('RSI 30–45 encendido por defecto (decisión de Walter, 24-nov-2026)', () => {
+    expect(DEFAULT_RSI_RULE).toBe(true)
+    const r = planCapital({ amount: 100, alloc: [{ t: 'A', p: 100 }], readings: { A: { ...hitAll, rsi: 60 } } })
+    expect(r.today).toBe(0)
+  })
+  it('bordes de RSI: 30 y 45 cuentan; 29,9 y 45,1 no; sin RSI no cuenta y se marca', () => {
+    const at = (rsi) => planCapital({ amount: 100, alloc: [{ t: 'A', p: 100 }], readings: { A: { ...hitAll, rsi } } })
+    expect(at(30).today).toBe(100)
+    expect(at(45).today).toBe(100)
+    expect(at(29.9).today).toBe(0)
+    expect(at(45.1).today).toBe(0)
+    const none = at(null)
+    expect(none.today).toBe(0)
+    expect(none.wait).toBe(100)
+    expect(none.rows[0].tramos.every(x => x.rsiMissing && x.state === 'wait')).toBe(true)
+    expect(at(60).rows[0].tramos.every(x => x.rsiBlocked && !x.rsiMissing)).toBe(true)
+    // Apagada, el RSI no se mira.
+    expect(planCapital({ amount: 100, alloc: [{ t: 'A', p: 100 }], readings: { A: { ...hitAll, rsi: null } }, rsiRule: false }).today).toBe(100)
+    expect(es['opp.res.st.rsiNone']).toMatch(/sin dato de RSI/)
   })
   it('regla de RSI: precio bajo la media pero RSI fuera de 30–45 → espera', () => {
     const rd = { ...hitAll, rsi: 60 }
