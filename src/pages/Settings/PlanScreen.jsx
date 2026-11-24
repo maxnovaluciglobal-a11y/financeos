@@ -8,6 +8,7 @@ import { useT } from '../../i18n/useT.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan } from '../../utils/licenseValidator.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 import UpgradeCard from './UpgradeCard.jsx'
+import { isNativeApp } from '../../native/platform.js'
 import { srow, slbl, ssub, Setting } from './settingsUi.jsx'
 
 export default function PlanScreen({ isDemo, accountUserId }) {
@@ -27,6 +28,25 @@ export default function PlanScreen({ isDemo, accountUserId }) {
   }
 
   if (isDemo) return <div style={ssub}>{t('settings.group.plan.demo')}</div>
+
+  // App de tienda (NAT-1, B2): sin "Probar Pro", sin clave de licencia que
+  // desactivar (no hay dónde volver a ingresarla y el plan vive en la cuenta).
+  // Solo el plan de la cuenta y, si es Pro comprado en la web, cómo cancelarlo.
+  if (isNativeApp()) {
+    return (
+      <div>
+        <Setting id="license" style={isPro ? srow : { ...srow, borderBottom: 'none' }}>
+          <div><div style={slbl}>{t('settings.license.label', { plan: isPro ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
+        </Setting>
+        {isPro && (
+          <Setting id="cancel" style={{ ...srow, borderBottom: 'none' }}>
+            <div><div style={slbl}>{t('settings.cancelSub.label')}</div><div style={ssub}>{t('settings.cancelSub.sub')}</div></div>
+            <Btn variant="ghost" size="sm" onClick={() => window.open(cancelUrl(lang), '_blank', 'noopener,noreferrer')}>{t('settings.cancelSub.btn')}</Btn>
+          </Setting>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div>

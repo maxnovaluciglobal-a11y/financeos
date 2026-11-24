@@ -240,11 +240,7 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
           ))}
         </div>
 
-        {!webPay && (
-          <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--tm)', lineHeight: 1.5, margin: '-6px 0 18px' }}>
-            {t('billing.native.unavailable')}
-          </p>
-        )}
+        {/* App de tienda: solo Starter, sin texto sobre Pro (NAT-1, B2). */}
 
         {trialOn && (
           <div style={{ marginBottom: 18 }}>
@@ -280,7 +276,8 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
 
         {/* Demo link */}
         <div style={{ textAlign: 'center', fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>
-          <a href="https://demo.moyiq.app/app/?demo=true" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('demo_click', { from: 'licensegate' })} style={{ color: 'var(--grn)', textDecoration: 'none' }}>
+          {/* En la app de tienda, el demo de adentro: el de la web tiene "Ver planes". */}
+          <a href={webPay ? 'https://demo.moyiq.app/app/?demo=true' : '/app/?demo=true'} target={webPay ? '_blank' : undefined} rel="noopener noreferrer" onClick={() => trackEvent('demo_click', { from: 'licensegate' })} style={{ color: 'var(--grn)', textDecoration: 'none' }}>
             {t('licenseGate.demoLink')}
           </a>
         </div>

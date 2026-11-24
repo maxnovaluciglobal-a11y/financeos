@@ -100,7 +100,9 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         {t('pro.gate.title', { feature: featureName })}
       </h2>
 
-      <ul
+      {/* App de tienda: sin lista de beneficios ni vista previa (NAT-1). Son
+          publicidad de un plan que la app no vende. */}
+      {webPay && <ul
         aria-label={t('pro.gate.includes')}
         style={{ listStyle: 'none', display: 'inline-flex', flexDirection: 'column', gap: 8, textAlign: 'left', margin: '0 0 20px', padding: 0 }}
       >
@@ -110,7 +112,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
             {t(key)}
           </li>
         ))}
-      </ul>
+      </ul>}
 
       {!webPay && (
         <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', lineHeight: 1.5 }}>
@@ -162,7 +164,7 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
     </div>
   )
 
-  if (!preview) return gate
+  if (!preview || !webPay) return gate
   return (
     <>
       {gate}
