@@ -20,7 +20,7 @@ export const US_PERSONA_META = { id: 'us', name: 'Maya Robinson', country: 'US',
 
 const PAYCHECK = 1926.40
 const paycheck = (id, ym, dd, amount = PAYCHECK, notes = '') =>
-  ({ id: d(id), date: day(ym, dd), source: 'Paycheck — Alamo Heights Medical Center', amount, category: 'Salario', recurrence: 'Quincenal', notes })
+  ({ id: d(id), date: day(ym, dd), source: 'Paycheck — hospital job', amount, category: 'Salario', recurrence: 'Quincenal', notes })
 
 // ── INGRESOS ──────────────────────────────────────────────────────────────────
 const PAST_INCOMES = [
@@ -108,8 +108,8 @@ export const US_BUDGETS = [
 // ── DEUDAS ────────────────────────────────────────────────────────────────────
 // La tarjeta tiene la tasa más alta → el simulador Avalanche la prioriza.
 export const US_DEBTS = [
-  { id: d('us-d1'), type: 'Auto', debtType: 'Auto',        creditor: 'Auto loan — 2021 Honda Civic', initial: 23_900.00, balance: 14_862.30, minPayment: 389.00, dueDate: nextMonthDate(12), rate: 7.4,   notes: '60 months' },
-  { id: d('us-d2'), type: 'Tarjeta', debtType: 'Tarjeta',     creditor: 'Credit card (Visa)',           initial:  3_200.00, balance:  2_614.55, minPayment:  78.00, dueDate: nextMonthDate(25), rate: 24.24, notes: 'APR 24.24%' },
+  { id: d('us-d1'), type: 'Auto', debtType: 'Auto',        creditor: 'Auto loan', initial: 23_900.00, balance: 14_862.30, minPayment: 389.00, dueDate: nextMonthDate(12), rate: 7.4,   notes: '60 months' },
+  { id: d('us-d2'), type: 'Tarjeta', debtType: 'Tarjeta',     creditor: 'Credit card',                  initial:  3_200.00, balance:  2_614.55, minPayment:  78.00, dueDate: nextMonthDate(25), rate: 24.24, notes: 'APR 24.24%' },
   { id: d('us-d3'), type: 'Estudiantil', debtType: 'Estudiantil', creditor: 'Federal student loan',         initial: 21_500.00, balance:  9_845.10, minPayment: 172.00, dueDate: nextMonthDate(1),  rate: 5.5,   notes: 'Standard repayment plan' },
 ]
 
@@ -129,10 +129,10 @@ const sub = (id, name, category, amount, dd, paymentMethod, notes = '') =>
   ({ id, name, category, amount, currency: 'USD', frequency: 'monthly', nextPaymentDate: day(M0, dd), paymentMethod, status: 'active', notes, createdAt: '2026-01-01', updatedAt: '2026-01-01' })
 
 export const US_SUBSCRIPTIONS = [
-  sub('us-sub1', 'Video streaming',          'Streaming',      15.49, 11, 'Visa'),
-  sub('us-sub2', 'Music streaming',          'Música',         11.99, 11, 'Visa'),
-  sub('us-sub3', 'Shopping membership',     'Delivery',       14.99,  7, 'Visa'),
-  sub('us-sub4', 'Cloud storage 200 GB',   'Almacenamiento',  2.99, 23, 'Apple Pay'),
+  sub('us-sub1', 'Video streaming',          'Streaming',      15.49, 11, 'Credit card'),
+  sub('us-sub2', 'Music streaming',          'Música',         11.99, 11, 'Credit card'),
+  sub('us-sub3', 'Shopping membership',     'Delivery',       14.99,  7, 'Credit card'),
+  sub('us-sub4', 'Cloud storage 200 GB',   'Almacenamiento',  2.99, 23, 'Mobile wallet'),
   sub('us-sub5', 'Gym membership',   'Gimnasio',       34.99,  5, 'Debit card'),
 ]
 

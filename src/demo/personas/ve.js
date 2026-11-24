@@ -46,11 +46,11 @@ const lastDay = (ym) => { const [y, m] = ym.split('-').map(Number); return new D
 // ── INGRESOS ──────────────────────────────────────────────────────────────────
 const QUINCENA_USD = 80
 const quincena = (id, ym, dd) =>
-  ({ id: d(id), date: day(ym, dd), source: 'Quincena — Distribuidora El Ávila', amount: bs(QUINCENA_USD, ym), category: 'Salario', recurrence: 'Quincenal', notes: 'Sueldo en Bs indexado al dólar' })
+  ({ id: d(id), date: day(ym, dd), source: 'Quincena — distribuidora', amount: bs(QUINCENA_USD, ym), category: 'Salario', recurrence: 'Quincenal', notes: 'Sueldo en Bs indexado al dólar' })
 const cesta = (id, ym) =>
   ({ id: d(id), date: day(ym, 5), source: 'Bono de alimentación (cestaticket)', amount: bs(40, ym), category: 'Bono', recurrence: 'Mensual', notes: '' })
 const bodega = (id, ym, dd, name, usd) =>
-  ({ id: d(id), date: day(ym, dd), source: `Contabilidad ${name}`, amount: bs(usd, ym), category: 'Freelance', recurrence: 'Mensual', notes: usdNote(usd, ym, 'por Zelle') })
+  ({ id: d(id), date: day(ym, dd), source: `Contabilidad ${name}`, amount: bs(usd, ym), category: 'Freelance', recurrence: 'Mensual', notes: usdNote(usd, ym, 'por transferencia en US$') })
 const remesa = (id, ym, dd, usd = 100) =>
   ({ id: d(id), date: day(ym, dd), source: 'Remesa de Luis (Santiago de Chile)', amount: bs(usd, ym), category: 'Otro', recurrence: 'Mensual', notes: usdNote(usd, ym, 'recibidos') })
 
@@ -70,7 +70,7 @@ const PAST_INCOMES = [
 // Mes difícil: el abasto no pagó, la remesa no llegó y la bodega pagó una parte.
 const HARD_INCOMES = [
   ...salaryMonth('ve-i0', M0),
-  { ...bodega('ve-i0-b1', M0, 6, 'Bodega La Esquina', 60), notes: `${usdNote(60, M0, 'por Zelle')} · pagó una parte` },
+  { ...bodega('ve-i0-b1', M0, 6, 'Bodega La Esquina', 60), notes: `${usdNote(60, M0, 'por transferencia en US$')} · pagó una parte` },
   ...PAST_INCOMES,
 ]
 
@@ -81,7 +81,7 @@ const GOOD_INCOMES = [
   ...salaryMonth('ve-ix0', M0),
   bodega('ve-ix0-b1', M0, 6, 'Bodega La Esquina', 100),
   bodega('ve-ix0-b2', M0, 9, 'Abasto Don Manuel', 80),
-  { id: d('ve-ix0-x'), date: day(M0, 14), source: 'Cierre contable de dos ferreterías', amount: bs(210, M0), category: 'Freelance', recurrence: 'Único', notes: usdNote(210, M0, 'por Binance (USDT)') },
+  { id: d('ve-ix0-x'), date: day(M0, 14), source: 'Cierre contable de dos ferreterías', amount: bs(210, M0), category: 'Freelance', recurrence: 'Único', notes: usdNote(210, M0, 'en dólares digitales') },
   remesa('ve-ix0-r', M0, 18),
   ...PAST_INCOMES,
 ]
@@ -94,10 +94,10 @@ const exp = (id, ym, dd, description, usd, category, method, type, recurrence = 
 function monthlyFixed(prefix, ym, v) {
   return [
     exp(`${prefix}-alq`,    ym,  1, 'Alquiler anexo — El Paraíso',       200, 'Vivienda',     'Efectivo',      'Necesidad', 'Mensual', usdNote(200, ym, 'en efectivo')),
-    exp(`${prefix}-cantv`,  ym,  8, 'CANTV — internet ABA y teléfono',     9, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
-    exp(`${prefix}-dig`,    ym, 10, 'Plan Digitel',                         8, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
-    exp(`${prefix}-mov`,    ym, 10, 'Recarga Movilnet — línea de mamá',     3, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
-    exp(`${prefix}-luz`,    ym, 12, 'Corpoelec — luz',                   v.luz, 'Servicios',   'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
+    exp(`${prefix}-cantv`,  ym,  8, 'Internet y teléfono fijo',     9, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
+    exp(`${prefix}-dig`,    ym, 10, 'Plan del celular',                         8, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
+    exp(`${prefix}-mov`,    ym, 10, 'Recarga del celular de mamá',     3, 'Servicios',    'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
+    exp(`${prefix}-luz`,    ym, 12, 'Servicio de luz',                   v.luz, 'Servicios',   'Transferencia', 'Necesidad', 'Mensual', 'Pago Móvil'),
     exp(`${prefix}-merc1`,  ym,  3, 'Mercado — supermercado',     v.m1, 'Alimentación', 'Débito',        'Necesidad'),
     exp(`${prefix}-feria`,  ym, 11, 'Verduras — feria de Coche',        v.feria, 'Alimentación', 'Efectivo',   'Necesidad', 'Único', 'Pagado en US$ efectivo'),
     exp(`${prefix}-merc2`,  ym, 17, 'Mercado — automercado',                   v.m2, 'Alimentación', 'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
@@ -119,7 +119,7 @@ export const VE_EXPENSES = [
   exp('ve-e1-gas',    M1, 14, 'Bombona de gas',                        6, 'Servicios',    'Efectivo',      'Necesidad'),
   exp('ve-e1-arepa',  M1, 21, 'Arepera con amigas',                   12, 'Alimentación', 'Transferencia', 'Deseo',     'Único', 'Pago Móvil'),
   ...monthlyFixed('ve-e2', M2, { luz: 4.40, m1: 61, feria: 25, m2: 26 }),
-  exp('ve-e2-cel',    M2, 9, 'Celular Samsung A15 — inicial Cashea', 64, 'Tecnología',   'Transferencia', 'Necesidad', 'Único', 'Inicial del 40 %; el resto en cuotas sin intereses'),
+  exp('ve-e2-cel',    M2, 9, 'Celular nuevo — inicial de la compra en cuotas', 64, 'Tecnología',   'Transferencia', 'Necesidad', 'Único', 'Inicial del 40 %; el resto en cuotas sin intereses'),
   exp('ve-e2-farma',  M2, 23, 'Farmacia — medicinas',               11, 'Salud',        'Transferencia', 'Necesidad', 'Único', 'Pago Móvil'),
   ...monthlyFixed('ve-e3', M3, { luz: 4.10, m1: 57, feria: 23, m2: 30 }),
   exp('ve-e3-gas',    M3, 15, 'Bombona de gas',                        6, 'Servicios',    'Efectivo',      'Necesidad'),
@@ -147,8 +147,8 @@ export const VE_BUDGETS = [
 // ── DEUDAS ────────────────────────────────────────────────────────────────────
 // La tarjeta tiene la tasa más alta → el simulador Avalanche la prioriza.
 export const VE_DEBTS = [
-  { id: d('ve-d1'), type: 'Crédito', debtType: 'Crédito', creditor: 'Cashea — celular Samsung A15', initial: bs(96, M0), balance: bs(64, M0), minPayment: bs(32, M0), dueDate: nextMonthDate(9), rate: 0, notes: '6 cuotas quincenales sin intereses' },
-  { id: d('ve-d2'), type: 'Tarjeta', debtType: 'Tarjeta', creditor: 'Tarjeta de crédito Banesco', initial: bs(150, M0), balance: bs(118, M0), minPayment: bs(15, M0), dueDate: nextMonthDate(20), rate: 58.0, notes: 'Tasa anual referencial' },
+  { id: d('ve-d1'), type: 'Crédito', debtType: 'Crédito', creditor: 'Compra en cuotas — celular', initial: bs(96, M0), balance: bs(64, M0), minPayment: bs(32, M0), dueDate: nextMonthDate(9), rate: 0, notes: '6 cuotas quincenales sin intereses' },
+  { id: d('ve-d2'), type: 'Tarjeta', debtType: 'Tarjeta', creditor: 'Tarjeta de crédito', initial: bs(150, M0), balance: bs(118, M0), minPayment: bs(15, M0), dueDate: nextMonthDate(20), rate: 58.0, notes: 'Tasa anual referencial' },
 ]
 
 // ── METAS ─────────────────────────────────────────────────────────────────────

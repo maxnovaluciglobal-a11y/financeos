@@ -14,7 +14,7 @@ export const DE_PERSONA_META = { id: 'de', name: 'Aylin Demir', country: 'DE', c
 
 const SALARY = 2684.30
 const salary = (id, ym) =>
-  ({ id: d(id), date: day(ym, 1), source: 'Gehalt — Rheinwerk Logistik GmbH', amount: SALARY, category: 'Salario', recurrence: 'Mensual', notes: '' })
+  ({ id: d(id), date: day(ym, 1), source: 'Gehalt — Logistikunternehmen', amount: SALARY, category: 'Salario', recurrence: 'Mensual', notes: '' })
 
 const PAST_INCOMES = [
   salary('de-i10', M1),
@@ -44,7 +44,7 @@ function monthlyFixed(prefix, ym, v) {
     exp(`${prefix}-inet`,   ym,  5, 'Internet',                   39.99, 'Servicios',    'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-handy`,  ym,  5, 'Handyvertrag',               17.99, 'Servicios',    'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-rfb`,    ym, 15, 'Rundfunkbeitrag',            18.36, 'Servicios',    'Débito',        'Necesidad', 'Mensual'),
-    exp(`${prefix}-dt`,     ym,  1, 'Deutschlandticket',          63.00, 'Transporte',   'Débito',        'Necesidad', 'Mensual'),
+    exp(`${prefix}-dt`,     ym,  1, 'Monatsticket ÖPNV',          63.00, 'Transporte',   'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-hpv`,    ym,  1, 'Haftpflichtversicherung',     6.25, 'Otros',        'Débito',        'Necesidad', 'Mensual'),
     exp(`${prefix}-rewe`,   ym,  4, 'Einkauf Supermarkt',               v.rewe, 'Alimentación', 'Débito',       'Necesidad'),
     exp(`${prefix}-lidl`,   ym, 17, 'Wocheneinkauf',         v.lidl, 'Alimentación', 'Débito',       'Necesidad'),
@@ -57,7 +57,7 @@ function monthlyFixed(prefix, ym, v) {
 export const DE_EXPENSES = [
   ...monthlyFixed('de-e0', M0, { rewe: 87.43, lidl: 64.12 }),
   exp('de-e0-nk',    M0, 12, 'Nebenkostennachzahlung',     418.60, 'Vivienda',     'Transferencia', 'Necesidad', 'Único', 'Abrechnung Vorjahr'),
-  exp('de-e0-tuev',  M0, 14, 'Autoreparatur vor dem TÜV',  640.00, 'Transporte',   'Débito',        'Necesidad', 'Único', 'Bremsen + Auspuff'),
+  exp('de-e0-tuev',  M0, 14, 'Autoreparatur vor der Hauptuntersuchung',  640.00, 'Transporte',   'Débito',        'Necesidad', 'Único', 'Bremsen + Auspuff'),
   exp('de-e0-zahn',  M0, 10, 'Professionelle Zahnreinigung', 95.00, 'Salud',       'Débito',        'Necesidad'),
   exp('de-e0-essen', M0, 16, 'Abendessen mit Freunden',     46.50, 'Alimentación', 'Crédito',       'Deseo'),
   exp('de-e0-jacke', M0, 18, 'Winterjacke',                 89.95, 'Ropa',         'Crédito',       'Deseo'),
@@ -104,7 +104,7 @@ export const DE_SUBSCRIPTIONS = [
   sub('de-sub2', 'Musik-Streaming',          'Música',         11.99,  8, 'Kreditkarte'),
   sub('de-sub3', 'Fitnessstudio',    'Gimnasio',       29.90,  2, 'Lastschrift'),
   sub('de-sub4', 'Versand-Abo',     'Delivery',        8.99, 21, 'Kreditkarte'),
-  sub('de-sub5', 'Cloud-Speicher 200 GB',   'Almacenamiento',  2.99, 26, 'Apple Pay'),
+  sub('de-sub5', 'Cloud-Speicher 200 GB',   'Almacenamiento',  2.99, 26, 'Mobiles Bezahlen'),
 ]
 
 export const DE_PERSONA = {

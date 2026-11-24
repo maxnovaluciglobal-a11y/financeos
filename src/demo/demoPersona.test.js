@@ -1,3 +1,4 @@
+import { demoRecurringRules } from './demoRecurring.js'
 import { describe, it, expect } from 'vitest'
 import { pickDemoPersonaId, buildDemoState, DEMO_PERSONAS, demoPersona } from './demoData.js'
 import { M0 } from './demoDates.js'
@@ -142,8 +143,11 @@ describe('persona de Venezuela (EST-5)', () => {
     expect(m0.some(r => /US\$/.test(r.notes) && /BCV/.test(r.notes) && /paralelo/.test(r.notes))).toBe(true)
     expect(texts.some(t => /remesa/i.test(t))).toBe(true)
   })
-  it('gastos típicos: Cashea, Pago Móvil, CANTV, Movilnet y Digitel, mercado y transporte', () => {
-    for (const re of [/Cashea/, /Pago Móvil/, /CANTV/, /Movilnet/, /Digitel/, /Mercado/, /Pasajes/]) {
+  // Ronda 3 pre-tiendas (N2): sin marcas de terceros (antes pedía Cashea, CANTV,
+  // Movilnet y Digitel; se cambiaron por descripciones genéricas, pendiente de
+  // que Walter decida si quiere volver a nombrar servicios locales).
+  it('gastos típicos: compra en cuotas, Pago Móvil, internet, celular, luz, mercado y transporte', () => {
+    for (const re of [/compra en cuotas/i, /Pago Móvil/, /Internet/, /celular/i, /luz/i, /Mercado/, /Pasajes/]) {
       expect(texts.some(t => re.test(t)), String(re)).toBe(true)
     }
   })
@@ -151,3 +155,17 @@ describe('persona de Venezuela (EST-5)', () => {
     for (const t of texts) expect(t).not.toMatch(/\b(vos|tenés|podés|querés|sabés|sos|hacé|mirá|fijate)\b/i)
   })
 })
+
+// Ronda 3 pre-tiendas (N2/D7): el demo se ve en las capturas de las tiendas; ninguna
+// persona nombra bancos, marcas, comercios ni modelos de terceros.
+describe('demo sin marcas de terceros (N2)', () => {
+  const BRANDS = /Bancolombia|Davivienda|Banesco|Visa\b|Mastercard|Honda|Civic|Apple Pay|Google Pay|Samsung|MacBook|\bMac\b|Netflix|Spotify|Amazon|Adobe|YouTube|Gumroad|Google One|TransMilenio|Unicentro|Rheinwerk|Deutschlandticket|TÜV|Zelle|Binance|USDT|Cashea|CANTV|Movilnet|Digitel|Corpoelec|\bPSE\b|Alamo Heights|REWE|Lidl/
+  for (const id of Object.keys(DEMO_PERSONAS)) {
+    it(id, () => {
+      const p = DEMO_PERSONAS[id]
+      const all = JSON.stringify([p.incomesGood, p.incomesHard, p.expenses, p.debts, p.goals, p.subscriptions, demoRecurringRules(p)])
+      expect(all.match(BRANDS)).toBeNull()
+    })
+  }
+})
+

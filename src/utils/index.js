@@ -420,10 +420,10 @@ export const SEED_INCOMES = [
 ]
 
 export const SEED_EXPENSES = [
-  { id: uid(), date: '2025-05-01', description: 'Arriendo', amount: 480000, category: 'Vivienda', method: 'Transferencia', type: 'Necesidad', recurrence: 'Mensual', notes: '' },
+  { id: uid(), date: '2025-05-01', description: 'Alquiler', amount: 480000, category: 'Vivienda', method: 'Transferencia', type: 'Necesidad', recurrence: 'Mensual', notes: '' },
   { id: uid(), date: '2025-05-03', description: 'Supermercado', amount: 185000, category: 'Alimentación', method: 'Débito', type: 'Necesidad', recurrence: 'Único', notes: '' },
   { id: uid(), date: '2025-05-04', description: 'Bencina', amount: 62000, category: 'Transporte', method: 'Débito', type: 'Necesidad', recurrence: 'Único', notes: '' },
-  { id: uid(), date: '2025-05-05', description: 'Netflix', amount: 18000, category: 'Entretención', method: 'Crédito', type: 'Deseo', recurrence: 'Mensual', notes: '' },
+  { id: uid(), date: '2025-05-05', description: 'Streaming de video', amount: 18000, category: 'Entretención', method: 'Crédito', type: 'Deseo', recurrence: 'Mensual', notes: '' },
   { id: uid(), date: '2025-05-06', description: 'Farmacia', amount: 35000, category: 'Salud', method: 'Débito', type: 'Necesidad', recurrence: 'Único', notes: '' },
 ]
 
