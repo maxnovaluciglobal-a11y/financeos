@@ -206,12 +206,15 @@ export function ReporteFinancieroPDF({ data }) {
     mIncome, mExpense, mBalance, savingRate,
     totalDebt, totalMinPayments,
     signals, alerts, goals, debts,
-    overBudgetCount, score, scoreLabel, scoreColor,
+    overBudgetCount, score, scoreLabel,
     advisorNotes,
     expByCategory,
     subMonthly, subAnnual, subCount, subAlerts, subByCategory, netWorth,
     lang = 'es',
   } = data
+  // El PDF no resuelve variables CSS: color del IQ Score con la paleta del PDF
+  // (mismos cortes que scoreLevel: ≥70 bien, ≥40 atención).
+  const scoreColor = score >= 70 ? C.grn : score >= 40 ? C.amb : C.red
   // react-pdf renderiza fuera del árbol de la app: idioma por data.lang.
   const t = (key, vars) => translate(lang, key, vars)
   const client = clientName || t('apdf.client')

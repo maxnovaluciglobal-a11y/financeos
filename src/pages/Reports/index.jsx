@@ -31,10 +31,11 @@ import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { sumAmounts, roundCents, savingGoal, meetsSavingGoal } from '../../utils/monthFigures.js'
 import { monthPlan } from '../../utils/recurring.js'
 import { reportOverBudget, subscriptionsToDeduct } from './reportsModel.js'
+import { monthSavingRate } from '../../utils/monthLeft.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, settings, recurring: rules } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, settings, recurring: rules, setAsides: ctxSetAsides } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = currencySymbol(settings.currency, settings.language)
@@ -101,7 +102,8 @@ export default function Reports({ setPage }) {
   const plan         = useMemo(() => monthPlan(rules || [], activeMonth, { incomes: _incAll || [], expenses: _expAll || [], today: localDateStr() }), [rules, activeMonth, _incAll, _expAll])
   const subsPending  = useMemo(() => subscriptionsToDeduct({ plan, rules, monthlySubs: totalSubs }), [plan, rules, totalSubs])
   const freeFlow     = roundCents(totalIncome - totalExpense - totalDebt - subsPending)   // Disponible tras deudas y suscripciones pendientes
-  const savingRate   = totalIncome > 0 ? balance/totalIncome : 0  // sin floor: coincide con Coach/Advisor
+  // La tasa de ahorro de toda la app (utils/monthLeft.js, QA I3).
+  const savingRate   = useMemo(() => monthSavingRate({ incomes, expenses, setAsides: ctxSetAsides, month: activeMonth }), [incomes, expenses, ctxSetAsides, activeMonth])
   const necesidad    = useMemo(() => sumAmounts(mExpenses.filter(r=>r.type==='Necesidad')), [mExpenses])
   const deseos       = useMemo(() => sumAmounts(mExpenses.filter(r=>r.type==='Deseo')), [mExpenses])
   const expByCat     = useMemo(() => { const m={}; mExpenses.forEach(e=>{m[e.category]=(m[e.category]||0)+(Number(e.amount)||0)}); return m }, [mExpenses])

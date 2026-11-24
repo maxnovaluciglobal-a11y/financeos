@@ -10,6 +10,7 @@ import { personalDebtRatio } from '../utils/personal.js'
 import { findEmergencyGoal } from '../utils/emergencyGoal.js'
 import { maskMoney } from '../utils/money.js'
 import { projectEndOfMonth } from '../utils/projection.js'
+import { monthSavingRate } from '../utils/monthLeft.js'
 // Motor de reglas del FinanceOS Coach
 // Configurable sin tocar componentes React
 // Cada regla: id, categoría, condición, severidad, mensaje, acción sugerida
@@ -314,13 +315,14 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
   const monthlyIncome  = incomes.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + (r.amount || 0), 0)
   const monthlyExpense = expenses.filter(r => r.date?.startsWith(activeMonth)).reduce((s, r) => s + (r.amount || 0), 0)
   const cashFlow       = monthlyIncome - monthlyExpense
-  // FIN-2: tasa de ahorro, colchón y carga de deuda sobre el mes PROYECTADO
-  // (mismo criterio que el IQ Score); los montos de los mensajes siguen siendo
-  // los registrados.
+  // FIN-2: colchón y carga de deuda sobre el mes PROYECTADO (mismo criterio
+  // que el IQ Score). La TASA DE AHORRO es la de toda la app (monthSavingRate,
+  // QA pre-tiendas I3): lo registrado, igual que Inicio, Panorama, Reportes y
+  // Modo Asesor, para que la cifra cuadre con los ingresos y gastos a la vista.
   const ref = projectEndOfMonth({ incomes, expenses, activeMonth })
   const refIncome  = ref.projInc
   const refExpense = ref.projExp
-  const savingsRate    = refIncome > 0 ? (refIncome - refExpense) / refIncome : 0
+  const savingsRate    = monthSavingRate({ incomes, expenses, month: activeMonth })
 
   // Suscripciones
   const activeSubs = (subs || []).filter(s => s.status === 'active')

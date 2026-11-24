@@ -126,3 +126,14 @@ export function monthLeft({ incomes = [], expenses = [], setAsides = [], month, 
     incCount, expCount,
   }
 }
+
+// Tasa de ahorro del mes: LA definición para toda pantalla (QA pre-tiendas
+// 23-nov-2026, I3). Inicio, Panorama, Reportes (y su PDF), Modo Asesor (y su
+// PDF) y Diagnóstico muestran este número: (ingresos − gastos registrados) ÷
+// ingresos del mes, con lo apartado contado como ahorro y sin movimientos
+// `inv`. Antes Diagnóstico usaba el mes PROYECTADO y daba 34,5 % contra el
+// 40,5 % del resto, con los mismos ingresos y gastos a la vista.
+/** @param {{ incomes?: any[], expenses?: any[], setAsides?: any[], month: string }} p */
+export function monthSavingRate({ incomes = [], expenses = [], setAsides = [], month }) {
+  return monthLeft({ incomes, expenses, setAsides, month }).savingRate
+}

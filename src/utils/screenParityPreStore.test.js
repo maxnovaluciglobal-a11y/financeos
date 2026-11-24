@@ -84,3 +84,38 @@ describe('I1/I2: Inversiones del demo, una sola cifra y un solo "Pusiste"', asyn
     expect(hoy.cash).toBeCloseTo(port.cash, 6)
   })
 })
+
+describe('I3/I4: una tasa de ahorro y un IQ Score para el mismo mes', async () => {
+  const { homeMonthTotals } = await import('../pages/Dashboard/dashboardModel.js')
+  const { calcCoachMetrics } = await import('../data/coachRules.js')
+  const { monthSavingRate } = await import('./monthLeft.js')
+  const MONTH = '2026-11'
+  const d = (day) => `${MONTH}-${String(day).padStart(2, '0')}`
+
+  it('Inicio/Panorama = Diagnóstico = Reportes/Asesor (monthSavingRate), también a mitad de mes', () => {
+    let seed = 3
+    const r = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 }
+    for (let i = 0; i < 500; i++) {
+      const incomes = [{ date: d(1), amount: 1000 + Math.round(r() * 400000) / 100 }]
+      const expenses = Array.from({ length: 1 + Math.floor(r() * 20) }, (_, j) => ({ date: d(1 + Math.floor(r() * 22)), amount: Math.round(r() * 30000) / 100, category: 'Ocio', id: `e${j}` }))
+      // Un mes anterior completo: la proyección (FIN-2) daría otra cifra.
+      expenses.push({ date: '2026-10-05', amount: 3000, category: 'Ocio', id: 'old' })
+      incomes.push({ date: '2026-10-01', amount: 2500 })
+      const home = homeMonthTotals({ incomes, expenses, activeMonth: MONTH, now: new Date(2026, 10, 22, 12) }).cur.savingRate
+      const coach = calcCoachMetrics({ incomes, expenses, budgets: [], debts: [], goals: [], subs: [], settings: { activeMonth: MONTH } }).savingsRate
+      const shared = monthSavingRate({ incomes, expenses, month: MONTH })
+      expect(coach).toBeCloseTo(home, 10)
+      expect(shared).toBeCloseTo(home, 10)
+    }
+  })
+
+  it('Diagnóstico y Modo Asesor muestran el IQ Score (useIqScore), no un puntaje propio', () => {
+    for (const f of ['pages/Coach/index.jsx', 'pages/Advisor/index.jsx', 'pages/Dashboard/useHomeData.jsx']) {
+      expect(src(f), f).toContain('useIqScore()')
+      expect(src(f), f).not.toMatch(/calcFinancialScore\(/)
+    }
+    expect(src('pages/Coach/index.jsx')).not.toMatch(/100 - warnings\.length/)
+    expect(src('pages/Advisor/index.jsx')).not.toMatch(/scoreMap/)
+    for (const f of ['pages/Advisor/index.jsx', 'pages/Reports/index.jsx']) expect(src(f), f).toContain('monthSavingRate(')
+  })
+})

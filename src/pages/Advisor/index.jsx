@@ -19,6 +19,9 @@ import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import config from '../../config.js'
 import { useNetWorth } from '../../hooks/useNetWorth.js'
+import { useIqScore } from '../../hooks/useIqScore.js'
+import { monthSavingRate } from '../../utils/monthLeft.js'
+import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { monthDebtLoad, personalDebts } from '../../utils/personal.js'
 import { monthPlan, pendingTotals } from '../../utils/recurring.js'
@@ -288,7 +291,7 @@ function AdvisorNotes({ notes, onSave }) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function Advisor() {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts, goals, settings, updateSettings, recurring: rules } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts, goals, settings, updateSettings, recurring: rules, setAsides: ctxSetAsides } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
@@ -319,7 +322,7 @@ export default function Advisor() {
       mIncome, mExpense, mBalance, savingRate,
       totalDebt, totalMinPayments,
       signals, alerts, goals, debts,
-      overBudgetCount, score, scoreLabel, scoreColor,
+      overBudgetCount, score, scoreLabel,
       advisorNotes,
       expByCategory:    expByCat,
       subMonthly, subAnnual, subCount,
@@ -374,7 +377,8 @@ export default function Advisor() {
   const mIncome  = sumAmounts(monthIncomes)
   const mExpense = sumAmounts(monthExpenses)
   const mBalance = roundCents(mIncome - mExpense)
-  const savingRate = mIncome > 0 ? mBalance / mIncome : 0
+  // La tasa de ahorro de toda la app (utils/monthLeft.js, QA I3).
+  const savingRate = monthSavingRate({ incomes, expenses, setAsides: ctxSetAsides, month: activeMonth })
   // Solo deuda del ámbito personal (excluye propiedades de inversión) — mismo
   // cálculo que el score y el Coach, ver personalDebtRatio en utils/personal.js.
   // G2-N5: con los fijos pendientes (el sueldo previsto), como el IQ Score.
@@ -397,11 +401,14 @@ export default function Advisor() {
   const signals = useMemo(() => calcTrafficLight(metrics, t), [metrics, t])
   const alerts  = useMemo(() => calcAlerts(metrics, t),       [metrics, t])
 
-  // Score general (0-100) basado en semáforos
-  const scoreMap = { green: 100, yellow: 50, red: 0 }
-  const score = signals.length > 0 ? Math.round(signals.reduce((s, sig) => s + scoreMap[sig.status], 0) / signals.length) : 0
-  const scoreColor = score >= 70 ? 'var(--pos)' : score >= 40 ? 'var(--warn)' : 'var(--neg)'
-  const scoreLabel = score >= 70 ? t('adv.score.healthy') : score >= 40 ? t('adv.score.attention') : t('adv.score.risk')
+  // Score general: el IQ Score del mes, el mismo número de Inicio, Panorama y
+  // Diagnóstico (hooks/useIqScore.js). Antes era el promedio del semáforo y
+  // el mismo mes daba 70 acá y 80 en Inicio (QA pre-tiendas I4).
+  const iq = useIqScore()
+  const score = iq?.score ?? 0
+  const scoreLevelKey = scoreLevel(score)
+  const scoreColor = SCORE_LEVELS[scoreLevelKey].color
+  const scoreLabel = t(scoreLevelKey === 'ok' ? 'adv.score.healthy' : scoreLevelKey === 'attention' ? 'adv.score.attention' : 'adv.score.risk')
 
   // Patrimonio neto (stock a hoy) — opcional: solo si hay datos que lo alimenten.
   // Usa movimientos SIN filtrar inversión (el flujo de propiedades vive en registros 💼).
@@ -475,6 +482,7 @@ export default function Advisor() {
                 <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)' }}>/ 100</div>
               </div>
               <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)' }}>{t('dash.health.title')}</div>
                 <div style={{ fontSize: 'var(--t-headline)', fontWeight: 700, color: scoreColor, marginBottom: 3 }}>{scoreLabel}</div>
                 <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5 }}>
                   {advisorNotes.clientName ? t('adv.score.client', { name: advisorNotes.clientName }) : ''}
