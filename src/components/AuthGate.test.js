@@ -21,7 +21,7 @@ vi.mock('../core/auth.js', () => ({
 
 const { loadLang } = await import('../i18n/langCache.js')
 const { translate } = await import('../i18n/translate.js')
-const { default: AuthGate, legalUrls, listenNativeOAuthError } = await import('./AuthGate.jsx')
+const { default: AuthGate, legalUrls, listenNativeOAuthError, LegalNotice } = await import('./AuthGate.jsx')
 const { NATIVE_OAUTH_ERROR_EVENT } = await import('../native/nativeLinks.js')
 
 const render = (lang, search = '', hash = '') => {
@@ -134,3 +134,16 @@ describe('AuthGate: aviso cuando falla el inicio con Google/Apple en la app nati
     expect(setError).not.toHaveBeenCalled()
   })
 })
+
+describe('LegalNotice en la app de tienda (F14, ronda 3)', () => {
+  it('abre Términos y Privacidad dentro de la app, sin enlazar a la landing (que muestra precios)', () => {
+    const t = (k) => translate('es', k)
+    const html = renderToStaticMarkup(createElement(LegalNotice, { t, lang: 'es', native: true }))
+    expect(html).toContain('data-testid="authgate-legal-terms"')
+    expect(html).toContain('data-testid="authgate-legal-privacy"')
+    expect(html).not.toContain('moyiq.app/')
+    const web = renderToStaticMarkup(createElement(LegalNotice, { t, lang: 'es', native: false }))
+    expect(web).toContain('href="https://moyiq.app/terms.html"')
+  })
+})
+

@@ -568,6 +568,27 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     else if (c.right > r.right) row.scrollLeft += c.right - r.right + 8
   }, [cat, chips])
 
+  // AND-11 (ronda 3): con letra grande la fila deslizable cortaba un chip en seco
+  // ("Fo…") y parecía un error. Si la fila no entra, el borde que tiene más
+  // chips se desvanece: se lee como "desliza para ver más" (todas siguen en el
+  // botón de la grilla).
+  const [catFade, setCatFade] = useState('')
+  useLayoutEffect(() => {
+    const row = catRowRef.current
+    if (!row) return undefined
+    const update = () => {
+      const max = row.scrollWidth - row.clientWidth
+      if (max <= 1) { setCatFade(''); return }
+      const x = row.scrollLeft
+      setCatFade(x <= 1 ? 'end' : x >= max - 1 ? 'start' : 'both')
+    }
+    update()
+    row.addEventListener('scroll', update, { passive: true })
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null
+    ro?.observe(row)
+    return () => { row.removeEventListener('scroll', update); ro?.disconnect() }
+  }, [chips, compact, type])
+
   // UX-N9: un solo "Guardar" a la vista. En la hoja compacta el ✓ del teclado
   // basta; el del pie aparece solo si el teclado quedó fuera de la vista.
   const keypadRef = useRef(null)
@@ -721,7 +742,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           </div>
         ) : compact ? (
           <div className={css.catRow}>
-            <div ref={catRowRef} role="group" aria-label={t('qa.category')} className={css.catScroll}>
+            <div ref={catRowRef} role="group" aria-label={t('qa.category')} className={css.catScroll} data-fade={catFade || undefined}>
               {(chips.includes(cat) || !cat ? chips : [cat, ...chips]).map(c => (
                 <button key={c} type="button" className={`fos-chip ${css.catChip}`} aria-pressed={cat === c} onClick={() => pickCategory(c)}
                   data-suggested={catSuggested && cat === c ? '' : undefined} aria-describedby={catSuggested && cat === c ? 'qa-cat-hint' : undefined}>

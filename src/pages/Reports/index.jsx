@@ -70,7 +70,7 @@ export default function Reports({ setPage }) {
       }
       const blob = await pdf(<ReportPDF data={data} />).toBlob()
       // AND-2: en la app nativa <a download> no guarda nada.
-      await saveBlob(blob, `MOY-IQ-${t('rpdf.filename')}-${activeMonth}.pdf`)
+      await saveBlob(blob, `moyiq-${t('rpdf.filename').toLowerCase()}-${activeMonth}.pdf`)
     } catch (e) {
       console.error('PDF error:', e)
       setPdfError(t('adv.pdf.error'))

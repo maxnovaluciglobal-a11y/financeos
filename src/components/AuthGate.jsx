@@ -4,7 +4,7 @@
 // concepto de cuenta; esto no reemplaza esa arquitectura local-first (los
 // datos siguen en IndexedDB, no en el servidor) — solo agrega una identidad
 // real (email/contraseña o Google) como puerta de entrada.
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, signInWithApple, resetPasswordForEmail, resendSignupConfirmation, MIN_PASSWORD_LENGTH } from '../core/auth.js'
@@ -31,20 +31,42 @@ export function legalUrls(lang) {
 
 // Aviso de Términos y Privacidad del registro: la frase lleva {terms} y
 // {privacy} y cada marcador se reemplaza por su enlace.
-export function LegalNotice({ t, lang }) {
+// App de tienda (F14, ronda 3): los textos se abren dentro de la app, en su
+// versión de tienda (sin precios ni prueba), en vez de la landing, cuyo pie
+// muestra los precios de la web.
+const LegalTerms = lazy(() => import('../pages/legal/Terms.jsx'))
+const LegalPrivacy = lazy(() => import('../pages/legal/Privacy.jsx'))
+
+export function LegalNotice({ t, lang, native = isNativeApp() }) {
   const urls = legalUrls(lang)
+  const [open, setOpen] = useState(null) // null | 'terms' | 'privacy'
   const parts = String(t('authGate.legalNotice')).split(/(\{terms\}|\{privacy\})/)
-  const link = (href, label) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tx)', textDecoration: 'underline' }}>{label}</a>
+  const linkStyle = { color: 'var(--tx)', textDecoration: 'underline' }
+  const link = (which, href, label) => (native
+    ? <button type="button" data-testid={`authgate-legal-${which}`} onClick={() => setOpen(which)} style={{ ...linkStyle, background: 'none', border: 'none', padding: '12px 2px', font: 'inherit', cursor: 'pointer' }}>{label}</button>
+    : <a href={href} target="_blank" rel="noopener noreferrer" style={linkStyle}>{label}</a>
   )
+  const Page = open === 'terms' ? LegalTerms : open === 'privacy' ? LegalPrivacy : null
   return (
-    <p data-testid="authgate-legal" style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>
-      {parts.map((part, i) => (
-        part === '{terms}' ? <span key={i}>{link(urls.terms, t('authGate.legalTerms'))}</span>
-          : part === '{privacy}' ? <span key={i}>{link(urls.privacy, t('authGate.legalPrivacy'))}</span>
-            : <span key={i}>{part}</span>
-      ))}
-    </p>
+    <>
+      <p data-testid="authgate-legal" style={{ fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>
+        {parts.map((part, i) => (
+          part === '{terms}' ? <span key={i}>{link('terms', urls.terms, t('authGate.legalTerms'))}</span>
+            : part === '{privacy}' ? <span key={i}>{link('privacy', urls.privacy, t('authGate.legalPrivacy'))}</span>
+              : <span key={i}>{part}</span>
+        ))}
+      </p>
+      {Page && (
+        <div role="dialog" aria-modal="true" data-testid="authgate-legal-sheet" style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'var(--bg)', overflowY: 'auto', padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
+          <div style={{ maxWidth: 720, margin: '0 auto' }}>
+            <button type="button" onClick={() => setOpen(null)} style={{ minHeight: 44, padding: '0 14px', marginBottom: 8, borderRadius: 8, border: '1px solid var(--brd)', background: 'var(--card)', color: 'var(--tx)', font: 'inherit', fontWeight: 600, cursor: 'pointer' }}>
+              {t('common.close')}
+            </button>
+            <Suspense fallback={null}><Page /></Suspense>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -193,6 +215,9 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleGoogle() {
     setError('')
+    // AND-14: sin conexión, avisar antes de abrir el navegador de Google/Apple
+    // (si no, se abre una página de "sin internet" sin explicación).
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) { setError(t('authGate.errorNetwork')); return }
     clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
     if (tab === 'signup') trackSignupStart('google')
@@ -203,6 +228,9 @@ export default function AuthGate({ onAuthenticated }) {
 
   async function handleApple() {
     setError('')
+    // AND-14: sin conexión, avisar antes de abrir el navegador de Google/Apple
+    // (si no, se abre una página de "sin internet" sin explicación).
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) { setError(t('authGate.errorNetwork')); return }
     clearDeletedNotice()
     stashOpenForOAuth(window.location.search)
     const result = await signInWithApple()
