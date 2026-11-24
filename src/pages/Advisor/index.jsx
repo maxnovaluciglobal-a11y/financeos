@@ -10,7 +10,7 @@ import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, Alert, PageHeader } from '../../components/ui/index.jsx'
-import { fmtMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints, localDateStr } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtPct, dateLocale, currentMonth, currencySymbol, fmtPctPoints, localDateStr } from '../../utils/index.js'
 import ProGate from '../../components/ui/ProGate.jsx'
 import { FinancialDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { downloadReportePDF, sendReportePDFByEmail } from './ReportePDF.jsx'
@@ -18,7 +18,7 @@ import { goalDisplayColor } from '../../utils/goalColor.js'
 import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import config from '../../config.js'
-import { calcNetWorth } from '../../utils/netWorth.js'
+import { useNetWorth } from '../../hooks/useNetWorth.js'
 import { countBudgetsExceeded } from '../../utils/budgets.js'
 import { monthDebtLoad, personalDebts } from '../../utils/personal.js'
 import { monthPlan, pendingTotals } from '../../utils/recurring.js'
@@ -288,7 +288,7 @@ function AdvisorNotes({ notes, onSave }) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function Advisor() {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts, receivables, goals, settings, updateSettings, recurring: rules } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts, goals, settings, updateSettings, recurring: rules } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // Modo Asesor personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym = currencySymbol(settings.currency, settings.language)
@@ -405,8 +405,8 @@ export default function Advisor() {
 
   // Patrimonio neto (stock a hoy) — opcional: solo si hay datos que lo alimenten.
   // Usa movimientos SIN filtrar inversión (el flujo de propiedades vive en registros 💼).
-  const nw = useMemo(() => calcNetWorth({ goals, debts, receivables, incomes: _incAll, expenses: _expAll, settings }),
-    [goals, debts, receivables, _incAll, _expAll, settings])
+  // Misma cifra que la página Patrimonio (useNetWorth: lo registrado + Inversiones).
+  const { nw } = useNetWorth()
 
   const noData = mIncome === 0 && mExpense === 0 && debts.length === 0
 
@@ -510,7 +510,7 @@ export default function Advisor() {
             <AdvisorKPI label={t('adv.kpi.debt')} value={fmtMoney(totalDebt, sym)} color={totalDebt > 0 ? 'var(--warn)' : 'var(--grn)'} sub={totalDebt > 0 ? t('adv.kpi.minPerMonth', { v: fmtMoney(totalMinPayments, sym) }) : t('adv.kpi.noDebts')} />
             <AdvisorKPI label={t('adv.kpi.goals')} value={goals.length} sub={t('adv.kpi.avgProgress', { pct: fmtPct(avgGoalPct) })} />
             <AdvisorKPI label={t('adv.kpi.budgets')} value={overBudgetCount > 0 ? t('adv.kpi.budgetsOver', { n: overBudgetCount }) : t('adv.kpi.budgetsOk')} color={overBudgetCount > 0 ? 'var(--neg)' : 'var(--grn)'} />
-            {nw.hasData && <AdvisorKPI label={t('adv.kpi.netWorth')} value={fmtMoney(nw.netWorth, sym)} color={nw.netWorth >= 0 ? 'var(--grn)' : 'var(--neg)'} sub={t('adv.kpi.netWorthSub', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })} />}
+            {nw.hasData && <AdvisorKPI label={t('adv.kpi.netWorth')} value={fmtSignedMoney(nw.netWorth, sym)} color={nw.netWorth >= 0 ? 'var(--grn)' : 'var(--neg)'} sub={t('adv.kpi.netWorthSub', { a: fmtMoney(nw.totalActivos, sym), p: fmtMoney(nw.totalPasivos, sym) })} />}
           </div>
 
           {/* Semáforo */}

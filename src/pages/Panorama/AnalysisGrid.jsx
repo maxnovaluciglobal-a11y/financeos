@@ -6,14 +6,12 @@ import { useMemo } from 'react'
 import { ChevronRight } from 'lucide-react'
 import Money from '../../components/Money.jsx'
 import { NAV_ICONS } from '../../components/icons/Icons.jsx'
-import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
+import { useNetWorth } from '../../hooks/useNetWorth.js'
 import { ALL_ITEMS, PANORAMA_PAGES, showProChip } from '../../components/layout/navConfig.js'
 import { getLicensePlan } from '../../utils/licenseValidator.js'
 import { moduleOn } from '../../utils/modules.js'
-import { calcNetWorth } from '../../utils/netWorth.js'
-import { fmtInvestAt, withInvest } from '../../utils/investNetWorth.js'
+import { fmtInvestAt } from '../../utils/investNetWorth.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
 import { fmtMoneyParts } from '../../utils/index.js'
 import s from './analysisGrid.module.css'
@@ -24,15 +22,11 @@ const signed = (n, sym) => `${n < 0 ? '−' : n > 0 ? '+' : ''}${whole(n, sym)}`
 
 export default function AnalysisGrid({ d, setPage }) {
   const { t } = useT()
-  const app = useApp() || {}
   const { settings, sym, activeMonth, kpis, todoItems, subMonthly } = d
   const plan = getLicensePlan()
-  const { inv } = useInvestPortfolio()
   const investOn = moduleOn(settings, 'investments')
-
-  const nw = useMemo(() => withInvest(calcNetWorth({
-    goals: d.goals, debts: d.debts, receivables: app.receivables, incomes: d.ctx.incomes, expenses: d.ctx.expenses, settings,
-  }), inv), [d.goals, d.debts, app.receivables, d.ctx.incomes, d.ctx.expenses, settings, inv])
+  // Misma cifra que Patrimonio, Reportes y Modo Asesor (hooks/useNetWorth.js).
+  const { inv, nw } = useNetWorth()
 
   const hasMonth = kpis.totalInc > 0 || kpis.totalExp > 0
   const proj = useMemo(() => (hasMonth ? projectEndOfMonth({ incomes: d.incomes, expenses: d.expenses, activeMonth, pending: d.pendingSum }) : null),

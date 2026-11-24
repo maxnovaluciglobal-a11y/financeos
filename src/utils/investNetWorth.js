@@ -2,8 +2,9 @@
 // persona y a Patrimonio neto, lógica pura.
 //
 // La línea "Inversiones" es una estimación con fecha y va aparte de Metas: no
-// toca `calcNetWorth`, así Reportes y el PDF siguen con lo que la persona
-// registró. Pero `withInvest` SÍ suma el portafolio al mismo total que el
+// toca `calcNetWorth`. Toda pantalla que muestra el patrimonio (Patrimonio,
+// Panorama, Inicio, Reportes, Modo Asesor y sus PDF) suma esa línea con
+// `withInvest` vía hooks/useNetWorth.js: una sola cifra (QA 23-nov-2026). Pero `withInvest` SÍ suma el portafolio al mismo total que el
 // "Ahorrado" de las metas, y nada impide que una meta (p. ej. "Roth IRA")
 // registre a mano dinero que ya está en Inversiones: ese dinero se contaría dos
 // veces (I-17, benchmark/05-coherencia-360). Hasta que existan las metas

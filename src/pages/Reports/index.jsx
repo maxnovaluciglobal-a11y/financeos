@@ -10,7 +10,7 @@ import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortNa
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
-import { calcNetWorth } from '../../utils/netWorth.js'
+import { useNetWorth } from '../../hooks/useNetWorth.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
@@ -34,7 +34,7 @@ import { reportOverBudget, subscriptionsToDeduct } from './reportsModel.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, receivables, subscriptions: allSubs, goals: allGoals, settings, recurring: rules } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, settings, recurring: rules } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = currencySymbol(settings.currency, settings.language)
@@ -49,8 +49,8 @@ export default function Reports({ setPage }) {
   const activeMonth = settings.activeMonth || currentMonth()
 
   // Patrimonio neto (stock a HOY) — cálculo compartido con la página Patrimonio
-  const nw = useMemo(() => calcNetWorth({ goals: allGoals, debts: allDebts, receivables, incomes: _incAll, expenses: _expAll, settings }),
-    [allGoals, allDebts, receivables, _incAll, _expAll, settings])
+  // Misma cifra que Patrimonio y Modo Asesor (lo registrado + Inversiones).
+  const { nw } = useNetWorth()
 
   async function downloadPDF() {
     setPdfLoading(true)

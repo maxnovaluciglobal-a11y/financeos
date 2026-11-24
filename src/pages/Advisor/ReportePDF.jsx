@@ -6,7 +6,7 @@
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer'
 import { PDF_FONT as F, PDF_COLOR as P, isOwnBrand } from '../pdfTheme.js'
 import PdfLogo from '../PdfLogo.jsx'
-import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
 
@@ -303,7 +303,7 @@ export function ReporteFinancieroPDF({ data }) {
             {netWorth && (
               <View style={s.kpiBox}>
                 <Text style={s.kpiLabel}>{t('rpdf.netWorth')}</Text>
-                <Text style={[s.kpiValue, { color: netWorth.netWorth >= 0 ? C.grn : C.red }]}>{fmtMoney(netWorth.netWorth, sym)}</Text>
+                <Text style={[s.kpiValue, { color: netWorth.netWorth >= 0 ? C.grn : C.red }]}>{fmtSignedMoney(netWorth.netWorth, sym)}</Text>
                 <Text style={s.kpiSub}>{t('rpdf.assetsLiabilities', { assets: fmtMoney(netWorth.totalActivos, sym), liabilities: fmtMoney(netWorth.totalPasivos, sym) })}</Text>
               </View>
             )}
