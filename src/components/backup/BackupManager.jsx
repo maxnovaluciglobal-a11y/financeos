@@ -11,15 +11,18 @@ import { CLOUD_ENABLED } from '../../core/supabase.js'
 import { cloudPush, cloudPull, cloudStatus } from '../../core/cloudSync.js'
 
 import { useT } from '../../i18n/useT.js'
+import { useBackDismiss } from '../../hooks/useBackDismiss.js'
 import { BackupStatusBadge, plural, daysSince, formatDate, validateBackupFile } from './BackupStatus.jsx'
 import { MIN_PASSPHRASE_LENGTH, isEncryptedBackupText, passphraseOk, decryptBackupFile } from '../../utils/backupFile.js'
 
 // ── MODAL DE CONFIRMACIÓN ─────────────────────────────────────────────────────
-function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = false }) {
+export function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, danger = false }) {
   const { t } = useT()
+  // R4-1: el botón atrás de Android cancela la restauración en vez de salir de Ajustes.
+  useBackDismiss(isOpen, onCancel)
   if (!isOpen) return null
   return (
-    <div style={{
+    <div role="dialog" aria-modal="true" aria-label={title} style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: 'rgba(0,0,0,.45)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', padding: 20,

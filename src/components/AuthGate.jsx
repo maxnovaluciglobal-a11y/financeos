@@ -11,6 +11,7 @@ import { signUpWithPassword, signInWithPassword, signInWithGoogle, signInWithApp
 import { nativePlatform, isNativeApp } from '../native/platform.js'
 import { NATIVE_OAUTH_ERROR_EVENT } from '../native/nativeLinks.js'
 import { oauthProviders } from '../native/storePolicy.js'
+import { useBackDismiss } from '../hooks/useBackDismiss.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
@@ -53,6 +54,8 @@ async function hasNetworkForOAuth() {
 export function LegalNotice({ t, lang, native = isNativeApp() }) {
   const urls = legalUrls(lang)
   const [open, setOpen] = useState(null) // null | 'terms' | 'privacy'
+  // R4-1: el botón atrás de Android cierra la hoja (antes mandaba la app al fondo).
+  useBackDismiss(open !== null, () => setOpen(null))
   const parts = String(t('authGate.legalNotice')).split(/(\{terms\}|\{privacy\})/)
   const linkStyle = { color: 'var(--tx)', textDecoration: 'underline' }
   const link = (which, href, label) => (native

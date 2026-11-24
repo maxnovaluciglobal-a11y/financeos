@@ -15,6 +15,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { Smartphone, FileUp } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
+import { useBackDismiss } from '../hooks/useBackDismiss.js'
 import { profileTemplateSettings } from '../data/templates.js'
 import CountryBadge from './CountryBadge.jsx'
 import { COUNTRIES, PRIMARY_COUNTRIES, countryKey, suggestedCurrency } from '../data/countries.js'
@@ -158,6 +159,9 @@ export default function Onboarding({ onComplete }) {
 
   // Persiste paso + respuestas para retomar si se cierra la app a mitad del flujo
   useEffect(() => { saveOnboardingProgress(step, answers, firstTxSaved) }, [step, answers, firstTxSaved])
+  // R4-1: en el paso 1 el botón atrás de Android hace lo mismo que «Volver»
+  // (paso 0) en vez de mandar la app al fondo. En los pasos 0 y 2 no hay a dónde volver.
+  useBackDismiss(step === 1, () => setStep(0))
   // Cuenta nueva: las "Novedades" de versiones anteriores no le corresponden.
   useEffect(() => { markNotesSeen() }, [])
 
