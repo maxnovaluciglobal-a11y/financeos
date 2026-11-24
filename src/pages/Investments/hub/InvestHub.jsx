@@ -10,7 +10,7 @@
 // Arriba, el interruptor "Vista completa" (esencial por defecto,
 // utils/investView.js) y el aviso educativo.
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
-import { Hammer } from 'lucide-react'
+import { CircleHelp, Hammer } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
 import { INVEST_TABS, OPEN_EVENT, bootTab, isTab, normTab, openAsset, rememberTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
@@ -27,6 +27,8 @@ const Market = lazy(() => import('../market/Market.jsx'))
 const Follow = lazy(() => import('../follow/Follow.jsx'))
 // Planificar (F5): calculadora, aportes y planes guardados.
 const Planificar = lazy(() => import('../planificar/Planificar.jsx'))
+// Ayuda (F7): la hoja y sus textos, solo al tocar "Ayuda".
+const InvestHelp = lazy(() => import('../help/InvestHelp.jsx'))
 
 const safeStorage = {
   getItem: (k) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -49,6 +51,8 @@ export default function InvestHub({ setPage, demo = false }) {
   const { t } = useT()
   const [tab, setTab] = useState(() => bootTab({ storage: safeStorage }))
   const [view, setView] = useInvestView()
+  const [help, setHelp] = useState(false)
+  const helpBtn = useRef(null)
   const refs = useRef({})
 
   useEffect(() => { rememberTab(tab, safeStorage) }, [tab])
@@ -97,8 +101,18 @@ export default function InvestHub({ setPage, demo = false }) {
         ))}
       </div>
 
-      <ViewToggle view={view} onChange={setView} />
+      <div className={s.toolRow}>
+        <ViewToggle view={view} onChange={setView} />
+        <button ref={helpBtn} type="button" className={s.helpBtn} onClick={() => setHelp(true)} aria-label={t('invest.hub.helpLabel')} aria-haspopup="dialog">
+          <CircleHelp size={18} strokeWidth={1.8} aria-hidden="true" />{t('invest.hub.help')}
+        </button>
+      </div>
       <EduNotice />
+      {help && (
+        <Suspense fallback={null}>
+          <InvestHelp open={help} onClose={() => { setHelp(false); helpBtn.current?.focus() }} />
+        </Suspense>
+      )}
 
       <TickerSearch onOpen={open} demo={demo} demoTickers={demo ? demoInvestRows().map(r => r.t) : []} />
 

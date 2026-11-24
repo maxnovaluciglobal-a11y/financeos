@@ -1,0 +1,33 @@
+/* Ayuda de Inversiones (F7): grupos de preguntas con <details>/<summary>,
+   el mismo patrón de acordeón que Mercado (market.module.css › .meaning). */
+.wrap { display: flex; flex-direction: column; gap: 16px; padding: 4px 2px 8px; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.title { margin: 0; font-family: var(--display); font-size: var(--t-title-2); font-weight: 700; color: var(--tx); outline: none; }
+.intro { margin: 4px 0 0; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tm); }
+.close {
+  min-width: 44px; min-height: 44px; display: grid; place-items: center; flex-shrink: 0;
+  border: none; border-radius: var(--r); background: var(--fill); color: var(--tm); cursor: pointer;
+}
+.close:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.group { display: flex; flex-direction: column; }
+.groupTitle {
+  margin: 0 0 4px; font-size: var(--t-footnote); font-weight: 600; letter-spacing: .02em;
+  text-transform: uppercase; color: var(--th);
+}
+.list { border-radius: var(--r); background: var(--sur); border: 0.5px solid var(--brd2); overflow: hidden; }
+.item + .item { border-top: 0.5px solid var(--brd2); }
+.item summary {
+  min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  cursor: pointer; font-size: var(--t-callout); font-weight: 600; color: var(--tx); list-style: none;
+}
+.item summary::-webkit-details-marker { display: none; }
+.item summary::after { content: '+'; margin-left: auto; color: var(--th); font-weight: 400; font-size: var(--t-title-2); line-height: 1; flex-shrink: 0; }
+.item[open] summary::after { content: '−'; }
+.item summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.answer { padding: 0 12px 12px; }
+.answer p { margin: 0 0 8px; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tm); }
+.answer p:last-child { margin-bottom: 0; }
+.contact { margin: 0; font-size: var(--t-subhead); color: var(--tm); line-height: var(--t-subhead-lh); }
+.contact a { color: var(--tx); }
+.foot { margin: 0; font-size: var(--t-footnote); color: var(--th); line-height: 1.5; }
+.status { margin: 0; font-size: var(--t-subhead); color: var(--tm); }

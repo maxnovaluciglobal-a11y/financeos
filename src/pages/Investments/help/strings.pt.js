@@ -1,0 +1,52 @@
+// Ajuda de Investimentos (F7), português. Mesmas chaves e variáveis que strings.es.js.
+export default {
+  'hlp.title': 'Ajuda de Investimentos',
+  'hlp.intro': 'Respostas curtas sobre como esta seção funciona. Toque em uma pergunta para abri-la.',
+  'hlp.close': 'Fechar',
+  'hlp.loading': 'Carregando…',
+
+  'hlp.g.nav': 'Como ela está organizada',
+  'hlp.q.sections': 'O que há em cada aba?',
+  'hlp.a.sections': 'Investimentos tem cinco abas.\n\nResumo: quanto vale sua carteira hoje, como ela mudou e o contexto do mercado. Carteira: suas posições, movimentos, dividendos e metas. Seguindo: os ativos que você segue sem tê-los, seus alertas de preço, Descobrir e Comparar. Planejar: a calculadora, os aportes e seus planos salvos. Mercado: índices, setores, câmbio e notícias.',
+  'hlp.q.views': 'O que muda entre a visão essencial e a completa?',
+  'hlp.a.views': 'A visão essencial mostra o básico, com uma linha simples de preço. A visão completa acrescenta velas, indicadores (médias, RSI, MACD e bandas de Bollinger), o stop e a faixa de mercado.\n\nMude com o botão "Visão completa", acima das abas. Trocar de visão não apaga nada.',
+  'hlp.q.asset': 'Como abro a página de um ativo?',
+  'hlp.a.asset': 'Digite o símbolo na busca, acima das abas, ou toque em um símbolo em qualquer lista. A página mostra o preço, o gráfico, os indicadores, os dados da empresa, sua posição se você tiver uma e notícias. Dali você pode seguir o ativo, criar um alerta ou registrar uma operação.',
+
+  'hlp.g.data': 'Dados e indicadores',
+  'hlp.q.fresh': 'Quão atualizados estão os preços?',
+  'hlp.a.fresh': 'Os preços chegam de fontes públicas, como o Yahoo Finance, e podem ter atraso. Ao lado do preço há uma etiqueta com a hora do último preço informado:\n\n"Em dia": esse preço tem 2 minutos ou menos. "Atraso de N min": tem mais de 2 minutos. "Mercado fechado": a bolsa está fora do horário. "Sem conexão": não foi possível atualizar e você vê o último preço que chegou. "Atraso não informado": a fonte não diz a hora.\n\nSão dados de referência, não para operar no instante.',
+  'hlp.q.ma': 'O que é uma média móvel?',
+  'hlp.a.ma': 'É o preço médio dos últimos dias. A média de 50 dias soma os fechamentos dos últimos 50 dias e divide por 50. Ela suaviza os saltos de cada dia e deixa ver a tendência.\n\nSe o preço está acima da média, nesse período ele tendeu a subir; se está abaixo, a cair. É um dado do passado: não diz o que vai acontecer.',
+  'hlp.q.rsi': 'O que é o RSI?',
+  'hlp.a.rsi': 'O RSI (índice de força relativa) compara as altas e as baixas dos últimos 14 dias em uma escala de 0 a 100.\n\nAcima de 70 costuma ser lido como o preço tendo subido rápido em pouco tempo; abaixo de 30, que caiu rápido. Ele não antecipa uma mudança de direção: um preço pode continuar subindo com o RSI alto.',
+  'hlp.q.macd': 'O que é o MACD?',
+  'hlp.a.macd': 'O MACD (12, 26, 9) mede o impulso do preço: compara uma média rápida, de 12 dias, com uma lenta, de 26 dias.\n\nO app mostra o histograma. Acima de zero, o impulso de curto prazo é positivo; abaixo de zero, negativo. Se as barras diminuem, esse impulso perde força. Como os outros indicadores, ele descreve o que já aconteceu.',
+
+  'hlp.g.risk': 'Risco e planejamento',
+  'hlp.q.calc': 'O que a calculadora faz?',
+  'hlp.a.calc': 'Em Planejar › Calculadora você informa o que quer comprar, a que preço e onde colocaria o stop. Com seu capital de referência e sua regra de risco, ela calcula quantas unidades cabem para que, se o preço chegar ao stop, a perda não passe da porcentagem que você escolheu.\n\nEla só calcula: não compra nada nem se conecta a nenhuma corretora.',
+  'hlp.q.stop': 'O que é o risco até o stop?',
+  'hlp.a.stop': 'O stop é o preço em que você venderia para cortar uma perda. O risco até o stop é o que você perderia se o preço chegasse lá: (entrada − stop) × unidades.\n\nSua regra de risco diz que porcentagem do seu capital você aceita perder em uma operação (1 % se você não mudar). Se você não informar um stop, a calculadora usa um estimado, 8 % abaixo da entrada.',
+  'hlp.q.cash': 'O que é o caixa?',
+  'hlp.a.cash': 'É o saldo dos depósitos, retiradas e operações que você registra em Carteira › Movimentos. Os depósitos o aumentam e as retiradas o diminuem; uma compra o diminui, e uma venda ou um dividendo o aumenta quando você escolhe passá-los pelo seu caixa.\n\n"Total aportado" são seus depósitos menos suas retiradas, mais as compras que você registrou fora do caixa. Não é o saldo do seu banco nem da sua corretora: é o que você registra aqui.',
+  'hlp.q.tramos': 'Como funcionam os aportes em faixas?',
+  'hlp.a.tramos': 'Em Planejar › Aportes mensais você reparte seu aporte do mês entre seus símbolos. Para cada um, pode dividir a parte dele em faixas sobre as médias móveis de 20, 50, 100 e 200 dias: cada faixa é a parte do valor atribuída a uma média.\n\nUm ponto marca se o preço de hoje está nessa média ou abaixo dela. É uma forma organizada de escalonar aportes, não uma indicação de quando comprar.',
+
+  'hlp.g.alerts': 'Alertas de preço',
+  'hlp.q.alertsHow': 'Como funcionam os alertas?',
+  'hlp.a.alertsHow': 'Em Seguindo › Alertas você escolhe um ativo e quando quer o aviso: se ele subir até um preço, se cair até um preço ou se se mover certa porcentagem no dia.\n\nOs alertas ficam na sua conta e o servidor os verifica a cada poucos minutos, então eles chegam mesmo com o app fechado, se você ativou os avisos nesse dispositivo (em Seguindo › Alertas ou em Configurações › Investimentos). Cada alerta avisa no máximo uma vez por dia. Os avisos no celular precisam de uma licença ativa; sem ela, os alertas continuam salvos e no app você vê quais foram atingidos.',
+  'hlp.q.alertsOld': 'Onde estão os alertas que eu tinha em invest.moyiq.app?',
+  'hlp.a.alertsOld': 'Eles não foram transferidos. Na versão anterior os alertas ficavam só no navegador onde você os criou, não na sua conta, então não há de onde trazê-los.\n\nCrie-os de novo em Seguindo › Alertas; a partir de agora eles ficam na sua conta. Se você tiver um arquivo de alertas exportado (.json), pode escolhê-lo ali mesmo.',
+
+  'hlp.g.account': 'Sua conta e seus dados',
+  'hlp.q.where': 'Onde ficam meus dados de Investimentos?',
+  'hlp.a.where': 'Na sua conta, no nosso servidor (Supabase), não no dispositivo: suas posições, movimentos, lista de acompanhamento, alertas e capital de referência. Cada tabela tem segurança por linha (RLS): só a sua sessão pode ler e alterar as suas linhas. Seu perfil de investidor, sua regra de risco e seus planos salvos ficam nos dados da sua conta.\n\nNo dispositivo ficam só preferências de visualização, os totais que o Panorama mostra e o aporte do mês. As metas da Carteira duram enquanto a seção está aberta; você pode levá-las na cópia JSON. Suas finanças do dia a dia continuam no seu dispositivo, como sempre.\n\nEm Configurações › Investimentos você pode exportar seus dados ou excluí-los. Excluir a conta inteira também os apaga.',
+  'hlp.q.ai': 'Usa inteligência artificial para me recomendar investimentos?',
+  'hlp.a.ai': 'Não. Investimentos não usa IA nem seu perfil de investidor para recomendar o que comprar ou vender. Os indicadores e as leituras são cálculos fixos sobre preços históricos, os mesmos para todas as pessoas. As decisões são suas.',
+  'hlp.q.free': 'Quanto custa?',
+  'hlp.a.free': 'Nada: Investimentos é gratuito. Só os avisos de alertas no celular precisam de uma licença ativa do moyiq.\n\nÉ uma ferramenta educativa: mostra dados e cálculos, não é consultoria financeira.',
+
+  'hlp.contact': 'Outra pergunta? Escreva para {email}.',
+  'hlp.foot': 'moyiq · Investimentos · análise educativa · não é consultoria financeira.',
+}

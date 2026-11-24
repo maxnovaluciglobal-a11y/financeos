@@ -1,0 +1,52 @@
+// Hilfe zu Investments (F7), Deutsch. Gleiche Schlüssel und Variablen wie strings.es.js.
+export default {
+  'hlp.title': 'Hilfe zu Investments',
+  'hlp.intro': 'Kurze Antworten dazu, wie dieser Bereich funktioniert. Tippen Sie auf eine Frage, um sie zu öffnen.',
+  'hlp.close': 'Schließen',
+  'hlp.loading': 'Wird geladen…',
+
+  'hlp.g.nav': 'Wie der Bereich aufgebaut ist',
+  'hlp.q.sections': 'Was steht in welchem Tab?',
+  'hlp.a.sections': 'Investments hat fünf Tabs.\n\nÜbersicht: was Ihr Portfolio heute wert ist, wie es sich verändert hat und das Marktumfeld. Portfolio: Ihre Positionen, Bewegungen, Dividenden und Ziele. Verfolgt: Werte, die Sie verfolgen, ohne sie zu besitzen, Ihre Preisalarme, Entdecken und Vergleichen. Planen: der Rechner, die Einzahlungen und Ihre gespeicherten Pläne. Markt: Indizes, Sektoren, Wechselkurse und Nachrichten.',
+  'hlp.q.views': 'Was ändert sich zwischen der Kernansicht und der Vollansicht?',
+  'hlp.a.views': 'Die Kernansicht zeigt das Wesentliche mit einer einfachen Kurslinie. Die Vollansicht zeigt zusätzlich Kerzen, Indikatoren (Durchschnitte, RSI, MACD und Bollinger-Bänder), Stops und das Marktband.\n\nSie wechseln sie mit dem Schalter „Vollansicht“ über den Tabs. Ein Wechsel der Ansicht löscht nichts.',
+  'hlp.q.asset': 'Wie öffne ich die Seite eines Werts?',
+  'hlp.a.asset': 'Geben Sie sein Symbol in die Suche über den Tabs ein oder tippen Sie in einer Liste auf ein Symbol. Die Seite zeigt den Kurs, das Diagramm, die Indikatoren, Unternehmensdaten, Ihre Position, falls Sie eine haben, und Nachrichten. Dort können Sie den Wert verfolgen, einen Alarm dafür anlegen oder eine Transaktion erfassen.',
+
+  'hlp.g.data': 'Daten und Indikatoren',
+  'hlp.q.fresh': 'Wie aktuell sind die Kurse?',
+  'hlp.a.fresh': 'Die Kurse kommen aus öffentlichen Quellen wie Yahoo Finance und können verzögert sein. Neben dem Kurs steht ein Hinweis mit der Uhrzeit des zuletzt gemeldeten Kurses:\n\n„Aktuell“: dieser Kurs ist höchstens 2 Minuten alt. „N Min. Verzögerung“: er ist älter als 2 Minuten. „Markt geschlossen“: die Börse ist außerhalb ihrer Handelszeit. „Keine Verbindung“: es konnte nicht aktualisiert werden, und Sie sehen den zuletzt empfangenen Kurs. „Verzögerung nicht angegeben“: die Quelle nennt keine Uhrzeit.\n\nEs sind Referenzdaten, nicht für den Handel in Echtzeit.',
+  'hlp.q.ma': 'Was ist ein gleitender Durchschnitt?',
+  'hlp.a.ma': 'Das ist der Durchschnittskurs der letzten Tage. Der 50-Tage-Durchschnitt addiert die Schlusskurse der letzten 50 Tage und teilt sie durch 50. Er glättet die täglichen Sprünge und macht den Trend sichtbar.\n\nLiegt der Kurs über seinem Durchschnitt, ist er in diesem Zeitraum eher gestiegen; liegt er darunter, eher gefallen. Das beschreibt die Vergangenheit, nicht die Zukunft.',
+  'hlp.q.rsi': 'Was ist der RSI?',
+  'hlp.a.rsi': 'Der RSI (Relative-Stärke-Index) vergleicht die Gewinne und Verluste der letzten 14 Tage auf einer Skala von 0 bis 100.\n\nÜber 70 wird meist so gelesen, dass der Kurs in kurzer Zeit schnell gestiegen ist; unter 30, dass er schnell gefallen ist. Eine Richtungsänderung sagt er nicht voraus: Ein Kurs kann mit hohem RSI weiter steigen.',
+  'hlp.q.macd': 'Was ist der MACD?',
+  'hlp.a.macd': 'Der MACD (12, 26, 9) misst den Schwung des Kurses: Er vergleicht einen schnellen Durchschnitt über 12 Tage mit einem langsamen über 26 Tage.\n\nDie App zeigt sein Histogramm. Über null ist der kurzfristige Schwung positiv, unter null negativ. Werden die Balken kürzer, lässt dieser Schwung nach. Wie die anderen Indikatoren beschreibt er, was schon passiert ist.',
+
+  'hlp.g.risk': 'Risiko und Planung',
+  'hlp.q.calc': 'Was macht der Rechner?',
+  'hlp.a.calc': 'Unter Planen › Rechner geben Sie ein, was Sie kaufen möchten, zu welchem Kurs und wo Ihr Stop liegen würde. Mit Ihrem Referenzkapital und Ihrer Risikoregel berechnet er, wie viele Einheiten passen, damit der Verlust beim Erreichen des Stops nicht über dem gewählten Prozentsatz liegt.\n\nEr rechnet nur: Er kauft nichts und verbindet sich mit keinem Broker.',
+  'hlp.q.stop': 'Was ist das Risiko bis zum Stop?',
+  'hlp.a.stop': 'Der Stop ist der Kurs, zu dem Sie verkaufen würden, um einen Verlust zu begrenzen. Das Risiko bis zum Stop ist, was Sie verlieren würden, wenn der Kurs dort ankommt: (Einstieg − Stop) × Einheiten.\n\nIhre Risikoregel legt fest, welchen Prozentsatz Ihres Kapitals Sie pro Transaktion zu verlieren bereit sind (1 %, solange Sie ihn nicht ändern). Ohne eingegebenen Stop nimmt der Rechner einen geschätzten, 8 % unter dem Einstieg.',
+  'hlp.q.cash': 'Was ist Bargeld?',
+  'hlp.a.cash': 'Das ist der Saldo der Einzahlungen, Auszahlungen und Transaktionen, die Sie unter Portfolio › Bewegungen erfassen. Einzahlungen erhöhen ihn, Auszahlungen senken ihn; ein Kauf senkt ihn, ein Verkauf oder eine Dividende erhöht ihn, wenn Sie sie über Ihr Bargeld laufen lassen.\n\n„Eingezahlt gesamt“ sind Ihre Einzahlungen minus Auszahlungen plus die Käufe, die Sie außerhalb des Bargelds erfasst haben. Es ist nicht der Saldo bei Ihrer Bank oder Ihrem Broker, sondern das, was Sie hier erfassen.',
+  'hlp.q.tramos': 'Wie funktionieren gestaffelte Einzahlungen?',
+  'hlp.a.tramos': 'Unter Planen › Einzahlungen verteilen Sie Ihre monatliche Einzahlung auf Ihre Symbole. Für jedes können Sie seinen Anteil in Stufen auf seine gleitenden Durchschnitte über 20, 50, 100 und 200 Tage aufteilen: Jede Stufe ist der Teil des Betrags, der einem Durchschnitt zugeordnet ist.\n\nEin Punkt zeigt, ob der heutige Kurs auf oder unter diesem Durchschnitt liegt. Das ist eine geordnete Art, Einzahlungen zu staffeln, kein Signal, wann gekauft werden soll.',
+
+  'hlp.g.alerts': 'Preisalarme',
+  'hlp.q.alertsHow': 'Wie funktionieren Alarme?',
+  'hlp.a.alertsHow': 'Unter Verfolgt › Alarme wählen Sie einen Wert und wann Sie benachrichtigt werden möchten: wenn er auf einen Kurs steigt, wenn er auf einen Kurs fällt oder wenn er sich an einem Tag um einen bestimmten Prozentsatz bewegt.\n\nAlarme werden in Ihrem Konto gespeichert und der Server prüft sie alle paar Minuten. Sie erreichen Sie also auch bei geschlossener App, wenn Sie die Benachrichtigungen auf diesem Gerät eingeschaltet haben (unter Verfolgt › Alarme oder unter Einstellungen › Investments). Jeder Alarm meldet sich höchstens einmal am Tag. Benachrichtigungen auf dem Telefon brauchen eine aktive Lizenz; ohne sie werden Alarme trotzdem gespeichert und die App zeigt, welche erreicht wurden.',
+  'hlp.q.alertsOld': 'Wo sind die Alarme, die ich auf invest.moyiq.app hatte?',
+  'hlp.a.alertsOld': 'Sie wurden nicht übernommen. In der vorherigen Version lagen Alarme nur in dem Browser, in dem Sie sie angelegt hatten, nicht in Ihrem Konto. Es gibt also keine Quelle, aus der sie geholt werden könnten.\n\nLegen Sie sie unter Verfolgt › Alarme neu an; ab jetzt bleiben sie in Ihrem Konto. Wenn Sie eine exportierte Alarmdatei (.json) haben, können Sie sie dort auswählen.',
+
+  'hlp.g.account': 'Ihr Konto und Ihre Daten',
+  'hlp.q.where': 'Wo werden meine Investments-Daten gespeichert?',
+  'hlp.a.where': 'In Ihrem Konto auf unserem Server (Supabase), nicht auf dem Gerät: Ihre Positionen, Bewegungen, Beobachtungsliste, Alarme und Ihr Referenzkapital. Jede Tabelle hat Sicherheit auf Zeilenebene (RLS): Nur Ihre Sitzung kann Ihre Zeilen lesen und ändern. Ihr Anlegerprofil, Ihre Risikoregel und Ihre gespeicherten Pläne liegen in den Kontodaten.\n\nAuf dem Gerät bleiben nur Ansichtseinstellungen, die Summen, die der Überblick zeigt, und die Einzahlung des Monats. Die Ziele im Portfolio gelten, solange der Bereich offen ist; in der JSON-Sicherung können Sie sie mitnehmen. Ihre Alltagsfinanzen bleiben wie immer auf Ihrem Gerät.\n\nUnter Einstellungen › Investments können Sie Ihre Daten exportieren oder löschen. Wenn Sie das ganze Konto löschen, werden sie ebenfalls gelöscht.',
+  'hlp.q.ai': 'Nutzt es künstliche Intelligenz, um mir Anlagen zu empfehlen?',
+  'hlp.a.ai': 'Nein. Investments nutzt weder KI noch Ihr Anlegerprofil, um Ihnen Käufe oder Verkäufe zu empfehlen. Die Indikatoren und Einordnungen sind feste Berechnungen auf historischen Kursen, für alle gleich. Die Entscheidungen treffen Sie.',
+  'hlp.q.free': 'Was kostet es?',
+  'hlp.a.free': 'Nichts: Investments ist kostenlos. Nur Alarm-Benachrichtigungen auf dem Telefon brauchen eine aktive moyiq-Lizenz.\n\nEs ist ein Lernwerkzeug: Es zeigt Daten und Berechnungen und ist keine Finanzberatung.',
+
+  'hlp.contact': 'Noch eine Frage? Schreiben Sie uns an {email}.',
+  'hlp.foot': 'moyiq · Investments · Analyse zu Lernzwecken · keine Finanzberatung.',
+}

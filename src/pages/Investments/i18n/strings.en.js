@@ -66,6 +66,8 @@ export default {
   "invest.hub.tab.planificar": "Plan",
   "invest.hub.tab.mercado": "Market",
   "invest.hub.wip": "In progress",
+  "invest.hub.help": "Help",
+  "invest.hub.helpLabel": "Open Investments help",
   "invest.hub.wipBody": "This section is not ready yet. This is what it will include:",
   "invest.hub.soon.resumen": "Portfolio value and its daily change, your risk at the stop, what to review today, the value-over-time chart against the S&P 500, your top 5 holdings, and cash and contributions.",
   "invest.hoy.fresh.loading": "Updating prices…",

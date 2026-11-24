@@ -66,6 +66,8 @@ export default {
   "invest.hub.tab.planificar": "Planen",
   "invest.hub.tab.mercado": "Markt",
   "invest.hub.wip": "In Arbeit",
+  "invest.hub.help": "Hilfe",
+  "invest.hub.helpLabel": "Hilfe zu Investments öffnen",
   "invest.hub.wipBody": "Dieser Bereich ist noch nicht fertig. Das wird er enthalten:",
   "invest.hub.soon.resumen": "Portfoliowert und Tagesveränderung, Ihr Risiko bis zum Stop, was heute zu prüfen ist, der Wertverlauf im Vergleich zum S&P 500, Ihre 5 größten Positionen sowie Barbestand und Einzahlungen.",
   "invest.hoy.fresh.loading": "Kurse werden aktualisiert…",

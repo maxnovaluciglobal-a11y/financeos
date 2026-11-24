@@ -69,6 +69,8 @@ export default {
   "invest.hub.tab.planificar": "Planificar",
   "invest.hub.tab.mercado": "Mercado",
   "invest.hub.wip": "En construcción",
+  "invest.hub.help": "Ayuda",
+  "invest.hub.helpLabel": "Abrir la ayuda de Inversiones",
   "invest.hub.wipBody": "Esta sección todavía no está lista. Esto es lo que va a traer:",
   "invest.hub.soon.resumen": "El valor del portafolio y su cambio del día, tu riesgo al stop, qué revisar hoy, el gráfico de valor en el tiempo contra el S&P 500, tus 5 posiciones principales y el efectivo y los aportes.",
   "invest.hoy.fresh.loading": "Actualizando precios…",
