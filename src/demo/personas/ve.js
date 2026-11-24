@@ -81,7 +81,7 @@ const GOOD_INCOMES = [
   ...salaryMonth('ve-ix0', M0),
   bodega('ve-ix0-b1', M0, 6, 'Bodega La Esquina', 100),
   bodega('ve-ix0-b2', M0, 9, 'Abasto Don Manuel', 80),
-  { id: d('ve-ix0-x'), date: day(M0, 14), source: 'Cierre contable de dos ferreterías', amount: bs(160, M0), category: 'Freelance', recurrence: 'Único', notes: usdNote(160, M0, 'por Binance (USDT)') },
+  { id: d('ve-ix0-x'), date: day(M0, 14), source: 'Cierre contable de dos ferreterías', amount: bs(210, M0), category: 'Freelance', recurrence: 'Único', notes: usdNote(210, M0, 'por Binance (USDT)') },
   remesa('ve-ix0-r', M0, 18),
   ...PAST_INCOMES,
 ]
