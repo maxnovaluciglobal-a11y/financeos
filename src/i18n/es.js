@@ -1908,7 +1908,7 @@ export const es = {
     'demo.tour.exit': "Salir",
     'demo.tour.replay': "Ver el recorrido otra vez",
     'demo.tour.kpiFree.title': "Lo que te queda este mes",
-    'demo.tour.kpiFree.body': "Ingresos menos gastos registrados en el mes. Los pagos fijos pendientes se muestran aparte. Se actualiza con cada movimiento.",
+    'demo.tour.kpiFree.body': "Ingresos menos los gastos registrados en el mes, lo que apartaste y los fijos que todavía faltan pagar. Se actualiza con cada movimiento.",
     'demo.tour.tabAdd.title': "Registrar un movimiento",
     'demo.tour.tabAdd.body': "Este botón abre el registro rápido: monto, fecha y categoría en una sola hoja.",
     'demo.tour.iqScore.title': "Tu IQ Score",

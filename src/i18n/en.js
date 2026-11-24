@@ -1908,7 +1908,7 @@ export const en = {
     'demo.tour.exit': "Exit",
     'demo.tour.replay': "Show the tour again",
     'demo.tour.kpiFree.title': "What you have left this month",
-    'demo.tour.kpiFree.body': "Income minus the expenses recorded this month. Pending recurring payments are shown separately. It updates with every transaction.",
+    'demo.tour.kpiFree.body': "Income minus this month's recorded expenses, what you set aside and the recurring bills still to pay. It updates with every transaction.",
     'demo.tour.tabAdd.title': "Record a transaction",
     'demo.tour.tabAdd.body': "This button opens quick add: amount, date and category on one sheet.",
     'demo.tour.iqScore.title': "Your IQ Score",

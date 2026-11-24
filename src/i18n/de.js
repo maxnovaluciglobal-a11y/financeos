@@ -1907,7 +1907,7 @@ export const de = {
     'demo.tour.exit': "Beenden",
     'demo.tour.replay': "Rundgang erneut ansehen",
     'demo.tour.kpiFree.title': "Was Ihnen diesen Monat bleibt",
-    'demo.tour.kpiFree.body': "Einnahmen minus die in diesem Monat erfassten Ausgaben. Offene feste Zahlungen werden separat angezeigt. Wird mit jeder Buchung aktualisiert.",
+    'demo.tour.kpiFree.body': "Einnahmen minus die in diesem Monat erfassten Ausgaben, das Zurückgelegte und die noch offenen festen Ausgaben. Wird mit jeder Buchung aktualisiert.",
     'demo.tour.tabAdd.title': "Buchung erfassen",
     'demo.tour.tabAdd.body': "Diese Schaltfläche öffnet die Schnellerfassung: Betrag, Datum und Kategorie auf einem Blatt.",
     'demo.tour.iqScore.title': "Ihr IQ Score",

@@ -155,3 +155,13 @@ describe('I8: Proyección dice de dónde sale el flujo mensual y el % real del p
     expect(src('pages/CashFlow/index.jsx')).toContain('fmtPct(pctBudgetUsed')
   })
 })
+
+describe('I5: el tour describe la cifra que señala', async () => {
+  const dicts = { es: (await import('../i18n/es.js')).es, en: (await import('../i18n/en.js')).en, pt: (await import('../i18n/pt.js')).pt, de: (await import('../i18n/de.js')).de }
+  it('"Te queda" ya descuenta los fijos por pagar (UX-N2): el tour no dice que van aparte', () => {
+    expect(dicts.en['demo.tour.kpiFree.body']).not.toMatch(/shown separately/)
+    expect(dicts.es['demo.tour.kpiFree.body']).not.toMatch(/se muestran aparte/)
+    expect(dicts.pt['demo.tour.kpiFree.body']).not.toMatch(/aparecem à parte/)
+    expect(dicts.de['demo.tour.kpiFree.body']).not.toMatch(/separat angezeigt/)
+  })
+})
