@@ -32,3 +32,10 @@ export const helpUrl = (lang) => HELP_URLS[landingLang(lang)]
 // ¿Es la página de planes de la landing (en cualquier idioma)? La usa
 // withCheckoutLang para pasarla al idioma de la interfaz.
 export const isPricingUrl = (url) => Object.values(PRICING_URLS).includes(url)
+
+// Ayuda desde la app de tienda (B2 de la revisión pre-tiendas): todas las
+// páginas de la landing muestran precios y enlaces a Planes, y Google Play y
+// App Store no dejan enlazar desde la app a una página que lleve a otro medio
+// de pago. Dentro de la app nativa, "Ayuda" escribe a soporte.
+export const SUPPORT_MAILTO = 'mailto:support@moyiq.app'
+export const appHelpHref = (lang, native = false) => (native ? SUPPORT_MAILTO : helpUrl(lang))

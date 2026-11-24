@@ -2,6 +2,7 @@
 // Importar movimientos — CSV/XLSX/XLS · FinanceOS
 // 100% local · sin dependencias externas · sin envío de datos
 
+import { isNativeApp } from '../../native/platform.js'
 import { useState, useMemo } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
@@ -106,7 +107,7 @@ export default function ImportMovements({ setPage } = {}) {
 
   async function handleFile(f) {
     const ext = f.name.split('.').pop().toLowerCase()
-    if (!['csv', 'xlsx', 'xls', 'pdf'].includes(ext)) {
+    if (!(isNativeApp() ? ['csv', 'xlsx', 'xls'] : ['csv', 'xlsx', 'xls', 'pdf']).includes(ext)) {
       setWarning(t('imp.err.format'))
       return
     }
@@ -293,7 +294,7 @@ export default function ImportMovements({ setPage } = {}) {
                   </>
               }
             </div>
-            <input id="csv-input" type="file" accept=".csv,.xlsx,.xls,.pdf" aria-hidden="true" style={{ display: 'none' }}
+            <input id="csv-input" type="file" accept={isNativeApp() ? ".csv,.xlsx,.xls" : ".csv,.xlsx,.xls,.pdf"} aria-hidden="true" style={{ display: 'none' }}
               onChange={e => e.target.files[0] && handleFile(e.target.files[0])} />
             <div style={s.privacy}>
               <SignalIcon kind="lock" size={13} />

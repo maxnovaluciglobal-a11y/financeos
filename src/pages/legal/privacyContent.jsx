@@ -30,10 +30,14 @@ function EsBody() {
         email. Los datos financieros del usuario se guardan en su dispositivo y no los recibimos.
         Solo salen del dispositivo si el usuario activa la sincronización (se cifran en el
         dispositivo antes de subirse; ver el punto 5 sobre la llave) o si envía un reporte PDF por
-        email. Las posiciones de Inversiones, si se usa esa sección, se guardan en nuestro servidor
-        (punto 4). Contamos las aperturas de la app de forma anónima y sin cookies (punto 8), sin
-        seguimiento de comportamiento, y la app no se
-        conecta con bancos.
+        email. Lo que se registra en Inversiones, si se usa esa sección en la app web
+        (posiciones, movimientos, activos que se siguen, alertas de precio, capital de referencia,
+        regla de riesgo y planes), se guarda en la cuenta, en nuestro servidor (punto 4); la app que
+        se descarga de Google Play o App Store no incluye Inversiones en esta versión. Los
+        comentarios y la encuesta que el usuario decida enviar también salen del dispositivo
+        (punto 4). En la app web contamos las aperturas de forma anónima y sin cookies (punto 8); la
+        app de las tiendas no incluye esa medición. No hay seguimiento de comportamiento y la app no
+        se conecta con bancos.
       </div>
 
       <div className={s.section}>
@@ -57,7 +61,7 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>3. Datos financieros: se quedan en el dispositivo</h2>
+        <h2>3. Datos financieros: se guardan en el dispositivo</h2>
         <p>
           Los siguientes datos se guardan en el navegador o dispositivo del usuario mediante
           IndexedDB, un estándar de almacenamiento local. <strong>No los recibimos</strong> ni son
@@ -76,7 +80,18 @@ function EsBody() {
           solo el texto, lo interpreta en tu dispositivo y no guarda audio; el micrófono se usa solo mientras
           dictas. Si configuras el Atajo de iPhone para Apple Pay, iOS le pasa a moyiq el monto y el comercio
           del pago al abrir la app: ese dato se guarda solo en tu dispositivo, y moyiq no se conecta a tu
-          banco, a tu tarjeta ni a Apple Pay.
+          banco, a tu tarjeta ni a Apple Pay. En la app que se descarga de Google Play o App Store, el
+          único permiso sensible que se pide es el del micrófono (y, en iPhone, el del reconocimiento de
+          voz), y solo para <em>Dictar</em>: el audio lo procesa el reconocedor del sistema operativo.
+        </p>
+        <p>
+          <strong>Copias de seguridad del sistema.</strong> En Android, la copia de seguridad del
+          sistema (Google) y la transferencia de datos a un teléfono nuevo pueden incluir los datos que
+          la app guarda en el teléfono, incluidas las finanzas. Quedan fuera la sesión, la clave de
+          licencia y la llave de la sincronización. En iPhone, la copia de iCloud puede incluir los
+          datos de la app. Esas copias las hace y las protege Google o Apple en la cuenta del usuario,
+          según sus propias políticas; nosotros no recibimos ni podemos leer esas copias. El usuario
+          puede desactivarlas en los ajustes de su teléfono.
         </p>
         <div className={s.infoBox}>
           <strong>Implicación práctica:</strong> Si el usuario borra los datos del navegador,
@@ -85,7 +100,7 @@ function EsBody() {
           recuperarlos.
         </div>
         <div className={s.warnBox} style={{ marginTop: 8 }}>
-          <strong>Modo incógnito o privado:</strong> En esas ventanas el navegador borra los datos
+          <strong>Modo incógnito o privado (app web):</strong> En esas ventanas el navegador borra los datos
           al cerrar la sesión. Para uso regular, conviene abrir la app en una ventana normal o
           instalarla (Agregar a pantalla de inicio).
         </div>
@@ -124,18 +139,28 @@ function EsBody() {
           <li>
             <strong>Notificaciones push (opcional):</strong> el identificador técnico (endpoint)
             del navegador, asociado al hash de la licencia. Las notificaciones contienen solo
-            avisos del sistema, nunca datos financieros.
+            avisos del sistema, nunca datos financieros. La app de Google Play y App Store no usa
+            notificaciones push en esta versión.
           </li>
           <li>
             <strong>Sincronización (opcional):</strong> la copia cifrada descrita en el punto 5.
           </li>
           <li>
-            <strong>Inversiones (opcional, apagado por defecto):</strong> las posiciones de inversión
-            que registras en moyiq · Inversiones (invest.moyiq.app) se guardan en nuestro servidor,
-            asociadas a tu cuenta, para que puedas verlas en cualquier dispositivo. Si activas el
-            módulo en Más › Ajustes › Funciones, la app lee esas posiciones y envía a la API de
-            Inversiones solo los símbolos, para obtener las cotizaciones. Tus movimientos siguen en tu
-            dispositivo. Base: ejecución de lo que pides.
+            <strong>Inversiones (opcional, apagado por defecto; solo en la app web):</strong> lo que
+            registras en moyiq · Inversiones (en la app web o en invest.moyiq.app) se guarda en nuestro
+            servidor, sin cifrado de extremo a extremo y asociado a tu cuenta, para que puedas verlo en
+            cualquier dispositivo: tus posiciones, tus movimientos (compras, ventas, depósitos y
+            dividendos, con precio, cantidad, monto, resultado y la nota que escribas), los activos que
+            sigues, tus alertas de precio (símbolo, condición y umbral, que usamos para avisarte con una
+            notificación push cuando se cumplen), tu capital de referencia, tu regla de riesgo y tus
+            planes guardados. Solo tú, con tu sesión iniciada, puedes verlos o cambiarlos. Para obtener
+            las cotizaciones, la app envía a la API de Inversiones solo los símbolos de los activos. En
+            tu dispositivo quedan solo los totales que muestra Panorama y el aporte del mes. Tus
+            finanzas personales siguen en tu dispositivo (ver el punto 5 sobre la sincronización).
+            Puedes descargar una copia (CSV o JSON) o eliminar estos datos desde Más › Ajustes ›
+            Inversiones sin eliminar tu cuenta; eliminar la cuenta también los borra. La app que se
+            descarga de Google Play o App Store no incluye la sección Inversiones en esta versión. Base:
+            ejecución de lo que pides.
           </li>
           <li>
             <strong>Perfil de inversionista (solo si abres Inversiones en la app):</strong> tus
@@ -150,7 +175,8 @@ function EsBody() {
           <li>
             <strong>Comentarios y encuesta (NPS):</strong> si nos escribes desde la app o respondes la
             encuesta, recibimos tu mensaje, tu puntaje, el correo de tu cuenta, la versión de la app,
-            el idioma, el país y el plan y, solo si lo marcas, un registro técnico de errores en el que
+            el idioma, el país que elegiste, el plan y la pantalla desde la que escribes y, solo si lo
+            marcas, un registro técnico de errores en el que
             los números de tres o más cifras se reemplazan por «#». Nos llega por correo (Resend) a nuestra bandeja de
             soporte (Google) para responderte. En la base guardamos solo la fecha de cada envío, para
             limitar la cantidad (los envíos de comentarios, 30 días; la encuesta, que respondiste, hasta
@@ -176,7 +202,8 @@ function EsBody() {
           en ese modelo la llave se deriva de la clave de licencia, que nuestro servidor conserva
           mientras exista esa copia, así que para esas copias no podemos asegurar que sea
           técnicamente imposible leerlas; solo las usamos para sincronizar los dispositivos del
-          usuario. Para el resto de las cuentas, el servidor guarda solo un hash de la licencia.
+          usuario. Las copias con frase de paso están cifradas de extremo a extremo; las del modelo
+          anterior, no. Para el resto de las cuentas, el servidor guarda solo un hash de la licencia.
           Quien prefiera que sus datos no salgan del dispositivo puede dejar la sincronización
           desactivada. Desactivarla detiene las subidas, pero no borra la copia ya guardada: para
           borrarla, escribir a support@moyiq.app o eliminar la cuenta desde Ajustes.
@@ -198,7 +225,7 @@ function EsBody() {
         <h2>7. Proveedores</h2>
         <p>Trabajamos con estos proveedores para operar el servicio:</p>
         <ul className={s.list}>
-          <li><strong>Supabase (EE. UU.):</strong> base de datos, autenticación (incluido el perfil de inversionista), sincronización cifrada, validación de licencias y las posiciones de Inversiones (servidores en Ohio, EE. UU., región us-east-2).</li>
+          <li><strong>Supabase (EE. UU.):</strong> base de datos, autenticación (incluido el perfil de inversionista), sincronización cifrada, validación de licencias y los datos de Inversiones (servidores en Ohio, EE. UU., región us-east-2).</li>
           <li>
             <strong>Stripe (EE. UU.):</strong> pagos, facturación y portal de clientes para gestionar o
             cancelar la suscripción. Nunca vemos los datos de la tarjeta; recibimos solo la
@@ -211,7 +238,8 @@ function EsBody() {
             a nuestras direcciones @moyiq.app y Turnstile, la verificación que comprueba que no eres un
             robot, entre otros, al entrar a la app, al registrarte, al recuperar el acceso y al enviar
             comentarios o la encuesta. Turnstile recibe tu
-            dirección IP y datos técnicos de tu navegador. Cloudflare actúa como encargado y, para
+            dirección IP y datos técnicos de tu navegador. La app que se descarga de Google Play o App
+            Store no usa Turnstile. Cloudflare actúa como encargado y, para
             mejorar esa detección de robots, como responsable propio.
           </li>
           <li><strong>Google (EE. UU.):</strong> la bandeja de Gmail donde recibimos y respondemos los correos y comentarios, y el inicio de sesión si el usuario elige entrar con Google.</li>
@@ -233,8 +261,10 @@ function EsBody() {
       <div className={s.section}>
         <h2>8. Estadísticas de uso, seguimiento y bancos</h2>
         <p>
-          Para saber cuántas veces se abre la app usamos <strong>Vercel Web Analytics</strong>, sin
-          cookies. Registra la apertura de forma anónima: la dirección de la app sin datos
+          Para saber cuántas veces se abre la app web (app.moyiq.app y demo.moyiq.app) usamos{' '}
+          <strong>Vercel Web Analytics</strong>, sin cookies. La app que se descarga de Google Play o
+          App Store no incluye esta medición ni ninguna otra herramienta de analítica o de registro
+          de fallos. Registra la apertura de forma anónima: la dirección de la app sin datos
           personales (solo las etiquetas de campaña utm y ref), el sitio de origen, un país y
           región aproximados, el navegador, el sistema operativo y el tipo de dispositivo. No
           recibe datos financieros, el email ni el identificador de la cuenta, no usa cookies ni
@@ -298,13 +328,19 @@ function EsBody() {
         <p>
           La cuenta también se puede eliminar sin escribirnos, desde Ajustes → Eliminar la cuenta
           (o en app.moyiq.app/delete-account). Eso borra al instante la cuenta y lo que el servidor
-          guarda de ella en moyiq y en moyiq · Inversiones, incluido el perfil de inversionista. Si hay
+          guarda de ella en moyiq y en moyiq · Inversiones, incluido el perfil de inversionista. Los
+          datos de Inversiones también se pueden borrar solos, sin eliminar la cuenta, desde Ajustes ›
+          Inversiones › Eliminar mis datos de Inversiones. Si hay
           un plan Pro activo, la eliminación también cancela la suscripción en Stripe; si esa
           cancelación automática falla, nos llega un aviso y la hacemos a mano en un día hábil (quien
-          prefiera hacerlo antes puede usar la página de cancelación). Si el correo estaba suscrito a
-          un newsletter, nosotros lo quitamos de la lista de nuestro proveedor de envío. Solo se
-          conservan los comprobantes de pago y la constancia de una cancelación, como se indica en
-          esta política.
+          prefiera hacerlo antes puede usar la página de cancelación). En ese caso, el identificador
+          de la suscripción de Stripe queda en un registro interno de errores, que se borra solo a los
+          30 días, y el aviso que recibe soporte (support@moyiq.app) incluye el email de la cuenta,
+          solo para completar la cancelación; lo borramos después de completarla. Si el correo estaba
+          suscrito a un newsletter, nosotros lo quitamos de la lista de nuestro proveedor de envío.
+          Solo se conservan, en Stripe, la ficha de cliente (identificador de cliente y correo de la
+          compra) y los comprobantes de pago, por obligaciones legales, contables y fiscales, y la
+          constancia de una cancelación, como se indica en esta política.
         </p>
         <p>
           Puedes pedir acceso, rectificación, supresión, oposición, portabilidad, limitación o bloqueo
@@ -403,10 +439,14 @@ function EnBody() {
         <strong>Summary:</strong> You need a free account, tied to an email address, to use
         moyiq. Your financial data is stored on your device and we do not receive it. It only
         leaves the device if you turn on sync (it is encrypted on the device before upload; see
-        section 5 about the key) or if you email a PDF report. Investments positions, if you use that
-        section, are stored on our server (section 4). We count app openings anonymously
-        and without cookies (section 8), with no behavior tracking, and the app does not connect
-        to banks.
+        section 5 about the key) or if you email a PDF report. What you record in Investments, if you
+        use that section in the web app (holdings, transactions, the assets you follow, price alerts,
+        reference capital, risk rule and plans), is stored in your account on our server (section 4);
+        the app downloaded from Google Play or the App Store does not include Investments in this
+        version. Feedback and survey answers you choose to send also leave the device (section 4). In
+        the web app we count openings anonymously and without cookies (section 8); the store app does
+        not include that measurement. There is no behavior tracking, and the app does not connect to
+        banks.
       </div>
 
       <div className={s.section}>
@@ -429,7 +469,7 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>3. Financial data stays on the device</h2>
+        <h2>3. Financial data is stored on the device</h2>
         <p>
           The following data is stored in the user's browser or device using IndexedDB, a local
           storage standard. <strong>We do not receive it</strong>, and it is not accessible to
@@ -448,7 +488,18 @@ function EnBody() {
           interprets it on your device and does not store audio; the microphone is used only while you
           dictate. If you set up the iPhone Shortcut for Apple Pay, iOS passes the payment amount and
           merchant to moyiq when the app opens: that data is stored only on your device, and moyiq does not
-          connect to your bank, your card or Apple Pay.
+          connect to your bank, your card or Apple Pay. In the app downloaded from Google Play or the App
+          Store, the only sensitive permission requested is the microphone (and, on iPhone, speech
+          recognition), used only for <em>Dictate</em>: the audio is processed by the operating
+          system's recognizer.
+        </p>
+        <p>
+          <strong>System backups.</strong> On Android, the system backup (Google) and the data transfer
+          to a new phone can include the data the app stores on the phone, including your finances. The
+          session, the license key and the sync key are excluded. On iPhone, the iCloud backup can
+          include the app's data. Those backups are made and protected by Google or Apple in the user's
+          account, under their own policies; we do not receive and cannot read them. The user can turn
+          them off in the phone's settings.
         </p>
         <div className={s.infoBox}>
           <strong>Practical implication:</strong> If the user clears browser data, uninstalls the
@@ -456,7 +507,7 @@ function EnBody() {
           is lost permanently and we cannot recover it.
         </div>
         <div className={s.warnBox} style={{ marginTop: 8 }}>
-          <strong>Incognito or private mode:</strong> In those windows the browser erases the data
+          <strong>Incognito or private mode (web app):</strong> In those windows the browser erases the data
           when the session ends. For regular use, open the app in a normal window or install it
           (Add to Home Screen).
         </div>
@@ -493,17 +544,27 @@ function EnBody() {
           <li>
             <strong>Push notifications (optional):</strong> the browser's technical identifier
             (endpoint), linked to the license hash. Notifications contain only system notices,
-            never financial data.
+            never financial data. The Google Play and App Store app does not use push notifications
+            in this version.
           </li>
           <li>
             <strong>Sync (optional):</strong> the encrypted copy described in section 5.
           </li>
           <li>
-            <strong>Investments (optional, off by default):</strong> the investment positions you record
-            in moyiq · Investments (invest.moyiq.app) are stored on our server, linked to your account,
-            so you can see them on any device. If you turn the module on in More › Settings › Features,
-            the app reads those positions and sends only the ticker symbols to the Investments API to
-            get quotes. Your transactions stay on your device. Basis: performing what you ask for.
+            <strong>Investments (optional, off by default; web app only):</strong> what you record in
+            moyiq · Investments (in the web app or at invest.moyiq.app) is stored on our server, without
+            end-to-end encryption and linked to your account, so you can see it on any device: your
+            holdings, your transactions (purchases, sales, deposits and dividends, with price, quantity,
+            amount, result and the note you write), the assets you follow, your price alerts (symbol,
+            condition and threshold, which we use to notify you with a push notification when they are
+            met), your reference capital, your risk rule and your saved plans. Only you, signed in, can
+            see or change them. To get quotes, the app sends only the asset symbols to the Investments
+            API. Only the totals shown in Overview and this month's contribution stay on your device.
+            Your personal finances stay on your device (see section 5 about sync). You can download a
+            copy (CSV or JSON) or delete this data from More › Settings › Investments without deleting
+            your account; deleting the account also deletes it. The app downloaded from Google Play or
+            the App Store does not include the Investments section in this version. Basis: performing
+            what you ask for.
           </li>
           <li>
             <strong>Investor profile (only if you open Investments in the app):</strong> your answers to
@@ -518,7 +579,7 @@ function EnBody() {
           <li>
             <strong>Feedback and survey (NPS):</strong> if you write to us from the app or answer the
             survey, we receive your message, your score, your account email, the app version, language,
-            country and plan and, only if you tick it, a technical error log in which numbers of
+            the country you chose, your plan and the screen you write from and, only if you tick it, a technical error log in which numbers of
             three or more digits are replaced with "#". It reaches our support inbox (Google) by email (Resend) so we can reply.
             In the database we keep only the date of each submission, to limit how many are sent
             (feedback submissions, 30 days; the survey you answered, until you delete the account).
@@ -543,7 +604,8 @@ function EnBody() {
           keep the previous model until they choose to move to a passphrase in Settings: in that
           model the key is derived from the license key, which our server keeps while that copy
           exists, so for those copies we cannot guarantee that reading them is technically
-          impossible; we only use them to sync the user's devices. For all other accounts, the
+          impossible; we only use them to sync the user's devices. Passphrase copies are end-to-end
+          encrypted; copies under the previous model are not. For all other accounts, the
           server stores only a hash of the license. Anyone who prefers that their data never
           leaves the device can keep sync turned off. Turning it off stops uploads but does not
           delete the copy already stored: to delete it, write to support@moyiq.app or delete the
@@ -565,7 +627,7 @@ function EnBody() {
         <h2>7. Service providers</h2>
         <p>We use these providers to run the service:</p>
         <ul className={s.list}>
-          <li><strong>Supabase (USA):</strong> database, authentication (including the investor profile), encrypted sync, license validation, and Investments positions (servers in Ohio, USA, region us-east-2).</li>
+          <li><strong>Supabase (USA):</strong> database, authentication (including the investor profile), encrypted sync, license validation, and Investments data (servers in Ohio, USA, region us-east-2).</li>
           <li>
             <strong>Stripe (USA):</strong> payments, billing, and the customer portal to manage or
             cancel the subscription. We never see card details; we only receive the payment
@@ -577,7 +639,8 @@ function EnBody() {
             <strong>Cloudflare (USA):</strong> the domain's DNS, forwarding of the emails you write to
             our @moyiq.app addresses, and Turnstile, the check that confirms you are not a bot when you
             sign in, sign up, recover access, or send feedback or the survey, among others. Turnstile receives your IP address and technical data
-            about your browser. Cloudflare acts as a processor and, to improve that bot detection, as an
+            about your browser. The app downloaded from Google Play or the App Store does not use
+            Turnstile. Cloudflare acts as a processor and, to improve that bot detection, as an
             independent controller.
           </li>
           <li><strong>Google (USA):</strong> the Gmail inbox where we receive and answer emails and feedback, and sign-in if the user chooses to sign in with Google.</li>
@@ -599,8 +662,10 @@ function EnBody() {
       <div className={s.section}>
         <h2>8. Usage statistics, tracking, and banks</h2>
         <p>
-          To know how often the app is opened we use <strong>Vercel Web Analytics</strong>, without
-          cookies. It records each opening anonymously: the app address without personal data
+          To know how often the web app (app.moyiq.app and demo.moyiq.app) is opened we use{' '}
+          <strong>Vercel Web Analytics</strong>, without cookies. The app downloaded from Google Play or
+          the App Store does not include this measurement or any other analytics or crash-reporting
+          tool. It records each opening anonymously: the app address without personal data
           (only the utm and ref campaign tags), the referring site, an approximate country and
           region, the browser, the operating system, and the device type. It does not receive
           financial data, the email, or the account identifier, does not use cookies or build
@@ -661,12 +726,19 @@ function EnBody() {
         <p>
           The account can also be deleted without writing to us, from Settings → Delete account
           (or at app.moyiq.app/delete-account). This immediately deletes the account and what the
-          server keeps about it in moyiq and moyiq · Investments, including the investor profile. If
+          server keeps about it in moyiq and moyiq · Investments, including the investor profile.
+          Investments data can also be deleted on its own, without deleting the account, from Settings ›
+          Investments › Delete my Investments data. If
           there is an active Pro plan, deletion also cancels the subscription in Stripe; if that
           automatic cancellation fails, we get an alert and do it by hand within one business day
-          (anyone who prefers to do it sooner can use the cancellation page). If the email was
-          subscribed to a newsletter, we remove it from our email provider's list. Only payment
-          receipts and the record of a cancellation are kept, as described in this policy.
+          (anyone who prefers to do it sooner can use the cancellation page). In that case, the Stripe
+          subscription identifier stays in an internal error log, which is deleted automatically after
+          30 days, and the alert that support (support@moyiq.app) receives includes the account email,
+          only to complete the cancellation; we delete it once that is done. If the email was
+          subscribed to a newsletter, we remove it from our email provider's list. Only these are
+          kept: in Stripe, the customer record (customer identifier and purchase email) and the payment
+          receipts, for legal, accounting and tax obligations, and the record of a cancellation, as
+          described in this policy.
         </p>
         <p>
           You can request access, rectification, erasure, objection, portability, restriction or
@@ -767,9 +839,13 @@ function PtBody() {
         um email. Os dados financeiros do usuário ficam no dispositivo dele e nós não os
         recebemos. Eles só saem do dispositivo se o usuário ativar a sincronização (são
         criptografados no dispositivo antes do envio; veja o item 5 sobre a chave) ou se enviar um
-        relatório PDF por email. As posições de Investimentos, se você usar essa seção, ficam no nosso
-        servidor (item 4). Contamos as aberturas do app de forma anônima e sem cookies (item
-        8), sem rastreamento de comportamento, e o app não se conecta a bancos.
+        relatório PDF por email. O que se registra em Investimentos, se você usar essa seção no app
+        web (posições, movimentações, ativos que você segue, alertas de preço, capital de referência,
+        regra de risco e planos), fica na sua conta, no nosso servidor (item 4); o app baixado do
+        Google Play ou da App Store não inclui Investimentos nesta versão. Os comentários e as
+        respostas da pesquisa que você decidir enviar também saem do dispositivo (item 4). No app web
+        contamos as aberturas de forma anônima e sem cookies (item 8); o app das lojas não inclui essa
+        medição. Não há rastreamento de comportamento, e o app não se conecta a bancos.
       </div>
 
       <div className={s.section}>
@@ -792,7 +868,7 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>3. Dados financeiros ficam no dispositivo</h2>
+        <h2>3. Dados financeiros são guardados no dispositivo</h2>
         <p>
           Os dados abaixo são armazenados no navegador ou dispositivo do usuário via IndexedDB, um
           padrão de armazenamento local. <strong>Nós não os recebemos</strong>, e eles não são
@@ -811,7 +887,19 @@ function PtBody() {
           moyiq recebe só o texto, interpreta no seu dispositivo e não guarda áudio; o microfone é usado só
           enquanto você dita. Se você configurar o Atalho do iPhone para Apple Pay, o iOS passa ao moyiq o
           valor e o estabelecimento do pagamento ao abrir o app: esse dado fica só no seu dispositivo, e o
-          moyiq não se conecta ao seu banco, ao seu cartão nem ao Apple Pay.
+          moyiq não se conecta ao seu banco, ao seu cartão nem ao Apple Pay. No app baixado do Google Play
+          ou da App Store, a única permissão sensível solicitada é a do microfone (e, no iPhone, a do
+          reconhecimento de fala), usada só para <em>Ditar</em>: o áudio é processado pelo
+          reconhecedor do sistema operacional.
+        </p>
+        <p>
+          <strong>Backups do sistema.</strong> No Android, o backup do sistema (Google) e a
+          transferência de dados para um celular novo podem incluir os dados que o app guarda no
+          celular, incluídas as finanças. Ficam de fora a sessão, a chave de licença e a chave da
+          sincronização. No iPhone, o backup do iCloud pode incluir os dados do app. Esses backups são
+          feitos e protegidos pelo Google ou pela Apple na conta do usuário, segundo as políticas
+          deles; nós não os recebemos nem podemos lê-los. O usuário pode desativá-los nos ajustes do
+          celular.
         </p>
         <div className={s.infoBox}>
           <strong>Implicação prática:</strong> Se o usuário apagar os dados do navegador,
@@ -819,7 +907,7 @@ function PtBody() {
           sincronização ativa), os dados são perdidos permanentemente e não podemos recuperá-los.
         </div>
         <div className={s.warnBox} style={{ marginTop: 8 }}>
-          <strong>Modo anônimo ou privado:</strong> Nessas janelas o navegador apaga os dados ao
+          <strong>Modo anônimo ou privado (app web):</strong> Nessas janelas o navegador apaga os dados ao
           encerrar a sessão. Para uso regular, abra o app em uma janela normal ou instale-o
           (Adicionar à tela inicial).
         </div>
@@ -856,18 +944,27 @@ function PtBody() {
           <li>
             <strong>Notificações push (opcional):</strong> o identificador técnico (endpoint) do
             navegador, vinculado ao hash da licença. As notificações contêm apenas avisos do
-            sistema, nunca dados financeiros.
+            sistema, nunca dados financeiros. O app do Google Play e da App Store não usa
+            notificações push nesta versão.
           </li>
           <li>
             <strong>Sincronização (opcional):</strong> a cópia criptografada descrita no item 5.
           </li>
           <li>
-            <strong>Investimentos (opcional, desligado por padrão):</strong> as posições de investimento
-            que você registra no moyiq · Investimentos (invest.moyiq.app) ficam no nosso servidor,
-            vinculadas à sua conta, para que você possa vê-las em qualquer dispositivo. Se você ativar o
-            módulo em Mais › Ajustes › Funções, o app lê essas posições e envia à API de Investimentos
-            apenas os símbolos, para obter as cotações. Suas movimentações continuam no seu dispositivo.
-            Base: execução do que você pede.
+            <strong>Investimentos (opcional, desligado por padrão; só no app web):</strong> o que você
+            registra no moyiq · Investimentos (no app web ou em invest.moyiq.app) fica no nosso servidor,
+            sem criptografia de ponta a ponta e vinculado à sua conta, para que você possa vê-lo em
+            qualquer dispositivo: suas posições, suas movimentações (compras, vendas, depósitos e
+            dividendos, com preço, quantidade, valor, resultado e a nota que você escrever), os ativos
+            que você segue, seus alertas de preço (símbolo, condição e limite, que usamos para avisar
+            você com uma notificação push quando se cumprem), seu capital de referência, sua regra de
+            risco e seus planos salvos. Só você, com sua sessão iniciada, pode vê-los ou alterá-los.
+            Para obter as cotações, o app envia à API de Investimentos apenas os símbolos dos ativos. No
+            seu dispositivo ficam só os totais que o Panorama mostra e o aporte do mês. Suas finanças
+            pessoais continuam no seu dispositivo (veja o item 5 sobre a sincronização). Você pode
+            baixar uma cópia (CSV ou JSON) ou excluir esses dados em Mais › Ajustes › Investimentos sem
+            excluir sua conta; excluir a conta também os apaga. O app baixado do Google Play ou da App
+            Store não inclui a seção Investimentos nesta versão. Base: execução do que você pede.
           </li>
           <li>
             <strong>Perfil de investidor (só se você abrir Investimentos no app):</strong> suas
@@ -882,7 +979,7 @@ function PtBody() {
           <li>
             <strong>Comentários e pesquisa (NPS):</strong> se você nos escreve pelo app ou responde à
             pesquisa, recebemos sua mensagem, sua nota, o email da sua conta, a versão do app, o idioma,
-            o país e o plano e, só se você marcar, um registro técnico de erros em que os números de
+            o país que você escolheu, o plano e a tela de onde você escreve e, só se você marcar, um registro técnico de erros em que os números de
             três ou mais algarismos são substituídos por «#». Isso chega por email (Resend) à nossa caixa de suporte (Google) para
             podermos responder. No banco de dados guardamos só a data de cada envio, para limitar a
             quantidade (envios de comentários, 30 dias; a pesquisa respondida, até você excluir a
@@ -907,7 +1004,8 @@ function PtBody() {
           continua no modelo anterior até escolher passar para uma frase-senha em Configurações:
           nesse modelo a chave é derivada da chave de licença, que nosso servidor conserva enquanto
           existir essa cópia, então para essas cópias não podemos garantir que seja tecnicamente
-          impossível lê-las; só as usamos para sincronizar os dispositivos do usuário. Para as
+          impossível lê-las; só as usamos para sincronizar os dispositivos do usuário. As cópias com
+          frase de acesso têm criptografia de ponta a ponta; as do modelo anterior, não. Para as
           demais contas, o servidor guarda apenas um hash da licença. Quem preferir que os dados
           não saiam do dispositivo pode manter a sincronização desativada. Desativá-la interrompe os
           envios, mas não apaga a cópia já armazenada: para apagá-la, escreva para
@@ -930,7 +1028,7 @@ function PtBody() {
         <h2>7. Fornecedores</h2>
         <p>Trabalhamos com estes fornecedores para operar o serviço:</p>
         <ul className={s.list}>
-          <li><strong>Supabase (EUA):</strong> banco de dados, autenticação (incluído o perfil de investidor), sincronização criptografada, validação de licenças e as posições de Investimentos (servidores em Ohio, EUA, região us-east-2).</li>
+          <li><strong>Supabase (EUA):</strong> banco de dados, autenticação (incluído o perfil de investidor), sincronização criptografada, validação de licenças e os dados de Investimentos (servidores em Ohio, EUA, região us-east-2).</li>
           <li>
             <strong>Stripe (EUA):</strong> pagamentos, faturamento e portal do cliente para gerenciar
             ou cancelar a assinatura. Nunca vemos os dados do cartão; recebemos apenas a confirmação do
@@ -943,7 +1041,8 @@ function PtBody() {
             para nossos endereços @moyiq.app e Turnstile, a verificação que confirma que você não é um
             robô, entre outros, ao entrar no app, ao se cadastrar, ao recuperar o acesso e ao enviar
             comentários ou a pesquisa. O Turnstile recebe seu
-            endereço IP e dados técnicos do seu navegador. A Cloudflare atua como operadora e, para
+            endereço IP e dados técnicos do seu navegador. O app baixado do Google Play ou da App Store
+            não usa o Turnstile. A Cloudflare atua como operadora e, para
             melhorar essa detecção de robôs, como controladora própria.
           </li>
           <li><strong>Google (EUA):</strong> a caixa do Gmail onde recebemos e respondemos emails e comentários, e o login se o usuário escolher entrar com o Google.</li>
@@ -965,8 +1064,10 @@ function PtBody() {
       <div className={s.section}>
         <h2>8. Estatísticas de uso, rastreamento e bancos</h2>
         <p>
-          Para saber quantas vezes o app é aberto usamos o <strong>Vercel Web Analytics</strong>,
-          sem cookies. Ele registra cada abertura de forma anônima: o endereço do app sem dados
+          Para saber quantas vezes o app web (app.moyiq.app e demo.moyiq.app) é aberto usamos o{' '}
+          <strong>Vercel Web Analytics</strong>, sem cookies. O app baixado do Google Play ou da App
+          Store não inclui essa medição nem nenhuma outra ferramenta de análise ou de registro de
+          falhas. Ele registra cada abertura de forma anônima: o endereço do app sem dados
           pessoais (apenas as etiquetas de campanha utm e ref), o site de origem, um país e região
           aproximados, o navegador, o sistema operacional e o tipo de dispositivo. Não recebe dados
           financeiros, o email nem o identificador da conta, não usa cookies nem cria perfis e,
@@ -1029,12 +1130,18 @@ function PtBody() {
         <p>
           A conta também pode ser excluída sem nos escrever, em Ajustes → Excluir a conta (ou em
           app.moyiq.app/delete-account). Isso apaga na hora a conta e o que o servidor guarda dela
-          no moyiq e no moyiq · Investimentos, incluído o perfil de investidor. Se houver um plano Pro
+          no moyiq e no moyiq · Investimentos, incluído o perfil de investidor. Os dados de
+          Investimentos também podem ser apagados sozinhos, sem excluir a conta, em Ajustes ›
+          Investimentos › Excluir meus dados de Investimentos. Se houver um plano Pro
           ativo, a exclusão também cancela a assinatura na Stripe; se esse cancelamento automático
           falhar, recebemos um aviso e o fazemos manualmente em um dia útil (quem preferir fazer antes
-          pode usar a página de cancelamento). Se o email estava inscrito em uma newsletter, nós o
-          retiramos da lista do nosso provedor de envio. Ficam apenas os comprovantes de pagamento e o
-          registro de um cancelamento, como indica esta política.
+          pode usar a página de cancelamento). Nesse caso, o identificador da assinatura da Stripe fica
+          em um registro interno de erros, que é apagado automaticamente após 30 dias, e o aviso que o
+          suporte (support@moyiq.app) recebe inclui o email da conta, só para concluir o cancelamento; nós o apagamos depois de concluí-lo. Se o email estava
+          inscrito em uma newsletter, nós o retiramos da lista do nosso provedor de envio. Ficam apenas,
+          na Stripe, a ficha de cliente (identificador de cliente e email da compra) e os comprovantes
+          de pagamento, por obrigações legais, contábeis e fiscais, e o registro de um cancelamento,
+          como indica esta política.
         </p>
         <p>
           Você pode pedir acesso, retificação, eliminação, oposição, portabilidade, limitação ou
@@ -1135,9 +1242,13 @@ function DeBody() {
         Konto mit Ihrer E-Mail-Adresse. Ihre Finanzdaten bleiben auf Ihrem Gerät; wir erhalten sie
         nicht. Sie verlassen das Gerät nur, wenn Sie die Synchronisierung aktivieren (dann vor dem
         Hochladen auf dem Gerät verschlüsselt; zum Schlüssel siehe Abschnitt 5) oder einen
-        PDF-Bericht per E-Mail versenden. Positionen in Investments speichern wir, wenn Sie diesen
-        Bereich nutzen, auf unserem Server (Abschnitt 4). App-Aufrufe zählen wir anonym und ohne Cookies
-        (Abschnitt 8), ohne Verhaltens-Tracking, und die App verbindet sich nicht mit Ihrer Bank.
+        PDF-Bericht per E-Mail versenden. Was Sie in Investments erfassen, wenn Sie diesen Bereich in
+        der Web-App nutzen (Positionen, Buchungen, verfolgte Werte, Kursalarme, Referenzkapital,
+        Risikoregel und Pläne), speichern wir in Ihrem Konto auf unserem Server (Abschnitt 4); die App
+        aus Google Play oder dem App Store enthält Investments in dieser Version nicht. Auch Feedback
+        und Umfrageantworten, die Sie senden, verlassen das Gerät (Abschnitt 4). In der Web-App zählen
+        wir Aufrufe anonym und ohne Cookies (Abschnitt 8); die App aus den Stores enthält diese Messung
+        nicht. Es gibt kein Verhaltens-Tracking, und die App verbindet sich nicht mit Ihrer Bank.
       </div>
 
       <div className={s.section}>
@@ -1171,7 +1282,7 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>3. Daten, die nur auf Ihrem Gerät gespeichert werden</h2>
+        <h2>3. Daten, die auf Ihrem Gerät gespeichert werden</h2>
         <p>
           Die App speichert Ihre Finanzdaten – Einnahmen und Ausgaben, Budgets, Schulden, Ziele,
           Abos und Einstellungen – im Speicher Ihres Browsers (IndexedDB) auf Ihrem Gerät.{' '}
@@ -1186,7 +1297,7 @@ function DeBody() {
           „Einstellungen“ als JSON-Datei exportieren.
         </div>
         <div className={s.warnBox} style={{ marginTop: 8 }}>
-          <strong>Privates Fenster:</strong> In privaten bzw. Inkognito-Fenstern löscht der Browser
+          <strong>Privates Fenster (Web-App):</strong> In privaten bzw. Inkognito-Fenstern löscht der Browser
           die Daten beim Schließen. Für die regelmäßige Nutzung öffnen Sie die App in einem normalen
           Fenster oder installieren Sie sie („Zum Startbildschirm hinzufügen“).
         </div>
@@ -1230,7 +1341,8 @@ function DeBody() {
             Ihres Browsers, verknüpft mit dem Hash Ihrer Lizenz. Versand von Systemhinweisen nur mit
             Ihrer Einwilligung über die Browser-Abfrage (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1
             TDDDG); nie mit Finanzdaten. Widerruf jederzeit über die Browser- oder
-            App-Einstellungen.
+            App-Einstellungen. Die App aus Google Play und dem App Store nutzt in dieser Version keine
+            Push-Benachrichtigungen.
           </li>
           <li>
             <strong>Kündigung:</strong> Name, E-Mail-Adresse, Vertragsangaben, Art und Zeitpunkt der
@@ -1242,12 +1354,21 @@ function DeBody() {
             zur Bearbeitung Ihrer Anfrage (Art. 6 Abs. 1 lit. b bzw. lit. f DSGVO).
           </li>
           <li>
-            <strong>Investments (optional, standardmäßig aus):</strong> Die Anlagepositionen, die Sie in
-            moyiq · Investments (invest.moyiq.app) erfassen, speichern wir auf unserem Server, verknüpft
-            mit Ihrem Konto, damit Sie sie auf jedem Gerät sehen. Aktivieren Sie das Modul unter Mehr ›
-            Einstellungen › Funktionen, liest die App diese Positionen und sendet nur die Tickersymbole
-            an die Investments-API, um Kurse abzurufen. Ihre Buchungen bleiben auf Ihrem Gerät (Art. 6
-            Abs. 1 lit. b DSGVO).
+            <strong>Investments (optional, standardmäßig aus; nur in der Web-App):</strong> Was Sie in
+            moyiq · Investments erfassen (in der Web-App oder unter invest.moyiq.app), speichern wir ohne
+            Ende-zu-Ende-Verschlüsselung und mit Ihrem Konto verknüpft auf unserem Server, damit Sie es
+            auf jedem Gerät sehen: Ihre Positionen, Ihre Buchungen (Käufe, Verkäufe, Einzahlungen und
+            Dividenden mit Preis, Menge, Betrag, Ergebnis und Ihrer Notiz), die Werte, die Sie verfolgen,
+            Ihre Kursalarme (Symbol, Bedingung und Schwelle, mit denen wir Sie per Push-Benachrichtigung
+            informieren, wenn sie erreicht werden), Ihr Referenzkapital, Ihre Risikoregel und Ihre
+            gespeicherten Pläne. Nur Sie können sie mit Ihrer Anmeldung sehen oder ändern. Für Kurse
+            sendet die App nur die Symbole der Werte an die Investments-API. Auf Ihrem Gerät bleiben nur
+            die Summen, die der Überblick zeigt, und die Einzahlung des Monats. Ihre persönlichen
+            Finanzen bleiben auf Ihrem Gerät (zur Synchronisierung siehe Abschnitt 5). Unter Mehr ›
+            Einstellungen › Investments können Sie eine Kopie (CSV oder JSON) herunterladen oder diese
+            Daten löschen, ohne das Konto zu löschen; mit dem Konto werden sie ebenfalls gelöscht. Die
+            App aus Google Play oder dem App Store enthält den Bereich Investments in dieser Version
+            nicht (Art. 6 Abs. 1 lit. b DSGVO).
           </li>
           <li>
             <strong>Anlegerprofil (nur wenn Sie Investments in der App öffnen):</strong> Ihre Antworten
@@ -1263,7 +1384,8 @@ function DeBody() {
           <li>
             <strong>Feedback und Umfrage (NPS):</strong> Schreiben Sie uns aus der App oder beantworten
             Sie die Umfrage, erhalten wir Ihre Nachricht, Ihre Bewertung, die E-Mail-Adresse Ihres
-            Kontos, App-Version, Sprache, Land und Tarif sowie, nur wenn Sie es ankreuzen, ein
+            Kontos, App-Version, Sprache, das gewählte Land, Tarif und den Bildschirm, von dem Sie
+            schreiben, sowie, nur wenn Sie es ankreuzen, ein
             technisches Fehlerprotokoll, in dem Zahlen ab drei Ziffern durch „#“ ersetzt sind. Es erreicht unser
             Support-Postfach (Google) per E-Mail (Resend), damit wir antworten können. In der Datenbank
             speichern wir nur das Datum jeder Übermittlung, um die Anzahl zu begrenzen
@@ -1279,6 +1401,18 @@ function DeBody() {
           wird nur während des Diktierens genutzt. Wenn Sie den iPhone-Kurzbefehl für Apple Pay einrichten,
           übergibt iOS beim Öffnen der App Betrag und Händler der Zahlung an moyiq: Diese Daten bleiben nur
           auf Ihrem Gerät, und moyiq verbindet sich weder mit Ihrer Bank noch mit Ihrer Karte oder Apple Pay.
+          In der App aus Google Play oder dem App Store wird als einzige sensible Berechtigung das
+          Mikrofon (auf dem iPhone zusätzlich die Spracherkennung) angefragt, nur für <em>Diktieren</em>:
+          Den Ton verarbeitet die Spracherkennung des Betriebssystems.
+        </p>
+        <p>
+          <strong>Systemsicherungen.</strong> Unter Android können die Systemsicherung (Google) und die
+          Datenübertragung auf ein neues Telefon die Daten enthalten, die die App auf dem Telefon
+          speichert, einschließlich Ihrer Finanzen. Ausgenommen sind die Sitzung, der Lizenzschlüssel und
+          der Schlüssel der Synchronisierung. Auf dem iPhone kann die iCloud-Sicherung die Daten der App
+          enthalten. Diese Sicherungen erstellen und schützen Google bzw. Apple in Ihrem Konto nach ihren
+          eigenen Richtlinien; wir erhalten sie nicht und können sie nicht lesen. Sie können sie in den
+          Einstellungen des Telefons ausschalten.
         </p>
       </div>
 
@@ -1296,7 +1430,8 @@ function DeBody() {
           bis er in den Einstellungen zu einer Passphrase wechselt: Dort wird der Schlüssel aus dem
           Lizenzschlüssel abgeleitet, den unser Server aufbewahrt, solange diese Kopie besteht;
           für diese Kopien können wir daher nicht zusichern, dass ein Lesen technisch unmöglich
-          ist, und wir nutzen sie ausschließlich zur Synchronisierung Ihrer Geräte. Für alle
+          ist, und wir nutzen sie ausschließlich zur Synchronisierung Ihrer Geräte. Kopien mit
+          Passphrase sind Ende-zu-Ende-verschlüsselt, Kopien im bisherigen Modell nicht. Für alle
           anderen Konten speichert der Server nur einen Hash der Lizenz. Wenn Ihre Daten das Gerät
           nicht verlassen sollen, lassen Sie die Synchronisierung ausgeschaltet. Das Ausschalten
           stoppt neue Uploads, löscht aber die bereits gespeicherte Kopie nicht; zur Löschung
@@ -1332,8 +1467,9 @@ function DeBody() {
       <div className={s.section}>
         <h2>8. Nutzungsstatistik, kein Tracking, keine Bankverbindung</h2>
         <p>
-          Um zu wissen, wie oft die App geöffnet wird, nutzen wir <strong>Vercel Web
-          Analytics</strong> ohne Cookies. Erfasst wird jeder Aufruf anonym: die App-Adresse ohne
+          Um zu wissen, wie oft die Web-App (app.moyiq.app und demo.moyiq.app) geöffnet wird, nutzen wir <strong>Vercel Web
+          Analytics</strong> ohne Cookies. Die App aus Google Play oder dem App Store enthält weder diese
+          Messung noch ein anderes Analyse- oder Absturzberichts-Werkzeug. Erfasst wird jeder Aufruf anonym: die App-Adresse ohne
           personenbezogene Daten (nur die Kampagnenparameter utm und ref), die verweisende Website,
           ungefähres Land und Region, Browser, Betriebssystem und Gerätetyp. Finanzdaten,
           E-Mail-Adresse und Konto-Kennung werden nicht übermittelt; es werden keine Cookies gesetzt
@@ -1370,7 +1506,7 @@ function DeBody() {
           geschieht dies auf Grundlage eines Vertrags zur Auftragsverarbeitung (Art. 28 DSGVO).
         </p>
         <ul className={s.list}>
-          <li><strong>Supabase Inc. (USA, Serverstandort Ohio, Region us-east-2):</strong> Datenbank, Authentifizierung (einschließlich Anlegerprofil), verschlüsselte Synchronisierung, Lizenzprüfung und Positionen von Investments.</li>
+          <li><strong>Supabase Inc. (USA, Serverstandort Ohio, Region us-east-2):</strong> Datenbank, Authentifizierung (einschließlich Anlegerprofil), verschlüsselte Synchronisierung, Lizenzprüfung und Daten von Investments.</li>
           <li>
             <strong>Stripe (USA bzw. Irland, je nach Vertragspartner):</strong> Zahlungsabwicklung.
             Stripe verarbeitet Zahlungsdaten teilweise als eigener Verantwortlicher (z. B. zur
@@ -1385,7 +1521,8 @@ function DeBody() {
             Adressen @moyiq.app und Turnstile, die Prüfung, ob ein Mensch die App nutzt, unter anderem bei
             Anmeldung, Registrierung, Wiederherstellung des Zugangs und beim Senden von Feedback oder
             der Umfrage. Turnstile erhält Ihre IP-Adresse und technische
-            Daten Ihres Browsers. Cloudflare handelt als Auftragsverarbeiter und, zur Verbesserung der
+            Daten Ihres Browsers. Die App aus Google Play oder dem App Store nutzt Turnstile nicht.
+            Cloudflare handelt als Auftragsverarbeiter und, zur Verbesserung der
             Bot-Erkennung, als eigener Verantwortlicher (Art. 6 Abs. 1 lit. f DSGVO).
           </li>
           <li><strong>Google (Google Ireland Ltd. / Google LLC):</strong> das Gmail-Postfach, in dem wir E-Mails und Feedback empfangen und beantworten, und die Anmeldung mit Google, wenn Sie diese wählen.</li>
@@ -1423,11 +1560,17 @@ function DeBody() {
             Kontodaten: bis zur Löschung Ihres Kontos. Sie können das Konto jederzeit selbst unter
             Einstellungen → Konto löschen (oder unter app.moyiq.app/delete-account) löschen; die beim
             Server gespeicherten Daten in moyiq und moyiq · Investments, einschließlich des
-            Anlegerprofils, werden dabei sofort gelöscht. Bei einem aktiven Pro-Abo kündigt die Löschung
+            Anlegerprofils, werden dabei sofort gelöscht. Die Daten von Investments lassen sich auch
+            einzeln löschen, ohne das Konto zu löschen (Einstellungen › Investments). Bei einem aktiven Pro-Abo kündigt die Löschung
             auch das Abonnement bei Stripe; schlägt diese automatische Kündigung fehl, erhalten wir einen
             Hinweis und erledigen sie innerhalb eines Werktags von Hand (wer es früher erledigen möchte,
-            nutzt die Kündigungsseite). War die E-Mail-Adresse für einen Newsletter angemeldet,
-            entfernen wir sie aus der Liste unseres E-Mail-Dienstleisters.
+            nutzt die Kündigungsseite). In diesem Fall bleibt die Kennung des Stripe-Abonnements in
+            einem internen Fehlerprotokoll, das nach 30 Tagen automatisch gelöscht wird, und der Hinweis
+            an den Support (support@moyiq.app) enthält die E-Mail-Adresse des Kontos, nur um die
+            Kündigung abzuschließen; danach löschen wir ihn. War die E-Mail-Adresse für einen
+            Newsletter angemeldet, entfernen wir sie aus der Liste unseres E-Mail-Dienstleisters. Bei
+            Stripe bleiben der Kundendatensatz (Kundenkennung und E-Mail-Adresse des Kaufs) und die
+            Zahlungsnachweise aufgrund gesetzlicher Aufbewahrungspflichten erhalten.
           </li>
           <li>E-Mail-Adressen für Neuigkeiten: bis zu Ihrer Abmeldung oder dem Widerruf Ihrer Einwilligung.</li>
           <li>

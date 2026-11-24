@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- CSP dentro del HTML (S4 de la revisión pre-tiendas): la app de tienda
+         (Capacitor) empaqueta este archivo y no recibe las cabeceras de vercel.json.
+         Es la misma política que la cabecera, sin frame-ancestors (no vale en meta) y con
+         https://app.moyiq.app en connect-src (/api desde la app nativa: native/platform.js
+         › apiBase). En la web se aplican las dos y manda la más estricta: no cambia nada.
+         scripts/securityHeaders.test.js exige que no se aparten. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc=' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://app.moyiq.app data: blob: https://nelwgbcddwiaimzbcuas.supabase.co wss://nelwgbcddwiaimzbcuas.supabase.co https://dolarapi.com https://ve.dolarapi.com https://mindicador.cl https://invest.moyiq.app; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" />
     <meta name="description" content="Finanzas personales en dos monedas, con tus datos en tu dispositivo. Gratis para empezar." />
     <!-- Vista previa al compartir el enlace (BRD-13). Imagen: public/og-app.png (1200x630). -->
     <meta property="og:type" content="website" />

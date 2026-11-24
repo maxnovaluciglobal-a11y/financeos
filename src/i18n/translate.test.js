@@ -528,7 +528,8 @@ describe('paridad de deleteAccount., feedback. y syncPass. (es/en/pt/de)', () =>
 
 // PRD-4 (auditoría 360): vista previa de Pro, franja del demo y checklist de Pro.
 describe('paridad de proTrial. y pro.demo. (es/en/pt/de)', () => {
-  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('proTrial.') || k.startsWith('pro.demo.') || k.startsWith('pro.gate.preview')).sort()
+  // Las variantes @native (app de tienda) tienen su propio test: nativeVariants.test.js.
+  const pick = (dict) => Object.keys(dict).filter(k => !k.endsWith('@native') && (k.startsWith('proTrial.') || k.startsWith('pro.demo.') || k.startsWith('pro.gate.preview'))).sort()
   it('las 4 lenguas tienen las mismas claves y variables', () => {
     const base = pick(es)
     expect(base.length).toBe(13)

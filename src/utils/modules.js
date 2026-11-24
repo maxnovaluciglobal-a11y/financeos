@@ -1,3 +1,5 @@
+import { canShowInvestments } from '../native/storePolicy.js'
+
 // src/utils/modules.js — módulos que se activan (poda P3, aprobada por Walter
 // el 30-oct-2026). Lo que usa una minoría (Propiedades, Modo asesor) no ocupa
 // fila en "Más" ni en el riel mientras esté apagado.
@@ -19,7 +21,11 @@ export const MODULE_IDS = Object.keys(MODULE_DEFAULTS)
 // Página de cada módulo (ids de navConfig.js / App.jsx).
 export const MODULE_PAGE = { properties: 'projects', advisor: 'advisor', investments: 'investments' }
 
+// En la app de tienda sin Inversiones (native/storePolicy.js) el módulo está
+// apagado siempre, diga lo que diga la cuenta: es el único punto que leen el
+// menú, Panorama, Patrimonio, Metas, el alta rápida y el sello de privacidad.
 export function moduleOn(settings, id) {
+  if (id === 'investments' && !canShowInvestments()) return false
   const m = settings?.modules
   if (!m || typeof m !== 'object' || !(id in m)) return MODULE_DEFAULTS[id] ?? true
   return m[id] === true

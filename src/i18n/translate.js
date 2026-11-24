@@ -29,9 +29,21 @@ export function interpolateParts(str, vars = {}) {
 // Usa solo lo que ya está en langCache (cargado con loadLang); si el idioma
 // todavía no terminó de cargar, cae a español. Las claves de una sección
 // diferida (sections.js) se buscan en el mismo orden: idioma activo, español.
-export function translate(lang, key, vars) {
+//
+// App de tienda (Capacitor): si existe `<key>@native`, gana sobre `<key>`. Así
+// un texto que habla del navegador, de precios, de la prueba o de una función
+// que la app nativa no tiene se cambia en un solo lugar, sin tocar cada
+// pantalla. nativeVariants.test.js exige que cada `@native` exista en los 4
+// idiomas (si faltara en uno, se vería el de español).
+export const NATIVE_SUFFIX = '@native'
+function inNativeApp() {
+  try { return globalThis.Capacitor?.isNativePlatform?.() === true } catch { return false }
+}
+export function translate(lang, key, vars, native = inNativeApp()) {
   const dict = langCache[lang]
-  const str = dict?.[key] ?? sectionStrings[lang]?.[key] ?? es[key] ?? sectionStrings.es[key] ?? key
+  const pick = (k) => dict?.[k] ?? sectionStrings[lang]?.[k]
+  const nk = native ? key + NATIVE_SUFFIX : null
+  const str = (nk && (pick(nk) ?? es[nk])) ?? pick(key) ?? es[key] ?? sectionStrings.es[key] ?? key
   return interpolate(str, vars)
 }
 

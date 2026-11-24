@@ -18,6 +18,8 @@ import CurrencyScreen from './CurrencyScreen.jsx'
 import AppearanceScreen from './AppearanceScreen.jsx'
 import FeaturesScreen from './FeaturesScreen.jsx'
 import InvestScreen from './InvestScreen.jsx'
+import { canShowInvestments } from '../../native/storePolicy.js'
+import { isNativeApp } from '../../native/platform.js'
 import AutoEntryScreen from './AutoEntryScreen.jsx'
 import { registroAutomaticoHere } from '../../utils/uiFlags.js'
 import { moduleOn } from '../../utils/modules.js'
@@ -201,7 +203,7 @@ export default function Settings({ setPage } = {}) {
           {sub === 'currency'      && <CurrencyScreen />}
           {sub === 'appearance'    && <AppearanceScreen />}
           {sub === 'features'      && <FeaturesScreen />}
-          {sub === 'investments'   && <InvestScreen setPage={setPage} isDemo={isDemo} onOpenFeatures={() => switchSub('features')} />}
+          {sub === 'investments' && canShowInvestments() && <InvestScreen setPage={setPage} isDemo={isDemo} onOpenFeatures={() => switchSub('features')} />}
           {sub === 'autoEntry'     && <AutoEntryScreen />}
           {sub === 'templates'     && (
             <Setting id="templates" style={{ paddingTop: 10 }}>
@@ -225,9 +227,16 @@ export default function Settings({ setPage } = {}) {
   // Registro automático apagado (uiFlags): sin fila ni resultados de búsqueda.
   const autoOn = registroAutomaticoHere()
   // Inversiones (F7): fila y búsqueda solo con el módulo encendido (o en el demo).
-  const investOn = moduleOn(appSettings || {}, 'investments') || !!appSettings?.isDemo
+  // En la app de tienda sin Inversiones (storePolicy) no hay fila, ni búsqueda,
+  // ni interruptor en Funciones.
+  const investAllowed = canShowInvestments()
+  const investOn = investAllowed && (moduleOn(appSettings || {}, 'investments') || !!appSettings?.isDemo)
   const visibleGroup = (id) => (autoOn || id !== 'autoEntry') && (investOn || id !== 'investments')
-  const results = searchSettings(query, t, SETTINGS_GROUPS.filter(g => visibleGroup(g.id)))
+  const searchGroups = SETTINGS_GROUPS.filter(g => visibleGroup(g.id))
+    .map(g => (investAllowed || g.id !== 'features' ? g : { ...g, items: g.items.filter(it => it.id !== 'investments') }))
+    // "Instalar como app" es de la PWA: en la app de tienda no está (I11).
+    .map(g => (!isNativeApp() || g.id !== 'advanced' ? g : { ...g, items: g.items.filter(it => it.id !== 'install') }))
+  const results = searchSettings(query, t, searchGroups)
   const showUpgradeHint = !isDemo && getLicensePlan() !== 'pro'
 
   return (
@@ -297,8 +306,8 @@ export default function Settings({ setPage } = {}) {
       <p style={{fontSize:'var(--t-subhead)',color:'var(--tm)',lineHeight:1.6,margin:'12px 2px 0'}}>
         {t('settings.support.line')}{' '}
         <a href="mailto:support@moyiq.app" style={{color:'var(--tx)'}}>support@moyiq.app</a>
-        {' · '}{t('settings.support.time')}{' · '}
-        <a href={helpUrl(lang)} target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a>
+        {' · '}{t('settings.support.time')}
+        {!isNativeApp() && <>{' · '}<a href={helpUrl(lang)} target="_blank" rel="noopener noreferrer" style={{color:'var(--tx)'}}>{t('nav.legal.help')}</a></>}
       </p>
       <div style={{padding:'10px 12px',background: 'var(--fill)',borderRadius:'var(--r)',border: 0,fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily: 'var(--sans)',lineHeight:1.7,marginTop:8}}>
         {t('settings.footer')}
