@@ -8,11 +8,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useApp } from '../../../context/AppContext.jsx'
 import { PORT_TABS, bootPortTab, rememberPortTab, tabKeyTarget, openAsset } from '../../../utils/investNav.js'
 import { displayRate } from '../../../utils/investValuation.js'
-import { holdingsCsv, operationsCsv, backupJson, exportName } from '../../../utils/investCsv.js'
-import { sortOpsDesc } from '../../../utils/investLedger.js'
-import { investData } from '../../../core/investData.js'
 import { usePortfolioBook } from './usePortfolioBook.js'
-import { makeFmt, downloadText } from './format.js'
+import { makeFmt } from './format.js'
+import { backupFile, download, operationsFile, positionsFile } from './exports.js'
 import { DISPLAY_CCY_KEY, initialDisplayCcy } from './view.js'
 import { usePT } from './text.js'
 import { ConfirmSheet, ImportSheet, PositionSheet, TradeSheet } from './sheets.jsx'
@@ -126,30 +124,18 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
     })
   }
 
-  // ── Exportar (se genera en el momento y se descarga; la app no guarda copia) ──
-  const csvLabels = () => ({
-    ticker: t('pf.csv.h.ticker'), type: t('pf.csv.h.type'), ccy: t('pf.csv.h.ccy'), shares: t('pf.csv.h.shares'), entry: t('pf.csv.h.entry'),
-    price: t('pf.csv.h.price'), value: t('pf.csv.h.value'), pnl: t('pf.csv.h.pnl'), ret: t('pf.csv.h.ret'), weight: t('pf.csv.h.weight'),
-    stop: t('pf.csv.h.stop'), fxCost: t('pf.csv.h.fxCost'), total: 'TOTAL', noFx: t('pf.noFx'),
-  })
-  const opLabels = () => ({
-    id: t('pf.csv.o.id'), date: t('pf.csv.o.date'), ticker: t('pf.csv.h.ticker'), type: t('pf.csv.h.type'), ccy: t('pf.csv.h.ccy'), price: t('pf.csv.h.price'),
-    qty: t('pf.csv.o.qty'), amount: t('pf.csv.o.amount'), fx: t('pf.csv.o.fx'), pnl: t('pf.csv.o.pnl'), rsi: 'RSI', note: t('pf.csv.o.note'),
-    cash: t('pf.csv.o.cash'), reinvested: t('pf.csv.o.reinvested'), edited: t('pf.csv.o.edited'), source: t('pf.csv.o.source'), yes: t('pf.yes'), no: t('pf.no'),
-    types: Object.fromEntries(['buy', 'sell', 'deposit', 'withdrawal', 'dividend', 'bonus'].map(k => [k, t(`pf.op.${k}`)])),
-  })
+  // ── Exportar (se genera en el momento y se descarga; la app no guarda copia).
+  // Misma lógica que Ajustes › Inversiones (exports.js).
   function exportPositions() {
-    downloadText(`${exportName('moyiq-inversiones')}.csv`, holdingsCsv(pb.positions.rows, csvLabels()), 'text/csv;charset=utf-8')
+    download(positionsFile(pb, t))
     toast(t('pf.toast.exported'))
   }
   function exportOperations() {
-    downloadText(`${exportName('moyiq-operaciones')}.csv`, operationsCsv(sortOpsDesc(pb.ops).reverse(), opLabels()), 'text/csv;charset=utf-8')
+    download(operationsFile(pb, t))
     toast(t('pf.toast.exported'))
   }
   async function exportBackup() {
-    const w = demo ? { ok: true, data: [] } : await investData.listWatchlist()
-    const json = backupJson({ holdings: pb.holdings, operations: pb.ops, watchlist: w.ok ? w.data : [], capital: pb.capital, targets })
-    downloadText(`${exportName('moyiq-inversiones-copia')}.json`, json, 'application/json')
+    download(await backupFile({ pb, targets, demo }))
     toast(t('pf.toast.backup'))
   }
 
