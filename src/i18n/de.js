@@ -3371,7 +3371,7 @@ export const de = {
     "settings.features.investments.sub": "Fügt den Bereich Investments mit Ihrem Portfolio hinzu, das auch im Überblick und im Nettovermögen erscheint. Ihre Positionen, Bewegungen, die Werte, die Sie verfolgen, Ihre Alarme, Ihr Referenzkapital und Ihre Pläne werden in Ihrem Konto auf unserem Server gespeichert, damit Sie sie auf jedem Gerät sehen können. Ihre persönlichen Finanzen bleiben auf Ihrem Gerät. Für die Kurse werden nur die Symbole abgefragt.",
     "tour.pano.invest.title": "Ihr Investments-Portfolio",
     "tour.pano.invest.body": "Der geschätzte Wert Ihrer Positionen und der Stand der Daten. Das ist eine Information, keine Anlageberatung.",
-    "networth.investments.disclaimer": "Orientierend — errechnet sich aus dem, was Sie in moyiq erfassen, und separat aus der Schätzung Ihres Investments-Portfolios. Nicht enthalten sind Bankguthaben, andere Anlagen oder nicht erfasste Vermögenswerte.",
+    "networth.investments.disclaimer": "Orientierend — errechnet sich aus dem, was Sie in moyiq erfassen, und separat aus der Schätzung Ihres Investments-Portfolios. Nicht enthalten sind Bankguthaben, andere Anlagen oder nicht erfasste Vermögenswerte. Vom Portfolio zählt nur der Wert der Positionen; nicht investiertes Guthaben in Investments wird nicht addiert.",
     "networth.investments": "Investments",
     "networth.investments.tag": "Schätzung aus Investments",
     "networth.investments.note": "Wert vom {at} · ändert sich mit dem Markt",
