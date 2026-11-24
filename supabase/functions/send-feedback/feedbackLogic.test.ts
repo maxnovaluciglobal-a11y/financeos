@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { parseFeedback, claimFeedback, claimNps, sendFeedbackEmail, renderFeedbackEmail, MAX_MESSAGE } from './feedbackLogic.ts'
-import { corsHeaders, ALLOWED_ORIGINS, FALLBACK_ORIGIN } from './cors.ts'
+import { corsHeaders, ALLOWED_ORIGINS, FALLBACK_ORIGIN, captchaExempt } from './cors.ts'
 
 const CONFIG = { supabaseUrl: 'https://p.supabase.co', serviceRole: 'srv', resendApiKey: 're', supportEmail: 'support@moyiq.app', fromEmail: 'moyiq <hola@moyiq.app>' }
 afterEach(() => { vi.unstubAllGlobals() })
@@ -75,5 +75,15 @@ describe('CORS de send-feedback', () => {
   it('solo la app', () => {
     for (const o of ALLOWED_ORIGINS) expect(corsHeaders(o)['Access-Control-Allow-Origin']).toBe(o)
     expect(corsHeaders('https://demo.moyiq.app')['Access-Control-Allow-Origin']).toBe(FALLBACK_ORIGIN)
+  })
+})
+
+describe('send-feedback: Turnstile y la app de tienda (V-NAT FN-1)', () => {
+  it('exime solo los orígenes de la app nativa', () => {
+    expect(captchaExempt('capacitor://localhost')).toBe(true)
+    expect(captchaExempt('https://localhost')).toBe(true)
+    for (const o of ['https://app.moyiq.app', 'https://demo.moyiq.app', 'http://localhost:5173', 'https://localhost.evil.com', '', null, undefined]) {
+      expect(captchaExempt(o)).toBe(false)
+    }
   })
 })

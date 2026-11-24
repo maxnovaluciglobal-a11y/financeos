@@ -9,10 +9,16 @@
 //      errorText={t('authGate.errorCaptcha')}
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { TURNSTILE_SITE_KEY, loadTurnstile, createTokenBox } from '../core/turnstile.js'
+import { isNativeApp } from '../native/platform.js'
 
 // errorText: texto ya traducido (authGate.errorCaptcha). Va por prop porque DemoGate se monta
 // antes de AppProvider y traduce con useTFor, no con useT.
-const Turnstile = forwardRef(function Turnstile({ action, errorText, siteKey = TURNSTILE_SITE_KEY, showError = false }, ref) {
+// App de tienda: sin widget. Su origen (capacitor://localhost, https://localhost)
+// no es un hostname del widget, y el login quedaba esperando 10 s un token que
+// nunca llegaba (V-NAT FN-1). send-feedback exime ese origen (cors.ts ›
+// captchaExempt); Supabase Auth no pide captcha.
+export const defaultSiteKey = (win = globalThis) => (isNativeApp(win) ? '' : TURNSTILE_SITE_KEY)
+const Turnstile = forwardRef(function Turnstile({ action, errorText, siteKey = defaultSiteKey(), showError = false }, ref) {
   const boxRef = useRef(null)
   const widgetId = useRef(null)
   const tokens = useRef(createTokenBox())

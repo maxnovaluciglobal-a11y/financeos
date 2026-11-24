@@ -6,9 +6,11 @@
 // cuenta) · 429 rate_limited · 503 claim_failed · 502 resend_*.
 // SEG-1: Turnstile (../_shared/turnstile.ts, docs/turnstile.md). Token en el
 // body como turnstileToken; con TURNSTILE_ENFORCE prendido, 403 captcha_failed
-// sin token válido (503 captcha_unavailable si Cloudflare no responde).
+// sin token válido (503 captcha_unavailable si Cloudflare no responde). La app
+// de tienda (capacitor://localhost, https://localhost) no lleva widget: ver
+// cors.ts › captchaExempt.
 import { parseFeedback, bearerToken, getAuthUser, claimFeedback, claimNps, sendFeedbackEmail, type FeedbackConfig } from "./feedbackLogic.ts";
-import { corsHeaders } from "./cors.ts";
+import { captchaExempt, corsHeaders } from "./cors.ts";
 import { resolveResendApiKey } from "../_shared/resendKey.ts";
 import { withErrorReporting } from "../_shared/errorReport.ts";
 import { checkTurnstile, clientIp, extractTurnstileToken, turnstileConfigFromEnv, turnstileErrorBody } from "../_shared/turnstile.ts";
@@ -40,11 +42,14 @@ Deno.serve(withErrorReporting("send-feedback", async (req) => {
   const user = token ? await getAuthUser(token, config) : null;
   if (!user) return json({ ok: false, error: "session_required" }, 401, origin);
 
-  const captcha = await checkTurnstile(
-    extractTurnstileToken(body, req.headers),
-    turnstileConfigFromEnv((n) => Deno.env.get(n)),
-    clientIp(req.headers),
-  );
+  // App de tienda: sin widget posible; vale la sesión y el tope (cors.ts › captchaExempt).
+  const captcha = captchaExempt(origin)
+    ? { allow: true as const, status: 200, reason: "native_app" }
+    : await checkTurnstile(
+      extractTurnstileToken(body, req.headers),
+      turnstileConfigFromEnv((n) => Deno.env.get(n)),
+      clientIp(req.headers),
+    );
   if (!captcha.allow) {
     console.warn(`send-feedback: rechazado por Turnstile (${captcha.reason})`);
     return json(turnstileErrorBody(captcha), captcha.status, origin);
