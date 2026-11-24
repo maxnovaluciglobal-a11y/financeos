@@ -7,13 +7,14 @@
 // solo sube, sin saltos por los ingresos. Mismas cuentas que el resto del Inicio:
 //   - gastado(d) = gastos registrados del día 1 al d. En el mes en curso, un
 //     gasto con fecha posterior a hoy cuenta hoy (como "Te queda").
-//   - ritmo ideal(d) = ingreso registrado del mes × d / días: una recta de ~0 al
-//     ingreso del mes el último día. Es la misma cuenta del Anillo Vivo
-//     (`pulse`: gastado/ingreso contra día/días), de la frase del mes
-//     (monthReading) y del gráfico de ritmo de Panorama (paceSeries).
-//   - píldora = ideal(hoy) − gastado(hoy): > 0 "por delante", < 0 "por detrás",
-//     pareja dentro del 2 % del ingreso (PACE_OK). Como mide a hoy, todo ingreso
-//     registrado del mes ya cuenta; un cobro que no llegó no cambia el ideal.
+//   - ritmo ideal(d) = fijos ya pagados + disponible × d / días, con
+//     disponible = ingreso − apartado − fijos (pagados y por pagar). Es la
+//     cuenta del veredicto del mes (utils/monthPace.js, I-22): los fijos se
+//     reservan enteros desde el día 1 y lo demás se reparte parejo. Sin fijos
+//     ni apartado es la recta de ~0 al ingreso del mes de siempre.
+//   - píldora = ideal(hoy) − gastado(hoy) = monthPace().gap; > 0 "por
+//     delante", < 0 "por detrás", pareja dentro del 2 % (PACE_OK). La píldora,
+//     el Anillo Vivo y la frase del mes (Inicio y Panorama) son paceVerdict.
 //   - proyección = la de projectEndOfMonth (projection.js), la misma de la
 //     tarjeta Proyección: mediana diaria sin los fijos + fijos pendientes. Antes
 //     era gastado(hoy) + promedio × días que faltan, y el arriendo pagado el
@@ -33,6 +34,7 @@
 
 import { projectEndOfMonth } from './projection.js'
 import { isSetAside, uniqueSetAsides } from './setAside.js'
+import { PACE_OK, paceVerdict } from './monthPace.js'
 
 // Mismo criterio que monthPosition (utils/monthReading.js), copiado acá para
 // que la ChartLupa no arrastre al trozo todo monthReading/dashboardModel.
@@ -46,14 +48,15 @@ function monthPosition(activeMonth, now) {
 }
 
 const dayOf = (r) => Number(String(r?.date || '').slice(8, 10))
-export const PACE_EVEN = 0.02   // igual que PACE_OK de monthReading y `pulse`
+export const PACE_EVEN = PACE_OK   // la tolerancia del veredicto del mes (monthPace.js)
 
 // Serie del mes. `income` = ingreso registrado del mes (kpis.totalInc); sin
 // ingreso no hay ritmo ideal. `plan` = monthPlan() del mes, para ubicar el cobro
 // previsto si todavía no se registró. `pending` = pendingTotals(plan), los
 // fijos que faltan (los suma la proyección, como en la tarjeta Proyección).
 // `pendingFixed` = monthLeft().pendingFixed: lo que "Te queda" ya descuenta.
-export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null, pendingFixed = 0 }) {
+// `fixedPaid` = monthLeft().fixedPaid: fijos de gasto ya pagados (I-22).
+export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], activeMonth, now = new Date(), income = 0, plan = [], pending = null, pendingFixed = 0, fixedPaid = 0 }) {
   const pos = monthPosition(activeMonth, now)
   const days = pos.days
   const lastDay = pos.today
@@ -85,12 +88,19 @@ export function dailyAvailable({ incomes = [], expenses = [], setAsides = [], ac
   const fixed = pos.mode === 'current' ? Math.max(0, Number(pendingFixed) || 0) : 0
   if (fixed > 0) for (let d = Math.max(1, lastDay); d <= days; d++) avail[d] = round2(avail[d] - fixed)
   const ref = Number(income) > 0 ? Number(income) : null
-  const ideal = ref == null ? null : spentCum.map((_, d) => round2(ref * d / days))
+  // Fijos ya pagados y por pagar: los mismos que usa el veredicto del mes. Un
+  // mes pasado no tiene nada por pagar (monthLeft).
+  const pendFixedAll = pos.mode === 'past' ? 0 : Math.max(0, Number(pendingFixed) || 0)
+  const paid = Math.min(spentCum[days], Math.max(0, Number(fixedPaid) || 0))
+  const pool = ref == null ? 0 : Math.max(0, ref - asideCum - paid - pendFixedAll)
+  const ideal = ref == null ? null : spentCum.map((_, d) => round2(paid + pool * d / days))
   const projEnd = pos.mode === 'current' && lastDay < days
     ? Math.max(spentCum[lastDay], projectEndOfMonth({ incomes, expenses, activeMonth, pending, now }).projExp)
     : null
   return {
     mode: pos.mode, days, lastDay, income: ref, pendingFixed: fixed,
+    // Para el veredicto (paceToday): apartado del mes y fijos ya pagados.
+    setAside: round2(asideCum), fixedPaid: paid, pendingFixedAll: pendFixedAll,
     spent, spentCum, earned, avail, ideal,
     projEnd,
     payday: paydayOf({ incomes, activeMonth, plan, days }),
@@ -113,16 +123,18 @@ export function paydayOf({ incomes = [], activeMonth, plan = [], days = 31 }) {
   return best ? best.day : null
 }
 
-// Ritmo de hoy: la píldora y el anillo del detalle (pulse) son la misma cuenta.
+// Ritmo de hoy: la píldora y el anillo del detalle son el veredicto del mes
+// (paceVerdict, utils/monthPace.js) con las cifras de la serie.
 //   gap   = ideal(hoy) − gastado(hoy)
-//   over  = gastado/ingreso − hoy/días  (lo que mide `pulse`)
-//   level = 'ok' ≤ 2 %, 'attention' ≤ 10 %, 'risk' (umbrales del Anillo Vivo)
+//   over  = variable/disponible − hoy/días
+//   level = 'ok' ≤ 2 %, 'attention' ≤ 10 %, 'risk' (o "te queda" < 0)
 export function paceToday(series) {
   if (!series || series.mode !== 'current' || !series.ideal || !(series.lastDay >= 1)) return null
   const d = series.lastDay
-  const gap = round2(series.ideal[d] - series.spentCum[d])
-  const over = series.spentCum[d] / series.income - d / series.days
-  return { gap, over, even: Math.abs(over) <= PACE_EVEN, level: over <= PACE_EVEN ? 'ok' : over <= 0.10 ? 'attention' : 'risk' }
+  const v = paceVerdict({ income: series.income, spent: series.spentCum[d], setAside: series.setAside,
+    pendingFixed: series.pendingFixedAll, fixedPaid: series.fixedPaid, today: d, days: series.days, mode: series.mode })
+  if (!v) return null
+  return { gap: v.gap, over: v.over, even: v.even, level: v.level }
 }
 
 // ── Geometría (unidades del viewBox) ────────────────────────────────────────

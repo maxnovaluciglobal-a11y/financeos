@@ -112,7 +112,7 @@ export function homeMonthTotals({ incomes = [], expenses = [], setAsides = [], a
     const m = monthLeft({ incomes, expenses, setAsides, month, untilDay, plan: monthPlanOf, today: now })
     return { totalInc: m.income, totalExp: m.spent, setAside: m.setAside,
              setAsideGoals: m.setAsideGoals, setAsideInvest: m.setAsideInvest,
-             pendingFixed: m.pendingFixed, pendingFixedCount: m.pendingFixedCount, leftReal: m.leftReal,
+             pendingFixed: m.pendingFixed, pendingFixedCount: m.pendingFixedCount, fixedPaid: m.fixedPaid, leftReal: m.leftReal,
              balance: m.left, freeFlow: m.left, savingRate: m.savingRate,
              incCount: m.incCount, expCount: m.expCount, setAsideCount: m.setAsideCount }
   }

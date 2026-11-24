@@ -55,7 +55,7 @@ describe('paridad de las claves nuevas de fase 1 (es/en/pt/de)', () => {
 // El mes en palabras y la línea del alta rápida (#2, #9–#12): la app reporta,
 // no aconseja, y nada de esto habla de inversión.
 describe('paridad y voz de reading.* (es/en/pt/de)', () => {
-  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('reading.') || k.startsWith('chart.pace.')).sort()
+  const pick = (dict) => Object.keys(dict).filter(k => k.startsWith('reading.')).sort()
   it('las 4 lenguas tienen exactamente las mismas claves y variables', () => {
     const base = pick(es)
     expect(base.length).toBeGreaterThan(40)

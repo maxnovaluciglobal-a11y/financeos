@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { monthReading, monthPosition, topCategoryDelta, budgetsConclusion, categoryConclusion, barConclusion,
-  paceReference, paceSeries, paceConclusion, renderReading } from './monthReading.js'
+  renderReading } from './monthReading.js'
 import { homeMonthTotals, budgetRows } from '../pages/Dashboard/dashboardModel.js'
-import { cumulativeByDay } from './chartSeries.js'
 import { es } from '../i18n/es.js'
 import { en } from '../i18n/en.js'
 import { pt } from '../i18n/pt.js'
@@ -79,7 +78,7 @@ describe('monthReading · prioridad: una frase, la más útil', () => {
   })
   it('ritmo alto en porcentaje fuera de VE/AR, coherente con el anillo', () => {
     const r = read({ incomes: [inc('2026-10-01', 100)], expenses: ten.map(e => ({ ...e, amount: 14 })) })
-    expect(say(r.short)).toBe('Va el 65 % del mes y se gastó el 84 % del ingreso; quedan 11 días.')
+    expect(say(r.short)).toBe('Va el 65 % del mes y se gastó el 84 % de lo que el ingreso deja libre tras fijos y apartado; quedan 11 días.')
     // #12: el dato por día llega a la lectura larga.
     expect(r.facts.map(f => f.key)).toContain('reading.perDay')
   })
@@ -180,39 +179,6 @@ describe('titulares (#9)', () => {
     expect(barConclusion([{ income: 0, expense: 0 }, { income: 5, expense: 1 }])).toBeNull()
     expect(say(barConclusion([{ income: 5, expense: 1 }, { income: 5, expense: 2 }]))).toBe('Los ingresos cubrieron los gastos en los 2 meses con datos')
     expect(say(barConclusion([{ income: 5, expense: 9 }, { income: 5, expense: 2 }, { income: 0, expense: 0 }]))).toBe('Los gastos superaron a los ingresos en 1 de 2 meses')
-  })
-})
-
-describe('gasto contra ritmo (#11)', () => {
-  it('referencia: ingreso, si no el mes anterior, si no nada', () => {
-    expect(paceReference({ income: 900, prevExpenses: 5 })).toEqual({ value: 900, kind: 'income' })
-    expect(paceReference({ income: 0, prevExpenses: 5 })).toEqual({ value: 5, kind: 'prev' })
-    expect(paceReference({})).toBeNull()
-  })
-  it('la línea llega a la referencia el último día y respeta los días sin dato', () => {
-    const cum = cumulativeByDay([exp('2026-10-02', 10)], M, NOW)
-    const s = paceSeries(cum, 310)
-    expect(s).toHaveLength(31)
-    expect(s[0].pace).toBe(10)
-    expect(s[30].pace).toBe(310)
-    expect(s[19].current).toBe(10)
-    expect(s[25].current).toBeNull()
-  })
-  it('título sobre, bajo y al ritmo', () => {
-    const data = (current) => [{ day: 1, current, pace: 100 }, { day: 2, current: null, pace: 200 }]
-    expect(say(paceConclusion(data(150)))).toBe('El gasto va $50 sobre el ritmo')
-    expect(say(paceConclusion(data(60)))).toBe('El gasto va $40 bajo el ritmo')
-    expect(say(paceConclusion(data(101)))).toBe('El gasto va al ritmo del mes')
-    expect(say(paceConclusion(data(150), { closed: true }))).toBe('El gasto cerró $50 sobre el ritmo')
-    expect(paceConclusion(data(0))).toBeNull()
-  })
-  it('G2-N3: "parejo" dentro del 2 % de la referencia del mes, como la píldora de la Lupa', () => {
-    // Día 23 de 30, referencia 1.000: ideal 766,67. Gastado 785 → +18,33 (1,8 % del mes).
-    const ref = 1000, days = 30, today = 23
-    const series = Array.from({ length: days }, (_, i) => ({ day: i + 1, current: i + 1 === today ? 785 : i + 1 < today ? 0 : null, pace: Math.round(ref * (i + 1) / days * 100) / 100 }))
-    expect(paceConclusion(series).key).toBe('reading.title.pace.even')
-    series[today - 1].current = 790   // +23,33: pasa el 2 % del mes
-    expect(paceConclusion(series).key).toBe('reading.title.pace.over')
   })
 })
 

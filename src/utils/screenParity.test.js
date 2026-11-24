@@ -7,10 +7,11 @@
 import { describe, it, expect } from 'vitest'
 import { homeMonthTotals, budgetRows } from '../pages/Dashboard/dashboardModel.js'
 import { dailyAvailable, paceToday } from './dailyAvailable.js'
-import { paceConclusion, paceReference, paceSeries } from './monthReading.js'
+import { monthReading } from './monthReading.js'
+import { monthPace } from './monthPace.js'
+import { monthPlan } from './recurring.js'
 import { budgetStatus, budgetUsage, countBudgetsExceeded, effectiveBudgetLimits } from './budgets.js'
 import { projectEndOfMonth } from './projection.js'
-import { cumulativeByDay } from './chartSeries.js'
 import { calcFinancialScore } from './financialScore.js'
 import { monthDebtLoad } from './personal.js'
 import { reportOverBudget } from '../pages/Reports/reportsModel.js'
@@ -67,23 +68,62 @@ describe('paridad entre pantallas: cifras clave del mes', () => {
     }
   })
 
-  it('ritmo: la píldora de la Lupa y Panorama dan el mismo veredicto (con gastos de fecha futura)', () => {
+  // I-22 (benchmark/05-coherencia-360): UN veredicto del mes. El Anillo Vivo
+  // (monthPace), la píldora de la Lupa (paceToday) y la frase del mes de
+  // Inicio y Panorama (monthReading: la corta y la lista larga son la misma
+  // llamada) dicen lo mismo, también con apartados y fijos pagados y por pagar.
+  it('ritmo: Inicio (anillo y Lupa) y Panorama dan el mismo veredicto, con apartados y fijos', () => {
     const r = rng(2)
+    let withFixed = 0, withAside = 0, risks = 0, oks = 0
     for (let i = 0; i < CASES; i++) {
       const today = 4 + Math.floor(r() * 24)
       const now = new Date(2026, 10, today, 12)
       const income = 1000 + cents(r, 4000)
-      const incomes = [{ date: d(1), amount: income }]
+      const incomes = [{ id: 'i1', date: d(1), amount: income }]
       const k = 3 + Math.floor(r() * 25)
-      const expenses = Array.from({ length: k }, (_, j) => ({ date: d(1 + Math.floor(r() * today)), amount: cents(r, income * 1.6 / k), category: CATS[j % 4] }))
-      if (r() < 0.3) expenses.push({ date: d(Math.min(30, today + 1 + Math.floor(r() * 5))), amount: cents(r, income * 0.2), category: 'Salud' })
-      const kp = homeMonthTotals({ incomes, expenses, activeMonth: MONTH, now })
-      const lupa = paceToday(dailyAvailable({ incomes, expenses, activeMonth: MONTH, now, income: kp.cur.totalInc }))
-      const ref = paceReference({ income: kp.cur.totalInc, prevExpenses: kp.prev.totalExp })
-      const pano = paceConclusion(paceSeries(cumulativeByDay(expenses, MONTH, now, { futureToToday: true }), ref.value))
-      expect(pano.key === 'reading.title.pace.even').toBe(lupa.even)
-      expect(pano.key !== 'reading.title.pace.over').toBe(lupa.level === 'ok')
+      const expenses = Array.from({ length: k }, (_, j) => ({ id: `e${j}`, date: d(1 + Math.floor(r() * today)), amount: cents(r, income * 1.2 / k), category: CATS[j % 4] }))
+      if (r() < 0.3) expenses.push({ id: 'ef', date: d(Math.min(30, today + 1 + Math.floor(r() * 5))), amount: cents(r, income * 0.2), category: 'Salud' })
+      // Fijos: arriendo el día 1 (pagado y vinculado) y uno a fin de mes (por pagar).
+      const rules = []
+      if (r() < 0.6) {
+        const rent = cents(r, income * 0.4)
+        rules.push(fixedRule('r-rent', 1, rent))
+        expenses.push({ id: 'e-rent', date: d(1), amount: rent, category: 'Vivienda', recurringId: 'r-rent', occurrenceDate: d(1) })
+        rules.push(fixedRule('r-gym', 29, cents(r, income * 0.15)))
+        withFixed++
+      }
+      const setAsides = r() < 0.5 ? [{ id: 's1', kind: 'setAside', dest: r() < 0.5 ? 'goal' : 'invest', amount: cents(r, income * 0.3), date: d(1 + Math.floor(r() * today)) }] : []
+      if (setAsides.length) withAside++
+      const plan = monthPlan(rules, MONTH, { incomes, expenses, today: d(today) })
+      const kp = homeMonthTotals({ incomes, expenses, setAsides, activeMonth: MONTH, now, plan })
+      const cur = { ...kp.cur, cur: kp.cur, prev: kp.prev, prevToDate: kp.prevToDate, prevCutDay: kp.prevCutDay }
+      // Inicio: el Anillo Vivo y la píldora de la Lupa.
+      const ring = monthPace(cur, MONTH, now)
+      const lupa = paceToday(dailyAvailable({ incomes, expenses, setAsides, activeMonth: MONTH, now, income: kp.cur.totalInc, plan, pendingFixed: kp.cur.pendingFixed, fixedPaid: kp.cur.fixedPaid }))
+      expect(lupa.level, `caso ${i}`).toBe(ring.level)
+      expect(lupa.even).toBe(ring.even)
+      expect(lupa.gap).toBeCloseTo(ring.gap, 1)
+      // Mismo "te queda" que el héroe.
+      expect(ring.left).toBeCloseTo(kp.cur.freeFlow, 2)
+      // Nunca "vas bien" con "Te queda" en negativo.
+      if (kp.cur.freeFlow < 0) expect(ring.level).toBe('risk')
+      // Panorama (y la frase del Inicio): monthReading con las mismas cifras.
+      const reading = monthReading({ activeMonth: MONTH, now, totals: cur, expenses, rows: [], pending: null })
+      const keys = reading.facts.map(f => f.key)
+      const balanceOk = kp.cur.leftReal >= 0
+      const early = keys.includes('reading.early')
+      if (!early && balanceOk) {
+        expect(keys.includes('reading.pace.ok'), `caso ${i}`).toBe(ring.level === 'ok')
+        if (Number.isFinite(ring.ratio)) expect(keys.includes('reading.pace.high'), `caso ${i}`).toBe(ring.level !== 'ok')
+      }
+      if (ring.level === 'risk') risks++
+      if (ring.level === 'ok') oks++
     }
+    // El generador cubre los casos que importan.
+    expect(withFixed).toBeGreaterThan(CASES * 0.4)
+    expect(withAside).toBeGreaterThan(CASES * 0.3)
+    expect(risks).toBeGreaterThan(50)
+    expect(oks).toBeGreaterThan(50)
   })
 
   it('"Te queda" es la misma cifra que el disponible de la Lupa y un mes cuadrado al centavo da 0', () => {
@@ -139,3 +179,9 @@ describe('paridad entre pantallas: cifras clave del mes', () => {
     expect(load.ratio).toBeCloseTo(0.12, 6)
   })
 })
+
+function fixedRule(id, day, amount) {
+  return { id, kind: 'expense', source: 'manual', description: id, category: 'Vivienda', amountMode: 'fixed',
+    amounts: [{ from: '2026-01', amount }], schedule: { freq: 'monthly', day, anchorDate: `2026-01-${String(day).padStart(2, '0')}` },
+    startDate: '2026-01-01', autoConfirm: false, paused: false, skipped: [] }
+}

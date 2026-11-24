@@ -48,6 +48,7 @@ import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal } from 'lucide-react'
 import { inicioLupaOn } from '../../utils/uiFlags.js'
 import { dailyAvailable, paceToday } from '../../utils/dailyAvailable.js'
+import { monthPace } from '../../utils/monthPace.js'
 
 // V4: el anillo es una tarjeta opcional ("Editar Inicio") y es lo único del
 // Inicio que usa recharts (~100 kB gzip). Lazy, el Inicio pinta sin esperarlo.
@@ -231,30 +232,26 @@ export default function Dashboard({ setPage }) {
   }
 
   // ── El Anillo Vivo (Pulso) — firma del producto, visible con datos del mes.
+  // I-22: el nivel es EL veredicto del mes (utils/monthPace.js), el mismo de
+  // la píldora de la Lupa y de la frase del mes en el Inicio y en Panorama:
+  // contra el ingreso, con lo apartado y los fijos como "Te queda".
   const pulse = useMemo(() => {
-    const { today, daysInMonth, daysLeft } = projectEndOfMonth({ incomes, expenses, activeMonth })
-    // Referencia = ingreso del mes (ritmo de gasto vs ritmo del tiempo).
-    const reference = kpis.totalInc > 0 ? kpis.totalInc : (kpis.totalExp || 1)
-    const spent = kpis.totalExp
-    const elapsedRatio = daysInMonth > 0 ? today / daysInMonth : 0
-    const spentRatio = reference > 0 ? spent / reference : 0
-    const pace = spentRatio - elapsedRatio
-    const level = pace <= 0.02 ? 'ok' : pace <= 0.10 ? 'attention' : 'risk'
-    const color = SCORE_LEVELS[level].color
-    const safePerDay = daysLeft > 0 ? Math.max(0, (reference - spent) / daysLeft) : 0
-    return { spentRatio, elapsedRatio, color, level, daysLeft,
-             centerValue: money(safePerDay),
-             refIsIncome: kpis.totalInc > 0 }
-  }, [incomes, expenses, kpis.totalExp, kpis.totalInc, activeMonth, money])
+    const { daysLeft } = projectEndOfMonth({ incomes, expenses, activeMonth })
+    const v = monthPace(kpis, activeMonth)
+    if (!v) return { daysLeft, level: null }
+    const color = SCORE_LEVELS[v.level].color
+    const spentRatio = Number.isFinite(v.ratio) ? Math.max(0, v.ratio) : 1
+    return { spentRatio, elapsedRatio: v.elapsed, color, level: v.level, daysLeft, verdict: v }
+  }, [incomes, expenses, kpis, activeMonth])
 
   // Entrega 1.5: gasto acumulado del mes contra el ritmo ideal. La píldora
-  // (paceToday) es la misma cuenta que `pulse` (anillo y etiqueta del detalle)
-  // y que la frase del mes: gastado/ingreso contra día/días.
+  // (paceToday) es el mismo veredicto que `pulse` (anillo y etiqueta del
+  // detalle) y que la frase del mes: paceVerdict (utils/monthPace.js).
   const lupaSeries = useMemo(() => {
     if (!lupa) return null
-    const sr = dailyAvailable({ incomes, expenses, setAsides, activeMonth, income: kpis.totalInc, plan, pending: pendingSum, pendingFixed: kpis.pendingFixed })
+    const sr = dailyAvailable({ incomes, expenses, setAsides, activeMonth, income: kpis.totalInc, plan, pending: pendingSum, pendingFixed: kpis.pendingFixed, fixedPaid: kpis.fixedPaid })
     return sr.lastDay >= 1 ? sr : null
-  }, [lupa, incomes, expenses, setAsides, activeMonth, plan, pendingSum, kpis.totalInc, kpis.pendingFixed])
+  }, [lupa, incomes, expenses, setAsides, activeMonth, plan, pendingSum, kpis.totalInc, kpis.pendingFixed, kpis.fixedPaid])
   const lupaPace = useMemo(() => paceToday(lupaSeries), [lupaSeries])
 
   // R12/R13: moneda de referencia del hero + calculadora del país.
@@ -334,7 +331,7 @@ export default function Dashboard({ setPage }) {
         <Suspense fallback={<div className={hs.sceneFallback} aria-hidden="true" />}>
           <InicioScene series={lupaSeries} pace={lupaPace} kpis={kpis} activeMonth={activeMonth} sym={sym} incomes={incomes} expenses={expenses}
             pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
-            pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
+            pulse={(kpis.incCount > 0 || kpis.expCount > 0) && pulse.level ? pulse : null}
             daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
             dualOn={dualOn} toUSD={toUSD} onOpen={setPage} refc={refc} />
         </Suspense>
@@ -348,7 +345,7 @@ export default function Dashboard({ setPage }) {
           {!lupa && (
             <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
               pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
-              pulse={(kpis.incCount > 0 || kpis.expCount > 0) ? pulse : null}
+              pulse={(kpis.incCount > 0 || kpis.expCount > 0) && pulse.level ? pulse : null}
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
               onOpen={setPage} refc={refc} />
           )}

@@ -7,7 +7,6 @@
 //   budgetsConclusion(rows)   → titular de Presupuestos
 //   categoryConclusion(...)   → titular del anillo de categorías
 //   barConclusion(...)        → titular de Ingresos vs Gastos
-//   paceSeries / paceConclusion → gráfico de gasto acumulado contra el ritmo
 //
 // Voz: la app reporta, no opina. Sin "deberías", sin alarmas, sin inversión.
 // Prioridad: un solo hecho, el más útil. El orden de `facts` ES la regla:
@@ -15,15 +14,16 @@
 //   pasado → ritmo alto → presupuesto cerca → fijos pendientes → categoría que
 //   más subió → ritmo normal. Lo que sigue en la lista completa Panorama.
 //
-// Ritmo: mismo cálculo y umbrales que el Anillo Vivo del Inicio (gastado sobre
-// ingreso contra mes transcurrido), para que la frase y el anillo no se
-// contradigan justo debajo del héroe. VE y AR: sin porcentajes de variación
+// Ritmo: EL veredicto del mes (paceVerdict, utils/monthPace.js; I-22), el
+// mismo del Anillo Vivo y de la píldora de la Lupa: contra el ingreso, con lo
+// apartado y los fijos como "Te queda". La frase corta del Inicio y la lista
+// de Panorama salen de esta función: no se contradicen. VE y AR: sin porcentajes de variación
 // nominal (prefersAmountDelta), y en US$ con la tasa de cada período si existe.
 
 import { monthDelta, usdMonthDelta, prefersAmountDelta, prevMonthOf } from '../pages/Dashboard/dashboardModel.js'
+import { PACE_OK, PACE_HIGH, paceVerdict } from './monthPace.js'
 
-export const PACE_OK = 0.02        // Igual que `pulse` en Dashboard/index.jsx
-export const PACE_HIGH = 0.10
+export { PACE_OK, PACE_HIGH }
 export const EARLY_DAYS = 3        // Hasta este día no se habla de ritmo
 export const EARLY_MOVES = 3       // ni con tan pocos movimientos
 export const CATEGORY_MIN_PCT = 15 // Por debajo, la variación es ruido
@@ -163,15 +163,20 @@ export function monthReading({ activeMonth, now = new Date(), totals, expenses =
   if (over.length === 1) add(line('reading.overOne', { cat: cat(over[0].category), amount: money(over[0].spent - over[0].limit) }))
   else if (over.length > 1) add(line('reading.overMany', { n: over.length, cat: cat(over[0].category) }))
 
-  const elapsed = pos.today / pos.days
-  const paceGap = income > 0 ? spent / income - elapsed : null
-  const daily = pos.today > 0 ? spent / pos.today : 0
-  const fits = income / pos.days
+  // I-22: el veredicto del mes. `used` = gasto fuera de los fijos ya pagados;
+  // `pool` = ingreso − apartado − fijos (pagados y por pagar).
+  const verdict = income > 0
+    ? paceVerdict({ income, spent, setAside: cur.setAside, pendingFixed: cur.pendingFixed, fixedPaid: cur.fixedPaid, today: pos.today, days: pos.days, mode: pos.mode })
+    : null
+  const elapsed = verdict ? verdict.elapsed : pos.today / pos.days
+  const daily = pos.today > 0 ? (verdict ? verdict.used : spent) / pos.today : 0
+  const fits = verdict ? Math.max(0, verdict.pool) / pos.days : income / pos.days
   const paceSentence = (() => {
-    if (paceGap == null || paceGap <= PACE_OK || balance < 0 || few) return null
-    return amountOnly
-      ? line('reading.pace.highAmount', { daily: money(daily), diff: money(daily - fits), left: lf })
-      : line('reading.pace.high', { elapsed: pct(elapsed), used: pct(spent / income), left: lf })
+    if (!verdict || verdict.level === 'ok' || balance < 0 || few) return null
+    if (amountOnly) return line('reading.pace.highAmount', { daily: money(daily), diff: money(daily - fits), left: lf })
+    // Sin nada libre (fijos y apartado se llevan el ingreso) no hay porcentaje que decir.
+    if (!Number.isFinite(verdict.ratio)) return null
+    return line('reading.pace.high', { elapsed: pct(elapsed), used: pct(verdict.ratio), left: lf })
   })()
   add(paceSentence)
 
@@ -181,7 +186,7 @@ export function monthReading({ activeMonth, now = new Date(), totals, expenses =
   // #12: el dato por día, solo si no fue ya la frase principal (VE/AR).
   if (paceSentence && !amountOnly && daily > fits) add(line('reading.perDay', { daily: money(daily), diff: money(daily - fits) }))
   if (totalDelta && totalDelta.dir !== 'flat' && !few) add(line(`reading.spent.${totalDelta.dir}`, { ...deltaVars(totalDelta, useUsd), month: month(prevKey) }))
-  if (paceGap != null && paceGap <= PACE_OK && balance >= 0 && !few) add(line('reading.pace.ok', { left: lf }))
+  if (verdict?.level === 'ok' && balance >= 0 && !few) add(line('reading.pace.ok', { left: lf }))
   return finish(few ? 'early' : 'current')
 }
 
@@ -223,42 +228,6 @@ export function barConclusion(series = []) {
   return deficit === 0
     ? line('reading.title.bar.covered', { total: withData.length })
     : line('reading.title.bar.deficit', { n: deficit, total: withData.length })
-}
-
-// ── Gasto acumulado contra el ritmo (#11) ───────────────────────────────────
-
-// Referencia del mes: el ingreso registrado, igual que el Anillo Vivo; sin
-// ingreso, lo gastado el mes anterior. null si no hay con qué comparar.
-export function paceReference({ income = 0, prevExpenses = 0 }) {
-  if (income > 0) return { value: income, kind: 'income' }
-  if (prevExpenses > 0) return { value: prevExpenses, kind: 'prev' }
-  return null
-}
-
-// Suma a cumulativeByDay la línea de ritmo: la referencia repartida parejo.
-export function paceSeries(cum, reference) {
-  const n = (cum || []).length
-  return (cum || []).map((d, i) => ({
-    day: d.day,
-    current: d.current,
-    pace: reference > 0 && n > 0 ? Math.round((reference * (i + 1) / n) * 100) / 100 : null,
-  }))
-}
-
-export function paceConclusion(series, { closed = false } = {}) {
-  const known = (series || []).filter(d => d.current != null && d.pace != null)
-  const last = known[known.length - 1]
-  if (!last || !(last.current > 0)) return null
-  const diff = last.current - last.pace
-  // G2-N3: "parejo" dentro del 2 % de la referencia del MES (el último punto
-  // de la línea), la misma tolerancia que la píldora de la Lupa (PACE_EVEN:
-  // |gastado/ingreso − día/días| ≤ 0,02). Antes era el 2 % del ideal a la
-  // fecha, más estricto, y el mismo día una pantalla decía "parejo" y la otra no.
-  const ref = series[series.length - 1]?.pace ?? last.pace
-  const close = Math.abs(diff) <= ref * PACE_OK
-  const tail = closed ? 'Closed' : ''
-  if (close) return line(`reading.title.pace.even${tail}`)
-  return line(`reading.title.pace.${diff > 0 ? 'over' : 'under'}${tail}`, { amount: money(Math.abs(diff)) })
 }
 
 // ── Texto ───────────────────────────────────────────────────────────────────

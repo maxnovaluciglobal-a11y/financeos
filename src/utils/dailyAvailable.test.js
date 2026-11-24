@@ -156,3 +156,23 @@ describe('escala', () => {
     expect(yOf(S.spentCum[18], dom)).toBeGreaterThan(CHART_PAD.t)
   })
 })
+
+// I-22: el ritmo ideal y la píldora son el veredicto del mes (monthPace.js).
+describe('ritmo ideal con fijos y apartado (I-22)', () => {
+  const now = new Date(2026, 10, 10, 12)
+  const incomes = [{ date: '2026-11-01', amount: 3000 }]
+  const expenses = [{ date: '2026-11-01', amount: 1200 }, { date: '2026-11-06', amount: 600 }]
+  const setAsides = [{ id: 's', kind: 'setAside', dest: 'goal', amount: 200, date: '2026-11-03' }]
+  const sr = dailyAvailable({ incomes, expenses, setAsides, activeMonth: '2026-11', now, income: 3000, fixedPaid: 1200, pendingFixed: 100 })
+  it('arranca en los fijos ya pagados y suma lo disponible parejo hasta fin de mes', () => {
+    // disponible = 3000 − 200 − 1200 − 100 = 1500
+    expect(sr.ideal[0]).toBe(1200)
+    expect(sr.ideal[30]).toBe(2700)
+    expect(sr.ideal[10]).toBe(1700)
+  })
+  it('la píldora: 1.700 − 1.800 = 100 por encima del ritmo, "algo rápido"', () => {
+    const p = paceToday(sr)
+    expect(p.gap).toBe(-100)
+    expect(p.level).toBe('attention')   // 600/1500 = 40 % contra 33,3 %
+  })
+})

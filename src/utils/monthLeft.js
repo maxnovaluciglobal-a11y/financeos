@@ -60,6 +60,28 @@ export function pendingFixedOf(plan, month, today) {
   return { amount: roundCents(p.expense), count: p.count }
 }
 
+// I-22: fijos de gasto YA pagados en `month` (ocurrencias `confirmed` del plan
+// con su movimiento registrado en ese mes). Ya están dentro de `spent`; el
+// veredicto del mes (utils/monthPace.js) los separa del gasto variable para
+// que el arriendo del día 1 no se lea como "gasto rápido". Sin reglas de
+// inversión ni movimientos `inv` o apartados, como el resto de "Te queda".
+/** @param {any[]} plan @param {string} month */
+export function fixedPaidOf(plan, month) {
+  if (!Array.isArray(plan) || plan.length === 0) return 0
+  let sum = 0
+  const seen = new Set()
+  for (const o of plan) {
+    if (!o || o.kind !== 'expense' || o.status !== 'confirmed' || o.rule?.inv) continue
+    const rec = o.record
+    if (!rec || rec.inv || isSetAside(rec) || !inMonth(rec, month, null)) continue
+    const key = rec.id ?? o.key
+    if (seen.has(key)) continue
+    seen.add(key)
+    sum += Number(rec.amount) || 0
+  }
+  return roundCents(sum)
+}
+
 /**
  * @param {{ incomes?: any[], expenses?: any[], setAsides?: any[], month: string, untilDay?: number | null,
  *   plan?: any[] | null, today?: Date | string | null }} p
@@ -94,6 +116,8 @@ export function monthLeft({ incomes = [], expenses = [], setAsides = [], month, 
     setAside: sa.total, setAsideGoals: sa.goals, setAsideInvest: sa.invest, setAsideCount: sa.count,
     // UX-N2: lo que ya descuenta de fijos por pagar, para explicar la cifra.
     pendingFixed: fixed.amount, pendingFixedCount: fixed.count,
+    // I-22: la parte de `spent` que son fijos ya pagados (para el veredicto).
+    fixedPaid: untilDay == null ? Math.min(spent, fixedPaidOf(plan || [], month)) : 0,
     leftReal,
     left,
     // Tasa de ahorro: lo que no se gastó (lo apartado es ahorro) ÷ ingresos.
