@@ -1,5 +1,5 @@
 export default {
-  'opp.title': 'Opportunities by your moving averages',
+  'opp.title': 'Your tranches by your moving averages',
   'opp.lead': 'Where today’s price of what you hold and follow sits against its 20, 50, 100 and 200-day averages. Each average is one tranche of your ladder: it is met when the price is at or below it.',
   'opp.edu': 'Educational information, not an investment recommendation. It is a calculation with your own rules on public data that may be delayed.',
   'opp.loading': 'Reading the averages…',
@@ -115,7 +115,7 @@ export default {
   'opp.math.step3Rsi': '3. A tranche is met today if today’s price is lower than or equal to its average and the RSI is between 30 and 45.',
   'opp.math.cents': 'Rounding cents go to the part with the largest remainder: the sum is exact.',
 
-  'opp.teaser.title': 'Opportunities by your moving averages',
+  'opp.teaser.title': 'Your tranches by your moving averages',
   'opp.teaser.loading': 'Reading the averages of your positions…',
   'opp.teaser.someOne': 'Today {n} of your {m} positions is at or below one of its 20, 50, 100 or 200-day averages.',
   'opp.teaser.someMany': 'Today {n} of your {m} positions are at or below one of their 20, 50, 100 or 200-day averages.',
@@ -123,7 +123,7 @@ export default {
   'opp.teaser.failed': 'The averages could not be read right now.',
   'opp.teaser.chip': '{t} · {n}-day average',
   'opp.teaser.chipAria': '{t}: at or below the {n}-day average, {tramos}',
-  'opp.teaser.see': 'See opportunities',
+  'opp.teaser.see': 'See your tranches',
   'opp.teaser.split': 'Split your uninvested {v}',
   'opp.teaser.splitAny': 'Split an amount',
 }

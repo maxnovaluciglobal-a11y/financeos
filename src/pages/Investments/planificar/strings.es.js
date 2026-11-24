@@ -9,7 +9,7 @@ export default {
   'plan.sampleData': 'Datos de ejemplo: el precio en vivo no respondió.',
   'plan.subLabel': 'Partes de Planificar',
   'plan.sub.calc': 'Calculadora',
-  'plan.sub.oportunidades': 'Oportunidades',
+  'plan.sub.oportunidades': 'Tus tramos',
   'plan.sub.aportes': 'Aportes',
   'plan.sub.planes': 'Planes guardados',
   'plan.dataNote': 'Precios con posible retraso, solo como referencia.',

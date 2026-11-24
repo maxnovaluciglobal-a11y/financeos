@@ -1,9 +1,9 @@
-// Textos de Planificar › Oportunidades y su tarjeta en Resumen (español,
+// Textos de Planificar › Tus tramos y su tarjeta en Resumen (español,
 // fallback). Voz de producto: seco, sin exclamaciones, tú (nunca voseo).
 // Nunca "compra", "vende" ni "te recomendamos": es un cálculo con las reglas
 // de la persona (Chile, CMF: la recomendación habitual es asesoría).
 export default {
-  'opp.title': 'Oportunidades según tus medias',
+  'opp.title': 'Tus tramos según tus medias',
   'opp.lead': 'Dónde está el precio de hoy de lo que tienes y sigues frente a sus medias de 20, 50, 100 y 200 días. Cada media es un tramo de tu escalera: se cumple cuando el precio está en o bajo ella.',
   'opp.edu': 'Información educativa, no es una recomendación de inversión. Es un cálculo con tus propias reglas sobre datos públicos con posible retraso.',
   'opp.loading': 'Leyendo las medias…',
@@ -119,7 +119,7 @@ export default {
   'opp.math.step3Rsi': '3. Un tramo cumple hoy si el precio de hoy es menor o igual que su media y el RSI está entre 30 y 45.',
   'opp.math.cents': 'Los centavos del redondeo van a la parte con mayor resto: la suma es exacta.',
 
-  'opp.teaser.title': 'Oportunidades según tus medias',
+  'opp.teaser.title': 'Tus tramos según tus medias',
   'opp.teaser.loading': 'Leyendo las medias de tus posiciones…',
   'opp.teaser.someOne': 'Hoy {n} de tus {m} posiciones está en o bajo alguna de sus medias de 20, 50, 100 o 200 días.',
   'opp.teaser.someMany': 'Hoy {n} de tus {m} posiciones están en o bajo alguna de sus medias de 20, 50, 100 o 200 días.',
@@ -127,7 +127,7 @@ export default {
   'opp.teaser.failed': 'No se pudieron leer las medias ahora.',
   'opp.teaser.chip': '{t} · media de {n}',
   'opp.teaser.chipAria': '{t}: en o bajo la media de {n} días, {tramos}',
-  'opp.teaser.see': 'Ver oportunidades',
+  'opp.teaser.see': 'Ver tus tramos',
   'opp.teaser.split': 'Repartir tus {v} sin invertir',
   'opp.teaser.splitAny': 'Repartir un monto',
 }

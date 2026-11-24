@@ -35,7 +35,7 @@ export default {
   'hlp.q.cash': '¿Qué es el efectivo?',
   'hlp.a.cash': 'Es el saldo de los depósitos, retiros y operaciones que registras en Portafolio › Movimientos. Los depósitos lo suben y los retiros lo bajan; una compra lo baja y una venta o un dividendo lo sube cuando eliges que pase por tu efectivo.\n\n"Total aportado" son tus depósitos menos tus retiros, más las compras que registraste fuera del efectivo. No es el saldo de tu banco ni de tu bróker: es lo que registras aquí.',
   'hlp.q.tramos': '¿Cómo funcionan los aportes por tramos?',
-  'hlp.a.tramos': 'En Planificar › Oportunidades, «Repartir mi capital» reparte un monto entre tus activos y divide la parte de cada uno en 4 tramos, uno por media móvil (20, 50, 100 y 200 días). Por defecto, 10/15/25/50 %.\n\nUn tramo se cumple hoy si el precio está en o bajo su media y, con la condición de RSI encendida (por defecto), si el RSI de 14 días está entre 30 y 45. Es un cálculo con tus propias reglas, no una recomendación de inversión.',
+  'hlp.a.tramos': 'En Planificar › Tus tramos, «Repartir mi capital» reparte un monto entre tus activos y divide la parte de cada uno en 4 tramos, uno por media móvil (20, 50, 100 y 200 días). Por defecto, 10/15/25/50 %.\n\nUn tramo se cumple hoy si el precio está en o bajo su media y, con la condición de RSI encendida (por defecto), si el RSI de 14 días está entre 30 y 45. Es un cálculo con tus propias reglas, no una recomendación de inversión.',
 
   'hlp.g.alerts': 'Alertas de precio',
   'hlp.q.alertsHow': '¿Cómo funcionan las alertas?',

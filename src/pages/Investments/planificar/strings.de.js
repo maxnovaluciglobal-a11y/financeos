@@ -7,7 +7,7 @@ export default {
   'plan.sampleData': 'Beispieldaten: Der Live-Kurs hat nicht geantwortet.',
   'plan.subLabel': 'Bereiche von Planen',
   'plan.sub.calc': 'Rechner',
-  'plan.sub.oportunidades': 'Chancen',
+  'plan.sub.oportunidades': 'Ihre Tranchen',
   'plan.sub.aportes': 'Einzahlungen',
   'plan.sub.planes': 'Gespeicherte Pläne',
   'plan.dataNote': 'Kurse können verzögert sein und dienen nur zur Orientierung.',

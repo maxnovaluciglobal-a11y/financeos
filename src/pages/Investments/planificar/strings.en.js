@@ -7,7 +7,7 @@ export default {
   'plan.sampleData': 'Sample data: the live price did not respond.',
   'plan.subLabel': 'Parts of Plan',
   'plan.sub.calc': 'Calculator',
-  'plan.sub.oportunidades': 'Opportunities',
+  'plan.sub.oportunidades': 'Your tranches',
   'plan.sub.aportes': 'Contributions',
   'plan.sub.planes': 'Saved plans',
   'plan.dataNote': 'Prices may be delayed and are for reference only.',

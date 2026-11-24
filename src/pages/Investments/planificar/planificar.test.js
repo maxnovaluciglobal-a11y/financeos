@@ -42,7 +42,7 @@ describe('textos de Planificar', () => {
       'plan.sub.calc', 'plan.rule.cancel', 'plan.calc.titleFull', 'plan.calc.tickerPh', 'plan.calc.capital', 'plan.calc.full.stop',
       'plan.calc.full.col.result', 'plan.calc.r.r1', 'plan.calc.r.r2', 'plan.calc.r.r3', 'plan.calc.res.units',
       'plan.ap.cad.monthly', 'plan.ap.cad.weekly', 'plan.ap.res.col.pct', 'plan.pl.trade.stopEst', 'plan.pl.kind.trade',
-      'plan.calc.stop', 'plan.ap.deposit', 'plan.pl.open', 'plan.sub.oportunidades',
+      'plan.calc.stop', 'plan.ap.deposit', 'plan.pl.open',
     ])
     expect(Object.keys(es).filter(k => !same.has(k) && pt[k] === es[k])).toEqual([])
   })
@@ -171,7 +171,7 @@ describe('vista esencial y completa', () => {
     // En la completa se puede probar otro capital y otra regla sin guardarlos.
     expect(calcInputs({ ...f, capital: '10.000', risk: '2' }, { full: true, capital: 20000, rule })).toMatchObject({ capital: 10000, riskPct: 2 })
   })
-  it('aportes: el capital disponible en las dos vistas; la escalera ya no está aquí, solo el enlace a Oportunidades (decisión del 24-nov-2026)', () => {
+  it('aportes: el capital disponible en las dos vistas; la escalera ya no está aquí, solo el enlace a Tus tramos (decisión del 24-nov-2026)', () => {
     const base = { capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {}, onGoOpp: () => {} }
     for (const view of ['esencial', 'completa']) {
       const html = render(Aportes, { ...base, view })

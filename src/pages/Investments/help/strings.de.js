@@ -31,7 +31,7 @@ export default {
   'hlp.q.cash': 'Was ist Bargeld?',
   'hlp.a.cash': 'Das ist der Saldo der Einzahlungen, Auszahlungen und Transaktionen, die Sie unter Portfolio › Bewegungen erfassen. Einzahlungen erhöhen ihn, Auszahlungen senken ihn; ein Kauf senkt ihn, ein Verkauf oder eine Dividende erhöht ihn, wenn Sie sie über Ihr Bargeld laufen lassen.\n\n„Eingezahlt gesamt“ sind Ihre Einzahlungen minus Auszahlungen plus die Käufe, die Sie außerhalb des Bargelds erfasst haben. Es ist nicht der Saldo bei Ihrer Bank oder Ihrem Broker, sondern das, was Sie hier erfassen.',
   'hlp.q.tramos': 'Wie funktionieren gestaffelte Einzahlungen?',
-  'hlp.a.tramos': 'Unter Planen › Chancen verteilt „Mein Kapital aufteilen“ einen Betrag auf Ihre Werte und teilt jeden Anteil in 4 Tranchen, eine pro gleitendem Durchschnitt (20, 50, 100 und 200 Tage). Standard: 10/15/25/50 %.\n\nEine Tranche ist heute erfüllt, wenn der Kurs auf oder unter ihrem Durchschnitt liegt und, mit eingeschalteter RSI-Bedingung (Standard), der 14-Tage-RSI zwischen 30 und 45 liegt. Es ist eine Rechnung mit Ihren eigenen Regeln, keine Anlageempfehlung.',
+  'hlp.a.tramos': 'Unter Planen › Ihre Tranchen verteilt „Mein Kapital aufteilen“ einen Betrag auf Ihre Werte und teilt jeden Anteil in 4 Tranchen, eine pro gleitendem Durchschnitt (20, 50, 100 und 200 Tage). Standard: 10/15/25/50 %.\n\nEine Tranche ist heute erfüllt, wenn der Kurs auf oder unter ihrem Durchschnitt liegt und, mit eingeschalteter RSI-Bedingung (Standard), der 14-Tage-RSI zwischen 30 und 45 liegt. Es ist eine Rechnung mit Ihren eigenen Regeln, keine Anlageempfehlung.',
 
   'hlp.g.alerts': 'Preisalarme',
   'hlp.q.alertsHow': 'Wie funktionieren Alarme?',

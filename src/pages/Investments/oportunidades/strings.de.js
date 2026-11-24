@@ -1,5 +1,5 @@
 export default {
-  'opp.title': 'Chancen nach Ihren gleitenden Durchschnitten',
+  'opp.title': 'Ihre Tranchen nach Ihren gleitenden Durchschnitten',
   'opp.lead': 'Wo der heutige Kurs Ihrer Positionen und beobachteten Werte gegenüber den Durchschnitten über 20, 50, 100 und 200 Tage liegt. Jeder Durchschnitt ist eine Tranche Ihrer Staffel: Sie ist erfüllt, wenn der Kurs auf oder unter ihm liegt.',
   'opp.edu': 'Bildungsinformation, keine Anlageempfehlung. Es ist eine Rechnung mit Ihren eigenen Regeln auf öffentlichen Daten, die verzögert sein können.',
   'opp.loading': 'Durchschnitte werden gelesen…',
@@ -115,7 +115,7 @@ export default {
   'opp.math.step3Rsi': '3. Eine Tranche ist heute erfüllt, wenn der heutige Kurs kleiner oder gleich ihrem Durchschnitt ist und der RSI zwischen 30 und 45 liegt.',
   'opp.math.cents': 'Die Rundungscents gehen an den Teil mit dem größten Rest: Die Summe stimmt genau.',
 
-  'opp.teaser.title': 'Chancen nach Ihren gleitenden Durchschnitten',
+  'opp.teaser.title': 'Ihre Tranchen nach Ihren gleitenden Durchschnitten',
   'opp.teaser.loading': 'Durchschnitte Ihrer Positionen werden gelesen…',
   'opp.teaser.someOne': 'Heute liegt {n} Ihrer {m} Positionen auf oder unter einem ihrer Durchschnitte über 20, 50, 100 oder 200 Tage.',
   'opp.teaser.someMany': 'Heute liegen {n} Ihrer {m} Positionen auf oder unter einem ihrer Durchschnitte über 20, 50, 100 oder 200 Tage.',
@@ -123,7 +123,7 @@ export default {
   'opp.teaser.failed': 'Die Durchschnitte konnten gerade nicht gelesen werden.',
   'opp.teaser.chip': '{t} · {n}-Tage-Schnitt',
   'opp.teaser.chipAria': '{t}: auf oder unter dem {n}-Tage-Durchschnitt, {tramos}',
-  'opp.teaser.see': 'Chancen ansehen',
+  'opp.teaser.see': 'Ihre Tranchen ansehen',
   'opp.teaser.split': 'Ihre nicht investierten {v} aufteilen',
   'opp.teaser.splitAny': 'Einen Betrag aufteilen',
 }
