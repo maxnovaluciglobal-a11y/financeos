@@ -117,7 +117,7 @@ export function PositionSheet({ open, onClose, prev, prefill, onSave, rates, dem
           <h2 ref={ref} tabIndex={-1} className={s.formTitle}>{title}</h2>
           <p className={s.formSub}>{t('pf.pos.sub')}</p>
         </div>
-        <Field id="pf-pos-t" label={t('pf.f.ticker')} error={errors.t} hint={!prev && px ? t('pf.pos.priceNow', { price: `${ccy} ${px.price}` }) : null}>
+        <Field id="pf-pos-t" label={t('pf.f.ticker')} error={errors.t} hint={!prev && px ? `${t('pf.pos.priceNow', { price: `${ccy} ${px.price}` })}${px.sample ? ` ${t('pf.sampleData')}` : ''}` : null}>
           <input className={s.input} {...aria('pf-pos-t', errors.t, !prev && px)} value={f.t || ''} onChange={set('t')} readOnly={!!prev} autoCapitalize="characters" autoComplete="off" spellCheck="false" maxLength={15} placeholder="AAPL" />
         </Field>
         <Field id="pf-pos-type" label={t('pf.f.type')} error={errors.type}>

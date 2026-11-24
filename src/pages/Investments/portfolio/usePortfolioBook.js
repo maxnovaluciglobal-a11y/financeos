@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { investData, newOperationUid, RULE_DEFAULTS } from '../../../core/investData.js'
 import { investApi } from '../../../core/investApi.js'
 import { createDemoInvestStore, demoInvestFx } from '../../../demo/demoInvestBook.js'
-import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
+import { demoMarketApi, isSample, keepRealQuotes, mergePrices } from '../../../demo/demoMarketApi.js'
 import { assetRates, currencyOf, readArsKind, toUsd } from '../../../utils/investValuation.js'
 import { positionRows, quoteLists } from '../../../utils/investPositions.js'
 import { book } from '../../../utils/investLedger.js'
@@ -39,17 +39,26 @@ export function usePortfolioBook({ demo = false, demoApi = demoMarketApi } = {})
       crypto.length ? api.crypto(crypto) : {},
       api.fxLatam(),
     ])
-    const quotes = { ...q, ...c }
+    const quotes = mergePrices(q, c)
     // Demo sin tipos de cambio reales: los fijos de moyiq marcados como
     // respaldo (se muestran en otra moneda, no convierten activos).
-    const latam = demo && isSample(fx) ? demoInvestFx() : fx
+    const fxSample = demo && (isSample(fx) || !fx)
+    const latam = fxSample ? demoInvestFx() : fx
     const needsArs = holdings.some(h => currencyOf(h.t, quotes[h.t]?.currency) === 'ARS')
     const arsRaw = needsArs || readKey('fos_invest_display_ccy') === 'ARS' ? await api.fxArs() : null
     const ars = demo && isSample(arsRaw) ? null : arsRaw
     if (!alive.current) return
     const asked = stocks.length + crypto.length
-    const sample = Object.values(quotes).some(x => x?.sample)
-    setMkt({ phase: asked && !Object.keys(quotes).length ? 'error' : 'ready', quotes, latam, ars, at: Date.now(), sample })
+    setMkt(m => {
+      // Refresco: lo de ejemplo no reemplaza precios ni tasas reales ya mostrados.
+      const qs = demo && m.at ? keepRealQuotes(m.quotes, quotes) : quotes
+      const keepFx = fxSample && m.latam && !m.fxSample
+      return {
+        phase: asked && !Object.keys(qs).length ? 'error' : 'ready', quotes: qs,
+        latam: keepFx ? m.latam : latam, ars: ars ?? (keepFx ? m.ars : null), at: Date.now(),
+        sample: Object.values(qs).some(x => x?.sample), fxSample: keepFx ? false : fxSample,
+      }
+    })
   }, [api, demo])
 
   const load = useCallback(async ({ force = false } = {}) => {

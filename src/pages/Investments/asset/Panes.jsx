@@ -98,7 +98,9 @@ export function Range52({ ccy, price, quote, score }) {
   )
 }
 
-export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn, demo, type, onRetry }) {
+// demo: todo el panel es de ejemplo (sin datos de origen). En el demo con
+// datos reales, cada bloque dice lo suyo: fundSample / earnSample.
+export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn, demo = false, fundSample = demo, earnSample = demo, type, onRetry }) {
   const { t } = useAssetT()
   const id = useId()
   const crypto = isCryptoTicker(ticker, type)
@@ -106,11 +108,11 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
   const e = earningsSummary(earn.data)
   return (
     <div className={s.pane}>
-      {demo && <p className={s.sampleTag}>{t('asset.sample')}</p>}
+      {fundSample && !crypto && <p className={s.sampleTag}>{t('asset.sample')}</p>}
       {crypto ? <p className={s.note}>{t('asset.fund.crypto')}</p>
         : fund.phase === 'loading' || fund.phase === 'idle' ? <Loading text={t('asset.fund.loading')} />
         : fund.phase === 'error' ? <Retry text={t('asset.fund.error')} onRetry={onRetry} />
-        : !hasFundamentals(f) ? <Retry text={t('asset.fund.none', { t: ticker })} onRetry={demo ? null : onRetry} />
+        : !hasFundamentals(f) ? <Retry text={t('asset.fund.none', { t: ticker })} onRetry={fundSample ? null : onRetry} />
         : (
           <>
             {fundTags(f).length > 0 && (
@@ -130,7 +132,7 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
                 )
               })}
             </dl>
-            {!demo && <p className={s.note}>
+            {!fundSample && <p className={s.note}>
               {t('asset.fund.source', { source: f.source === 'finnhub' ? 'Finnhub' : 'Financial Modeling Prep' })}
               {fmtStamp(f.fetchedAt) ? ` ${t('asset.fund.updated', { date: fmtStamp(f.fetchedAt) })}` : ''} {t('asset.fund.differ')}
             </p>}
@@ -146,6 +148,7 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
             : !e ? <p className={s.note}>{t('asset.earn.none', { t: ticker })}</p>
             : (
               <>
+                {earnSample && <p className={s.sampleTag}>{t('asset.sample')}</p>}
                 <p className={s.note}>
                   {e.total > 0 ? t('asset.earn.summary', { n: e.beat, total: e.total }) : ''}
                   {e.nextDate ? ` ${t('asset.earn.next', { date: fmtDay(e.nextDate) })}` : ''}
@@ -174,7 +177,7 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
                     </table>
                   </div>
                 )}
-                {e.source && !demo && <p className={s.note}>{t('asset.earn.source', { source: e.source === 'finnhub' ? 'Finnhub' : 'Financial Modeling Prep' })}</p>}
+                {e.source && !earnSample && <p className={s.note}>{t('asset.earn.source', { source: e.source === 'finnhub' ? 'Finnhub' : 'Financial Modeling Prep' })}</p>}
               </>
             )}
         </section>

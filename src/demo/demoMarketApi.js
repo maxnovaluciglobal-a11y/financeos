@@ -26,6 +26,7 @@ import { DEMO_WATCH as HOY_WATCH, demoHistory, demoMarket, demoQuotes } from './
 import { demoEarnings, demoFx, demoMarketBar, demoNews, demoSpyHistory } from './demoMarket.js'
 
 const marked = new WeakSet()
+export const markSample = (rows) => mark(rows)
 const mark = (rows) => { if (rows && typeof rows === 'object') marked.add(rows); return rows }
 /** ¿Esta serie (o este objeto) es de ejemplo? */
 export const isSample = (x) => !!x && typeof x === 'object' && (marked.has(x) || x.sample === true)
@@ -81,6 +82,25 @@ export function createSampleMarketApi(over = {}) {
     fxArs: () => ({ ...demoFx().ars, sample: true }),
   }
   return { ...base, ...over }
+}
+
+// Reglas para no mezclar ejemplo y realidad bajo un mismo rótulo:
+//  · mergePrices: acciones (Yahoo) y cripto (CoinGecko) se piden aparte; si
+//    alguno de los dos trajo precios reales, lo de ejemplo del otro se
+//    descarta (queda sin precio, como en la app). Solo si ninguno respondió
+//    va todo de ejemplo.
+//  · keepRealQuotes: en un refresco, si ya se muestran precios reales, lo de
+//    ejemplo que llegue se descarta (lo real queda, con su hora).
+export function mergePrices(...maps) {
+  const all = Object.assign({}, ...maps.map(m => m || {}))
+  const anyReal = Object.values(all).some(q => q && q.price > 0 && !q.sample)
+  if (!anyReal) return all
+  return Object.fromEntries(Object.entries(all).filter(([, q]) => !q?.sample))
+}
+export function keepRealQuotes(prev, next) {
+  const hadReal = Object.values(prev || {}).some(q => q && q.price > 0 && !q.sample)
+  const add = hadReal ? Object.fromEntries(Object.entries(next || {}).filter(([, q]) => !q?.sample)) : (next || {})
+  return { ...(prev || {}), ...add }
 }
 
 const priced = (map) => Object.values(map || {}).some(q => q && q.price > 0)

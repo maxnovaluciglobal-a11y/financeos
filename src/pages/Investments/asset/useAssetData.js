@@ -18,7 +18,7 @@ import { investData } from '../../../core/investData.js'
 import { fetchPortfolioDetail } from '../../../core/investBridge.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
 import { DEMO_WATCH, sampleEarnings, sampleNews } from '../../../demo/demoInvestAsset.js'
-import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
+import { demoMarketApi, isSample, mergePrices } from '../../../demo/demoMarketApi.js'
 import { RULE_DEFAULTS } from '../../../core/investData.js'
 import { isCryptoTicker } from './format.js'
 
@@ -65,6 +65,11 @@ export function useAssetData(ticker, { demo = false, demoApi = demoMarketApi } =
     ;(async () => {
       let q = await api.quote(ticker)
       if (!q && isCryptoTicker(ticker)) q = await api.quote(ticker.replace(/-USD$/, ''), { crypto: true })
+      // Demo: antes que el ejemplo, la otra fuente real de cripto (CoinGecko).
+      if (q?.sample && isCryptoTicker(ticker)) {
+        const c = await api.quote(ticker, { crypto: true })
+        if (c && !c.sample) q = c
+      }
       if (ok()) setQuote(q ? READY(q) : { phase: 'none', data: null })
     })()
     api.history(ticker, '1y', '1d').then(rows => { if (ok()) setHist1y(rows ? READY(rows) : { phase: 'error', data: null }) })
@@ -123,7 +128,7 @@ export function useAssetData(ticker, { demo = false, demoApi = demoMarketApi } =
         api.crypto(rows.filter(r => r.type === 'Crypto').map(r => r.t)),
       ]).then(([a, b]) => {
         if (gen !== alive.current) return
-        const q = { ...a, ...b }
+        const q = mergePrices(a, b)
         const val = (r) => r.sh * (q[r.t]?.price > 0 ? q[r.t].price : r.price)
         const total = rows.reduce((s, r) => s + val(r), 0)
         const row = rows.find(r => r.t === ticker)

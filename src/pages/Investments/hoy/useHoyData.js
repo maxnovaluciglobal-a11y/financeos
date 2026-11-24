@@ -20,7 +20,7 @@ import { investData, RULE_DEFAULTS } from '../../../core/investData.js'
 import { assetRates, currencyOf, readArsKind } from '../../../utils/investValuation.js'
 import { STRIP_SYMS, historyPlan, historySymbol, runLimited } from '../../../utils/investHoy.js'
 import { DEMO_CAPITAL, DEMO_WATCH, demoHistory, demoHoldings, demoHoyStore, demoMarket, demoOperations, demoQuotes } from '../../../demo/demoInvestHoy.js'
-import { demoHoyApi, isSample } from '../../../demo/demoMarketApi.js'
+import { demoHoyApi, isSample, keepRealQuotes, markSample, mergePrices } from '../../../demo/demoMarketApi.js'
 
 const REFRESH_MS = 5 * 60 * 1000
 const HISTORY_LIMIT = 4
@@ -37,7 +37,7 @@ async function loadQuotes(holdings, api = investApi) {
     stocks.length ? api.quotes(stocks) : {},
     crypto.length ? api.crypto(crypto) : {},
   ])
-  return { ...a, ...b }
+  return mergePrices(a, b)
 }
 
 async function loadRates(holdings, quotes, api = investApi) {
@@ -109,7 +109,7 @@ export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '
       const holdings = base.holdings
       if (!holdings.length) return
       const quotes = await loadQuotes(holdings, api)
-      if (alive.current && Object.keys(quotes).length) setBase(b => ({ ...b, quotes: { ...b.quotes, ...quotes }, quotesFailed: false, at: Date.now() }))
+      if (alive.current && Object.keys(quotes).length) setBase(b => ({ ...b, quotes: keepRealQuotes(b.quotes, quotes), quotesFailed: false, at: Date.now() }))
     }
     const start = () => { if (!id) id = setInterval(tick, REFRESH_MS) }
     const stop = () => { if (id) { clearInterval(id); id = null } }
@@ -182,7 +182,7 @@ export function useHoyData({ demo = false, sample = false, range = '1A', cmp = '
     let ok = true
     if (pure) {
       const add = {}
-      for (const r of todo) add[`${r.sym}|${r.range}`] = demoHistory(r.sym, r.range)
+      for (const r of todo) add[`${r.sym}|${r.range}`] = markSample(demoHistory(r.sym, r.range))
       setHist(h => ({ ...h, ...add }))
       return undefined
     }

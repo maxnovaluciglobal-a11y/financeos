@@ -38,6 +38,7 @@ import { shows } from '../../../utils/investView.js'
 import PutSummary from '../esencial/PutSummary.jsx'
 import { commitAporte, readAporte } from './aporteStore.js'
 import { queuePlanAporte } from '../../../utils/investNav.js'
+import { isSample } from '../../../demo/demoMarketApi.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
 import s from './hoy.module.css'
@@ -381,7 +382,7 @@ function AporteForm({ initial, hasMoyiq, onDone }) {
 }
 
 // ── Régimen y VIX ─────────────────────────────────────────────────
-function ContextLine({ regime, vix, done, onTab }) {
+function ContextLine({ regime, vix, done, onTab, sample = false }) {
   const { t } = useT()
   const RIc = regime?.regime === 'risk_on' ? TrendingUp : regime?.regime === 'risk_off' ? TrendingDown : Minus
   const level = vixLevel(vix)
@@ -393,6 +394,7 @@ function ContextLine({ regime, vix, done, onTab }) {
     <section className={s.ctx} aria-label={t('invest.hoy.ctx.label')}>
       <p className={s.ctxText} aria-live="polite">
         {parts.length ? parts : <span className={s.muted}>{done ? t('invest.hoy.ctx.none') : t('invest.hoy.ctx.loading')}</span>}
+        {parts.length > 0 && sample && <span className={s.muted}> · {t('invest.mkt.sampleShort')}</span>}
       </p>
       <button type="button" className={s.link} onClick={() => onTab('mercado')}>{t('invest.hoy.ctx.see')}<ChevronRight size={14} aria-hidden="true" /></button>
     </section>
@@ -565,6 +567,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
 
   // ── Régimen y VIX ──
   const spy = d.historyOf('SPY', '1y')
+  // Régimen (historia de SPY) y VIX (cinta): cada uno dice si es de ejemplo.
+  const ctxSample = isSample(spy) || stripSample
   const regime = spy ? regimeOf(spy.map(r => r.close)) : null
   const vixItem = (d.market.items || []).find(it => it.sym === VIX_SYM)
   const vix = vixItem?.price ?? null
@@ -616,7 +620,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
 
   const footer = (
     <div className={s.footer}>
-      {demo && !pricesSample && <p className={s.muted}>{t('invest.demo.live')}</p>}
+      {demo && !pricesSample && !stripSample && <p className={s.muted}>{t('invest.demo.live')}</p>}
       {fake && pricesSample && <p className={s.muted}>{t('invest.chart.sample')}</p>}
       <div className={s.links}>
         <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer">{t('invest.card.sourcesLink')}</a>
@@ -677,7 +681,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')} />
       {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
       <AporteForm initial={initialAporte} hasMoyiq={!!aUsd} onDone={goAporte} />
-      <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} />
+      <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} sample={ctxSample} />
       {footer}
     </div>
   )

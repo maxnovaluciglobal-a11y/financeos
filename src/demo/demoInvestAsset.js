@@ -1,5 +1,6 @@
 // src/demo/demoInvestAsset.js — datos de ejemplo de la ficha del activo en el
-// demo (demo.moyiq.app no está en la lista de orígenes de la API de Invest).
+// demo. La ficha muestra datos reales (demo/demoMarketApi.js); esto es el
+// respaldo de cada pieza si la API no responde, y la fuente de las pruebas.
 // Todo es ficticio y la pantalla lo rotula "Datos de ejemplo". Coherente con
 // demoInvestRows(): el último cierre de VOO, AAPL, BTC-USD y MSFT es su precio
 // de ejemplo, y el cierre anterior da el mismo cambio del día.
@@ -72,7 +73,7 @@ const FUND = {
 }
 export function sampleFundamentals(ticker) {
   const f = FUND[String(ticker).toUpperCase()]
-  return f ? { ...f, source: 'fmp', fetchedAt: DEMO_END, sample: true } : null
+  return f ? { ...f, source: 'sample', fetchedAt: DEMO_END, sample: true } : null
 }
 
 export function sampleEarnings(ticker) {
@@ -82,7 +83,7 @@ export function sampleEarnings(ticker) {
   const dates = ['2026-10-30', '2026-07-31', '2026-05-01', '2026-01-30']
   const beats = [true, true, false, true]
   return {
-    ticker: t, nextDate: '2027-01-29', nextEpsEst: +(base * 1.12).toFixed(2), source: 'finnhub', sample: true,
+    ticker: t, nextDate: '2027-01-29', nextEpsEst: +(base * 1.12).toFixed(2), source: 'sample', sample: true,
     quarters: dates.map((date, i) => {
       const epsEst = +(base * (1 + (3 - i) * 0.03)).toFixed(2)
       return { date, epsEst, eps: +(epsEst * (beats[i] ? 1.04 : 0.97)).toFixed(2), beat: beats[i] }

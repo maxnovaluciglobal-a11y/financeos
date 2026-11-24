@@ -19,7 +19,7 @@ import { investAlerts } from '../../../core/investAlerts.js'
 import { runLimited } from '../../../utils/investHoy.js'
 import { isDuplicate, validateAlert } from '../../../utils/investAlerts.js'
 import { DEMO_WATCH, demoAlerts } from '../../../demo/demoInvestFollow.js'
-import { demoMarketApi, isSample } from '../../../demo/demoMarketApi.js'
+import { demoMarketApi, isSample, keepRealQuotes } from '../../../demo/demoMarketApi.js'
 import { roundLevel } from '../../../utils/investAlerts.js'
 
 const REFRESH_MS = 5 * 60 * 1000
@@ -88,7 +88,7 @@ export function useFollowData({ demo = false, full = false, demoApi = demoMarket
     const r = await api.quotes(list)
     if (!alive.current) return
     setQuotesFailed(Object.keys(r).length === 0)
-    setQuotes(q => ({ ...q, ...r }))
+    setQuotes(q => keepRealQuotes(q, r))
     if (demo) {
       const st = demoStore()
       const next = anchorDemoAlerts(st.alerts, r)

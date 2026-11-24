@@ -5,7 +5,9 @@ import '../pages/Investments/i18n/investStrings.js'
 import { createElement as h } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { translate } from '../i18n/translate.js'
-import { createDemoMarketApi, createSampleMarketApi, isSample, sampleTickers } from './demoMarketApi.js'
+import { createDemoMarketApi, createSampleMarketApi, isSample, keepRealQuotes, mergePrices, sampleTickers } from './demoMarketApi.js'
+import { keepsReal } from '../pages/Investments/market/useMarket.js'
+import { sampleEarnings, sampleFundamentals } from './demoInvestAsset.js'
 import { demoInvestRows } from './demoInvest.js'
 import { demoMarketBar } from './demoMarket.js'
 import { anchorDemoAlerts } from '../pages/Investments/follow/useFollowData.js'
@@ -109,13 +111,13 @@ describe('datos reales del demo con respaldo de ejemplo', () => {
 
 describe('pantallas del demo con datos reales', () => {
   const base = { ...demoState(t, NOW), offline: false, refreshing: false, refresh: () => {} }
-  it('Mercado: aviso de datos reales; solo la pieza que cayó dice Datos de ejemplo', () => {
+  it('Mercado: el aviso de datos reales solo si todo es real; la pieza que cayó dice Datos de ejemplo', () => {
     const parts = { bar: false, spy: false, earn: false, news: true, fx: false }
     const m = { ...base, demo: true, sample: true, parts }
     expect(samplePart(m, 'bar')).toBe(false)
     expect(samplePart(m, 'news')).toBe(true)
     const html = renderToStaticMarkup(h(MarketView, { t, lang: 'es', m, now: NOW }))
-    expect(html).toContain(t('invest.mkt.demoLive'))
+    expect(html).not.toContain(t('invest.mkt.demoLive'))
     expect(html).toContain(t('invest.mkt.news.footSample'))
     expect(html).not.toContain('Datos de ejemplo ·') // la cinta es real
     const allLive = renderToStaticMarkup(h(MarketView, { t, lang: 'es', m: { ...base, demo: true, sample: false, parts: { ...parts, news: false } }, now: NOW }))
@@ -135,5 +137,38 @@ describe('pantallas del demo con datos reales', () => {
     queuePlanAporte(750)
     expect(takePlanQueue()).toEqual({ sub: 'aportes', usd: 750 })
     expect(takePlanQueue()).toBeNull()
+  })
+})
+
+describe('nunca mezclar ejemplo y realidad', () => {
+  const real = (p) => ({ price: p, changePct: 0, source: 'yahoo' })
+  const fake = (p) => ({ price: p, changePct: 0, sample: true })
+  it('acciones reales + cripto de ejemplo: la de ejemplo se descarta (queda sin precio)', () => {
+    expect(mergePrices({ VOO: real(663) }, { 'BTC-USD': fake(84000) })).toEqual({ VOO: real(663) })
+    expect(mergePrices({ VOO: fake(550) }, { 'BTC-USD': real(61412) })).toEqual({ 'BTC-USD': real(61412) })
+  })
+  it('si ninguna fuente respondió, todo de ejemplo (y se rotula)', () => {
+    const m = mergePrices({ VOO: fake(550) }, { 'BTC-USD': fake(84000) })
+    expect(Object.values(m).every(q => q.sample)).toBe(true)
+  })
+  it('un refresco que cae al ejemplo no reemplaza precios reales ya mostrados', () => {
+    const shown = { VOO: real(663), AAPL: real(349) }
+    expect(keepRealQuotes(shown, { VOO: fake(550), AAPL: fake(200) })).toEqual(shown)
+    expect(keepRealQuotes(shown, { VOO: real(670) }).VOO.price).toBe(670)
+    // Sin nada real a la vista, el ejemplo entra; y lo real luego lo reemplaza.
+    const first = keepRealQuotes({}, { VOO: fake(550) })
+    expect(first.VOO.sample).toBe(true)
+    expect(keepRealQuotes(first, { VOO: real(663) }).VOO.sample).toBeUndefined()
+  })
+  it('Mercado: cinta, noticias, SPY o tasas reales ya mostradas no se cambian por ejemplo en un refresco', () => {
+    const bar = demoMarketBar()
+    expect(keepsReal({ bar: true }, 'bar', bar)).toBe(true)
+    expect(keepsReal({}, 'bar', bar)).toBe(false)
+    expect(keepsReal({ bar: true }, 'bar', BAR)).toBe(false)
+    expect(keepsReal({ news: true }, 'news', { items: [], sample: true })).toBe(true)
+  })
+  it('los resultados y fundamentales de ejemplo no se atribuyen a un proveedor', () => {
+    expect(sampleEarnings('AAPL').source).toBe('sample')
+    expect(sampleFundamentals('AAPL').source).toBe('sample')
   })
 })

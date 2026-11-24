@@ -436,7 +436,8 @@ export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab,
   }, [])
   return (
     <div className={s.market}>
-      {m.demo && !(m.parts && Object.values(m.parts).every(Boolean)) && <p className={s.sample} role="note">{t('invest.mkt.demoLive')}</p>}
+      {/* Solo si todo lo que enumera es real; si no, cada sección se rotula sola. */}
+      {m.demo && !m.sample && m.bar.phase !== 'loading' && <p className={s.sample} role="note">{t('invest.mkt.demoLive')}</p>}
       {m.sample && <p className={s.sample} role="note">{t('invest.mkt.sample')}</p>}
       {!essential && <Strip t={t} rows={rows} sparks={m.sparks} loading={loading} onPick={pick} />}
       <Head t={t} m={m} now={now} />

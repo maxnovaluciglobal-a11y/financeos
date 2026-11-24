@@ -73,6 +73,8 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
   else if (!price) hint = t('fl.sheet.hint.noPrice', { t: sym })
   else if (pct) hint = t('fl.sheet.hint.pct', { t: sym, pct: pctOrDash(quote.changePct, { signed: true }) })
   else hint = t(`fl.sheet.hint.${form.condition}`, { t: sym, px: pxOrPlain(price, ccy) })
+  // Demo sin respuesta de la API: el precio de referencia es de ejemplo.
+  if (price && quote?.sample) hint = `${hint} ${t('fl.sampleData')}`
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
   async function submit(e) {

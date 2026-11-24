@@ -92,6 +92,9 @@ export async function vixOf(api, b, { quick = false } = {}) {
   const h = await api.history(VIX_SYM, '3mo', '1d')
   return h?.length ? h[h.length - 1].close : null
 }
+// ¿Llega una pieza de ejemplo cuando ya se mostró la real? (demo, refresco)
+export const keepsReal = (shownReal, k, next) => !!shownReal?.[k] && isSample(next)
+
 // Universo (portafolio + lista, en memoria) y fechas de resultados, de a 4.
 // `fallback` (demo): si NINGUNA fecha respondió, todas salen del ejemplo; si
 // respondió alguna, las que faltan cuentan como fallidas (como en la app).
@@ -132,6 +135,9 @@ export function useMarket({ demo = false, api: liveApi = defaultApi, data: liveD
   // Minigráficos: en el demo, el de ejemplo solo acompaña a la cinta de
   // ejemplo (nunca una línea inventada junto a un precio real).
   const barSample = useRef(false)
+  // Piezas que ya se mostraron reales en esta visita: un refresco de ejemplo
+  // no las reemplaza.
+  const real = useRef({})
   const loadSparks = useCallback(async () => {
     const todo = MKT_SYMS.map(s => s.sym)
     await runLimited(todo, 3, async (sym) => {
@@ -142,26 +148,45 @@ export function useMarket({ demo = false, api: liveApi = defaultApi, data: liveD
   }, [api, demo, set])
 
   const loadEarnings = useCallback(async () => {
-    const r = await loadEarningsWith(api, data, now, { fallback: demo ? (tk) => demoEarnings(now())[tk] || null : null })
+    const shown = real.current.earn
+    const r = await loadEarningsWith(api, data, now, { fallback: demo && !shown ? (tk) => demoEarnings(now())[tk] || null : null })
+    const res = r.earn.result
+    // Demo: con fechas reales ya a la vista, un refresco sin respuesta no las borra.
+    if (demo && shown && res.total && res.failed === res.total) return
+    if (!r.sample && res.sources.length) real.current.earn = true
     set(s => ({ earn: r.earn, ...part('earn', r.sample)(s) }))
   }, [api, data, demo, now, set])
 
   const loadLive = useCallback(async ({ quick = false } = {}) => {
     const bar = api.marketbar().then(async (b) => {
       const vix = await vixOf(api, b, { quick })
+      // Refresco que cae al ejemplo con la cinta real ya a la vista: cuenta
+      // como fallo (queda lo real, "desactualizado"), nunca se reemplaza.
+      if (keepsReal(real.current, 'bar', b)) { set(prev => barState(prev, null, null, now())); return }
+      if (b && !isSample(b)) real.current.bar = true
       if (demo) barSample.current = isSample(b)
       set(prev => ({ ...barState(prev, b, vix, now()), ...(b ? part('bar', isSample(b))(prev) : {}) }))
       // Cinta de ejemplo: sus minigráficos de ejemplo (los reales no llegaron).
-      if (demo && isSample(b)) set(s => ({ sparks: Object.fromEntries(MKT_SYMS.map(x => [x.sym, s.sparks[x.sym] || demoMonth(x.sym)])) }))
+      if (demo && barSample.current) set(s => ({ sparks: Object.fromEntries(MKT_SYMS.map(x => [x.sym, s.sparks[x.sym] || demoMonth(x.sym)])) }))
     })
-    const news = api.news().then(n => set(prev => ({ ...newsState(prev, n), ...(n ? part('news', isSample(n))(prev) : {}) })))
+    const news = api.news().then(n => {
+      if (keepsReal(real.current, 'news', n)) { set(prev => newsState(prev, null)); return }
+      if (n && !isSample(n) && n.items?.length) real.current.news = true
+      set(prev => ({ ...newsState(prev, n), ...(n ? part('news', isSample(n))(prev) : {}) }))
+    })
     if (quick) { await Promise.all([bar, news]); return }
-    const spy = api.history('SPY', '2y', '1d').then(rows => set(s => ({ ...spyState(rows), ...part('spy', isSample(rows))(s) })))
+    const spy = api.history('SPY', '2y', '1d').then(rows => {
+      if (keepsReal(real.current, 'spy', rows)) return
+      if (rows && !isSample(rows)) real.current.spy = true
+      set(s => ({ ...spyState(rows), ...part('spy', isSample(rows))(s) }))
+    })
     const fx = Promise.all([api.fxLatam(), api.fxArs()]).then(([latam, ars]) => {
       // Demo: si una de las dos fuentes cayó al ejemplo, la tabla entera es de
       // ejemplo (una sola fila de ejemplo entre tasas reales no se distingue).
       const sample = demo && (isSample(latam) || isSample(ars))
       if (sample) { const f = demoFx(); latam = f.latam; ars = f.ars }
+      if (sample && real.current.fx) return
+      if (!sample && (latam || ars)) real.current.fx = true
       set(s => ({ ...fxState(latam, ars), ...part('fx', sample)(s) }))
     })
     await Promise.all([bar, news, spy, fx, loadEarnings()])

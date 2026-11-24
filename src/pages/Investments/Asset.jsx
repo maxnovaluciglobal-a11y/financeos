@@ -427,7 +427,7 @@ function InvestAssetPage({ setPage }) {
         </div>
         <div role="tabpanel" id="asset-panel" aria-labelledby={`asset-tab-${tab}`} tabIndex={0} className={s.panel}>
           {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase} onRetry={() => d.retryHistory(false)} />}
-          {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} demo={!!(d.fund.sample || d.earn.sample)} type={type} onRetry={() => needFund(true)} />}
+          {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} fundSample={!!d.fund.sample} earnSample={!!d.earn.sample} type={type} onRetry={() => needFund(true)} />}
           {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} priceSample={quoteSample} onSaveStop={saveStop} showStop={shows(mode, 'stop')} />}
           {tab === 'news' && <NewsPane ticker={ticker} news={d.news} onRetry={() => needNews(true)} />}
         </div>
