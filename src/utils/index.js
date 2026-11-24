@@ -74,6 +74,8 @@ export function setMoneyLocale(currency, language) {
 // Locale activo, para los toLocaleString sueltos que no pasan por fmtMoney.
 export const moneyLocale = () => _moneyLocale
 export const moneyDecimals = () => _moneyDecimals
+// Moneda activa de la persona (la que fijó setMoneyLocale).
+export const moneyCurrency = () => _moneyCurrency
 
 // Símbolo de la moneda en el idioma activo. Único caso especial: en inglés el
 // dólar es "$" (así lo escribe un usuario de EE. UU.); en español/portugués/
@@ -212,6 +214,9 @@ export function fmtAxis(v, locale) {
   const sign = n < 0 ? MINUS : ''
   const num = (x, frac) => x.toLocaleString(locale, { minimumFractionDigits: frac, maximumFractionDigits: frac })
   if (a >= 1_000_000) return sign + num(a / 1_000_000, 1) + NNBSP + 'M'
+  // M14 (QA): bajo 10 K con decimales (hasta 2, sin ceros de más): los ticks
+  // 750 · 1.500 · 2.250 ya no salen "2 K, 2 K".
+  if (a >= 1000 && a < 10_000 && a % 1000 !== 0) return sign + (a / 1000).toLocaleString(locale, { maximumFractionDigits: 2 }) + NNBSP + 'K'
   if (a >= 1000) return sign + num(Math.round(a / 1000), 0) + NNBSP + 'K'
   return sign + num(Math.round(a), 0)
 }

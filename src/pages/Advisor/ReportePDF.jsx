@@ -6,7 +6,7 @@
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer'
 import { PDF_FONT as F, PDF_COLOR as P, isOwnBrand } from '../pdfTheme.js'
 import PdfLogo from '../PdfLogo.jsx'
-import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
+import { fmtMoney, fmtSignedMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
 
@@ -206,12 +206,15 @@ export function ReporteFinancieroPDF({ data }) {
     mIncome, mExpense, mBalance, savingRate,
     totalDebt, totalMinPayments,
     signals, alerts, goals, debts,
-    overBudgetCount, score, scoreLabel, scoreColor,
+    overBudgetCount, score, scoreLabel,
     advisorNotes,
     expByCategory,
     subMonthly, subAnnual, subCount, subAlerts, subByCategory, netWorth,
     lang = 'es',
   } = data
+  // El PDF no resuelve variables CSS: color del IQ Score con la paleta del PDF
+  // (mismos cortes que scoreLevel: ≥70 bien, ≥40 atención).
+  const scoreColor = score >= 70 ? C.grn : score >= 40 ? C.amb : C.red
   // react-pdf renderiza fuera del árbol de la app: idioma por data.lang.
   const t = (key, vars) => translate(lang, key, vars)
   const client = clientName || t('apdf.client')
@@ -303,7 +306,7 @@ export function ReporteFinancieroPDF({ data }) {
             {netWorth && (
               <View style={s.kpiBox}>
                 <Text style={s.kpiLabel}>{t('rpdf.netWorth')}</Text>
-                <Text style={[s.kpiValue, { color: netWorth.netWorth >= 0 ? C.grn : C.red }]}>{fmtMoney(netWorth.netWorth, sym)}</Text>
+                <Text style={[s.kpiValue, { color: netWorth.netWorth >= 0 ? C.grn : C.red }]}>{fmtSignedMoney(netWorth.netWorth, sym)}</Text>
                 <Text style={s.kpiSub}>{t('rpdf.assetsLiabilities', { assets: fmtMoney(netWorth.totalActivos, sym), liabilities: fmtMoney(netWorth.totalPasivos, sym) })}</Text>
               </View>
             )}

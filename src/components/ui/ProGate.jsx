@@ -21,7 +21,8 @@
 // prueba, con la nota de cobro debajo (tarjeta requerida, cuándo se cobra).
 // Con el flag apagado o sin URL, todo queda como antes (utils/pricing.js, proCta).
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { ProStripSlot } from './proStripSlot.js'
 import { usePlan } from '../../hooks/usePlan.js'
 import { useAccount } from '../../hooks/useAccount.js'
 import PeriodToggle from './PeriodToggle.jsx'
@@ -69,8 +70,16 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
   // APP-N12: ?plan=annual|monthly de la landing (también tras confirmar el correo).
   const [period, setPeriod] = useState(() => (typeof window !== 'undefined' && planParam(initialSearch(window.location.search))) || DEFAULT_BILLING_PERIOD)
 
+  // I10: la franja del demo va debajo del encabezado de la página si lo hay
+  // (PageHead la reclama, components/ui/proStripSlot.js).
+  const [stripClaimed, setStripClaimed] = useState(false)
+  const stripSlot = useMemo(() => ({
+    strip: <DemoProStrip t={t} days={config.pricing.trialDays} />,
+    claim: () => setStripClaimed(true),
+  }), [t])
+
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
-  if (isPro && isDemo) return <><DemoProStrip t={t} days={config.pricing.trialDays} />{children}</>
+  if (isPro && isDemo) return <ProStripSlot.Provider value={stripSlot}>{!stripClaimed && stripSlot.strip}{children}</ProStripSlot.Provider>
   if (isPro) return children
 
   const featureName = featureKey ? t(featureKey) : (feature || t('pro.gate.featureDefault'))

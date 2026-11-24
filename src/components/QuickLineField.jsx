@@ -5,7 +5,7 @@
 // lecturas. Enter guarda solo cuando el formulario ya es válido.
 import { useT } from '../i18n/useT.js'
 import { useMoney, MONEY_MASK } from './Money.jsx'
-import { fmtMoney, fmtMoneyFor } from '../utils/index.js'
+import { fmtMoney, fmtMoneyFor, moneyDecimals } from '../utils/index.js'
 import css from './QuickLineField.module.css'
 
 export default function QuickLineField({ value, result, sym, onChange, onPick, onEnter, summary }) {
@@ -36,7 +36,8 @@ export default function QuickLineField({ value, result, sym, onChange, onPick, o
           e.stopPropagation()
           if (!asking) onEnter()
         }}
-        placeholder={t('qa.line.ph')}
+        // M15 (QA): en monedas sin centavos (COP, CLP…) el ejemplo va en miles, no "8,50".
+        placeholder={t(moneyDecimals() === 0 ? 'qa.line.ph0' : 'qa.line.ph')}
         aria-label={t('qa.line.label')}
         aria-describedby="qa-line-status"
         autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}

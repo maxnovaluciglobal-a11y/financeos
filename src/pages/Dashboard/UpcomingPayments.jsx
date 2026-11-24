@@ -61,13 +61,14 @@ export default function UpcomingPayments({ rules, incomes, expenses, debts, rece
       <div className={s.cardHead}>
         <h2 id="home-upcoming-title" className={s.cardTitle}>
           {t(hasCollect ? 'home.upcoming.titleBoth' : items.some(it => it.overdue) ? 'home.upcoming.titleDue' : 'home.upcoming.title')}
-          {short && <span className={s.cardHintInline}> · {t('home.upcoming.hint7')}</span>}
+          {/* I13 (QA): con vencidos en la lista, el plazo no dice solo "próximos 7 días". */}
+          {short && <span className={s.cardHintInline}> · {t(items.some(it => it.overdue) ? 'home.upcoming.hint7Due' : 'home.upcoming.hint7')}</span>}
         </h2>
         {short && setPage
           ? <button type="button" className={s.cardLink} onClick={() => setPage('recurring')}>
               {hiddenCount > 0 ? t('home.upcoming.viewAllN', { n: total }) : t('home.upcoming.viewAll')} →
             </button>
-          : <span className={s.cardHint}>{t(short ? 'home.upcoming.hint7' : 'home.upcoming.hint')}</span>}
+          : <span className={s.cardHint}>{t(short ? (items.some(it => it.overdue) ? 'home.upcoming.hint7Due' : 'home.upcoming.hint7') : 'home.upcoming.hint')}</span>}
       </div>
 
       {items.length === 0 ? (

@@ -145,8 +145,8 @@ export const DEMO_BUDGETS = [
 // ── DEUDAS ────────────────────────────────────────────────────────────────────
 // Dos deudas con tasas altas → simulador Avalanche muestra ahorro real
 export const DEMO_DEBTS = [
-  { id: d('d1'), creditor: 'Tarjeta Bancolombia',   initial: 4_200_000,  balance: 3_800_000,  minPayment: 190_000, dueDate: nextMonthDate(15), rate: 24.0, notes: 'Tasa efectiva anual 24%' },
-  { id: d('d2'), creditor: 'Crédito de consumo',    initial: 8_500_000,  balance: 7_200_000,  minPayment: 320_000, dueDate: nextMonthDate(5),  rate: 18.5, notes: 'Préstamo 36 meses Davivienda' },
+  { id: d('d1'), debtType: 'Tarjeta', creditor: 'Tarjeta Bancolombia',   initial: 4_200_000,  balance: 3_800_000,  minPayment: 190_000, dueDate: nextMonthDate(15), rate: 24.0, notes: 'Tasa efectiva anual 24%' },
+  { id: d('d2'), debtType: 'Crédito', creditor: 'Crédito de consumo',    initial: 8_500_000,  balance: 7_200_000,  minPayment: 320_000, dueDate: nextMonthDate(5),  rate: 18.5, notes: 'Préstamo 36 meses Davivienda' },
 ]
 
 // ── METAS ─────────────────────────────────────────────────────────────────────

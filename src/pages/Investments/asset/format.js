@@ -1,7 +1,7 @@
 // Formato de cifras de la ficha (puro: se prueba en asset/format.test.js).
 // Precios en la moneda del activo: "US$" para USD y el código para el resto
 // (Invest: pxT). Signo con U+2212, nunca "-".
-import { fmtAmount, fmtDecimal, fmtPct, moneyLocale, MINUS } from '../../../utils/index.js'
+import { fmtAmount, fmtDecimal, fmtPct, moneyLocale, moneyCurrency, MINUS } from '../../../utils/index.js'
 import { decimalsFor } from '../../../utils/investValuation.js'
 
 export function pxDecimals(n, ccy) {
@@ -16,7 +16,9 @@ export function fmtPx(n, ccy = 'USD', { decimals } = {}) {
   const d = decimals ?? pxDecimals(n, c)
   const body = fmtAmount(Math.abs(Number(n)), d)
   const sign = Number(n) < 0 && /[1-9]/.test(body) ? MINUS : ''
-  return `${sign}${c === 'USD' ? 'US$' : `${c} `}${body}`
+  // M8 (QA): quien lleva sus cuentas en dólares ve "$", como en el resto de la
+  // app (investNetWorth.fmtUsd); al lado de pesos sigue "US$".
+  return `${sign}${c === 'USD' ? (moneyCurrency() === 'USD' ? '$' : 'US$') : `${c} `}${body}`
 }
 export function fmtPxSigned(n, ccy, opts) {
   if (n == null || !Number.isFinite(Number(n))) return '—'
@@ -45,14 +47,16 @@ export function fmtStamp(ms, locale = moneyLocale()) {
   try { return new Date(n).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return null }
 }
 
-// Hora del último precio en la zona de la persona, 24 h ("14:05"). Si el
-// precio no es de hoy, con la fecha corta delante ("18 nov 14:05").
+// Hora del último precio en la zona de la persona, con el reloj de su idioma
+// ("14:05" fuera del inglés, "02:05 PM" en inglés: M8 del QA, antes 24 h siempre y
+// junto a "11:24 PM" del resto). Si el precio no es de hoy, con la fecha corta
+// delante ("18 nov 14:05").
 export function fmtClock(ms, { now = Date.now(), locale = moneyLocale() } = {}) {
   const n = Number(ms)
   if (!(n > 0)) return null
   try {
     const d = new Date(n)
-    const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: String(locale).startsWith('en') ? 'h12' : 'h23' })
     if (d.toDateString() === new Date(now).toDateString()) return time
     return `${d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} ${time}`
   } catch { return null }

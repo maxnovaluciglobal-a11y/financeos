@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import { useInvestAccess } from './useInvestAccess.js'
 import { loadSnapshot, readSnapshot, subscribeSnapshot } from '../core/investBridge.js'
-import { demoInvestSnapshot } from '../demo/demoInvest.js'
 import { moduleOn } from '../utils/modules.js'
 import { investValueForUser, resolveUserRate } from '../utils/investNetWorth.js'
 
@@ -37,14 +36,28 @@ export function useInvestPortfolio() {
       })
   }, [])
 
+  // Demo (QA 23-nov-2026, I1): el total se valora como la pantalla de
+  // Inversiones (mismas posiciones, precios y tipos de cambio reales), no con
+  // una cifra fija. Import dinámico: el código de mercado del demo no entra
+  // al paquete inicial. Mientras carga, 'loading' (nunca una cifra provisoria).
+  const [demoSnap, setDemoSnap] = useState(null)
+  const loadDemo = useCallback((force) => {
+    setPhase('loading')
+    return import('../demo/demoInvestSnapshot.js')
+      .then(m => m.loadDemoInvestSnapshot({ force }))
+      .then((s) => { setDemoSnap(s); setPhase('ready') })
+      .catch(() => setPhase('error'))
+  }, [])
+
   useEffect(() => {
-    if (!allowed || demo) return undefined
+    if (!allowed) return undefined
+    if (demo) { loadDemo(false); return undefined }
     load(false)
     return subscribeSnapshot((s) => { setSnap(s); setPhase('ready') })
-  }, [allowed, demo, load])
+  }, [allowed, demo, load, loadDemo])
 
-  const refresh = useCallback(() => load(true), [load])
-  const current = useMemo(() => (demo ? demoInvestSnapshot() : snap), [demo, snap])
+  const refresh = useCallback(() => (demo ? loadDemo(true) : load(true)), [demo, load, loadDemo])
+  const current = demo ? demoSnap : snap
   const inv = useMemo(() => (allowed ? investValueForUser(current, settings, readKey) : null), [allowed, current, settings])
   const rate = useMemo(() => (allowed ? resolveUserRate(settings, current?.fx, readKey) : null), [allowed, current, settings])
 
@@ -52,7 +65,7 @@ export function useInvestPortfolio() {
     on,
     demo,
     access: access.status,
-    phase: !on ? 'off' : !allowed ? 'locked' : demo ? 'ready' : phase,
+    phase: !on ? 'off' : !allowed ? 'locked' : phase,
     snapshot: allowed ? current : null,
     inv,
     rate,

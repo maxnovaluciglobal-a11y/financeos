@@ -52,10 +52,11 @@ describe('datos de ejemplo de Hoy', () => {
     expect(T.cost).toBeCloseTo(snap.costUsd)
     expect(T.day).toBeCloseTo(snap.dayUsd, 0)
   })
-  it('el libro de ejemplo cuadra: efectivo 500, aportado 11.500, ganancia = valor − aportado', () => {
+  it('el libro de ejemplo cuadra (el mismo de Portafolio, QA I2): efectivo 1.062, aportado 12.000, ganancia = valor − aportado', () => {
     const B = cashBook(demo.demoOperations(), demo.demoHoldings(), { ccyOf: () => 'USD', priceOf: t => demo.demoQuotes()[t].price, toUsd: v => v })
-    expect(B.cash).toBeCloseTo(500)
-    expect(B.contributed).toBeCloseTo(11500)
+    // 12.000 depositados − 11.400 en compras + 380 de la venta + 82 de dividendos.
+    expect(B.cash).toBeCloseTo(1062)
+    expect(B.contributed).toBeCloseTo(12000)
     expect(B.gain).toBeCloseTo(B.value - B.contributed)
   })
   it('las series terminan en el precio de ejemplo y "Para revisar hoy" tiene algo que mostrar', () => {
@@ -85,10 +86,10 @@ describe('<Hoy> en la vista esencial (por defecto)', () => {
     // Lo demás sigue: gráfico de valor, posiciones, efectivo.
     for (const k of ['Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes']) expect(out, k).toContain(k)
   })
-  it('con el libro de ejemplo, Pusiste es lo aportado (11.500) y el mercado suma valor − aportado', () => {
+  it('con el libro de ejemplo, Pusiste es lo aportado (12.000, igual que Portafolio) y el mercado suma valor − aportado', () => {
     const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
     expect(out).toContain('Lo que aportaste')
-    expect(out).toMatch(/Pusiste (US)?\$ ?11\.500,00/)
+    expect(out).toMatch(/Pusiste (US)?\$ ?12\.000,00/)
   })
   it('en otra moneda pregunta si le ganó al dólar; en US$ no (no hay inflación en dólares para comparar)', () => {
     const usd = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
@@ -110,7 +111,9 @@ describe('<Hoy>', () => {
       at = i
     }
     expect(out).toContain('S&P 500 (SPY)')
-    expect(out).toContain('Chile (ECH)')
+    // M12 (QA): Chile (ECH) solo para quien vive en Chile.
+    expect(out).not.toContain('Chile (ECH)')
+    expect(text(render(sampleData(), { currency: 'CLP', language: 'es', country: 'CL' }))).toContain('Chile (ECH)')
     for (const r of ['1M', '3M', 'Año', '1A', 'Máx']) expect(out).toContain(r)
     expect(out).toContain('Datos para revisar, no instrucciones de compra o venta.')
     expect(out).not.toContain('Yahoo Finance,') // el ejemplo no se atribuye a ninguna fuente

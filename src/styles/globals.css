@@ -282,9 +282,9 @@ button { cursor: pointer; font-family: var(--sans); }
   box-shadow: var(--sh-1);
   transition: box-shadow var(--dur) var(--ease), transform var(--dur-press) var(--ease-out);
 }
-.fos-btn-primary:hover:not(:disabled) { background: var(--btn-primary-bg-hover); box-shadow: var(--sh-2); }
+.fos-btn-primary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-primary-bg-hover); box-shadow: var(--sh-2); }
 .fos-btn-primary:active:not(:disabled) { transform: scale(.98); }
-.fos-btn-primary:disabled { background: var(--sur3); color: var(--th); box-shadow: none; cursor: not-allowed; }
+.fos-btn-primary:disabled, .fos-btn-primary[aria-disabled="true"] { background: var(--sur3); color: var(--th); box-shadow: none; cursor: not-allowed; }
 
 .fos-btn-secondary {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;

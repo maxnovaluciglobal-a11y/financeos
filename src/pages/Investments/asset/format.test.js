@@ -31,12 +31,13 @@ describe('formato de la ficha', () => {
     expect(isCryptoTicker('X', 'Crypto')).toBe(true)
     expect(isCryptoTicker('AAPL')).toBe(false)
   })
-  it('hora del último precio: 24 h; con fecha si no es de hoy', () => {
+  it('hora del último precio: 24 h (12 h en inglés); con fecha si no es de hoy', () => {
     const at = new Date(2026, 10, 18, 14, 5).getTime()
     expect(fmtClock(at, { now: new Date(2026, 10, 18, 20, 0).getTime(), locale: 'es-CL' })).toBe('14:05')
     const other = fmtClock(at, { now: new Date(2026, 10, 19, 9, 0).getTime(), locale: 'es-CL' })
     expect(other).toMatch(/18/)
     expect(other).toMatch(/14:05$/)
+    expect(fmtClock(at, { now: new Date(2026, 10, 18, 20, 0).getTime(), locale: 'en-US' })).toMatch(/^0?2:05\s?PM$/)
     expect(fmtClock(null)).toBeNull()
     expect(fmtClock(0)).toBeNull()
   })

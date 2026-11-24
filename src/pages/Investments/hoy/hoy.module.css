@@ -192,3 +192,6 @@
 .footer { display: flex; flex-direction: column; gap: 6px; }
 .links { display: flex; flex-wrap: wrap; gap: 0 16px; }
 .links a { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--t-footnote); color: var(--th); text-decoration: underline; text-underline-offset: 2px; }
+
+/* M11 (QA): la ayuda de teclado del gráfico, solo donde hay teclado y puntero fino. */
+@media (hover: none), (pointer: coarse) { .kbdOnly { display: none; } }

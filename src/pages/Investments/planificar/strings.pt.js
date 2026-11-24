@@ -107,7 +107,7 @@ export default {
   'plan.ap.fromCapital': 'Usar seu capital ainda não investido ({v})',
   'plan.ap.fromCapitalNote': 'Valor fixado em {v}: é uma divisão única, não um aporte mensal.',
   'plan.ap.ladderHint': 'A visão completa acrescenta a divisão em parcelas pelas médias móveis de 20, 50, 100 e 200 dias.',
-  'plan.ap.fromCash': 'Usar o que você tem Para investir ({v})',
+  'plan.ap.fromCash': 'Usar o que você tem em “Para investir” ({v})',
   'plan.ap.err.amount_required': 'Informe quanto quer aportar.',
   'plan.ap.err.amount_invalid': 'O valor precisa ser maior que 0.',
   'plan.ap.saveBlock.proj': 'Para salvar o plano, corrija os anos ou o rendimento em “Quanto você poderia ter?”.',

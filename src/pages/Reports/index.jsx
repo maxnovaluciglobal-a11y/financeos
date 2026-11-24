@@ -10,7 +10,7 @@ import { fmtMoney as fmtMoneyRaw, fmtPct, dateLocale, currentMonth, monthShortNa
 import { ReportsDisclaimer } from '../../components/legal/MicroCopy.jsx'
 import { pendingDebtMonthly } from '../../utils/personal.js'
 import { effectiveBudgetLimits } from '../../utils/budgets.js'
-import { calcNetWorth } from '../../utils/netWorth.js'
+import { useNetWorth } from '../../hooks/useNetWorth.js'
 import { monthLabel } from '../shared/constants.js'
 import MonthSelector from '../shared/MonthSelector.jsx'
 import MoneyFlow from '../../components/charts/MoneyFlow.jsx'
@@ -30,11 +30,12 @@ import { totalForMonth, cumulativeByDay, prevMonthKey } from '../../utils/chartS
 import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { sumAmounts, roundCents, savingGoal, meetsSavingGoal } from '../../utils/monthFigures.js'
 import { monthPlan } from '../../utils/recurring.js'
-import { reportOverBudget, subscriptionsToDeduct } from './reportsModel.js'
+import { reportOverBudget, reportFlow, rule503020 } from './reportsModel.js'
+import { monthLeft, monthSavingRate } from '../../utils/monthLeft.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
-  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, receivables, subscriptions: allSubs, goals: allGoals, settings, recurring: rules } = useApp()
+  const { incomes: _incAll, expenses: _expAll, budgets, debts: allDebts, subscriptions: allSubs, settings, recurring: rules, setAsides: ctxSetAsides } = useApp()
   const incomes = (_incAll || []).filter(r => !r?.inv)   // reporte personal: excluye inversión
   const expenses = (_expAll || []).filter(r => !r?.inv)
   const sym        = currencySymbol(settings.currency, settings.language)
@@ -49,8 +50,8 @@ export default function Reports({ setPage }) {
   const activeMonth = settings.activeMonth || currentMonth()
 
   // Patrimonio neto (stock a HOY) — cálculo compartido con la página Patrimonio
-  const nw = useMemo(() => calcNetWorth({ goals: allGoals, debts: allDebts, receivables, incomes: _incAll, expenses: _expAll, settings }),
-    [allGoals, allDebts, receivables, _incAll, _expAll, settings])
+  // Misma cifra que Patrimonio y Modo Asesor (lo registrado + Inversiones).
+  const { nw } = useNetWorth()
 
   async function downloadPDF() {
     setPdfLoading(true)
@@ -99,9 +100,13 @@ export default function Reports({ setPage }) {
   // ENG-N6: solo las suscripciones que faltan este mes; las ya cobradas son
   // gasto real y ya están en totalExpense.
   const plan         = useMemo(() => monthPlan(rules || [], activeMonth, { incomes: _incAll || [], expenses: _expAll || [], today: localDateStr() }), [rules, activeMonth, _incAll, _expAll])
-  const subsPending  = useMemo(() => subscriptionsToDeduct({ plan, rules, monthlySubs: totalSubs }), [plan, rules, totalSubs])
-  const freeFlow     = roundCents(totalIncome - totalExpense - totalDebt - subsPending)   // Disponible tras deudas y suscripciones pendientes
-  const savingRate   = totalIncome > 0 ? balance/totalIncome : 0  // sin floor: coincide con Coach/Advisor
+  // "Te queda" del Inicio (QA I7): ingresos − gastos − apartado − fijos por
+  // pagar (deudas, suscripciones y demás fijos del plan), la misma función.
+  const month        = useMemo(() => monthLeft({ incomes, expenses, setAsides: ctxSetAsides, month: activeMonth, plan, today: localDateStr() }), [incomes, expenses, ctxSetAsides, activeMonth, plan])
+  const flow         = useMemo(() => reportFlow(month), [month])
+  const freeFlow     = month.left
+  // La tasa de ahorro de toda la app (utils/monthLeft.js, QA I3).
+  const savingRate   = useMemo(() => monthSavingRate({ incomes, expenses, setAsides: ctxSetAsides, month: activeMonth }), [incomes, expenses, ctxSetAsides, activeMonth])
   const necesidad    = useMemo(() => sumAmounts(mExpenses.filter(r=>r.type==='Necesidad')), [mExpenses])
   const deseos       = useMemo(() => sumAmounts(mExpenses.filter(r=>r.type==='Deseo')), [mExpenses])
   const expByCat     = useMemo(() => { const m={}; mExpenses.forEach(e=>{m[e.category]=(m[e.category]||0)+(Number(e.amount)||0)}); return m }, [mExpenses])
@@ -191,7 +196,7 @@ export default function Reports({ setPage }) {
         ) : null}
       </div>
       <div className="kpi-row">
-        <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(totalDebt+subsPending>0) ? t('reports.kpi.afterDebts', { v: fmtMoney(freeFlow,sym) }) : t('reports.kpi.incMinusExp')} />
+        <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(month.pendingFixed + month.setAside > 0) ? t('reports.kpi.afterFixed', { v: m(fmtSignedMoney(freeFlow,sym)) }) : t('reports.kpi.incMinusExp')} />
         <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={atGoal?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: fmtPct(goal, { decimals: 0 }) })} />
         <KPI label={t('reports.kpi.income')}      value={fmtMoney(totalIncome,sym)} />
         <KPI label={t('reports.kpi.subs')} value={fmtMoney(totalSubs,sym)} color="amber" sub={t('reports.kpi.subsSub')} />
@@ -200,7 +205,7 @@ export default function Reports({ setPage }) {
       <div className="grid2">
         <Card>
           <CardHeader title={t('reports.chart.flow')} />
-          <MoneyFlow incomes={mIncomes} expenses={mExpenses} subscriptions={Array.isArray(allSubs)?allSubs:[]} debts={Array.isArray(allDebts)?allDebts:[]} sym={sym} />
+          <MoneyFlow flow={flow} sym={sym} />
         </Card>
         <Card>
           <CardHeader title={t('reports.chart.byCat')} />
@@ -210,10 +215,12 @@ export default function Reports({ setPage }) {
           <CardHeader title={t('reports.rule.title')} />
           <div style={{fontSize:'var(--t-footnote)',color:'var(--th)',fontFamily:'var(--sans)',lineHeight:1.5,marginTop:-2,marginBottom:10}}>{t('reports.rule.sub')}</div>
           {totalIncome === 0 ? <Empty text={t('reports.rule.empty')} cta={setPage ? t('empty.importCta') : undefined} onCta={() => setPage?.('import')} /> : (() => {
+            // QA I7: suma 100 % (las cuotas de deuda cuentan cuando se pagan, como gasto).
+            const split = rule503020({ income: totalIncome, spent: totalExpense, wants: deseos })
             const rules = [
-              {id:'needs', label:t('reports.rule.needs'), actual:necesidad+totalDebt, ideal:totalIncome*0.5, color:'var(--grn)', max:50},
-              {id:'wants', label:t('reports.rule.wants'),               actual:deseos,              ideal:totalIncome*0.3, color:'var(--amb)', max:30},
-              {id:'savings', label:t('reports.rule.savings'),               actual:Math.max(0,balance), ideal:totalIncome*0.2, color:'var(--blu)', max:20},
+              {id:'needs', label:t('reports.rule.needs'), actual:split.needs, ideal:totalIncome*0.5, color:'var(--grn)', max:50},
+              {id:'wants', label:t('reports.rule.wants'),               actual:split.wants,              ideal:totalIncome*0.3, color:'var(--amb)', max:30},
+              {id:'savings', label:t('reports.rule.savings'),               actual:split.savings, ideal:totalIncome*0.2, color:'var(--blu)', max:20},
             ]
             return (
               <div style={{display:'flex',flexDirection:'column',gap:14}}>

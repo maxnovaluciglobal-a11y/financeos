@@ -23,7 +23,7 @@ export default function Brief({ ticker, quote, fund, rows, rowsPhase, type, pric
   }
   if (b.dividend) {
     const k = b.dividend.kind
-    facts.push(['div', t(`asset.brief.div.${k}`), k === 'pays' ? t('asset.brief.div.paysText', { pct: fmtPct(b.dividend.yield, { decimals: 1 }) }) : k === 'none' ? t('asset.brief.div.noneText') : t('asset.brief.div.cryptoText')])
+    facts.push(['div', t(`asset.brief.div.${k}`), k === 'pays' ? t('asset.brief.div.paysText', { pct: fmtPct(b.dividend.yield, { decimals: b.dividend.yield < 0.001 ? 2 : 1 }) }) : k === 'none' ? t('asset.brief.div.noneText') : t('asset.brief.div.cryptoText')])
   }
   if (b.year) {
     const p = b.year.pct

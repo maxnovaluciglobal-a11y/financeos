@@ -109,7 +109,7 @@ export default {
   'plan.ap.fromCapital': 'Usar tu capital sin invertir ({v})',
   'plan.ap.fromCapitalNote': 'Monto fijado en {v}: es un reparto único, no un aporte mensual.',
   'plan.ap.ladderHint': 'La vista completa agrega el reparto por tramos según las medias móviles de 20, 50, 100 y 200 días.',
-  'plan.ap.fromCash': 'Usar lo que tienes Para invertir ({v})',
+  'plan.ap.fromCash': 'Usar lo que tienes en «Para invertir» ({v})',
   'plan.ap.err.amount_required': 'Escribe cuánto quieres aportar.',
   'plan.ap.err.amount_invalid': 'El monto tiene que ser mayor que 0.',
   'plan.ap.saveBlock.proj': 'Para guardar el plan, corrige los años o el rendimiento en «¿Cuánto podrías tener?».',

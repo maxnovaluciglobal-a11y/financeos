@@ -127,7 +127,10 @@ describe('Esta empresa en 30 segundos', () => {
     expect(b.empty).toBe(true)
     expect(companyBrief({ fund: {}, type: 'Stock', now: NOW }).dividend).toBeNull()
     expect(companyBrief({ type: 'Crypto', now: NOW }).dividend).toEqual({ kind: 'crypto' })
-    const none = companyBrief({ fund: { sector: 'Energy' }, type: 'Stock', now: NOW })
+    // M10 (QA): sin el dato de dividendos (un ETF en la fuente) no dice "no paga";
+    // solo un 0 explícito.
+    expect(companyBrief({ fund: { sector: 'Energy' }, type: 'Stock', now: NOW }).dividend).toBeNull()
+    const none = companyBrief({ fund: { sector: 'Energy', dividendYield: 0 }, type: 'Stock', now: NOW })
     expect(none.dividend).toEqual({ kind: 'none' })
   })
   it('el tamaño puede salir de la cotización si los fundamentales no lo traen', () => {

@@ -20,9 +20,10 @@
   border: 1px solid var(--color-brand); background: var(--color-brand-muted); color: var(--tx);
   font-family: var(--sans); font-size: var(--t-subhead); font-weight: 600;
 }
-.keyOk:disabled { border-color: transparent; background: var(--sur2); color: var(--th); cursor: not-allowed; }
+/* M15: aria-disabled (no disabled) para poder decir qué falta al tocarlo. */
+.keyOk:disabled, .keyOk[aria-disabled="true"] { border-color: transparent; background: var(--sur2); color: var(--th); cursor: not-allowed; }
 /* Hoja de una sola tarea: ✓ es el único guardar a la vista, así que es el primario. */
-.keyOkPrimary:not(:disabled) { border-color: transparent; background: var(--btn-primary-bg); color: var(--btn-primary-fg); }
+.keyOkPrimary:not(:disabled):not([aria-disabled="true"]) { border-color: transparent; background: var(--btn-primary-bg); color: var(--btn-primary-fg); }
 .keyOk:focus-visible, .key:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Fecha + "Pegar SMS" en una sola fila */

@@ -1,7 +1,8 @@
 // src/components/ui/index.jsx
 // Shared UI primitives
 
-import { useId, useRef, useState, Children, cloneElement, isValidElement } from 'react'
+import { useContext, useId, useLayoutEffect, useRef, useState, Children, cloneElement, isValidElement } from 'react'
+import { ProStripSlot } from './proStripSlot.js'
 import styles from './ui.module.css'
 import LargeTitle from '../layout/LargeTitle.jsx'
 import PageScene from '../layout/PageScene.jsx'
@@ -275,10 +276,14 @@ export function SectionTitle({ children }) {
 // (LargeTitle, con su barra compacta al hacer scroll en móvil) y UN subtítulo.
 // La barra superior ya no repite el nombre de la página.
 // Con UI_FLAGS.pageScene el título va sobre la escena morada (PageScene).
+// Dentro de una puerta Pro del demo, la franja "Función Pro" va DEBAJO del
+// título (proStripSlot.js, QA I10): la escena es lo primero de la pantalla.
 export function PageHead({ title, sub }) {
   const [scene] = useState(pageSceneHere)
-  if (scene) return <PageScene><LargeTitle title={title} sub={sub} /></PageScene>
-  return <LargeTitle title={title} sub={sub} />
+  const slot = useContext(ProStripSlot)
+  useLayoutEffect(() => { slot?.claim() }, [slot])
+  const head = scene ? <PageScene><LargeTitle title={title} sub={sub} /></PageScene> : <LargeTitle title={title} sub={sub} />
+  return slot ? <>{head}{slot.strip}</> : head
 }
 export const PageHeader = PageHead
 

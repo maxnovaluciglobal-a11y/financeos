@@ -28,7 +28,7 @@ import { cashBook } from '../../../utils/investCash.js'
 import {
   VIX_SYM, STRIP_SYMS, aportePending, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
   rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFadeOf, stripFormat, summarizeFreshness, topPositions, validateAporte,
-  vixLevel, withLivePoint, PVH_CMP, PVH_RANGES, REVIEW_MAX_CHIPS,
+  vixLevel, withLivePoint, PVH_CMP, PVH_RANGES, pvhCmpFor, REVIEW_MAX_CHIPS,
 } from '../../../utils/investHoy.js'
 import { convertHoldings, currencyOf, holdingRows, portfolioTotals, toUsd } from '../../../utils/investValuation.js'
 import { monthContributions, resolveUserRate } from '../../../utils/investNetWorth.js'
@@ -435,7 +435,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const currency = settings.currency
   const { money, money0 } = useMemo(() => usdFmt(currency), [currency])
   const [range, setRange] = useState(() => (PVH_RANGES.includes(readKey(RANGE_KEY)) ? readKey(RANGE_KEY) : '1A'))
-  const [cmp, setCmp] = useState(() => (PVH_CMP.includes(readKey(CMP_KEY)) ? readKey(CMP_KEY) : ''))
+  const cmpOptions = pvhCmpFor(settings.country)
+  const [cmp, setCmp] = useState(() => (cmpOptions.includes(readKey(CMP_KEY)) ? readKey(CMP_KEY) : ''))
   const [bannerOff, setBannerOff] = useState(false)
   const [noRate, setNoRate] = useState(null)
   // Aportes marcados en moyiq este mes (no dependen de Inversiones): si están
@@ -666,7 +667,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
         {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}
       </div>
 
-      <ValueChart points={chart.pts} index={chart.index} invested={chart.invested} range={range} cmp={cmp}
+      <ValueChart points={chart.pts} index={chart.index} invested={chart.invested} range={range} cmp={cmp} cmpOptions={cmpOptions}
         onRange={pickRange} onCmp={pickCmp} state={chart.state} notes={chartNotes} money={money} money0={money0}
         onRetry={chart.state === 'error' || chart.state === 'short' ? d.retryHistory : null} />
 

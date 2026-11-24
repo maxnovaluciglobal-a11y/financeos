@@ -9,6 +9,7 @@ import { useT } from '../../i18n/useT.js'
 import { evaluateCoach, calcCoachMetrics, COACH_CONFIG } from '../../data/coachRules.js'
 import useSubscriptionMetrics from '../../hooks/useSubscriptionMetrics.js'
 import { scoreLevel, SCORE_LEVELS } from '../../utils/financialScore.js'
+import { useIqScore } from '../../hooks/useIqScore.js'
 import { ScoreState, ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { fmtPct, fmtDecimal } from '../../utils/index.js'
@@ -133,10 +134,12 @@ export default function Coach() {
 
   const fmtP = n => fmtPct(n)
 
-  // Score orientativo 0-100 — misma escala de 3 estados que el IQ Score (D3):
-  // Bien ≥70 · Atención 40–69 · Riesgo <40 (antes tenía sus propios cortes 80/60).
-  const score = Math.max(0, 100 - warnings.length * 20 - attentions.length * 8)
-  const level = scoreLevel(score)
+  // El IQ Score del mes, el MISMO número que Inicio, Panorama y Modo Asesor
+  // (hooks/useIqScore.js). Antes era un "puntaje de hábitos" propio
+  // (100 − señales) y el mismo mes daba 44 acá y 80 en Inicio (QA I4).
+  const iq = useIqScore()
+  const score = iq?.score ?? 0
+  const level = iq?.level ?? scoreLevel(score)
   const scoreColor = SCORE_LEVELS[level].color
   // Umbrales de cada KPI → nivel (los mismos cortes de color que ya tenía cada barra)
   const lvl3 = (good, mid) => good ? 'ok' : mid ? 'attention' : 'risk'

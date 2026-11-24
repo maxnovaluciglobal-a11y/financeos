@@ -7,8 +7,7 @@ import { useMemo, useState, useCallback } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { evaluateCoach, calcCoachMetrics } from '../../data/coachRules.js'
-import { calcFinancialScore } from '../../utils/financialScore.js'
-import { isSyncEnabled, syncAvailable, syncMeta, lastSyncTime } from '../../core/sync.js'
+import { useIqScore } from '../../hooks/useIqScore.js'
 import { ScoreStateIcon } from '../../components/ScoreState.jsx'
 import SignalIcon from '../../components/icons/SignalIcon.jsx'
 import { refEligible, resolveRefRate } from '../../utils/refRate.js'
@@ -147,18 +146,9 @@ export function useHomeData() {
     return evaluateCoach(metrics, t).slice(0, 2)
   }, [incomes, expenses, budgets, debts, goals, subs, settings, kpis.incCount, kpis.expCount, t])
 
-  // ── IQ Score — 5 factores del brand book moyiq (ver utils/financialScore.js) ──
-  const healthScore = useMemo(() => {
-    if (kpis.incCount === 0 && kpis.expCount === 0) return null
-    const meta = syncMeta()
-    return calcFinancialScore({
-      savingRate: kpis.savingRate,
-      expenses, debts, goals, incomes, activeMonth,
-      syncEnabled: isSyncEnabled() && syncAvailable(),
-      lastSyncAt: lastSyncTime(meta),
-      pending: pendingSum,
-    }, t)
-  }, [kpis.savingRate, kpis.incCount, kpis.expCount, expenses, debts, goals, incomes, activeMonth, pendingSum, t])
+  // ── IQ Score — una sola cuenta para Inicio, Panorama, Diagnóstico y Modo
+  // Asesor (hooks/useIqScore.js; QA pre-tiendas I4).
+  const healthScore = useIqScore()
 
   // Mapea una señal del diagnóstico a una acción concreta (por la categoría
   // de la regla: el texto ya viene traducido).

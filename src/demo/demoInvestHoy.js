@@ -7,6 +7,7 @@
 // símbolo) y terminan EXACTAMENTE en el precio de ejemplo, así el gráfico
 // acaba en la cifra de arriba. Nada se pide a la red ni se guarda.
 import { demoInvestRows } from './demoInvest.js'
+import { demoInvestOps } from './demoInvestBook.js'
 import { RULE_DEFAULTS } from '../core/investData.js'
 
 // Stops de ejemplo: dos posiciones con stop y dos sin (la columna existe).
@@ -38,12 +39,12 @@ export function demoQuotes() {
   return out
 }
 
-// Operaciones coherentes con las posiciones: un depósito de 11.500 y las
-// cuatro compras desde el efectivo (11.000) → efectivo 500, aportado 11.500,
-// valor 13.000, resultado +1.500 (el mismo total que demoInvestSnapshot).
-export function demoOperations() {
-  const buys = demoInvestRows().map((r, i) => ({ id: i + 2, uid: `demo-op-${i + 2}`, type: 'buy', ticker: r.t, date: '2026-03-02', currency: 'USD', qty: r.sh, price: r.avgCost, amount: r.sh * r.avgCost, cash: true }))
-  return [{ id: 1, uid: 'demo-op-1', type: 'deposit', ticker: null, date: '2026-03-01', currency: 'USD', amount: 11500 }, ...buys]
+// Operaciones: el MISMO libro que Portafolio (demoInvestOps: depósito de
+// 12.000, compras, venta parcial de MSFT y dividendos). Antes Hoy tenía su
+// propio libro (depósito de 11.500) y "Pusiste" decía 11.500 en Resumen y
+// 12.000 en Portafolio (QA pre-tiendas 23-nov-2026, I2).
+export function demoOperations(now = Date.now()) {
+  return demoInvestOps(now)
 }
 
 // Perfil de cada símbolo: deriva diaria (+ sube con el tiempo) y volatilidad.

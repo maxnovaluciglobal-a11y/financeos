@@ -27,3 +27,33 @@ export function subscriptionsToDeduct({ plan, rules, monthlySubs }) {
   }
   return roundCents(s)
 }
+
+// Flujo del mes (QA pre-tiendas I7): las MISMAS cifras que "Te queda" del
+// Inicio (utils/monthLeft.js). `m` = monthLeft(...) del mes con su plan de
+// fijos. Ingresos = gastos + apartado + fijos por pagar + disponible, al
+// centavo; si el mes ya está en rojo, disponible 0 y el faltante aparte.
+// Antes el gráfico restaba TODAS las suscripciones y cuotas mínimas otra vez
+// (aunque ya estaban en los gastos) y daba un "Disponible" distinto del KPI.
+export function reportFlow(m) {
+  const income = roundCents(Number(m?.income) || 0)
+  const spent = roundCents(Number(m?.spent) || 0)
+  const setAside = roundCents(Number(m?.setAside) || 0)
+  const pendingFixed = roundCents(Number(m?.pendingFixed) || 0)
+  const left = roundCents(Number(m?.left) || 0)
+  return { income, spent, setAside, pendingFixed, available: Math.max(0, left), short: Math.max(0, -left) }
+}
+
+// Regla 50/30/20 (QA I7): partes del ingreso del mes que suman 100 % cuando el
+// mes no está en rojo. Necesidades (incluye las cuotas de deuda ya pagadas,
+// que son gastos registrados) = todo gasto que no es "Deseo"; Ahorro = la tasa
+// de ahorro de toda la app (ingresos − gastos). Antes se sumaban encima las
+// cuotas mínimas de las deudas aunque no fueran gasto del mes y la regla
+// llegaba a 113 %.
+export function rule503020({ income, spent, wants }) {
+  const inc = Number(income) || 0
+  const exp = Number(spent) || 0
+  const w = Math.min(Number(wants) || 0, exp)
+  const needs = roundCents(exp - w)
+  const savings = roundCents(Math.max(0, inc - exp))
+  return { needs, wants: roundCents(w), savings, income: inc }
+}

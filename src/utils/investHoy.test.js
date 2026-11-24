@@ -135,8 +135,10 @@ describe('Valor en el tiempo (portfolio-history.js)', () => {
   })
   it('el último punto se cambia por el valor en vivo', () => {
     const pts = rowsOf('2026-11-18', [1, 2]).map(r => ({ ts: r.ts, v: r.close }))
-    expect(withLivePoint(pts, 9, day('2026-11-19') + 3600).at(-1).v).toBe(9)
-    expect(withLivePoint(pts, 9, day('2026-11-20') + 3600)).toHaveLength(3)
+    // "Ahora" es mediodía LOCAL: el día de hoy se toma del calendario local (M7).
+    const noon = (y, m, d) => Math.floor(new Date(y, m - 1, d, 12).getTime() / 1000)
+    expect(withLivePoint(pts, 9, noon(2026, 11, 19)).at(-1).v).toBe(9)
+    expect(withLivePoint(pts, 9, noon(2026, 11, 20))).toHaveLength(3)
   })
   it('recorta los 5 períodos y rebasa el índice al mismo punto de partida', () => {
     const pts = Array.from({ length: 400 }, (_, i) => ({ ts: day('2025-10-01') + i * 86400, v: 100 + i }))
@@ -261,5 +263,14 @@ describe('top 5, aporte y cinta', () => {
     expect(stripFormat('BTC-USD', 84000)).toEqual({ kind: 'usd', decimals: 0 })
     expect(stripFormat('^GSPC', 6000)).toEqual({ kind: 'index', decimals: 0 })
     expect(stripFormat('^RUT', 980).decimals).toBe(2)
+  })
+})
+
+describe('withLivePoint en hora local (QA M7)', () => {
+  it('a las 23:00 locales el punto de hoy cae en el día local, no en el siguiente en UTC', () => {
+    const local23 = new Date(2026, 10, 23, 23, 0, 0)
+    const pts = [{ ts: Date.UTC(2026, 10, 20) / 1000, v: 1 }]
+    const out = withLivePoint(pts, 5, Math.floor(local23.getTime() / 1000))
+    expect(dayKey(out.at(-1).ts)).toBe('2026-11-23')
   })
 })

@@ -5,20 +5,18 @@
 // Con el módulo Inversiones encendido suma aparte la estimación de Invest
 // (InvestLine); calcNetWorth no cambia y Reportes sigue sin ella.
 
-import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, PageHeader, Empty } from '../../components/ui/index.jsx'
 import { fmtMoney as fmtMoneyRaw, currencySymbol } from '../../utils/index.js'
-import { calcNetWorth } from '../../utils/netWorth.js'
-import { netWorthOverlapNote, withInvest } from '../../utils/investNetWorth.js'
-import { useInvestPortfolio } from '../../hooks/useInvestPortfolio.js'
+import { netWorthOverlapNote } from '../../utils/investNetWorth.js'
+import { useNetWorth } from '../../hooks/useNetWorth.js'
 import InvestLine from './InvestLine.jsx'
 import CountUp from '../../components/CountUp.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
 
 export default function NetWorth() {
-  const { goals, debts, receivables, incomes, expenses, settings } = useApp()
+  const { settings } = useApp()
   const { t } = useT()
   const sym = currencySymbol(settings.currency, settings.language)
   // Ocultar montos (T13): fmtMoney enmascara cuando settings.hideAmounts está activo.
@@ -26,11 +24,8 @@ export default function NetWorth() {
   const fmtMoney = (n, s) => m(fmtMoneyRaw(n, s))
 
   // Cálculo compartido (mismo que usa el resumen en Reportes/PDF)
-  const base = useMemo(() => calcNetWorth({ goals, debts, receivables, incomes, expenses, settings }),
-    [goals, debts, receivables, incomes, expenses, settings])
-  const { inv } = useInvestPortfolio()
-  const { savedInGoals, propsValueTotal, propertiesNet, pendingDebt, receivablesPending, totalActivos, totalPasivos, netWorth, hasData } =
-    useMemo(() => withInvest(base, inv), [base, inv])
+  const { inv, nw } = useNetWorth()
+  const { savedInGoals, propsValueTotal, propertiesNet, pendingDebt, receivablesPending, totalActivos, totalPasivos, netWorth, hasData } = nw
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

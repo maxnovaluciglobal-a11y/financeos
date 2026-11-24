@@ -205,7 +205,7 @@ export default function CashFlow({ setPage }) {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginBottom: 4 }}>
                     <span>{t('cf.eom.budgetUsed')}</span>
-                    <span style={{ color: paceColor }}>{budgetBarPct.toFixed(0)}% · {paceLabel}</span>
+                    <span style={{ color: paceColor }}>{fmtPct(pctBudgetUsed, { decimals: 0 })} · {paceLabel}</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 3, background: 'var(--brd2)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${budgetBarPct}%`, background: paceColor, borderRadius: 3, transition: '.3s' }} />
@@ -235,12 +235,12 @@ export default function CashFlow({ setPage }) {
       {/* KPIs de proyección */}
       <div className="kpi-row">
         <KPI label={t('cf.kpi.netFlow')}
-          value={fmtMoney(monthlyNetFlow, sym)}
+          value={fmtSignedMoney(monthlyNetFlow, sym)}
           color={monthlyNetFlow > 0 ? 'green' : monthlyNetFlow < 0 ? 'red' : 'default'}
           sub={trend === 'positivo' ? t('cf.kpi.trendUp') : trend === 'negativo' ? t('cf.kpi.trendDown') : t('cf.kpi.trendFlat')} />
-        <KPI label={t('cf.kpi.bal30')}  value={fmtMoney(bal30, sym)}  color={bal30 > 0 ? 'green' : 'red'} />
-        <KPI label={t('cf.kpi.bal60')}  value={fmtMoney(bal60, sym)}  color={bal60 > 0 ? 'green' : 'red'} />
-        <KPI label={t('cf.kpi.bal90')}  value={fmtMoney(bal90, sym)}  color={bal90 > 0 ? 'green' : 'red'} />
+        <KPI label={t('cf.kpi.bal30')}  value={fmtSignedMoney(bal30, sym)}  color={bal30 > 0 ? 'green' : 'red'} />
+        <KPI label={t('cf.kpi.bal60')}  value={fmtSignedMoney(bal60, sym)}  color={bal60 > 0 ? 'green' : 'red'} />
+        <KPI label={t('cf.kpi.bal90')}  value={fmtSignedMoney(bal90, sym)}  color={bal90 > 0 ? 'green' : 'red'} />
       </div>
 
       {/* Gráfico de proyección */}
@@ -362,17 +362,17 @@ export default function CashFlow({ setPage }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {monthlyNetFlow > 0 && (
               <Alert type="ok">
-                {t('cf.analysis.positive', { v: fmtMoney(monthlyNetFlow, sym), b90: fmtMoney(bal90, sym) })}
+                {t('cf.analysis.positive', { n: monthlyEstimate.monthsUsed, v: fmtMoney(monthlyNetFlow, sym), b90: fmtSignedMoney(bal90, sym) })}
               </Alert>
             )}
             {monthlyNetFlow < 0 && (
               <Alert type="danger">
-                {t('cf.analysis.negative', { v: fmtMoney(-monthlyNetFlow, sym), b90: fmtMoney(bal90, sym) })}
+                {t('cf.analysis.negative', { n: monthlyEstimate.monthsUsed, v: fmtMoney(-monthlyNetFlow, sym), b90: fmtSignedMoney(bal90, sym) })}
               </Alert>
             )}
             {monthlyNetFlow === 0 && (
               <Alert type="warn">
-                {t('cf.analysis.zero')}
+                {t('cf.analysis.zero', { n: monthlyEstimate.monthsUsed })}
               </Alert>
             )}
             {recurringExp.length > 0 && (

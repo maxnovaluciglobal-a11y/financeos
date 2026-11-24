@@ -107,7 +107,7 @@ export default {
   'plan.ap.fromCapital': 'Ihr nicht investiertes Kapital verwenden ({v})',
   'plan.ap.fromCapitalNote': 'Betrag auf {v} gesetzt: eine einmalige Aufteilung, keine monatliche Einzahlung.',
   'plan.ap.ladderHint': 'Die vollständige Ansicht ergänzt die Aufteilung in Tranchen nach den gleitenden Durchschnitten über 20, 50, 100 und 200 Tage.',
-  'plan.ap.fromCash': 'Ihr Geld Zum Investieren verwenden ({v})',
+  'plan.ap.fromCash': 'Ihr Guthaben unter „Zum Investieren“ verwenden ({v})',
   'plan.ap.err.amount_required': 'Geben Sie ein, wie viel Sie einzahlen möchten.',
   'plan.ap.err.amount_invalid': 'Der Betrag muss größer als 0 sein.',
   'plan.ap.saveBlock.proj': 'Um den Plan zu speichern, korrigieren Sie die Jahre oder die Rendite unter „Wie viel könnten Sie haben?“.',

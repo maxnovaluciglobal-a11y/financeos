@@ -32,42 +32,27 @@ function SankeyPath({ x1, y1, h1, x2, y2, h2, color, opacity = 0.22 }) {
   return <path d={d} fill={color} opacity={opacity} />
 }
 
-export default function MoneyFlow({ incomes, expenses, subscriptions, debts, sym = '$' }) {
+// `flow` = reportFlow(monthLeft(...)) (pages/Reports/reportsModel.js): las
+// mismas cifras que "Te queda" del Inicio y el KPI de Reportes (QA pre-tiendas
+// I7). Antes recalculaba suscripciones y cuotas completas por su cuenta.
+export default function MoneyFlow({ flow, sym = '$' }) {
   // Ocultar montos (T13): las cifras de los nodos SVG pasan por m(); los
   // porcentajes y las proporciones del dibujo se quedan (no son montos).
   const { m } = useMoney()
   const { t } = useT()
   const amt = (v) => m(fmtV(v, sym))
-  const safeInc = useMemo(() => (Array.isArray(incomes) ? incomes : []), [incomes])
-  const safeExp = useMemo(() => (Array.isArray(expenses) ? expenses : []), [expenses])
-  const safeSubs = useMemo(() => (Array.isArray(subscriptions) ? subscriptions : []), [subscriptions])
-  const safeDebt = useMemo(() => (Array.isArray(debts) ? debts : []), [debts])
 
   const data = useMemo(() => {
-    const totalInc = safeInc.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
+    const totalInc = Number(flow?.income) || 0
     if (totalInc === 0) return null
-
-    const totalExp  = safeExp.reduce((s, r) => s + (Number(r?.amount) || 0), 0)
-    const totalSubs = safeSubs.filter(s => s?.status === 'active').reduce((s, sub) => {
-      const amt = Number(sub.amount) || 0
-      const f   = sub.frequency || 'monthly'
-      if (f === 'annual' || f === 'anual') return s + amt / 12
-      if (f === 'quarterly') return s + amt / 3
-      if (f === 'weekly') return s + amt * 4.33
-      return s + amt
-    }, 0)
-    const totalDebt = safeDebt.reduce((s, d) => s + (Number(d?.minPayment) || 0), 0)
-    const libre     = Math.max(0, totalInc - totalExp - totalSubs - totalDebt)
-
     const items = [
-      { key: 'gastos', label: t('chart.expenses'), amount: totalExp,   color: COLORS.gastos },
-      totalSubs > 0 && { key: 'subs',   label: t('chart.flow.subs'), amount: totalSubs,  color: COLORS.subs },
-      totalDebt > 0 && { key: 'deudas', label: t('chart.flow.debt'), amount: totalDebt,  color: COLORS.deudas },
-      { key: 'libre',  label: t('chart.flow.available'), amount: libre,     color: COLORS.libre },
+      { key: 'gastos', label: t('chart.expenses'), amount: flow.spent, color: COLORS.gastos },
+      flow.setAside > 0 && { key: 'apartado', label: t('chart.flow.setAside'), amount: flow.setAside, color: COLORS.deudas },
+      flow.pendingFixed > 0 && { key: 'fijos', label: t('chart.flow.pendingFixed'), amount: flow.pendingFixed, color: COLORS.subs },
+      { key: 'libre', label: t('chart.flow.available'), amount: flow.available, color: COLORS.libre },
     ].filter(Boolean)
-
     return { totalInc, items }
-  }, [safeInc, safeExp, safeSubs, safeDebt, t])
+  }, [flow, t])
 
   if (!data) return <ChartEmpty msg={t('chart.flow.empty')} />
 
