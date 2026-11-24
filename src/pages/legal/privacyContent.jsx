@@ -26,15 +26,15 @@ function EsBody() {
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
-        <strong>Resumen:</strong> Para usar moyiq se necesita una cuenta gratuita, asociada a un
-        email. Los datos financieros del usuario se guardan en su dispositivo y no los recibimos.
-        Solo salen del dispositivo si el usuario activa la sincronización (se cifran en el
-        dispositivo antes de subirse; ver el punto 5 sobre la llave) o si envía un reporte PDF por
-        email. Lo que se registra en Inversiones, si se usa esa sección en la app web
+        <strong>Resumen:</strong> Para usar moyiq necesitas una cuenta gratuita, asociada a un
+        email. Tus datos financieros se guardan en tu dispositivo y no los recibimos.
+        Solo salen del dispositivo si activas la sincronización (se cifran en tu
+        dispositivo antes de subirse; ver el punto 5 sobre la llave) o si envías un reporte PDF por
+        email. Lo que registras en Inversiones, si usas esa sección en la app web
         (posiciones, movimientos, activos que se siguen, alertas de precio, capital de referencia,
-        regla de riesgo y planes), se guarda en la cuenta, en nuestro servidor (punto 4); la app que
+        regla de riesgo y planes), se guarda en tu cuenta, en nuestro servidor (punto 4); la app que
         se descarga de Google Play o App Store no incluye Inversiones en esta versión. Los
-        comentarios y la encuesta que el usuario decida enviar también salen del dispositivo
+        comentarios y la encuesta que decidas enviar también salen del dispositivo
         (punto 4). En la app web contamos las aperturas de forma anónima y sin cookies (punto 8); la
         app de las tiendas no incluye esa medición. No hay seguimiento de comportamiento y la app no
         se conecta con bancos.
@@ -44,8 +44,8 @@ function EsBody() {
         <h2>1. Quién opera moyiq</h2>
         <p>
           Moyiq es desarrollado y distribuido por MAXNOVA & LUCI Global LLC. Esta política explica
-          qué datos se quedan en el dispositivo del usuario, qué datos guardamos en nuestros
-          servidores, con qué proveedores trabajamos y cómo ejercer los derechos sobre esos datos.
+          qué datos se quedan en tu dispositivo, qué datos guardamos en nuestros
+          servidores, con qué proveedores trabajamos y cómo ejercer tus derechos sobre esos datos.
         </p>
         <CompanyBlock lang="es" />
       </div>
@@ -53,8 +53,8 @@ function EsBody() {
       <div className={s.section}>
         <h2>2. Cuenta de usuario</h2>
         <p>
-          Para usar la app se necesita una <strong>cuenta gratuita</strong>. Guardamos el email de
-          la cuenta. Si el usuario entra con Google, recibimos de Google su email y su nombre. La
+          Para usar la app necesitas una <strong>cuenta gratuita</strong>. Guardamos el email de
+          la cuenta. Si entras con Google, recibimos de Google tu email y tu nombre. La
           contraseña la gestiona el servicio de autenticación de forma cifrada; nosotros nunca
           la vemos.
         </p>
@@ -63,7 +63,7 @@ function EsBody() {
       <div className={s.section}>
         <h2>3. Datos financieros: se guardan en el dispositivo</h2>
         <p>
-          Los siguientes datos se guardan en el navegador o dispositivo del usuario mediante
+          Los siguientes datos se guardan en tu navegador o dispositivo mediante
           IndexedDB, un estándar de almacenamiento local. <strong>No los recibimos</strong> ni son
           accesibles para MAXNOVA & LUCI Global LLC ni para terceros:
         </p>
@@ -89,14 +89,14 @@ function EsBody() {
           sistema (Google) y la transferencia de datos a un teléfono nuevo pueden incluir los datos que
           la app guarda en el teléfono, incluidas las finanzas. Quedan fuera la sesión, la clave de
           licencia y la llave de la sincronización. En iPhone, la copia de iCloud puede incluir los
-          datos de la app. Esas copias las hace y las protege Google o Apple en la cuenta del usuario,
-          según sus propias políticas; nosotros no recibimos ni podemos leer esas copias. El usuario
-          puede desactivarlas en los ajustes de su teléfono.
+          datos de la app. Esas copias las hace y las protege Google o Apple en tu cuenta,
+          según sus propias políticas; nosotros no recibimos ni podemos leer esas copias. Puedes
+          desactivarlas en los ajustes de tu teléfono.
         </p>
         <div className={s.infoBox}>
-          <strong>Implicación práctica:</strong> Si el usuario borra los datos del navegador,
-          desinstala la app o cambia de dispositivo sin haber exportado un respaldo (o sin tener
-          la sincronización activa), sus datos se pierden de forma permanente y no podemos
+          <strong>Implicación práctica:</strong> Si borras los datos del navegador,
+          desinstalas la app o cambias de dispositivo sin haber exportado un respaldo (o sin tener
+          la sincronización activa), tus datos se pierden de forma permanente y no podemos
           recuperarlos.
         </div>
         <div className={s.warnBox} style={{ marginTop: 8 }}>
@@ -123,16 +123,16 @@ function EsBody() {
             hora de la confirmación como prueba del consentimiento.
           </li>
           <li>
-            <strong>Formulario del demo:</strong> nombre, email y si el usuario acepta recibir
+            <strong>Formulario del demo:</strong> nombre, email y si aceptas recibir
             novedades.
           </li>
           <li>
-            <strong>Diagnóstico Exprés:</strong> email, puntaje obtenido y si el usuario acepta
+            <strong>Diagnóstico Exprés:</strong> email, puntaje obtenido y si aceptas
             recibir novedades.
           </li>
           <li>
             <strong>Plan Pro:</strong> el email de la compra, la cuenta a la que está asociado, un
-            hash irreversible de la clave de licencia (la clave misma solo si el usuario sincroniza
+            hash irreversible de la clave de licencia (la clave misma solo si sincronizas
             con el modelo anterior; ver el punto 5), el plan y las fechas de activación y
             vencimiento.
           </li>
@@ -192,32 +192,32 @@ function EsBody() {
       <div className={s.section}>
         <h2>5. Sincronización entre dispositivos (opcional y cifrada)</h2>
         <p>
-          La sincronización viene desactivada. Si el usuario la activa en Ajustes, sus datos se
-          cifran en el dispositivo con <strong>AES-GCM</strong> antes de enviarse y se almacenan
+          La sincronización viene desactivada. Si la activas en Ajustes, tus datos se
+          cifran en tu dispositivo con <strong>AES-GCM</strong> antes de enviarse y se almacenan
           cifrados. Desde el 19 de octubre de 2026, al activarla se crea una frase de paso: la
           llave se deriva de esa frase en el dispositivo (PBKDF2 con 600 000 iteraciones y sal
           aleatoria), la frase no se envía ni se guarda en nuestro servidor y, por eso, no podemos
-          leer esa copia ni recuperarla si se olvida la frase. Quien ya sincronizaba antes de esa
-          fecha sigue con el modelo anterior hasta que elija pasar a una frase de paso en Ajustes:
+          leer esa copia ni recuperarla si olvidas la frase. Si ya sincronizabas antes de esa
+          fecha, sigues con el modelo anterior hasta que elijas pasar a una frase de paso en Ajustes:
           en ese modelo la llave se deriva de la clave de licencia, que nuestro servidor conserva
           mientras exista esa copia, así que para esas copias no podemos asegurar que sea
-          técnicamente imposible leerlas; solo las usamos para sincronizar los dispositivos del
-          usuario. Las copias con frase de paso están cifradas de extremo a extremo; las del modelo
+          técnicamente imposible leerlas; solo las usamos para sincronizar tus
+          dispositivos. Las copias con frase de paso están cifradas de extremo a extremo; las del modelo
           anterior, no. Para el resto de las cuentas, el servidor guarda solo un hash de la licencia.
-          Quien prefiera que sus datos no salgan del dispositivo puede dejar la sincronización
+          Si prefieres que tus datos no salgan de tu dispositivo, deja la sincronización
           desactivada. Desactivarla detiene las subidas, pero no borra la copia ya guardada: para
-          borrarla, escribir a support@moyiq.app o eliminar la cuenta desde Ajustes.
+          borrarla, escribe a support@moyiq.app o elimina la cuenta desde Ajustes.
         </p>
       </div>
 
       <div className={s.section}>
         <h2>6. Envío de reportes por email (Modo Asesor)</h2>
         <p>
-          Cuando el usuario pulsa el botón para enviar un reporte PDF por email desde el Modo
+          Cuando pulsas el botón para enviar un reporte PDF por email desde el Modo
           Asesor, el PDF (con los datos financieros que contiene) y la dirección del destinatario
           pasan por nuestro servidor y por nuestro proveedor de email (Resend){' '}
           <strong>sin cifrado de extremo a extremo</strong>, únicamente para entregarlo. No
-          guardamos el reporte. Esto ocurre solo cuando el usuario realiza esa acción.
+          guardamos el reporte. Esto ocurre solo cuando realizas esa acción.
         </p>
       </div>
 
@@ -242,7 +242,7 @@ function EsBody() {
             Store no usa Turnstile. Cloudflare actúa como encargado y, para
             mejorar esa detección de robots, como responsable propio.
           </li>
-          <li><strong>Google (EE. UU.):</strong> la bandeja de Gmail donde recibimos y respondemos los correos y comentarios, y el inicio de sesión si el usuario elige entrar con Google.</li>
+          <li><strong>Google (EE. UU.):</strong> la bandeja de Gmail donde recibimos y respondemos los correos y comentarios, y el inicio de sesión si eliges entrar con Google.</li>
           <li>
             <strong>mindicador.cl (Chile) y dolarapi.com:</strong> servicios públicos de cotizaciones.
             La app los consulta desde tu dispositivo (incluido ve.dolarapi.com para Venezuela) para
@@ -307,8 +307,8 @@ function EsBody() {
       <div className={s.section}>
         <h2>10. Exportación e importación de datos</h2>
         <p>
-          El usuario puede exportar todos sus datos en formato JSON o CSV desde Ajustes. La
-          exportación queda bajo su control exclusivo; no recibimos copia. La importación de
+          Puedes exportar todos tus datos en formato JSON o CSV desde Ajustes. La
+          exportación queda bajo tu control exclusivo; no recibimos copia. La importación de
           respaldos ocurre íntegramente en el dispositivo.
         </p>
       </div>
@@ -322,7 +322,7 @@ function EsBody() {
         <p>
           Para acceder a los datos que guardamos, corregirlos o pedir su eliminación (incluida la
           de la cuenta), basta con escribir a <strong>support@moyiq.app</strong>. Los datos
-          financieros guardados solo en el dispositivo los controla y borra el propio usuario,
+          financieros guardados solo en tu dispositivo los controlas y borras tú,
           porque nosotros no los tenemos.
         </p>
         <p>
@@ -400,8 +400,8 @@ function EsBody() {
       <div className={s.section}>
         <h2>14. Seguridad</h2>
         <p>
-          Los datos locales dependen de la seguridad del dispositivo del usuario. Los datos
-          sincronizados se guardan cifrados con una llave derivada de la frase de paso del usuario
+          Los datos locales dependen de la seguridad de tu dispositivo. Los datos
+          sincronizados se guardan cifrados con una llave derivada de tu frase de paso
           (o, en el modelo anterior, de la clave de licencia; ver el punto 5). Recomendamos exportar
           respaldos JSON periódicamente y guardar la frase de paso en un lugar seguro.
         </p>

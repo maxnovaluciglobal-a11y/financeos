@@ -152,11 +152,11 @@ function EsBody({ store = false } = {}) {
           Moyiq almacena los datos financieros localmente en el dispositivo del usuario. Salvo
           que el usuario active la sincronización cifrada opcional,{' '}
           <strong>MAXNOVA & LUCI Global LLC no almacena ni puede recuperar esos datos</strong>{' '}
-          (y aun con sincronización activa, solo almacena datos cifrados que no puede leer).
+          (y aun con sincronización activa, solo almacena datos cifrados; las copias con frase de paso no las puede leer, ver el punto 5 de la Política de Privacidad).
         </p>
         <div className={s.warnBox}>
           <strong>Advertencia sobre pérdida de datos:</strong> Los datos pueden perderse de forma
-          permanente si el usuario borra los datos del navegador, limpia la caché, cambia de
+          permanente si el usuario borra los datos {store ? 'de la app' : 'del navegador'}, limpia la caché, cambia de
           dispositivo sin exportar un respaldo, desinstala la aplicación o reinstala el sistema
           operativo. Se recomienda exportar respaldos JSON con regularidad desde Ajustes.
         </div>
@@ -169,7 +169,7 @@ function EsBody({ store = false } = {}) {
           responsable por:
         </p>
         <ul className={s.list}>
-          <li>Pérdida de datos debido a borrado del navegador u otras causas locales</li>
+          <li>Pérdida de datos debido a borrado {store ? 'de los datos de la app' : 'del navegador'} u otras causas locales</li>
           <li>Decisiones financieras tomadas con base en la información de la herramienta</li>
           <li>Daños directos, indirectos, incidentales o consecuentes derivados del uso</li>
           <li>Interrupciones del servicio por causas de terceros (alojamiento, navegador, etc.)</li>
@@ -374,11 +374,11 @@ function EnBody({ store = false } = {}) {
           Moyiq stores financial data locally on the user's device. Unless the user turns on the
           optional encrypted sync,{' '}
           <strong>MAXNOVA & LUCI Global LLC does not store and cannot recover that data</strong>{' '}
-          (and even with sync on, it only stores encrypted data it cannot read).
+          (and even with sync on, it only stores encrypted data; it cannot read copies protected by a passphrase, see section 5 of the Privacy Policy).
         </p>
         <div className={s.warnBox}>
           <strong>Data-loss warning:</strong> Data can be lost permanently if the user clears
-          browser data, wipes the cache, switches devices without exporting a backup, uninstalls
+          {store ? 'the app data' : 'browser data'}, wipes the cache, switches devices without exporting a backup, uninstalls
           the app, or reinstalls the operating system. Export JSON backups regularly from Settings.
         </div>
       </div>
@@ -390,7 +390,7 @@ function EnBody({ store = false } = {}) {
           liable for:
         </p>
         <ul className={s.list}>
-          <li>Data loss due to browser clearing or other local causes</li>
+          <li>Data loss due to {store ? 'clearing the app data' : 'browser clearing'} or other local causes</li>
           <li>Financial decisions made based on the tool's information</li>
           <li>Direct, indirect, incidental, or consequential damages arising from use</li>
           <li>Service interruptions caused by third parties (hosting, browser, etc.)</li>
@@ -594,11 +594,11 @@ function PtBody({ store = false } = {}) {
           O moyiq armazena os dados financeiros localmente no dispositivo do usuário. Salvo se o
           usuário ativar a sincronização criptografada opcional,{' '}
           <strong>a MAXNOVA & LUCI Global LLC não armazena nem pode recuperar esses dados</strong>{' '}
-          (e, mesmo com a sincronização ativa, armazena apenas dados criptografados que não pode ler).
+          (e, mesmo com a sincronização ativa, armazena apenas dados criptografados; as cópias com frase de acesso ele não pode ler, veja o item 5 da Política de Privacidade).
         </p>
         <div className={s.warnBox}>
           <strong>Aviso sobre perda de dados:</strong> Os dados podem ser perdidos permanentemente
-          se o usuário apagar os dados do navegador, limpar o cache, trocar de dispositivo sem
+          se o usuário apagar os dados {store ? 'do app' : 'do navegador'}, limpar o cache, trocar de dispositivo sem
           exportar um backup, desinstalar o app ou reinstalar o sistema operacional. Recomenda-se
           exportar backups JSON regularmente em Configurações.
         </div>
@@ -611,7 +611,7 @@ function PtBody({ store = false } = {}) {
           responsável por:
         </p>
         <ul className={s.list}>
-          <li>Perda de dados devido à limpeza do navegador ou outras causas locais</li>
+          <li>Perda de dados devido à limpeza {store ? 'dos dados do app' : 'do navegador'} ou outras causas locais</li>
           <li>Decisões financeiras tomadas com base nas informações da ferramenta</li>
           <li>Danos diretos, indiretos, incidentais ou consequentes decorrentes do uso</li>
           <li>Interrupções do serviço por causas de terceiros (hospedagem, navegador etc.)</li>
@@ -745,7 +745,7 @@ function DeBody({ store = false } = {}) {
           Finanzberater und keine offizielle Steuererklärung (z. B. über ELSTER).
         </p>
         <p>
-          (6) Technische Voraussetzungen: ein aktueller Webbrowser mit aktiviertem JavaScript; für
+          (6) Technische Voraussetzungen: {store ? 'ein Telefon mit einer unterstützten Systemversion' : 'ein aktueller Webbrowser mit aktiviertem JavaScript'}; für
           Konto, Abo-Prüfung und Synchronisierung eine Internetverbindung.
         </p>
       </div>
@@ -925,7 +925,7 @@ function DeBody({ store = false } = {}) {
       <div className={s.section}>
         <h2>§ {n(11)} Datensicherung</h2>
         <p>
-          Ihre Finanzdaten werden lokal in Ihrem Browser bzw. auf Ihrem Gerät gespeichert. Ohne
+          Ihre Finanzdaten werden lokal {store ? 'in der App auf Ihrem Gerät' : 'in Ihrem Browser bzw. auf Ihrem Gerät'} gespeichert. Ohne
           aktivierte Synchronisierung haben wir keinen Zugriff darauf und können sie nicht
           wiederherstellen. Wir empfehlen, regelmäßig eine Sicherung über „Einstellungen“ zu
           exportieren. Die Haftung nach § {n(10)} Abs. 1 bleibt unberührt.
