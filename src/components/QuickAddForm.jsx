@@ -74,7 +74,7 @@ const DEFAULT_METHOD = config.paymentMethods[0]
 // más usado de la app. Con una moneda sin decimales, la coma pasa a ser "000".
 // B4a (W3): 4.ª columna con ⌫ arriba y ✓ (guardar) a la altura del pulgar; el
 // ✓ se activa solo con monto y categoría.
-function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm, primaryOk = false }) {
+function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm, onBlocked, primaryOk = false }) {
   const decimalKey = decimals > 0 ? KEY_DECIMAL : KEY_THOUSAND
   const sep = decimalSeparator(locale || moneyLocale())
   const label = (k) => (k === KEY_BACKSPACE ? t('qa.keypadBackspace') : k === KEY_DECIMAL ? t('qa.keypadDecimal') : k === KEY_THOUSAND ? t('qa.keypadThousand') : k)
@@ -88,7 +88,7 @@ function NumericKeypad({ setAmount, decimals, locale, t, canConfirm, onConfirm, 
     <div role="group" aria-label={t('qa.amount')} className={css.keypad}>
       {key('1')}{key('2')}{key('3')}{key(KEY_BACKSPACE)}
       {key('4')}{key('5')}{key('6')}
-      <button type="button" className={`${css.key} ${css.keyOk} ${primaryOk ? css.keyOkPrimary : ''}`} onClick={onConfirm} disabled={!canConfirm} aria-label={t('qa.keypadSave')}>
+      <button type="button" className={`${css.key} ${css.keyOk} ${primaryOk ? css.keyOkPrimary : ''}`} onClick={canConfirm ? onConfirm : onBlocked} aria-disabled={!canConfirm} aria-label={t('qa.keypadSave')}>
         <Check size={22} strokeWidth={2.2} aria-hidden="true" />
         <span aria-hidden="true">{t('qa.keypadSave')}</span>
       </button>
@@ -443,6 +443,13 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   }, [display, amountSize])
 
   // Apartar: no es un gasto (no lleva categoría ni método); resta de "Te queda".
+  // M15 (QA): "Guardar" sin monto (o sin categoría o destino) dice qué falta
+  // en vez de no responder.
+  function explainBlocked() {
+    if (saving) return
+    showToast?.(t(!(amt > 0) ? 'qa.need.amount' : isAside ? 'qa.need.dest' : 'qa.need.category'), 'error')
+  }
+
   async function saveSetAside() {
     if (!canConfirm || !destOn || !addSetAside) return
     setSaving(true)
@@ -589,7 +596,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   ) : null
 
   const saveButton = (
-    <button type="button" className="fos-btn-primary" onClick={save} disabled={!canSave || (isAside && !destOn)} style={{ minHeight: 48 }}>
+    <button type="button" className="fos-btn-primary" onClick={(!canSave || (isAside && !destOn)) && !saving ? explainBlocked : save} aria-disabled={!canSave || (isAside && !destOn)} style={{ minHeight: 48 }}>
       {saving ? '…' : t('qa.save')}
     </button>
   )
@@ -741,7 +748,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         {catHint && <div id="qa-cat-hint" className={css.catHint}>{catHint}</div>}
 
         <div ref={keypadRef}>
-          <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} primaryOk={compact} />
+          <NumericKeypad setAmount={setAmount} decimals={entryDecimals} locale={entryLocale} t={t} canConfirm={canConfirm} onConfirm={save} onBlocked={explainBlocked} primaryOk={compact} />
         </div>
 
         {/* Lo que no hace falta para registrar: a un toque, con el método a la vista */}

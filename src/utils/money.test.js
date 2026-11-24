@@ -113,7 +113,9 @@ describe('fmtAxis (ejes compactos de gráficos, enteros)', () => {
     expect(fmtAxis(950.5)).toBe('951')
     expect(fmtAxis(12_000)).toBe('12\u202fK')
     expect(fmtAxis(1_500_000)).toBe('1,5\u202fM')
-    expect(fmtAxis(-2500)).toBe('\u22123\u202fK')
+    expect(fmtAxis(-2500)).toBe('\u22122,5\u202fK')
+    // M14 (QA): ticks de 750 en 750 no repiten etiqueta.
+    expect([0, 750, 1500, 2250, 3000].map(v => fmtAxis(v, 'en-US'))).toEqual(['0', '750', '1.5\u202fK', '2.25\u202fK', '3\u202fK'])
     expect(fmtAxis(1_500_000, 'en-US')).toBe('1.5\u202fM')
   })
 })
