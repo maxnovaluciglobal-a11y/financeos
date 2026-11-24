@@ -18,6 +18,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { ChevronDown, Check } from 'lucide-react'
 import CountryBadge from '../CountryBadge.jsx'
 import { moveIndex, typeaheadIndex, isTypeaheadKey } from './listboxKeys.js'
+import { useBackDismiss } from '../../hooks/useBackDismiss.js'
 
 function Mark({ code, size }) {
   // "Otro país" no tiene sello: marca de texto, la misma que usa el onboarding.
@@ -49,6 +50,7 @@ export default function CountrySelect({ value, onChange, options, labelId, id })
     setOpen(true)
   }
   function closeList() { setOpen(false) }
+  useBackDismiss(open, closeList)
   function choose(i) {
     const opt = options[i]
     closeList()

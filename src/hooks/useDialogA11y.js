@@ -5,11 +5,21 @@
 // Con diálogos apilados (una lista dentro de un formulario en hoja) solo responde
 // el de más arriba: Esc cierra uno por vez.
 import { useEffect, useRef } from 'react'
+import { pushBackDismiss } from '../native/backStack.js'
 
 const stack = []
 
 export function useDialogA11y(open, onClose, containerRef, focusRef) {
   const token = useRef({})
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+  // Botón atrás de Android: cierra este diálogo antes de navegar (AND-3). Va
+  // aparte del efecto de abajo para que un onClose nuevo en cada render no lo
+  // vuelva a poner arriba de un diálogo abierto después.
+  useEffect(() => {
+    if (!open) return undefined
+    return pushBackDismiss(() => closeRef.current?.())
+  }, [open])
   useEffect(() => {
     if (!open) return
     const me = token.current

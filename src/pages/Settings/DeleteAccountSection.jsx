@@ -44,7 +44,7 @@ export default function DeleteAccountSection({ autoOpen = false }) {
   }, [autoOpen])
 
   async function handleExport() {
-    try { await exportData(); setExported(true) } catch { setError(t('deleteAccount.exportError')) }
+    try { if (await exportData() !== 'cancelled') setExported(true) } catch { setError(t('deleteAccount.exportError')) }
   }
 
   async function handleDelete() {

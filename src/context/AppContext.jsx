@@ -30,6 +30,7 @@ import { encryptBackupFile } from '../utils/backupFile.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
 import { isNewerDbError } from '../utils/forceUpdate.js'
 import { applyTheme, watchSystemTheme } from '../utils/theme.js'
+import { saveBlob, SAVED } from '../native/saveFile.js'
 import { convertColorList } from '../utils/legacyColors.js'
 import { runOnVisible } from './visibilitySync.js'
 
@@ -598,7 +599,7 @@ export function AppProvider({ children }) {
   }, [showToast, tr])
 
   // FIX: BOM UTF-8 (\uFEFF) para que Excel Windows muestre acentos correctamente
-  const exportCSV = useCallback(() => {
+  const exportCSV = useCallback(async () => {
     try {
       // Encabezados y valores fijos (tipo, categoría canónica, método,
       // recurrencia) en el idioma activo; lo que escribió el usuario va tal cual.
@@ -614,15 +615,14 @@ export function AppProvider({ children }) {
       ]
       const csv  = toCsv(rows)
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }) // FIX: BOM
-      const url  = URL.createObjectURL(blob)
-      const a    = document.createElement('a')
-      a.href     = url
-      a.download = `moyiq-${localDateStr()}.csv`
-      a.click()
-      URL.revokeObjectURL(url)
-      showToast(tr('toast.csvExported'), 'ok')
+      // En la app nativa, "listo" solo si el archivo quedó guardado (AND-2).
+      const r = await saveBlob(blob, `moyiq-${localDateStr()}.csv`)
+      if (r === SAVED) showToast(tr('toast.csvExported'), 'ok')
+      else showToast(tr('toast.saveCancelled'), 'info')
+      return r
     } catch (e) {
       showToast(tr('toast.csvError'), 'error')
+      throw e
     }
   }, [state, showToast, tr])
 
@@ -651,16 +651,17 @@ export function AppProvider({ children }) {
       const blob = passphrase
         ? new Blob([await encryptBackupFile(backup, passphrase)], { type: 'text/plain' })
         : new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
-      const url  = URL.createObjectURL(blob)
-      const a    = document.createElement('a')
-      a.href     = url
-      a.download = `moyiq-backup-${localDateStr()}${passphrase ? '.enc.txt' : '.json'}`
-      a.click()
-      URL.revokeObjectURL(url)
-      if (data.incomplete?.length) showToast(tr('toast.backupIncomplete'), 'error')
+      // Devuelve 'saved' | 'cancelled' y lanza si falló: quien llama marca
+      // "Último respaldo" solo con 'saved' (AND-2: en la app nativa la
+      // descarga <a download> no guardaba nada y la app decía que sí).
+      const r = await saveBlob(blob, `moyiq-backup-${localDateStr()}${passphrase ? '.enc.txt' : '.json'}`)
+      if (r !== SAVED) showToast(tr('toast.saveCancelled'), 'info')
+      else if (data.incomplete?.length) showToast(tr('toast.backupIncomplete'), 'error')
       else showToast(tr('toast.backupCreated'), 'ok')
+      return r
     } catch (e) {
       showToast(tr('toast.backupError'), 'error')
+      throw e
     }
   }, [showToast, tr])
 

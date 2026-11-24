@@ -6,7 +6,9 @@
 // del navegador/Android y el gesto de iOS. La lógica de qué apilar vive pura
 // en components/layout/pageStack.js (con tests).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { navAction, bootEntries, backAction, backTarget, isStackState, isRootPage } from '../components/layout/pageStack.js'
+import { navAction, bootEntries, backAction, backTarget, isStackState, isRootPage, nativeBackAction } from '../components/layout/pageStack.js'
+import { TAB_IDS } from '../components/layout/navConfig.js'
+import { setBackNavigator } from '../native/backStack.js'
 import { runViewTransition } from '../components/layout/viewTransition.js'
 import { tabMotion } from '../components/layout/navConfig.js'
 import { UI_FLAGS } from '../utils/uiFlags.js'
@@ -130,6 +132,17 @@ export function usePageStack(page, setPageState) {
     setNavDir('pop')
     runViewTransition(() => { setStackState(history.state); setPageState(a.page) })
   }, [setPageState])
+
+  // Botón atrás de Android (bridge.js → native/backStack.js), después de cerrar
+  // hojas y menús: vuelve de pantalla, o de pestaña a Inicio; en Inicio avisa
+  // que no hay a dónde volver y la app va al fondo (AND-4).
+  useEffect(() => setBackNavigator(() => {
+    const a = nativeBackAction(history.state, pageRef.current)
+    if (a === 'history') { inAppBack.current = true; history.back(); return true }
+    if (a === 'parent') { back(); return true }
+    if (a === 'home') { go(TAB_IDS[0]); return true }
+    return false
+  }), [back, go])
 
   return { go, back, backTo: backTarget(stackState, page) }
 }

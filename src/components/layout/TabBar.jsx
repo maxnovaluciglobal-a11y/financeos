@@ -11,6 +11,7 @@
 // AddFab queda para Ingresos, la pantalla empujada que no tiene barra.
 // La pestaña activa sale de activeTabFor(page) (R04): las páginas internas
 // encienden su pestaña madre, así la barra nunca queda sin activo.
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Home, ArrowLeftRight, Wallet, Target, LayoutGrid, Plus } from 'lucide-react'
 import { activeTabFor, TAB_HOME, TAB_MOVEMENTS, TAB_BUDGETS, TAB_GOALS, TAB_MENU } from './navConfig.js'
 import { tabPress } from './pageStack.js'
@@ -34,11 +35,54 @@ export const TABS = [
   { id: TAB_MENU,      Ic: LayoutGrid,     On: GridOn,      lb: 'nav.menuLabel' },
 ]
 
+// Texto agrandado del sistema (AND-11): la WebView de Android escala la letra
+// con su textZoom y la consulta de contenedor de shell.module.css (25em) no se
+// entera, así que las etiquetas quedaban cortadas ("Ho…", "Transacti…"). Se
+// mide de verdad: si alguna etiqueta no entra, quedan solo los íconos (la
+// etiqueta sigue siendo el nombre accesible); si vuelven a entrar todas, vuelven.
+// Pura para poder probarla: anchos naturales de las etiquetas, ancho visible de
+// cada una y ancho de la cápsula.
+export function tabLabelsFit({ natural, visible, pill, compact, pad = 12 }) {
+  if (!natural.length || !pill) return !compact
+  if (compact) return natural.reduce((a, w) => a + w + pad, 0) <= pill - 8
+  // Una etiqueta de 1 px ya la ocultó la consulta de contenedor: no cuenta.
+  return natural.every((w, i) => (visible[i] ?? 0) <= 1 || w <= visible[i] + 1)
+}
+
+function useTabLabelsFit(pillRef, deps) {
+  const [compact, setCompact] = useState(false)
+  const compactRef = useRef(compact)
+  compactRef.current = compact
+  useLayoutEffect(() => {
+    const pill = pillRef.current
+    if (!pill) return undefined
+    const check = () => {
+      const labels = [...pill.querySelectorAll('[data-tab-label]')]
+      const fit = tabLabelsFit({
+        natural: labels.map(l => l.scrollWidth),
+        visible: labels.map(l => l.clientWidth),
+        pill: pill.clientWidth,
+        compact: compactRef.current,
+      })
+      if (fit === compactRef.current) setCompact(!fit)
+    }
+    check()
+    if (typeof ResizeObserver === 'undefined') return undefined
+    const ro = new ResizeObserver(check)
+    ro.observe(pill)
+    return () => ro.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps = textos de las pestañas
+  }, deps)
+  return compact
+}
+
 export default function TabBar({ page, onNavigate, onReselect, onAdd, t }) {
   const active = activeTabFor(page)
+  const pillRef = useRef(null)
+  const compact = useTabLabelsFit(pillRef, TABS.map(tab => t(tab.lb)))
   return (
-    <nav className={s.tabbar} aria-label={t('nav.tabsLabel')} data-tabbar>
-      <div className={s.tabPill}>
+    <nav className={s.tabbar} aria-label={t('nav.tabsLabel')} data-tabbar data-labels={compact ? 'off' : undefined}>
+      <div className={s.tabPill} ref={pillRef}>
       {TABS.map((tab) => {
         const { id, Ic, On, lb } = tab
         const on = active === id
@@ -55,7 +99,7 @@ export default function TabBar({ page, onNavigate, onReselect, onAdd, t }) {
             <span className={s.tabIc} aria-hidden="true">
               {on ? <On /> : <Ic size={22} strokeWidth={1.7} />}
             </span>
-            <span className={s.tabLb}>{t(lb)}</span>
+            <span className={s.tabLb} data-tab-label>{t(lb)}</span>
           </button>
         )
       })}

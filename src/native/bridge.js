@@ -10,13 +10,18 @@
 //                      lo cambia a morado; ver InicioScene.jsx)
 //   Haptics            utils/haptics.js → Taptic Engine
 //   SplashScreen       se oculta apenas la app pintó
-//   App                botón atrás de Android; enlaces moyiq:// y universales
+//   App                botón atrás de Android (backStack.js); enlaces moyiq:// y universales
+//   MoyiqNative        solo Android, plugin local del repo nativo: fondo detrás de
+//                      las barras, cambio de tema del sistema y "Guardar como"
+//                      (saveFile.js). En iOS no existe y todo sigue igual.
 //   Browser            vuelta del inicio con Google/Apple (nativeAuth.js)
 //   Keyboard           se configura en capacitor.config (resize nativo)
 import { registerPlugin, SystemBars, SystemBarsStyle } from '@capacitor/core'
 import { parseNativeUrl, NATIVE_OAUTH_ERROR_EVENT } from './nativeLinks.js'
 import { setNativeHaptics } from './nativeHaptics.js'
 import { logRejection } from '../utils/errorLog.js'
+import { handleBack } from './backStack.js'
+import { setNativePrefersDark } from '../utils/theme.js'
 
 // Un plugin nativo que falla no tiene que romper la app: queda en el registro de errores.
 const soft = (p, where) => p.catch(logRejection(`native:${where}`))
@@ -24,6 +29,11 @@ const soft = (p, where) => p.catch(logRejection(`native:${where}`))
 const App = registerPlugin('App')
 const Haptics = registerPlugin('Haptics')
 const SplashScreen = registerPlugin('SplashScreen')
+const MoyiqNative = registerPlugin('MoyiqNative')
+
+function hasPlugin(win, name) {
+  try { return win.Capacitor?.isPluginAvailable?.(name) === true } catch { return false }
+}
 
 const LAUNCH_KEY = 'fnos_native_launch_url'
 
@@ -64,7 +74,16 @@ export function rgbToHex(css) {
 // solo: la app lo deja en morado aunque la pantalla de acceso sea blanca.
 function colorUnderStatusBar(doc, win) {
   if (doc.documentElement.dataset.scene === 'on') return currentThemeColor(doc, win)
-  let el = doc.elementFromPoint?.(win.innerWidth / 2, 2)
+  return colorAt(doc, win, 2)
+}
+
+// Lo mismo para la barra de navegación (gestos o botones) de abajo.
+function colorUnderNavBar(doc, win) {
+  return colorAt(doc, win, win.innerHeight - 2)
+}
+
+function colorAt(doc, win, y) {
+  let el = doc.elementFromPoint?.(win.innerWidth / 2, y)
   while (el && el !== doc.documentElement) {
     const cs = win.getComputedStyle(el)
     // Un degradado (la franja del demo) tiene background-color transparente:
@@ -76,18 +95,39 @@ function colorUnderStatusBar(doc, win) {
   return rgbToHex(win.getComputedStyle(doc.body).backgroundColor) || rgbToHex(win.getComputedStyle(doc.documentElement).backgroundColor)
 }
 
+// Android (AND-7): con WebView < 140 Capacitor deja la vista web DEBAJO de las
+// barras y lo que se ve detrás es el fondo de la ventana (#FAFAFA en claro).
+// Elegir los íconos solo por el color de la página dejaba reloj blanco sobre
+// blanco. Con MoyiqNative se pinta ese fondo del mismo color que la página
+// (cabecera arriba, barra inferior abajo) y los íconos salen de ese color; con
+// WebView ≥ 140 la página ya dibuja detrás de las barras y pintar no cambia nada.
+// SystemBars.setStyle vuelve a pintar el fondo de la ventana: por eso los
+// colores van siempre DESPUÉS del estilo.
 function installSystemBars(win) {
   const doc = win.document
+  const paint = hasPlugin(win, 'MoyiqNative')
   let last = null
   let queued = false
-  const sync = () => {
+  let chain = Promise.resolve()
+  const sync = (force = false) => {
     queued = false
-    const style = barStyleFor(colorUnderStatusBar(doc, win))
-    if (style === last) return
-    last = style
-    soft(SystemBars.setStyle({ style }), 'systemBars')
+    const top = colorUnderStatusBar(doc, win)
+    const bottom = paint ? colorUnderNavBar(doc, win) : null
+    const key = `${top}|${bottom}`
+    if (key === last && !force) return
+    last = key
+    const status = barStyleFor(top)
+    const nav = bottom ? barStyleFor(bottom) : status
+    chain = chain.then(async () => {
+      if (status === nav) await SystemBars.setStyle({ style: status })
+      else {
+        await SystemBars.setStyle({ style: status, bar: 'StatusBar' })
+        await SystemBars.setStyle({ style: nav, bar: 'NavigationBar' })
+      }
+      if (paint && top) await MoyiqNative.setBarColors({ top, bottom: bottom || top })
+    }).catch(logRejection('native:systemBars'))
   }
-  const schedule = () => { if (!queued) { queued = true; win.setTimeout(sync, 120) } }
+  const schedule = () => { if (!queued) { queued = true; win.setTimeout(() => sync(), 120) } }
   sync()
   const mo = new MutationObserver(schedule)
   mo.observe(doc.head, { subtree: true, attributes: true, attributeFilter: ['content', 'media'], childList: true })
@@ -95,6 +135,16 @@ function installSystemBars(win) {
   mo.observe(doc.body, { subtree: true, childList: true })
   win.addEventListener('scroll', schedule, { capture: true, passive: true })
   win.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', schedule)
+  if (paint) {
+    // AND-13: con configChanges=uiMode la actividad no se recrea y la WebView no
+    // avisa el cambio de prefers-color-scheme: lo avisa el plugin. El tema
+    // "Sistema" se vuelve a aplicar (utils/theme.js) y las barras se repintan
+    // aunque el tema de la app no cambie (Android repinta la ventana).
+    soft(MoyiqNative.addListener('systemThemeChange', ({ dark }) => {
+      setNativePrefersDark(!!dark)
+      win.setTimeout(() => sync(true), 150)
+    }), 'systemTheme')
+  }
 }
 
 function installHaptics() {
@@ -141,10 +191,14 @@ function installLinksAndBack(win) {
     } catch { /* sin sessionStorage: se procesa igual */ }
     return handleUrl(url, win)
   }).catch(logRejection('native:launchUrl'))
-  // Android: atrás cierra la hoja o vuelve de pantalla (popstate, igual que en
-  // la PWA); en la primera pantalla manda la app al fondo en vez de cerrarla.
+  // Android (AND-3/AND-4, backStack.js): atrás cierra primero la hoja, el
+  // diálogo o el menú abierto; después vuelve de pantalla, o de pestaña a
+  // Inicio; en Inicio (o en el demo) la app va al fondo, nunca a la pantalla de
+  // acceso. Sin la app montada (acceso, alta) se usa el historial como siempre.
   soft(App.addListener('backButton', ({ canGoBack }) => {
-    if (canGoBack && win.history.length > 1) win.history.back()
+    const r = handleBack()
+    if (r === 'dismissed' || r === 'navigated') return
+    if (r === 'unhandled' && canGoBack && win.history.length > 1) win.history.back()
     else soft(App.minimizeApp(), 'minimize')
   }), 'backButton')
 }

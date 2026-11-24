@@ -150,7 +150,7 @@ export default function SyncSection() {
   }
 
   async function backup() {
-    try { await exportData(); setBackupDone(true) } catch { setError(t('syncPass.errBackup')) }
+    try { if (await exportData() !== 'cancelled') setBackupDone(true) } catch { setError(t('syncPass.errBackup')) }
   }
 
   function toggleOff() { disableSync(); setOn(false); setMigrating(false); setNeed(null); refresh() }

@@ -95,3 +95,20 @@ export function backTarget(state, page) {
 export function isStackState(state) {
   return !!state && typeof state.fosPage === 'string' && state.fosPage.length > 0
 }
+
+// Botón atrás de Android (AND-4), cuando no hay ninguna hoja abierta:
+// - 'history'  hay una entrada propia debajo (pantalla empujada o subpantalla
+//              de Ajustes, que guarda fos…Sub): history.back(), igual que "‹".
+// - 'parent'   pantalla secundaria sin entrada debajo: a su raíz.
+// - 'home'     pestaña que no es Inicio: a Inicio (las pestañas no se apilan).
+// - 'root'     Inicio: la app va al fondo (nunca vuelve a la pantalla de acceso
+//              ni sale del demo).
+export function nativeBackAction(state, page) {
+  const own = isStackState(state) && state.fosPage === page
+  const depth = own ? Number(state.fosDepth) || 0 : 0
+  const sub = own && Object.keys(state).some(k => /^fos\w*Sub$/.test(k) && state[k])
+  if (sub || depth > 0) return 'history'
+  if (!isRootPage(page)) return 'parent'
+  if ((page || TAB_IDS[0]) !== TAB_IDS[0]) return 'home'
+  return 'root'
+}

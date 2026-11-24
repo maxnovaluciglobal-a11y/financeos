@@ -69,3 +69,24 @@ describe('matchMedia', () => {
     applyTheme('light');  expect(attrs['data-theme']).toBe('light')
   })
 })
+
+describe('cambio de tema avisado por la app de Android (AND-13)', () => {
+  it('el aviso nativo manda sobre matchMedia y dispara el listener', async () => {
+    const { setNativePrefersDark } = await import('./theme.js')
+    const handlers = {}
+    globalThis.window = {
+      matchMedia: () => ({ matches: true, addEventListener() {}, removeEventListener() {} }),
+      addEventListener: (n, f) => { handlers[n] = f },
+      removeEventListener: (n) => { delete handlers[n] },
+      dispatchEvent: (e) => handlers[e.type]?.(e),
+    }
+    globalThis.CustomEvent ??= class { constructor(type, init) { this.type = type; this.detail = init?.detail } }
+    const seen = []
+    const stop = watchSystemTheme(v => seen.push(v))
+    setNativePrefersDark(false)
+    expect(seen).toEqual([false])
+    expect(systemPrefersDark()).toBe(false)
+    stop()
+    expect(Object.keys(handlers)).toEqual([])
+  })
+})

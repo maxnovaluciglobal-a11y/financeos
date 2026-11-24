@@ -40,7 +40,7 @@ export default function Toast() {
         animation: 'fos-toast-in var(--dur-surface-enter, 220ms) var(--ease, ease) both',
       }}
     >
-      <span><InlineIcon kind={isError ? 'alert' : 'ok'} size={14} />{toast.msg}</span>
+      <span><InlineIcon kind={isError ? 'alert' : toast.type === 'info' ? 'info' : 'ok'} size={14} />{toast.msg}</span>
       {action && (
         <button
           type="button"

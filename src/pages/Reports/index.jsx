@@ -31,6 +31,7 @@ import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { sumAmounts, roundCents, savingGoal, meetsSavingGoal } from '../../utils/monthFigures.js'
 import { monthPlan } from '../../utils/recurring.js'
 import { reportOverBudget, subscriptionsToDeduct } from './reportsModel.js'
+import { saveBlob } from '../../native/saveFile.js'
 
 export default function Reports({ setPage }) {
   const { t, lang } = useT()
@@ -67,12 +68,8 @@ export default function Reports({ setPage }) {
         lang,
       }
       const blob = await pdf(<ReportPDF data={data} />).toBlob()
-      const url  = URL.createObjectURL(blob)
-      const a    = document.createElement('a')
-      a.href     = url
-      a.download = `MOY-IQ-${t('rpdf.filename')}-${activeMonth}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
+      // AND-2: en la app nativa <a download> no guarda nada.
+      await saveBlob(blob, `MOY-IQ-${t('rpdf.filename')}-${activeMonth}.pdf`)
     } catch (e) {
       console.error('PDF error:', e)
       setPdfError(t('adv.pdf.error'))

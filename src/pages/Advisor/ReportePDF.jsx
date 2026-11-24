@@ -9,6 +9,7 @@ import PdfLogo from '../PdfLogo.jsx'
 import { fmtMoney, fmtPct, dateLocale, catName, prioLabel, subName, monthYearLabel } from '../../utils/index.js'
 import { translate } from '../../i18n/translate.js'
 import config from '../../config.js'
+import { saveBlob } from '../../native/saveFile.js'
 
 // ── COLORES (marca: pdfTheme.js, BRD-8) ────────────────────────────────────────
 const C = {
@@ -575,13 +576,8 @@ async function blobToBase64(blob) {
 export async function downloadReportePDF(data) {
   const filename = reportFilename(data)
   const blob = await buildReportePDFBlob(data)
-  const url  = URL.createObjectURL(blob)
-  const a    = document.createElement('a')
-  a.href     = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-
+  // AND-2: en la app nativa <a download> no guarda nada (native/saveFile.js).
+  await saveBlob(blob, filename)
   return filename
 }
 
