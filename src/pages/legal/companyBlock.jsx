@@ -30,11 +30,11 @@ export function CompanyBlock({ lang }) {
 
 // Aviso del cambio de nombre (REBRAND_NOTICE) sobre el cuerpo de cada página.
 export function withRebrandNotice(Body, lang) {
-  function BodyWithNotice() {
+  function BodyWithNotice(props) {
     return (
       <>
         <p className={s.infoBox}>{pickLang(REBRAND_NOTICE, lang)}</p>
-        <Body />
+        <Body {...props} />
       </>
     )
   }

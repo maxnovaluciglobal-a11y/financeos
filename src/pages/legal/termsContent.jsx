@@ -18,7 +18,9 @@ import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
 import { CompanyBlock, withRebrandNotice } from './companyBlock.jsx'
 
-function EsBody() {
+function EsBody({ store = false } = {}) {
+  // App de tienda (AND-5, B2): sin precios, Stripe, prueba ni clave de licencia.
+  const n = (k) => (store && k > 9 ? k - 5 : k)
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
@@ -64,11 +66,24 @@ function EsBody() {
         <p>
           Para usar la app se necesita una cuenta gratuita, creada con un email o con Google. El
           usuario es responsable de mantener la confidencialidad de su acceso y de la seguridad de
-          su dispositivo y de su clave de licencia. Puede pedir la eliminación de su cuenta en
+          su dispositivo y de {store ? 'su acceso' : 'su clave de licencia'}. Puede pedir la eliminación de su cuenta en
           cualquier momento escribiendo a support@moyiq.app.
         </p>
       </div>
 
+      {store && (
+        <div className={s.section}>
+          <h2>4. Planes en esta app</h2>
+          <p>
+            La app que se descarga de Google Play o App Store ofrece el plan <strong>Starter</strong>:
+            licencia de uso personal no exclusiva, sin costo y sin límite de tiempo. No permite uso
+            profesional con clientes, redistribución ni entrega a terceros. Si la cuenta ya tiene el
+            plan Pro, también se puede usar en esta app, con las condiciones que se aceptaron al
+            contratarlo. En esta app no se vende ningún plan ni se cobra nada.
+          </p>
+        </div>
+      )}
+      {!store && (<>
       <div className={s.section}>
         <h2>4. Planes y licencias</h2>
         <ul className={s.list}>
@@ -118,19 +133,21 @@ function EsBody() {
           Si el usuario es consumidor con residencia en la Unión Europea, el Espacio Económico Europeo o el Reino Unido, puede desistir de la suscripción Pro dentro de los 14 días siguientes a la contratación, sin indicar motivos, con un mensaje claro a support@moyiq.app. Devolvemos todos los pagos en un plazo máximo de 14 días por el mismo medio de pago; si pidió expresamente que el servicio empezara durante ese plazo, podemos descontar la parte proporcional ya prestada. Si es consumidor con residencia habitual en Alemania, se aplican en su lugar las AGB en alemán.
         </p>
       </div>
+      </>)}
+
       <div className={s.section}>
-        <h2>10. Responsabilidad del usuario</h2>
+        <h2>{n(10)}. Responsabilidad del usuario</h2>
         <p>El usuario es el único responsable de:</p>
         <ul className={s.list}>
           <li>La exactitud de los datos que ingresa en la herramienta</li>
           <li>Las decisiones financieras que tome basándose en la información mostrada</li>
           <li>Exportar y respaldar sus datos periódicamente</li>
-          <li>La seguridad de su dispositivo, su cuenta y su clave de licencia</li>
+          <li>La seguridad de su dispositivo, su cuenta y {store ? 'su acceso' : 'su clave de licencia'}</li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>11. Almacenamiento local y pérdida de datos</h2>
+        <h2>{n(11)}. Almacenamiento local y pérdida de datos</h2>
         <p>
           Moyiq almacena los datos financieros localmente en el dispositivo del usuario. Salvo
           que el usuario active la sincronización cifrada opcional,{' '}
@@ -146,7 +163,7 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>12. Limitación de responsabilidad</h2>
+        <h2>{n(12)}. Limitación de responsabilidad</h2>
         <p>
           En la máxima medida permitida por la ley aplicable, MAXNOVA & LUCI Global LLC no será
           responsable por:
@@ -161,7 +178,7 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>13. Propiedad intelectual</h2>
+        <h2>{n(13)}. Propiedad intelectual</h2>
         <p>
           El código fuente, el diseño y el contenido de moyiq son propiedad de MAXNOVA & LUCI
           Global LLC y están protegidos por derechos de autor. La licencia no transfiere derechos
@@ -170,18 +187,18 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>14. Uso permitido</h2>
+        <h2>{n(14)}. Uso permitido</h2>
         <p>El usuario se compromete a no utilizar moyiq para:</p>
         <ul className={s.list}>
           <li>Actividades ilegales o fraudulentas</li>
           <li>Evadir obligaciones fiscales o legales</li>
           <li>Uso comercial con el plan Starter, o con más clientes de los que permite su plan</li>
-          <li>Compartir o redistribuir su clave de licencia o su acceso a terceros</li>
+          <li>Compartir o redistribuir {store ? 'su acceso' : 'su clave de licencia o su acceso'} a terceros</li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>15. Disponibilidad del servicio</h2>
+        <h2>{n(15)}. Disponibilidad del servicio</h2>
         <p>
           Moyiq es una PWA (Progressive Web App) que funciona sin conexión una vez cargada. El
           inicio de sesión, la validación del plan y la sincronización requieren conexión. MAXNOVA &
@@ -190,7 +207,7 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>16. Consecuencias del incumplimiento</h2>
+        <h2>{n(16)}. Consecuencias del incumplimiento</h2>
         <p>
           El incumplimiento de estos términos o de los términos de licencia puede resultar, previo aviso
           cuando sea razonable, en la revocación del derecho de uso. Para usar moyiq fuera de los límites del
@@ -199,7 +216,7 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>17. Modificaciones</h2>
+        <h2>{n(17)}. Modificaciones</h2>
         <p>
           MAXNOVA & LUCI Global LLC puede actualizar estos términos. Los cambios se publican en esta
           página con la fecha de actualización. El uso continuado implica aceptación de los
@@ -208,14 +225,14 @@ function EsBody() {
       </div>
 
       <div className={s.section}>
-        <h2>18. Ley aplicable</h2>
+        <h2>{n(18)}. Ley aplicable</h2>
         <p>
           Estos términos se rigen por las leyes del Estado de Florida (EE. UU.), sin aplicar sus normas de conflicto de leyes. Los tribunales estatales y federales con sede en el condado de Miami-Dade, Florida, son competentes para cualquier controversia, sin perjuicio de que cualquiera de las partes acuda a un tribunal de menor cuantía (small claims). Si el usuario es consumidor, esta elección no lo priva de la protección de las normas imperativas del país donde tiene su residencia habitual ni de su derecho a litigar ante los tribunales de su domicilio cuando esa ley lo garantice.
         </p>
       </div>
 
       <div className={s.section}>
-        <h2>19. Contacto</h2>
+        <h2>{n(19)}. Contacto</h2>
         <p>Para consultas sobre estos términos: <strong>support@moyiq.app</strong></p>
       </div>
 
@@ -223,7 +240,9 @@ function EsBody() {
   )
 }
 
-function EnBody() {
+function EnBody({ store = false } = {}) {
+  // App de tienda (AND-5, B2): sin precios, Stripe, prueba ni clave de licencia.
+  const n = (k) => (store && k > 9 ? k - 5 : k)
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
@@ -269,11 +288,24 @@ function EnBody() {
         <p>
           A free account, created with an email address or with Google, is required to use the
           app. The user is responsible for keeping their access confidential and for the security
-          of their device and license key. The user can request deletion of their account at any
+          of their device{store ? '' : ' and license key'}. The user can request deletion of their account at any
           time by writing to support@moyiq.app.
         </p>
       </div>
 
+      {store && (
+        <div className={s.section}>
+          <h2>4. Plans in this app</h2>
+          <p>
+            The app downloaded from Google Play or the App Store offers the <strong>Starter</strong>{' '}
+            plan: a non-exclusive personal use license, free of charge and with no time limit. It
+            does not allow professional use with clients, redistribution or handing it to third
+            parties. If the account already has the Pro plan, it can also be used in this app, under
+            the terms accepted when it was taken out. Nothing is sold or charged in this app.
+          </p>
+        </div>
+      )}
+      {!store && (<>
       <div className={s.section}>
         <h2>4. Plans and licenses</h2>
         <ul className={s.list}>
@@ -323,19 +355,21 @@ function EnBody() {
           If the user is a consumer resident in the European Union, the European Economic Area, or the United Kingdom, they can withdraw from the Pro subscription within 14 days after signing up, without giving a reason, with a clear message to support@moyiq.app. We refund all payments within 14 days at the latest, to the same payment method; if the user expressly asked for the service to start during that period, we may deduct a proportionate amount for the service already provided. Consumers habitually resident in Germany are covered by the German terms (AGB) instead.
         </p>
       </div>
+      </>)}
+
       <div className={s.section}>
-        <h2>10. User responsibility</h2>
+        <h2>{n(10)}. User responsibility</h2>
         <p>The user is solely responsible for:</p>
         <ul className={s.list}>
           <li>The accuracy of the data entered in the tool</li>
           <li>The financial decisions made based on the information displayed</li>
           <li>Exporting and backing up their data periodically</li>
-          <li>The security of their device, account, and license key</li>
+          <li>The security of their device{store ? ' and account' : ', account, and license key'}</li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>11. Local storage and data loss</h2>
+        <h2>{n(11)}. Local storage and data loss</h2>
         <p>
           Moyiq stores financial data locally on the user's device. Unless the user turns on the
           optional encrypted sync,{' '}
@@ -350,7 +384,7 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>12. Limitation of liability</h2>
+        <h2>{n(12)}. Limitation of liability</h2>
         <p>
           To the maximum extent permitted by applicable law, MAXNOVA & LUCI Global LLC is not
           liable for:
@@ -365,7 +399,7 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>13. Intellectual property</h2>
+        <h2>{n(13)}. Intellectual property</h2>
         <p>
           The source code, design, and content of moyiq are the property of MAXNOVA & LUCI Global
           LLC and are protected by copyright. The license does not transfer any intellectual
@@ -374,18 +408,18 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>14. Permitted use</h2>
+        <h2>{n(14)}. Permitted use</h2>
         <p>The user agrees not to use moyiq for:</p>
         <ul className={s.list}>
           <li>Illegal or fraudulent activity</li>
           <li>Evading tax or legal obligations</li>
           <li>Commercial use on the Starter plan, or with more clients than their plan allows</li>
-          <li>Sharing or redistributing their license key or access to third parties</li>
+          <li>Sharing or redistributing their {store ? 'access' : 'license key or access'} to third parties</li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>15. Service availability</h2>
+        <h2>{n(15)}. Service availability</h2>
         <p>
           Moyiq is a Progressive Web App that works offline once loaded. Sign-in, plan validation,
           and sync require a connection. MAXNOVA & LUCI Global LLC does not guarantee uninterrupted
@@ -394,7 +428,7 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>16. Non-compliance</h2>
+        <h2>{n(16)}. Non-compliance</h2>
         <p>
           Breaching these terms or the license terms may lead, after notice where
           reasonable, to revocation of the right of use. To use moyiq beyond the limits of the purchased plan, write to{' '}
@@ -403,7 +437,7 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>17. Changes</h2>
+        <h2>{n(17)}. Changes</h2>
         <p>
           MAXNOVA & LUCI Global LLC may update these terms. Changes are published on this page with
           the date of the update. Continued use implies acceptance of the updated terms.
@@ -411,14 +445,14 @@ function EnBody() {
       </div>
 
       <div className={s.section}>
-        <h2>18. Governing law</h2>
+        <h2>{n(18)}. Governing law</h2>
         <p>
           These terms are governed by the laws of the State of Florida, USA, without regard to its conflict-of-laws rules. The state and federal courts located in Miami-Dade County, Florida, have jurisdiction over any dispute, although either party may bring a claim in small-claims court. If the user is a consumer, this choice does not deprive them of the protection of the mandatory rules of the country where they habitually reside, or of their right to bring proceedings in the courts where they live where that law guarantees it.
         </p>
       </div>
 
       <div className={s.section}>
-        <h2>19. Contact</h2>
+        <h2>{n(19)}. Contact</h2>
         <p>For questions about these terms: <strong>support@moyiq.app</strong></p>
       </div>
 
@@ -426,7 +460,9 @@ function EnBody() {
   )
 }
 
-function PtBody() {
+function PtBody({ store = false } = {}) {
+  // App de tienda (AND-5, B2): sin precios, Stripe, prueba ni clave de licencia.
+  const n = (k) => (store && k > 9 ? k - 5 : k)
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
@@ -472,11 +508,24 @@ function PtBody() {
         <p>
           Para usar o app é necessária uma conta gratuita, criada com um email ou com o Google. O
           usuário é responsável por manter a confidencialidade do seu acesso e pela segurança do
-          seu dispositivo e da sua chave de licença. Ele pode pedir a exclusão da conta a qualquer
+          seu dispositivo{store ? '' : ' e da sua chave de licença'}. Ele pode pedir a exclusão da conta a qualquer
           momento escrevendo para support@moyiq.app.
         </p>
       </div>
 
+      {store && (
+        <div className={s.section}>
+          <h2>4. Planos neste app</h2>
+          <p>
+            O app baixado do Google Play ou da App Store oferece o plano <strong>Starter</strong>:
+            licença de uso pessoal não exclusiva, sem custo e sem limite de tempo. Não permite uso
+            profissional com clientes, redistribuição nem entrega a terceiros. Se a conta já tem o
+            plano Pro, ele também pode ser usado neste app, com as condições aceitas ao contratá-lo.
+            Neste app não se vende nenhum plano nem se cobra nada.
+          </p>
+        </div>
+      )}
+      {!store && (<>
       <div className={s.section}>
         <h2>4. Planos e licenças</h2>
         <ul className={s.list}>
@@ -526,19 +575,21 @@ function PtBody() {
           Se o usuário for consumidor residente na União Europeia, no Espaço Econômico Europeu ou no Reino Unido, pode desistir da assinatura Pro em até 14 dias após a contratação, sem indicar motivo, com uma mensagem clara para support@moyiq.app. Devolvemos todos os pagamentos em no máximo 14 dias pelo mesmo meio de pagamento; se o usuário pediu expressamente que o serviço começasse nesse prazo, podemos descontar a parte proporcional já prestada. Consumidores com residência habitual na Alemanha estão cobertos pelos termos em alemão (AGB). Isso não limita os direitos que a legislação do país do usuário lhe assegura, como o Código de Defesa do Consumidor no Brasil.
         </p>
       </div>
+      </>)}
+
       <div className={s.section}>
-        <h2>10. Responsabilidade do usuário</h2>
+        <h2>{n(10)}. Responsabilidade do usuário</h2>
         <p>O usuário é o único responsável por:</p>
         <ul className={s.list}>
           <li>A exatidão dos dados que insere na ferramenta</li>
           <li>As decisões financeiras que tomar com base nas informações mostradas</li>
           <li>Exportar e fazer backup dos seus dados periodicamente</li>
-          <li>A segurança do seu dispositivo, da sua conta e da sua chave de licença</li>
+          <li>A segurança do seu dispositivo{store ? ' e da sua conta' : ', da sua conta e da sua chave de licença'}</li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>11. Armazenamento local e perda de dados</h2>
+        <h2>{n(11)}. Armazenamento local e perda de dados</h2>
         <p>
           O moyiq armazena os dados financeiros localmente no dispositivo do usuário. Salvo se o
           usuário ativar a sincronização criptografada opcional,{' '}
@@ -554,7 +605,7 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>12. Limitação de responsabilidade</h2>
+        <h2>{n(12)}. Limitação de responsabilidade</h2>
         <p>
           Na máxima medida permitida pela lei aplicável, a MAXNOVA & LUCI Global LLC não será
           responsável por:
@@ -569,7 +620,7 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>13. Propriedade intelectual</h2>
+        <h2>{n(13)}. Propriedade intelectual</h2>
         <p>
           O código-fonte, o design e o conteúdo do moyiq são propriedade da MAXNOVA & LUCI Global
           LLC e estão protegidos por direitos autorais. A licença não transfere direitos de
@@ -578,18 +629,18 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>14. Uso permitido</h2>
+        <h2>{n(14)}. Uso permitido</h2>
         <p>O usuário se compromete a não usar o moyiq para:</p>
         <ul className={s.list}>
           <li>Atividades ilegais ou fraudulentas</li>
           <li>Evadir obrigações fiscais ou legais</li>
           <li>Uso comercial com o plano Starter, ou com mais clientes do que o seu plano permite</li>
-          <li>Compartilhar ou redistribuir sua chave de licença ou seu acesso a terceiros</li>
+          <li>Compartilhar ou redistribuir {store ? 'seu acesso' : 'sua chave de licença ou seu acesso'} a terceiros</li>
         </ul>
       </div>
 
       <div className={s.section}>
-        <h2>15. Disponibilidade do serviço</h2>
+        <h2>{n(15)}. Disponibilidade do serviço</h2>
         <p>
           O moyiq é uma PWA (Progressive Web App) que funciona offline depois de carregada. O
           login, a validação do plano e a sincronização exigem conexão. A MAXNOVA & LUCI Global LLC
@@ -598,7 +649,7 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>16. Consequências do descumprimento</h2>
+        <h2>{n(16)}. Consequências do descumprimento</h2>
         <p>
           O descumprimento destes termos ou dos termos de licença pode resultar, mediante aviso
           prévio quando razoável, na revogação do direito de uso. Para usar o moyiq além dos limites do plano adquirido,
@@ -607,7 +658,7 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>17. Alterações</h2>
+        <h2>{n(17)}. Alterações</h2>
         <p>
           A MAXNOVA & LUCI Global LLC pode atualizar estes termos. As alterações são publicadas
           nesta página com a data de atualização. O uso continuado implica aceitação dos termos
@@ -616,14 +667,14 @@ function PtBody() {
       </div>
 
       <div className={s.section}>
-        <h2>18. Lei aplicável</h2>
+        <h2>{n(18)}. Lei aplicável</h2>
         <p>
           Estes termos regem-se pelas leis do Estado da Flórida (EUA), sem aplicação das suas normas de conflito de leis. Os tribunais estaduais e federais com sede no condado de Miami-Dade, Flórida, são competentes para qualquer disputa, sem prejuízo de qualquer das partes recorrer a um juizado de pequenas causas. Se o usuário for consumidor, esta escolha não o priva da proteção das normas imperativas do país onde tem residência habitual nem do direito de litigar nos tribunais do seu domicílio quando essa lei o garantir.
         </p>
       </div>
 
       <div className={s.section}>
-        <h2>19. Contato</h2>
+        <h2>{n(19)}. Contato</h2>
         <p>Para questões sobre estes termos: <strong>support@moyiq.app</strong></p>
       </div>
 
@@ -635,7 +686,9 @@ function PtBody() {
 // Abweichungen zu den anderen Sprachen (deutsches Recht, Jahresabo nach der ersten
 // Laufzeit monatlich kündbar mit anteiliger Erstattung, Widerrufsrecht) sind gewollt
 // und im Bericht an die Anwältin/den Anwalt aufgeführt.
-function DeBody() {
+function DeBody({ store = false } = {}) {
+  // App de tienda (AND-5, B2): sin precios, Stripe, prueba ni clave de licencia.
+  const n = (k) => (store && k > 8 ? k - 4 : k)
   return (
     <div className={s.legalWrap}>
       <div className={s.highlight}>
@@ -710,6 +763,19 @@ function DeBody() {
         </p>
       </div>
 
+      {store && (
+        <div className={s.section}>
+          <h2>§ 4 Tarife in dieser App</h2>
+          <p>
+            Die App aus Google Play oder dem App Store bietet den Tarif <strong>Starter</strong>: ein
+            einfaches, nicht übertragbares Recht zur privaten Nutzung, kostenlos und zeitlich
+            unbegrenzt. Hat Ihr Konto bereits den Tarif Pro, können Sie ihn auch in dieser App
+            nutzen, zu den Bedingungen, die Sie beim Abschluss akzeptiert haben. In dieser App wird
+            kein Tarif verkauft und nichts berechnet.
+          </p>
+        </div>
+      )}
+      {!store && (<>
       <div className={s.section}>
         <h2>§ 4 Vertragsschluss</h2>
         <p>
@@ -825,8 +891,10 @@ function DeBody() {
         </p>
       </div>
 
+      </>)}
+
       <div className={s.section}>
-        <h2>§ 9 Gewährleistung und Aktualisierungen</h2>
+        <h2>§ {n(9)} Gewährleistung und Aktualisierungen</h2>
         <p>
           Es gelten die gesetzlichen Vorschriften über Mängel digitaler Produkte (§§ 327 ff. BGB).
           Wir stellen Ihnen während der Vertragslaufzeit die für den Erhalt der Vertragsmäßigkeit
@@ -835,7 +903,7 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>§ 10 Haftung</h2>
+        <h2>§ {n(10)} Haftung</h2>
         <p>
           (1) Wir haften unbeschränkt bei Vorsatz und grober Fahrlässigkeit, bei Verletzung von
           Leben, Körper oder Gesundheit, nach dem Produkthaftungsgesetz sowie im Umfang einer
@@ -855,31 +923,31 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>§ 11 Datensicherung</h2>
+        <h2>§ {n(11)} Datensicherung</h2>
         <p>
           Ihre Finanzdaten werden lokal in Ihrem Browser bzw. auf Ihrem Gerät gespeichert. Ohne
           aktivierte Synchronisierung haben wir keinen Zugriff darauf und können sie nicht
           wiederherstellen. Wir empfehlen, regelmäßig eine Sicherung über „Einstellungen“ zu
-          exportieren. Die Haftung nach § 10 Abs. 1 bleibt unberührt.
+          exportieren. Die Haftung nach § {n(10)} Abs. 1 bleibt unberührt.
         </p>
       </div>
 
       <div className={s.section}>
-        <h2>§ 12 Nutzungsrechte</h2>
+        <h2>§ {n(12)} Nutzungsrechte</h2>
         <p>
           (1) Wir räumen Ihnen für die Dauer des jeweiligen Vertrags ein einfaches, nicht
           übertragbares Recht ein, moyiq auf Ihren eigenen Geräten zu nutzen: mit Starter für
           private Zwecke, mit Pro zusätzlich beruflich mit bis zu 30 Klientinnen und Klienten.
         </p>
         <p>
-          (2) Nicht gestattet sind insbesondere die Weitergabe Ihres Zugangs oder
-          Lizenzschlüssels an Dritte, der Weiterverkauf, die Unterlizenzierung sowie die
+          (2) Nicht gestattet sind insbesondere die Weitergabe Ihres Zugangs{store ? '' : ' oder Lizenzschlüssels'}
+          an Dritte, der Weiterverkauf, die Unterlizenzierung sowie die
           Veröffentlichung einer eigenen Version unter anderer Marke.
         </p>
       </div>
 
       <div className={s.section}>
-        <h2>§ 13 Änderungen der Leistung und dieser AGB</h2>
+        <h2>§ {n(13)} Änderungen der Leistung und dieser AGB</h2>
         <p>
           (1) Wir dürfen moyiq über das zur Erhaltung der Vertragsmäßigkeit erforderliche Maß
           hinaus nur unter den Voraussetzungen des § 327r BGB ändern, insbesondere aus triftigem
@@ -892,7 +960,7 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>§ 14 Datenschutz</h2>
+        <h2>§ {n(14)} Datenschutz</h2>
         <p>
           Informationen zur Verarbeitung personenbezogener Daten finden Sie in der
           Datenschutzerklärung in der App.
@@ -900,7 +968,7 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>§ 15 Verbraucherstreitbeilegung</h2>
+        <h2>§ {n(15)} Verbraucherstreitbeilegung</h2>
         <p>
           Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer
           Verbraucherschlichtungsstelle teilzunehmen.
@@ -908,7 +976,7 @@ function DeBody() {
       </div>
 
       <div className={s.section}>
-        <h2>§ 16 Schlussbestimmungen</h2>
+        <h2>§ {n(16)} Schlussbestimmungen</h2>
         <p>
           (1) Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts.
           Bei Verbrauchern gilt diese Rechtswahl nur insoweit, als nicht der gewährte Schutz durch

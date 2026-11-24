@@ -7,6 +7,7 @@ import { PageHeader } from '../../components/ui/index.jsx'
 import { useT } from '../../i18n/useT.js'
 import { pickLang } from './legalMeta.js'
 import { TERMS_CONTENT } from './termsContent.jsx'
+import { isNativeApp } from '../../native/platform.js'
 
 export default function Terms() {
   const { lang } = useT()
@@ -14,7 +15,8 @@ export default function Terms() {
   return (
     <div className="stack">
       <PageHeader title={title} sub={sub} />
-      <Body />
+      {/* App de tienda: versión sin precios, Stripe, prueba ni clave (AND-5). */}
+      <Body store={isNativeApp()} />
     </div>
   )
 }
