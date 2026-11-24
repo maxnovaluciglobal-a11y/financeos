@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, fmtPct, currencyDecimals, fmtPctPoints, localDateStr } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtPct, fmtPctPoints, localDateStr, fmtMoneyFor, currencySymbol } from '../../utils/index.js'
 import { toLocal } from '../../utils/recurring.js'
 import { nextPaymentOn } from '../../utils/subscriptionNext.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
@@ -141,7 +141,6 @@ export default function Subscriptions() {
   const { settings, incomes, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteWithUndo } = useApp()
   const currency = settings.currency || 'CLP'
   // Con los decimales de la moneda de cada suscripción (una de US$ en una cuenta en COP lleva centavos).
-  const fmt = (n, cur = currency) => fmtAmount(n, currencyDecimals(cur))
   // Una sola fuente: el contexto (app real o demo). Antes la app real leía
   // además su propia copia de IndexedDB y escribía directo en la store, por
   // fuera del contexto — con la unificación en fijos, cada cambio tiene que
@@ -252,8 +251,8 @@ export default function Subscriptions() {
 
       {/* KPIs */}
       <div className="kpi-row" style={{ marginBottom: 16 }}>
-        <KPI label={t('subs.kpi.monthly')} value={`${currency} ${fmt(totalMonthly)}`} color="green" />
-        <KPI label={t('subs.kpi.annual')} value={`${currency} ${fmt(totalAnnual)}`} />
+        <KPI label={t('subs.kpi.monthly')} value={fmtMoneyFor(totalMonthly, currency, settings.language)} color="green" />
+        <KPI label={t('subs.kpi.annual')} value={fmtMoneyFor(totalAnnual, currency, settings.language)} />
         <KPI label={t('subs.kpi.active')} value={activeSubs.length} />
         <KPI label={t('subs.kpi.mostExpensive')} value={mostExpensive ? mostExpensive.name : '—'} color="amber" />
         <KPI label={t('subs.kpi.nextPay')} value={nextSub ? toLocal(nextOf(nextSub)).toLocaleDateString(dateLocale()) : '—'} />
@@ -263,10 +262,10 @@ export default function Subscriptions() {
       {activeSubs.length > 0 && (
         <div className="grid2" style={{ gap: 16, marginBottom: 16 }}>
           <ChartCard title={t('subs.chart.top')} minHeight={160}>
-            <HorizontalBars records={topRecords} sym={`${currency} `} maxItems={6} />
+            <HorizontalBars records={topRecords} sym={currencySymbol(currency, settings.language)} maxItems={6} />
           </ChartCard>
           <ChartCard title={t('subs.chart.byCat')} minHeight={160}>
-            <CategoryDonut records={catRecords} sym={`${currency} `} maxCategories={6} />
+            <CategoryDonut records={catRecords} sym={currencySymbol(currency, settings.language)} maxCategories={6} />
           </ChartCard>
         </div>
       )}
@@ -360,8 +359,8 @@ export default function Subscriptions() {
                       <td style={{ padding: '9px 12px' }}>
                         <Badge color="blue">{subLabel(sub.category, lang)}</Badge>
                       </td>
-                      <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--tx)' }}>{(sub.currency || currency)} {fmt(monthly, sub.currency || currency)}</td>
-                      <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--tx)' }}>{fmtMoneyFor(monthly, sub.currency || currency, settings.language)}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{fmtMoneyFor(annual, sub.currency || currency, settings.language)}</td>
                       <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
                       <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
                         {sub.nextPaymentDate ? toLocal(nextOf(sub)).toLocaleDateString(dateLocale()) : '—'}

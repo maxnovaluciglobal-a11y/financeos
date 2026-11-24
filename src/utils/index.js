@@ -74,6 +74,8 @@ export function setMoneyLocale(currency, language) {
 // Locale activo, para los toLocaleString sueltos que no pasan por fmtMoney.
 export const moneyLocale = () => _moneyLocale
 export const moneyDecimals = () => _moneyDecimals
+// Moneda activa de la persona (la que fijó setMoneyLocale).
+export const moneyCurrency = () => _moneyCurrency
 
 // Símbolo de la moneda en el idioma activo. Único caso especial: en inglés el
 // dólar es "$" (así lo escribe un usuario de EE. UU.); en español/portugués/

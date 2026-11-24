@@ -44,7 +44,7 @@ function useWidth(ref) {
 
 // points: serie ya recortada al período; index: rebasada o null; invested: US$.
 // state: 'loading' · 'error' · 'short' (sin historia suficiente) · 'ready'.
-export default function ValueChart({ points, index, invested, range, cmp, onRange, onCmp, state, notes = [], money, money0, onRetry }) {
+export default function ValueChart({ points, index, invested, range, cmp, cmpOptions, onRange, onCmp, state, notes = [], money, money0, onRetry }) {
   const { t } = useT()
   const { m } = useMoney()
   const box = useRef(null)
@@ -113,7 +113,7 @@ export default function ValueChart({ points, index, invested, range, cmp, onRang
       <div className={s.cardHead}>
         <h2 id="hoy-pvh-title" className={s.cardTitle}>{t('invest.hoy.pvh.title')}</h2>
         <div className={s.chips} role="group" aria-label={t('invest.hoy.pvh.cmpLabel')}>
-          {PVH_CMP.map(c => (
+          {(cmpOptions || PVH_CMP).map(c => (
             <button key={c || 'none'} type="button" className={s.chip} aria-pressed={cmp === c} onClick={() => onCmp(c)}>
               {c ? t(`invest.hoy.pvh.cmp.${c}`) : t('invest.hoy.pvh.cmp.none')}
             </button>
@@ -199,7 +199,7 @@ export default function ValueChart({ points, index, invested, range, cmp, onRang
           {cmp && <span><i className={s.keyIx} />{t('invest.hoy.pvh.key.index', { ix: cmpLabel })}</span>}
         </p>
       </div>
-      {ready && <p className={s.muted}>{t('invest.hoy.pvh.keysHint')}</p>}
+      {ready && <p className={`${s.muted} ${s.kbdOnly}`}>{t('invest.hoy.pvh.keysHint')}</p>}
       {notes.length > 0 && <p className={s.muted}>{notes.join(' ')}</p>}
     </section>
   )

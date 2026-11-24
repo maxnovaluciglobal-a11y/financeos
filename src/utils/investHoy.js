@@ -220,17 +220,28 @@ export function buildSeries(positions, histories, fxHist, { fxNow = {}, weekdays
 
 // El último punto con los precios en vivo de la cifra de arriba (si TODAS las
 // posiciones incluidas tienen precio): mismo día → se reemplaza; si no, se agrega.
+// M7 (QA): las velas son días en UTC (medianoche UTC) y la pantalla las
+// formatea en UTC. El punto "hoy" se ancla al día CALENDARIO LOCAL expresado
+// igual (medianoche UTC de esa fecha): a las 23:00 en América ya no aparecía
+// como "mañana" ("Nov 24" visto el 23-nov).
+export function localDaySec(nowSec) {
+  const d = new Date(nowSec * 1000)
+  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 1000
+}
 export function withLivePoint(points, liveUsd, nowSec = Math.floor(Date.now() / 1000)) {
   if (!points?.length || !(liveUsd > 0)) return points || []
   const out = points.slice()
   const last = out[out.length - 1]
-  if (dayKey(nowSec) === dayKey(last.ts)) out[out.length - 1] = { ...last, v: liveUsd }
-  else if (nowSec > last.ts) out.push({ ts: nowSec, v: liveUsd })
+  const today = localDaySec(nowSec)
+  if (dayKey(today) === dayKey(last.ts)) out[out.length - 1] = { ...last, v: liveUsd }
+  else if (today > last.ts) out.push({ ts: today, v: liveUsd })
   return out
 }
 
 export const PVH_RANGES = ['1M', '3M', 'YTD', '1A', 'MAX']
 export const PVH_CMP = ['', 'SPY', 'ECH']
+// M12 (QA): el índice de Chile (ECH) solo se ofrece a quien vive en Chile.
+export const pvhCmpFor = (country) => PVH_CMP.filter(c => c !== 'ECH' || String(country || '').toUpperCase() === 'CL')
 export const fetchRangeOf = (range) => (range === 'MAX' ? '5y' : '1y')
 
 export function sliceRange(points, range, now) {

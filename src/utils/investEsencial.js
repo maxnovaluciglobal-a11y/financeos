@@ -170,7 +170,8 @@ export function companyBrief({ quote = null, fund = null, rows = null, type = 'S
     .map(x => (x == null ? '' : String(x).trim())).filter(x => x && !/^etf$/i.test(x))
   let dividend = null
   if (crypto) dividend = { kind: 'crypto' }
-  else if (f) dividend = Number(f.dividendYield) > 0 ? { kind: 'pays', yield: Number(f.dividendYield) } : { kind: 'none' }
+  // M10 (QA): sin el dato (null) no se afirma nada; "no paga" solo con un 0.
+  else if (f && f.dividendYield != null && Number.isFinite(Number(f.dividendYield))) dividend = Number(f.dividendYield) > 0 ? { kind: 'pays', yield: Number(f.dividendYield) } : { kind: 'none' }
   const out = {
     what: f?.description ? firstSentence(f.description) : null,
     sector: [...new Set(sector)],

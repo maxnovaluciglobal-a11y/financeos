@@ -111,7 +111,9 @@ describe('<Hoy>', () => {
       at = i
     }
     expect(out).toContain('S&P 500 (SPY)')
-    expect(out).toContain('Chile (ECH)')
+    // M12 (QA): Chile (ECH) solo para quien vive en Chile.
+    expect(out).not.toContain('Chile (ECH)')
+    expect(text(render(sampleData(), { currency: 'CLP', language: 'es', country: 'CL' }))).toContain('Chile (ECH)')
     for (const r of ['1M', '3M', 'Año', '1A', 'Máx']) expect(out).toContain(r)
     expect(out).toContain('Datos para revisar, no instrucciones de compra o venta.')
     expect(out).not.toContain('Yahoo Finance,') // el ejemplo no se atribuye a ninguna fuente

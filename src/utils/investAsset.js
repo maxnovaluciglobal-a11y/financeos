@@ -211,7 +211,9 @@ export function fundMetrics(raw, quote = null) {
   return FUND_METRICS.map(([key, field, kind]) => {
     let v = numOrNull(f[field])
     if (key === 'cap' && !(v > 0)) v = numOrNull(quote?.marketCap) > 0 ? Number(quote.marketCap) : null
-    if (key === 'div') return { key, kind, v: v > 0 ? v : null, none: !(v > 0) }
+    // M10 (QA): sin dato (null, típico de un ETF en la fuente) no es "no paga";
+    // solo un 0 explícito lo es.
+    if (key === 'div') return { key, kind, v: v > 0 ? v : null, none: v === 0 }
     return { key, kind, v }
   })
 }

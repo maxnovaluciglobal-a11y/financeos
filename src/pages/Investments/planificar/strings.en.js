@@ -107,7 +107,7 @@ export default {
   'plan.ap.fromCapital': 'Use your uninvested capital ({v})',
   'plan.ap.fromCapitalNote': 'Amount set to {v}: a one-off split, not a monthly contribution.',
   'plan.ap.ladderHint': 'The full view adds the split in tranches by the 20, 50, 100 and 200-day moving averages.',
-  'plan.ap.fromCash': 'Use what you have To invest ({v})',
+  'plan.ap.fromCash': 'Use what you have in “To invest” ({v})',
   'plan.ap.err.amount_required': 'Enter how much you want to contribute.',
   'plan.ap.err.amount_invalid': 'The amount has to be greater than 0.',
   'plan.ap.saveBlock.proj': 'To save the plan, fix the years or the return in “How much could you have?”.',
