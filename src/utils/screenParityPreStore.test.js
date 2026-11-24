@@ -141,3 +141,17 @@ describe('I7: Reportes cuadra con el Inicio y la regla 50/30/20 suma 100 %', asy
     expect(s).not.toMatch(/necesidad\+totalDebt/)
   })
 })
+
+describe('I8: Proyección dice de dónde sale el flujo mensual y el % real del presupuesto', async () => {
+  const { en } = await import('../i18n/en.js')
+  const { es } = await import('../i18n/es.js')
+  it('el flujo es el promedio de los últimos meses (todos los movimientos), no "de fijos"', () => {
+    expect(en['cf.analysis.positive']).toContain('{n}')
+    expect(en['cf.analysis.positive']).not.toMatch(/recurring monthly net flow/)
+    expect(es['cf.analysis.positive']).not.toMatch(/movimientos fijos es/)
+    expect(src('pages/CashFlow/index.jsx')).toContain('n: monthlyEstimate.monthsUsed')
+  })
+  it('el % de presupuesto usado no se recorta a 100 %', () => {
+    expect(src('pages/CashFlow/index.jsx')).toContain('fmtPct(pctBudgetUsed')
+  })
+})
