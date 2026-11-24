@@ -119,3 +119,25 @@ describe('I3/I4: una tasa de ahorro y un IQ Score para el mismo mes', async () =
     for (const f of ['pages/Advisor/index.jsx', 'pages/Reports/index.jsx']) expect(src(f), f).toContain('monthSavingRate(')
   })
 })
+
+describe('I7: Reportes cuadra con el Inicio y la regla 50/30/20 suma 100 %', async () => {
+  const { reportFlow, rule503020 } = await import('../pages/Reports/reportsModel.js')
+  const { monthLeft } = await import('./monthLeft.js')
+  it('Disponible del flujo = "Te queda" del Inicio y las partes suman los ingresos', () => {
+    const m = monthLeft({ incomes: [{ date: '2026-11-01', amount: 4782.8 }], expenses: [{ date: '2026-11-02', amount: 2832.15 }], month: '2026-11' })
+    const f = reportFlow({ ...m, pendingFixed: 691.97, left: Math.round((m.left - 691.97) * 100) / 100 })
+    expect(f.available).toBeCloseTo(1258.68, 2)
+    expect(f.spent + f.setAside + f.pendingFixed + f.available).toBeCloseTo(f.income, 2)
+  })
+  it('caso del QA: 2.654,27 necesidades + 177,88 deseos con 639 de cuotas pendientes da 100 %, no 113 %', () => {
+    const r = rule503020({ income: 4782.8, spent: 2832.15, wants: 177.88 })
+    expect((r.needs + r.wants + r.savings) / r.income).toBeCloseTo(1, 6)
+    expect(r.savings / r.income).toBeCloseTo((4782.8 - 2832.15) / 4782.8, 6)   // = tasa de ahorro
+  })
+  it('Reportes usa monthLeft y reportFlow (no recalcula suscripciones ni cuotas)', () => {
+    const s = src('pages/Reports/index.jsx')
+    expect(s).toContain('monthLeft(')
+    expect(s).toContain('<MoneyFlow flow={flow}')
+    expect(s).not.toMatch(/necesidad\+totalDebt/)
+  })
+})
