@@ -81,7 +81,7 @@ export default {
   'opp.lad.long': 'Más peso en las medias largas',
   'opp.lad.half200': 'Mitad en la media de 200 días',
   'opp.lad.weights': 'Tramos {w}',
-  'opp.cap.rsiRule': 'Exigir RSI entre 30 y 45 (tu modelo de julio)',
+  'opp.cap.rsiRule': 'Exigir RSI entre 30 y 45 (retroceso sin sobreventa extrema)',
   'opp.cap.rsiHelpOn': 'Encendido: un tramo cuenta como cumplido solo si el precio está en o bajo su media y, además, el RSI de 14 días está entre 30 y 45 (incluidos). Sin dato de RSI, no se cuenta.',
   'opp.cap.rsiHelpOff': 'Apagado: un tramo cuenta como cumplido solo con que el precio esté en o bajo su media; el RSI no se mira.',
 

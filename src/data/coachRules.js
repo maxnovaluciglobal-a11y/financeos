@@ -257,7 +257,7 @@ export const COACH_RULES = [
     category: 'ccat.backup',
     evaluate: (m, tr) => m.daysSinceBackup >= COACH_CONFIG.thresholds.backupDaysHigh ? {
       severity: 'warning',
-      title: tr('cr.backupHigh.title'),
+      title: m.neverBackedUp ? tr('cr.backupNever.title') : tr('cr.backupHigh.title'),
       msg: m.neverBackedUp ? tr('cr.backupNever.msg') : tr('cr.backupHigh.msg', { n: m.daysSinceBackup }),
       action: tr('cr.backupHigh.action'),
     } : null,

@@ -77,7 +77,7 @@ export default {
   'opp.lad.long': 'Mehr Gewicht auf den langen Durchschnitten',
   'opp.lad.half200': 'Die Hälfte auf den 200-Tage-Durchschnitt',
   'opp.lad.weights': 'Tranchen {w}',
-  'opp.cap.rsiRule': 'RSI zwischen 30 und 45 verlangen (Ihr Modell vom Juli)',
+  'opp.cap.rsiRule': 'RSI zwischen 30 und 45 verlangen (Rücksetzer, ohne überverkauft zu sein)',
   'opp.cap.rsiHelpOn': 'An: Eine Tranche gilt nur als erfüllt, wenn der Kurs auf oder unter ihrem Durchschnitt liegt und zusätzlich der 14-Tage-RSI zwischen 30 und 45 liegt (einschließlich). Ohne RSI-Wert zählt sie nicht.',
   'opp.cap.rsiHelpOff': 'Aus: Eine Tranche gilt als erfüllt, sobald der Kurs auf oder unter ihrem Durchschnitt liegt; der RSI wird nicht geprüft.',
 

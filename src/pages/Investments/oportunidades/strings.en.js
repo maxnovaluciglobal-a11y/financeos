@@ -77,7 +77,7 @@ export default {
   'opp.lad.long': 'More weight on the long averages',
   'opp.lad.half200': 'Half on the 200-day average',
   'opp.lad.weights': 'Tranches {w}',
-  'opp.cap.rsiRule': 'Require an RSI between 30 and 45 (your July model)',
+  'opp.cap.rsiRule': 'Require an RSI between 30 and 45 (a pullback, not deeply oversold)',
   'opp.cap.rsiHelpOn': 'On: a tranche counts as met only if the price is at or below its average and the 14-day RSI is also between 30 and 45 (inclusive). Without RSI data, it does not count.',
   'opp.cap.rsiHelpOff': 'Off: a tranche counts as met as soon as the price is at or below its average; the RSI is not checked.',
 

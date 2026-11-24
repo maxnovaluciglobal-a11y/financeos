@@ -77,7 +77,7 @@ export default {
   'opp.lad.long': 'Mais peso nas médias longas',
   'opp.lad.half200': 'Metade na média de 200 dias',
   'opp.lad.weights': 'Faixas {w}',
-  'opp.cap.rsiRule': 'Exigir RSI entre 30 e 45 (seu modelo de julho)',
+  'opp.cap.rsiRule': 'Exigir RSI entre 30 e 45 (recuo sem sobrevenda extrema)',
   'opp.cap.rsiHelpOn': 'Ligado: uma faixa conta como cumprida só se o preço está na média ou abaixo dela e, além disso, o RSI de 14 dias está entre 30 e 45 (inclusive). Sem dado de RSI, não conta.',
   'opp.cap.rsiHelpOff': 'Desligado: uma faixa conta como cumprida bastando o preço estar na média ou abaixo dela; o RSI não é considerado.',
 

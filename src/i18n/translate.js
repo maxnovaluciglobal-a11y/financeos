@@ -35,15 +35,23 @@ export function interpolateParts(str, vars = {}) {
 // que la app nativa no tiene se cambia en un solo lugar, sin tocar cada
 // pantalla. nativeVariants.test.js exige que cada `@native` exista en los 4
 // idiomas (si faltara en uno, se vería el de español).
+//
+// Por plataforma (ronda 3, N5/AND-10): `<key>@android` o `<key>@ios` ganan sobre
+// `@native` en esa app (p. ej. el Atajo de Apple Pay solo existe en iPhone).
 export const NATIVE_SUFFIX = '@native'
+export const PLATFORM_SUFFIXES = ['@android', '@ios']
 function inNativeApp() {
   try { return globalThis.Capacitor?.isNativePlatform?.() === true } catch { return false }
 }
-export function translate(lang, key, vars, native = inNativeApp()) {
+function nativePlatformName() {
+  try { const p = globalThis.Capacitor?.getPlatform?.(); return p === 'android' || p === 'ios' ? p : null } catch { return null }
+}
+export function translate(lang, key, vars, native = inNativeApp(), platform = native ? nativePlatformName() : null) {
   const dict = langCache[lang]
   const pick = (k) => dict?.[k] ?? sectionStrings[lang]?.[k]
+  const pk = native && platform ? `${key}@${platform}` : null
   const nk = native ? key + NATIVE_SUFFIX : null
-  const str = (nk && (pick(nk) ?? es[nk])) ?? pick(key) ?? es[key] ?? sectionStrings.es[key] ?? key
+  const str = (pk && (pick(pk) ?? es[pk])) ?? (nk && (pick(nk) ?? es[nk])) ?? pick(key) ?? es[key] ?? sectionStrings.es[key] ?? key
   return interpolate(str, vars)
 }
 

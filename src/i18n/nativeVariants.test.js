@@ -6,10 +6,13 @@ import { es } from './es.js'
 import { en } from './en.js'
 import { pt } from './pt.js'
 import { de } from './de.js'
-import { NATIVE_SUFFIX } from './translate.js'
+import { NATIVE_SUFFIX, PLATFORM_SUFFIXES, translate } from './translate.js'
+import { langCache } from './langCache.js'
 
 const DICTS = { es, en, pt, de }
-const nativeKeys = (d) => Object.keys(d).filter(k => k.endsWith(NATIVE_SUFFIX))
+const SUFFIXES = [NATIVE_SUFFIX, ...PLATFORM_SUFFIXES]
+const suffixOf = (k) => SUFFIXES.find(x => k.endsWith(x))
+const nativeKeys = (d) => Object.keys(d).filter(k => suffixOf(k))
 
 describe('variantes @native', () => {
   it('las mismas claves en los 4 idiomas, todas con su clave base', () => {
@@ -17,14 +20,14 @@ describe('variantes @native', () => {
     expect(base.length).toBeGreaterThan(10)
     for (const [lang, d] of Object.entries(DICTS)) {
       expect(nativeKeys(d).sort(), lang).toEqual(base)
-      for (const k of base) expect(d[k.slice(0, -NATIVE_SUFFIX.length)], `${lang} ${k}`).toBeTypeOf('string')
+      for (const k of base) expect(d[k.slice(0, -suffixOf(k).length)], `${lang} ${k}`).toBeTypeOf('string')
     }
   })
   it('las mismas variables {x} que la clave base', () => {
     const vars = (v) => [...String(v).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort()
     for (const [lang, d] of Object.entries(DICTS)) {
       for (const k of nativeKeys(d)) {
-        const b = d[k.slice(0, -NATIVE_SUFFIX.length)]
+        const b = d[k.slice(0, -suffixOf(k).length)]
         for (const v of vars(d[k])) expect(vars(b), `${lang} ${k}`).toContain(v)
       }
     }
@@ -37,5 +40,13 @@ describe('variantes @native', () => {
   }
   it('es: sin voseo', () => {
     expect(nativeKeys(es).filter(k => /\b(tenés|podés|usá|tocá|elegí|querés|sabés)\b/.test(es[k]))).toEqual([])
+  })
+  it('@android/@ios ganan sobre @native solo en su plataforma (N5)', () => {
+    langCache.es = es
+    const k = 'settings.group.autoEntry.desc'
+    expect(translate('es', k, null, true, 'android')).toBe(es[k + '@android'])
+    expect(translate('es', k, null, true, 'ios')).toBe(es[k])
+    expect(translate('es', k, null, false)).toBe(es[k])
+    expect(translate('es', k, null, true, 'android')).not.toMatch(/Apple Pay/)
   })
 })
