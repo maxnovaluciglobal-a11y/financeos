@@ -37,6 +37,7 @@ import { logRejection } from '../../utils/errorLog.js'
 import { rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
 import { prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
+import { currentHomeProto } from './proto/homeProto.js'
 import { currentMonth, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupStatus.jsx'
@@ -106,7 +107,23 @@ function TodoStrip({ children }) {
 }
 const Slot = ({ children }) => <div className={hs.todoSlot}>{children}</div>
 
+// Inicio v2 (24-nov-2026): prototipos A/B/C solo con ?home=a|b|c (proto/homeProto.js).
+// Sin el parámetro, el Inicio de siempre, sin cambios.
+const HomeProto = lazy(() => import('./proto/HomeProto.jsx'))
+
 export default function Dashboard({ setPage }) {
+  const [proto] = useState(currentHomeProto)
+  if (proto) {
+    return (
+      <Suspense fallback={<div className={hs.sceneFallback} aria-hidden="true" />}>
+        <HomeProto variant={proto} setPage={setPage} />
+      </Suspense>
+    )
+  }
+  return <DashboardCurrent setPage={setPage} />
+}
+
+function DashboardCurrent({ setPage }) {
   const { t } = useT()
   const {
     ctx, settings, incomes, expenses, setAsides, budgets, goals, subs, debts, sym, activeMonth,
