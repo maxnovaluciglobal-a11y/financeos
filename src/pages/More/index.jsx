@@ -126,9 +126,11 @@ export default function More({ setPage }) {
 
       {!settings.isDemo && <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />}
 
-      {/* Herramientas de mi país: una hoja con todas (CL, MX, ES, PT…). */}
-      <Sheet open={!!countrySheet} onClose={() => setCountrySheet(null)} ariaLabel={t('more.countryTools')} maxWidth={420}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)' }}>{t('more.countryTools')}</h2>
+      {/* Herramientas de mi país: una hoja con todas (CL, MX, ES, PT…). Si
+          lleva también Modo asesor o Propiedades (tope de filas, I-5), su
+          título es "Más herramientas" (lb de la fila). */}
+      <Sheet open={!!countrySheet} onClose={() => setCountrySheet(null)} ariaLabel={t(countrySheet?.lb || 'more.countryTools')} maxWidth={420}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)' }}>{t(countrySheet?.lb || 'more.countryTools')}</h2>
         <div className={s.list}>
           {(countrySheet?.items || []).map(it => (
             <button key={it.id} type="button" className={s.row} onClick={() => { setCountrySheet(null); setPage(it.id) }}>

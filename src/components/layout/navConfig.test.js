@@ -130,12 +130,42 @@ describe('módulo Inversiones en "Más"', () => {
   it('≤ 10 filas en todo país y toda combinación de módulos', () => {
     for (const cc of COUNTRIES) for (const st of STATES) expect(rowsOf(cc, st), `${cc} ${JSON.stringify(st)}`).toBeLessThanOrEqual(10)
   })
-  it('solo Argentina se pasa, y ahí Inversiones queda en Panorama', () => {
-    const dropped = COUNTRIES.filter(cc => STATES.some(st => st.modules.investments && !flat(moreSections(cc, st)).includes('investments')))
-    expect(dropped).toEqual(['AR'])
-    expect(flat(moreSections('AR', on))).not.toContain('investments')
-    expect(flat(moreSections('AR', on))).toContain('panorama')
-    expect(flat(moreSections('AR', { modules: { properties: false, advisor: false, investments: true } }))).toContain('investments')
+  // I-5 (benchmark/05-coherencia-360): un mismo destino no cambia de lugar según el país.
+  it('encendido: Inversiones está en Herramientas en TODO país y toda combinación de módulos', () => {
+    for (const cc of COUNTRIES) for (const st of STATES.filter(x => x.modules.investments)) {
+      const tools = moreSections(cc, st).find(g => g.sec === 'nav.sec.tools').items.map(i => i.id)
+      expect(tools, `${cc} ${JSON.stringify(st)}`).toContain('investments')
+    }
+  })
+  it('nada desaparece: cada ítem visible del NAV sigue alcanzable con cualquier combinación de módulos', () => {
+    for (const cc of COUNTRIES) for (const st of STATES) {
+      const reach = new Set([...TAB_IDS, ...flat(moreSections(cc, st)), ...PANORAMA_PAGES, 'dashboard'])
+      for (const it_ of ALL_ITEMS.filter(i => navItemVisible(i, cc, st))) {
+        expect(reach.has(it_.id), `${cc} ${JSON.stringify(st)}: ${it_.id}`).toBe(true)
+      }
+    }
+  })
+  it('AR con todo encendido: calculadora a un toque, Inversiones y Propiedades directas, Modo asesor en "Más herramientas"', () => {
+    const tools = moreSections('AR', on).find(g => g.sec === 'nav.sec.tools').items
+    expect(tools.map(i => i.id)).toEqual(['multidolar', 'countryTools', 'projects', 'investments'])
+    const sheet = tools.find(i => i.id === 'countryTools')
+    expect(sheet).toMatchObject({ sheet: true, lb: 'more.moreTools', proOnly: true })
+    expect(sheet.items.map(i => i.id)).toEqual(['inflacion', 'advisor'])
+    expect(rowsOf('AR', on)).toBe(10)
+  })
+  it('AR sin Propiedades: Modo asesor se pliega y queda "Activar más funciones"', () => {
+    const st = { modules: { properties: false, advisor: true, investments: true } }
+    const ids = moreSections('AR', st).find(g => g.sec === 'nav.sec.tools').items.map(i => i.id)
+    expect(ids).toEqual(['multidolar', 'countryTools', 'investments', 'modules'])
+  })
+  it('sin pasarse del tope no se pliega nada: la hoja solo lleva herramientas del país', () => {
+    for (const cc of COUNTRIES.filter(c => c !== 'AR')) for (const st of STATES) {
+      const sheet = moreSections(cc, st).find(g => g.sec === 'nav.sec.tools')?.items.find(i => i.id === 'countryTools')
+      if (sheet) expect(sheet.lb, cc).toBe('more.countryTools')
+      const ids = flat(moreSections(cc, st))
+      if (st.modules.advisor) expect(moreSections(cc, st).find(g => g.sec === 'nav.sec.tools').items.map(i => i.id), cc).toContain('advisor')
+      expect(ids).toContain('panorama')
+    }
   })
   it('el riel de escritorio lo muestra solo encendido', () => {
     const it_ = ALL_ITEMS.find(i => i.id === 'investments')

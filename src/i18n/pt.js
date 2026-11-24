@@ -3282,6 +3282,7 @@ export const pt = {
     "more.sec.panorama": "Análise",
     "more.recurringSubs": "Fixos e assinaturas",
     "more.countryTools": "Ferramentas do meu país",
+    "more.moreTools": "Mais ferramentas",
     "more.enableModules": "Ativar mais funções",
     "more.help": "Ajuda e comentários",
     "home.upcoming.hint7": "próximos 7 dias",

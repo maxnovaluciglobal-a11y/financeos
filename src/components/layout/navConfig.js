@@ -132,7 +132,8 @@ export function activeTabFor(page) {
 //  · Panorama: el hub del análisis (Diagnóstico, Patrimonio, Proyección, Reportes…)
 //  · Herramientas: calculadora de tasa (VE/AR) · herramientas del país ·
 //    Propiedades, Modo asesor e Inversiones si están encendidos ·
-//    "Activar más funciones"
+//    "Activar más funciones". Inversiones nunca se quita (I-5): si no entra,
+//    Modo asesor y luego Propiedades pasan a la hoja de herramientas.
 //  · Cuenta: Ajustes (Ayuda y comentarios va en la barra del pie, junto a
 //    tema y cerrar sesión, para no pasar de 10 filas en AR con todo encendido)
 // R13: en VE/AR la calculadora de tasa del país (Multimoneda / Dólar y
@@ -159,24 +160,40 @@ export function moreSections(country, settings = {}) {
     item('income'),
     item('import'),
   ]
+  // Propiedades, Modo asesor e Inversiones (módulos encendidos), en ese orden.
+  const extras = ['projects', 'advisor', 'investments'].map(item).filter(it => navItemVisible(it, cc, settings))
+  const modulesRow = promptableModulesOff(settings).length > 0
+    ? { id: 'modules', lb: 'more.enableModules', action: 'features' } : null
+
+  // I-5 (benchmark/05-coherencia-360, 23-nov-2026): Inversiones encendido está
+  // SIEMPRE en Herramientas, en todos los países; nunca se quita para respetar
+  // el tope. Si las filas pasan de MORE_MAX_ROWS (hoy solo Argentina, con
+  // calculadora de tasa + Inflación + los tres módulos), lo de menor prioridad
+  // entra en la hoja de herramientas: primero Modo asesor, después
+  // Propiedades. La calculadora de tasa sigue a un toque (R13) y nada
+  // desaparece: lo plegado queda dentro de la hoja.
+  const sheetItems = [...countryItems]
+  const FOLD_ORDER = ['advisor', 'projects']
+  const toolRows = () => (tool ? 1 : 0) + (sheetItems.length > 0 ? 1 : 0) + extras.length + (modulesRow ? 1 : 0)
+  const rows = () => money.length + toolRows() + 2 // Panorama + Ajustes
+  for (const id of FOLD_ORDER) {
+    if (rows() <= MORE_MAX_ROWS) break
+    const i = extras.findIndex(it => it.id === id)
+    // Plegar en una hoja vacía no ahorra filas: solo si ya hay algo adentro.
+    if (i < 0 || sheetItems.length === 0) continue
+    sheetItems.push(extras.splice(i, 1)[0])
+  }
+
   const tools = []
   if (tool) tools.push({ ...item(tool), lb: 'refcur.tool', tool: true })
-  if (countryItems.length === 1) tools.push(countryItems[0])
-  else if (countryItems.length > 1) tools.push({ id: 'countryTools', lb: 'more.countryTools', sheet: true, items: countryItems, proOnly: countryItems.every(it => it.proOnly) })
-  for (const id of ['projects', 'advisor', 'investments']) {
-    const it = item(id)
-    if (navItemVisible(it, cc, settings)) tools.push(it)
+  if (sheetItems.length === 1) tools.push(sheetItems[0])
+  else if (sheetItems.length > 1) {
+    // Si la hoja lleva algo que no es del país, se llama "Más herramientas".
+    const onlyCountry = sheetItems.every(it => countryItems.includes(it))
+    tools.push({ id: 'countryTools', lb: onlyCountry ? 'more.countryTools' : 'more.moreTools', sheet: true, items: sheetItems, proOnly: sheetItems.every(it => it.proOnly) })
   }
-  if (promptableModulesOff(settings).length > 0) tools.push({ id: 'modules', lb: 'more.enableModules', action: 'features' })
-
-  // Argentina es el único país con calculadora de tasa Y herramienta propia:
-  // con Inversiones sumado puede pasar de 10 filas. Ahí Inversiones queda solo
-  // en Panorama, que tiene la misma tarjeta (y el riel de escritorio la conserva).
-  const rows = money.length + tools.length + 2 // Panorama + Ajustes
-  if (rows > MORE_MAX_ROWS) {
-    const i = tools.findIndex(it => it.id === 'investments')
-    if (i >= 0) tools.splice(i, 1)
-  }
+  tools.push(...extras)
+  if (modulesRow) tools.push(modulesRow)
 
   return [
     { sec: 'more.sec.money', items: money },
