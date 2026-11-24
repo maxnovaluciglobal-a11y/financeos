@@ -56,3 +56,29 @@ describe('Turnstile en la CSP', () => {
     expect(dir('connect-src')).not.toContain('https://challenges.cloudflare.com')
   })
 })
+
+// S4 (revisión pre-tiendas, 23-nov-2026): la app de tienda empaqueta index.html
+// sin las cabeceras de Vercel, así que el HTML lleva la misma CSP en un <meta>.
+describe('CSP en el <meta> del index.html (app de tienda)', () => {
+  const metaCsp = (/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/.exec(html) || [])[1] || ''
+  const mdir = (name) => (metaCsp.split(';').map(s => s.trim()).find(s => s.startsWith(name + ' ')) || '').split(/\s+/).slice(1)
+  const names = (p) => p.split(';').map(s => s.trim().split(/\s+/)[0]).filter(Boolean)
+
+  it('existe y va antes de cualquier script o estilo', () => {
+    expect(metaCsp).not.toBe('')
+    const at = html.indexOf('http-equiv="Content-Security-Policy"')
+    expect(at).toBeLessThan(html.indexOf('<script'))
+    expect(at).toBeLessThan(html.indexOf('<link'))
+  })
+  it('mismas directivas que la cabecera, salvo frame-ancestors (no vale en meta)', () => {
+    expect(names(metaCsp)).toEqual(names(csp).filter(n => n !== 'frame-ancestors'))
+    for (const n of names(metaCsp)) {
+      if (n === 'connect-src') continue
+      expect(mdir(n), n).toEqual(dir(n))
+    }
+  })
+  it('connect-src: lo de la cabecera más el dominio de la API para la app nativa', () => {
+    expect(mdir('connect-src')).toEqual(["'self'", 'https://app.moyiq.app', ...dir('connect-src').slice(1)])
+    expect(mdir('script-src')).not.toContain("'unsafe-inline'")
+  })
+})
