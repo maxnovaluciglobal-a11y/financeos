@@ -4,6 +4,10 @@
    estado en el teléfono, y texto en blanco (contrast.test.js). */
 .scene {
   position: relative;
+  /* Dentro de un encabezado flex con selector de mes (Ingresos, Reportes…)
+     ocupa toda la fila, como .pageHeader (QA I10: Ingresos la dejaba a media
+     pantalla y el selector quedaba al lado de la escena). */
+  flex: 1 1 100%;
   color: var(--on-grad-text);
   background: var(--gr-impulso);
   border-radius: var(--radius-lg);
