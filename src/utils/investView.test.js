@@ -25,11 +25,13 @@ describe('vista esencial / completa', () => {
     expect(readView(s)).toBe('esencial')
   })
   it('la esencial oculta velas, indicadores, stop, cinta, lecturas y medias; nada se borra en la completa', () => {
-    for (const part of ['candles', 'indicators', 'stop', 'strip', 'review', 'movingAverages', 'unrealized', 'riskR', 'ladder']) {
+    for (const part of ['candles', 'indicators', 'stop', 'strip', 'review', 'movingAverages', 'unrealized', 'riskR']) {
       expect(shows('esencial', part), part).toBe(false)
       expect(shows('completa', part), part).toBe(true)
     }
     expect(shows('esencial', 'value')).toBe(true)
+    // La escalera salió de Aportes (inv-v2, 24-nov): "Tus tramos" está en las dos vistas.
+    expect(shows('esencial', 'ladder')).toBe(true)
     expect(isFull('completa')).toBe(true)
     expect(isFull('esencial')).toBe(false)
   })
