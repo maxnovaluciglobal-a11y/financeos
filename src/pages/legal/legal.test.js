@@ -15,7 +15,7 @@ import { TERMS_CONTENT } from './termsContent.jsx'
 import { LICENSE_CONTENT } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
 import { sanitizeLogMessage } from '../../core/feedback.js'
-import { COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, PRIVACY_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
+import { COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, PRIVACY_LAST_UPDATED, TERMS_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -58,7 +58,7 @@ describe('legal pages × languages', () => {
 
         it('renders non-empty content with the last-updated date', () => {
           expect(text.length).toBeGreaterThan(800)
-          expect(text).toContain((page === 'privacy' ? PRIVACY_LAST_UPDATED : LAST_UPDATED)[lang])
+          expect(text).toContain((page === 'privacy' ? PRIVACY_LAST_UPDATED : page === 'terms' ? TERMS_LAST_UPDATED : LAST_UPDATED)[lang])
         })
 
         it('has no exclamation marks and no emoji', () => {

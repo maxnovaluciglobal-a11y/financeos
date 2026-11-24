@@ -23,3 +23,11 @@ export const REBRAND_DEPLOY_DATE = '2026-11-18'
 // 20-nov; la de la app tiene que decir lo mismo (fecha y versión reemplazada).
 export const PRIVACY_DEPLOY_DATE = '2026-11-24'
 export const PRIVACY_PREVIOUS_DATE = '2026-11-20'
+
+// Vigencia propia de los Términos de Uso (ronda 4 pre-tiendas, R3-2): su texto
+// cambió en 8d228a6 (sincronización opcional y «datos de la app») y la landing
+// los publica con vigencia 24-nov-2026 «· reemplaza a la versión 2026-11-18»
+// (financeos-landing 93ce24e). La app tiene que decir lo mismo. Licencia y
+// descargo siguen con REBRAND_DEPLOY_DATE (no cambiaron dentro de la app).
+export const TERMS_DEPLOY_DATE = '2026-11-24'
+export const TERMS_PREVIOUS_DATE = REBRAND_DEPLOY_DATE

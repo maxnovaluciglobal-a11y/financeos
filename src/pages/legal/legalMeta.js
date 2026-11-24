@@ -1,7 +1,7 @@
 // src/pages/legal/legalMeta.js
 // Datos comunes de las páginas legales (es/en/pt/de). Sin React ni hooks: lo
 // importan los módulos de contenido y legal.test.js en node.
-import { PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
+import { PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE, TERMS_DEPLOY_DATE, TERMS_PREVIOUS_DATE } from '../../data/deployDate.js'
 import { STORE_BUILD } from '../../native/storeBuild.js'
 
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
@@ -22,8 +22,10 @@ function effectiveLabel(lang, date = LEGAL_EFFECTIVE_DATE) {
   return { es: `Vigente desde el ${day}`, en: `Effective ${day}`, pt: `Em vigor desde ${day}`, de: `Gültig ab ${day}` }[lang]
 }
 
-// Fecha visible en el encabezado de cada página legal. Al cambiar el texto de
-// fondo de cualquiera de las cuatro páginas, cambiar LEGAL_EFFECTIVE_DATE.
+// Fecha visible en el encabezado de Licencia y Descargo. Términos y Privacidad
+// tienen vigencia propia (TERMS_LAST_UPDATED y PRIVACY_LAST_UPDATED, más abajo):
+// al cambiar el texto de fondo de una página, darle su propia fecha en
+// data/deployDate.js en vez de mover la de las demás.
 export const LAST_UPDATED = {
   es: effectiveLabel('es'),
   en: effectiveLabel('en'),
@@ -38,15 +40,25 @@ export const LAST_UPDATED = {
 export const PRIVACY_EFFECTIVE_DATE = PRIVACY_DEPLOY_DATE
 export const PRIVACY_VERSION = PRIVACY_EFFECTIVE_DATE
 export const PRIVACY_REPLACES = PRIVACY_PREVIOUS_DATE
-const REPLACES_LABEL = {
-  es: `reemplaza a la versión ${PRIVACY_REPLACES}`,
-  en: `replaces version ${PRIVACY_REPLACES}`,
-  pt: `substitui a versão ${PRIVACY_REPLACES}`,
-  de: `ersetzt die Fassung ${PRIVACY_REPLACES}`,
+function replacesLabel(lang, version) {
+  return {
+    es: `reemplaza a la versión ${version}`,
+    en: `replaces version ${version}`,
+    pt: `substitui a versão ${version}`,
+    de: `ersetzt die Fassung ${version}`,
+  }[lang]
 }
-export const PRIVACY_LAST_UPDATED = Object.fromEntries(
-  ['es', 'en', 'pt', 'de'].map(lang => [lang, `${effectiveLabel(lang, PRIVACY_EFFECTIVE_DATE)} · ${REPLACES_LABEL[lang]}`]),
+const datedLabels = (date, replaces) => Object.fromEntries(
+  ['es', 'en', 'pt', 'de'].map(lang => [lang, `${effectiveLabel(lang, date)} · ${replacesLabel(lang, replaces)}`]),
 )
+export const PRIVACY_LAST_UPDATED = datedLabels(PRIVACY_EFFECTIVE_DATE, PRIVACY_REPLACES)
+
+// Términos de Uso: vigencia propia (data/deployDate.js, TERMS_DEPLOY_DATE, R3-2),
+// la misma que publica la landing, y cita la versión a la que reemplaza.
+export const TERMS_EFFECTIVE_DATE = TERMS_DEPLOY_DATE
+export const TERMS_VERSION = TERMS_EFFECTIVE_DATE
+export const TERMS_REPLACES = TERMS_PREVIOUS_DATE
+export const TERMS_LAST_UPDATED = datedLabels(TERMS_EFFECTIVE_DATE, TERMS_REPLACES)
 
 // Aviso del cambio de nombre, al inicio de las cuatro páginas legales.
 // "MOY IQ" aparece aquí a propósito (alias permitido en copyLint.test.js).

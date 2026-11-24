@@ -14,7 +14,7 @@
 // clásico (React.createElement), así que React tiene que estar en scope.
 import React from 'react'
 import s from './legal.module.css'
-import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
+import { TERMS_LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
 import { CompanyBlock, withRebrandNotice } from './companyBlock.jsx'
 
@@ -1004,8 +1004,8 @@ function DeBody({ store = false } = {}) {
 }
 
 export const TERMS_CONTENT = {
-  es: { title: 'Términos de Uso', sub: `${LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
-  en: { title: 'Terms of Use', sub: `${LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
-  pt: { title: 'Termos de Uso', sub: `${LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
-  de: { title: 'Allgemeine Geschäftsbedingungen (AGB)', sub: `${LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
+  es: { title: 'Términos de Uso', sub: `${TERMS_LAST_UPDATED.es} · ${OPERATOR}`, Body: withRebrandNotice(EsBody, 'es') },
+  en: { title: 'Terms of Use', sub: `${TERMS_LAST_UPDATED.en} · ${OPERATOR}`, Body: withRebrandNotice(EnBody, 'en') },
+  pt: { title: 'Termos de Uso', sub: `${TERMS_LAST_UPDATED.pt} · ${OPERATOR}`, Body: withRebrandNotice(PtBody, 'pt') },
+  de: { title: 'Allgemeine Geschäftsbedingungen (AGB)', sub: `${TERMS_LAST_UPDATED.de} · ${OPERATOR}`, Body: withRebrandNotice(DeBody, 'de') },
 }
