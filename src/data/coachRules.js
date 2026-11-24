@@ -258,7 +258,7 @@ export const COACH_RULES = [
     evaluate: (m, tr) => m.daysSinceBackup >= COACH_CONFIG.thresholds.backupDaysHigh ? {
       severity: 'warning',
       title: tr('cr.backupHigh.title'),
-      msg: tr('cr.backupHigh.msg', { n: m.daysSinceBackup }),
+      msg: m.neverBackedUp ? tr('cr.backupNever.msg') : tr('cr.backupHigh.msg', { n: m.daysSinceBackup }),
       action: tr('cr.backupHigh.action'),
     } : null,
   },
@@ -364,10 +364,14 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
   const goalsOnTrack  = goals.filter(g => g.target > 0 && (g.saved || 0) / g.target >= COACH_CONFIG.thresholds.goalsProgressWarn).length
 
   // Backup
+  // M6 (QA): sin respaldo, `neverBackedUp` (el mensaje lo dice con palabras;
+  // antes se veía el centinela "999 días").
   let daysSinceBackup = 999
+  let neverBackedUp = true
   try {
     const lastBackup = localStorage.getItem('fos_last_backup')
     if (lastBackup) {
+      neverBackedUp = false
       daysSinceBackup = Math.floor((Date.now() - new Date(lastBackup).getTime()) / 86400000)
     }
   } catch { /* sin acceso a localStorage: se asume que nunca hubo respaldo */ }
@@ -381,6 +385,6 @@ export function calcCoachMetrics({ incomes, expenses, budgets, debts, goals, sub
     totalDebt, debtMonthlyPayments, debtLoad,
     emergencyFundMonths,
     goalsStalled, goalsOnTrack,
-    daysSinceBackup,
+    daysSinceBackup, neverBackedUp,
   }
 }

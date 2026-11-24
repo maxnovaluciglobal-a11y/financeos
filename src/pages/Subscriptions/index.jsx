@@ -5,8 +5,9 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, fmtPct, currencyDecimals, fmtPctPoints } from '../../utils/index.js'
+import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtAmount, fmtPct, currencyDecimals, fmtPctPoints, localDateStr } from '../../utils/index.js'
 import { toLocal } from '../../utils/recurring.js'
+import { nextPaymentOn } from '../../utils/subscriptionNext.js'
 import ChartCard from '../../components/charts/ChartCard.jsx'
 import HorizontalBars from '../../components/charts/HorizontalBars.jsx'
 import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
@@ -27,6 +28,9 @@ export const FREQ_LABELS = {
   quarterly: 'Trimestral',
   annual:    'Anual',
 }
+
+// I13 (QA): la fecha guardada puede quedar en el pasado; se muestra la próxima.
+const nextOf = (sub) => nextPaymentOn(sub?.nextPaymentDate, sub?.frequency, localDateStr())
 
 // ── CÁLCULOS ────────────────────────────────────────────────────────────────────
 export function toMonthly(amount, frequency) {
@@ -111,13 +115,13 @@ export function generateAlerts(subs, monthlyIncome, t = null, lang = null) {
   const in7   = new Date(today); in7.setDate(today.getDate() + 7)
   const upcoming = active.filter(s => {
     if (!s.nextPaymentDate) return false
-    const d = toLocal(s.nextPaymentDate)
+    const d = toLocal(nextOf(s))
     return d >= today && d <= in7
   })
   upcoming.forEach(s => {
     alerts.push({
       type: 'upcoming',
-      msg: tr('subs.alert.upcoming', { name: s.name, date: toLocal(s.nextPaymentDate).toLocaleDateString(dateLocale()) }, `"${s.name}" tiene un pago próximo el ${toLocal(s.nextPaymentDate).toLocaleDateString(dateLocale())}.`),
+      msg: tr('subs.alert.upcoming', { name: s.name, date: toLocal(nextOf(s)).toLocaleDateString(dateLocale()) }, `"${s.name}" tiene un pago próximo el ${toLocal(nextOf(s)).toLocaleDateString(dateLocale())}.`),
     })
   })
 
@@ -167,7 +171,7 @@ export default function Subscriptions() {
     : null
   const nextSub = activeSubs
     .filter(s => s.nextPaymentDate)
-    .sort((a, b) => String(a.nextPaymentDate).localeCompare(String(b.nextPaymentDate)))[0]
+    .sort((a, b) => nextOf(a).localeCompare(nextOf(b)))[0]
   const alerts = useMemo(() => generateAlerts(subs, monthlyIncome, t, lang), [subs, monthlyIncome, t, lang])
 
   // Datos para gráficos
@@ -252,7 +256,7 @@ export default function Subscriptions() {
         <KPI label={t('subs.kpi.annual')} value={`${currency} ${fmt(totalAnnual)}`} />
         <KPI label={t('subs.kpi.active')} value={activeSubs.length} />
         <KPI label={t('subs.kpi.mostExpensive')} value={mostExpensive ? mostExpensive.name : '—'} color="amber" />
-        <KPI label={t('subs.kpi.nextPay')} value={nextSub ? (toLocal(nextSub.nextPaymentDate) || new Date(nextSub.nextPaymentDate)).toLocaleDateString(dateLocale()) : '—'} />
+        <KPI label={t('subs.kpi.nextPay')} value={nextSub ? toLocal(nextOf(nextSub)).toLocaleDateString(dateLocale()) : '—'} />
       </div>
 
       {/* VISUAL INSIGHTS */}
@@ -360,7 +364,7 @@ export default function Subscriptions() {
                       <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{(sub.currency || currency)} {fmt(annual, sub.currency || currency)}</td>
                       <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{FREQ_LABELS[sub.frequency] ? t('mov.freq.' + sub.frequency) : sub.frequency}</td>
                       <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', whiteSpace: 'nowrap' }}>
-                        {sub.nextPaymentDate ? (toLocal(sub.nextPaymentDate) || new Date(sub.nextPaymentDate)).toLocaleDateString(dateLocale()) : '—'}
+                        {sub.nextPaymentDate ? toLocal(nextOf(sub)).toLocaleDateString(dateLocale()) : '—'}
                       </td>
                       <td style={{ padding: '9px 12px' }}>
                         <button onClick={() => toggleStatus(sub)} aria-pressed={isActive} style={{

@@ -108,9 +108,9 @@ export const US_BUDGETS = [
 // ── DEUDAS ────────────────────────────────────────────────────────────────────
 // La tarjeta tiene la tasa más alta → el simulador Avalanche la prioriza.
 export const US_DEBTS = [
-  { id: d('us-d1'), type: 'Auto',        creditor: 'Auto loan — 2021 Honda Civic', initial: 23_900.00, balance: 14_862.30, minPayment: 389.00, dueDate: nextMonthDate(12), rate: 7.4,   notes: '60 months' },
-  { id: d('us-d2'), type: 'Tarjeta',     creditor: 'Credit card (Visa)',           initial:  3_200.00, balance:  2_614.55, minPayment:  78.00, dueDate: nextMonthDate(25), rate: 24.24, notes: 'APR 24.24%' },
-  { id: d('us-d3'), type: 'Estudiantil', creditor: 'Federal student loan',         initial: 21_500.00, balance:  9_845.10, minPayment: 172.00, dueDate: nextMonthDate(1),  rate: 5.5,   notes: 'Standard repayment plan' },
+  { id: d('us-d1'), type: 'Auto', debtType: 'Auto',        creditor: 'Auto loan — 2021 Honda Civic', initial: 23_900.00, balance: 14_862.30, minPayment: 389.00, dueDate: nextMonthDate(12), rate: 7.4,   notes: '60 months' },
+  { id: d('us-d2'), type: 'Tarjeta', debtType: 'Tarjeta',     creditor: 'Credit card (Visa)',           initial:  3_200.00, balance:  2_614.55, minPayment:  78.00, dueDate: nextMonthDate(25), rate: 24.24, notes: 'APR 24.24%' },
+  { id: d('us-d3'), type: 'Estudiantil', debtType: 'Estudiantil', creditor: 'Federal student loan',         initial: 21_500.00, balance:  9_845.10, minPayment: 172.00, dueDate: nextMonthDate(1),  rate: 5.5,   notes: 'Standard repayment plan' },
 ]
 
 // ── METAS ─────────────────────────────────────────────────────────────────────

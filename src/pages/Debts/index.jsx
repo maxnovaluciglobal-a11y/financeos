@@ -9,7 +9,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { KPI, Card, CardHeader, FormGroup, FormRow, Btn, Alert, Badge, ProgressBar, PageHeader, ChoiceGroup, EmptyState } from '../../components/ui/index.jsx'
 import Receivables from './Receivables.jsx'
-import { fmtMoney as fmtMoneyRaw, fmtPct, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr, currencySymbol } from '../../utils/index.js'
+import { fmtMoney as fmtMoneyRaw, fmtPct, fmtPctPoints, DEBT_TYPES, debtEmoji, moneyLocale, dateLocale, localDateStr, currencySymbol } from '../../utils/index.js'
 import DebtProgressList from '../../components/charts/DebtProgressList.jsx'
 import { loadIndicadores } from '../../utils/indicadores.js'
 import ProGate from '../../components/ui/ProGate.jsx'
@@ -84,7 +84,9 @@ function DebtPayoffSimulator({ debts, sym }) {
   const monthsSaved    = base.months - withExtra.months
   const interestSaved  = base.totalInterest - withExtra.totalInterest
 
-  const fmtMonths = m => m >= 600 ? t('debts.sim.years50') : m > 12 ? `${Math.floor(m/12)} ${Math.floor(m/12)>1?t('debts.sim.years'):t('debts.sim.year')} ${m%12?`${m%12} ${t('debts.sim.month')}`:''}` : `${m} ${m!==1?t('debts.sim.months'):t('debts.sim.month')}`
+  // M3 (QA): el resto de meses también lleva plural ("4 years 3 months").
+  const monthsWord = n => (n !== 1 ? t('debts.sim.months') : t('debts.sim.month'))
+  const fmtMonths = m => m >= 600 ? t('debts.sim.years50') : m > 12 ? `${Math.floor(m/12)} ${Math.floor(m/12)>1?t('debts.sim.years'):t('debts.sim.year')}${m%12?` ${m%12} ${monthsWord(m%12)}`:''}` : `${m} ${monthsWord(m)}`
 
   if (!activeDebts.length) return null
 
@@ -159,7 +161,7 @@ function DebtPayoffSimulator({ debts, sym }) {
               <div style={{width:20,height:20,borderRadius:'50%',background:i===0?'var(--grn)':'var(--brd)',color:i===0?'#fff':'var(--th)',fontSize:'var(--t-footnote)',fontFamily: 'var(--num)',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{i+1}</div>
               <div style={{flex:1,fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--tx)'}}>{d.creditor}</div>
               <div style={{fontSize:'var(--t-footnote)',fontFamily: 'var(--sans)',color:'var(--th)'}}><Money>{fmtMoney(d.balance,sym)}</Money></div>
-              {Number(d.rate) > 0 && <Badge color="red">{d.rate}% TAE</Badge>}
+              {Number(d.rate) > 0 && <Badge color="red">{t('chart.debt.rate', { rate: fmtPctPoints(d.rate) })}</Badge>}
             </div>
           ))
         }
@@ -403,7 +405,7 @@ export default function Debts() {
                 <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.creditor}</span>
               </div>
               <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end',marginLeft:'auto'}}>
-                {d.rate > 0 && <Badge color="red">{d.rate}% TAE</Badge>}
+                {d.rate > 0 && <Badge color="red">{t('chart.debt.rate', { rate: fmtPctPoints(d.rate) })}</Badge>}
                 {Number(d.ufBalance) > 0 && <Badge color="amber">UF</Badge>}
                 {(d.project||'').trim() && <Badge color="green"><Building2 size={11} strokeWidth={1.7} aria-hidden="true" style={{ verticalAlign: '-1px', marginRight: 3 }} />{d.project}</Badge>}
                 {d.balance > 0 && d.minPayment > 0 && confirmPay !== d.id && (
