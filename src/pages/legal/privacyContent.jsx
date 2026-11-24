@@ -238,7 +238,8 @@ function EsBody() {
             a nuestras direcciones @moyiq.app y Turnstile, la verificación que comprueba que no eres un
             robot, entre otros, al entrar a la app, al registrarte, al recuperar el acceso y al enviar
             comentarios o la encuesta. Turnstile recibe tu
-            dirección IP y datos técnicos de tu navegador. Cloudflare actúa como encargado y, para
+            dirección IP y datos técnicos de tu navegador. La app que se descarga de Google Play o App
+            Store no usa Turnstile. Cloudflare actúa como encargado y, para
             mejorar esa detección de robots, como responsable propio.
           </li>
           <li><strong>Google (EE. UU.):</strong> la bandeja de Gmail donde recibimos y respondemos los correos y comentarios, y el inicio de sesión si el usuario elige entrar con Google.</li>
@@ -335,10 +336,11 @@ function EsBody() {
           prefiera hacerlo antes puede usar la página de cancelación). En ese caso, el identificador
           de la suscripción de Stripe queda en un registro interno de errores, que se borra solo a los
           30 días, y el aviso que recibe soporte (support@moyiq.app) incluye el email de la cuenta,
-          solo para completar la cancelación. Si el correo estaba suscrito a
-          un newsletter, nosotros lo quitamos de la lista de nuestro proveedor de envío. Solo se
-          conservan los comprobantes de pago y la constancia de una cancelación, como se indica en
-          esta política.
+          solo para completar la cancelación; lo borramos después de completarla. Si el correo estaba
+          suscrito a un newsletter, nosotros lo quitamos de la lista de nuestro proveedor de envío.
+          Solo se conservan, en Stripe, la ficha de cliente (identificador de cliente y correo de la
+          compra) y los comprobantes de pago, por obligaciones legales, contables y fiscales, y la
+          constancia de una cancelación, como se indica en esta política.
         </p>
         <p>
           Puedes pedir acceso, rectificación, supresión, oposición, portabilidad, limitación o bloqueo
@@ -637,7 +639,8 @@ function EnBody() {
             <strong>Cloudflare (USA):</strong> the domain's DNS, forwarding of the emails you write to
             our @moyiq.app addresses, and Turnstile, the check that confirms you are not a bot when you
             sign in, sign up, recover access, or send feedback or the survey, among others. Turnstile receives your IP address and technical data
-            about your browser. Cloudflare acts as a processor and, to improve that bot detection, as an
+            about your browser. The app downloaded from Google Play or the App Store does not use
+            Turnstile. Cloudflare acts as a processor and, to improve that bot detection, as an
             independent controller.
           </li>
           <li><strong>Google (USA):</strong> the Gmail inbox where we receive and answer emails and feedback, and sign-in if the user chooses to sign in with Google.</li>
@@ -731,9 +734,11 @@ function EnBody() {
           (anyone who prefers to do it sooner can use the cancellation page). In that case, the Stripe
           subscription identifier stays in an internal error log, which is deleted automatically after
           30 days, and the alert that support (support@moyiq.app) receives includes the account email,
-          only to complete the cancellation. If the email was
-          subscribed to a newsletter, we remove it from our email provider's list. Only payment
-          receipts and the record of a cancellation are kept, as described in this policy.
+          only to complete the cancellation; we delete it once that is done. If the email was
+          subscribed to a newsletter, we remove it from our email provider's list. Only these are
+          kept: in Stripe, the customer record (customer identifier and purchase email) and the payment
+          receipts, for legal, accounting and tax obligations, and the record of a cancellation, as
+          described in this policy.
         </p>
         <p>
           You can request access, rectification, erasure, objection, portability, restriction or
@@ -1036,7 +1041,8 @@ function PtBody() {
             para nossos endereços @moyiq.app e Turnstile, a verificação que confirma que você não é um
             robô, entre outros, ao entrar no app, ao se cadastrar, ao recuperar o acesso e ao enviar
             comentários ou a pesquisa. O Turnstile recebe seu
-            endereço IP e dados técnicos do seu navegador. A Cloudflare atua como operadora e, para
+            endereço IP e dados técnicos do seu navegador. O app baixado do Google Play ou da App Store
+            não usa o Turnstile. A Cloudflare atua como operadora e, para
             melhorar essa detecção de robôs, como controladora própria.
           </li>
           <li><strong>Google (EUA):</strong> a caixa do Gmail onde recebemos e respondemos emails e comentários, e o login se o usuário escolher entrar com o Google.</li>
@@ -1131,9 +1137,11 @@ function PtBody() {
           falhar, recebemos um aviso e o fazemos manualmente em um dia útil (quem preferir fazer antes
           pode usar a página de cancelamento). Nesse caso, o identificador da assinatura da Stripe fica
           em um registro interno de erros, que é apagado automaticamente após 30 dias, e o aviso que o
-          suporte (support@moyiq.app) recebe inclui o email da conta, só para concluir o cancelamento. Se o email estava inscrito em uma newsletter, nós o
-          retiramos da lista do nosso provedor de envio. Ficam apenas os comprovantes de pagamento e o
-          registro de um cancelamento, como indica esta política.
+          suporte (support@moyiq.app) recebe inclui o email da conta, só para concluir o cancelamento; nós o apagamos depois de concluí-lo. Se o email estava
+          inscrito em uma newsletter, nós o retiramos da lista do nosso provedor de envio. Ficam apenas,
+          na Stripe, a ficha de cliente (identificador de cliente e email da compra) e os comprovantes
+          de pagamento, por obrigações legais, contábeis e fiscais, e o registro de um cancelamento,
+          como indica esta política.
         </p>
         <p>
           Você pode pedir acesso, retificação, eliminação, oposição, portabilidade, limitação ou
@@ -1513,7 +1521,8 @@ function DeBody() {
             Adressen @moyiq.app und Turnstile, die Prüfung, ob ein Mensch die App nutzt, unter anderem bei
             Anmeldung, Registrierung, Wiederherstellung des Zugangs und beim Senden von Feedback oder
             der Umfrage. Turnstile erhält Ihre IP-Adresse und technische
-            Daten Ihres Browsers. Cloudflare handelt als Auftragsverarbeiter und, zur Verbesserung der
+            Daten Ihres Browsers. Die App aus Google Play oder dem App Store nutzt Turnstile nicht.
+            Cloudflare handelt als Auftragsverarbeiter und, zur Verbesserung der
             Bot-Erkennung, als eigener Verantwortlicher (Art. 6 Abs. 1 lit. f DSGVO).
           </li>
           <li><strong>Google (Google Ireland Ltd. / Google LLC):</strong> das Gmail-Postfach, in dem wir E-Mails und Feedback empfangen und beantworten, und die Anmeldung mit Google, wenn Sie diese wählen.</li>
@@ -1558,8 +1567,10 @@ function DeBody() {
             nutzt die Kündigungsseite). In diesem Fall bleibt die Kennung des Stripe-Abonnements in
             einem internen Fehlerprotokoll, das nach 30 Tagen automatisch gelöscht wird, und der Hinweis
             an den Support (support@moyiq.app) enthält die E-Mail-Adresse des Kontos, nur um die
-            Kündigung abzuschließen. War die E-Mail-Adresse für einen Newsletter angemeldet,
-            entfernen wir sie aus der Liste unseres E-Mail-Dienstleisters.
+            Kündigung abzuschließen; danach löschen wir ihn. War die E-Mail-Adresse für einen
+            Newsletter angemeldet, entfernen wir sie aus der Liste unseres E-Mail-Dienstleisters. Bei
+            Stripe bleiben der Kundendatensatz (Kundenkennung und E-Mail-Adresse des Kaufs) und die
+            Zahlungsnachweise aufgrund gesetzlicher Aufbewahrungspflichten erhalten.
           </li>
           <li>E-Mail-Adressen für Neuigkeiten: bis zu Ihrer Abmeldung oder dem Widerruf Ihrer Einwilligung.</li>
           <li>
