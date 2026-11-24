@@ -11,7 +11,6 @@ import { signUpWithPassword, signInWithPassword, signInWithGoogle, signInWithApp
 import { nativePlatform, isNativeApp } from '../native/platform.js'
 import { NATIVE_OAUTH_ERROR_EVENT } from '../native/nativeLinks.js'
 import { oauthProviders } from '../native/storePolicy.js'
-import { hasNetworkForOAuth } from '../native/connectivity.js'
 import { useT } from '../i18n/useT.js'
 import Logo from './Logo.jsx'
 import Turnstile from './Turnstile.jsx'
@@ -37,6 +36,19 @@ export function legalUrls(lang) {
 // muestra los precios de la web.
 const LegalTerms = lazy(() => import('../pages/legal/Terms.jsx'))
 const LegalPrivacy = lazy(() => import('../pages/legal/Privacy.jsx'))
+
+// AND-14 / R3-1: ¿hay red para abrir Google/Apple? En la web alcanza con
+// navigator.onLine; en la app nativa se carga native/connectivity.js (plugin
+// Network o prueba al health de Supabase Auth) recién al tocar el botón, para
+// que @capacitor/core no entre en el JS inicial de la web (presupuesto de 264 kB).
+async function hasNetworkForOAuth() {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return false
+  if (!isNativeApp()) return true
+  try {
+    const { hasNetworkForOAuth: check } = await import('../native/connectivity.js')
+    return await check()
+  } catch { return true }
+}
 
 export function LegalNotice({ t, lang, native = isNativeApp() }) {
   const urls = legalUrls(lang)

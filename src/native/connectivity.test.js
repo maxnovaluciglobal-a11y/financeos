@@ -107,3 +107,12 @@ describe('hasNetworkForOAuth (cableado real)', () => {
     expect(fetchImpl).not.toHaveBeenCalled()
   })
 })
+
+describe('presupuesto del JS inicial', () => {
+  it('AuthGate carga connectivity.js solo con import() (no mete @capacitor/core en el JS inicial de la web)', async () => {
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(new URL('../components/AuthGate.jsx', import.meta.url), 'utf8')
+    expect(src).not.toMatch(/^import[^\n]*native\/connectivity/m)
+    expect(src).toMatch(/await import\('\.\.\/native\/connectivity\.js'\)/)
+  })
+})
