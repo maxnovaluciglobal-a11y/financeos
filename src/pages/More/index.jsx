@@ -75,7 +75,7 @@ function AccountHeader({ setPage }) {
 
 function RowIcon({ it }) {
   if (it.tool) return <Calculator size={18} strokeWidth={1.7} />
-  if (it.id === 'countryTools') return <Wrench size={18} strokeWidth={1.7} />
+  if (it.id === 'countryTools' || it.id === 'moreTools') return <Wrench size={18} strokeWidth={1.7} />
   if (it.id === 'modules') return <Sparkles size={18} strokeWidth={1.7} />
   if (SHOW_FIRMA && it.cc) return <CountryBadge code={it.cc} />
   const Ic = NAV_ICONS[it.id]
@@ -127,13 +127,13 @@ export default function More({ setPage }) {
       {!settings.isDemo && <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />}
 
       {/* Herramientas de mi país: una hoja con todas (CL, MX, ES, PT…). Si
-          lleva también Modo asesor o Propiedades (tope de filas, I-5), su
-          título es "Más herramientas" (lb de la fila). */}
+          es la de "Más herramientas" (Modo asesor, Propiedades o "Activar más
+          funciones" plegados por el tope de filas, I-5), lleva su título. */}
       <Sheet open={!!countrySheet} onClose={() => setCountrySheet(null)} ariaLabel={t(countrySheet?.lb || 'more.countryTools')} maxWidth={420}>
         <h2 style={{ margin: '0 0 12px', fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)' }}>{t(countrySheet?.lb || 'more.countryTools')}</h2>
         <div className={s.list}>
           {(countrySheet?.items || []).map(it => (
-            <button key={it.id} type="button" className={s.row} onClick={() => { setCountrySheet(null); setPage(it.id) }}>
+            <button key={it.id} type="button" className={s.row} onClick={() => { setCountrySheet(null); open(it) }}>
               <span className={s.rowIc} aria-hidden="true"><RowIcon it={it} /></span>
               <span className={s.rowLabel}>{t(it.lb)}</span>
               {showProChip(it, plan) && <span className={s.pro}>PRO</span>}

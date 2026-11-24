@@ -133,7 +133,8 @@ export function activeTabFor(page) {
 //  · Herramientas: calculadora de tasa (VE/AR) · herramientas del país ·
 //    Propiedades, Modo asesor e Inversiones si están encendidos ·
 //    "Activar más funciones". Inversiones nunca se quita (I-5): si no entra,
-//    Modo asesor y luego Propiedades pasan a la hoja de herramientas.
+//    Modo asesor, Propiedades y "Activar más funciones" pasan, en ese orden,
+//    a una hoja "Más herramientas"; las del país siguen directas.
 //  · Cuenta: Ajustes (Ayuda y comentarios va en la barra del pie, junto a
 //    tema y cerrar sesión, para no pasar de 10 filas en AR con todo encendido)
 // R13: en VE/AR la calculadora de tasa del país (Multimoneda / Dólar y
@@ -167,33 +168,34 @@ export function moreSections(country, settings = {}) {
 
   // I-5 (benchmark/05-coherencia-360, 23-nov-2026): Inversiones encendido está
   // SIEMPRE en Herramientas, en todos los países; nunca se quita para respetar
-  // el tope. Si las filas pasan de MORE_MAX_ROWS (hoy solo Argentina, con
-  // calculadora de tasa + Inflación + los tres módulos), lo de menor prioridad
-  // entra en la hoja de herramientas: primero Modo asesor, después
-  // Propiedades. La calculadora de tasa sigue a un toque (R13) y nada
-  // desaparece: lo plegado queda dentro de la hoja.
-  const sheetItems = [...countryItems]
-  const FOLD_ORDER = ['advisor', 'projects']
-  const toolRows = () => (tool ? 1 : 0) + (sheetItems.length > 0 ? 1 : 0) + extras.length + (modulesRow ? 1 : 0)
+  // el tope. Las herramientas del país (Inflación en AR) siguen como fila
+  // directa. Si las filas pasan de MORE_MAX_ROWS (hoy solo Argentina, con
+  // calculadora de tasa + Inflación + módulos), lo de menor prioridad va a una
+  // hoja "Más herramientas": primero Modo asesor, después Propiedades y, si
+  // hace falta, "Activar más funciones". La calculadora de tasa sigue a un
+  // toque (R13) y nada desaparece: lo plegado queda dentro de la hoja.
+  const rest = [...extras, ...(modulesRow ? [modulesRow] : [])]
+  const folded = []
+  const FOLD_ORDER = ['advisor', 'projects', 'modules']
+  const toolRows = () => (tool ? 1 : 0) + (countryItems.length > 1 ? 1 : countryItems.length)
+    + (folded.length > 0 ? 1 : 0) + rest.length
   const rows = () => money.length + toolRows() + 2 // Panorama + Ajustes
   for (const id of FOLD_ORDER) {
     if (rows() <= MORE_MAX_ROWS) break
-    const i = extras.findIndex(it => it.id === id)
-    // Plegar en una hoja vacía no ahorra filas: solo si ya hay algo adentro.
-    if (i < 0 || sheetItems.length === 0) continue
-    sheetItems.push(extras.splice(i, 1)[0])
+    const i = rest.findIndex(it => it.id === id)
+    if (i >= 0) folded.push(rest.splice(i, 1)[0])
   }
+  // Una hoja con un solo ítem no ahorra nada: vuelve a ser fila.
+  if (folded.length === 1) rest.push(folded.pop())
 
   const tools = []
   if (tool) tools.push({ ...item(tool), lb: 'refcur.tool', tool: true })
-  if (sheetItems.length === 1) tools.push(sheetItems[0])
-  else if (sheetItems.length > 1) {
-    // Si la hoja lleva algo que no es del país, se llama "Más herramientas".
-    const onlyCountry = sheetItems.every(it => countryItems.includes(it))
-    tools.push({ id: 'countryTools', lb: onlyCountry ? 'more.countryTools' : 'more.moreTools', sheet: true, items: sheetItems, proOnly: sheetItems.every(it => it.proOnly) })
-  }
-  tools.push(...extras)
-  if (modulesRow) tools.push(modulesRow)
+  if (countryItems.length === 1) tools.push(countryItems[0])
+  else if (countryItems.length > 1) tools.push({ id: 'countryTools', lb: 'more.countryTools', sheet: true, items: countryItems, proOnly: countryItems.every(it => it.proOnly) })
+  const RANK = ['projects', 'advisor', 'investments', 'modules']
+  const order = (list) => [...list].sort((x, y) => RANK.indexOf(x.id) - RANK.indexOf(y.id))
+  if (folded.length > 1) tools.push({ id: 'moreTools', lb: 'more.moreTools', sheet: true, items: order(folded), proOnly: folded.every(it => it.proOnly) })
+  tools.push(...order(rest))
 
   return [
     { sec: 'more.sec.money', items: money },

@@ -145,23 +145,30 @@ describe('módulo Inversiones en "Más"', () => {
       }
     }
   })
-  it('AR con todo encendido: calculadora a un toque, Inversiones y Propiedades directas, Modo asesor en "Más herramientas"', () => {
+  it('AR con todo encendido: calculadora a un toque, Inflación directa, Modo asesor y Propiedades en "Más herramientas"', () => {
     const tools = moreSections('AR', on).find(g => g.sec === 'nav.sec.tools').items
-    expect(tools.map(i => i.id)).toEqual(['multidolar', 'countryTools', 'projects', 'investments'])
-    const sheet = tools.find(i => i.id === 'countryTools')
+    expect(tools.map(i => i.id)).toEqual(['multidolar', 'inflacion', 'moreTools', 'investments'])
+    const sheet = tools.find(i => i.id === 'moreTools')
     expect(sheet).toMatchObject({ sheet: true, lb: 'more.moreTools', proOnly: true })
-    expect(sheet.items.map(i => i.id)).toEqual(['inflacion', 'advisor'])
+    expect(sheet.items.map(i => i.id)).toEqual(['projects', 'advisor'])
     expect(rowsOf('AR', on)).toBe(10)
   })
-  it('AR sin Propiedades: Modo asesor se pliega y queda "Activar más funciones"', () => {
+  it('AR sin Propiedades: Modo asesor y "Activar más funciones" van juntos a la hoja; Inflación sigue directa', () => {
     const st = { modules: { properties: false, advisor: true, investments: true } }
-    const ids = moreSections('AR', st).find(g => g.sec === 'nav.sec.tools').items.map(i => i.id)
-    expect(ids).toEqual(['multidolar', 'countryTools', 'investments', 'modules'])
+    const tools = moreSections('AR', st).find(g => g.sec === 'nav.sec.tools').items
+    expect(tools.map(i => i.id)).toEqual(['multidolar', 'inflacion', 'moreTools', 'investments'])
+    expect(tools.find(i => i.id === 'moreTools').items.map(i => i.id)).toEqual(['advisor', 'modules'])
+  })
+  it('AR: Inflación es fila directa con cualquier combinación de módulos', () => {
+    for (const st of STATES) {
+      const tools = moreSections('AR', st).find(g => g.sec === 'nav.sec.tools').items.map(i => i.id)
+      expect(tools.slice(0, 2), JSON.stringify(st)).toEqual(['multidolar', 'inflacion'])
+    }
   })
   it('sin pasarse del tope no se pliega nada: la hoja solo lleva herramientas del país', () => {
     for (const cc of COUNTRIES.filter(c => c !== 'AR')) for (const st of STATES) {
-      const sheet = moreSections(cc, st).find(g => g.sec === 'nav.sec.tools')?.items.find(i => i.id === 'countryTools')
-      if (sheet) expect(sheet.lb, cc).toBe('more.countryTools')
+      const tools = moreSections(cc, st).find(g => g.sec === 'nav.sec.tools')?.items || []
+      expect(tools.map(i => i.id), cc).not.toContain('moreTools')
       const ids = flat(moreSections(cc, st))
       if (st.modules.advisor) expect(moreSections(cc, st).find(g => g.sec === 'nav.sec.tools').items.map(i => i.id), cc).toContain('advisor')
       expect(ids).toContain('panorama')
