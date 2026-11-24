@@ -27,6 +27,7 @@ vi.mock('../i18n/useT.js', () => ({ useT: () => ({ t: (k) => k, lang: 'es' }), u
 const { handleBack, _resetBackStack } = await import('./backStack.js')
 const { LegalNotice } = await import('../components/AuthGate.jsx')
 const { ConfirmModal } = await import('../components/backup/BackupManager.jsx')
+const { DemoBottomCTA } = await import('../demo/DemoShell.jsx')
 
 beforeEach(() => {
   _resetBackStack()
@@ -74,6 +75,23 @@ describe('R4-1: atrás cancela la confirmación de restaurar respaldo', () => {
   })
 })
 
+describe('ronda 5: atrás cierra la tarjeta «¿Te sirve?» del demo', () => {
+  it('visible: atrás la cierra (como la X)', () => {
+    h.state.push(true, false) // visible, dismissed
+    DemoBottomCTA({ hidden: false })
+    expect(handleBack()).toBe('dismissed')
+    expect(h.setters[1]).toHaveBeenCalledWith(true)
+  })
+  it('oculta o durante el recorrido: no registra nada', () => {
+    h.state.push(false, false)
+    DemoBottomCTA({ hidden: false })
+    expect(handleBack()).toBe('unhandled')
+    h.state.push(true, false)
+    DemoBottomCTA({ hidden: true })
+    expect(handleBack()).toBe('unhandled')
+  })
+})
+
 // Auditoría: cualquier componente que pinte un diálogo (role="dialog",
 // role="alertdialog", aria-modal) o una capa a pantalla completa
 // (position: 'fixed' + inset: 0) tiene que registrarse en el botón atrás.
@@ -94,7 +112,7 @@ function* files(dir) {
     else if (/\.jsx$/.test(name) && !/\.test\./.test(name)) yield p
   }
 }
-const DIALOG = /role="(dialog|alertdialog)"|aria-modal|position: ?'fixed',[^}\n]*inset: ?0/
+const DIALOG = /role="(dialog|alertdialog)"|aria-modal|position: ?'fixed',[^}\n]*inset: ?0|className="demo-bottom-cta"/
 
 describe('auditoría: hojas y diálogos registrados en el botón atrás', () => {
   it('ningún diálogo o capa a pantalla completa queda fuera de backStack', () => {

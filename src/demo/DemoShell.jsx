@@ -16,6 +16,7 @@ import { AppContext } from '../context/AppContext.jsx'
 import { useT, useLangReady } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
 import { usePageStack } from '../hooks/usePageStack.js'
+import { useBackDismiss } from '../hooks/useBackDismiss.js'
 import { prefetchTabs } from '../utils/prefetchTabs.js'
 import { canShowWebCheckout, storePage } from '../native/storePolicy.js'
 import { isNativeApp } from '../native/platform.js'
@@ -76,7 +77,7 @@ function DemoBridge({ children }) {
 // CTA persistente al pie — aparece después de 75 s de uso del demo. Tarjeta
 // Navy plana (sin degradado); en móvil va encima de la barra y del "+", no los tapa.
 // No se muestra mientras corre el recorrido.
-function DemoBottomCTA({ hidden }) {
+export function DemoBottomCTA({ hidden }) {
   const { t, lang } = useT()
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(() => {
@@ -89,12 +90,15 @@ function DemoBottomCTA({ hidden }) {
     return () => clearTimeout(t)
   }, [dismissed])
 
-  if (!visible || dismissed || hidden) return null
-
   function dismiss() {
     try { localStorage.setItem('fos_demo_cta_dismissed', '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
     setDismissed(true)
   }
+  // Ronda 5: la tarjeta flota sobre el contenido (tapa, por ejemplo, «Restaurar»
+  // en Ajustes): el botón atrás de Android la cierra como la X antes de navegar.
+  useBackDismiss(visible && !dismissed && !hidden, dismiss)
+
+  if (!visible || dismissed || hidden) return null
 
   return (
     <div className="demo-bottom-cta" role="region" aria-label={t('demo.cta.title')}>
