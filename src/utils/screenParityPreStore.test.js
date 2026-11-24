@@ -165,3 +165,21 @@ describe('I5: el tour describe la cifra que señala', async () => {
     expect(dicts.de['demo.tour.kpiFree.body']).not.toMatch(/separat angezeigt/)
   })
 })
+
+describe('I9: Ahorro fiscal EE. UU. en el idioma de la interfaz', async () => {
+  const us = (await import('../config/aporte/us.js')).default
+  const dicts = { es: (await import('../i18n/es.js')).es, en: (await import('../i18n/en.js')).en, pt: (await import('../i18n/pt.js')).pt, de: (await import('../i18n/de.js')).de }
+  it('todo texto visible del config de EE. UU. es una clave presente en los 4 idiomas', () => {
+    for (const f of ['titulo', 'subtitulo', 'disclaimer', 'ingresoLabel', 'aporteLabel', 'resumenTope', 'resumen']) {
+      const key = us.i18n[f]
+      for (const [l, d] of Object.entries(dicts)) expect(d[key], `${l} ${key}`).toBeTruthy()
+    }
+    expect(dicts.en['ahorroFiscal.us.capSummary']).not.toMatch(/Tope|según/)
+    expect(dicts.es['ahorroFiscal.us.incomeLabel']).not.toMatch(/Annual/)
+  })
+  it('la pantalla precarga el ingreso anual estimado, no la suma del año', () => {
+    const s = src('pages/AhorroFiscal/index.jsx')
+    expect(s).toContain('annualIncomeEstimate(incomes, activeMonth)')
+    expect(s).not.toMatch(/startsWith\(year\)\)\s*\n\s*\.reduce/)
+  })
+})

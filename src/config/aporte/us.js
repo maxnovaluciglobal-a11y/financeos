@@ -30,6 +30,19 @@ export default {
   disclaimer: 'Educational estimate, not tax advice. Single-filer federal brackets only (ignores state tax, credits, IRA). Consult a tax professional or the IRS.',
   ingresoLabel: 'Annual gross income (USD)',
   aporteLabel: 'Planned annual 401(k) contribution (USD)',
+  // Textos visibles: claves i18n (QA pre-tiendas I9). Los literales de abajo
+  // quedan solo como respaldo para quien lea el config sin `t`.
+  i18n: {
+    titulo: 'ahorroFiscal.us.title',
+    subtitulo: 'ahorroFiscal.us.sub',
+    disclaimer: 'ahorroFiscal.us.disclaimer',
+    ingresoLabel: 'ahorroFiscal.us.incomeLabel',
+    aporteLabel: 'ahorroFiscal.us.contribLabel',
+    resumenTope: 'ahorroFiscal.us.capSummary',
+    resumen: 'ahorroFiscal.us.resultSummary',
+  },
+  // Variables de capSummary (montos con el formato de la pantalla).
+  i18nVars: { limit: LIMIT_401K, ira: 7500, std: STANDARD_DEDUCTION_2026.single },
   resumenTope: 'Tope deducible: límite 401(k) ' + LIMIT_401K.toLocaleString('en-US') + ' + catch-up según edad (la IRA suma otros $7.500 aparte). Se descuenta la standard deduction ($' + STANDARD_DEDUCTION_2026.single.toLocaleString('en-US') + ') antes de aplicar los tramos.',
 
   // ingresoAnual es BRUTO. Los tramos BR están definidos sobre taxable income,

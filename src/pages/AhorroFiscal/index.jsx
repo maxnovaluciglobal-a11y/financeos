@@ -10,6 +10,7 @@ import { Card, CardHeader, FormRow, FormGroup, ProgressBar, Alert, PageHeader } 
 import ProGate from '../../components/ui/ProGate.jsx'
 import { getAporteConfig, calcAporte } from '../../utils/aporteEngine.js'
 import { fmtFixed, currentMonth, fmtPctPoints } from '../../utils/index.js'
+import { annualIncomeEstimate } from '../../utils/annualIncome.js'
 import {
   compararRothTraditional, calcHSA, tasaMarginalDesdeBruto,
   limite401k, limiteIRA, limiteHSA, LIMITES_2026,
@@ -28,9 +29,10 @@ export default function AhorroFiscal() {
   // Si settings.country cambia con el componente montado, un hook después del
   // return hace que React renderice menos hooks de los esperados y la pantalla
   // queda en blanco. Referencia de estructura correcta: pages/Steuer/index.jsx.
-  const ingresoEstimado = useMemo(() => Math.round((incomes || [])
-    .filter(r => String(r?.date || '').startsWith(year))
-    .reduce((s, r) => s + (Number(r.amount) || 0), 0)), [incomes, year])
+  // QA pre-tiendas I9: el ingreso ANUAL estimado (promedio de los meses con
+  // datos de los últimos 12, × 12), no la suma de lo que va del año.
+  const est = useMemo(() => annualIncomeEstimate(incomes, activeMonth), [incomes, activeMonth])
+  const ingresoEstimado = est.amount
 
   const [ingreso, setIngreso] = useState(ingresoEstimado || '')
   const [aporte, setAporte] = useState('')
@@ -69,23 +71,32 @@ export default function AhorroFiscal() {
   const esUS = config.pais === 'US'
 
   const fmt = (n) => fmtFixed(n, locale, sym)
+  // Texto del config del país: clave i18n si la declara (EE. UU.), si no el
+  // literal (MX/CO/ES, herramientas en español de su país).
+  const vars = Object.fromEntries(Object.entries(config.i18nVars || {}).map(([k, v]) => [k, fmt(v)]))
+  const tx = (field, fallback) => (config.i18n?.[field] ? t(config.i18n[field], vars) : (fallback ?? config[field]))
 
   return (
     <ProGate feature={t('ahorroFiscal.proGateFeature')}>
       <div className="stack">
-        <PageHeader title={config.titulo} sub={config.subtitulo} />
+        <PageHeader title={tx('titulo')} sub={tx('subtitulo')} />
 
         <Alert type="info">
-          {config.disclaimer} <strong>{t('ahorroFiscal.figures', { year: config.vigencia, source: config.fuente })}</strong>
+          {tx('disclaimer')} <strong>{t('ahorroFiscal.figures', { year: config.vigencia, source: config.fuente })}</strong>
         </Alert>
 
         <Card>
           <CardHeader title={t('ahorroFiscal.card.yourYearData')} right={<span style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)' }}>{year}</span>} />
           <FormRow>
-            <FormGroup label={config.ingresoLabel}>
+            <FormGroup label={tx('ingresoLabel')}>
               <input type="number" inputMode="decimal" min="0" value={ingreso} placeholder="0" onChange={e => setIngreso(e.target.value)} />
+              {est.months > 0 && String(ingreso) === String(ingresoEstimado) && (
+                <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 4, lineHeight: 1.5 }}>
+                  {t(est.months >= 12 ? 'ahorroFiscal.incomeEstimate12' : 'ahorroFiscal.incomeEstimate', { n: est.months })}
+                </div>
+              )}
             </FormGroup>
-            <FormGroup label={config.aporteLabel}>
+            <FormGroup label={tx('aporteLabel')}>
               <input type="number" inputMode="decimal" min="0" value={aporte} placeholder="0" onChange={e => setAporte(e.target.value)} />
             </FormGroup>
           </FormRow>
@@ -108,7 +119,7 @@ export default function AhorroFiscal() {
           {esUS && (
             <FormRow>
               <FormGroup label={t('ahorroFiscal.usAgeLabel')}>
-                <input type="number" inputMode="decimal" min="0" max="100" value={edad} placeholder="e.g. 42" onChange={e => setEdad(e.target.value)} />
+                <input type="number" inputMode="decimal" min="0" max="100" value={edad} placeholder={t('ahorroFiscal.usAgePh')} onChange={e => setEdad(e.target.value)} />
               </FormGroup>
             </FormRow>
           )}
@@ -126,7 +137,7 @@ export default function AhorroFiscal() {
             </div>
           )}
           <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-            {config.resumenTope}
+            {tx('resumenTope')}
           </div>
           {esUS && <LimitesUSA edad={edad} fmt={fmt} t={t} />}
         </Card>
@@ -139,7 +150,7 @@ export default function AhorroFiscal() {
                 {fmt(result.ahorro)}
               </div>
               <div style={{ fontSize: 'var(--t-footnote)', fontFamily: 'var(--sans)', color: 'var(--th)', marginTop: 6 }}>
-                {t('ahorroFiscal.summarySub', { resumen: result.resumen, pct: fmtPctPoints(Math.round(result.marginal * 100)) })}
+                {t('ahorroFiscal.summarySub', { resumen: tx('resumen', result.resumen), pct: fmtPctPoints(Math.round(result.marginal * 100)) })}
               </div>
             </div>
 
