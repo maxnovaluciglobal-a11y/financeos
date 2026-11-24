@@ -7,7 +7,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { PRIVACY_DEPLOY_DATE, REBRAND_DEPLOY_DATE } from './deployDate.js'
+import { PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE } from './deployDate.js'
 import { LEGAL_EFFECTIVE_DATE, LEGAL_VERSION, LAST_UPDATED, PRIVACY_EFFECTIVE_DATE, PRIVACY_LAST_UPDATED, PRIVACY_REPLACES, PRIVACY_VERSION } from '../pages/legal/legalMeta.js'
 import { RELEASE_NOTES } from './releaseNotes.js'
 
@@ -61,11 +61,17 @@ describe('fecha del despliegue del rebranding', () => {
     expect(PRIVACY_DEPLOY_DATE).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(PRIVACY_EFFECTIVE_DATE).toBe(PRIVACY_DEPLOY_DATE)
     expect(PRIVACY_VERSION).toBe(PRIVACY_DEPLOY_DATE)
-    expect(PRIVACY_REPLACES).toBe(REBRAND_DEPLOY_DATE)
-    expect(PRIVACY_EFFECTIVE_DATE > REBRAND_DEPLOY_DATE).toBe(true)
-    expect(PRIVACY_LAST_UPDATED.es).toContain(`reemplaza a la versión ${REBRAND_DEPLOY_DATE}`)
+    expect(PRIVACY_REPLACES).toBe(PRIVACY_PREVIOUS_DATE)
+    expect(PRIVACY_EFFECTIVE_DATE > PRIVACY_PREVIOUS_DATE).toBe(true)
+    expect(PRIVACY_PREVIOUS_DATE > REBRAND_DEPLOY_DATE).toBe(true)
+    expect(PRIVACY_LAST_UPDATED.es).toContain(`reemplaza a la versión ${PRIVACY_PREVIOUS_DATE}`)
     expect(PRIVACY_LAST_UPDATED.es).not.toBe(LAST_UPDATED.es)
-    for (const lang of ['en', 'pt', 'de']) expect(PRIVACY_LAST_UPDATED[lang]).toContain(REBRAND_DEPLOY_DATE)
+    for (const lang of ['en', 'pt', 'de']) expect(PRIVACY_LAST_UPDATED[lang]).toContain(PRIVACY_PREVIOUS_DATE)
+  })
+
+  it('N4 (ronda 3): la política de la app tiene la misma fecha que la landing (24-nov, reemplaza a 20-nov)', () => {
+    expect(PRIVACY_DEPLOY_DATE).toBe('2026-11-24')
+    expect(PRIVACY_PREVIOUS_DATE).toBe('2026-11-20')
   })
 
   it('el TODO(privacy-deploy) sigue junto a PRIVACY_DEPLOY_DATE mientras la fecha no esté fijada', () => {

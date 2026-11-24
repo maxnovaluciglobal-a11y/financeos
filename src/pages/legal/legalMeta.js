@@ -1,7 +1,7 @@
 // src/pages/legal/legalMeta.js
 // Datos comunes de las páginas legales (es/en/pt/de). Sin React ni hooks: lo
 // importan los módulos de contenido y legal.test.js en node.
-import { PRIVACY_DEPLOY_DATE, REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
+import { PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE } from '../../data/deployDate.js'
 
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
 export const SUPPORT_EMAIL = 'support@moyiq.app'
@@ -36,7 +36,7 @@ export const LAST_UPDATED = {
 // y el encabezado cita la versión a la que reemplaza.
 export const PRIVACY_EFFECTIVE_DATE = PRIVACY_DEPLOY_DATE
 export const PRIVACY_VERSION = PRIVACY_EFFECTIVE_DATE
-export const PRIVACY_REPLACES = LEGAL_EFFECTIVE_DATE
+export const PRIVACY_REPLACES = PRIVACY_PREVIOUS_DATE
 const REPLACES_LABEL = {
   es: `reemplaza a la versión ${PRIVACY_REPLACES}`,
   en: `replaces version ${PRIVACY_REPLACES}`,

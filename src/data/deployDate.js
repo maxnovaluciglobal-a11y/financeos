@@ -18,4 +18,8 @@ export const REBRAND_DEPLOY_DATE = '2026-11-18'
 // LATAM, así que no puede tener la misma fecha que la del 18-nov (snapshot en
 // `03 - Legal y Cumplimiento/versiones/`). Los otros tres textos legales siguen
 // con REBRAND_DEPLOY_DATE.
-export const PRIVACY_DEPLOY_DATE = '2026-11-20'
+// 24-nov-2026 (ronda 3 pre-tiendas, N4): la versión con Inversiones, copias del
+// sistema y Turnstile se publicó en la landing el 24-nov y reemplaza a la del
+// 20-nov; la de la app tiene que decir lo mismo (fecha y versión reemplazada).
+export const PRIVACY_DEPLOY_DATE = '2026-11-24'
+export const PRIVACY_PREVIOUS_DATE = '2026-11-20'
