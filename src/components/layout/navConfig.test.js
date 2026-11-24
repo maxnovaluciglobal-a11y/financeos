@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { activeTabFor, TAB_IDS, NAV, ALL_ITEMS, showProChip, tabMotion } from './navConfig.js'
 
-describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas', () => {
+describe('activeTabFor (R04, Inicio v2): cada página enciende una de las 3 pestañas', () => {
   it('Inicio', () => {
     expect(activeTabFor('dashboard')).toBe('dashboard')
     expect(activeTabFor(undefined)).toBe('dashboard')
@@ -13,10 +13,10 @@ describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas',
     }
   })
 
-  it('Presupuestos y Metas son pestañas propias (L2)', () => {
-    expect(activeTabFor('budgets')).toBe('budgets')
-    expect(activeTabFor('goals')).toBe('goals')
-    expect(TAB_IDS).toEqual(['dashboard', 'movements', 'budgets', 'goals', 'more'])
+  it('tres pestañas: Inicio · Movimientos · Más; Presupuestos y Metas encienden Más (Inicio v2)', () => {
+    expect(TAB_IDS).toEqual(['dashboard', 'movements', 'more'])
+    expect(activeTabFor('budgets')).toBe('more')
+    expect(activeTabFor('goals')).toBe('more')
   })
 
   it('el resto (Más, Ajustes, deudas, Panorama, legales, herramientas de país) enciende Más', () => {
@@ -29,6 +29,10 @@ describe('activeTabFor (R04, L2): cada página enciende una de las 5 pestañas',
     for (const it_ of ALL_ITEMS) expect(TAB_IDS).toContain(activeTabFor(it_.id))
   })
 
+  it('Presupuestos y Metas siguen alcanzables: primeras filas de Más en todo país', () => {
+    for (const cc of COUNTRIES) expect(moreSections(cc)[0].items.slice(0, 2).map(i => i.id), cc).toEqual(['budgets', 'goals'])
+  })
+
   it('Ajustes sigue alcanzable desde el Menú (vive en NAV)', () => {
     expect(NAV.some(g => g.items.some(i => i.id === 'settings'))).toBe(true)
   })
@@ -39,16 +43,16 @@ import { moreSections, PANORAMA_PAGES, navItemVisible } from './navConfig.js'
 const COUNTRIES = ['CL', 'VE', 'AR', 'MX', 'CO', 'PE', 'EC', 'ES', 'PT', 'DE', 'US']
 const flat = (secs) => secs.flatMap(g => g.items.flatMap(i => [i.id, ...(i.items || []).map(x => x.id)]))
 
-describe('"Más" (poda P1): 4 grupos, ≤ 10 filas, nada inalcanzable', () => {
+describe('"Más" (poda P1, Inicio v2): 4 grupos, ≤ 12 filas, nada inalcanzable', () => {
   it('4 grupos en orden: Mi dinero · Análisis · Herramientas · Cuenta', () => {
     expect(moreSections('CL').map(g => g.sec)).toEqual(['more.sec.money', 'more.sec.panorama', 'nav.sec.tools', 'nav.sec.account'])
-    expect(moreSections('CL')[0].items.map(i => i.id)).toEqual(['debts', 'recurring', 'income', 'import'])
+    expect(moreSections('CL')[0].items.map(i => i.id)).toEqual(['budgets', 'goals', 'debts', 'recurring', 'income', 'import'])
   })
 
-  it('como mucho 10 filas en cualquier país, con todos los módulos encendidos', () => {
+  it('como mucho 12 filas en cualquier país, con todos los módulos encendidos', () => {
     for (const cc of COUNTRIES) {
       const rows = moreSections(cc, {}).reduce((n, g) => n + g.items.length, 0)
-      expect(rows, cc).toBeLessThanOrEqual(10)
+      expect(rows, cc).toBeLessThanOrEqual(12)
     }
   })
 
@@ -127,8 +131,8 @@ describe('módulo Inversiones en "Más"', () => {
     expect(it_).toBeDefined()
     expect(showProChip(it_, 'starter')).toBe(false)
   })
-  it('≤ 10 filas en todo país y toda combinación de módulos', () => {
-    for (const cc of COUNTRIES) for (const st of STATES) expect(rowsOf(cc, st), `${cc} ${JSON.stringify(st)}`).toBeLessThanOrEqual(10)
+  it('≤ 12 filas en todo país y toda combinación de módulos', () => {
+    for (const cc of COUNTRIES) for (const st of STATES) expect(rowsOf(cc, st), `${cc} ${JSON.stringify(st)}`).toBeLessThanOrEqual(12)
   })
   // I-5 (benchmark/05-coherencia-360): un mismo destino no cambia de lugar según el país.
   it('encendido: Inversiones está en Herramientas en TODO país y toda combinación de módulos', () => {
@@ -151,7 +155,7 @@ describe('módulo Inversiones en "Más"', () => {
     const sheet = tools.find(i => i.id === 'moreTools')
     expect(sheet).toMatchObject({ sheet: true, lb: 'more.moreTools', proOnly: true })
     expect(sheet.items.map(i => i.id)).toEqual(['projects', 'advisor'])
-    expect(rowsOf('AR', on)).toBe(10)
+    expect(rowsOf('AR', on)).toBe(12)
   })
   it('AR sin Propiedades: Modo asesor y "Activar más funciones" van juntos a la hoja; Inflación sigue directa', () => {
     const st = { modules: { properties: false, advisor: true, investments: true } }
@@ -199,8 +203,8 @@ describe('showProChip (ola A3, H22)', () => {
 
 describe('tabMotion', () => {
   it('desliza hacia el lado de la pestaña tocada', () => {
-    expect(tabMotion('dashboard', 'budgets')).toBe('tab-next')
-    expect(tabMotion('goals', 'movements')).toBe('tab-prev')
+    expect(tabMotion('dashboard', 'more')).toBe('tab-next')
+    expect(tabMotion('more', 'movements')).toBe('tab-prev')
   })
   it('vuelve al fundido sin interruptor o fuera de las pestañas', () => {
     expect(tabMotion('dashboard', 'budgets', false)).toBe('tab')

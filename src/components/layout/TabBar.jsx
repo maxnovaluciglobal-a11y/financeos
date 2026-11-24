@@ -1,19 +1,20 @@
 // src/components/layout/TabBar.jsx
-// Navegación primaria en móvil (L2, aprobado por Walter el 21-oct-2026): 5
-// destinos — Inicio · Movimientos · Presupuestos · Metas · Menú. Reemplaza las
-// 3 pestañas de la decisión D2 (08-oct).
+// Navegación primaria en móvil (Inicio v2, 24-nov-2026, aprobado por Walter):
+// 3 destinos — Inicio · Movimientos · Más — y el "+" aparte. Reemplaza los 5
+// de L2 (21-oct), cuyas etiquetas se cortaban; Presupuestos y Metas están en
+// los botones redondos del Inicio y al principio de Más.
 // Cápsula flotante (19-nov-2026, aprobada por Walter; referencias Gocash y
 // Rial): los 5 destinos van en una píldora translúcida separada de los bordes,
 // y el "+" queda a su lado como botón redondo propio, en la misma zona del
 // pulgar (no se mezcla con los destinos: es una acción, no un lugar). La
-// pestaña activa es una píldora rellena con el ícono relleno. A 340 px o menos
-// las etiquetas se ocultan a la vista (siguen siendo el nombre accesible).
+// pestaña activa es una píldora rellena con el ícono relleno. Si alguna
+// etiqueta no entra, quedan solo los íconos (siguen siendo el nombre accesible).
 // AddFab queda para Ingresos, la pantalla empujada que no tiene barra.
 // La pestaña activa sale de activeTabFor(page) (R04): las páginas internas
 // encienden su pestaña madre, así la barra nunca queda sin activo.
 import { useLayoutEffect, useRef, useState } from 'react'
-import { Home, ArrowLeftRight, Wallet, Target, LayoutGrid, Plus } from 'lucide-react'
-import { activeTabFor, TAB_HOME, TAB_MOVEMENTS, TAB_BUDGETS, TAB_GOALS, TAB_MENU } from './navConfig.js'
+import { Home, ArrowLeftRight, LayoutGrid, Plus } from 'lucide-react'
+import { activeTabFor, TAB_HOME, TAB_MOVEMENTS, TAB_MENU } from './navConfig.js'
 import { tabPress } from './pageStack.js'
 import s from './shell.module.css'
 
@@ -23,15 +24,11 @@ const solid = (d) => function SolidIcon() {
 }
 const HomeOn = solid('M12 2.6 3.3 9.8c-.2.2-.3.4-.3.7V20c0 .6.4 1 1 1h5.2v-6.4c0-.3.2-.6.6-.6h4.4c.4 0 .6.3.6.6V21H20c.6 0 1-.4 1-1v-9.5c0-.3-.1-.5-.3-.7L12 2.6Z')
 const MovementsOn = solid('M8 3 2.6 8.2 8 13.4V10h13.4V6.5H8V3Zm8 7.6V14H2.6v3.5H16V21l5.4-5.2L16 10.6Z')
-const WalletOn = solid('M5.2 3.6A3.2 3.2 0 0 0 2 6.8v10.4a3.2 3.2 0 0 0 3.2 3.2h13.6a3.2 3.2 0 0 0 3.2-3.2v-1.7h-4.6a3.5 3.5 0 0 1 0-7H22V9.8a3 3 0 0 0-3-3H5.2a.8.8 0 0 1 0-1.6H19V3.6H5.2Zm12.2 7.4a2 2 0 1 0 0 4H22v-4h-4.6Z')
-const TargetOn = solid('M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 3.6a6.4 6.4 0 1 1 0 12.8 6.4 6.4 0 0 1 0-12.8ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z')
 const GridOn = solid('M4.5 3h4A1.5 1.5 0 0 1 10 4.5v4A1.5 1.5 0 0 1 8.5 10h-4A1.5 1.5 0 0 1 3 8.5v-4A1.5 1.5 0 0 1 4.5 3Zm11 0h4A1.5 1.5 0 0 1 21 4.5v4a1.5 1.5 0 0 1-1.5 1.5h-4A1.5 1.5 0 0 1 14 8.5v-4A1.5 1.5 0 0 1 15.5 3Zm-11 11h4a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 8.5 21h-4A1.5 1.5 0 0 1 3 19.5v-4A1.5 1.5 0 0 1 4.5 14Zm11 0h4a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5Z')
 
 export const TABS = [
   { id: TAB_HOME,      Ic: Home,           On: HomeOn,      lb: 'nav.dashboard' },
   { id: TAB_MOVEMENTS, Ic: ArrowLeftRight, On: MovementsOn, lb: 'nav.sec.movements' },
-  { id: TAB_BUDGETS,   Ic: Wallet,         On: WalletOn,    lb: 'nav.budgets' },
-  { id: TAB_GOALS,     Ic: Target,         On: TargetOn,    lb: 'nav.goals' },
   { id: TAB_MENU,      Ic: LayoutGrid,     On: GridOn,      lb: 'nav.menuLabel' },
 ]
 

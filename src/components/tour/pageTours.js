@@ -8,9 +8,12 @@ export const PAGE_TOURS = {
   dashboard: [
     { id: 'kpi-free',     title: 'tour.home.left.title',   body: 'tour.home.left.body' },
     // Poda P1: sin vista detallada; su contenido es Panorama (fila del IQ).
+    // Inicio v2: los botones redondos del bloque y "Pregúntale a moyiq".
     { id: 'home-quick',   title: 'tour.home.quick.title',  body: 'tour.home.quick.body' },
+    { id: 'home-ask',     title: 'tour.home.ask.title',    body: 'tour.home.ask.body' },
     { id: 'first-steps',  title: 'tour.home.steps.title',  body: 'tour.home.steps.body' },
-    { id: 'iq-score',     title: 'tour.home.panorama.title', body: 'tour.home.panorama.body' },
+    // El IQ ahora está en la cabecera (abre el Diagnóstico); el paso de Panorama
+    // sale para dejar el recorrido en 5 pasos.
     { id: 'home-edit',    title: 'tour.home.edit.title',   body: 'tour.home.edit.body' },
   ],
   // Poda P1: hub del análisis.

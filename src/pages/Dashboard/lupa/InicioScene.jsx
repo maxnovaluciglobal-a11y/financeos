@@ -1,5 +1,13 @@
 // src/pages/Dashboard/lupa/InicioScene.jsx — cabecera del Inicio nuevo
-// (Entrega 1.5, detrás de uiFlags.inicioLupa). Escena morada a sangre con la
+// (Entrega 1.5, detrás de uiFlags.inicioLupa).
+//
+// Inicio v2 (24-nov-2026, variante D aprobada por Walter; referencia Rial): la
+// escena es una cabecera de app — mes a la izquierda, logo al centro, IQ y el
+// asistente a la derecha — en vez del título "Inicio"; la cifra, el ritmo, un
+// gráfico compacto (tocar un día abre sus movimientos; sin leyenda ni fila de
+// pasos) y los 4 botones redondos DENTRO del bloque. Ingresos y Gastos pasan a
+// tarjetas debajo (index.jsx). El ojo de "Ocultar montos" va junto a la cifra
+// porque la barra superior del Shell no se muestra en el Inicio del teléfono. Escena morada a sangre con la
 // cifra "Te queda" gigante y la ChartLupa del mes debajo; el resto del Inicio
 // sigue abajo, sobre la superficie tranquila. Mismas cifras que HomeKpis:
 // kpis.freeFlow, el detalle (HeroDetailSheet) y la línea Ingresos · Gastos.
@@ -12,24 +20,26 @@
 // blanco (data-scene en <html>, shell.module.css).
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import { useT } from '../../../i18n/useT.js'
-import { currencySymbol, dateLocale, fmtAmount, fmtMoney, fmtMoneyParts, fmtSignedMoney, moneyLocale } from '../../../utils/index.js'
+import { currencySymbol, currentMonth, dateLocale, fmtAmount, fmtMoneyParts, fmtSignedMoney, moneyLocale } from '../../../utils/index.js'
 import { toRef } from '../../../utils/refRate.js'
 import { useSceneChrome } from '../../../components/layout/useSceneChrome.js'
-import LargeTitle from '../../../components/layout/LargeTitle.jsx'
+import Sheet from '../../../components/ui/Sheet.jsx'
+import { Isotipo, Logotipo } from '../../../components/Logo.jsx'
+import { SCORE_LEVELS } from '../../../utils/financialScore.js'
+import { prevMonthOf } from '../dashboardModel.js'
 import { monthLabel } from '../../shared/constants.js'
 import HeroDetailSheet from '../HeroDetailSheet.jsx'
 import { useKpiDeltas } from '../HomeKpis.jsx'
 import { fmtRef, currentLensCurrency } from '../RefCurrency.jsx'
 import ChartLupaRaw from './ChartLupa.jsx'
 import DaySheet from './DaySheet.jsx'
-import { inspectLines, paceLine, shortDate, valueText } from './lupaText.js'
+import { inspectLines, paceLine, valueText } from './lupaText.js'
 import s from './scene.module.css'
 
 const ChartLupa = memo(ChartLupaRaw)
-const STEP_IDLE_MS = 6000
 
 // Partes de la cifra grande: signo, símbolo, entero y decimales (a la mitad).
 function bigParts(value, { showRef, rate, sym, lang }) {
@@ -62,12 +72,62 @@ function BigNumber({ parts }) {
   )
 }
 
-export default function InicioScene({ series, pace: paceData, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending }) {
+
+// ── Cabecera de app ────────────────────────────────────────────────────────
+function IqChip({ healthScore, onOpen, t }) {
+  if (!healthScore) return null
+  const level = SCORE_LEVELS[healthScore.level] ? healthScore.level : 'attention'
+  return (
+    <button type="button" className={s.iq} data-level={level} onClick={onOpen} data-tour="home-iq"
+      aria-label={t('home.iq.aria', { score: healthScore.score, label: healthScore.label })}>
+      <span className={s.iqTag} aria-hidden="true">IQ</span>
+      <span className={`num ${s.iqNum}`} aria-hidden="true">{healthScore.score}</span>
+    </button>
+  )
+}
+
+function monthsBack(n, from = currentMonth()) {
+  const out = [from]
+  let m = from
+  for (let i = 1; i < n; i++) { m = prevMonthOf(m); out.push(m) }
+  return out
+}
+
+function MonthSheet({ open, onClose, activeMonth, onPick, t }) {
+  const months = useMemo(() => {
+    const list = monthsBack(12)
+    return list.includes(activeMonth) ? list : [activeMonth, ...list]
+  }, [activeMonth])
+  return (
+    <Sheet open={open} onClose={onClose} ariaLabel={t('home.month.title')} maxWidth={420}>
+      <h2 className={s.sheetTitle}>{t('home.month.title')}</h2>
+      <ul className={s.monthList}>
+        {months.map(mo => (
+          <li key={mo}>
+            <button type="button" className={s.monthRow} aria-current={mo === activeMonth ? 'true' : undefined} onClick={() => onPick(mo)}>
+              <span>{monthLabel(mo)}</span>
+              {mo === activeMonth && <Check size={18} strokeWidth={2.2} aria-hidden="true" />}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Sheet>
+  )
+}
+
+export default function InicioScene({ series, pace: paceData, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending,
+  healthScore, actions = [], onAsk, amountsHidden = false, onToggleAmounts, onPickMonth }) {
   const { t, lang } = useT()
   const { m } = useMoney()
   const sceneRef = useRef(null)
   const chartRef = useRef(null)
   useSceneChrome(sceneRef)
+  // En el teléfono esta cabecera reemplaza la barra superior del Shell (scene.module.css).
+  useEffect(() => {
+    const root = document.documentElement
+    root.dataset.homeHeader = 'on'
+    return () => { delete root.dataset.homeHeader }
+  }, [])
 
   const { cur } = kpis
   const free = cur.freeFlow
@@ -85,29 +145,12 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
   const [sheetDay, setSheetDay] = useState(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
-  const idleT = useRef(0)
-  useEffect(() => () => clearTimeout(idleT.current), [])
+  const [monthOpen, setMonthOpen] = useState(false)
   useEffect(() => { setInspect(null) }, [activeMonth])
 
   const onDay = useCallback((d, mode) => setInspect(mode === 'rest' ? null : d), [])
   const onTap = useCallback((d) => { setSheetDay(d); setSheetOpen(true) }, [])
   const valueTextOf = useCallback((d) => valueText({ series, day: d, activeMonth, t, fmt, locale }), [series, activeMonth, t, fmt, locale])
-  const axis = useMemo(() => {
-    if (!series) return null
-    const out = [
-      { key: 's', day: 1, text: shortDate(activeMonth, 1, locale) },
-      { key: 'e', day: series.days, align: 'end', text: shortDate(activeMonth, series.days, locale) },
-    ]
-    const p = series.payday
-    if (p) {
-      const pay = t('home.lupa.axis.payday', { day: p })
-      // Cerca de un borde, el cobro reemplaza la fecha de ese borde (no se pisan).
-      if (p <= 5) out[0] = { key: 's', day: 1, text: pay }
-      if (p >= series.days - 4) out[1] = { ...out[1], text: pay }
-      if (p > 5 && p < series.days - 4) out.push({ key: 'p', day: p, align: 'mid', text: pay })
-    }
-    return out
-  }, [series, activeMonth, locale, t])
 
   const { prevMonth, prev, cutDay, usdOn, usdFmt, deltaOf } = useKpiDeltas({ kpis, activeMonth, country: refc?.country })
   const prevHasData = prev.incCount > 0 || prev.expCount > 0
@@ -123,35 +166,46 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
     ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).sub
     : daysLeft > 0 ? t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }) : t('home.kpi.leftSub')
 
-  function step(dir) {
-    const c = chartRef.current
-    if (!c || !series) return
-    const from = c.mode === 'rest' ? series.lastDay : c.cur
-    const d = Math.max(1, Math.min(series.lastDay, from + dir))
-    if (dir > 0 && from >= series.lastDay) { c.rest(); return }
-    c.glideTo(d)
-    clearTimeout(idleT.current)
-    idleT.current = setTimeout(() => chartRef.current?.rest(), STEP_IDLE_MS)
-  }
-
   const subParts = [t('home.kpi.leftSub')]
   if (daysLeft != null) subParts.push(t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }))
 
   return (
     <section ref={sceneRef} className={s.scene} aria-label={t('home.kpis.aria')}>
       <div className={s.inner}>
-        <div className={s.head}>
-          <LargeTitle title={t('home.title')} sub={monthLabel(activeMonth)} />
+        {/* Título de la pantalla para lectores (la cabecera visible es la de la app). */}
+        <h1 className="sr-only">{t('home.title')}</h1>
+        <div className={s.appHeader}>
+          <button type="button" className={s.month} onClick={() => setMonthOpen(true)} aria-haspopup="dialog"
+            aria-label={t('home.month.aria', { month: monthLabel(activeMonth) })}>
+            <span>{monthLabel(activeMonth)}</span>
+            <ChevronDown size={16} strokeWidth={2} aria-hidden="true" />
+          </button>
+          <Logotipo size={20} title="moyiq" className={s.logo} style={{ color: 'var(--on-grad-text)' }} />
+          <div className={s.headerEnd}>
+            <IqChip healthScore={healthScore} onOpen={onOpen ? () => onOpen('coach') : undefined} t={t} />
+            {onAsk && (
+              <button type="button" className={s.askBtn} onClick={onAsk} aria-haspopup="dialog" aria-label={t('home.ask.open.aria')} data-tour="home-ask-btn">
+                <span className={s.askAvatar} aria-hidden="true"><Isotipo size={15} decorative style={{ color: 'var(--purple-700)' }} /></span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className={s.grid}>
           <div className={s.heroCol} data-tour="kpi-free">
-            <button type="button" className={s.heroOpen} aria-haspopup="dialog"
-              aria-label={`${free < 0 ? t('home.kpi.short') : t('home.kpi.left')}. ${t('home.detail.open')}`}
-              onClick={() => setDetailOpen(true)}>
-              <span className={s.label} data-lupa="label">{label}</span>
-              {!looking && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.labelChevron} />}
-            </button>
+            <div className={s.labelRow}>
+              <button type="button" className={s.heroOpen} aria-haspopup="dialog"
+                aria-label={`${free < 0 ? t('home.kpi.short') : t('home.kpi.left')}. ${t('home.detail.open')}`}
+                onClick={() => setDetailOpen(true)}>
+                <span className={s.label} data-lupa="label">{label}</span>
+                {!looking && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.labelChevron} />}
+              </button>
+              {onToggleAmounts && (
+                <button type="button" className={s.eye} onClick={onToggleAmounts} aria-pressed={amountsHidden} aria-label={t('money.toggle')}>
+                  {amountsHidden ? <EyeOff size={18} strokeWidth={1.8} aria-hidden="true" /> : <Eye size={18} strokeWidth={1.8} aria-hidden="true" />}
+                </button>
+              )}
+            </div>
             {hasData
               ? <BigNumber parts={bigParts(value, { showRef, rate, sym, lang })} />
               : <p className={s.noData}>{t('verdict.noData')}</p>}
@@ -161,8 +215,8 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
                 <span>{sub}</span>
               </p>
             )}
-            {/* UX-N2: la cifra ya descuenta los fijos que faltan; se dice cuánto. */}
-            {!looking && hasData && cur.pendingFixed > 0 && <p className={`num ${s.dual}`}>{t('home.kpi.pendingFixed', { v: fmt(cur.pendingFixed) })}</p>}
+            {/* UX-N2: cuánto de fijos por pagar ya descuenta la cifra lo dice el
+                detalle (tocar "Te queda"); el bloque queda en ≤ 55 % de la pantalla. */}
             {!looking && dualOn && !refc && hasData && <p className={s.dual}>{toUSD(free)}</p>}
           </div>
 
@@ -170,41 +224,23 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
             <div className={s.chartCol}>
               <ChartLupa ref={chartRef} series={series} invite hold={sheetOpen}
                 label={t('home.lupa.aria', { month: monthLabel(activeMonth) })}
-                valueTextOf={valueTextOf} axis={axis} onDay={onDay} onTap={onTap} />
-              <div className={s.legend} aria-hidden="true">
-                <span className={s.lgLine}>{t('home.lupa.legend.spent')}</span>
-                {series.ideal && <span className={s.lgIdeal}>{t('home.lupa.legend.ideal')}</span>}
-                {series.projEnd != null && <span className={s.lgProj}>{t('home.lupa.legend.proj')}</span>}
-              </div>
-              <div className={s.step}>
-                <button type="button" className={s.stepBtn} onClick={() => step(-1)} aria-label={t('home.lupa.prev')}>
-                  <ChevronLeft size={18} strokeWidth={2} aria-hidden="true" />
-                </button>
-                <span className={s.stepHint}>{t('home.lupa.hint')}</span>
-                <button type="button" className={s.stepBtn} onClick={() => step(1)} aria-label={t('home.lupa.next')}>
-                  <ChevronRight size={18} strokeWidth={2} aria-hidden="true" />
-                </button>
-              </div>
+                valueTextOf={valueTextOf} onDay={onDay} onTap={onTap} />
             </div>
           )}
         </div>
 
-        {/* Ingresos · Gastos en una línea (poda P1), cada mitad abre Movimientos. */}
-        <div className={s.pairLine}>
-          {[
-            { key: 'inc', label: t('dash.kpi.income'), raw: cur.totalInc, filter: 'income', sign: '+' },
-            { key: 'exp', label: t('dash.kpi.expenses'), raw: cur.totalExp, filter: 'expense', sign: '−' },
-          ].map(k => {
-            const Tag = onOpen ? 'button' : 'div'
-            return (
-              <Tag key={k.key} type={onOpen ? 'button' : undefined} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
-                className={s.pairItem} onClick={onOpen ? () => openMovements(onOpen, k.filter) : undefined}>
-                <span className={s.pairLabel}>{k.label}{onOpen && <ChevronRight size={14} strokeWidth={1.8} aria-hidden="true" />}</span>
-                <span className={`num ${s.pairValue}`} style={{ '--chars': fmtMoney(k.raw, sym).length + 1 }}>{k.raw > 0 ? k.sign : ''}<Money>{fmtMoney(k.raw, sym)}</Money></span>
-              </Tag>
-            )
-          })}
-        </div>
+        {/* Botones redondos dentro del bloque (patrón Rial): círculo de 56 px y
+            etiqueta; toda la columna es el área de toque. */}
+        {actions.length > 0 && (
+          <nav className={s.round} aria-label={t('dash.quick.title')} data-tour="home-quick">
+            {actions.map(a => (
+              <button key={a.key} type="button" className={s.roundBtn} onClick={a.run}>
+                <span className={s.roundIc}><a.Ic size={22} strokeWidth={1.9} aria-hidden="true" /></span>
+                <span className={s.roundLb}>{a.label}</span>
+              </button>
+            ))}
+          </nav>
+        )}
       </div>
 
       <HeroDetailSheet open={detailOpen} onClose={() => setDetailOpen(false)} free={free} hasData={hasData} sym={sym}
@@ -213,6 +249,9 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
         pulse={pulse} pending={pending} onReviewPending={onReviewPending} dual={!refc && dualOn && hasData ? toUSD(free) : null}
         sub={subParts.join(' · ')} onPanorama={onOpen ? () => onOpen('panorama') : undefined} />
 
+      <MonthSheet open={monthOpen} onClose={() => setMonthOpen(false)} activeMonth={activeMonth} t={t}
+        onPick={(mo) => { setMonthOpen(false); if (mo !== activeMonth) onPickMonth?.(mo) }} />
+
       {series && (
         <DaySheet open={sheetOpen} day={sheetDay} series={series} activeMonth={activeMonth} incomes={incomes} expenses={expenses} sym={sym} fmt={fmt}
           onDay={(d) => { setSheetDay(d); chartRef.current?.glideTo(d) }}
@@ -220,9 +259,4 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
       )}
     </section>
   )
-}
-
-function openMovements(onOpen, filter) {
-  if (filter) { try { sessionStorage.setItem('fos_mov_filter', filter) } catch { /* modo privado: abre sin filtro */ } }
-  onOpen('movements')
 }

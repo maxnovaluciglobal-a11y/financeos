@@ -59,3 +59,15 @@ describe('pageTours (R08)', () => {
     }
   })
 })
+
+describe('recorrido del Inicio v2 (24-nov-2026)', () => {
+  it('muestra los botones redondos y "Pregúntale a moyiq", con textos en los 4 idiomas', async () => {
+    const ids = PAGE_TOURS.dashboard.map(s => s.id)
+    expect(ids).toEqual(['kpi-free', 'home-quick', 'home-ask', 'first-steps', 'home-edit'])
+    const dicts = await Promise.all(['es', 'en', 'pt', 'de'].map(l => import(`../../i18n/${l}.js`).then(m => m[l])))
+    for (const d of dicts) for (const s of PAGE_TOURS.dashboard) {
+      expect(d[s.title], s.title).toBeTruthy()
+      expect(d[s.body], s.body).toBeTruthy()
+    }
+  })
+})

@@ -12,12 +12,16 @@ const ALL_PAGES = [
 
 describe('chromeFor (R14): qué páginas llevan barra, "‹" y "+"', () => {
   it('solo Inicio, Movimientos y Menú muestran la barra, sin "‹"', () => {
-    for (const p of ['dashboard', 'movements', 'budgets', 'goals', 'more']) {
+    for (const p of ['dashboard', 'movements', 'more']) {
       const c = chromeFor(p)
       expect(c.tabBar, p).toBe(true)
       expect(c.back, p).toBe(false)
       expect(c.fab, p).toBe(true)
     }
+  })
+
+  it('Inicio v2: Presupuestos y Metas se abren empujadas desde Más, con "‹" y sin barra', () => {
+    for (const p of ['budgets', 'goals']) expect(chromeFor(p)).toMatchObject({ tabBar: false, back: true, parent: 'more' })
   })
 
   it('toda otra página se abre empujada: sin barra y con "‹"', () => {
@@ -59,7 +63,9 @@ describe('navAction: qué se apila en el historial', () => {
     expect(navAction('more', 'debts')).toBe('push')
     expect(navAction('dashboard', 'reports')).toBe('push')
     expect(navAction('debts', 'settings')).toBe('push')
-    expect(navAction('budgets', 'goals')).toBe('replace')
+    // Inicio v2: Presupuestos y Metas ya no son pestañas, se abren empujadas.
+    expect(navAction('dashboard', 'budgets')).toBe('push')
+    expect(navAction('more', 'goals')).toBe('push')
   })
   it('ir a una raíz desde una pantalla empujada también apila (sidebar, enlaces internos)', () => {
     expect(navAction('debts', 'dashboard')).toBe('push')
@@ -100,8 +106,8 @@ describe('backAction / backTarget', () => {
   })
   it('isRootPage / isStackState', () => {
     expect(isRootPage('more')).toBe(true)
-    expect(isRootPage('goals')).toBe(true)
-    expect(isRootPage('budgets')).toBe(true)
+    expect(isRootPage('goals')).toBe(false)
+    expect(isRootPage('budgets')).toBe(false)
     expect(isRootPage('debts')).toBe(false)
     expect(isStackState({ fosPage: 'goals' })).toBe(true)
     expect(isStackState({ usr: 1 })).toBe(false)

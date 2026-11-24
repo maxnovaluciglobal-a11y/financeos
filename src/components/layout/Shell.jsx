@@ -275,7 +275,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
             línea del título grande. Al hacer scroll se le suma el título compacto
             (LargeTitle lo manda a #nav-title) y el fondo con desenfoque, ligados al
             dedo. En las pantallas empujadas (R14) lleva "‹ {de dónde viniste}". */}
-        <header className={s.topbar}>
+        <header className={s.topbar} data-shell-topbar>
           <div className={s.navBg} aria-hidden="true" />
           <div className={s.topLeft}>
             {chrome.back && (
@@ -316,9 +316,9 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
           </div>
         </main>
 
-        {/* TABBAR móvil — barra anclada de 5 destinos (Inicio · Movimientos ·
-            Presupuestos · Metas · Menú, L2) con el "+" adentro. Se oculta con el
-            teclado abierto. */}
+        {/* TABBAR móvil — 3 destinos (Inicio · Movimientos · Más, Inicio v2 del
+            24-nov-2026) y el "+" al lado. La misma barra en todas las raíces; las
+            pantallas empujadas no la llevan. Se oculta con el teclado abierto. */}
         <div className={keyboardOpen ? s.tabbarHidden : undefined}>
           {chrome.tabBar && <TabBar page={page} onNavigate={navigate} onReselect={scrollToTop} onAdd={() => setQuickAdd('expense')} t={t} />}
           {chrome.fab && !chrome.tabBar && <AddFab onAdd={() => setQuickAdd(page === 'income' ? 'income' : 'expense')} t={t} />}

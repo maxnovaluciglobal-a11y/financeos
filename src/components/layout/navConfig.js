@@ -86,14 +86,16 @@ export function pageLabel(id) {
   return ALL_ITEMS.find(it => it.id === id)?.lb || id
 }
 
-// ── Pestañas del TabBar móvil (R01/R04, L2) ────────────────────────────────
-// Cinco raíces: Inicio · Movimientos · Presupuestos · Metas · Menú (L2,
-// aprobado por Walter el 21-oct-2026; reemplaza las 3 pestañas de la decisión
-// D2 del 08-oct). Mismo modelo que Invest: las dos funciones núcleo a un toque.
+// ── Pestañas del TabBar móvil (R01/R04, Inicio v2) ─────────────────────────
+// Tres raíces: Inicio · Movimientos · Más, con el "+" aparte (Inicio v2,
+// 24-nov-2026, variante D aprobada por Walter; referencia Rial). Reemplaza las
+// 5 de L2 (21-oct): con 5 las etiquetas se cortaban ("Movimien…", "Presupues…").
+// Presupuestos y Metas siguen a un toque desde los botones redondos del Inicio
+// y son las primeras filas de Más; se abren como pantallas empujadas de Más.
 // La navegación sigue plana (setPage) y los ids de página no cambiaron, así
 // que los enlaces profundos (?open=…) y las rutas existentes siguen igual. Cada
 // página se mapea a la pestaña que la contiene: lo de la sección "Movimientos"
-// del NAV enciende Movimientos; Presupuestos y Metas, la suya; el resto
+// del NAV enciende Movimientos; el resto (Presupuestos y Metas incluidos)
 // (incluidas las legales y Ajustes, que se abren desde el Menú) enciende Menú.
 // La barra nunca queda sin pestaña activa.
 export const TAB_HOME = 'dashboard'
@@ -101,7 +103,7 @@ export const TAB_MOVEMENTS = 'movements'
 export const TAB_BUDGETS = 'budgets'
 export const TAB_GOALS = 'goals'
 export const TAB_MENU = 'more'
-export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_BUDGETS, TAB_GOALS, TAB_MENU]
+export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_MENU]
 
 const MOVEMENT_PAGES = new Set(
   (NAV.find(g => g.sec === 'nav.sec.movements')?.items || []).map(it => it.id)
@@ -117,8 +119,6 @@ export function tabMotion(from, to, slide = true) {
 export function activeTabFor(page) {
   if (!page || page === TAB_HOME) return TAB_HOME
   if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS
-  if (page === TAB_BUDGETS) return TAB_BUDGETS
-  if (page === TAB_GOALS) return TAB_GOALS
   return TAB_MENU
 }
 
@@ -129,7 +129,8 @@ export function activeTabFor(page) {
 // o es pestaña, o es fila de "Más", o vive dentro de una fila (Panorama, la
 // hoja "Herramientas de mi país" o Fijos › Suscripciones). navConfig.test.js
 // lo verifica para cada país.
-//  · Mi dinero: Deudas y cobros · Fijos y suscripciones · Ingresos · Importar
+//  · Mi dinero: Presupuestos · Metas · Deudas y cobros · Fijos y suscripciones ·
+//    Ingresos · Importar
 //  · Panorama: el hub del análisis (Diagnóstico, Patrimonio, Proyección, Reportes…)
 //  · Herramientas: calculadora de tasa (VE/AR) · herramientas del país ·
 //    Propiedades, Modo asesor e Inversiones si están encendidos ·
@@ -148,7 +149,8 @@ export const PANORAMA_PAGES = ['coach', 'networth', 'cashflow', 'reports', 'subs
 const item = (id) => ALL_ITEMS.find(it => it.id === id)
 
 // Tope de filas de "Más" (navConfig.test.js lo exige en cada país).
-export const MORE_MAX_ROWS = 10
+// Inicio v2: 10 → 12, por las dos filas que llegaron de la barra (Presupuestos y Metas).
+export const MORE_MAX_ROWS = 12
 
 export function moreSections(country, settings = {}) {
   const cc = (country || 'CL').toUpperCase()
@@ -156,7 +158,10 @@ export function moreSections(country, settings = {}) {
   const countryItems = (NAV.find(g => g.sec === 'nav.sec.country')?.items || [])
     .filter(it => navItemVisible(it, cc, settings) && it.id !== tool)
 
+  // Inicio v2: Presupuestos y Metas dejaron de ser pestañas; van primeros.
   const money = [
+    item('budgets'),
+    item('goals'),
     { ...item('debts'), lb: 'more.debts' },
     { ...item('recurring'), lb: 'more.recurringSubs' },
     item('income'),

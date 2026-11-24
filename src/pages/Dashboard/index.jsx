@@ -7,6 +7,14 @@
 // categorías más en riesgo → IQ Score en una línea → tarjetas que la persona
 // sumó en "Editar Inicio". La vista detallada de antes es Panorama (en "Más"):
 // nada se borró, se movió.
+//
+// Inicio v2 (24-nov-2026, variante D aprobada por Walter): con la escena, la
+// cabecera es de app (mes · logo · IQ y asistente), los 4 botones redondos van
+// DENTRO del bloque (Presupuestos · Metas · Fijos o Convertir · Importar: con
+// la barra de 3 pestañas, Presupuestos y Metas se abren desde acá y desde Más),
+// y debajo vienen las tarjetas de Ingresos y Gastos y "Pregúntale a moyiq"
+// (respuestas en el teléfono, con reglas; ask/). El Inicio clásico
+// (?ui=inicio-clasico) queda como estaba.
 
 import { lazy, Suspense, useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useT } from '../../i18n/useT.js'
@@ -37,7 +45,7 @@ import { logRejection } from '../../utils/errorLog.js'
 import { rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
 import { prevMonthOf } from './dashboardModel.js'
 import hs from './Home.module.css'
-import { currentMonth, fmtPct } from '../../utils/index.js'
+import { currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
 import { BackupReminderBanner } from '../../components/backup/BackupStatus.jsx'
 import SafariStorageNotice from '../../components/backup/SafariStorageNotice.jsx'
@@ -45,7 +53,10 @@ import SyncErrorNotice from '../../components/backup/SyncErrorNotice.jsx'
 import { PageHeader } from '../../components/ui/index.jsx'
 import { Switch } from '../Settings/settingsUi.jsx'
 import MonthSheet from '../../components/recurring/MonthSheet.jsx'
-import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal } from 'lucide-react'
+import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal, Wallet, Target, Repeat, ChevronRight } from 'lucide-react'
+import Money from '../../components/Money.jsx'
+import { AskCard, AskSheet } from './ask/AskMoyiq.jsx'
+import ask from './ask/ask.module.css'
 import { inicioLupaOn } from '../../utils/uiFlags.js'
 import { dailyAvailable, paceToday } from '../../utils/dailyAvailable.js'
 import { monthPace } from '../../utils/monthPace.js'
@@ -107,7 +118,7 @@ function TodoStrip({ children }) {
 const Slot = ({ children }) => <div className={hs.todoSlot}>{children}</div>
 
 export default function Dashboard({ setPage }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const {
     ctx, settings, incomes, expenses, setAsides, budgets, goals, subs, debts, sym, activeMonth,
     refOn, refRate, bumpRate, dualOn, toUSD, money,
@@ -311,6 +322,27 @@ export default function Dashboard({ setPage }) {
     { key: 'imp', label: t('home.quick.import'),  Ic: Upload, run: () => setPage('import') },
   ] : []
 
+  // Inicio v2: botones redondos de la escena. Con moneda de referencia (VE/AR o
+  // moneda dual) el tercero es Convertir, como en los atajos de antes; Fijos
+  // sigue en Más y en Movimientos.
+  const go = (page) => () => setPage?.(page)
+  const roundActions = setPage ? [
+    { key: 'bud', label: t('nav.budgets'), Ic: Wallet, run: go('budgets') },
+    { key: 'goal', label: t('nav.goals'), Ic: Target, run: go('goals') },
+    refOn
+      ? { key: 'conv', label: t('home.quick.convert'), Ic: ArrowLeftRight, run: () => setConvOpen(true) }
+      : { key: 'rec', label: t('nav.recurring'), Ic: Repeat, run: go('recurring') },
+    { key: 'imp', label: t('home.quick.import'), Ic: Upload, run: go('import') },
+  ] : []
+  const [askOpen, setAskOpen] = useState(false)
+  const [askQ, setAskQ] = useState(null)
+  const openAsk = (id = null) => { setAskQ(id); setAskOpen(true) }
+  const openMovements = (filter) => {
+    if (!setPage) return
+    try { sessionStorage.setItem('fos_mov_filter', filter) } catch { /* modo privado: abre sin filtro */ }
+    setPage('movements')
+  }
+
   // P3: "Editar Inicio" — tarjetas opcionales, apagadas por defecto.
   const [editOpen, setEditOpen] = useState(false)
   const cardOn = (id) => homeCardOn(settings, id)
@@ -336,7 +368,10 @@ export default function Dashboard({ setPage }) {
             pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
             pulse={(kpis.incCount > 0 || kpis.expCount > 0) && pulse.level ? pulse : null}
             daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
-            dualOn={dualOn} toUSD={toUSD} onOpen={setPage} refc={refc} />
+            dualOn={dualOn} toUSD={toUSD} onOpen={setPage} refc={refc}
+            healthScore={healthScore} actions={roundActions} onAsk={() => openAsk()}
+            amountsHidden={!!settings.hideAmounts} onToggleAmounts={() => updateSettings?.({ ...settings, hideAmounts: !settings.hideAmounts })}
+            onPickMonth={(mo) => updateSettings?.({ ...settings, activeMonth: mo })} />
         </Suspense>
       ) : (
         /* Encabezado único (UI-M8): "Inicio" y el mes que se está mirando. */
@@ -352,9 +387,29 @@ export default function Dashboard({ setPage }) {
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
               onOpen={setPage} refc={refc} />
           )}
+          {lupa && (
+            <div className={ask.cards}>
+              {[
+                { key: 'inc', label: t('dash.kpi.income'), raw: kpis.cur.totalInc, n: kpis.cur.incCount, filter: 'income', sign: '+', cls: ask.cardInc },
+                { key: 'exp', label: t('dash.kpi.expenses'), raw: kpis.cur.totalExp, n: kpis.cur.expCount, filter: 'expense', sign: '−', cls: ask.cardExp },
+              ].map(k => {
+                const Tag = setPage ? 'button' : 'div'
+                return (
+                  <Tag key={k.key} type={setPage ? 'button' : undefined} className={`${ask.card} ${k.cls}`} data-tour={k.key === 'inc' ? 'kpi-income' : undefined}
+                    onClick={setPage ? () => openMovements(k.filter) : undefined}>
+                    <span className={ask.cardLabel}>{k.label}{setPage && <ChevronRight size={14} strokeWidth={1.8} aria-hidden="true" />}</span>
+                    <span className={`num ${ask.cardValue}`}>{k.raw > 0 ? k.sign : ''}<Money>{fmtMoney(k.raw, sym)}</Money></span>
+                    <span className={ask.cardSub}>{t(`home.count.${k.n === 1 ? 'one' : 'many'}`, { n: k.n })}</span>
+                  </Tag>
+                )
+              })}
+            </div>
+          )}
+          {lupa && <div data-tour="home-ask"><AskCard onAsk={openAsk} t={t} /></div>}
+
           <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
 
-          {quick.length > 0 && (
+          {!lupa && quick.length > 0 && (
             <nav className={hs.quick} aria-label={t('dash.quick.title')} data-tour="home-quick">
               {quick.map(a => (
                 <button key={a.key} type="button" className={hs.quickBtn} onClick={a.run}>
@@ -414,6 +469,10 @@ export default function Dashboard({ setPage }) {
             <SlidersHorizontal size={16} strokeWidth={1.7} aria-hidden="true" />{t('home.edit.cta')}
           </button>
         </div>
+      )}
+      {lupa && (
+        <AskSheet open={askOpen} q={askQ} onQ={setAskQ} onClose={() => setAskOpen(false)} sym={sym} lang={lang} setPage={setPage} t={t}
+          data={{ kpis, monthExpenses, activeMonth }} />
       )}
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} ariaLabel={t('home.edit.title')} maxWidth={420}>
         <h2 style={{ margin: '0 0 4px', fontSize: 'var(--t-headline)', fontWeight: 700, color: 'var(--tx)' }}>{t('home.edit.title')}</h2>
