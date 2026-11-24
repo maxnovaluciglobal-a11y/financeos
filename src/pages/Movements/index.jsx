@@ -45,6 +45,7 @@ import { refEligible, resolveRefRate, SOURCE_LABEL, REF_CURRENCY } from '../../u
 import { mergeMovements, monthTotals, lensState, inLens, parseExpensePrefill, PREFILL_KEY, normType, filterMovements, categoriesByAmount } from './movementsList.js'
 import { ORIGIN_KINDS, toggleKind, toggleCategory, activeFilters, clearFilter, searchVisible, toggleSearch, donutPick, donutRecords } from './movementsFilters.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { logRejection } from '../../utils/errorLog.js'
 
 // Filtro de tipo preseleccionado desde otra pantalla (Ingresos, Inicio, Menú):
 // sessionStorage['fos_mov_filter'] = 'income' | 'expense' | 'all', igual que
@@ -802,7 +803,7 @@ export default function Movements({ setPage }) {
           </li>
           {exportCSV && (
             <li>
-              <button type="button" className={ms.menuItem} onClick={() => { setMoreOpen(false); exportCSV() }}>
+              <button type="button" className={ms.menuItem} onClick={() => { setMoreOpen(false); exportCSV()?.catch?.(logRejection('movements:csv')) }}>
                 <span className={ms.menuLabel}><Download size={16} strokeWidth={1.7} aria-hidden="true" />{t('movl.export')}</span>
               </button>
             </li>

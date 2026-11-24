@@ -18,6 +18,8 @@ import { tasaMarginalDE } from '../../config/deducciones/de.js'
 import { getDeduccionesConfig, autofillGastos } from '../../utils/deduccionesEngine.js'
 import { currentMonth, fmtPctPoints } from '../../utils/index.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { saveBlob } from '../../native/saveFile.js'
+import { logRejection } from '../../utils/errorLog.js'
 
 const fmtEUR = (n) => `€${(Number(n) || 0).toLocaleString('de-DE', { maximumFractionDigits: 0 })}`
 
@@ -295,12 +297,8 @@ function ElsterExport({ desglose, year, t }) {
 
   function descargar() {
     const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `werbungskosten-${year}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
+    // AND-2: en la app nativa <a download> no guarda nada (native/saveFile.js).
+    saveBlob(blob, `werbungskosten-${year}.txt`).catch(logRejection('steuer:download'))
   }
 
   if (lineas.length === 0) return null

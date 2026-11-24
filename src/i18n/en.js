@@ -2151,6 +2151,7 @@ export const en = {
     'toast.csvError': "Couldn't export the CSV.",
     'toast.backupCreated': "Backup created.",
     'toast.backupError': "Couldn't create the backup.",
+    'toast.saveCancelled': "No file was saved.",
     'toast.backupIncomplete': "Backup created, but without your recurring transactions: they couldn't be read. Try again, or copy the error log in Settings.",
     'toast.recurringLoadError': "Your recurring transactions couldn't be loaded. Reload the app; if it keeps happening, copy the error log in Settings.",
     'toast.imported': "Data imported.",

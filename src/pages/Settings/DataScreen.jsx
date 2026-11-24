@@ -10,6 +10,7 @@ import SnapshotRestore from '../../components/recurring/SnapshotRestore.jsx'
 import SyncSection from './SyncSection.jsx'
 import { useT } from '../../i18n/useT.js'
 import { srow, slbl, ssub, Setting } from './settingsUi.jsx'
+import { logRejection } from '../../utils/errorLog.js'
 
 const block = { borderTop: '1px solid var(--brd2)', paddingTop: 14, marginTop: 18 }
 const h3 = { margin: '0 0 10px', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)' }
@@ -33,7 +34,7 @@ export default function DataScreen() {
       <Setting id="csv" style={{ ...block, paddingTop: 0 }}>
         <div style={{ ...srow, borderBottom: 'none' }}>
           <div><div style={slbl}>{t('settings.exportCsv.label')}</div><div style={ssub}>{t('settings.exportCsv.sub')}</div></div>
-          <Btn variant="ghost" size="sm" onClick={exportCSV}>{t('settings.exportCsv.btn')}</Btn>
+          <Btn variant="ghost" size="sm" onClick={() => { exportCSV().catch(logRejection('settings:csv')) }}>{t('settings.exportCsv.btn')}</Btn>
         </div>
       </Setting>
 

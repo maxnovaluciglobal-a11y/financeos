@@ -85,8 +85,10 @@ export default function BackupManager() {
       return
     }
     try {
-      await exportData(encOn ? { passphrase: encPass } : undefined)
-      // Guardar fecha del último respaldo
+      const r = await exportData(encOn ? { passphrase: encPass } : undefined)
+      // "Último respaldo" solo si el archivo quedó guardado (AND-2): cancelar el
+      // selector o la hoja de compartir no cuenta.
+      if (r === 'cancelled') return
       await updateSettings({ ...settings, lastBackupAt: new Date().toISOString() })
       setStatus({ type: 'ok', msg: t(encOn ? 'backup.enc.exportOk' : 'backup.status.exportOk') })
       if (encOn) { setEncPass(''); setEncOn(false) }

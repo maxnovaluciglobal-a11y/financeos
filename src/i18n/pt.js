@@ -2151,6 +2151,7 @@ export const pt = {
     'toast.csvError': "Erro ao exportar o CSV.",
     'toast.backupCreated': "Backup criado.",
     'toast.backupError': "Erro ao criar o backup.",
+    'toast.saveCancelled': "Nenhum arquivo foi salvo.",
     'toast.backupIncomplete': "Backup criado, mas sem os movimentos fixos: não foi possível lê-los. Tente de novo ou copie o registro de erros em Ajustes.",
     'toast.recurringLoadError': "Não foi possível carregar os movimentos fixos. Recarregue o app; se continuar, copie o registro de erros em Ajustes.",
     'toast.imported': "Dados importados.",

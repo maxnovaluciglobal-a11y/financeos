@@ -14,6 +14,7 @@ import { demoPersona } from './demoData.js'
 import { pricingUrl } from '../utils/landingUrls.js'
 import { canShowWebCheckout } from '../native/storePolicy.js'
 import { isNativeApp } from '../native/platform.js'
+import { useBackDismiss } from '../hooks/useBackDismiss.js'
 
 export const APP_URL = 'https://app.moyiq.app/app/'
 // UX-N4: el CTA del demo abre "Crear cuenta" (no "Iniciar sesión") y marca el origen.
@@ -28,6 +29,8 @@ export default function DemoBanner({ onReplayTour }) {
   const plansUrl = pricingUrl(lang)
   const [scenario, setLocal] = useState('exitoso')
   const [menuOpen, setMenuOpen] = useState(false)
+  // Atrás de Android cierra el menú, no sale del demo (AND-3).
+  useBackDismiss(menuOpen, () => setMenuOpen(false))
   const menuId = useId()
   const btnRef = useRef(null)
   const menuRef = useRef(null)

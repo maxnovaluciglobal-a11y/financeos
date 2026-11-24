@@ -323,6 +323,14 @@
   .tab { padding: 0; }
 }
 
+/* Texto agrandado en la app de Android (AND-11): TabBar.jsx mide y, si alguna
+   etiqueta no entra entera, deja solo los íconos. */
+.tabbar[data-labels="off"] .tabLb {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.tabbar[data-labels="off"] .tab { padding: 0; }
+
 /* 341–379 px (Galaxy de 360, iPhone SE y mini de 375): con el "+" al lado, a
    las etiquetas en español les sobran 11 px y "Movimientos" y "Presupuestos"
    quedan pegadas. La cápsula toma el ancho completo y el "+" flota encima de

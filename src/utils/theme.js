@@ -22,7 +22,19 @@ function mediaQuery() {
   try { return typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(QUERY) : null } catch { return null }
 }
 
+// Android (AND-13): la WebView no avisa el cambio del sistema con la app
+// abierta; el puente nativo lo informa acá (native/bridge.js) y gana sobre
+// matchMedia hasta el próximo arranque.
+const NATIVE_THEME_EVENT = 'fos:native-system-theme'
+let nativePrefersDark = null
+
+export function setNativePrefersDark(dark) {
+  nativePrefersDark = !!dark
+  try { window.dispatchEvent(new CustomEvent(NATIVE_THEME_EVENT, { detail: { dark: nativePrefersDark } })) } catch { /* sin window (tests) */ }
+}
+
 export function systemPrefersDark() {
+  if (nativePrefersDark !== null) return nativePrefersDark
   return !!mediaQuery()?.matches
 }
 
@@ -39,14 +51,18 @@ export function applyTheme(setting, storage = globalThis.localStorage) {
 // Llama a onChange(prefersDark) cada vez que el sistema cambia de claro a
 // oscuro. Devuelve la función para dejar de escuchar.
 export function watchSystemTheme(onChange) {
+  const onNative = (e) => onChange(!!e.detail?.dark)
+  const hasWin = typeof window !== 'undefined' && !!window.addEventListener
+  if (hasWin) window.addEventListener(NATIVE_THEME_EVENT, onNative)
+  const offNative = () => { if (hasWin) window.removeEventListener(NATIVE_THEME_EVENT, onNative) }
   const mq = mediaQuery()
-  if (!mq) return () => {}
-  const handler = (e) => onChange(!!e.matches)
+  if (!mq) return offNative
+  const handler = (e) => { nativePrefersDark = null; onChange(!!e.matches) }
   if (mq.addEventListener) {
     mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
+    return () => { offNative(); mq.removeEventListener('change', handler) }
   }
   // Safari < 14
   mq.addListener?.(handler)
-  return () => mq.removeListener?.(handler)
+  return () => { offNative(); mq.removeListener?.(handler) }
 }

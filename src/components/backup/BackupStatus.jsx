@@ -183,7 +183,7 @@ export function BackupReminderBanner({ suppress = false } = {}) {
   async function handleBackupNow() {
     setExporting(true)
     try {
-      await exportData()
+      if (await exportData() === 'cancelled') return
       await updateSettings({ ...settings, lastBackupAt: new Date().toISOString() })
       setDismissed(true)
     } catch { /* el botón vuelve a habilitarse solo, sin mensaje extra acá */ }

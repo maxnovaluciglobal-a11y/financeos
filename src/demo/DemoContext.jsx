@@ -17,6 +17,7 @@ import { ruleFromRecord, withAmountFrom, ruleAfterLinkedRecord } from '../utils/
 import { translate } from '../i18n/translate.js'
 import { loadLang } from '../i18n/langCache.js'
 import { applyTheme, watchSystemTheme } from '../utils/theme.js'
+import { saveBlob, SAVED } from '../native/saveFile.js'
 
 export const DemoContext = createContext(null)
 
@@ -231,7 +232,7 @@ export function DemoProvider({ children }) {
   }, [showToast, tr, state.personaId, state.settings?.language])
 
   // Export funciona normalmente — usa datos demo
-  const exportCSV = useCallback(() => {
+  const exportCSV = useCallback(async () => {
     const rows = [
       ['type', 'date', 'description', 'category', 'amount', 'method', 'recurrence'].map(c => tr(`csv.col.${c}`)),
       ...state.incomes.map(r  => [tr('csv.type.income'),  r.date, r.source,      catName(r.category, langRef.current), r.amount,  '',                                     recurrenceLabel(r.recurrence, langRef.current)]),
@@ -241,13 +242,14 @@ export function DemoProvider({ children }) {
     ]
     const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = 'moyiq-demo-data.csv'
-    a.click()
-    URL.revokeObjectURL(url)
-    showToast(tr('demo.toast.csv'), 'ok')
+    try {
+      const r = await saveBlob(blob, 'moyiq-demo-data.csv')
+      showToast(r === SAVED ? tr('demo.toast.csv') : tr('toast.saveCancelled'), r === SAVED ? 'ok' : 'info')
+      return r
+    } catch (e) {
+      showToast(tr('toast.csvError'), 'error')
+      throw e
+    }
   }, [state.incomes, state.expenses, showToast, tr])
 
   const exportData = useCallback(async (opts) => {
@@ -256,13 +258,14 @@ export function DemoProvider({ children }) {
     const blob = passphrase
       ? new Blob([await encryptBackupFile(data, passphrase)], { type: 'text/plain' })
       : new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = passphrase ? 'moyiq-demo-backup.enc.txt' : 'moyiq-demo-backup.json'
-    a.click()
-    URL.revokeObjectURL(url)
-    showToast(tr('demo.toast.json'), 'ok')
+    try {
+      const r = await saveBlob(blob, passphrase ? 'moyiq-demo-backup.enc.txt' : 'moyiq-demo-backup.json')
+      showToast(r === SAVED ? tr('demo.toast.json') : tr('toast.saveCancelled'), r === SAVED ? 'ok' : 'info')
+      return r
+    } catch (e) {
+      showToast(tr('toast.backupError'), 'error')
+      throw e
+    }
   }, [showToast, tr, state.personaId, state.settings?.language])
 
   // Import en demo: solo memoria, no persiste

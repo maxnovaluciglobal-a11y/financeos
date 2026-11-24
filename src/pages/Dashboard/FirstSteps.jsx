@@ -33,7 +33,7 @@ export default function FirstSteps({ setPage }) {
   async function backupNow() {
     setExporting(true)
     try {
-      await ctx.exportData?.()
+      if (await ctx.exportData?.() === 'cancelled') return
       await ctx.updateSettings?.({ ...settings, lastBackupAt: new Date().toISOString() })
     } catch {
       // Si la descarga falla, el respaldo completo (con restaurar) vive en Ajustes.

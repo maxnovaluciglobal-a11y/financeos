@@ -463,7 +463,7 @@ export default function AuthGate({ onAuthenticated }) {
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           spellCheck={false}
           // eslint-disable-next-line jsx-a11y/no-autofocus -- the sign-in screen exists only to enter the email; focus goes straight to its first field
-          autoFocus
+          autoFocus={!isNativeApp()}
           autoComplete="email"
         />
         <label htmlFor="authgate-password" style={s.label}>{t('authGate.passwordLabel')}</label>

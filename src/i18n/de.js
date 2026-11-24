@@ -2150,6 +2150,7 @@ export const de = {
     'toast.csvError': "Die CSV-Datei konnte nicht exportiert werden.",
     'toast.backupCreated': "Sicherung erstellt.",
     'toast.backupError': "Die Sicherung konnte nicht erstellt werden.",
+    'toast.saveCancelled': "Es wurde keine Datei gespeichert.",
     'toast.backupIncomplete': "Sicherung erstellt, aber ohne die festen Buchungen: Sie konnten nicht gelesen werden. Versuchen Sie es erneut oder kopieren Sie das Fehlerprotokoll in den Einstellungen.",
     'toast.recurringLoadError': "Die festen Buchungen konnten nicht geladen werden. Laden Sie die App neu; wenn es weiter passiert, kopieren Sie das Fehlerprotokoll in den Einstellungen.",
     'toast.imported': "Daten importiert.",

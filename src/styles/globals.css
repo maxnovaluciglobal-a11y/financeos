@@ -551,3 +551,16 @@ button { cursor: pointer; font-family: var(--sans); }
     padding: calc(32px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* App de Android/iOS (AND-12): Play pide objetivos táctiles de 48 dp (el
+   informe previo al lanzamiento marca "Touch target size"); la web sigue con
+   44 px. data-native lo pone native/bridge.js. Los enlaces dentro de un texto
+   ganan área con relleno y margen negativo, sin mover las líneas. */
+:root[data-native="on"] :is(button, a[href], [role="button"], [role="tab"], [role="switch"], [role="option"], .fos-link, select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"])) {
+  /* !important: varios controles fijan min-height: 44px en línea (AuthGate). */
+  min-height: 48px !important;
+}
+:root[data-native="on"] :is(button, [role="button"], [role="switch"]) { min-width: 48px !important; }
+:root[data-native="on"] :is(p, li, span, label, small) > a[href] {
+  display: inline-block; padding: 14px 6px; margin: -14px -6px;
+}
