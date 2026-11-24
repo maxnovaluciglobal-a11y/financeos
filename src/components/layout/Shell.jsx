@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
-import { helpUrl } from '../../utils/landingUrls.js'
+import { isNativeApp } from '../../native/platform.js'
+import { appHelpHref } from '../../utils/landingUrls.js'
 import s from './shell.module.css'
 import { BackupStatusBadge } from '../backup/BackupStatus.jsx'
 import QuickAdd from '../QuickAdd.jsx'
@@ -251,7 +252,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
             <button type="button" onClick={() => navigate('privacy')} className={s.legalLink}>{t('nav.legal.privacy')}</button>
             <button type="button" onClick={() => navigate('terms')} className={s.legalLink}>{t('nav.legal.terms')}</button>
             <button type="button" onClick={() => navigate('disclaimer')} className={s.legalLink}>{t('nav.legal.disclaimer')}</button>
-            <a href={helpUrl(lang)} target='_blank' rel='noopener noreferrer' className={s.legalLink} style={{textDecoration:'none'}}>{t('nav.legal.help')}</a>
+            <a href={appHelpHref(lang, isNativeApp())} target='_blank' rel='noopener noreferrer' className={s.legalLink} style={{textDecoration:'none'}}>{t('nav.legal.help')}</a>
           </div>
           {SHOW_FIRMA && (
             <div style={{ display:'flex', justifyContent:'center', padding:'8px 0 2px' }}

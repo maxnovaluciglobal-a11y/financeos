@@ -17,7 +17,7 @@ import { useT, useLangReady } from '../i18n/useT.js'
 import { proPriceVars } from '../utils/pricing.js'
 import { usePageStack } from '../hooks/usePageStack.js'
 import { prefetchTabs } from '../utils/prefetchTabs.js'
-import { canShowWebCheckout } from '../native/storePolicy.js'
+import { canShowWebCheckout, storePage } from '../native/storePolicy.js'
 import { isNativeApp } from '../native/platform.js'
 
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
@@ -164,7 +164,7 @@ function DemoInner() {
   }, [docTitle])
 
   function renderPage(page) {
-    switch (page) {
+    switch (storePage(page)) {
       case 'dashboard':     return <Dashboard setPage={setPage}/>
       case 'income':        return <Income setPage={setPage}/>
       case 'budgets':       return <Budgets />

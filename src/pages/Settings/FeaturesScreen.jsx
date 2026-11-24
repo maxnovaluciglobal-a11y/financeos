@@ -7,6 +7,7 @@
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { moduleOn, setModule } from '../../utils/modules.js'
+import { canShowInvestments } from '../../native/storePolicy.js'
 import { srow, slbl, ssub, Switch, Setting } from './settingsUi.jsx'
 
 export default function FeaturesScreen() {
@@ -31,13 +32,13 @@ export default function FeaturesScreen() {
         <Switch checked={moduleOn(settings, 'advisor')} labelledBy="settings-feat-advisor" onChange={() => toggle('advisor')} />
       </Setting>
       {/* Gratis y sin ProGate: los datos de mercado no tienen licencia comercial (INV-1). */}
-      <Setting id="investments" style={{ ...srow, borderBottom: 'none' }}>
+      {canShowInvestments() && <Setting id="investments" style={{ ...srow, borderBottom: 'none' }}>
         <div>
           <div style={slbl} id="settings-feat-investments">{t('settings.features.investments')}</div>
           <div style={ssub}>{t('settings.features.investments.sub')}</div>
         </div>
         <Switch checked={moduleOn(settings, 'investments')} labelledBy="settings-feat-investments" onChange={() => toggle('investments')} />
-      </Setting>
+      </Setting>}
     </div>
   )
 }

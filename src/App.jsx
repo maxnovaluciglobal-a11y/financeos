@@ -26,6 +26,7 @@ import { useState, useEffect } from 'react'
 import { listenSwOpen } from './utils/swOpen.js'
 import { logClientError, logRejection } from './utils/errorLog.js'
 import { useLangReady } from './i18n/useT.js'
+import { storePage } from './native/storePolicy.js'
 
 // Páginas lazy — solo se cargan cuando el usuario navega a ellas
 const Dashboard     = lazy(() => import('./pages/Dashboard/index.jsx'))
@@ -288,7 +289,7 @@ function Inner() {
   }
 
   function renderPage(page) {
-    switch (page) {
+    switch (storePage(page)) {
       case 'dashboard':     return <Dashboard setPage={setPage}/>
       case 'income':        return <Income setPage={setPage}/>
       case 'budgets':       return <Budgets />

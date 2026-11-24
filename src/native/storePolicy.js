@@ -12,12 +12,19 @@
 // ofrecer también un servicio equivalente (Sign in with Apple). Hasta que Apple
 // esté configurado en Supabase (`appleSignIn`), iOS entra solo con correo y
 // contraseña, que no exige nada más.
+//
+// Inversiones (decisión del 23-nov-2026, D1 de la revisión pre-tiendas): la v1
+// de Google Play y App Store sale sin Inversiones; vuelve en una v2. Con
+// `investments` en false la app nativa no muestra la sección en ningún lado
+// (navegación, Panorama, Patrimonio, Ajustes, enlaces ?open=invest-*, Ayuda) y
+// no le pide nada al servidor de Inversiones. La web y la PWA no cambian.
 
-import { nativePlatform } from './platform.js'
+import { isNativeApp, nativePlatform } from './platform.js'
 
 export const NATIVE_FLAGS = Object.freeze({
   iapReady: false,     // compra de la tienda integrada (RevenueCat)
   appleSignIn: false,  // proveedor Apple configurado en Supabase Auth
+  investments: false,  // sección Inversiones en la app de tienda (v2)
 })
 
 /** ¿Se puede mostrar el checkout de Stripe (precio, botón, enlace)? */
@@ -40,4 +47,29 @@ export function oauthProviders(platform, flags = NATIVE_FLAGS) {
 // Atajo para los componentes: ¿esta instancia puede mostrar el checkout web?
 export function canShowWebCheckout(win = globalThis) {
   return webCheckoutAllowed(nativePlatform(win))
+}
+
+/** ¿Esta plataforma muestra Inversiones? La web siempre; la app nativa, solo con el flag. */
+export function investmentsAllowed(platform, flags = NATIVE_FLAGS) {
+  return platform === 'web' || flags.investments === true
+}
+
+// Atajo para los componentes. Cualquier app nativa cuenta como nativa aunque
+// Capacitor no diga la plataforma (nativePlatform cae a 'web' en ese caso).
+export function canShowInvestments(win = globalThis, flags = NATIVE_FLAGS) {
+  return isNativeApp(win) ? flags.investments === true : true
+}
+
+// Páginas de Inversiones: en la app de tienda sin Inversiones, un enlace o una
+// página guardada que apunte a ellas abre Inicio.
+export const INVEST_PAGES = Object.freeze(['investments', 'investAsset'])
+export function storePage(page, win = globalThis) {
+  return INVEST_PAGES.includes(page) && !canShowInvestments(win) ? 'dashboard' : page
+}
+
+// La etiqueta PRO es publicidad de un plan que la app de tienda no vende
+// (NAT-1): sin compra de la tienda no se muestra.
+export function canShowProMarketing(win = globalThis, flags = NATIVE_FLAGS) {
+  if (!isNativeApp(win)) return true
+  return storePurchaseAllowed(nativePlatform(win), flags)
 }
