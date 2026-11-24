@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { Btn } from '../../components/ui/index.jsx'
 import { useT } from '../../i18n/useT.js'
+import { isNativeApp } from '../../native/platform.js'
 import DiagnosticsRow from './DiagnosticsRow.jsx'
 import { srow, slbl, ssub, Setting } from './settingsUi.jsx'
 
@@ -44,7 +45,8 @@ export default function AdvancedScreen({ install }) {
         <div><div style={slbl}>{t('settings.resetOnboarding.label')}</div><div style={ssub}>{t('settings.resetOnboarding.sub')}</div></div>
         <Btn variant="ghost" size="sm" onClick={()=>updateSettings({...settings,onboardingDone:false})}>{t('settings.resetOnboarding.btn')}</Btn>
       </Setting>
-      <Setting id="install" style={{ ...srow, borderBottom: 'none' }}>
+      {/* App de tienda: ya es una app; "Instalar como app" es de la PWA (I11). */}
+      {!isNativeApp() && <Setting id="install" style={{ ...srow, borderBottom: 'none' }}>
         <div>
           <div style={slbl}>{t('settings.install.title')}</div>
           <div style={ssub}>
@@ -55,7 +57,7 @@ export default function AdvancedScreen({ install }) {
           </div>
         </div>
         {!installed && !isIOS && installPrompt && <Btn variant="ghost" size="sm" onClick={onInstall}>{t('settings.install.btn')}</Btn>}
-      </Setting>
+      </Setting>}
     </div>
   )
 }

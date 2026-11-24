@@ -2,6 +2,7 @@
 // Proyección de flujo de caja — 30/60/90 días
 // Basado en transacciones recurrentes detectadas + saldo actual
 
+import { isNativeApp } from '../../native/platform.js'
 import { useMemo } from 'react'
 import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
@@ -142,7 +143,8 @@ export default function CashFlow({ setPage }) {
           página — alguien que escanea (no lee párrafos largos) nunca lo veía,
           y es el único aviso de toda la pantalla cuyo costo de ignorarlo es
           perder datos de verdad. */}
-      <Alert type="warning">{t('cf.incognitoWarning')}</Alert>
+      {/* El modo incógnito es del navegador: no aplica en la app de tienda (I11). */}
+      {!isNativeApp() && <Alert type="warning">{t('cf.incognitoWarning')}</Alert>}
 
       {!hasData && (
         <Alert type="info">
