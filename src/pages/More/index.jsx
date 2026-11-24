@@ -6,7 +6,8 @@
 // cerrar sesión, legales y versión.
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles } from 'lucide-react'
+import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles, CircleHelp } from 'lucide-react'
+import { requestTourReplay } from '../../components/tour/PageTour.jsx'
 import { useT } from '../../i18n/useT.js'
 import { isNativeApp } from '../../native/platform.js'
 import { appHelpHref } from '../../utils/landingUrls.js'
@@ -150,6 +151,11 @@ export default function More({ setPage }) {
             <MessageSquare size={16} strokeWidth={1.7} aria-hidden="true" />{t('more.help')}
           </button>
         )}
+        {/* Inicio v2: en el teléfono el Inicio no tiene la barra con el "?";
+            el recorrido se vuelve a ver desde acá. */}
+        <button type="button" onClick={() => { requestTourReplay('dashboard'); setPage('dashboard') }} className={s.action}>
+          <CircleHelp size={16} strokeWidth={1.7} aria-hidden="true" />{t('home.tourReplay')}
+        </button>
         <button type="button" onClick={toggleTheme} className={s.action}>
           {isDark
             ? <><Sun size={16} strokeWidth={1.7} aria-hidden="true" />{t('settings.theme.light')}</>

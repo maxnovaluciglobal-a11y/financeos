@@ -188,6 +188,6 @@
 /* Escritorio: el ojo ya está en la barra superior ("Ocultar montos") y los
    botones no se separan de punta a punta. */
 @media (min-width: 701px) {
-  .eye { display: none; }
+  .eye, .eyeStatus { display: none; }
   .round { max-width: 36rem; }
 }

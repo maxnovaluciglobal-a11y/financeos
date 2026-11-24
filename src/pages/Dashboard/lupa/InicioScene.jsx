@@ -146,6 +146,8 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
   const [sheetOpen, setSheetOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
   const [monthOpen, setMonthOpen] = useState(false)
+  // El ojo anuncia el cambio (la barra superior, con su propio aviso, no está en el Inicio del teléfono).
+  const [amountsMsg, setAmountsMsg] = useState('')
   useEffect(() => { setInspect(null) }, [activeMonth])
 
   const onDay = useCallback((d, mode) => setInspect(mode === 'rest' ? null : d), [])
@@ -201,10 +203,12 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
                 {!looking && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.labelChevron} />}
               </button>
               {onToggleAmounts && (
-                <button type="button" className={s.eye} onClick={onToggleAmounts} aria-pressed={amountsHidden} aria-label={t('money.toggle')}>
+                <button type="button" className={s.eye} aria-pressed={amountsHidden} aria-label={t('money.toggle')}
+                  onClick={() => { setAmountsMsg(t(amountsHidden ? 'money.announce.shown' : 'money.announce.hidden')); onToggleAmounts() }}>
                   {amountsHidden ? <EyeOff size={18} strokeWidth={1.8} aria-hidden="true" /> : <Eye size={18} strokeWidth={1.8} aria-hidden="true" />}
                 </button>
               )}
+              <span className={`sr-only ${s.eyeStatus}`} role="status" aria-live="polite">{amountsMsg}</span>
             </div>
             {hasData
               ? <BigNumber parts={bigParts(value, { showRef, rate, sym, lang })} />

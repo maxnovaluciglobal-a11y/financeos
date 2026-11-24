@@ -271,3 +271,21 @@ describe('B5: variación en US$ con la tasa de cada mes', () => {
     expect(usdMonthDelta(1, 1, { curRate: 0, prevRate: 100 })).toBeNull()
   })
 })
+
+import { monthCloseDue } from './dashboardModel.js'
+describe('monthCloseDue (cierre de mes, Inicio v2)', () => {
+  const now = new Date(2026, 10, 24)
+  it('sale con el cambio natural de mes (mes guardado anterior, con datos, sin descartar)', () => {
+    expect(monthCloseDue({ activeMonth: '2026-10', now, hasData: true })).toBe(true)
+  })
+  it('no sale si la persona eligió ese mes en el selector de la cabecera', () => {
+    expect(monthCloseDue({ activeMonth: '2026-10', now, hasData: true, browsed: '2026-10' })).toBe(false)
+    // Lo elegido antes no tapa otro mes que quedó atrás solo.
+    expect(monthCloseDue({ activeMonth: '2026-09', now, hasData: true, browsed: '2026-10' })).toBe(true)
+  })
+  it('no sale en el mes en curso, sin datos ni ya descartado', () => {
+    expect(monthCloseDue({ activeMonth: '2026-11', now, hasData: true })).toBe(false)
+    expect(monthCloseDue({ activeMonth: '2026-10', now, hasData: false })).toBe(false)
+    expect(monthCloseDue({ activeMonth: '2026-10', now, hasData: true, dismissed: true })).toBe(false)
+  })
+})

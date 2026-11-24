@@ -4,30 +4,48 @@
 // de lenguaje; la tarjeta y cada respuesta lo dicen. Se abre desde la tarjeta
 // del Inicio y desde el ícono blanco de la cabecera.
 import { useCallback } from 'react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, CircleHelp } from 'lucide-react'
 import Sheet from '../../../components/ui/Sheet.jsx'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import { Isotipo } from '../../../components/Logo.jsx'
-import { fmtMoney, fmtPct, catName } from '../../../utils/index.js'
+import { fmtMoney, fmtPct, catName, dateLocale } from '../../../utils/index.js'
 import { monthLabel } from '../../shared/constants.js'
 import { prevMonthOf } from '../dashboardModel.js'
-import { ASK_QUESTIONS, answerFor } from './askAnswers.js'
+import { ASK_QUESTIONS, answerFor, monthMode } from './askAnswers.js'
 import p from './ask.module.css'
 
-export function AskCard({ onAsk, t }) {
+const cap = (x) => (x ? x.charAt(0).toLocaleUpperCase() + x.slice(1) : x)
+
+// Nombre del mes para las frases ("octubre"; con el año si no es el actual).
+export function monthName(ym, today = new Date(), locale = dateLocale()) {
+  const [y, mo] = String(ym).split('-').map(Number)
+  if (!y || !mo) return String(ym || '')
+  const opts = y === today.getFullYear() ? { month: 'long' } : { month: 'long', year: 'numeric' }
+  try { return new Intl.DateTimeFormat(locale, opts).format(new Date(y, mo - 1, 1)) } catch { return String(ym) }
+}
+
+// Las preguntas siguen al mes elegido en la cabecera: "este mes" solo si es el
+// mes en curso; si no, "¿Cuánto gasté en octubre?" (revisión del 24-nov).
+export function questionLabel(id, { activeMonth, t, today = new Date(), locale } = {}) {
+  const current = !activeMonth || monthMode(activeMonth, today) === 'current'
+  if (!current && (id === 'spent' || id === 'compare')) return t(`home.ask.q.${id}.other`, { month: monthName(activeMonth, today, locale) })
+  return t(`home.ask.q.${id}`)
+}
+
+export function AskCard({ onAsk, t, activeMonth }) {
   return (
-    <section className={p.ask} aria-labelledby="home-proto-ask">
+    <section className={p.ask} aria-labelledby="home-ask-title">
       <div className={p.askHead}>
         <span className={p.askAvatarLg} aria-hidden="true"><Isotipo size={18} decorative style={{ color: 'var(--on-grad-text)' }} /></span>
         <div className={p.askHeadText}>
-          <h2 id="home-proto-ask" className={p.askTitle}>{t('home.ask.title')}</h2>
+          <h2 id="home-ask-title" className={p.askTitle}>{t('home.ask.title')}</h2>
           <p className={p.askSub}>{t('home.ask.sub')}</p>
         </div>
       </div>
       <div className={p.chips}>
         {ASK_QUESTIONS.map(id => (
           <button key={id} type="button" className={p.chip} onClick={() => onAsk(id)} aria-haspopup="dialog">
-            {t(`home.ask.q.${id}`)}
+            {questionLabel(id, { activeMonth, t })}
           </button>
         ))}
       </div>
@@ -47,22 +65,26 @@ function Diff({ d, money, t, invert = false }) {
   )
 }
 
-export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t }) {
+export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t, onTour }) {
   const { m } = useMoney()
   const money = useCallback((n) => m(fmtMoney(n, sym)), [m, sym])
   const a = q ? answerFor(q, data) : null
+  const current = monthMode(data.activeMonth) === 'current'
+  const mn = monthName(data.activeMonth)
+  const label = (id) => questionLabel(id, { activeMonth: data.activeMonth, t })
   let body = null
   if (q === 'spent' && a) {
-    body = a.count === 0 ? <p className={p.ansLead}>{t('home.ask.spent.none')}</p> : (
+    const k = current ? '' : '.other'
+    body = a.count === 0 ? <p className={p.ansLead}>{t(`home.ask.spent.none${k}`, { month: mn })}</p> : (
       <>
-        <p className={p.ansLead}>{t('home.ask.spent.body', { v: money(a.spent), count: t(`home.count.${a.count === 1 ? 'one' : 'many'}`, { n: a.count }) })}</p>
-        {a.share != null && <p className={p.ansText}>{t('home.ask.spent.share', { pct: fmtPct(a.share), inc: money(a.income) })}</p>}
+        <p className={p.ansLead}>{t(`home.ask.spent.body${k}`, { month: mn, v: money(a.spent), count: t(`home.count.${a.count === 1 ? 'one' : 'many'}`, { n: a.count }) })}</p>
+        {a.share != null && <p className={p.ansText}>{t(`home.ask.spent.share${k}`, { month: mn, pct: fmtPct(a.share), inc: money(a.income) })}</p>}
       </>
     )
   } else if (q === 'top' && a) {
-    body = a.rows.length === 0 ? <p className={p.ansLead}>{t('home.ask.spent.none')}</p> : (
+    body = a.rows.length === 0 ? <p className={p.ansLead}>{t(current ? 'home.ask.spent.none' : 'home.ask.spent.none.other', { month: mn })}</p> : (
       <>
-        <p className={p.ansText}>{t('home.ask.top.total', { v: money(a.total) })}</p>
+        <p className={p.ansText}>{t(current ? 'home.ask.top.total' : 'home.ask.top.total.other', { month: mn, v: money(a.total) })}</p>
         <ol className={p.topList}>
           {a.rows.map((r, i) => (
             <li key={r.category} className={p.topRow}>
@@ -87,7 +109,7 @@ export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t })
           {[
             { k: 'income', label: t('dash.kpi.income'), row: a.income },
             { k: 'spent', label: t('dash.kpi.expenses'), row: a.spent, invert: true },
-            { k: 'left', label: t('home.ask.compare.left'), row: a.left },
+            { k: 'balance', label: t('home.ask.compare.balance'), row: a.balance },
           ].map(r => (
             <div key={r.k} className={p.cmpRow}>
               <dt>{r.label}</dt>
@@ -99,25 +121,27 @@ export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t })
             </div>
           ))}
         </dl>
+        <p className={p.ansNote}>{t('home.ask.compare.balanceNote')}</p>
       </>
     )
   } else if (q === 'perDay' && a) {
-    body = a.short ? <p className={p.ansLead}>{t('home.ask.perDay.short', { v: money(Math.abs(a.free)) })}</p>
-      : a.closed ? <p className={p.ansLead}>{t('home.ask.perDay.closed', { v: money(a.free) })}</p>
+    body = a.future ? <p className={p.ansLead}>{t('home.ask.perDay.future', { month: cap(mn) })}</p>
+      : a.closed ? <p className={p.ansLead}>{t('home.ask.perDay.closed', { month: cap(mn), v: money(a.free) })}</p>
+      : a.short ? <p className={p.ansLead}>{t('home.ask.perDay.short', { v: money(Math.abs(a.free)) })}</p>
         : (
           <>
             <p className={p.ansBig}><span className="num"><Money>{fmtMoney(a.perDay, sym)}</Money></span></p>
-            <p className={p.ansLead}>{t(a.daysLeft === 1 ? 'home.ask.perDay.one' : 'home.ask.perDay.many', { v: money(a.perDay), n: a.daysLeft })}</p>
+            <p className={p.ansLead}>{t(a.daysAfter === 0 ? 'home.ask.perDay.one' : 'home.ask.perDay.many', { v: money(a.perDay), n: a.daysAfter })}</p>
             <p className={p.ansNote}>{t('home.ask.perDay.note', { v: money(a.free) })}</p>
           </>
         )
   }
   const others = ASK_QUESTIONS.filter(id => id !== q)
   return (
-    <Sheet open={open} onClose={onClose} ariaLabel={q ? t(`home.ask.q.${q}`) : t('home.ask.title')} maxWidth={460}>
+    <Sheet open={open} onClose={onClose} ariaLabel={q ? label(q) : t('home.ask.title')} maxWidth={460}>
       <div className={p.ansHead}>
         <span className={p.askAvatarLg} aria-hidden="true"><Isotipo size={18} decorative style={{ color: 'var(--on-grad-text)' }} /></span>
-        <h2 className={p.sheetTitle}>{q ? t(`home.ask.q.${q}`) : t('home.ask.title')}</h2>
+        <h2 className={p.sheetTitle}>{q ? label(q) : t('home.ask.title')}</h2>
       </div>
       <div className={p.ans} aria-live="polite">{body}</div>
       {q && q !== 'perDay' && setPage && (
@@ -128,10 +152,15 @@ export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t })
       <p className={p.ansOthersLb}>{q ? t('home.ask.others') : t('home.ask.open')}</p>
       <div className={p.chipsSheet}>
         {(q ? others : ASK_QUESTIONS).map(id => (
-          <button key={id} type="button" className={p.chipSheet} onClick={() => onQ(id)}>{t(`home.ask.q.${id}`)}</button>
+          <button key={id} type="button" className={p.chipSheet} onClick={() => onQ(id)}>{label(id)}</button>
         ))}
       </div>
       <p className={p.ansSource}>{t('home.ask.source')}</p>
+      {onTour && (
+        <button type="button" className={p.ansCta} onClick={() => { onClose(); onTour() }}>
+          <CircleHelp size={16} strokeWidth={1.8} aria-hidden="true" />{t('home.tourReplay')}
+        </button>
+      )}
     </Sheet>
   )
 }

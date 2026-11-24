@@ -280,3 +280,16 @@ export function upcomingFromRules(rules, { incomes = [], expenses = [], today = 
   out.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount)
   return { items: out.slice(0, limit), total: out.length }
 }
+
+// ── Cierre de mes ────────────────────────────────────────────────────────────
+// La hoja "Cierre de mes" sale SOLO cuando el mes activo quedó atrás porque
+// pasó el calendario (el mes guardado sigue siendo el anterior). Si la persona
+// eligió ese mes a propósito en el selector de la cabecera (Inicio v2), está
+// mirando un mes pasado: no se le ofrece "pasar al mes siguiente" (revisión
+// del 24-nov-2026: el botón principal deshacía la elección).
+export const MONTH_BROWSE_KEY = 'fos_month_browsed'
+export function monthCloseDue({ activeMonth, now = new Date(), dismissed = false, browsed = null, hasData = false }) {
+  const [y, mo] = String(activeMonth).split('-').map(Number)
+  const closed = now.getFullYear() > y || (now.getFullYear() === y && now.getMonth() + 1 > mo)
+  return closed && !dismissed && browsed !== activeMonth && hasData
+}

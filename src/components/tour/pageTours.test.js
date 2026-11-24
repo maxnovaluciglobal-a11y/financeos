@@ -71,3 +71,15 @@ describe('recorrido del Inicio v2 (24-nov-2026)', () => {
     }
   })
 })
+
+import { requestTourReplay, takeTourReplay } from './PageTour.jsx'
+describe('volver a ver el recorrido sin la barra superior (Inicio v2)', () => {
+  it('requestTourReplay deja el pedido y takeTourReplay lo consume una sola vez, solo para esa página', () => {
+    const st = memStorage()
+    st.removeItem = (k) => st.setItem(k, '')
+    requestTourReplay('dashboard', st)
+    expect(takeTourReplay('movements', st)).toBe(false)
+    expect(takeTourReplay('dashboard', st)).toBe(true)
+    expect(takeTourReplay('dashboard', st)).toBe(false)
+  })
+})

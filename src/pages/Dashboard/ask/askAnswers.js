@@ -3,9 +3,13 @@
 // modelo de lenguaje: cada pregunta se responde con las MISMAS cifras que ya
 // muestra la app, nada de cuentas nuevas:
 //   · gasto del mes y comparación → homeMonthTotals (monthLeft) vía useHomeData
-//     (cur y prevToDate: el mes anterior cortado al mismo día);
-//   · por día → budgetPace (utils/budgets.js), la misma cuenta "te quedan X por
-//     día" de Presupuestos, aplicada a "Te queda";
+//     (cur y prevToDate: el mes anterior cortado al mismo día). La fila de saldo
+//     de la comparación es lo REGISTRADO (ingresos − gastos − apartado, leftReal):
+//     el mes anterior no tiene fijos por pagar, así que comparar "Te queda" con
+//     él mezclaría cosas distintas. Se llama "Saldo registrado", nunca "Te queda"
+//     (revisión del 24-nov: dos "Te queda" distintos en la misma pantalla);
+//   · por día → "Te queda" (freeFlow, la cifra del héroe) entre hoy y los días
+//     restantes del héroe (projectEndOfMonth: 6 el 24-nov → hoy + 6 = 7 partes);
 //   · categorías → la suma por categoría de los gastos del mes (como el anillo).
 // Devuelve datos; el texto lo arma el componente con i18n.
 import { budgetPace } from '../../../utils/budgets.js'
@@ -41,6 +45,7 @@ export function answerTop({ monthExpenses, limit = 5 }) {
 
 /** Compara con el mes pasado, al mismo día (prevToDate) o completo si el mes ya cerró. */
 export function answerCompare({ kpis }) {
+  // `balance` = saldo registrado (leftReal), NO "Te queda": ver la cabecera.
   const cur = kpis?.cur || {}
   const prev = kpis?.prevToDate || kpis?.prev || {}
   const line = (a, b) => ({ cur: num(a), prev: num(b), diff: num(a) - num(b) })
@@ -49,15 +54,29 @@ export function answerCompare({ kpis }) {
     hasPrev: num(prev.incCount) + num(prev.expCount) > 0,
     income: line(cur.totalInc, prev.totalInc),
     spent: line(cur.totalExp, prev.totalExp),
-    left: line(cur.leftReal ?? cur.freeFlow, prev.freeFlow),
+    balance: line(cur.leftReal ?? cur.freeFlow, prev.leftReal ?? prev.freeFlow),
   }
 }
 
-/** ¿Cuánto me queda por día? "Te queda" repartido en los días que faltan (hoy incluido). */
+/** Posición del mes elegido respecto de hoy: 'past' | 'current' | 'future'. */
+export function monthMode(activeMonth, today = new Date()) {
+  const cur = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+  return activeMonth < cur ? 'past' : activeMonth > cur ? 'future' : 'current'
+}
+
+/**
+ * ¿Cuánto me queda por día? "Te queda" (la cifra del héroe) repartido entre hoy
+ * y los días restantes. `daysAfter` es el MISMO número que el héroe ("6 días
+ * restantes", projectEndOfMonth); se reparte en daysAfter + 1 partes porque hoy
+ * también se puede gastar.
+ */
 export function answerPerDay({ kpis, activeMonth, today = new Date() }) {
   const free = num(kpis?.cur?.freeFlow)
+  const mode = monthMode(activeMonth, today)
   const p = budgetPace({ spent: 0, total: Math.max(0, free), activeMonth, today })
-  return { free, perDay: p.perDay, daysLeft: p.daysLeft, closed: !!p.closed || p.daysLeft <= 0, short: free < 0 }
+  const daysAfter = mode === 'current' ? Math.max(0, p.daysLeft - 1) : 0
+  return { free, mode, perDay: mode === 'current' ? p.perDay : 0, daysAfter, parts: mode === 'current' ? p.daysLeft : 0,
+    closed: mode === 'past', future: mode === 'future', short: mode === 'current' && free < 0 }
 }
 
 export function answerFor(id, input) {

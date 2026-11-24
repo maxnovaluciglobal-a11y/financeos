@@ -43,7 +43,7 @@ import ConverterSheet from '../../components/ConverterSheet.jsx'
 import { openQuickAdd } from '../../components/quickAddBus.js'
 import { logRejection } from '../../utils/errorLog.js'
 import { rateToolFor, savedRate, isStale, fresherRate, ratePatch } from '../../utils/refRate.js'
-import { prevMonthOf } from './dashboardModel.js'
+import { prevMonthOf, monthCloseDue, MONTH_BROWSE_KEY } from './dashboardModel.js'
 import hs from './Home.module.css'
 import { currentMonth, fmtMoney, fmtPct } from '../../utils/index.js'
 import { monthLabel } from '../shared/constants.js'
@@ -56,6 +56,7 @@ import MonthSheet from '../../components/recurring/MonthSheet.jsx'
 import { Plus, Minus, ArrowLeftRight, Upload, PiggyBank, SlidersHorizontal, Wallet, Target, Repeat, ChevronRight } from 'lucide-react'
 import Money from '../../components/Money.jsx'
 import { AskCard, AskSheet } from './ask/AskMoyiq.jsx'
+import { requestTourReplay } from '../../components/tour/PageTour.jsx'
 import ask from './ask/ask.module.css'
 import { inicioLupaOn } from '../../utils/uiFlags.js'
 import { dailyAvailable, paceToday } from '../../utils/dailyAvailable.js'
@@ -141,15 +142,15 @@ export default function Dashboard({ setPage }) {
   setLensCurrency(refOn ? lensRate?.ref : 'USD')
 
   // ── Modal cierre de mes ───────────────────────────────────────────────────
-  const [closeDismissed, setCloseDismissed] = useState(() => {
+  // Solo con el cambio natural de mes; elegir un mes pasado en el selector de
+  // la cabecera no lo dispara (monthCloseDue, dashboardModel.js).
+  const [closeTick, setCloseTick] = useState(0)
+  const closeDismissed = (() => {
+    void closeTick
     try { return localStorage.getItem(`fos_close_${activeMonth}`) === '1' } catch { return false }
-  })
-  const isMonthClosed = (() => {
-    const now = new Date()
-    const [y, mo] = activeMonth.split('-').map(Number)
-    return now.getFullYear() > y || (now.getFullYear() === y && now.getMonth() + 1 > mo)
   })()
-  const showCloseModal = isMonthClosed && !closeDismissed && (kpis.incCount > 0 || kpis.expCount > 0)
+  const browsedMonth = (() => { try { return sessionStorage.getItem(MONTH_BROWSE_KEY) } catch { return null } })()
+  const showCloseModal = monthCloseDue({ activeMonth, dismissed: closeDismissed, browsed: browsedMonth, hasData: kpis.incCount > 0 || kpis.expCount > 0 })
 
   // Hoja de inicio de mes (fusionada con el cierre): la primera vez que se
   // abre el Inicio en el mes en curso muestra cómo cerró el anterior y los
@@ -175,7 +176,7 @@ export default function Dashboard({ setPage }) {
 
   function dismissClose() {
     try { localStorage.setItem(`fos_close_${activeMonth}`, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
-    setCloseDismissed(true)
+    setCloseTick(n => n + 1)
   }
 
   function goNextMonth() {
@@ -371,7 +372,10 @@ export default function Dashboard({ setPage }) {
             dualOn={dualOn} toUSD={toUSD} onOpen={setPage} refc={refc}
             healthScore={healthScore} actions={roundActions} onAsk={() => openAsk()}
             amountsHidden={!!settings.hideAmounts} onToggleAmounts={() => updateSettings?.({ ...settings, hideAmounts: !settings.hideAmounts })}
-            onPickMonth={(mo) => updateSettings?.({ ...settings, activeMonth: mo })} />
+            onPickMonth={(mo) => {
+              try { sessionStorage.setItem(MONTH_BROWSE_KEY, mo) } catch { /* modo privado */ }
+              updateSettings?.({ ...settings, activeMonth: mo })
+            }} />
         </Suspense>
       ) : (
         /* Encabezado único (UI-M8): "Inicio" y el mes que se está mirando. */
@@ -405,7 +409,7 @@ export default function Dashboard({ setPage }) {
               })}
             </div>
           )}
-          {lupa && <div data-tour="home-ask"><AskCard onAsk={openAsk} t={t} /></div>}
+          {lupa && <div data-tour="home-ask"><AskCard onAsk={openAsk} t={t} activeMonth={activeMonth} /></div>}
 
           <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
 
@@ -472,6 +476,7 @@ export default function Dashboard({ setPage }) {
       )}
       {lupa && (
         <AskSheet open={askOpen} q={askQ} onQ={setAskQ} onClose={() => setAskOpen(false)} sym={sym} lang={lang} setPage={setPage} t={t}
+          onTour={() => requestTourReplay('dashboard')}
           data={{ kpis, monthExpenses, activeMonth }} />
       )}
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} ariaLabel={t('home.edit.title')} maxWidth={420}>
