@@ -51,7 +51,8 @@ export function investValueForUser(snapshot, settings, read) {
 // tasa con fecha (`inv.amount`; useInvestPortfolio da `inv` null si no). Sin
 // tasa la línea va aparte en US$ y no suma: no hay doble conteo que avisar.
 export function portfolioInNetWorth(inv) {
-  return inv != null && inv.amount != null && Number.isFinite(Number(inv.amount))
+  // Un portafolio vacío (valor 0) no suma nada: no hay doble conteo que avisar.
+  return inv != null && inv.amount != null && Number.isFinite(Number(inv.amount)) && Number(inv.amount) > 0
 }
 
 // Patrimonio: la nota de una línea va solo si además hay ahorro en metas.

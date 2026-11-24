@@ -140,7 +140,13 @@ describe('aviso de doble conteo metas + Inversiones (I-17)', () => {
     expect(netWorthOverlapNote(nw, inv)).toBe(true)
     expect(netWorthOverlapNote(withInvest(calcNetWorth({ goals: [] }), inv), inv)).toBe(false)
   })
-  it('el aviso coincide con investInTotal de withInvest', () => {
+  it('portafolio vacío (valor 0): no hay aviso', () => {
+    const inv = investValueForUser({ ...snap, valueUsd: 0 }, { currency: 'CLP' }, none)
+    expect(inv.amount).toBe(0)
+    expect(portfolioInNetWorth(inv)).toBe(false)
+    expect(netWorthOverlapNote({ savedInGoals: 500 }, inv)).toBe(false)
+  })
+  it('con portafolio, el aviso coincide con investInTotal de withInvest', () => {
     for (const settings of [{ currency: 'USD' }, { currency: 'CLP' }, { currency: 'ARS' }, { currency: '' }]) {
       const inv = investValueForUser(snap, settings, none)
       expect(portfolioInNetWorth(inv), JSON.stringify(settings)).toBe(withInvest(calcNetWorth({}), inv).investInTotal)
