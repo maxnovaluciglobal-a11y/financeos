@@ -182,7 +182,7 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
             <span>{monthLabel(activeMonth)}</span>
             <ChevronDown size={16} strokeWidth={2} aria-hidden="true" />
           </button>
-          <Logotipo size={20} title="moyiq" className={s.logo} style={{ color: 'var(--on-grad-text)' }} />
+          <Logotipo size={30} title="moyiq" className={s.logo} style={{ color: 'var(--on-grad-text)' }} />
           <div className={s.headerEnd}>
             <IqChip healthScore={healthScore} onOpen={onOpen ? () => onOpen('coach') : undefined} t={t} />
             {onAsk && (
