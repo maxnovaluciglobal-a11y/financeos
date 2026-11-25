@@ -1,19 +1,21 @@
 // src/utils/recurringConfirm.js — qué escribir al confirmar ocurrencias.
 // Pura: la usan core/db (dentro de una transacción) y el demo (en memoria).
 //
-// items: [{ rule, date, amount? }]. Idempotente: salta lo que ya tiene un
+// items: [{ rule, date, amount?, review? }] (review: registro automático →
+// "Por revisar"). Idempotente: salta lo que ya tiene un
 // registro (mismo id determinista o mismo recurringId + occurrenceDate).
 // Reglas de deuda: reusa "Registrar pago" (utils/debtPayment.js) — el gasto
 // sale por el monto pagado y la deuda baja su saldo, una sola vez.
 import { buildConfirmedRecord, occurrenceRecordId } from './recurring.js'
 import { applyDebtPayment } from './debtPayment.js'
+import { withReview } from './reviewFlags.js'
 
 export function planConfirmations(items, existingRecords, debtsById, { today, now } = {}) {
   const list = (items || []).filter(it => it && it.rule && it.date)
   const seen = new Set((existingRecords || []).filter(r => r?.recurringId && r?.occurrenceDate).map(r => `${r.recurringId}|${r.occurrenceDate}`))
   const ids = new Set((existingRecords || []).map(r => r?.id))
   const writes = []
-  for (const { rule, date, amount } of list) {
+  for (const { rule, date, amount, review } of list) {
     const key = `${rule.id}|${date}`
     if (seen.has(key) || ids.has(occurrenceRecordId(rule.id, date))) continue
     seen.add(key)
@@ -25,7 +27,9 @@ export function planConfirmations(items, existingRecords, debtsById, { today, no
       debt = res.debt; amt = res.amount
       debtsById.set(debt.id, debt)
     }
-    const record = buildConfirmedRecord(rule, date, { amount: amt, today, createdAt: now })
+    let record = buildConfirmedRecord(rule, date, { amount: amt, today, createdAt: now })
+    // Registro automático (nadie lo vio al crearse): pasa por "Por revisar".
+    if (review) record = withReview(record, 'recurring')
     writes.push({ store: rule.kind === 'income' ? 'incomes' : 'expenses', record, debt })
   }
   return writes

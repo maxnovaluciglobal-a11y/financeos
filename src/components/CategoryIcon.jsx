@@ -121,8 +121,12 @@ export function categoryVisual(category) {
 
 export default function CategoryIcon({ category, size = 28 }) {
   const ctx = useContext(AppContext)
-  const { Icon, slot } = categoryVisual(category)
-  const emoji = ctx?.settings?.showCategoryEmoji === true ? catEmoji(category) : ''
+  const { Icon, slot: baseSlot } = categoryVisual(category)
+  // Color y emoji que la persona eligió para la categoría (settings.categoryPrefs.look,
+  // utils/categoryPrefs.js). El emoji propio sigue la misma opción de Apariencia.
+  const look = ctx?.settings?.categoryPrefs?.look?.[category]
+  const slot = [1, 2, 3, 4, 5, 7, 8].includes(look?.slot) ? look.slot : baseSlot
+  const emoji = ctx?.settings?.showCategoryEmoji === true ? (typeof look?.emoji === 'string' && look.emoji) || catEmoji(category) : ''
   return (
     <span aria-hidden="true" className="cat-icon" style={{
       width: size, height: size,

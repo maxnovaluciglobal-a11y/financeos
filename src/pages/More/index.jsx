@@ -4,7 +4,7 @@
 // cabecera de cuenta (email y plan; el estado del respaldo vive en Ajustes ›
 // Datos y en "Para hacer" del Inicio cuando está vencido). Al final, tema,
 // cerrar sesión, legales y versión.
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles, CircleHelp } from 'lucide-react'
 import { requestTourReplay } from '../../components/tour/PageTour.jsx'
@@ -27,6 +27,8 @@ import { logRejection } from '../../utils/errorLog.js'
 import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 
 const SHOW_FIRMA = true
+// Invita a alguien (24-nov-2026): compartir sin recompensas.
+import InviteButton from '../../extras/InviteButton.jsx'
 
 function AccountHeader({ setPage }) {
   const { settings } = useApp()
@@ -151,6 +153,7 @@ export default function More({ setPage }) {
             <MessageSquare size={16} strokeWidth={1.7} aria-hidden="true" />{t('more.help')}
           </button>
         )}
+        {!settings.isDemo && <Suspense fallback={null}><InviteButton className={s.action} /></Suspense>}
         {/* Inicio v2: en el teléfono el Inicio no tiene la barra con el "?";
             el recorrido se vuelve a ver desde acá. */}
         <button type="button" onClick={() => { requestTourReplay('dashboard'); setPage('dashboard') }} className={s.action}>

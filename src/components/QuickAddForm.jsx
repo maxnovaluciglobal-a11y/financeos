@@ -13,9 +13,9 @@
 //                  (QuickAdd pregunta antes de descartarlo, UX-N9)
 //   allowSetAside  agrega "Apartar" junto a Gasto e Ingreso (F-1): mueve plata de
 //                  lo que te queda a una meta o a "Para invertir" (utils/setAside.js)
-import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react'
 import SignalIcon from './icons/SignalIcon.jsx'
-import { Calendar, Check, ChevronDown, LayoutGrid, Mic, Square } from 'lucide-react'
+import { Calendar, Check, ChevronDown, LayoutGrid, Mic, Pencil, Square } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
 import { useMoney } from './Money.jsx'
@@ -25,7 +25,7 @@ import { orderQuickChips, hasProfileTemplate, rankByRecency } from '../utils/qui
 import { UI_FLAGS } from '../utils/uiFlags.js'
 import config from '../config.js'
 import {
-  localDateStr, dateLocale, moneyLocale, catName, catLabel, methodLabel,
+  localDateStr, dateLocale, moneyLocale, catName, methodLabel,
   getCategoriesExpense, getCategoriesIncome, CATS_EXPENSE, CATS_INCOME,
   currencySymbol, fmtMoney, fmtMoneyFor, localeForCurrency,
 } from '../utils/index.js'
@@ -44,6 +44,7 @@ import {
 import { parseQuickLine, lineFormPatch, findCategory } from '../utils/quickLine.js'
 import { spokenToLine, parseVoiceLine, speechLang } from '../utils/voiceEntry.js'
 import { intakeFormValues, isIosSafariTab } from '../utils/autoEntry.js'
+import { withReview, quickAddNeedsReview } from '../utils/reviewFlags.js'
 import { registroAutomaticoHere } from '../utils/uiFlags.js'
 import { goalAcceptsSetAside } from '../utils/setAsideGoal.js'
 import { moduleOn } from '../utils/modules.js'
@@ -53,6 +54,15 @@ import { navigateTo } from './quickAddBus.js'
 import css from './QuickAddForm.module.css'
 import SheetSelect from './ui/SheetSelect.jsx'
 import OptionSheet from './ui/OptionSheet.jsx'
+// Píldoras con emoji y reglas de categoría (24-nov-2026). Este archivo ya es un
+// chunk diferido (QuickAdd lo carga con lazy), así que las reglas se importan
+// estáticamente acá: hacen falta mientras se escribe, no solo al guardar, y no
+// suman nada a la carga inicial. La hoja de edición se carga al tocarla.
+import CategoryPills from './categories/CategoryPills.jsx'
+import { findRule, rulesOf } from '../utils/categoryRules.js'
+import { prefsOf, visibleCats, emojiFor, nameFor } from '../utils/categoryPrefs.js'
+import { withCategoryStrings } from '../i18n/categories/index.js'
+const CategoryManagerSheet = lazy(() => import('./categories/CategoryManager.jsx'))
 
 const readStorage = (k) => { try { return localStorage.getItem(k) } catch { return null } }
 const writeStorage = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v) } catch { /* almacenamiento no disponible: se sigue sin recordar */ } }
@@ -131,7 +141,7 @@ function DateSegment({ date, setDate, t }) {
 
 // prefill: alta que llegó por URL (utils/autoEntry.js, el Atajo de Apple Pay).
 // Solo rellena: guardar sigue siendo un toque de la persona.
-export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, allowSetAside = false, prefill = null, onDirtyChange }) {
+function QuickAddForm({ defaultType = 'expense', onSaved, resetKey, amountRef: externalAmountRef, autoFocus = false, stickySave = false, allowMoreDetails = false, allowSetAside = false, prefill = null, onDirtyChange }) {
   const { addExpense, addIncome, delExpense, delIncome, expenses, incomes, settings, updateSettings, showToast, recurring, addWithRule, saveRule, goals, addSetAside, delSetAside } = useApp() || {}
   const { t, lang } = useT()
   // N3 (ola A, 30-oct-2026): "Repetir: … $X" respeta "ocultar montos" (T13).
@@ -174,6 +184,10 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // UX-N9: la categoría que la hoja dejó elegida sola al abrir; se marca como
   // sugerencia hasta que la persona la toque o elija otra.
   const [autoCat, setAutoCat] = useState('')
+  // Regla de la persona que puso la categoría actual ({ cat, match }): si no la
+  // cambia, cuenta como elegida (no entra a Por revisar por la categoría).
+  const ruleCat = useRef(null)
+  const [manage, setManage] = useState(null)       // hoja de categorías: { cat } o null
   const ownAmountRef = useRef(null)
   const amountRef = externalAmountRef || ownAmountRef
 
@@ -181,6 +195,8 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const merchantRules = (settings && typeof settings.merchantRules === 'object') ? settings.merchantRules : {}
   const lastMethod = config.paymentMethods.includes(settings?.lastPaymentMethod) ? settings.lastPaymentMethod : DEFAULT_METHOD
   const showEmoji = settings?.showCategoryEmoji === true
+  const userRules = useMemo(() => rulesOf(settings), [settings])
+  const catPrefs = useMemo(() => prefsOf(settings), [settings])
 
   const currency = settings?.currency
   const sym = currencySymbol(currency, settings?.language)
@@ -210,7 +226,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     setType(startType); setDest(''); setAmount(''); setDesc(''); setCat(''); setSaving(false)
     setDate(baseDate.current); setMethod(lastMethod); setRepeat(false); setFreq('monthly')
     setPasteOpen(false); setPasteText(''); setDetected(false); setPastedDate(null)
-    setUsdMode(false); setSuggestedMsg(''); catManual.current = false; setAutoCat('')
+    setUsdMode(false); setSuggestedMsg(''); catManual.current = false; setAutoCat(''); ruleCat.current = null
     setLine(''); setLineResult(null); lineFill.current = {}; lineMode.current = 'text'
     setVoiceHeard(''); setIntakeInfo(null)
     if (prefill && autoOn) applyPrefill(prefill)
@@ -236,7 +252,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (v.desc) setDesc(v.desc)
     if (v.date) setDate(v.date)
     const allowed = v.type === 'expense' ? getCategoriesExpense(settings) : getCategoriesIncome(settings)
-    const c = v.desc ? findCategory({ description: v.desc, text: v.desc, type: v.type, rules: merchantRules, allowed }) : null
+    const byRule = v.desc ? findRule(v.desc, userRules, { kind: v.type, allowed }) : null
+    const c = byRule ? byRule.category : v.desc ? findCategory({ description: v.desc, text: v.desc, type: v.type, rules: merchantRules, allowed }) : null
+    if (byRule) ruleCat.current = { cat: byRule.category, match: byRule.match }
     if (c) { setCat(c); lineFill.current = { cat: c }; setSuggestedMsg(t('qa.suggested', { cat: catName(c, lang) })) }
     let safari = false
     try { safari = isIosSafariTab(navigator, window.matchMedia?.('(display-mode: standalone)').matches === true) } catch { safari = false }
@@ -268,8 +286,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
       : Object.entries(counts).sort((a, b) => b[1] - a[1]).map(e => e[0])
     // Plantilla de perfil activa (ej. freelancer): sus categorías primero (M5)
     const templateCats = (type === 'expense' ? settings?.categoriesExpense : settings?.categoriesIncome) || []
-    return orderQuickChips({ ranked, effective: effectiveCats, templateCats, canonical: type === 'expense' ? CATS_EXPENSE : CATS_INCOME, templateActive: hasProfileTemplate(settings) })
-  }, [type, ownOfType, settings, effectiveCats, compact])
+    const ordered = orderQuickChips({ ranked, effective: effectiveCats, templateCats, canonical: type === 'expense' ? CATS_EXPENSE : CATS_INCOME, templateActive: hasProfileTemplate(settings) })
+    // Las que la persona quitó de las píldoras no se ofrecen (siguen en "Todas").
+    const shown = visibleCats(ordered, catPrefs, type)
+    return shown.length ? shown : ordered
+  }, [type, ownOfType, settings, effectiveCats, compact, catPrefs])
   // Categorías válidas para una sugerencia: las del tipo activo (el mapa de
   // reglas es compartido entre gastos e ingresos).
   const allowedCats = useMemo(() => [...new Set([...chips, ...effectiveCats, ...(type === 'expense' ? CATS_EXPENSE : CATS_INCOME)])], [chips, effectiveCats, type])
@@ -296,6 +317,7 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
 
   function pickCategory(c) {
     catManual.current = true
+    ruleCat.current = null
     setAutoCat('')
     setSuggestedMsg('')
     setCat(c)
@@ -304,6 +326,15 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   // B4a: categoría sugerida mientras se escribe, con lo aprendido al guardar.
   function changeDesc(value) {
     setDesc(value)
+    // Una regla de la persona manda sobre lo aprendido al guardar.
+    const byRule = catManual.current ? null : findRule(value, userRules, { kind: type, allowed: allowedCats })
+    if (byRule) {
+      ruleCat.current = { cat: byRule.category, match: byRule.match }
+      if (byRule.category !== cat) { setCat(byRule.category); setAutoCat('') }
+      setSuggestedMsg(t('crules.fromRule', { match: byRule.match }))
+      return
+    }
+    if (ruleCat.current && ruleCat.current.cat === cat) ruleCat.current = null
     const next = nextAutoCategory({ desc: value, rules: merchantRules, allowed: allowedCats, manual: catManual.current, current: cat })
     if (next) {
       setCat(next)
@@ -339,7 +370,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if (r.type) setType(r.type)
     if (r.merchant) {
       setDesc(r.merchant)
-      const learned = merchantRules[ruleKey(r.merchant)]
+      const byRule = findRule(r.merchant, userRules, { kind: r.type || type })
+      const learned = byRule ? byRule.category : merchantRules[ruleKey(r.merchant)]
+      if (byRule) ruleCat.current = { cat: byRule.category, match: byRule.match }
       if (learned) setCat(learned)   // 2ª vez que aparece este comercio, ya tiene categoría
     }
     setDetected(true)
@@ -367,6 +400,16 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     if ('date' in patch) setDate(patch.date)
     if ('usd' in patch) setUsdMode(patch.usd)
     if ('cat' in patch) { setCat(patch.cat); setSuggestedMsg(t('qa.suggested', { cat: catName(patch.cat, lang) })) }
+    // Línea o dictado: una regla de la persona manda sobre la sugerencia.
+    const lineDesc = 'desc' in patch ? patch.desc : desc
+    const lineType = 'type' in patch ? patch.type : type
+    const byRule = !catManual.current && lineDesc ? findRule(`${lineDesc} ${text}`, userRules, { kind: lineType }) : null
+    if (byRule) {
+      ruleCat.current = { cat: byRule.category, match: byRule.match }
+      lineFill.current = { ...lineFill.current, cat: byRule.category }
+      setCat(byRule.category); setAutoCat('')
+      setSuggestedMsg(t('crules.fromRule', { match: byRule.match }))
+    }
     return r
   }
 
@@ -482,6 +525,13 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
     const data = type === 'expense'
       ? { ...base, subcategory: '', method, type: 'Necesidad', notes: usdNote, project: '' }
       : { ...base, source: finalDesc, ...(usdNote ? { notes: usdNote } : {}) }
+    // "Por revisar": lo que llegó por el Atajo de Apple Pay, otro enlace o el
+    // dictado, guardado con la categoría que eligió la app (utils/review.js).
+    const origin = intakeInfo ? (intakeInfo.source === 'applepay' ? 'applepay' : 'link')
+      : lineMode.current === 'voice' ? 'voice' : null
+    // Una regla de la persona cuenta como elección (utils/categoryRules.js).
+    const byUserRule = !!ruleCat.current && ruleCat.current.cat === cat
+    if (origin) Object.assign(data, withReview(data, origin, { needs: quickAddNeedsReview({ origin, categoryChosen: catManual.current || byUserRule }) }))
     let savedItem = null
     try {
       if (repeat && addWithRule) {
@@ -603,9 +653,11 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
   const footerOn = footerSaveVisible({ stickySave, compact, showMore, keypadVisible, needsFallback: canSave && !canConfirm })
   // UX-N9: la preselección se ve como sugerencia; sin categoría, se pide elegir.
   const catSuggested = !isAside && compact && !!cat && cat === autoCat
-  const catHint = isAside ? '' : catSuggested ? t('qa.catSuggestedHint') : (compact && !cat && typed > 0 ? t('qa.catPickHint') : '')
+  const ruleHint = !isAside && ruleCat.current && ruleCat.current.cat === cat ? t('crules.fromRule', { match: ruleCat.current.match }) : ''
+  const catHint = isAside ? '' : ruleHint || (catSuggested ? t('qa.catSuggestedHint') : (compact && !cat && typed > 0 ? t('qa.catPickHint') : ''))
 
-  const chipLabel = (c) => (showEmoji ? catLabel(c, lang) : catName(c, lang))
+  const chipLabel = (c) => (showEmoji ? `${emojiFor(c, catPrefs)} ${nameFor(c, catPrefs, lang)}` : nameFor(c, catPrefs, lang))
+  const openManage = (c) => setManage({ cat: c || null })
   const repeatLabel = (r) => r.description || catName(r.category, lang) || ''
 
   const moreDetailsLink = allowMoreDetails && type === 'expense' && !isAside ? (
@@ -742,14 +794,13 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
           </div>
         ) : compact ? (
           <div className={css.catRow}>
-            <div ref={catRowRef} role="group" aria-label={t('qa.category')} className={css.catScroll} data-fade={catFade || undefined}>
-              {(chips.includes(cat) || !cat ? chips : [cat, ...chips]).map(c => (
-                <button key={c} type="button" className={`fos-chip ${css.catChip}`} aria-pressed={cat === c} onClick={() => pickCategory(c)}
-                  data-suggested={catSuggested && cat === c ? '' : undefined} aria-describedby={catSuggested && cat === c ? 'qa-cat-hint' : undefined}>
-                  {chipLabel(c)}
-                </button>
-              ))}
-            </div>
+            <CategoryPills ref={catRowRef} layout="scroll" className={css.catScroll} pillClassName={css.catChip} fade={catFade}
+              cats={chips.includes(cat) || !cat ? chips : [cat, ...chips]} value={cat} onPick={pickCategory} onEdit={openManage} editPill={false}
+              prefs={catPrefs} lang={lang} t={t} label={t('qa.category')} suggested={catSuggested ? cat : ''} describedBy="qa-cat-hint" />
+            {/* Equivalente visible de la pulsación larga: siempre a la vista, fuera de la fila deslizable */}
+            <button type="button" className={css.catAll} onClick={() => openManage(null)} aria-haspopup="dialog" aria-label={t('cats.edit')} title={t('cats.hint')}>
+              <Pencil size={17} strokeWidth={1.8} aria-hidden="true" />
+            </button>
             <button type="button" className={css.catAll} onClick={() => setAllCatsOpen(true)} aria-label={t('qa.allCats')} title={t('qa.allCats')}>
               <LayoutGrid size={18} strokeWidth={1.8} aria-hidden="true" />
             </button>
@@ -757,12 +808,9 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
               options={allowedCats.map(c => ({ value: c, label: chipLabel(c) }))} value={cat} onPick={pickCategory} />
           </div>
         ) : (
-          <div role="group" aria-label={t('qa.category')} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
-            {(chips.includes(cat) || !cat ? chips : [...chips, cat]).map(c => (
-              <button key={c} type="button" className="fos-chip" aria-pressed={cat === c} onClick={() => pickCategory(c)}>
-                {chipLabel(c)}
-              </button>
-            ))}
+          <div style={{ marginBottom: 10 }}>
+            <CategoryPills cats={chips.includes(cat) || !cat ? chips : [...chips, cat]} value={cat} onPick={pickCategory} onEdit={openManage}
+              prefs={catPrefs} lang={lang} t={t} label={t('qa.category')} />
           </div>
         )}
 
@@ -879,6 +927,16 @@ export default function QuickAddForm({ defaultType = 'expense', onSaved, resetKe
         {stickySave
           ? (showMore && <div className={css.footer} data-hidden={footerOn ? undefined : ''}>{saveButton}</div>)
           : <div style={{ marginTop: 8 }}>{saveButton}</div>}
+        {manage && (
+          <Suspense fallback={null}>
+            <CategoryManagerSheet onClose={() => setManage(null)} initialKind={type === 'income' ? 'income' : 'expense'} initialEdit={manage.cat}
+              onPicked={(c) => pickCategory(c)} />
+          </Suspense>
+        )}
     </>
   )
 }
+
+// Los textos de las píldoras y las reglas viven en una sección diferida
+// (src/i18n/categories): la hoja espera su idioma con el <Suspense> de QuickAdd.
+export default withCategoryStrings(QuickAddForm)

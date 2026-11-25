@@ -6,7 +6,7 @@ import {
   quoteFreshness, summarizeFreshness, computeRiskAtStop, heaviest, scoreCloses, reviewToday,
   dayKey, buildSeries, withLivePoint, sliceRange, rebase, change, niceStep, axisTicks, cursorKey,
   regimeOf, vixLevel, historySymbol, fxSymbol, historyPlan, runLimited, topPositions,
-  validateAporte, aporteUsd, aportePending, stripFormat, STRIP_SYMS, DEFAULT_STOP_PCT,
+  validateAporte, aporteUsd, aportePending, stripFormat, STRIP_SYMS, DEFAULT_STOP_PCT, PVH_RANGES, assetSpark, fetchRangeOf,
 } from './investHoy.js'
 import { normalizeQuote } from '../core/investApi.js'
 
@@ -151,6 +151,26 @@ describe('Valor en el tiempo (portfolio-history.js)', () => {
     const ix = rebase(pts.slice(0, 3).map(p => ({ ts: p.ts, close: 50 * (1 + (p.v - 100) / 10) })), pts.slice(0, 3))
     ix.forEach((p, i) => expect(p.v).toBeCloseTo([100, 110, 120][i]))
     expect(change(pts.slice(0, 2))).toMatchObject({ abs: 1, pct: 0.01 })
+  })
+  it('rangos 1S · 1M · 3M · YTD · 1A · Todo; 1S es la última semana de cierres', () => {
+    expect(PVH_RANGES).toEqual(['1S', '1M', '3M', 'YTD', '1A', 'MAX'])
+    const pts = Array.from({ length: 30 }, (_, i) => ({ ts: day('2026-11-01') + i * 86400, v: 100 + i }))
+    const w = sliceRange(pts, '1S')
+    expect(w[0].ts).toBe(pts.at(-1).ts - 7 * 86400)
+    expect(w).toHaveLength(8)
+    // 1S sale de la serie de 1 año; solo Todo pide 5 años.
+    expect(fetchRangeOf('1S')).toBe('1y')
+    expect(fetchRangeOf('MAX')).toBe('5y')
+  })
+  it('assetSpark: minigráfico de un activo con el cambio del período, sin cierres malos', () => {
+    const rows = Array.from({ length: 40 }, (_, i) => ({ ts: day('2026-10-01') + i * 86400, close: 50 + i }))
+    rows.push({ ts: day('2026-09-01'), close: 0 }, { ts: NaN, close: 10 }, null)
+    const sp = assetSpark(rows, '1S')
+    expect(sp.values).toEqual([82, 83, 84, 85, 86, 87, 88, 89])
+    expect(sp.pct).toBeCloseTo(89 / 82 - 1)
+    expect(assetSpark(rows, 'MAX').values).toHaveLength(40)
+    expect(assetSpark([{ ts: 1, close: 5 }], '1M')).toBeNull()
+    expect(assetSpark(null, '1M')).toBeNull()
   })
   it('marcas lindas del eje y teclas del cursor', () => {
     expect(niceStep(90)).toBe(50)

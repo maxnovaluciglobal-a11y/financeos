@@ -214,7 +214,7 @@ function InvestAssetPage({ setPage }) {
     if (push.state === 'off') {
       toast(`${msg} ${ft('fl.push.off')}`, 'ok', {
         label: ft('fl.push.enable'),
-        onAction: async () => { const [txt, tone] = pushResultText(await push.enable(), ft); toast(txt, tone) },
+        onAction: async () => { const [txt, tone] = pushResultText(await push.enable(), ft); if (txt) toast(txt, tone) },
       })
     } else if (push.state === 'noLicense' || push.state === 'unsupported') {
       // La alerta se guardó, pero no va a llegar al teléfono: se dice.

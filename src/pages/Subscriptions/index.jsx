@@ -2,7 +2,7 @@
 // Módulo de suscripciones y gastos recurrentes — FinanceOS v1.4
 // Sin backend · Sin scraping · 100% local
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { uid, subEmoji, subLabel, dateLocale, currentMonth, fmtPct, fmtPctPoints, localDateStr, fmtMoneyFor, currencySymbol } from '../../utils/index.js'
@@ -14,6 +14,9 @@ import CategoryDonut from '../../components/charts/CategoryDonut.jsx'
 import { PageHeader, Card, CardHeader, KPI, Btn, Badge, Alert, Empty, FormGroup, FormRow } from '../../components/ui/index.jsx'
 import { Pencil, X } from 'lucide-react'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+
+// ✓ "Pagado este mes" (24-nov-2026), con lazy(): sin imports estáticos nuevos.
+const SubPaidMark = lazy(() => import('../../components/ahead/pageBits.jsx').then(m => ({ default: m.SubPaidMark })))
 
 // ── CONSTANTES ──────────────────────────────────────────────────────────────────
 export const SUB_CATEGORIES = [
@@ -138,7 +141,8 @@ const EMPTY_FORM = {
 // ── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────────
 export default function Subscriptions() {
   const { t, lang } = useT()
-  const { settings, incomes, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteWithUndo } = useApp()
+  const { settings, incomes, expenses, recurring, subscriptions: ctxSubs, addSubscription, updateSubscription, deleteWithUndo } = useApp()
+  const todayStr = localDateStr()
   const currency = settings.currency || 'CLP'
   // Con los decimales de la moneda de cada suscripción (una de US$ en una cuenta en COP lleva centavos).
   // Una sola fuente: el contexto (app real o demo). Antes la app real leía
@@ -355,7 +359,14 @@ export default function Subscriptions() {
                   const isActive = sub.status === 'active'
                   return (
                     <tr key={sub.id} style={{ borderBottom: i < displayed.length - 1 ? '.5px solid var(--brd)' : 'none', opacity: isActive ? 1 : 0.5 }}>
-                      <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>{sub.name}</td>
+                      <td style={{ padding: '9px 12px', fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)' }}>
+                        {sub.name}
+                        {isActive && (
+                          <Suspense fallback={null}>
+                            <SubPaidMark subId={sub.id} recurring={recurring} incomes={incomes} expenses={expenses} today={todayStr} />
+                          </Suspense>
+                        )}
+                      </td>
                       <td style={{ padding: '9px 12px' }}>
                         <Badge color="blue">{subLabel(sub.category, lang)}</Badge>
                       </td>

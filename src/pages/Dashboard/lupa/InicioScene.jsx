@@ -36,7 +36,8 @@ import { useKpiDeltas } from '../HomeKpis.jsx'
 import { fmtRef, currentLensCurrency } from '../RefCurrency.jsx'
 import ChartLupaRaw from './ChartLupa.jsx'
 import DaySheet from './DaySheet.jsx'
-import { inspectLines, paceLine, valueText } from './lupaText.js'
+import { inspectLines, paceGap, paceLine, valueText } from './lupaText.js'
+import { useAheadStrings } from '../../../i18n/ahead/index.js'
 import s from './scene.module.css'
 
 const ChartLupa = memo(ChartLupaRaw)
@@ -164,6 +165,10 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
   const value = looking ? series.spentCum[inspect] : free
   const label = looking ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).label : (free < 0 ? t('home.kpi.short') : t('home.kpi.left'))
   const pace = !looking && isCurrent ? paceLine(paceData, { t, fmt }) : null
+  // el exceso o el margen también rotulado sobre el gráfico
+  // (sus textos llegan con este trozo; hasta entonces el gráfico va sin rótulo).
+  const ahead = useAheadStrings()
+  const gap = useMemo(() => (isCurrent && ahead.ready ? paceGap(paceData, { t: ahead.t, fmt }) : null), [isCurrent, ahead.ready, ahead.t, paceData, fmt])
   const sub = looking
     ? inspectLines({ series, day: inspect, activeMonth, t, fmt, locale }).sub
     : daysLeft > 0 ? t(`home.kpi.daysLeft.${daysLeft === 1 ? 'one' : 'many'}`, { n: daysLeft }) : t('home.kpi.leftSub')
@@ -226,7 +231,7 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
 
           {hasData && series && (
             <div className={s.chartCol}>
-              <ChartLupa ref={chartRef} series={series} invite hold={sheetOpen}
+              <ChartLupa ref={chartRef} series={series} invite hold={sheetOpen} gap={gap}
                 label={t('home.lupa.aria', { month: monthLabel(activeMonth) })}
                 valueTextOf={valueTextOf} onDay={onDay} onTap={onTap} />
             </div>

@@ -65,11 +65,16 @@ function geometry(series) {
   // Ritmo ideal: una recta, de ~0 el día 1 al ingreso del mes el último día.
   const ideal = series.ideal ? `M${f(X(1))} ${f(Y(series.ideal[1]))} L${f(X(series.days))} ${f(Y(series.ideal[series.days]))}` : ''
   const proj = series.projEnd != null && last ? `M${f(last[0])} ${f(last[1])} L${f(X(series.days))} ${f(Y(series.projEnd))}` : ''
-  return { X, Y, line, area, ideal, proj, last, bot, payX: series.payday ? X(series.payday) : null, dots: pts }
+  // 24-nov-2026: el tramo entre lo gastado y el ritmo ideal
+  // de hoy, para rotular el exceso o el margen sobre el gráfico.
+  const d = series.lastDay
+  const gapSeg = series.mode === 'current' && series.ideal && d >= 1
+    ? { x: X(d), y1: Y(series.spentCum[d]), y2: Y(series.ideal[d]) } : null
+  return { X, Y, line, area, ideal, proj, last, bot, payX: series.payday ? X(series.payday) : null, dots: pts, gapSeg }
 }
 
 // El dibujo, una vez para el gráfico y otra (con puntos por día) para la lente.
-const Plot = memo(function Plot({ g, size, dots, gid }) {
+const Plot = memo(function Plot({ g, size, dots, gid, gapKind }) {
   const sizeProps = size ? { width: size[0], height: size[1], style: { width: size[0], height: size[1] } } : {}
   return (
     <svg className={c.plot} viewBox={`0 0 ${CHART_W} ${CHART_H}`} aria-hidden="true" focusable="false" {...sizeProps}>
@@ -83,12 +88,27 @@ const Plot = memo(function Plot({ g, size, dots, gid }) {
       {g.area && <path d={g.area} fill={`url(#${gid})`} />}
       {g.ideal && <path className={c.ideal} d={g.ideal} />}
       {g.proj && <path className={c.proj} d={g.proj} />}
+      {gapKind && g.gapSeg && <line className={`${c.gapSeg} ${gapKind === 'over' ? c.gapOver : c.gapUnder}`}
+        x1={g.gapSeg.x} x2={g.gapSeg.x} y1={g.gapSeg.y1} y2={g.gapSeg.y2} />}
       {g.payX != null && <circle className={c.pay} cx={g.payX} cy={g.bot} r="2.6" />}
       {g.line && <path className={c.line} d={g.line} />}
       {dots && g.dots.map(([x, y], i) => <circle key={i} className={c.dayDot} cx={x} cy={y} r="1.6" />)}
     </svg>
   )
 })
+
+// Rótulo del exceso/margen junto al tramo de hoy: a la izquierda si hoy está
+// en la mitad derecha del gráfico, si no a la derecha; nunca bajo el aro de la
+// lupa en reposo (radio 22 px + borde).
+function GapLabel({ seg, gap }) {
+  const left = seg.x / CHART_W * 100
+  const mid = Math.min(88, Math.max(12, ((seg.y1 + seg.y2) / 2) / CHART_H * 100))
+  const toLeft = left > 55
+  return (
+    <span className={`num ${c.gapLabel} ${gap.kind === 'over' ? c.gapLabelOver : c.gapLabelUnder}`} aria-hidden="true"
+      data-side={toLeft ? 'left' : 'right'} style={{ left: `${left.toFixed(2)}%`, top: `${mid.toFixed(2)}%` }}>{gap.text}</span>
+  )
+}
 
 function swallowNextClick() {
   const stop = (e) => { e.stopPropagation(); e.preventDefault(); done() }
@@ -97,7 +117,10 @@ function swallowNextClick() {
   window.addEventListener('click', stop, true)
 }
 
-const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, axis, onDay, onTap, invite = false, hold = false }, ref) {
+// `gap` (opcional): { kind: 'over'|'under', text } — el exceso o el margen
+// contra el ritmo de hoy, rotulado sobre el gráfico (en reposo). Es visual: el
+// mismo dato ya lo dicen la píldora y el texto del slider.
+const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, axis, onDay, onTap, invite = false, hold = false, gap = null }, ref) {
   const hostRef = useRef(null)
   const lensRef = useRef(null)
   const lensInRef = useRef(null)
@@ -277,7 +300,8 @@ const ChartLupa = forwardRef(function ChartLupa({ series, label, valueTextOf, ax
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel} onPointerLeave={onPointerLeave}
         onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur}>
-        <Plot g={g} gid={gid + 'a'} />
+        <Plot g={g} gid={gid + 'a'} gapKind={gap && g.gapSeg ? gap.kind : null} />
+        {gap && g.gapSeg && <GapLabel seg={g.gapSeg} gap={gap} />}
         <div ref={guideRef} className={c.guide} style={lensSize ? { height: lensSize[1] } : undefined} />
         <div ref={handRef} className={c.hand} />
         <div ref={dotRef} className={c.dot} />

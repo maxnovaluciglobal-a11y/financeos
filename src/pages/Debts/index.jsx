@@ -3,7 +3,7 @@
 // en Receivables.jsx; aquí queda la pestaña "Debo" de siempre. V2: un solo
 // botón Latón por pantalla (el de alta, o "Registrar deuda" con el formulario
 // abierto); las acciones de cada tarjeta son secundarias.
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -21,6 +21,9 @@ import { logRejection } from '../../utils/errorLog.js'
 import { Building2 } from 'lucide-react'
 import { monthsAheadFirstDay } from '../../utils/monthMath.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+
+// Vista por tarjeta de crédito (24-nov-2026): su propio trozo, con sus textos.
+const CardsView = lazy(() => import('../../components/ahead/CardsView.jsx'))
 
 // ── Calculadora Avalanche / Snowball ─────────────────────────────────────────
 function calcPayoffPlan(debts, extraPayment, method) {
@@ -174,7 +177,7 @@ function DebtPayoffSimulator({ debts, sym }) {
 }
 
 export default function Debts() {
-  const { debts, receivables = [], addDebt, updateDebt, addExpense, addIncome, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences } = useApp()
+  const { debts, receivables = [], addDebt, updateDebt, addExpense, addIncome, incomes, expenses, settings, deleteWithUndo, recurring, confirmOccurrences, showToast } = useApp()
   const { t } = useT()
   // "Debo" por defecto; si solo hay "Me deben", se abre en esa pestaña.
   const [dir, setDir]               = useState(() => (debts.length === 0 && receivables.length > 0 ? 'owed' : 'owe'))
@@ -309,6 +312,11 @@ export default function Debts() {
         <KPI label={t('debts.kpi.active')}    value={debts.length} />
         <KPI label={t('debts.kpi.paid')}      value={fmtMoney(totalPaid,sym)} color="green" />
       </div>
+      {debts.some(d => (d.debtType || 'Tarjeta') === 'Tarjeta') && (
+        <Suspense fallback={null}>
+          <CardsView debts={debts} rules={recurring} incomes={incomes} expenses={expenses} sym={sym} updateDebt={updateDebt} showToast={showToast} />
+        </Suspense>
+      )}
       <div data-tour="debt-new"><Btn variant={show ? 'ghost' : 'primary'} onClick={() => setShow(s => !s)} aria-expanded={show}>{show ? t('debts.toggle.close') : t('debts.toggle.new')}</Btn></div>
       {show && (
         <Card>

@@ -103,6 +103,7 @@ const EXEMPT = {
   'components/ui/Toast.jsx': 'aviso efímero, no es una hoja',
   'admin/AdminCRM.jsx': 'panel web de administración, no está en la app',
   'components/tour/PageTour.jsx': 'solo busca un diálogo abierto con querySelector; el recorrido (Tour.jsx) sí se registra',
+  'core/localAlerts/Host.jsx': 'solo busca una hoja abierta con querySelector; la hoja de avisos (PushAsk) es un <Sheet>',
 }
 const SRC = join(import.meta.dirname, '..')
 function* files(dir) {

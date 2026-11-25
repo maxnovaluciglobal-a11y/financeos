@@ -17,7 +17,9 @@ function Arrow({ n }) {
   return <Ic size={14} strokeWidth={2.4} aria-hidden="true" />
 }
 
-export default function PutSummary({ summary, money, pct, currency = 'USD', inflation = null }) {
+// detailsOnly: solo el desglose y "¿Le ganaste…?" (Resumen ya abre con
+// "Depositado frente a ganancia", hoy/DepositGain.jsx); sin nada que mostrar, nada.
+export default function PutSummary({ summary, money, pct, currency = 'USD', inflation = null, detailsOnly = false }) {
   const { t } = useEssT()
   const id = useId()
   if (!summary) return null
@@ -34,10 +36,11 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
   // Con pérdida la etiqueta ya dice "restó" (y la flecha baja): la cifra va sin
   // signo, para no leer "El mercado restó −50". El signo queda con "sumó".
   const lost = g < -0.005
+  if (detailsOnly && parts.length < 2 && !checks) return null
   return (
     <section className={s.put} aria-labelledby={`${id}-put`}>
       <h2 id={`${id}-put`} className="sr-only">{t('ess.put.title')}</h2>
-      <dl className={s.putRow}>
+      {!detailsOnly && <dl className={s.putRow}>
         <div className={s.putCell}>
           <dt className={s.putLabel}>{t('ess.put.put')}</dt>
           <dd className={s.putValue}><Money>{money(summary.put)}</Money></dd>
@@ -51,7 +54,7 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
             {summary.value != null ? <> · <Money>{t('ess.put.value', { v: money(summary.value) })}</Money></> : null}
           </dd>
         </div>
-      </dl>
+      </dl>}
 
       {parts.length > 1 && (
         <div className={s.parts}>
@@ -87,7 +90,7 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
           <p className={s.putSub}>{t('ess.beat.note')}</p>
         </div>
       )}
-      {summary.partial && <p className={s.putSub} role="note">{t('ess.put.partial')}</p>}
+      {summary.partial && !detailsOnly && <p className={s.putSub} role="note">{t('ess.put.partial')}</p>}
     </section>
   )
 }

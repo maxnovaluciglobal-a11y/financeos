@@ -10,5 +10,7 @@
     var pref = localStorage.getItem('fos_theme_pref')
     var dark = pref === 'dark' || (pref === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+    // Transparencias (Ajustes › Apariencia): preferencia de este dispositivo.
+    if (localStorage.getItem('fos_glass') === 'off') document.documentElement.setAttribute('data-glass', 'off')
   } catch (e) { /* sin almacenamiento: tema por defecto */ }
 })()

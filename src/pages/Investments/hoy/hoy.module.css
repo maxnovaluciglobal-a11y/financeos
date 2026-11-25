@@ -195,3 +195,25 @@
 
 /* M11 (QA): la ayuda de teclado del gráfico, solo donde hay teclado y puntero fino. */
 @media (hover: none), (pointer: coarse) { .kbdOnly { display: none; } }
+
+/* ── Depositado frente a ganancia (Inversiones v2) ── */
+.depHint {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 10px 0 0; padding: 10px 12px;
+  border-radius: 14px; background: var(--on-grad-chip); color: var(--on-grad-text);
+  font-size: var(--t-footnote); line-height: 1.4;
+}
+.depHint > svg { flex: none; }
+.depHint > span { flex: 1 1 220px; min-width: 0; }
+.depBtn {
+  min-height: 44px; padding: 0 14px; border: 1px solid var(--on-grad-track); border-radius: 12px;
+  background: transparent; color: var(--on-grad-text); font: inherit; font-weight: 600; cursor: pointer;
+  transition: background-color .18s ease, transform .18s cubic-bezier(.16, 1, .3, 1);
+}
+.depBtn:hover { background: var(--on-grad-chip); }
+.depBtn:active { transform: scale(.98); }
+.depBtn:focus-visible { outline: 2px solid var(--on-grad-text); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .depBtn { transition: none; } }
+
+/* Minigráfico de cada posición, en el período del gráfico de valor. */
+.topHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.topSpark { display: inline-flex; align-items: center; gap: 6px; flex: none; font-size: var(--t-footnote); font-variant-numeric: tabular-nums; }

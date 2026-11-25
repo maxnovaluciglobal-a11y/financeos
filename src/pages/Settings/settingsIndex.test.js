@@ -20,7 +20,7 @@ const tEn = tFor(en)
 
 describe('Ajustes: grupos (R10)', () => {
   it('las filas (10 de R10 + Funciones de la poda P3 + Inversiones de F7), en orden, y cada una en una sola sección', () => {
-    expect(GROUP_IDS).toEqual(['profile', 'currency', 'appearance', 'templates', 'features', 'investments', 'autoEntry', 'data', 'security', 'notifications', 'plan', 'advanced', 'danger'])
+    expect(GROUP_IDS).toEqual(['profile', 'currency', 'appearance', 'templates', 'categories', 'features', 'investments', 'autoEntry', 'data', 'security', 'notifications', 'plan', 'advanced', 'danger'])
     const inSections = SETTINGS_SECTIONS.flatMap(s => s.groups)
     expect(inSections).toEqual(GROUP_IDS)
   })

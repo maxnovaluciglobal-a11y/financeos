@@ -14,6 +14,9 @@ import { useNetWorth } from '../../hooks/useNetWorth.js'
 import InvestLine from './InvestLine.jsx'
 import CountUp from '../../components/CountUp.jsx'
 import Money, { useMoney } from '../../components/Money.jsx'
+import { Suspense } from 'react'
+// Puntos y millas (24-nov-2026): manuales, fuera del total.
+import LoyaltyCard from './LoyaltyCard.jsx'
 
 export default function NetWorth() {
   const { settings } = useApp()
@@ -90,6 +93,7 @@ export default function NetWorth() {
           </div>
         </>
       )}
+      <Suspense fallback={null}><LoyaltyCard sym={sym} netWorth={netWorth} /></Suspense>
     </div>
   )
 }

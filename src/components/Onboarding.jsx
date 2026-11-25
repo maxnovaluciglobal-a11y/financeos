@@ -11,7 +11,7 @@
 // Las claves i18n del flujo viejo de 9 pasos se borraron el 08-oct-2026 (chore
 // de fase 3) tras comprobar con grep que nada las leía.
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, Suspense } from 'react'
 import { Smartphone, FileUp } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useT } from '../i18n/useT.js'
@@ -414,7 +414,7 @@ export default function Onboarding({ onComplete }) {
         </div>
       ) : (
         <div style={{ marginBottom: 16 }}>
-          <QuickAddForm onSaved={() => { setFirstTxSaved(true); setStep(2) }} />
+          <Suspense fallback={<div style={{ minHeight: 420 }} aria-busy="true" />}><QuickAddForm onSaved={() => { setFirstTxSaved(true); setStep(2) }} /></Suspense>
         </div>
       )}
 

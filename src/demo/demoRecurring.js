@@ -21,6 +21,7 @@ const manual = (id, kind, description, category, amount, day, extra = {}) => ({
   amounts: [{ from: M0, amount }],
   schedule: extra.schedule || { freq: 'monthly', day, anchorDate: `${M0}-${String(day).padStart(2, '0')}` },
   startDate: START, autoConfirm: !!extra.autoConfirm, paused: false, skipped: [], createdAt: CREATED,
+  ...(extra.installments ? { installments: extra.installments } : {}),
 })
 
 const MANUAL = {
@@ -30,6 +31,8 @@ const MANUAL = {
     manual('so-servicios', 'expense', 'Servicios públicos', 'Servicios', 145_000, 2, { method: 'Transferencia', amountMode: 'average' }),
     manual('so-transmi', 'expense', 'Recarga de transporte público', 'Transporte', 52_000, 5),
     manual('so-internet', 'expense', 'Internet hogar', 'Servicios', 79_000, 14),
+    // Compra en cuotas: muestra "Cuota 4 de 12" y su fin en la proyección.
+    manual('so-celular', 'expense', 'Celular en cuotas', 'Tecnología', 89_000, 20, { method: 'Crédito', installments: { total: 12, before: 3 } }),
   ],
   us: [
     manual('us-pay', 'income', 'Paycheck — hospital job', 'Salario', 1926.40, 3,
@@ -40,6 +43,7 @@ const MANUAL = {
     manual('us-net', 'expense', 'Internet', 'Servicios', 60.00, 9),
     manual('us-phone', 'expense', 'Phone plan', 'Servicios', 45.00, 9, { method: 'Crédito' }),
     manual('us-carins', 'expense', 'Car insurance', 'Transporte', 148.00, 14, { method: 'Crédito' }),
+    manual('us-laptop', 'expense', 'Laptop — 12 payments', 'Tecnología', 74.92, 18, { method: 'Crédito', installments: { total: 12, before: 3 } }),
   ],
   de: [
     manual('de-gehalt', 'income', 'Gehalt — Logistikunternehmen', 'Salario', 2684.30, 1, { autoConfirm: true }),
@@ -49,6 +53,7 @@ const MANUAL = {
     manual('de-handy', 'expense', 'Handyvertrag', 'Servicios', 17.99, 5),
     manual('de-rfb', 'expense', 'Rundfunkbeitrag', 'Servicios', 18.36, 15),
     manual('de-dt', 'expense', 'Monatsticket ÖPNV', 'Transporte', 63.00, 1),
+    manual('de-laptop', 'expense', 'Laptop in 12 Raten', 'Tecnología', 79.90, 18, { installments: { total: 12, before: 3 } }),
   ],
   // Montos en Bs a la tasa BCV de este mes (los del mes que viene los ajusta
   // el modo "promedio"/"último" si ella lo elige).

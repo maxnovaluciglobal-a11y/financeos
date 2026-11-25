@@ -77,19 +77,37 @@ describe('datos de ejemplo de Hoy', () => {
 })
 
 describe('<Hoy> en la vista esencial (por defecto)', () => {
-  it('abre con Pusiste y El mercado sumó, sin cinta, sin riesgo al stop ni "Para revisar hoy"', () => {
+  it('abre con Depositado frente a ganancia, sin cinta, sin riesgo al stop ni "Para revisar hoy"', () => {
     const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
-    expect(out.indexOf('Pusiste')).toBeGreaterThan(-1)
-    expect(out.indexOf('Pusiste')).toBeLessThan(out.indexOf('Valor de tu portafolio'))
-    expect(out).toMatch(/El mercado (sumó|restó)/)
-    for (const k of ['Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Riesgo al stop']) expect(out, k).not.toContain(k)
+    // Primera lectura: el título (para lector de pantalla), el valor y lo depositado.
+    expect(out.trim().indexOf('Depositado frente a ganancia')).toBe(0)
+    expect(out.indexOf('Valor de tu portafolio')).toBeLessThan(out.search(/Depositado (US)?\$/))
+    expect(out.indexOf('Valor de tu portafolio')).toBeLessThan(out.indexOf('Datos de ejemplo'))
+    expect(out).toMatch(/Ganancia|Pérdida/)
+    // La banda de valor de siempre no se repite debajo.
+    expect(out.split('Valor de tu portafolio')).toHaveLength(2)
+    expect(out).not.toContain('Pusiste')
+    for (const k of ['Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Riesgo al stop', 'Resultado sobre el costo']) expect(out, k).not.toContain(k)
     // Lo demás sigue: gráfico de valor, posiciones, efectivo.
     for (const k of ['Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes']) expect(out, k).toContain(k)
   })
-  it('con el libro de ejemplo, Pusiste es lo aportado (12.000, igual que Portafolio) y el mercado suma valor − aportado', () => {
+  it('con el libro de ejemplo, Depositado es lo aportado (12.000, igual que Portafolio) y la ganancia es valor − aportado', () => {
     const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
-    expect(out).toContain('Lo que aportaste')
-    expect(out).toMatch(/Pusiste (US)?\$ ?12\.000,00/)
+    expect(out).toMatch(/Depositado (US)?\$ ?12\.000,00/)
+    expect(out).toContain('tus depósitos menos tus retiros')
+    expect(out).not.toContain('Aún no registraste depósitos')
+  })
+  it('sin depósitos registrados lo dice y ofrece registrarlos (nunca llama "depositado" al costo)', () => {
+    const out = text(render(sampleData({ ops: [] }), { currency: 'USD', language: 'es' }, 'esencial'))
+    expect(out).toContain('Pagado por tus posiciones')
+    expect(out).not.toMatch(/Depositado (US)?\$/)
+    expect(out).toContain('Aún no registraste depósitos')
+    expect(out).toContain('Registrar depósitos')
+  })
+  it('cada posición trae su minigráfico en el período del gráfico de valor', () => {
+    const html = render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial')
+    expect(text(html)).toContain('Minigráficos: Último año')
+    expect(html).toMatch(/role="img" aria-label="Precio, Último año: [+−-]/)
   })
   it('en otra moneda pregunta si le ganó al dólar; en US$ no (no hay inflación en dólares para comparar)', () => {
     const usd = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
@@ -103,7 +121,7 @@ describe('<Hoy> en la vista esencial (por defecto)', () => {
 describe('<Hoy>', () => {
   it('arma la pantalla completa en el orden de Invest, rotulada como ejemplo', () => {
     const out = text(render(sampleData()))
-    const order = ['Datos de ejemplo', 'Dow 30', 'Valor de tu portafolio', 'Tu riesgo hoy', 'Para revisar hoy', 'Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes', '¿Cuánto puedes aportar este mes?', 'Ver mercado']
+    const order = ['Depositado frente a ganancia', 'Valor de tu portafolio', 'Datos de ejemplo', 'Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes', '¿Cuánto puedes aportar este mes?', 'Ver mercado']
     let at = -1
     for (const k of order) {
       const i = out.indexOf(k)
@@ -114,7 +132,9 @@ describe('<Hoy>', () => {
     // M12 (QA): Chile (ECH) solo para quien vive en Chile.
     expect(out).not.toContain('Chile (ECH)')
     expect(text(render(sampleData(), { currency: 'CLP', language: 'es', country: 'CL' }))).toContain('Chile (ECH)')
-    for (const r of ['1M', '3M', 'Año', '1A', 'Máx']) expect(out).toContain(r)
+    for (const r of ['1S', '1M', '3M', 'YTD', '1A', 'Todo']) expect(out).toContain(r)
+    // En la Vista completa, el resultado sobre el costo va aparte de la ganancia frente a lo depositado.
+    expect(out).toContain('Resultado sobre el costo')
     expect(out).toContain('Datos para revisar, no instrucciones de compra o venta.')
     expect(out).not.toContain('Yahoo Finance,') // el ejemplo no se atribuye a ninguna fuente
   })

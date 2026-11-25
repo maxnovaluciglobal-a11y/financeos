@@ -25,6 +25,14 @@ const loaders = {
   de: () => import('./de.js'),
 }
 
+// Con el diccionario ya en casa, los textos de las secciones diferidas del
+// mismo idioma se bajan en reposo (src/i18n/preloadSections.js).
+function preloadSectionsIdle(lang) {
+  if (typeof window === 'undefined') return
+  const idle = window.requestIdleCallback || ((f) => setTimeout(f, 1200))
+  idle(() => { import('./preloadSections.js').then(m => m.default(lang)).catch(() => null) }) // sin red: cada sección se carga al abrirse
+}
+
 export function loadLang(lang) {
   if (langCache[lang]) return Promise.resolve(langCache[lang])
   if (!langPromises[lang]) {
@@ -32,6 +40,7 @@ export function loadLang(lang) {
     langPromises[lang] = (loader ? loader() : Promise.resolve({}))
       .then((mod) => {
         langCache[lang] = mod[lang] ?? mod.default ?? es
+        preloadSectionsIdle(lang)
         return langCache[lang]
       })
       .catch(() => {

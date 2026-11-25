@@ -210,3 +210,26 @@ describe('contraste de la cápsula inferior sobre la escena (A11Y-N3)', () => {
     expect(ratio(hex(tok(LIGHT, '--gray-600')), pill)).toBeLessThan(TEXT)
   })
 })
+
+// ── 4. Hojas con material de vidrio (24-nov-2026, interruptor Transparencias) ──
+// La hoja es color-mix(superficie 94 %, transparent) sobre la página oscurecida
+// por el velo. Se mide el peor caso: negro o blanco puro detrás, además de los
+// fondos de marca. Con Transparencias apagadas o "Reducir transparencia" la
+// hoja es sólida (html[data-glass="off"] y @media en tokens.css).
+describe('contraste del texto sobre las hojas de vidrio', () => {
+  for (const [name, theme] of Object.entries(THEMES)) {
+    it(`${name}: texto principal, secundario y tenue ≥ 4,5 con cualquier fondo detrás`, () => {
+      const mat = material(theme, '--sheet-bg')
+      for (const b of [...BEHIND.map(n => hex(tok(theme, n))), [0, 0, 0], [255, 255, 255]]) {
+        const bg = over(mat, b)
+        for (const t of ['--text-primary', '--text-secondary', '--text-subtle']) check(`${name} ${t} / hoja sobre ${b}`, parse(tok(theme, t)).slice(0, 3), bg, TEXT)
+      }
+      expect(fails).toEqual([])
+    })
+  }
+  it('apagado, reducido o sin backdrop-filter: barra y hojas sólidas', () => {
+    expect(css).toMatch(/html\[data-glass="off"\]\s*\{[^}]*--tabbar-blur:\s*none[^}]*--sheet-bg:\s*var\(--color-surface\)/)
+    expect(css).toMatch(/prefers-reduced-transparency:\s*reduce/)
+    expect(css).toMatch(/@supports not \(\(backdrop-filter/)
+  })
+})

@@ -1,6 +1,8 @@
 // src/pages/Investments/hoy/Hoy.jsx — pestaña Resumen de Inversiones (F2; se
 // llamó "Hoy" hasta el 20-nov-2026, coherencia 360 I-7).
-// Abre con lo de la persona: "Pusiste" y "El mercado sumó" (esencial/PutSummary).
+// Abre con "Depositado frente a ganancia" (DepositGain, Inversiones v2: valor,
+// lo depositado y la ganancia, con la variación de hoy) y debajo el desglose
+// de esencial/PutSummary. Sin datos para eso, "Pusiste" y la banda de valor.
 // Después, en el orden de renderDash de Invest:
 // frescura de precios · cinta · aviso de aportes de moyiq · banda de valor ·
 // Tu riesgo hoy · Para revisar hoy · Valor en el tiempo · avisos de tipo de
@@ -26,7 +28,7 @@ import { useT } from '../../../i18n/useT.js'
 import { INVEST_ORIGIN } from '../../../core/investBridge.js'
 import { cashBook } from '../../../utils/investCash.js'
 import {
-  VIX_SYM, STRIP_SYMS, aportePending, historySymbol, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
+  VIX_SYM, STRIP_SYMS, aportePending, assetSpark, historySymbol, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
   rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFadeOf, stripFormat, summarizeFreshness, topPositions, validateAporte,
   vixLevel, withLivePoint, PVH_CMP, PVH_RANGES, pvhCmpFor, REVIEW_MAX_CHIPS,
 } from '../../../utils/investHoy.js'
@@ -34,6 +36,9 @@ import { convertHoldings, currencyOf, holdingRows, portfolioTotals, toUsd } from
 import { monthContributions, resolveUserRate } from '../../../utils/investNetWorth.js'
 import { currencySymbol, currentMonth, dateLocale, fmtAmount, fmtMoney, fmtPct, moneyLocale } from '../../../utils/index.js'
 import { putAndGain } from '../../../utils/investEsencial.js'
+import { costResult, depositGain } from '../../../utils/investDeposit.js'
+import DepositGain from './DepositGain.jsx'
+import { queuePortIntent } from '../portfolio/intentQueue.js'
 import { shows } from '../../../utils/investView.js'
 import PutSummary from '../esencial/PutSummary.jsx'
 import { commitAporte, readAporte } from './aporteStore.js'
@@ -264,7 +269,7 @@ function ReviewCard({ review, onOpen, onRetry, labelOf = (x) => x }) {
 }
 
 // ── Tus posiciones (top 5) ────────────────────────────────────────
-function TopPositions({ top, total, money, onOpen, onTab, showRisk = true }) {
+function TopPositions({ top, total, money, onOpen, onTab, showRisk = true, sparks = null, rangeName = '' }) {
   const { t } = useT()
   const typeKey = (ty) => (['Stock', 'ETF', 'Crypto'].includes(ty) ? ty : 'Otro')
   return (
@@ -273,18 +278,34 @@ function TopPositions({ top, total, money, onOpen, onTab, showRisk = true }) {
         <div>
           <h2 id="hoy-top-title" className={s.cardTitle}>{t('invest.port.holdings')}</h2>
           <p className={s.muted}>{total > top.length ? t('invest.hoy.top.sub', { n: total }) : t('invest.hoy.top.sorted')}</p>
+          {sparks && rangeName && <p className={s.muted}>{t('invest.hoy.top.sparkRange', { range: rangeName })}</p>}
         </div>
         <button type="button" className={s.link} onClick={() => onTab('portafolio')}>{t('invest.card.view')}<ChevronRight size={14} aria-hidden="true" /></button>
       </div>
       <ul className={s.topList}>
         {top.map((r, i) => {
           const rk = r.risk
+          const sp = sparks?.[r.t] || null
           const riskText = !rk || rk.noStop ? t('invest.hoy.top.noStop') : `${money(-rk.riskAtStop, true)}${rk.stopIsDefault ? ` ${t('invest.hoy.top.est')}` : ''}`
+          // El nombre accesible reemplaza al contenido: lleva también los % de cambio.
+          const aria = [
+            t('invest.search.open', { t: r.t }),
+            sp && sp.values.length > 1 ? t('invest.hoy.top.sparkAria', { range: rangeName, pct: fmtPct(sp.pct || 0, { signed: true }) }) : '',
+            r.plUsd != null && r.plPct != null ? `${t('invest.hoy.top.result')} ${fmtPct(r.plPct, { signed: true })}` : '',
+          ].filter(Boolean).join(', ')
           return (
             <li key={r.id ?? `${r.t}-${i}`}>
-              <button type="button" className={s.topRow} data-cols={showRisk ? 4 : 3} onClick={() => onOpen(r.t)} aria-label={t('invest.search.open', { t: r.t })}>
+              <button type="button" className={s.topRow} data-cols={showRisk ? 4 : 3} onClick={() => onOpen(r.t)} aria-label={aria}>
                 <span className={s.topMain}>
-                  <span className={s.topTicker}>{r.t}</span>
+                  <span className={s.topHead}>
+                    <span className={s.topTicker}>{r.t}</span>
+                    {sp && sp.values.length > 1 && (
+                      <span className={s.topSpark}>
+                        <Sparkline values={sp.values} width={64} height={20} label={t('invest.hoy.top.sparkAria', { range: rangeName, pct: fmtPct(sp.pct || 0, { signed: true }) })} />
+                        <span className={s.tone} data-tone={dirOf(sp.pct || 0)} aria-hidden="true">{fmtPct(sp.pct || 0, { signed: true })}</span>
+                      </span>
+                    )}
+                  </span>
                   <span className={s.muted}>{[r.name, t(`invest.type.${typeKey(r.type)}`)].filter(Boolean).join(' · ')}</span>
                 </span>
                 <span className={s.topCell}><span className={s.cellLabel}>{t('invest.detail.value')}</span><Money>{money(r.valueUsd)}</Money></span>
@@ -564,6 +585,22 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const aUsd = aporte ? aporteUsd(aporte) : null
   // ── Pusiste / El mercado sumó (con el libro si está completo) ──
   const put = useMemo(() => putAndGain({ ledger: B, totals: T }), [B, T])
+  // ── Depositado frente a ganancia: la primera lectura (Inversiones v2) ──
+  const dep = useMemo(() => depositGain({ ledger: B, totals: T, opsMissing: !!d.opsMissing }), [B, T, d.opsMissing])
+  const costRes = shows(view, 'unrealized') ? costResult(T, dep) : null
+  const bandSub = T.missing > 0 ? t(T.missing === 1 ? 'invest.hoy.band.loadingOne' : 'invest.hoy.band.loadingMany', { n: T.missing }) : local
+  // ── Minigráfico de cada posición, en el mismo período del gráfico ──
+  const topSparks = useMemo(() => {
+    const out = {}
+    const fr = fetchRangeOf(range)
+    for (const r of top) {
+      const h = holdings.find(x => x.t === r.t)
+      const rws = h ? historyOf(symOf(h), fr) : null
+      const sp = rws ? assetSpark(rws, range) : null
+      if (sp) out[r.t] = sp
+    }
+    return out
+  }, [top, holdings, historyOf, symOf, range])
   const pctFmt = useCallback((f, signed) => fmtPct(f, { signed }), [])
   const pending = aporte ? aportePending(aporte, d.ops, month) : null
   const [saved] = useState(() => readAporte(readKey))
@@ -607,7 +644,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
     onTab('planificar')
   }
   const intent = (what) => {
-    try { window.dispatchEvent(new CustomEvent('fos:invest-intent', { detail: { intent: what } })) } catch { /* sin ventana (pruebas) */ }
+    queuePortIntent(what)
     onTab('portafolio')
   }
 
@@ -668,14 +705,17 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
           <button type="button" className={s.btn} onClick={() => setSample(false)}>{t('invest.hoy.sample.exit')}</button>
         </div>
       )}
-      <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} />
+      {dep
+        ? <DepositGain dep={dep} sub={bandSub} money={money} costRes={costRes} onRegister={() => intent('deposit')} />
+        : <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} />}
+      {dep && <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} detailsOnly />}
       <Freshness sample={pricesSample} fresh={fresh} hasCrypto={hasCrypto} hasStocks={hasStocks} />
       {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} onTab={onTab} />}
       {banner}
 
       <div className={s.top}>
         {/* En la esencial, PutSummary ya dice el resultado ("El mercado sumó"): no se repite con otro nombre. */}
-        <ValueBand T={T} local={local} money={money} priced={T.priced > 0} showResult={shows(view, 'unrealized') || !put} />
+        {!dep && <ValueBand T={T} local={local} money={money} priced={T.priced > 0} showResult={shows(view, 'unrealized') || !put} />}
         {shows(view, 'stop') && <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />}
         {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}
       </div>
@@ -692,7 +732,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       {Math.abs(T.fxEffect) >= 0.5 && <p className={s.note} role="note"><Money>{t('invest.hoy.fx.effect', { v: money(T.fxEffect, true) })}</Money></p>}
       {T.fxUnknown > 0 && <p className={s.note} role="note">{t(T.fxUnknown === 1 ? 'invest.hoy.fx.unknownOne' : 'invest.hoy.fx.unknownMany', { n: T.fxUnknown })}</p>}
 
-      <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')} />
+      <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')}
+        sparks={Object.keys(topSparks).length ? topSparks : null} rangeName={t(`invest.hoy.pvh.rangeName.${range}`)} />
       <OppTeaser items={oppItems} free={oppFree} money={money} onSee={() => goOpp(false)} onSplit={() => goOpp(true)} />
       {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
       <AporteForm initial={initialAporte} hasMoyiq={!!aUsd} onDone={goAporte} />

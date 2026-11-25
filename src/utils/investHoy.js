@@ -238,7 +238,9 @@ export function withLivePoint(points, liveUsd, nowSec = Math.floor(Date.now() / 
   return out
 }
 
-export const PVH_RANGES = ['1M', '3M', 'YTD', '1A', 'MAX']
+// 1S (Inversiones v2): la última semana con los cierres
+// diarios que ya trae la serie de 1 año.
+export const PVH_RANGES = ['1S', '1M', '3M', 'YTD', '1A', 'MAX']
 export const PVH_CMP = ['', 'SPY', 'ECH']
 // M12 (QA): el índice de Chile (ECH) solo se ofrece a quien vive en Chile.
 export const pvhCmpFor = (country) => PVH_CMP.filter(c => c !== 'ECH' || String(country || '').toUpperCase() === 'CL')
@@ -248,13 +250,30 @@ export function sliceRange(points, range, now) {
   if (!points || !points.length) return []
   const last = now || points[points.length - 1].ts
   let from
-  if (range === '1M') from = last - 31 * DAY
+  if (range === '1S') from = last - 7 * DAY
+  else if (range === '1M') from = last - 31 * DAY
   else if (range === '3M') from = last - 92 * DAY
   else if (range === 'YTD') from = Date.UTC(new Date(last * 1000).getUTCFullYear(), 0, 1) / 1000
   else if (range === '1A') from = last - 366 * DAY
   else from = -Infinity
   const out = points.filter(p => p.ts >= from)
   return out.length >= 2 ? out : points.slice(-2)
+}
+
+// Minigráfico de un activo en el período elegido: cierres diarios
+// ([{ ts, close }]) recortados como el gráfico de valor, con el cambio del
+// período (primer → último cierre). Sin al menos 2 cierres, null.
+export function assetSpark(rows, range, now) {
+  const pts = []
+  for (const r of rows || []) {
+    const c = Number(r && r.close)
+    if (r && Number.isFinite(r.ts) && Number.isFinite(c) && c > 0) pts.push({ ts: r.ts, v: c })
+  }
+  if (pts.length < 2) return null
+  pts.sort((a, b) => a.ts - b.ts)
+  const cut = sliceRange(pts, range, now)
+  const ch = change(cut)
+  return { values: cut.map(p => p.v), pct: ch ? ch.pct : null, from: cut[0].ts, to: cut[cut.length - 1].ts }
 }
 
 export function rebase(indexRows, points) {

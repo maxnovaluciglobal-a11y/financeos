@@ -52,4 +52,14 @@ export function paceLine(pace, { t, fmt }) {
     : { kind: 'behind', text: t('home.lupa.pace.behind', { amount: fmt(-gap) }) }
 }
 
+// Rótulo sobre el gráfico: "$639.144 por encima" o "por
+// debajo" del ritmo de hoy. null si el ritmo va parejo o los fijos se llevan
+// todo el ingreso (no hay ritmo que medir). Claves en components/ahead.
+export function paceGap(pace, { t, fmt }) {
+  if (!pace || pace.cause === 'fixed' || pace.even || !Number.isFinite(pace.gap) || pace.gap === 0) return null
+  return pace.gap > 0
+    ? { kind: 'under', text: t('ahead.pace.under', { amount: fmt(pace.gap) }) }
+    : { kind: 'over', text: t('ahead.pace.over', { amount: fmt(-pace.gap) }) }
+}
+
 export const sheetTitle = (activeMonth, day, locale) => upperFirst(longDate(activeMonth, day, locale))

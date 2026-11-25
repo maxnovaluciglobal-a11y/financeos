@@ -469,7 +469,7 @@ export function buildTransactions(rows, batchId, importedAt) {
   const now = importedAt || new Date().toISOString()
   rows.forEach(row => {
     if (!row._include || row.status !== 'valid') return
-    const base = { date: row.date, description: row.description, concept: row.description, amount: row.amount, category: row.category || 'Importado', account: row.account || '', notes: '', source: 'csv', importBatchId: batchId, importedAt: now, originalDescription: row.originalDescription }
+    const base = { date: row.date, description: row.description, concept: row.description, amount: row.amount, category: row.category || 'Importado', account: row.account || '', notes: '', source: 'csv', importBatchId: batchId, importedAt: now, originalDescription: row.originalDescription, categorySuggested: !!row.categorySuggested }
     if (row.type === 'income') incomes.push(base)
     else expenses.push(base)
   })

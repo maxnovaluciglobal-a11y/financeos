@@ -17,6 +17,8 @@ import { VE_PERSONA } from './personas/ve.js'
 
 import { d, M0, M1, M2, M3, M4, M5, day, nextMonthDate, nextYearDate } from './demoDates.js'
 import { demoRecurringRules } from './demoRecurring.js'
+import { seedDemoReview } from '../utils/review.js'
+import { suggestMatch } from '../utils/categoryRules.js'
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
 export const DEMO_SETTINGS = {
@@ -145,8 +147,8 @@ export const DEMO_BUDGETS = [
 // ── DEUDAS ────────────────────────────────────────────────────────────────────
 // Dos deudas con tasas altas → simulador Avalanche muestra ahorro real
 export const DEMO_DEBTS = [
-  { id: d('d1'), debtType: 'Tarjeta', creditor: 'Tarjeta de crédito',   initial: 4_200_000,  balance: 3_800_000,  minPayment: 190_000, dueDate: nextMonthDate(15), rate: 24.0, notes: 'Tasa efectiva anual 24%' },
-  { id: d('d2'), debtType: 'Crédito', creditor: 'Crédito de consumo',    initial: 8_500_000,  balance: 7_200_000,  minPayment: 320_000, dueDate: nextMonthDate(5),  rate: 18.5, notes: 'Préstamo a 36 meses' },
+  { id: d('d1'), debtType: 'Tarjeta', creditor: 'Tarjeta de crédito',   initial: 4_200_000,  balance: 3_800_000,  minPayment: 190_000, dueDate: nextMonthDate(15), rate: 24.0, notes: 'Tasa efectiva anual 24%', creditLimit: 6_000_000, statementAmount: 1_450_000 },
+  { id: d('d2'), debtType: 'Crédito', creditor: 'Crédito de consumo',    initial: 8_500_000,  balance: 7_200_000,  minPayment: 320_000, dueDate: nextMonthDate(5),  rate: 18.5, notes: 'Préstamo a 36 meses', totalInstallments: 36, paidInstallments: 9 },
 ]
 
 // ── METAS ─────────────────────────────────────────────────────────────────────
@@ -231,18 +233,36 @@ export function onlyUntilToday(rows, today = new Date()) {
   return rows.filter(r => !r.date || String(r.date).slice(0, 10) <= iso)
 }
 
+// Reglas de categoría del demo (24-nov-2026): las 2 palabras de comercio que
+// más se repiten en los gastos de la persona con una sola categoría, para que
+// Ajustes › Categorías y reglas no aparezca vacío. Marcadas `source: 'demo'`.
+export function demoCategoryRules(expenses) {
+  const by = new Map()
+  for (const e of Array.isArray(expenses) ? expenses : []) {
+    const key = suggestMatch(e?.description)
+    if (!key || !e.category) continue
+    const g = by.get(key) || { key, cats: new Set(), n: 0 }
+    g.cats.add(e.category); g.n++
+    by.set(key, g)
+  }
+  return [...by.values()].filter(g => g.cats.size === 1 && g.n >= 2)
+    .sort((a, b) => b.n - a.n || (a.key < b.key ? -1 : 1)).slice(0, 2)
+    .map(g => ({ id: `cr-demo-${g.key}`, match: g.key, category: [...g.cats][0], kind: 'expense', createdAt: '2026-01-01T00:00:00.000Z', source: 'demo' }))
+}
+
 export function buildDemoState(personaId, language = detectLanguage(), scenario = 'dificil') {
   const p = DEMO_PERSONAS[personaId] || SOFIA_PERSONA
   return {
     personaId: p.id,
     incomes:       onlyUntilToday(scenario === 'exitoso' ? p.incomesGood : p.incomesHard),
-    expenses:      onlyUntilToday(p.expenses),
+    // "Por revisar": 3 gastos del mes marcados, sin cambiar montos.
+    expenses:      seedDemoReview(onlyUntilToday(p.expenses), M0),
     budgets:       p.budgets,
     debts:         p.debts,
     goals:         p.goals,
     subscriptions: p.subscriptions,
     recurring:     demoRecurringRules(p),
-    settings:      { ...DEMO_SETTINGS, currency: p.currency, country: p.country, language, ...(p.settings ? p.settings() : {}) },
+    settings:      { ...DEMO_SETTINGS, currency: p.currency, country: p.country, language, categoryRules: demoCategoryRules(p.expenses), ...(p.settings ? p.settings() : {}) },
   }
 }
 

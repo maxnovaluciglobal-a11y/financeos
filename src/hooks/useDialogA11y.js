@@ -29,7 +29,7 @@ export function useDialogA11y(open, onClose, containerRef, focusRef) {
 
     const onKey = (e) => {
       if (stack[stack.length - 1] !== me) return
-      if (e.key === 'Escape') { e.preventDefault(); onClose?.(); return }
+      if (e.key === 'Escape') { e.preventDefault(); closeRef.current?.(); return }
       if (e.key === 'Tab' && containerRef?.current) {
         const els = [...containerRef.current.querySelectorAll('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])')]
           .filter(el => !el.disabled && el.offsetParent !== null)
@@ -47,5 +47,8 @@ export function useDialogA11y(open, onClose, containerRef, focusRef) {
       if (i >= 0) stack.splice(i, 1)
       if (trigger && typeof trigger.focus === 'function') trigger.focus()
     }
-  }, [open, onClose, containerRef, focusRef])
+  // onClose va por closeRef: un onClose nuevo en cada render (un guardado en
+  // una hoja anidada) no debe desmontar el efecto, porque al limpiar devuelve
+  // el foco al disparador y la hoja pierde el foco.
+  }, [open, containerRef, focusRef])
 }

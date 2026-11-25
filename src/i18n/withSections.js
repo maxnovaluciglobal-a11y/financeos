@@ -15,10 +15,30 @@ import apvEs from '../pages/APV/strings.es.js'
 import apvEn from '../pages/APV/strings.en.js'
 import apvPt from '../pages/APV/strings.pt.js'
 import apvDe from '../pages/APV/strings.de.js'
+import guideEs from './guide/strings.es.js'
+import guideEn from './guide/strings.en.js'
+import guidePt from './guide/strings.pt.js'
+import guideDe from './guide/strings.de.js'
+import extrasEs from '../extras/strings.es.js'
+import extrasEn from '../extras/strings.en.js'
+import extrasPt from '../extras/strings.pt.js'
+import extrasDe from '../extras/strings.de.js'
+import aheadEs from './ahead/strings.es.js'
+import aheadEn from './ahead/strings.en.js'
+import aheadPt from './ahead/strings.pt.js'
+import aheadDe from './ahead/strings.de.js'
+import categoriesEs from './categories/strings.es.js'
+import categoriesEn from './categories/strings.en.js'
+import categoriesPt from './categories/strings.pt.js'
+import categoriesDe from './categories/strings.de.js'
 
 export const SECTION_DICTS = {
   invest: { es: investEs, en: investEn, pt: investPt, de: investDe },
   apv: { es: apvEs, en: apvEn, pt: apvPt, de: apvDe },
+  guide: { es: guideEs, en: guideEn, pt: guidePt, de: guideDe },
+  extras: { es: extrasEs, en: extrasEn, pt: extrasPt, de: extrasDe },
+  ahead: { es: aheadEs, en: aheadEn, pt: aheadPt, de: aheadDe },
+  categories: { es: categoriesEs, en: categoriesEn, pt: categoriesPt, de: categoriesDe },
 }
 
 const merged = (lang, main) => Object.assign({}, main, ...Object.values(SECTION_DICTS).map(d => d[lang]))

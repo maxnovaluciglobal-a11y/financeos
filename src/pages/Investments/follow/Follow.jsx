@@ -75,7 +75,7 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
     if (push.state === 'off') {
       say(`${msg} ${t('fl.push.off')}`, {
         label: t('fl.push.enable'),
-        onAction: async () => { const [txt, tone] = pushResultText(await push.enable(), t); showToast?.(txt, tone) },
+        onAction: async () => { const [txt, tone] = pushResultText(await push.enable(), t); if (txt) showToast?.(txt, tone) },
       })
     } else if (push.state === 'noLicense' || push.state === 'unsupported') say(`${msg} ${t(push.state === 'noLicense' ? 'fl.push.noLicense' : 'fl.push.unsupported')}`)
     else say(msg)

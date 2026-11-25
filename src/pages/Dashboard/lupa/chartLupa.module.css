@@ -70,6 +70,26 @@
   50% { box-shadow: 0 0 0 5px var(--on-grad-accent), 0 0 0 7px var(--text-on-accent), 0 0 0 24px color-mix(in srgb, var(--on-grad-accent) 28%, transparent); }
 }
 
+/* Exceso o margen del ritmo de hoy: tramo vertical entre lo
+   gastado y el ritmo ideal, y su rótulo. Rojo de exceso con blanco encima
+   (5,8:1) o lima con tinta, como la píldora. Se oculta mientras se recorre. */
+.gapSeg { stroke-width: 3; stroke-linecap: round; }
+.gapOver { stroke: var(--red-300); }
+.gapUnder { stroke: var(--on-grad-accent); }
+.gapLabel {
+  position: absolute; z-index: 5; pointer-events: none; width: max-content; max-width: 50%;
+  padding: 2px var(--space-2); border-radius: var(--radius-pill);
+  font-size: var(--t-footnote); line-height: 1.25; font-weight: var(--fw-semibold);
+  /* Con texto agrandado parte en dos líneas antes que cortar la cifra. */
+  white-space: normal; overflow-wrap: anywhere;
+  transition: opacity .15s;
+}
+.gapLabel[data-side="right"] { transform: translate(28px, -50%); }
+.gapLabel[data-side="left"]  { transform: translate(calc(-100% - 28px), -50%); }
+.gapLabelOver  { background: var(--red-700); color: var(--gray-0); }
+.gapLabelUnder { background: var(--on-grad-accent); color: var(--text-on-accent); }
+.chart[data-mode="active"] .gapLabel { opacity: 0; }
+
 .axis {
   position: relative; height: 1rem; margin-top: var(--space-1);
   font-size: var(--type-etiqueta); line-height: var(--type-etiqueta-lh); font-weight: var(--fw-semibold);

@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   UserRound, Coins, Palette, LayoutTemplate, DatabaseBackup, ShieldCheck, Bell,
-  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles, Zap, ChartLine } from 'lucide-react'
+  CreditCard, SlidersHorizontal, TriangleAlert, Search, ChevronRight, ChevronLeft, X, Sparkles, Zap, ChartLine, Tags } from 'lucide-react'
 import { PageHeader } from '../../components/ui/index.jsx'
 import TemplateSelector from '../../components/templates/TemplateSelector.jsx'
 import SecuritySection from './SecuritySection.jsx'
@@ -29,6 +29,7 @@ import NotificationsScreen from './NotificationsScreen.jsx'
 import PlanScreen from './PlanScreen.jsx'
 import AdvancedScreen from './AdvancedScreen.jsx'
 import DangerScreen from './DangerScreen.jsx'
+import CategoriesScreen from './CategoriesScreen.jsx'
 import { Setting } from './settingsUi.jsx'
 // Mismas filas que el Menú (patrón rial ya aprobado): grupo con título, lista
 // en una superficie, fila de ≥ 52 px con ícono, texto y chevron.
@@ -43,7 +44,7 @@ import { useT } from '../../i18n/useT.js'
 import { helpUrl } from '../../utils/landingUrls.js'
 
 const ICONS = {
-  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, features: Sparkles, investments: ChartLine, autoEntry: Zap,
+  profile: UserRound, currency: Coins, appearance: Palette, templates: LayoutTemplate, categories: Tags, features: Sparkles, investments: ChartLine, autoEntry: Zap,
   data: DatabaseBackup, security: ShieldCheck, notifications: Bell, plan: CreditCard,
   advanced: SlidersHorizontal, danger: TriangleAlert,
 }
@@ -202,6 +203,7 @@ export default function Settings({ setPage } = {}) {
           {sub === 'profile'       && <ProfileScreen isDemo={isDemo} accountEmail={accountEmail} />}
           {sub === 'currency'      && <CurrencyScreen />}
           {sub === 'appearance'    && <AppearanceScreen />}
+          {sub === 'categories'    && <CategoriesScreen />}
           {sub === 'features'      && <FeaturesScreen />}
           {sub === 'investments' && canShowInvestments() && <InvestScreen setPage={setPage} isDemo={isDemo} onOpenFeatures={() => switchSub('features')} />}
           {sub === 'autoEntry'     && <AutoEntryScreen />}

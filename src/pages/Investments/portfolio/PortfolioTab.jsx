@@ -15,6 +15,7 @@ import { DISPLAY_CCY_KEY, initialDisplayCcy } from './view.js'
 import { usePT } from './text.js'
 import { ConfirmSheet, ImportSheet, PositionSheet, TradeSheet } from './sheets.jsx'
 import { useTargets } from './targetsStore.js'
+import { takePortIntent } from './intentQueue.js'
 import Positions from './Positions.jsx'
 import Movements from './Movements.jsx'
 import Dividends from './Dividends.jsx'
@@ -159,6 +160,15 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
     setDispCcy,
     dispCcy,
   }
+
+  // Pedido desde Resumen (Depositado frente a ganancia, estado vacío): se abre
+  // una vez, al montar.
+  useEffect(() => {
+    const it = takePortIntent()
+    if (it === 'deposit') { setSub('movimientos'); setTrade({ type: 'deposit' }) }
+    else if (it === 'import') setImp('csv')
+    else if (it === 'add') setPos({ prev: null, prefill: null })
+  }, [])
 
   const knownTickers = useMemo(() => [...new Set(pb.holdings.map(h => h.t))], [pb.holdings])
 

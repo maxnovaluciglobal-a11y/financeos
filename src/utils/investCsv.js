@@ -16,7 +16,7 @@
 //    "sin tipo de cambio": no entran al total.
 import { csvCell, toCsv } from './csvSafe.js'
 
-const COLS = {
+export const COLS = {
   t: ['ticker', 'simbolo', 'símbolo', 'symbol', 'activo', 'asset'],
   sh: ['unidades', 'cantidad', 'acciones', 'shares', 'quantity', 'qty', 'units', 'anteile', 'stück', 'quantidade'],
   cost: ['entrada', 'precio de entrada', 'costo', 'costo promedio', 'precio', 'avg_cost', 'avg cost', 'cost', 'price', 'entry', 'einstand', 'preço médio'],
@@ -24,9 +24,9 @@ const COLS = {
   stop: ['stop', 'stop loss'],
   fxCost: ['tipo de cambio de compra', 'fx at cost', 'fx_at_cost', 'câmbio da compra', 'wechselkurs beim kauf'],
 }
-const TYPES = { stock: 'Stock', accion: 'Stock', 'acción': 'Stock', aktie: 'Stock', 'ação': 'Stock', etf: 'ETF', crypto: 'Crypto', cripto: 'Crypto', krypto: 'Crypto', bond: 'Bond', bono: 'Bond' }
+export const TYPES = { stock: 'Stock', accion: 'Stock', 'acción': 'Stock', aktie: 'Stock', 'ação': 'Stock', etf: 'ETF', crypto: 'Crypto', cripto: 'Crypto', krypto: 'Crypto', bond: 'Bond', bono: 'Bond' }
 // Como Invest, pero sin empezar por = - (un "ticker" =CMD es una fórmula, no un activo).
-const TICKER_RE = /^[A-Z0-9^][A-Z0-9.\-^=]{0,14}$/
+export const TICKER_RE = /^[A-Z0-9^][A-Z0-9.\-^=]{0,14}$/
 export const IMPORT_MAX_ROWS = 200
 
 export function splitLine(line, sep) {

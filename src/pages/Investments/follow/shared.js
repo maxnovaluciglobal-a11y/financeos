@@ -3,7 +3,8 @@
 // Notificaciones, core/push.js; ligado a la licencia).
 import { useCallback, useEffect, useState } from 'react'
 import { fmtPct } from '../../../utils/index.js'
-import { enablePush, isPushEnabled, pushSupported } from '../../../core/push.js'
+import { isPushEnabled, pushSupported } from '../../../core/push.js'
+import { requestPushPermission } from '../../../core/pushPrimer.js'
 import { getLicenseKey } from '../../../utils/licenseValidator.js'
 import { ALERT_LIMIT } from '../../../utils/investAlerts.js'
 
@@ -61,7 +62,9 @@ export async function hasLiveSubscription({ sw = typeof navigator !== 'undefined
 }
 
 // Resultado de enable() → [texto, tono] para un aviso (toast).
+// "Ahora no" en la hoja de ejemplos: [null, null], sin aviso.
 export function pushResultText(r, t) {
+  if (r?.error === 'dismissed') return [null, null]
   if (r?.ok) return [t('fl.push.ok'), 'ok']
   if (r?.error === 'no_license') return [t('fl.push.noLicense'), 'error']
   if (r?.error === 'unsupported') return [t('fl.push.unsupported'), 'error']
@@ -84,8 +87,10 @@ export function usePushOffer(demo) {
     if (busy) return { ok: false, error: 'busy' }
     setBusy(true); setError(null)
     try {
-      const r = await enablePush()
+      // Antes del diálogo del navegador, la hoja con ejemplos.
+      const r = await requestPushPermission({ source: 'invest' })
       if (r.ok) { setState('on'); return { ok: true } }
+      if (r.error === 'dismissed') return { ok: false, error: 'dismissed' }
       // Sin licencia o sin soporte: el texto del estado ya lo explica (sin
       // sumar "No se pudo activar", que lo contradice).
       if (r.error === 'no_license') { setState('noLicense'); return { ok: false, error: 'no_license' } }

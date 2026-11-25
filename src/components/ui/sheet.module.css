@@ -13,13 +13,14 @@
 .sheet {
   position: relative; display: flex; flex-direction: column; width: 100%; box-sizing: border-box;
   max-height: calc(100dvh - max(env(safe-area-inset-top), 16px) - 8px);
-  background: var(--sur); border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  background: var(--sheet-bg, var(--sur)); border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  -webkit-backdrop-filter: var(--sheet-blur, none); backdrop-filter: var(--sheet-blur, none);
   box-shadow: var(--sh-3); outline: none;
   transform: translateY(100%); will-change: transform; touch-action: pan-y;
 }
 /* El resorte pasa apenas del punto final: esta extensión evita ver el fondo. */
 .sheet::after {
-  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 40px; background: var(--sur);
+  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 40px; background: var(--sheet-bg, var(--sur));
 }
 .grip { flex: 0 0 auto; display: flex; justify-content: center; padding: 8px 0 12px; touch-action: none; }
 .gripBar { width: 38px; height: 4px; border-radius: var(--r-pill); background: var(--brd2); }

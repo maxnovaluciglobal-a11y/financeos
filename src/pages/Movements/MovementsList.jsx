@@ -14,16 +14,25 @@ import { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { catName, expSubcatLabel, dateLocale, localDateStr, fmtDayMonth } from '../../utils/index.js'
 import { filterMovements, groupByDay, dayLabel, isFixed, inLens } from './movementsList.js'
+import { isUncategorized } from '../../utils/review.js'
+import { useApp } from '../../context/AppContext.jsx'
+import { prefsOf, nameFor } from '../../utils/categoryPrefs.js'
+import { withCategoryStrings } from '../../i18n/categories/index.js'
 import s from './movements.module.css'
 
 const PAGE = 40
 
 // Una fila de la lista (también la usa la hoja del día del calendario, B3b).
-export function MovementRow({ e, type = 'all', sym, lens, onOpen, onEdit, onDelete }) {
+function MovementRowBody({ e, type = 'all', sym, lens, onOpen, onEdit, onDelete }) {
   const { t, lang } = useT()
-  const catNameOf = (c) => catName(c, lang)
+  const { settings } = useApp() || {}
+  const prefs = prefsOf(settings)
+  // Nombre propio de la categoría (categoryPrefs), si la persona le puso uno.
+  const catNameOf = (c) => nameFor(c, prefs, lang)
   const amt = (n) => inLens(n, lens)
   const income = e.kind === 'income'
+  // Punto en lo que todavía no tiene categoría (sin categoría o "Importado").
+  const uncat = isUncategorized(e)
   const name = e.name || catNameOf(e.category)
   // Deslizar es un atajo: tocar la fila abre el detalle con las mismas dos
   // acciones a la vista (causa 18).
@@ -39,7 +48,8 @@ export function MovementRow({ e, type = 'all', sym, lens, onOpen, onEdit, onDele
         <span className={s.rowName}>{e.inv && <InlineIcon kind="investment" size={12} />}{name}</span>
         <span className={s.rowMeta}>
           {income && type === 'all' && <><ArrowDownLeft size={12} strokeWidth={1.8} aria-hidden="true" />{t('movl.kind.income')}<span aria-hidden="true">·</span></>}
-          {catNameOf(e.category)}{e.subcategory ? ` › ${expSubcatLabel(e.subcategory, lang)}` : ''}
+          {uncat && <span className={s.uncatDot} aria-hidden="true" />}
+          {uncat ? <>{t('movl.uncat')}</> : catNameOf(e.category)}{e.subcategory ? ` › ${expSubcatLabel(e.subcategory, lang)}` : ''}
           {isFixed(e) && <><span aria-hidden="true">·</span><Repeat size={12} strokeWidth={1.7} aria-hidden="true" />{t('movl.filter.fixed')}</>}
           <span className="sr-only">{`, ${fmtDayMonth(e.date)}`}</span>
         </span>
@@ -54,7 +64,7 @@ export function MovementRow({ e, type = 'all', sym, lens, onOpen, onEdit, onDele
 // Poda P2 (30-oct-2026): la búsqueda, el origen y la categoría los maneja la
 // página (lupa en la fila de controles, hoja "Filtrar" y chips quitables); la
 // lista solo filtra y agrupa con lo que recibe.
-export default function MovementsList({ items, type = 'all', sym, lens, query = '', kind = 'all', category, onClearFilters, onOpen, onEdit, onDelete, empty }) {
+function MovementsList({ items, type = 'all', sym, lens, query = '', kind = 'all', category, onClearFilters, onOpen, onEdit, onDelete, empty }) {
   const { t, lang } = useT()
   const ofType = useMemo(() => filterMovements(items, { type }), [items, type])
   const filtered = useMemo(
@@ -122,3 +132,8 @@ export default function MovementsList({ items, type = 'all', sym, lens, query = 
     </section>
   )
 }
+
+// "Sin categoría" vive en la sección diferida src/i18n/categories (también
+// la usa la hoja del día del calendario, B3b).
+export const MovementRow = withCategoryStrings(MovementRowBody)
+export default withCategoryStrings(MovementsList)

@@ -230,7 +230,7 @@ export function AppProvider({ children }) {
       // taparía el fijo del mismo nombre (nunca se registraría).
       const due = dueAutoConfirmations(rules, { incomes, expenses: splitSetAsides(expenses).expenses, today: localDateStr() })
       let created = 0
-      if (due.length) created = (await confirmOccurrencesInDb(due.map(o => ({ rule: o.rule, date: o.date })))).records.length
+      if (due.length) created = (await confirmOccurrencesInDb(due.map(o => ({ rule: o.rule, date: o.date, review: true })))).records.length
       if (upserts.length || adv || created) await rehydrate({ notLocalChange: true })
       if (created) showToast(tr(created === 1 ? 'rec.toast.autoOne' : 'rec.toast.autoMany', { n: created }), 'ok')
     } catch (e) {

@@ -1,0 +1,50 @@
+/* src/pages/Dashboard/firstStepsCard.module.css — tarjeta "Primeros pasos"
+   Misma superficie que las tarjetas de Ingresos y Gastos; filas de
+   48 px; un solo acento (el paso siguiente). */
+.card {
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  border-radius: var(--radius-lg); background: var(--color-surface); color: var(--tx);
+}
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.title { margin: 0; font-size: var(--t-headline); line-height: var(--t-headline-lh); font-weight: 600; color: var(--tx); }
+.dot { color: var(--th); font-weight: 400; }
+.count { font-weight: 600; color: var(--tm); }
+.hide {
+  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin-right: -12px; border: 0; border-radius: 50%;
+  background: transparent; color: var(--th); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.hide:active { background: var(--fill-2); }
+.hide:focus-visible, .rowBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.bar { position: relative; height: 4px; margin: var(--space-1) 0 var(--space-2); border-radius: 2px; background: var(--sur3); overflow: hidden; }
+.fill { position: absolute; inset: 0 auto 0 0; border-radius: 2px; background: var(--color-brand); transition: width var(--dur-value-update, 550ms) cubic-bezier(.2, .8, .2, 1); }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; min-height: 48px; box-shadow: inset 0 1px 0 var(--color-divider); }
+.row:first-child { box-shadow: none; }
+.rowBtn {
+  display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 48px; padding: 0;
+  border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rowBtn:active { opacity: .6; }
+.rowDone { gap: var(--space-3); }
+.rowDone .rowText { color: var(--tm); }
+.rowNext { align-items: flex-start; gap: var(--space-3); padding: var(--space-3) 0; }
+.rowText { flex: 1; min-width: 0; font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+.nextBody { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.desc { font-size: var(--t-subhead); line-height: 1.45; color: var(--tm); }
+.cta { width: auto; margin-top: var(--space-2); min-height: 44px; }
+
+.mark, .markNext, .markDone {
+  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; font-size: var(--t-footnote); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mark { box-shadow: inset 0 0 0 1.5px var(--sur3); color: var(--th); }
+.markNext { background: var(--color-action); color: var(--color-action-fg); }
+.markDone { background: color-mix(in srgb, var(--pos) 14%, transparent); color: var(--pos); }
+.chev { flex-shrink: 0; color: var(--th); }
+
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }

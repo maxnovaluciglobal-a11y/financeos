@@ -11,7 +11,7 @@ import { normalize } from '../../components/ui/listboxKeys.js'
 
 // Secciones de la raíz, en orden. Cada una agrupa filas (ids de SETTINGS_GROUPS).
 export const SETTINGS_SECTIONS = [
-  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'features', 'investments', 'autoEntry'] },
+  { id: 'prefs',   title: 'settings.section.prefs',   groups: ['profile', 'currency', 'appearance', 'templates', 'categories', 'features', 'investments', 'autoEntry'] },
   { id: 'dataSec', title: 'settings.section.dataSec', groups: ['data', 'security', 'notifications'] },
   { id: 'more',    title: 'settings.section.more',    groups: ['plan', 'advanced', 'danger'] },
 ]
@@ -37,6 +37,11 @@ export const SETTINGS_GROUPS = [
   ] },
   { id: 'templates', items: [
     { id: 'templates', label: 'settings.templates.title' },
+  ] },
+  // Categorías en píldoras y reglas de categoría (24-nov-2026, CategoriesScreen.jsx).
+  { id: 'categories', items: [
+    { id: 'categories', label: 'cats.title' },
+    { id: 'rules',      label: 'crules.title' },
   ] },
   // Poda P3 (30-oct-2026): módulos que se activan (utils/modules.js).
   { id: 'features', items: [
@@ -140,7 +145,7 @@ export const CONTROL_MAP = [
   ['settings.exportCsv.label',         'data',          'DataScreen.jsx'],
   ['settings.dataStorage.title',       'data',          'DataScreen.jsx'],
   ['<SecuritySection',                 'security',      'index.jsx'],
-  ['enablePush',                       'notifications', 'NotificationsScreen.jsx'],
+  ['requestPushPermission',            'notifications', 'NotificationsScreen.jsx'], // pasa por la hoja de ejemplos
   ['settings.license.label',           'plan',          'PlanScreen.jsx'],
   ['settings.confirmDeactivateLicense','plan',          'PlanScreen.jsx'],
   ['settings.cancelSub.label',         'plan',          'PlanScreen.jsx'],

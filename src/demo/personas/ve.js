@@ -147,8 +147,8 @@ export const VE_BUDGETS = [
 // ── DEUDAS ────────────────────────────────────────────────────────────────────
 // La tarjeta tiene la tasa más alta → el simulador Avalanche la prioriza.
 export const VE_DEBTS = [
-  { id: d('ve-d1'), type: 'Crédito', debtType: 'Crédito', creditor: 'Compra en cuotas — celular', initial: bs(96, M0), balance: bs(64, M0), minPayment: bs(32, M0), dueDate: nextMonthDate(9), rate: 0, notes: '6 cuotas quincenales sin intereses' },
-  { id: d('ve-d2'), type: 'Tarjeta', debtType: 'Tarjeta', creditor: 'Tarjeta de crédito', initial: bs(150, M0), balance: bs(118, M0), minPayment: bs(15, M0), dueDate: nextMonthDate(20), rate: 58.0, notes: 'Tasa anual referencial' },
+  { id: d('ve-d1'), type: 'Crédito', debtType: 'Crédito', creditor: 'Compra en cuotas — celular', initial: bs(96, M0), balance: bs(64, M0), minPayment: bs(32, M0), dueDate: nextMonthDate(9), rate: 0, notes: '6 cuotas quincenales sin intereses', totalInstallments: 6, paidInstallments: 2 },
+  { id: d('ve-d2'), type: 'Tarjeta', debtType: 'Tarjeta', creditor: 'Tarjeta de crédito', initial: bs(150, M0), balance: bs(118, M0), minPayment: bs(15, M0), dueDate: nextMonthDate(20), rate: 58.0, notes: 'Tasa anual referencial', creditLimit: bs(250, M0), statementAmount: bs(42, M0) },
 ]
 
 // ── METAS ─────────────────────────────────────────────────────────────────────

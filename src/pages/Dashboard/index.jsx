@@ -23,12 +23,13 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import DonutEmpty from './DonutEmpty.jsx'
 import { SCORE_LEVELS } from '../../utils/financialScore.js'
 import { projectEndOfMonth } from '../../utils/projection.js'
-import { isSyncEnabled, syncAvailable } from '../../core/sync.js'
 import { ScoreState } from '../../components/ScoreState.jsx'
 import HomeKpis from './HomeKpis.jsx'
 import MonthReading from './MonthReading.jsx'
-import FirstSteps from './FirstSteps.jsx'
-import { firstStepsProgress } from './firstSteps.js'
+import FirstSteps, { useFirstSteps } from './FirstSteps.jsx'
+import ReviewInbox from './review/ReviewInbox.jsx'
+// Avisos de tus finanzas de hoy (fijo de mañana, presupuesto al 90 %, lo que queda, cobro).
+import LocalAlertsCard from './LocalAlertsCard.jsx'
 import ProChecklist from './ProChecklist.jsx'
 import BudgetByCategory from './BudgetByCategory.jsx'
 import UpcomingPayments from './UpcomingPayments.jsx'
@@ -129,13 +130,10 @@ export default function Dashboard({ setPage }) {
   const [lupa] = useState(() => lupaOn(!!settings.isDemo))
 
   // R7/A8: un solo aviso de respaldo. Si "Primeros pasos" ya lo pide, no sale
-  // la franja.
-  const guide = firstStepsProgress({
-    incomes: ctx.incomes, expenses: ctx.expenses, budgets: ctx.budgets,
-    lastBackupAt: settings.lastBackupAt, syncOn: isSyncEnabled() && syncAvailable(),
-  })
-  const firstStepsShown = !settings.isDemo && !guide.complete && !!setPage
-  const backupStepPending = firstStepsShown && !guide.steps.find(st => st.id === 'backup')?.done
+  // la franja. La tarjeta va arriba del contenido, fuera de "Para hacer".
+  const steps = useFirstSteps()
+  const firstStepsShown = steps.visible && !!setPage
+  const backupStepPending = firstStepsShown && steps.progress.steps.some(st => st.id === 'backup' && !st.done)
 
   // Rial #20: la lente del héroe en US$ o € (settings.refCurrency).
   const lensRate = useLensRate(settings, refRate, refOn)
@@ -384,6 +382,9 @@ export default function Dashboard({ setPage }) {
 
       <div className={`${hs.home} ${lupa ? hs.calm : ''}`}>
         <div className={hs.stack}>
+          {/* Primeros pasos: arriba del contenido, solo en una cuenta nueva. */}
+          <FirstSteps setPage={setPage} steps={steps} />
+          <Suspense fallback={null}><LocalAlertsCard setPage={setPage} /></Suspense>
           {!lupa && (
             <HomeKpis kpis={kpis} activeMonth={activeMonth} sym={sym} dualOn={dualOn} toUSD={toUSD}
               pending={pendingSum} onReviewPending={() => setReviewOpen(true)}
@@ -391,6 +392,8 @@ export default function Dashboard({ setPage }) {
               daysLeft={activeMonth === currentMonth() ? pulse.daysLeft : null}
               onOpen={setPage} refc={refc} />
           )}
+          {/* Por revisar: debajo de las cifras del mes; sin pendientes no ocupa lugar. */}
+          {!lupa && <ReviewInbox sym={sym} />}
           {lupa && (
             <div className={ask.cards}>
               {[
@@ -409,6 +412,7 @@ export default function Dashboard({ setPage }) {
               })}
             </div>
           )}
+          {lupa && <ReviewInbox sym={sym} />}
           {lupa && <div data-tour="home-ask"><AskCard onAsk={openAsk} t={t} activeMonth={activeMonth} /></div>}
 
           <MonthReading kpis={kpis} expenses={expenses} budgets={budgets} pending={pendingSum} activeMonth={activeMonth} settings={settings} sym={sym} setPage={setPage} />
@@ -429,7 +433,6 @@ export default function Dashboard({ setPage }) {
               del héroe, a un toque. */}
           <TodoStrip>
               <Slot><SyncErrorNotice setPage={setPage} /></Slot>
-              <Slot><FirstSteps setPage={setPage} /></Slot>
               <Slot><ProChecklist setPage={setPage} suppressed={firstStepsShown} /></Slot>
               <Slot><BackupReminderBanner suppress={backupStepPending} /></Slot>
               <Slot><SafariStorageNotice /></Slot>

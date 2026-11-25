@@ -6,6 +6,9 @@ import { ChoiceGroup } from '../../components/ui/index.jsx'
 import { THEME_SETTINGS } from '../../utils/theme.js'
 import { useT } from '../../i18n/useT.js'
 import { srow, slbl, ssub, Switch, Setting } from './settingsUi.jsx'
+import { Suspense } from 'react'
+// Transparencias (24-nov-2026): preferencia del dispositivo.
+import GlassSetting from './GlassSetting.jsx'
 
 export default function AppearanceScreen() {
   const { settings, updateSettings } = useApp()
@@ -33,6 +36,7 @@ export default function AppearanceScreen() {
           onChange={() => updateSettings({ ...settings, showCategoryEmoji: settings.showCategoryEmoji !== true })}
         />
       </Setting>
+      <Suspense fallback={null}><GlassSetting /></Suspense>
     </div>
   )
 }

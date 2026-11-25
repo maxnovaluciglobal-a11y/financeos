@@ -4,8 +4,8 @@
 // kind='income': los mismos campos que la edición de la página de Ingresos
 // (fuente, monto, fecha, categoría); el borrado usa el mismo Deshacer.
 
-import { useEffect, useRef, useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Pencil, Trash2, Wand2 } from 'lucide-react'
 import Sheet from '../../components/ui/Sheet.jsx'
 import Amount from '../../components/Amount.jsx'
 import CategoryIcon from '../../components/CategoryIcon.jsx'
@@ -14,6 +14,11 @@ import { useT } from '../../i18n/useT.js'
 import { catName, expSubcatLabel, methodLabel, dateLocale, recurrenceLabel } from '../../utils/index.js'
 import s from './movements.module.css'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { suggestMatch, recordText } from '../../utils/categoryRules.js'
+import { isUncategorized, markReviewed } from '../../utils/review.js'
+// "Aplicar siempre a «Uber»": la hoja de la regla se carga al tocar.
+import { withCategoryStrings } from '../../i18n/categories/index.js'
+const RuleSheet = lazy(() => import('../../components/categories/RuleSheet.jsx'))
 
 function fullDate(iso) {
   const [y, m, d] = String(iso || '').split('-').map(Number)
@@ -22,7 +27,7 @@ function fullDate(iso) {
   catch { return iso }
 }
 
-export default function MovementSheet({ expense, open = true, startEditing = false, kind = 'expense', sym, categories, subcats = {}, onClose, onSave, onDelete }) {
+function MovementSheet({ expense, open = true, startEditing = false, kind = 'expense', sym, categories, subcats = {}, onClose, onSave, onDelete }) {
   // El movimiento se conserva mientras la hoja baja: al cerrar, el padre lo vacía.
   const kept = useRef(expense)
   if (expense) kept.current = expense
@@ -33,6 +38,7 @@ export default function MovementSheet({ expense, open = true, startEditing = fal
   const [f, setF] = useState({})
   const firstField = useRef(null)
   const editBtn = useRef(null)
+  const [ruleOpen, setRuleOpen] = useState(false)
 
   useEffect(() => { setEditing(false) }, [e?.id])
   // Deslizar la fila → "Editar" abre directo el formulario.
@@ -44,13 +50,16 @@ export default function MovementSheet({ expense, open = true, startEditing = fal
     setEditing(true)
   }
   if (!e) return null
+  const ruleMatch = onSave ? suggestMatch(recordText(e)) : ''
   const valid = f.description?.trim() && Number(f.amount) > 0
   const save = async () => {
     if (!valid) return
     const base = { amount: Number(f.amount), date: f.date || e.date, category: f.category || e.category }
-    await onSave?.(income
+    const out = income
       ? { ...e, ...base, source: f.description.trim() }
-      : { ...e, ...base, description: f.description.trim(), subcategory: f.subcategory ?? '' })
+      : { ...e, ...base, description: f.description.trim(), subcategory: f.subcategory ?? '' }
+    // Elegir otra categoría es revisarlo: sale de "Por revisar" (utils/review.js).
+    await onSave?.(base.category !== e.category ? markReviewed(out, { category: base.category }) : out)
     setEditing(false)
     onClose()
   }
@@ -90,6 +99,17 @@ export default function MovementSheet({ expense, open = true, startEditing = fal
               </button>
             )}
           </div>
+          {ruleMatch && !isUncategorized(e) && (
+            <button type="button" className="fos-link" onClick={() => setRuleOpen(true)} aria-haspopup="dialog"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, marginTop: 8, fontSize: 'var(--t-subhead)' }}>
+              <Wand2 size={16} strokeWidth={1.7} aria-hidden="true" />{t('crules.applyAlways', { match: ruleMatch })}
+            </button>
+          )}
+          {ruleOpen && (
+            <Suspense fallback={null}>
+              <RuleSheet onClose={() => setRuleOpen(false)} initial={{ match: ruleMatch, category: e.category, kind: income ? 'income' : 'expense' }} />
+            </Suspense>
+          )}
         </>
       ) : (
         <form onSubmit={(ev) => { ev.preventDefault(); save() }}>
@@ -129,3 +149,5 @@ export default function MovementSheet({ expense, open = true, startEditing = fal
     </Sheet>
   )
 }
+
+export default withCategoryStrings(MovementSheet, null)

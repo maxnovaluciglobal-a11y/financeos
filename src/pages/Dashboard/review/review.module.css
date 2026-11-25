@@ -1,0 +1,66 @@
+/* src/pages/Dashboard/review/review.module.css — "Por revisar".
+   Misma superficie que las tarjetas de Ingresos y Gastos. Áreas de toque de
+   44 px (48 en la app nativa por la regla global de data-native). */
+.inbox { padding: var(--space-3) var(--space-4) var(--space-1); border-radius: var(--radius-lg); background: var(--color-surface); }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: 44px; }
+.title { display: inline-flex; align-items: center; gap: var(--space-2); margin: 0;
+  font-size: var(--t-headline); line-height: var(--t-headline-lh); font-weight: 600; color: var(--tx); }
+.badge {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 7px;
+  border-radius: var(--radius-pill); background: var(--color-action); color: var(--color-action-fg);
+  font-size: var(--t-footnote); font-weight: 600; line-height: 1;
+}
+.all {
+  min-height: 44px; padding: 0 2px; border: 0; background: transparent; cursor: pointer;
+  color: var(--blu); font: inherit; font-size: var(--t-subhead); font-weight: 600; -webkit-tap-highlight-color: transparent;
+}
+
+.list { list-style: none; margin: 0; padding: 0; }
+.row { padding: var(--space-2) 0 var(--space-3); box-shadow: inset 0 1px 0 var(--color-divider); }
+.row:first-child { box-shadow: none; }
+.main {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3);
+  width: 100%; min-height: 48px; padding: 0; border: 0; background: transparent; color: inherit;
+  font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.main:active { opacity: .6; }
+.text { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+.meta { display: flex; align-items: center; gap: var(--space-2); min-width: 0; font-size: var(--t-footnote); color: var(--th); }
+.origin {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 1px 7px; border-radius: var(--radius-pill); background: var(--fill-2); color: var(--tm); font-weight: 600;
+}
+.amt, .amtInc { font-size: var(--t-subhead); font-weight: 600; white-space: nowrap; color: var(--tx); }
+.amtInc { color: var(--pos); }
+.amtWrap { display: inline-flex; justify-content: flex-end; }
+
+.actions { display: flex; align-items: center; gap: var(--space-2); padding-left: calc(28px + var(--space-3)); }
+.catChip, .ok {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; padding: 0 var(--space-3);
+  border: 0; border-radius: var(--radius-pill); cursor: pointer; font: inherit; font-size: var(--t-footnote); font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+}
+.catChip { min-width: 0; max-width: 60%; background: var(--color-surface-raised); color: var(--tx); box-shadow: inset 0 0 0 1px var(--color-divider-strong); }
+.catChipText { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catChipEmpty { color: var(--color-brand-text); box-shadow: inset 0 0 0 1px var(--color-brand-muted); }
+.ok { margin-left: auto; background: var(--chip-on-bg); color: var(--chip-on-tx); }
+.catChip:active, .ok:active { opacity: .7; }
+.main:focus-visible, .catChip:focus-visible, .ok:focus-visible, .all:focus-visible, .chip:focus-visible {
+  outline: 2px solid var(--color-focus); outline-offset: 2px;
+}
+
+/* ── Hojas ───────────────────────────────────────────────────────────── */
+.sheetTitle { margin: 0; font-size: var(--t-title-2); line-height: var(--t-title-2-lh); font-weight: 700; color: var(--tx); }
+.sheetSub { margin: var(--space-1) 0 var(--space-3); font-size: var(--t-subhead); line-height: 1.45; color: var(--tm); }
+.empty { margin: var(--space-4) 0; font-size: var(--t-body); color: var(--tm); }
+.allBtn { margin-top: var(--space-3); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-3) 0 var(--space-2);
+  border: 0; border-radius: var(--radius-pill); cursor: pointer; font: inherit; font-size: var(--t-subhead); font-weight: 600;
+  background: var(--color-surface-raised); color: var(--tx); box-shadow: inset 0 0 0 1px var(--color-divider-strong);
+  -webkit-tap-highlight-color: transparent;
+}
+.chipOn { background: var(--chip-on-bg); color: var(--chip-on-tx); box-shadow: none; }
+.chip:active { opacity: .7; }

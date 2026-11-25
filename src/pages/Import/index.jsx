@@ -13,6 +13,7 @@ import { uid, fmtMoney, currencySymbol, getCategoriesExpense, getCategoriesIncom
 import CountryBadge from '../../components/CountryBadge.jsx'
 import { detectBankTemplate, applyTemplate, BANK_TEMPLATES } from './bankTemplates.js'
 import { canonicalCategory } from '../../utils/categoryAliases.js'
+import { withReview, importNeedsReview } from '../../utils/review.js'
 import { logClientError } from '../../utils/errorLog.js'
 import { PageHeader } from '../../components/ui/index.jsx'
 import Money from '../../components/Money.jsx'
@@ -20,6 +21,7 @@ import {
   parseFile, detectColumns, validateRows, detectDuplicates, suggestCategory,
   createImportBatch, buildTransactions, MAX_ROWS,
 } from './fileParser.js'
+import { applyRulesToImportRows } from '../../utils/categoryRules.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 import { splitSetAsides } from '../../utils/setAside.js'
 
@@ -178,7 +180,10 @@ export default function ImportMovements({ setPage } = {}) {
     // cuando la fila no trae categoría propia (no había columna mapeada). El
     // usuario ve la sugerencia en la tabla de revisión y puede cambiarla antes
     // de confirmar — nunca se aplica en silencio.
-    const withCategory = withDupes.map(r => {
+    // Reglas de la persona primero (utils/categoryRules.js): la categoría que
+    // ponen no es una sugerencia y no manda la fila a Por revisar.
+    const byRule = applyRulesToImportRows(withDupes, settings?.categoryRules)
+    const withCategory = byRule.map(r => {
       if (r.category) return r
       const suggested = suggestCategory(r.description, existing)
       return suggested ? { ...r, category: suggested, categorySuggested: true } : r
@@ -200,7 +205,9 @@ export default function ImportMovements({ setPage } = {}) {
       // Guardado resiliente: si UNA fila falla, las demás SÍ se guardan (antes un
       // solo error abortaba TODA la importación y no cargaba nada). Sanitiza cada
       // registro a tipos serializables por IndexedDB.
-      const clean = (r) => ({
+      // "Por revisar": la fila con categoría sugerida o sin categoría la
+      // confirma la persona después, desde el Inicio (utils/review.js).
+      const clean = (r) => withReview({
         id: uid(),
         date: String(r.date || ''),
         description: String(r.description || ''),
@@ -208,9 +215,9 @@ export default function ImportMovements({ setPage } = {}) {
         amount: Number(r.amount) || 0,
         category: canonicalCategory(String(r.category || 'Importado')),
         account: String(r.account || ''),
-        notes: '', source: 'csv', importBatchId: batchId, importedAt: now,
+        notes: '', source: 'csv', importBatchId: batchId, importedAt: now, createdAt: now,
         originalDescription: String(r.originalDescription || r.description || ''),
-      })
+      }, 'import', { needs: importNeedsReview(r) })
       let ok = 0, fail = 0
       for (const r of [...incomes.map(x => ['incomes', x]), ...expenses.map(x => ['expenses', x])]) {
         try { await dbAdd(r[0], clean(r[1])); ok++ } catch { fail++ }

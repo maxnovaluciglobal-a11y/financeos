@@ -10,7 +10,8 @@ import { investApi } from '../../../core/investApi.js'
 import { demoMarketApi } from '../../../demo/demoMarketApi.js'
 import { currencyOf, rateOf } from '../../../utils/investValuation.js'
 import { crossFill, CASH_CCYS, localToday } from '../../../utils/investTrade.js'
-import { parseHoldingsCsv, parseBackup, IMPORT_MAX_ROWS } from '../../../utils/investCsv.js'
+import { parseBackup, IMPORT_MAX_ROWS } from '../../../utils/investCsv.js'
+import { MAP_FIELDS, PRESETS, PRESET_IDS, DECIMAL_MODES, applyMap, autoMap, csvTable, numOf } from '../../../utils/investMappedImport.js'
 import { parseInput } from './format.js'
 import { usePT } from './text.js'
 import s from './portfolio.module.css'
@@ -283,22 +284,52 @@ export function TradeSheet({ open, onClose, prefill, onSave, tickers = [], hasDe
   )
 }
 
-// ── Importar CSV de posiciones o restaurar una copia JSON ──
+// ── Importar posiciones desde un archivo o restaurar una copia JSON ──
+// Archivo (Inversiones v2): CSV o Excel con columnas elegidas por la persona
+// (utils/investMappedImport.js). Fintual y Racional son formatos POR
+// CONFIRMAR: la hoja lo dice y siempre muestra el mapeo. Nunca se piden
+// claves ni se lee la web de la corredora: solo el archivo elegido.
+const isXlsx = (file) => /\.xlsx$/i.test(file?.name || '') || file?.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
 export function ImportSheet({ open, onClose, mode = 'csv', existingTickers = [], onImportHoldings, onImportOps, onImportTargets }) {
   const { t } = usePT()
   const ref = useRef(null)
   const [parsed, setParsed] = useState(null)
+  const [table, setTable] = useState(null)
+  const [preset, setPreset] = useState('generic')
+  const [map, setMap] = useState(null)
+  const [decimal, setDecimal] = useState('auto')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
-  useEffect(() => { if (open) { setParsed(null); setMsg('') } }, [open, mode])
+  useEffect(() => { if (open) { setParsed(null); setTable(null); setMap(null); setDecimal('auto'); setMsg('') } }, [open, mode])
+  // El archivo (CSV o Excel) se convierte en tabla; las filas salen del mapeo.
+  const fromMap = useMemo(() => (table ? applyMap(table, map, { presetId: preset, decimal }) : null), [table, map, preset, decimal])
+  const view = useMemo(() => (mode === 'csv' && fromMap ? { rows: fromMap.rows, ops: [], errors: fromMap.errors } : parsed), [mode, fromMap, parsed])
+  function takeTable(tb) {
+    if (tb.error) { setTable(null); setParsed({ rows: [], ops: [], errors: [{ code: tb.error }] }); return }
+    setParsed(null)
+    setTable(tb)
+    setMap(autoMap(tb.head, preset))
+  }
+  function pickPreset(p) {
+    setPreset(p)
+    if (table) setMap(autoMap(table.head, p))
+  }
   function read(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 2 * 1024 * 1024) { setParsed({ rows: [], ops: [], errors: [{ code: 'too_big' }] }); return }
+    if (file.size > 2 * 1024 * 1024) { setTable(null); setParsed({ rows: [], ops: [], errors: [{ code: 'too_big' }] }); return }
+    if (mode === 'csv' && isXlsx(file)) {
+      file.arrayBuffer()
+        .then(buf => import('../../../utils/investXlsx.js').then(m => m.xlsxTable(buf)))
+        .then(takeTable)
+        .catch(() => { setTable(null); setParsed({ rows: [], ops: [], errors: [{ code: 'xlsx' }] }) })
+      return
+    }
     const fr = new FileReader()
     fr.onload = () => {
       const text = String(fr.result || '')
-      if (mode === 'csv') { const r = parseHoldingsCsv(text); setParsed({ rows: r.rows, ops: [], errors: r.errors }) }
+      if (mode === 'csv') takeTable(csvTable(text))
       else {
         const r = parseBackup(text, { existingTickers })
         setParsed(r.ok ? { rows: r.holdings, ops: r.operations, errors: [], skipped: r.skippedHoldings, targets: r.targets } : { rows: [], ops: [], errors: [{ code: r.error }] })
@@ -308,19 +339,20 @@ export function ImportSheet({ open, onClose, mode = 'csv', existingTickers = [],
     fr.readAsText(file)
   }
   const errText = (e) => (e.line ? t(`pf.csv.err.${e.code}`, { line: e.line, value: e.value || '' }) : t(`pf.csv.err.${e.code}`, { max: IMPORT_MAX_ROWS }))
-  const total = (parsed?.rows.length || 0) + (parsed?.ops.length || 0)
+  const total = (view?.rows.length || 0) + (view?.ops?.length || 0)
   async function go() {
     setBusy(true)
     let done = 0, all = 0, failed = false
-    if (parsed.rows.length) { const r = await onImportHoldings(parsed.rows); done += r.imported; all += r.total; failed = failed || !r.ok }
-    if (parsed.ops.length) { const r = await onImportOps(parsed.ops); done += r.imported; all += r.total; failed = failed || !r.ok }
-    if (parsed.targets && onImportTargets) onImportTargets(parsed.targets)
+    if (view.rows.length) { const r = await onImportHoldings(view.rows); done += r.imported; all += r.total; failed = failed || !r.ok }
+    if (view.ops?.length) { const r = await onImportOps(view.ops); done += r.imported; all += r.total; failed = failed || !r.ok }
+    if (view.targets && onImportTargets) onImportTargets(view.targets)
     setBusy(false)
     if (!failed) onClose(t('pf.csv.done', { n: done }))
     else setMsg(t('pf.csv.partial', { n: done, total: all }))
   }
   const title = mode === 'csv' ? t('pf.csv.title') : t('pf.json.title')
-  const preview = useMemo(() => (parsed?.rows || []).slice(0, 12), [parsed])
+  const preview = useMemo(() => (view?.rows || []).slice(0, 12), [view])
+  const presetName = t(`pf.csv.preset.${preset}`)
   return (
     <Sheet open={open} onClose={() => onClose()} ariaLabel={title} initialFocusRef={ref}>
       <div className={s.form}>
@@ -328,22 +360,57 @@ export function ImportSheet({ open, onClose, mode = 'csv', existingTickers = [],
           <h2 ref={ref} tabIndex={-1} className={s.formTitle}>{title}</h2>
           <p className={s.formSub}>{mode === 'csv' ? t('pf.csv.sub') : t('pf.json.sub')}</p>
         </div>
-        <Field id="pf-imp-file" label={t('pf.csv.file')}>
-          <input id="pf-imp-file" className={s.input} type="file" accept={mode === 'csv' ? '.csv,text/csv' : '.json,application/json'} onChange={read} />
+        {mode === 'csv' && (
+          <fieldset className={s.field} style={{ border: 0, margin: 0, padding: 0 }}>
+            <legend id="pf-imp-preset" className={s.fieldLabel}>{t('pf.csv.preset')}</legend>
+            <ChoiceGroup labelledBy="pf-imp-preset" value={preset} onChange={pickPreset}
+              options={PRESET_IDS.map(id => ({ value: id, label: t(`pf.csv.preset.${id}`) }))} />
+            {!PRESETS[preset].confirmed && <p className={s.hint} role="note">{t('pf.csv.preset.unconfirmed', { name: presetName })}</p>}
+            {preset === 'fintual' && <p className={s.hint}>{t('pf.csv.preset.fintualFunds')}</p>}
+          </fieldset>
+        )}
+        <Field id="pf-imp-file" label={t('pf.csv.file')} hint={mode === 'csv' ? t('pf.csv.noKeys') : null}>
+          <input id="pf-imp-file" className={s.input} type="file"
+            accept={mode === 'csv' ? '.csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : '.json,application/json'}
+            onChange={read} aria-describedby={mode === 'csv' ? 'pf-imp-file-hint' : undefined} />
         </Field>
-        {parsed && parsed.errors.length > 0 && (
+        {mode === 'csv' && table && map && (
+          <fieldset className={s.field} style={{ border: 0, margin: 0, padding: 0 }}>
+            <legend className={s.fieldLabel}>{t('pf.csv.map')}</legend>
+            {MAP_FIELDS.map(k => (
+              <Field key={k} id={`pf-imp-map-${k}`} label={t(`pf.csv.map.${k}`)}>
+                <SheetSelect className={s.select} id={`pf-imp-map-${k}`} value={String(map[k] ?? -1)}
+                  onChange={(e) => setMap(m => ({ ...m, [k]: Number(e.target.value) }))}>
+                  <option value="-1">{t('pf.csv.map.none')}</option>
+                  {table.head.map((h, i) => <option key={i} value={String(i)}>{h || `#${i + 1}`}</option>)}
+                </SheetSelect>
+              </Field>
+            ))}
+            <p className={s.hint}>{t('pf.csv.map.hint')}</p>
+          </fieldset>
+        )}
+        {mode === 'csv' && table && map && (
+          <fieldset className={s.field} style={{ border: 0, margin: 0, padding: 0 }}>
+            <legend id="pf-imp-decimal" className={s.fieldLabel}>{t('pf.csv.decimal')}</legend>
+            <ChoiceGroup labelledBy="pf-imp-decimal" value={decimal} onChange={setDecimal}
+              options={DECIMAL_MODES.map(id => ({ value: id, label: t(`pf.csv.decimal.${id}`) }))} />
+            {/* Cómo queda "1.000" con lo elegido: mil o uno, sin adivinar. */}
+            <p className={s.hint} role="note">{t('pf.csv.decimal.reads', { n: String(numOf('1.000', { thousandsDot: !!PRESETS[preset].thousandsDot, decimal })) })}</p>
+          </fieldset>
+        )}
+        {view && view.errors.length > 0 && (
           <ul className={s.notes} role="alert" style={{ margin: 0, paddingLeft: 18 }}>
-            {parsed.errors.slice(0, 5).map((e, i) => <li key={i} className={s.error}>{errText(e)}</li>)}
+            {view.errors.slice(0, 5).map((e, i) => <li key={i} className={s.error}>{errText(e)}</li>)}
           </ul>
         )}
         {preview.length > 0 && (
           <ul className={s.preview} aria-label={t('pf.csv.preview')}>
             {preview.map((r, i) => <li key={`${r.t}-${i}`}><span>{r.t} · {t(`pf.type.${r.type}`)}</span><span>{r.sh} × {r.cost}</span></li>)}
-            {parsed.rows.length > preview.length && <li><span>{t('pf.csv.more', { n: parsed.rows.length - preview.length })}</span></li>}
+            {view.rows.length > preview.length && <li><span>{t('pf.csv.more', { n: view.rows.length - preview.length })}</span></li>}
           </ul>
         )}
-        {parsed?.ops?.length > 0 && <p className={s.hint}>{t('pf.json.ops', { n: parsed.ops.length })}</p>}
-        {parsed?.skipped?.length > 0 && <p className={s.hint}>{t('pf.json.skipped', { list: parsed.skipped.join(', ') })}</p>}
+        {view?.ops?.length > 0 && <p className={s.hint}>{t('pf.json.ops', { n: view.ops.length })}</p>}
+        {view?.skipped?.length > 0 && <p className={s.hint}>{t('pf.json.skipped', { list: view.skipped.join(', ') })}</p>}
         {msg && <p className={s.error} role="alert">{msg}</p>}
         <div className={s.two}>
           <button type="button" className={s.btn} onClick={() => onClose()}>{t('pf.cancel')}</button>

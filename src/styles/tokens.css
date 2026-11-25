@@ -361,6 +361,11 @@
 
   /* Hoja inferior */
   --sheet-radius: var(--radius-xl);
+  /* Material de vidrio de las hojas (24-nov-2026). En claro la hoja sigue
+     sólida: sobre el lavanda de la superficie el texto secundario queda justo
+     en 4,5:1 y cualquier transparencia lo baja (contrast.test.js §4). */
+  --sheet-bg: var(--color-surface);
+  --sheet-blur: none;
 
   /* Medidor */
   --meter-track: var(--color-brand-muted); --meter-fill: var(--color-brand);
@@ -381,6 +386,25 @@
   --tabbar-shadow: 0 12px 32px -6px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .3);
   --tabbar-active-bg: rgb(168 151 218 / .20);
   --card-shadow: none;
+  /* Hojas de vidrio en oscuro: al 94 % el texto tenue sigue ≥ 4,5:1 con
+     negro o blanco detrás (contrast.test.js §4). */
+  --sheet-bg: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  --sheet-blur: saturate(1.6) blur(28px);
+}
+
+/* Transparencias apagadas (Ajustes › Apariencia, public/theme-boot.js), el
+   sistema con "Reducir transparencia" o un navegador sin backdrop-filter:
+   fondos sólidos en la barra de pestañas y en las hojas. html[...] gana a
+   [data-theme="dark"] por especificidad. */
+html[data-glass="off"] {
+  --tabbar-bg: var(--color-surface-raised); --tabbar-blur: none;
+  --sheet-bg: var(--color-surface); --sheet-blur: none;
+}
+@media (prefers-reduced-transparency: reduce) {
+  html[data-theme] { --tabbar-bg: var(--color-surface-raised); --tabbar-blur: none; --sheet-bg: var(--color-surface); --sheet-blur: none; }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-theme] { --tabbar-bg: var(--color-surface-raised); --sheet-bg: var(--color-surface); }
 }
 
 /* ═════════════ COMPATIBILIDAD (Entrega 1 → se retira en la Entrega 2) ═════════════

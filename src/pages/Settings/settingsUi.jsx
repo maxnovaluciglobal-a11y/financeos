@@ -11,7 +11,9 @@ export const slbl = { fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var
 export const ssub = { fontSize: 'var(--t-subhead)', lineHeight: 'var(--t-subhead-lh)', color: 'var(--th)', fontFamily: 'var(--sans)', marginTop: 1 }
 
 // Interruptor de 44×24 (área táctil de 44 de alto con el relleno del botón).
-export function Switch({ checked, onChange, label, labelledBy }) {
+// `disabled`: aria-disabled (sigue enfocable y el lector dice por qué, con
+// `describedBy`) y no cambia al tocarlo.
+export function Switch({ checked, onChange, label, labelledBy, disabled = false, describedBy }) {
   return (
     <button
       type="button"
@@ -19,8 +21,10 @@ export function Switch({ checked, onChange, label, labelledBy }) {
       aria-checked={!!checked}
       aria-label={labelledBy ? undefined : label}
       aria-labelledby={labelledBy}
-      onClick={onChange}
-      style={{ background: 'none', border: 'none', padding: '10px 0', minHeight: 44, flexShrink: 0, cursor: 'pointer' }}
+      aria-describedby={describedBy}
+      aria-disabled={disabled || undefined}
+      onClick={disabled ? undefined : onChange}
+      style={{ background: 'none', border: 'none', padding: '10px 0', minHeight: 44, flexShrink: 0, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1 }}
     >
       <span aria-hidden="true" style={{
         display: 'block', width: 44, height: 24, borderRadius: 12, position: 'relative',

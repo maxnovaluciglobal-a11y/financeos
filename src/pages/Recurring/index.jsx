@@ -3,7 +3,7 @@
 // reglas: crear, editar, pausar, terminar, registro automático e historial de
 // montos. Las reglas de Suscripciones y Deudas se editan en su página (son su
 // fuente); acá se pueden pausar y ver. Ver utils/recurring.js.
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { Plus, ChevronDown } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
@@ -21,6 +21,16 @@ import {
 } from '../../utils/index.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
+// Próximos 12 meses, cuotas y ✓ "pagado este mes" (24-nov-2026): con lazy(),
+// sin imports estáticos nuevos (el mapa de precarga de la entrada no crece).
+const ProjectionCard = lazy(() => import('../../components/ahead/ProjectionCard.jsx'))
+const RuleAheadMeta = lazy(() => import('../../components/ahead/pageBits.jsx').then(m => ({ default: m.RuleAheadMeta })))
+const InstallmentFields = lazy(() => import('../../components/ahead/pageBits.jsx').then(m => ({ default: m.InstallmentFields })))
+const instOf = (rule) => {
+  const total = Math.floor(Number(rule?.installments?.total) || 0)
+  return total > 0 ? { total, before: Math.min(total, Math.floor(Number(rule.installments.before) || 0)) } : null
+}
+
 const EMPTY = (today) => ({
   kind: 'expense', description: '', amount: '', category: 'Vivienda', method: METHODS[0] || '',
   freq: 'monthly', day: String(Number(today.slice(8, 10))), start: today, end: '', amountMode: 'fixed', autoConfirm: false,
@@ -34,17 +44,22 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
     category: initial.category, method: initial.method || '', freq: initial.schedule?.freq || 'monthly',
     day: String(initial.schedule?.day ?? ''), start: initial.startDate, end: initial.endDate || '',
     amountMode: initial.amountMode || 'fixed', autoConfirm: !!initial.autoConfirm,
-  } : EMPTY(today))
+    instTotal: String(instOf(initial)?.total || ''), instBefore: String(instOf(initial)?.before || ''),
+  } : { ...EMPTY(today), instTotal: '', instBefore: '' })
   const [err, setErr] = useState('')
   const set = (k, v) => setF(p => ({ ...p, [k]: v }))
   const cats = f.kind === 'income' ? getCategoriesIncome(settings) : getCategoriesExpense(settings)
   const needsDay = f.freq === 'monthly' || f.freq === 'yearly'
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault()
     const amt = Number(String(f.amount).replace(',', '.'))
     if (!f.description.trim()) { setErr(t('rec.form.errDesc')); return }
     if (!(amt > 0)) { setErr(t('rec.form.errAmount')); return }
+    // Cuotas (opcional, solo gastos manuales): "4 de 12" y fin automático.
+    const instTotal = Math.floor(Number(f.instTotal) || 0)
+    const instBefore = Math.floor(Number(f.instBefore) || 0)
+    if (instTotal > 0 && instBefore > instTotal) { setErr(t('ahead.form.errInst')); return }
     const day = f.day === 'last' ? 'last' : Math.min(31, Math.max(1, Number(f.day) || Number(f.start.slice(8, 10)) || 1))
     const schedule = { freq: f.freq, anchorDate: f.start, ...(needsDay ? { day } : {}) }
     let rule = {
@@ -53,7 +68,18 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
       method: f.kind === 'expense' ? f.method : undefined, amountMode: f.amountMode,
       schedule, startDate: f.start, autoConfirm: f.autoConfirm, paused: initial?.paused || false, skipped: initial?.skipped || [],
     }
-    if (f.end) rule.endDate = f.end; else delete rule.endDate
+    const canInst = f.kind === 'expense' && (initial?.source || 'manual') === 'manual'
+    if (canInst && instTotal > 0) rule.installments = { total: instTotal, before: Math.max(0, instBefore) }
+    else delete rule.installments
+    if (rule.installments || initial?.installments) {
+      // Fin automático = fecha de la última cuota: se recalcula si cambian las
+      // cuotas, el inicio o el calendario, y se borra si se quitan las cuotas.
+      const { resolveInstallmentEnd } = await import('../../utils/ahead.js')
+      const { endDate, autoEnd } = resolveInstallmentEnd(initial, rule, f.end)
+      if (endDate) rule.endDate = endDate; else delete rule.endDate
+      if (rule.installments && autoEnd) rule.installments.autoEnd = true
+    } else if (f.end) rule.endDate = f.end
+    else delete rule.endDate
     if (!initial) rule.amounts = [{ from: monthOf(f.start), amount: amt }]
     else if (amountAt(initial, currentMonth()) !== amt) rule = withAmountFrom(rule, currentMonth(), amt)
     onSave(rule)
@@ -120,6 +146,11 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
             <input type="date" value={f.end} min={f.start} onChange={e => set('end', e.target.value)} />
           </FormGroup>
         </FormRow>
+        {f.kind === 'expense' && (initial?.source || 'manual') === 'manual' && (
+          <Suspense fallback={null}>
+            <InstallmentFields total={f.instTotal} before={f.instBefore} onChange={set} />
+          </Suspense>
+        )}
         <FormGroup label={t('rec.form.amountMode')}>
           <SheetSelect value={f.amountMode} onChange={e => set('amountMode', e.target.value)}>
             {['fixed', 'last', 'average'].map(m => <option key={m} value={m}>{t(`rec.form.mode.${m}`)}</option>)}
@@ -139,7 +170,7 @@ function RuleForm({ initial, onSave, onCancel, settings }) {
   )
 }
 
-function RuleRow({ rule, sym, today, onEdit, onTogglePause, onEnd, onDelete, onToggleAuto, setPage }) {
+function RuleRow({ rule, sym, today, plan, onEdit, onTogglePause, onEnd, onDelete, onToggleAuto, setPage }) {
   const { t, lang } = useT()
   const [open, setOpen] = useState(false)
   const ended = rule.endDate && rule.endDate < today
@@ -160,6 +191,7 @@ function RuleRow({ rule, sym, today, onEdit, onTogglePause, onEnd, onDelete, onT
           {ended && <span>{t('rec.rule.ended')}</span>}
           {rule.autoConfirm && !rule.paused && !ended && <span>{t('rec.rule.auto')}</span>}
           {next && <span>{t('rec.rule.next', { date: dateParts(next, lang).full })}</span>}
+          <Suspense fallback={null}><RuleAheadMeta rule={rule} next={next} plan={plan} today={today} /></Suspense>
         </div>
       </div>
       <div className={s.right}>
@@ -205,7 +237,7 @@ function RuleRow({ rule, sym, today, onEdit, onTogglePause, onEnd, onDelete, onT
 export default function Recurring({ setPage }) {
   const ctx = useApp()
   const { t } = useT()
-  const { settings, incomes, expenses, subscriptions } = ctx
+  const { settings, incomes, expenses, subscriptions, debts } = ctx
   const rules = useMemo(() => (Array.isArray(ctx.recurring) ? ctx.recurring : []), [ctx.recurring])
   const sym = currencySymbol(settings.currency, settings.language)
   const activeMonth = settings.activeMonth || currentMonth()
@@ -214,6 +246,9 @@ export default function Recurring({ setPage }) {
   const { confirm, confirmMany, skip, unskip, live } = useOccurrenceActions()
 
   const plan = useMemo(() => monthPlan(rules, activeMonth, { incomes, expenses, today }), [rules, activeMonth, incomes, expenses, today])
+  // ✓ "Pagado este mes" de cada regla: siempre el mes calendario, no el activo.
+  const thisMonthPlan = useMemo(() => (activeMonth === today.slice(0, 7) ? plan : monthPlan(rules, today.slice(0, 7), { incomes, expenses, today })),
+    [plan, activeMonth, rules, incomes, expenses, today])
   const totals = pendingTotals(plan, { personalOnly: false })
   const due = plan.filter(o => o.status === 'pending' && o.date <= today)
 
@@ -275,6 +310,12 @@ export default function Recurring({ setPage }) {
         <div role="status" aria-live="polite" className="sr-only">{live}</div>
       </Card>
 
+      {rules.length > 0 && (
+        <Suspense fallback={null}>
+          <ProjectionCard rules={rules} debts={debts} incomes={incomes} expenses={expenses} sym={sym} />
+        </Suspense>
+      )}
+
       {form ? (
         <RuleForm initial={form === 'new' ? null : form} settings={settings} onSave={save} onCancel={() => setForm(null)} />
       ) : (
@@ -293,7 +334,7 @@ export default function Recurring({ setPage }) {
         ) : (
           <ul className={s.rows}>
             {sorted.map(r => (
-              <RuleRow key={r.id} rule={r} sym={sym} today={today} setPage={setPage}
+              <RuleRow key={r.id} rule={r} sym={sym} today={today} setPage={setPage} plan={thisMonthPlan}
                 onEdit={(rule) => setForm(rule)} onTogglePause={togglePause} onEnd={end} onDelete={del} onToggleAuto={toggleAuto} />
             ))}
           </ul>

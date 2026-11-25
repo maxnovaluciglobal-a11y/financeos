@@ -1,0 +1,66 @@
+/* Categorías en píldoras, reglas y propuestas (24-nov-2026).
+   Todo con tokens: claro y oscuro salen de tokens.css. Objetivos táctiles ≥ 44 px. */
+
+.pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.pillsScroll { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; flex: 1; min-width: 0; }
+.pillsScroll::-webkit-scrollbar { display: none; }
+.pill { flex-shrink: 0; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.pillEmoji { font-size: 1.05em; line-height: 1; }
+.pillEdit { flex-shrink: 0; color: var(--tm); background: transparent; box-shadow: inset 0 0 0 1px var(--brd2); }
+.pillEdit:hover { color: var(--tx); }
+.pillOff { background: transparent; box-shadow: inset 0 0 0 1px var(--brd2); color: var(--tm); }
+.pillEditing { box-shadow: inset 0 0 0 1.5px var(--accent); }
+
+.hint { margin: 6px 0 0; font-size: var(--t-footnote); color: var(--th); text-align: center; font-family: var(--sans); }
+
+.title { margin: 0 0 4px; font-size: var(--t-title-3, var(--t-headline)); font-weight: 700; font-family: var(--display); color: var(--tx); }
+.sub { margin: 0 0 14px; font-size: var(--t-subhead); line-height: var(--t-subhead-lh); color: var(--tm); font-family: var(--sans); }
+.section { margin: 16px 0 6px; font-size: var(--t-footnote); font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--th); font-family: var(--sans); }
+.empty { margin: 4px 0; font-size: var(--t-subhead); color: var(--tm); font-family: var(--sans); }
+
+.seg { display: flex; gap: 4px; background: var(--sur3); border-radius: var(--r-pill); padding: 3px; margin-bottom: 8px; }
+.segBtn { flex: 1; min-height: 44px; border: none; border-radius: var(--r-pill); background: transparent; color: var(--tm); font: 700 var(--t-subhead) var(--sans); cursor: pointer; }
+.segBtn[aria-pressed="true"] { background: var(--sur); color: var(--tx); box-shadow: var(--sh-1); }
+
+.row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.row input { flex: 1; min-width: 0; min-height: 44px; }
+.row button { flex: 0 0 auto; width: auto; padding-inline: 16px; }
+.modeBtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 10px; padding: 0 2px; border: none; background: none; color: var(--accent); font: 600 var(--t-subhead) var(--sans); cursor: pointer; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+.emojiBtn { min-width: 44px; min-height: 44px; border: none; border-radius: 12px; background: var(--fill); font-size: 22px; line-height: 1; cursor: pointer; }
+.emojiBtn[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--accent); background: var(--sur); }
+.swatch { min-width: 44px; min-height: 44px; border: none; border-radius: 50%; cursor: pointer; display: grid; place-items: center; color: var(--on-accent, #fff); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--sur), 0 0 0 4px var(--tx); }
+.field { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; font: 600 var(--t-subhead) var(--sans); color: var(--tx); }
+.field input { min-height: 44px; font-weight: 400; }
+.note { margin: 6px 0 0; font-size: var(--t-footnote); color: var(--th); line-height: 1.45; font-family: var(--sans); }
+.actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.actions > * { flex: 1; min-height: 48px; }
+.check { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; margin-top: 12px; font: 400 var(--t-subhead) var(--sans); color: var(--tx); cursor: pointer; line-height: 1.4; }
+.check input { margin-top: 3px; }
+.preview { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+/* Lista de reglas (Ajustes) */
+.rules { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.ruleRow { display: flex; align-items: center; gap: 8px; min-height: 56px; border-bottom: 1px solid var(--brd2); }
+.ruleMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; min-height: 52px; justify-content: center; padding: 4px 0; border: none; background: none; color: var(--tx); cursor: pointer; font-family: var(--sans); }
+.ruleMatch { font-size: var(--t-callout); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ruleCat { font-size: var(--t-subhead); color: var(--tm); }
+.iconBtn { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border: none; border-radius: 12px; background: none; color: var(--tm); cursor: pointer; }
+.iconBtn:hover { background: var(--fill); color: var(--tx); }
+.danger { color: var(--red); }
+
+/* Propuestas */
+.proposal { margin: 0 0 10px; padding: 12px 14px; border-radius: 16px; background: var(--sur2); border: 1px solid var(--brd2); font-family: var(--sans); }
+.proposalLb { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-size: var(--t-footnote); font-weight: 700; color: var(--accent); }
+.proposalLead { margin: 0; font-size: var(--t-callout); font-weight: 600; color: var(--tx); line-height: 1.35; }
+.proposalWhy { margin: 2px 0 0; font-size: var(--t-footnote); color: var(--tm); }
+.proposalItems { list-style: none; margin: 8px 0 0; padding: 0; font-size: var(--t-subhead); color: var(--tm); }
+.proposalItems li { display: flex; justify-content: space-between; gap: 8px; min-height: 28px; align-items: center; }
+.proposalItems li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.proposalBtns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.proposalBtns > button { min-height: 44px; }
+/* Dentro de una hoja el fondo es el mismo --fill de .fos-chip: la píldora
+   elegida necesita su propia superficie para leerse como botón. */
+.pillOn { background: var(--sur); box-shadow: inset 0 0 0 1px var(--brd2), var(--sh-1); }

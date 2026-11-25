@@ -10,6 +10,10 @@ import { de } from './withSections.js'
 
 const ALLOWED = {
   pt: new Set([
+    // Avisos locales y Puntos y millas (24-nov-2026): solo variables o cognados iguales en pt.
+    'la.fixedDue.body', 'loyalty.edit', 'loyalty.form.titleEdit', 'loyalty.estimated',
+    // 24-nov-2026: iguales en pt a propósito.
+    'steps.expense.cta', 'review.confirmAria', 'review.openAria',
     // Invest F2, Hoy (20-nov-2026): nombres de índices, tickers y cognados iguales en este idioma.
     "invest.hoy.strip.sym.gspc", "invest.hoy.strip.sym.dji", "invest.hoy.strip.sym.ixic", "invest.hoy.strip.sym.rut", "invest.hoy.strip.sym.oil", "invest.hoy.strip.sym.eurusd", "invest.hoy.strip.sym.btc", "invest.hoy.pvh.cmp.SPY", "invest.hoy.pvh.cmp.ECH", "invest.hoy.pvh.range.1M", "invest.hoy.pvh.range.3M", "invest.hoy.pvh.range.1A", "invest.hoy.pvh.rangeName.3M", "invest.hoy.pvh.say", "invest.hoy.pvh.sayIndex", "invest.hoy.top.sorted", "invest.hoy.top.result", "invest.hoy.top.weight", "invest.hoy.cash.contributed", "invest.hoy.ctx.vix.normal", "invest.hoy.ctx.vix.high", "invest.hoy.ctx.vix.extreme", "invest.hoy.ctx.see", "invest.hoy.empty.import",
     'mov.filter.btn', // Poda P2: "Filtrar" es igual en portugués
@@ -140,6 +144,7 @@ const ALLOWED = {
     "ui.editItem",
   ]),
   en: new Set([
+    'la.fixedDue.body', // avisos locales: solo variables ('{name}: {amount}.')
     // Invest F2, Hoy (20-nov-2026): nombres de índices, tickers y cognados iguales en este idioma.
     "invest.hoy.strip.sym.gspc", "invest.hoy.strip.sym.dji", "invest.hoy.strip.sym.ixic", "invest.hoy.strip.sym.rut", "invest.hoy.strip.sym.btc", "invest.hoy.pvh.cmp.SPY", "invest.hoy.pvh.cmp.ECH", "invest.hoy.pvh.range.1M", "invest.hoy.pvh.range.3M", "invest.hoy.pvh.say", "invest.hoy.pvh.sayIndex", "invest.hoy.ctx.vix.normal",
     'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")
@@ -161,6 +166,7 @@ const ALLOWED = {
     "subs.form.namePh",
   ]),
   de: new Set([
+    'la.fixedDue.body', // avisos locales: solo variables ('{name}: {amount}.')
     // Invest F2, Hoy (20-nov-2026): nombres de índices, tickers y cognados iguales en este idioma.
     "invest.hoy.strip.sym.gspc", "invest.hoy.strip.sym.dji", "invest.hoy.strip.sym.ixic", "invest.hoy.strip.sym.rut", "invest.hoy.strip.sym.btc", "invest.hoy.pvh.cmp.SPY", "invest.hoy.pvh.cmp.ECH", "invest.hoy.pvh.range.1M", "invest.hoy.pvh.range.3M", "invest.hoy.pvh.say", "invest.hoy.pvh.sayIndex", "invest.hoy.ctx.vix.normal",
     'conv.shareText', // B2: solo variables y signos ("{from} = {to} · {rate} ({source}, {date})")

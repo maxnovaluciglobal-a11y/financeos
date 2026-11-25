@@ -13,6 +13,12 @@ import { monthLabel } from '../../shared/constants.js'
 import { prevMonthOf } from '../dashboardModel.js'
 import { ASK_QUESTIONS, answerFor, monthMode } from './askAnswers.js'
 import p from './ask.module.css'
+// "Ordenar mis movimientos" (24-nov-2026): propone categorías para grupos de
+// movimientos parecidos y la persona confirma. Mismas reglas fijas en el teléfono.
+import Proposals, { useProposals } from '../../../components/categories/Proposals.jsx'
+import { withCategoryStrings } from '../../../i18n/categories/index.js'
+
+export const TIDY_Q = 'tidy'
 
 const cap = (x) => (x ? x.charAt(0).toLocaleUpperCase() + x.slice(1) : x)
 
@@ -27,12 +33,14 @@ export function monthName(ym, today = new Date(), locale = dateLocale()) {
 // Las preguntas siguen al mes elegido en la cabecera: "este mes" solo si es el
 // mes en curso; si no, "¿Cuánto gasté en octubre?" (revisión del 24-nov).
 export function questionLabel(id, { activeMonth, t, today = new Date(), locale } = {}) {
+  if (id === TIDY_Q) return t('propose.askChip')
   const current = !activeMonth || monthMode(activeMonth, today) === 'current'
   if (!current && (id === 'spent' || id === 'compare')) return t(`home.ask.q.${id}.other`, { month: monthName(activeMonth, today, locale) })
   return t(`home.ask.q.${id}`)
 }
 
-export function AskCard({ onAsk, t, activeMonth }) {
+function AskCardBody({ onAsk, t, activeMonth }) {
+  const tidy = useProposals().groups.length
   return (
     <section className={p.ask} aria-labelledby="home-ask-title">
       <div className={p.askHead}>
@@ -48,6 +56,11 @@ export function AskCard({ onAsk, t, activeMonth }) {
             {questionLabel(id, { activeMonth, t })}
           </button>
         ))}
+        {tidy > 0 && (
+          <button type="button" className={p.chip} onClick={() => onAsk(TIDY_Q)} aria-haspopup="dialog">
+            {questionLabel(TIDY_Q, { t })} <span className="num">({tidy})</span>
+          </button>
+        )}
       </div>
     </section>
   )
@@ -65,10 +78,10 @@ function Diff({ d, money, t, invert = false }) {
   )
 }
 
-export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t, onTour }) {
+function AskSheetBody({ open, q, onQ, onClose, data, sym, lang, setPage, t, onTour }) {
   const { m } = useMoney()
   const money = useCallback((n) => m(fmtMoney(n, sym)), [m, sym])
-  const a = q ? answerFor(q, data) : null
+  const a = q && q !== TIDY_Q ? answerFor(q, data) : null
   const current = monthMode(data.activeMonth) === 'current'
   const mn = monthName(data.activeMonth)
   const label = (id) => questionLabel(id, { activeMonth: data.activeMonth, t })
@@ -136,6 +149,9 @@ export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t, o
           </>
         )
   }
+  if (q === TIDY_Q) {
+    body = <TidyAnswer sym={sym} t={t} />
+  }
   const others = ASK_QUESTIONS.filter(id => id !== q)
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={q ? label(q) : t('home.ask.title')} maxWidth={460}>
@@ -164,3 +180,20 @@ export function AskSheet({ open, q, onQ, onClose, data, sym, lang, setPage, t, o
     </Sheet>
   )
 }
+
+// Respuesta de "Ordenar mis movimientos": las propuestas, cada una con su
+// confirmación y su Deshacer. Nada cambia sin un toque.
+function TidyAnswer({ sym, t }) {
+  const n = useProposals().groups.length
+  return (
+    <>
+      <p className={p.ansLead}>{n === 0 ? t('propose.askNone') : t(n === 1 ? 'propose.askLead.one' : 'propose.askLead.many', { n })}</p>
+      <Proposals limit={5} sym={sym} />
+      <p className={p.ansNote}>{t('propose.askHow')}</p>
+    </>
+  )
+}
+
+// "Ordenar mis movimientos" usa la sección diferida src/i18n/categories.
+export const AskCard = withCategoryStrings(AskCardBody, null)
+export const AskSheet = withCategoryStrings(AskSheetBody, null)

@@ -25,9 +25,11 @@ import UpdateNotice from '../UpdateNotice.jsx'
 // V4: piezas ocasionales fuera del JS inicial.
 const PushAsk = lazy(() => import('../PushAsk.jsx'))
 const WhatsNew = lazy(() => import('../WhatsNew.jsx'))
-import { shouldAskPush, PUSH_ASKED_KEY } from '../../core/pushAsk.js'
-import { pushSupported, isPushEnabled } from '../../core/push.js'
-import { getLicenseKey, getLicensePlan } from '../../utils/licenseValidator.js'
+import { setPushPrimerHost, createPrimerQueue } from '../../core/pushPrimer.js'
+import { logRejection } from '../../utils/errorLog.js'
+import { getLicensePlan } from '../../utils/licenseValidator.js'
+// Avisos locales (fijos, presupuestos, lo que queda, cobro): se calculan en el dispositivo.
+const LocalAlerts = lazy(() => import('../../core/localAlerts/Host.jsx'))
 import { Eye, EyeOff, Lock, Sun, Moon, LogOut, ChevronLeft } from 'lucide-react'
 import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 
@@ -35,7 +37,7 @@ import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
 const SHOW_FIRMA = true
 
 export default function Shell({ page, setPage, onBack, backTo, children }) {
-  const { settings, updateSettings, incomes, expenses, showToast } = useApp()
+  const { settings, updateSettings, incomes, expenses } = useApp()
   const { t, lang } = useT()
   // Con "Sistema" el atajo muestra el opuesto de lo que se ve y fija ese tema.
   const isDark = useResolvedTheme(settings.theme) === 'dark'
@@ -63,27 +65,30 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   // tapa — se oculta mientras se escribe (ver useKeyboardOpen).
   const keyboardOpen = useKeyboardOpen()
 
-  // Pre-permiso de avisos (R09): se evalúa después de guardar desde el Registro
-  // rápido, con los conteos ya actualizados (el efecto corre tras el render).
+  // Pre-permiso de avisos (R09; con ejemplos y "Ahora no" que pospone):
+  // el pedido automático se evalúa después de guardar desde el Registro rápido,
+  // con los conteos ya actualizados (el efecto corre tras el render); el chequeo
+  // (core/pushAutoAsk.js) se carga recién ahí. Ajustes, Inversiones y "Primeros
+  // pasos" lo piden por core/pushPrimer.js: la misma hoja, sin esperar al 3.er
+  // movimiento ni al plazo de "Ahora no". pushAsk: null | 'auto' | 'manual' |
+  // el `source` del pedido ('invest' muestra el ejemplo de alerta de precio).
+  // Guardar también emite 'fos:quickadd-saved' (pedido de avisos locales de la
+  // app de tienda, core/localAlerts/Host.jsx).
+  // Lo guardado y el toast del pedido automático son de la hoja (PushAsk.jsx).
   const [pushCheck, setPushCheck] = useState(false)
-  const [pushAskOpen, setPushAskOpen] = useState(false)
+  const [pushAsk, setPushAsk] = useState(null)
+  const [pushQueue] = useState(() => createPrimerQueue((o) => setPushAsk(o?.source || 'manual')))
   const movementCount = (incomes?.length || 0) + (expenses?.length || 0)
   useEffect(() => {
     if (!pushCheck) return
     setPushCheck(false)
-    let asked = false
-    try { asked = localStorage.getItem(PUSH_ASKED_KEY) === '1' } catch { asked = true }
-    if (shouldAskPush({ supported: pushSupported(), enabled: isPushEnabled(), asked,
-      hasLicense: !!getLicenseKey(), isDemo: !!settings.isDemo, movementCount })) {
-      try { localStorage.setItem(PUSH_ASKED_KEY, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
-      setTimeout(() => setPushAskOpen(true), 400)
-    }
+    if (settings.isDemo) return
+    import('../../core/pushAutoAsk.js').then(({ autoPushAsk }) => {
+      if (autoPushAsk({ movementCount })) setTimeout(() => setPushAsk(v => v || 'auto'), 400)
+    // Sin el chunk (sin red) se vuelve a intentar en el próximo guardado.
+    }).catch(logRejection('Shell:pushAutoAsk'))
   }, [pushCheck, movementCount, settings.isDemo])
-  function onPushResult(r) {
-    if (r?.ok) showToast?.(t('pushAsk.enabled'))
-    else if (r?.error === 'permission_denied') showToast?.(t('settings.push.permissionDenied'), 'error')
-    else showToast?.(t('settings.push.genericError'), 'error')
-  }
+  useEffect(() => setPushPrimerHost(pushQueue.request), [pushQueue])
 
   // R14/L2: raíces (Inicio · Movimientos · Presupuestos · Metas · Menú) con barra; el resto se abre
   // "empujado": "‹" arriba, sin barra y sin "+" (salvo páginas de registrar).
@@ -326,10 +331,11 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
       </div>
 
       <PageTour page={page} open={tour.open} onClose={tour.close} />
-      <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => setPushCheck(true)} />
-      {pushAskOpen && <Suspense fallback={null}><PushAsk open={pushAskOpen} onClose={() => setPushAskOpen(false)} onResult={onPushResult} /></Suspense>}
+      <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => { setPushCheck(true); window.dispatchEvent(new Event('fos:quickadd-saved')) }} />
+      {pushAsk && <Suspense fallback={null}><PushAsk open auto={pushAsk === 'auto'} source={pushAsk} onClose={() => setPushAsk(null)} onResult={pushQueue.settle} /></Suspense>}
       <UpdateNotice />
       <Suspense fallback={null}><WhatsNew /></Suspense>
+      <Suspense fallback={null}><LocalAlerts /></Suspense>
     </div>
   )
 }

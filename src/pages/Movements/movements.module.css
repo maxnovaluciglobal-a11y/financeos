@@ -185,3 +185,7 @@
 @media (prefers-reduced-motion: reduce) {
   .totalsChevron, .row, .segOpt { transition: none; }
 }
+
+/* Punto en lo que todavía no tiene categoría (24-nov-2026). El texto
+   "Sin categoría" va al lado: el punto solo refuerza, no es la única señal. */
+.uncatDot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-right: 2px; }

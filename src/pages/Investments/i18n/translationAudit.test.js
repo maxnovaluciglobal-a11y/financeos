@@ -62,6 +62,7 @@ const SAME_OK = {
     'plan.ap.res.total', 'pf.total', 'pf.col.total', // Total
     'pf.f.ticker', 'pf.csv.h.ticker', // Ticker
     'pf.freq.irregular', // Irregular
+    'pf.csv.preset.fintual', 'pf.csv.preset.racional', // Fintual, Racional (nombres propios)
   ]),
   de: new Set([
     'asset.ex.b3', 'fl.col.macd',
@@ -71,6 +72,7 @@ const SAME_OK = {
     'invest.hoy.strip.sym.ixic', 'invest.hoy.strip.sym.rut', 'invest.hoy.strip.sym.btc',
     'plan.calc.stop', 'plan.calc.full.stop', 'plan.calc.r.stop',
     'pf.f.ticker', 'pf.csv.h.ticker', 'pf.csv.h.stop',
+    'pf.csv.preset.fintual', 'pf.csv.preset.racional', // Fintual, Racional (nombres propios)
   ]),
 }
 

@@ -85,8 +85,8 @@ export const DE_BUDGETS = [
 ]
 
 export const DE_DEBTS = [
-  { id: d('de-d1'), type: 'Auto', debtType: 'Auto',    creditor: 'Ratenkredit Auto',        initial: 12_000.00, balance: 6_480.00, minPayment: 215.00, dueDate: nextMonthDate(1),  rate: 5.9, notes: '60 Monate' },
-  { id: d('de-d2'), type: 'Crédito', debtType: 'Crédito', creditor: 'Ratenkauf Küche (0 %)',    initial:  1_800.00, balance:   900.00, minPayment:  75.00, dueDate: nextMonthDate(15), rate: 0,   notes: '24 Raten' },
+  { id: d('de-d1'), type: 'Auto', debtType: 'Auto',    creditor: 'Ratenkredit Auto',        initial: 12_000.00, balance: 6_480.00, minPayment: 215.00, dueDate: nextMonthDate(1),  rate: 5.9, notes: '60 Monate', totalInstallments: 60, paidInstallments: 28 },
+  { id: d('de-d2'), type: 'Crédito', debtType: 'Crédito', creditor: 'Ratenkauf Küche (0 %)',    initial:  1_800.00, balance:   900.00, minPayment:  75.00, dueDate: nextMonthDate(15), rate: 0,   notes: '24 Raten', totalInstallments: 24, paidInstallments: 12 },
 ]
 
 // "Notgroschen" lo reconoce isEmergencyGoalName (IQ Score / Coach).
