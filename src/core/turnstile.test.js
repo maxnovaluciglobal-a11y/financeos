@@ -72,3 +72,19 @@ describe('turnstile', () => {
     expect(appended[0].src).toBe('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit')
   })
 })
+
+import { widgetLanguage } from '../components/Turnstile.jsx'
+describe('widgetLanguage', () => {
+  const doc = (lang) => ({ documentElement: { lang } })
+  it('usa el idioma de la app', () => {
+    expect(widgetLanguage(doc('es'))).toBe('es')
+    expect(widgetLanguage(doc('en-US'))).toBe('en')
+    expect(widgetLanguage(doc('de'))).toBe('de')
+    expect(widgetLanguage(doc('pt'))).toBe('pt-br')
+  })
+  it('sin idioma conocido deja que Turnstile decida', () => {
+    expect(widgetLanguage(doc(''))).toBe('auto')
+    expect(widgetLanguage(doc('fr'))).toBe('auto')
+    expect(widgetLanguage(null)).toBe('auto')
+  })
+})

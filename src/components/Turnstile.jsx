@@ -25,6 +25,14 @@ export function defaultSiteKey(win = globalThis, key = TURNSTILE_SITE_KEY) {
   try { host = win.location?.hostname || '' } catch { host = '' }
   return host === NATIVE_APP_HOSTNAME ? key : ''
 }
+// Idioma del widget (sus propios avisos, como el de sin conexión): el de la app,
+// no el del navegador. Turnstile usa "pt-br" para portugués.
+export function widgetLanguage(doc = globalThis.document) {
+  let l = ''
+  try { l = String(doc?.documentElement?.lang || '').slice(0, 2).toLowerCase() } catch { l = '' }
+  if (l === 'pt') return 'pt-br'
+  return ['es', 'en', 'de'].includes(l) ? l : 'auto'
+}
 const Turnstile = forwardRef(function Turnstile({ action, errorText, siteKey = defaultSiteKey(), showError = false }, ref) {
   const boxRef = useRef(null)
   const widgetId = useRef(null)
@@ -40,6 +48,7 @@ const Turnstile = forwardRef(function Turnstile({ action, errorText, siteKey = d
         sitekey: siteKey,
         action,
         appearance: 'interaction-only',
+        language: widgetLanguage(),
         'response-field': false,
         callback: (token) => { setFailed(false); tokens.current.put(token) },
         'expired-callback': () => { tokens.current.clear(); ts.reset(widgetId.current) },
