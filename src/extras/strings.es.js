@@ -77,7 +77,7 @@ export default {
   'invite.title': 'moyiq',
   'invite.text': 'Uso moyiq para ordenar mis finanzas. Tus datos se quedan en tu teléfono y no te pide la clave del banco. Pruébalo:',
   'invite.copied': 'Enlace copiado',
-  'invite.failed': 'No se pudo compartir. El enlace es moyiq.app',
+  'invite.failed': 'No se pudo compartir. El enlace es {url}',
 
   // ── Puntos y millas (manual) ──
   'loyalty.title': 'Puntos y millas',

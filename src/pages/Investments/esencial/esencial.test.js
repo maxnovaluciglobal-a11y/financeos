@@ -28,7 +28,8 @@ describe('textos de la vista esencial', () => {
     })
   }
   it('portugués propio: ninguna frase igual al español (salvo palabras que son iguales)', () => {
-    const same = new Set(['ess.put.part.dividends', 'ess.put.part.fx']) // "Dividendos" y "Dólar" son iguales en portugués
+    // "Dividendos", "Dólar" y "Depositado" (como en Resumen, invest.dep.deposited) son iguales en portugués
+    const same = new Set(['ess.put.part.dividends', 'ess.put.part.fx', 'ess.put.put'])
     expect(Object.keys(es).filter(k => !same.has(k) && pt[k] === es[k])).toEqual([])
   })
   it('español neutro, sin exclamaciones ni emoji; el alemán no tutea', () => {
@@ -62,25 +63,28 @@ describe('<PutSummary>, interruptor y aviso', () => {
   it('sin resumen no dibuja nada', () => {
     expect(renderToStaticMarkup(h(PutSummary, { summary: null, money, pct }))).toBe('')
   })
-  it('Pusiste primero, luego El mercado sumó, y el desglose solo con dividendos o dólar', () => {
+  it('Depositado primero, luego Ganancia (las palabras de Resumen), y el desglose solo con dividendos o dólar', () => {
     const base = { basis: 'contributed', put: 1000, gain: 120, value: 1120, pct: 0.12, parts: null, partial: false }
     const plain = text(renderToStaticMarkup(h(PutSummary, { summary: base, money, pct })))
-    expect(plain.indexOf('Pusiste')).toBeLessThan(plain.indexOf('El mercado sumó'))
+    expect(plain.indexOf('Depositado')).toBeGreaterThan(-1)
+    expect(plain.indexOf('Depositado')).toBeLessThan(plain.indexOf('Ganancia'))
+    expect(plain).toContain('12.0 % sobre lo depositado')
+    expect(plain).not.toMatch(/Pusiste|El mercado (sumó|restó)/)
     expect(plain).toContain('US$1000.00')
     expect(plain).toContain('+US$120.00')
     expect(plain).not.toContain('De dónde viene')
     const parts = text(renderToStaticMarkup(h(PutSummary, { summary: { ...base, parts: { price: 90, dividends: 50, fx: -20 } }, money, pct })))
     for (const k of ['De dónde viene', 'Precio', 'Dividendos', 'Dólar', '−US$20.00']) expect(parts).toContain(k)
   })
-  it('pérdida: "El mercado restó"; en otra moneda, la pregunta del dólar (sin inflación inventada)', () => {
+  it('pérdida: "Pérdida"; sin libro, "Pagado por tus posiciones"; en otra moneda, la pregunta del dólar (sin inflación inventada)', () => {
     const loss = { basis: 'invested', put: 1000, gain: -50, value: 950, pct: -0.05, parts: null, partial: false }
     const out = text(renderToStaticMarkup(h(PutSummary, { summary: loss, money, pct, currency: 'CLP' })))
-    expect(out).toContain('El mercado restó')
-    // Sin doble negación: "El mercado restó US$50.00", nunca "restó −US$50.00".
-    expect(out).toContain('El mercado restó US$50.00')
-    expect(out).not.toMatch(/restó\s*−/)
+    expect(out).toContain('Pagado por tus posiciones')
+    // Sin doble negación: "Pérdida US$50.00", nunca "Pérdida −US$50.00".
+    expect(out).toContain('Pérdida US$50.00')
+    expect(out).not.toMatch(/Pérdida\s*−/)
     expect(out).not.toContain('−US$50.00')
-    expect(out).toContain('5.0 % sobre lo que pusiste')
+    expect(out).toContain('5.0 % sobre lo pagado')
     expect(out).toContain('¿Le ganaste al dólar?')
     expect(out).toContain('No, por ahora.')
     expect(out).not.toContain('inflación')

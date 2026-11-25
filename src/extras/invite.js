@@ -4,14 +4,28 @@
 //   App de tienda  hoja de compartir del sistema (@capacitor/share, ya en el repo nativo)
 //   Web            Web Share API; si no hay, copia el enlace al portapapeles
 // Devuelve 'shared' | 'copied' | 'cancelled' | 'failed'. Nunca lanza.
+//
+// Enlace (25-nov-2026, decisión de Walter): la web comparte la home
+// (https://moyiq.app). La app de tienda (nativa o compilada para tiendas)
+// comparte https://moyiq.app/app, una página de la landing sin precios ni
+// planes (financeos-landing/app.html): la app de tienda no puede llevar a
+// precios fuera de la tienda (storePolicy.js).
 import { isNativeApp } from '../native/platform.js'
+import { STORE_BUILD } from '../native/storeBuild.js'
 
 export const INVITE_URL = 'https://moyiq.app'
+export const STORE_INVITE_URL = 'https://moyiq.app/app'
+
+/** Enlace a compartir: el sin precios en la app de tienda, la home en la web. */
+export function inviteUrl(win = globalThis, storeBuild = STORE_BUILD) {
+  return storeBuild || isNativeApp(win) ? STORE_INVITE_URL : INVITE_URL
+}
 const isCancel = (e) => e?.name === 'AbortError' || /cancel/i.test(String(e?.message || e || ''))
 
 /** @param {{ title: string, text: string }} msg */
-export async function shareInvite({ title, text }, win = globalThis) {
-  const data = { title, text, url: INVITE_URL }
+export async function shareInvite({ title, text }, win = globalThis, storeBuild = STORE_BUILD) {
+  const url = inviteUrl(win, storeBuild)
+  const data = { title, text, url }
   try {
     if (isNativeApp(win) && win.Capacitor?.isPluginAvailable?.('Share')) {
       const { registerPlugin } = await import('@capacitor/core')
@@ -24,7 +38,7 @@ export async function shareInvite({ title, text }, win = globalThis) {
       return 'shared'
     }
     if (nav?.clipboard?.writeText) {
-      await nav.clipboard.writeText(`${text} ${INVITE_URL}`)
+      await nav.clipboard.writeText(`${text} ${url}`)
       return 'copied'
     }
     return 'failed'

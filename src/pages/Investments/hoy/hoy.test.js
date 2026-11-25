@@ -86,7 +86,7 @@ describe('<Hoy> en la vista esencial (por defecto)', () => {
     expect(out).toMatch(/Ganancia|Pérdida/)
     // La banda de valor de siempre no se repite debajo.
     expect(out.split('Valor de tu portafolio')).toHaveLength(2)
-    expect(out).not.toContain('Pusiste')
+    expect(out).not.toMatch(/Pusiste|El mercado (sumó|restó)/)
     for (const k of ['Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Riesgo al stop', 'Resultado sobre el costo']) expect(out, k).not.toContain(k)
     // Lo demás sigue: gráfico de valor, posiciones, efectivo.
     for (const k of ['Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes']) expect(out, k).toContain(k)

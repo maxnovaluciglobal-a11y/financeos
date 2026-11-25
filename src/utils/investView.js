@@ -2,7 +2,7 @@
 // (ajustes del 20-nov-2026, PLAN de invest-en-moyiq; coherencia 360 §5).
 //
 // Esencial (por defecto) deja lo que cualquier persona entiende sin saber de
-// bolsa: valor, lo que pusiste, lo que sumó el mercado y una línea simple de
+// bolsa: valor, lo depositado, la ganancia y una línea simple de
 // precio. Completa suma lo de quien ya opera: velas, RSI, MACD, bandas de
 // Bollinger, medias, stop y riesgo al stop, la cinta de mercado. Nada se borra:
 // el interruptor solo elige qué se dibuja.
@@ -38,7 +38,7 @@ const FULL_ONLY = new Set([
   'strip', // cinta de mercado
   'review', // "Para revisar hoy" (medias y RSI)
   'movingAverages', // media de 200 días del mercado
-  'unrealized', // "Resultado (si vendieras hoy)": la esencial ya lo cuenta en "El mercado sumó"
+  'unrealized', // "Resultado (si vendieras hoy)": la esencial ya lo cuenta en "Ganancia"
   'riskR', // Planificar: stop, R, escenarios en múltiplos de R y límite por posición
 ])
 export function shows(view, part) {

@@ -41,8 +41,9 @@ export const GLOSSARY = {
   planificar: { es: 'Planificar', en: 'Plan', pt: 'Planejar', de: 'Planen', def: 'Aporte mensual y cómo repartirlo', keys: ['invest.hub.tab.planificar'] },
   mercado: { es: 'Mercado', en: 'Market', pt: 'Mercado', de: 'Markt', def: 'Cómo está el mercado hoy, en general', keys: ['invest.hub.tab.mercado'], cognate: true },
   aporte: { es: 'Aporte', en: 'Contribution', pt: 'Aporte', de: 'Einzahlung', def: 'Dinero que mandas a Inversiones', cognate: true },
-  pusiste: { es: 'Pusiste', en: 'You put in', pt: 'Você colocou', de: 'Eingezahlt', def: 'Todo el dinero que pusiste en el portafolio, menos lo que sacaste' },
-  mercadoSumo: { es: 'El mercado sumó', en: 'The market added', pt: 'O mercado somou', de: 'Der Markt brachte', def: 'Lo que cambió el valor por los precios, aparte de lo que pusiste (puede ser negativo: "El mercado restó")' },
+  // Resumen y Portafolio, una sola pareja (decisión de Walter, 25-nov-2026): reemplaza a "Pusiste / El mercado sumó".
+  depositado: { es: 'Depositado', en: 'Deposited', pt: 'Depositado', de: 'Eingezahlt', def: 'Tus depósitos menos tus retiros, más lo que compraste con dinero de afuera', cognate: true },
+  ganancia: { es: 'Ganancia', en: 'Gain', pt: 'Ganho', de: 'Gewinn', def: 'Valor de hoy menos lo depositado; si es negativa se llama "Pérdida"' },
   posicion: { es: 'Posición', en: 'Holding', pt: 'Posição', de: 'Position', def: 'Lo que tienes de un activo (por ejemplo, 3 unidades de VOO)' },
   simbolo: { es: 'Símbolo', en: 'Symbol', pt: 'Símbolo', de: 'Kürzel', def: 'El código del activo (AAPL, VOO)', cognate: true },
   invertido: { es: 'Invertido', en: 'Invested', pt: 'Investido', de: 'Investiert', def: 'Lo que pagaste en total por una posición' },
@@ -119,6 +120,11 @@ export const RETIRED = [
   { lang: 'es', re: /\bal costo\b|costo de compra/i, use: 'Invertido / "Sin precio, a lo invertido"' },
   { lang: 'es', re: /ganancia o p[eé]rdida|ganancia total|^En total$/i, use: 'Resultado' },
   { lang: 'es', re: /efectivo disponible/i, use: 'Para invertir' },
+  // Depositado / Ganancia (25-nov-2026): una sola pareja en Resumen y Portafolio
+  { lang: 'es', re: /\bpusiste\b|el mercado (sum[oó]|rest[oó])/i, use: 'Depositado / Ganancia / Pérdida' },
+  { lang: 'en', re: /\byou put in\b|the market (added|took away)/i, use: 'Deposited / Gain / Loss' },
+  { lang: 'pt', re: /voc[eê] colocou|o mercado (somou|tirou)/i, use: 'Depositado / Ganho / Perda' },
+  { lang: 'de', re: /der Markt (gab dazu|nahm weg|brachte)/i, use: 'Eingezahlt / Gewinn / Verlust' },
 ]
 
 /**

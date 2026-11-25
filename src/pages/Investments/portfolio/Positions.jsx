@@ -4,7 +4,7 @@
 // cifras) y una fila por posición que se despliega con su detalle, el stop
 // editable y las acciones. Las filas suman el total (tipo de cambio de compra,
 // utils/investPositions.js). Dirección siempre con flecha + signo + texto.
-// Arriba de todo, "Pusiste / El mercado sumó" (esencial/PutSummary). En la
+// Arriba de todo, "Depositado / Ganancia" (esencial/PutSummary). En la
 // vista esencial (utils/investView.js) no se muestran el riesgo al stop, el
 // stop editable ni el capital de referencia: siguen en Vista completa.
 import { useMemo, useState } from 'react'
@@ -163,7 +163,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
   const { rows, totals } = pb.positions
   const showStop = shows(view, 'stop')
   const put = useMemo(() => putAndGain({ ledger: pb.opsState === 'ready' ? pb.ledger : null, totals: { ...totals, total: totals.pl } }), [pb.opsState, pb.ledger, totals])
-  // En la esencial, "El mercado sumó" (PutSummary) ya cuenta el resultado: la
+  // En la esencial, "Ganancia" (PutSummary) ya cuenta el resultado: la
   // banda y la fila de totales no lo repiten con otro nombre.
   const showResult = shows(view, 'unrealized') || !put
   const share = riskShare(totals.risk, pb.capital, totals.value)

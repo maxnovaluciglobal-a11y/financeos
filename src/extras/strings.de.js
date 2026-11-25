@@ -69,7 +69,7 @@ export default {
   'invite.title': 'moyiq',
   'invite.text': 'Ich ordne meine Finanzen mit moyiq. Die Daten bleiben auf dem eigenen Telefon, und es fragt nie nach dem Bankpasswort. Hier ausprobieren:',
   'invite.copied': 'Link kopiert',
-  'invite.failed': 'Teilen hat nicht geklappt. Der Link ist moyiq.app',
+  'invite.failed': 'Teilen hat nicht geklappt. Der Link ist {url}',
 
   'loyalty.title': 'Punkte und Meilen',
   'loyalty.sub': 'Guthaben aus Punkte- oder Meilenprogrammen. Sie sind kein Geld: Sie zählen nicht zu Ihrem Vermögen, außer Sie schalten es ein.',

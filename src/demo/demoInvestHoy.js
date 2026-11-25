@@ -41,7 +41,7 @@ export function demoQuotes() {
 
 // Operaciones: el MISMO libro que Portafolio (demoInvestOps: depósito de
 // 12.000, compras, venta parcial de MSFT y dividendos). Antes Hoy tenía su
-// propio libro (depósito de 11.500) y "Pusiste" decía 11.500 en Resumen y
+// propio libro (depósito de 11.500) y "Depositado" decía 11.500 en Resumen y
 // 12.000 en Portafolio (QA pre-tiendas 23-nov-2026, I2).
 export function demoOperations(now = Date.now()) {
   return demoInvestOps(now)

@@ -2,8 +2,8 @@
 // (ajustes del 20-nov-2026; benchmark 00-SINTESIS §3-4). Lógica pura, sin
 // textos: la pantalla traduce las claves.
 //
-//  · putAndGain: "Pusiste" (lo que aportaste) y "El mercado sumó" (lo que
-//    ganó o perdió), con el desglose Precio + Dividendos + Dólar solo cuando
+//  · putAndGain: "Depositado" (lo que aportaste) y "Ganancia" o "Pérdida" (lo
+//    que ganó o perdió; mismas palabras que Resumen), con el desglose Precio + Dividendos + Dólar solo cuando
 //    hay datos para separarlo.
 //  · beatChecks: "¿Le ganaste a la inflación y al dólar?" solo con lo que se
 //    puede calcular sin inventar.
@@ -16,15 +16,15 @@ import { dailyReturns, volatility } from './investIndicators.js'
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v)
 const EPS = 0.005
 
-// ── Pusiste / El mercado sumó ─────────────────────────────────────
+// ── Depositado / Ganancia ─────────────────────────────────────────
 // ledger: el libro (investLedger.book o investCash.cashBook) o null si no hay
 // operaciones. totals: portfolioTotals (Resumen) o positionRows().totals
 // (Portafolio): { value, cost, total|pl, fxEffect, fxKnown, fxUnknown,
 // excluded }. Todo en US$.
 //
-// Con depósitos u operaciones completos manda el libro: Pusiste = lo aportado
+// Con depósitos u operaciones completos manda el libro: Depositado = lo aportado
 // (depósitos − retiros + compras de afuera + posiciones cargadas a su costo) y
-// El mercado sumó = valor actual − lo aportado. Si no, lo invertido en las
+// Ganancia = valor actual − lo aportado. Si no, lo invertido en las
 // posiciones de hoy y su resultado.
 // Desglose: Dividendos = los cobrados en el libro; Dólar = el efecto del tipo
 // de cambio desde la compra, solo si TODAS las posiciones en otra moneda
@@ -66,7 +66,7 @@ export function putAndGain({ ledger = null, totals = null } = {}) {
 
 // ── ¿Le ganaste a la inflación y al dólar? ────────────────────────
 // Dólar: el portafolio se mide en US$, así que "guardar los dólares sin
-// invertir" rinde 0: le ganaste si el mercado sumó. Solo para quien no usa
+// invertir" rinde 0: le ganaste si hubo ganancia. Solo para quien no usa
 // dólares como moneda (para quien usa US$ la pregunta no dice nada).
 // Inflación: hace falta la inflación de la misma moneda y del mismo período.
 // moyiq no tiene una serie de inflación en dólares, así que hoy no se calcula;

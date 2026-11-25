@@ -1,4 +1,5 @@
-// "Pusiste" y "El mercado sumó" arriba de Resumen y de Portafolio, con el
+// "Depositado" y "Ganancia" (o "Pérdida") arriba de Portafolio (y de Resumen
+// cuando no hay DepositGain), con las mismas palabras que hoy/DepositGain.jsx, y el
 // desglose Precio + Dividendos + Dólar cuando hay datos y "¿Le ganaste a la
 // inflación y al dólar?" cuando se puede calcular (utils/investEsencial.js).
 // money(n, signed) formatea en la moneda de la pantalla; pct(frac, signed) los
@@ -33,8 +34,9 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
     ].filter(([, v]) => v != null)
     : []
   const hasInflation = !!checks?.some(c => c.key === 'inflation')
-  // Con pérdida la etiqueta ya dice "restó" (y la flecha baja): la cifra va sin
-  // signo, para no leer "El mercado restó −50". El signo queda con "sumó".
+  // Con pérdida la etiqueta ya dice "Pérdida" (y la flecha baja): la cifra va sin
+  // signo, para no leer "Pérdida −50". El signo queda con "Ganancia".
+  const contributed = summary.basis === 'contributed'
   const lost = g < -0.005
   if (detailsOnly && parts.length < 2 && !checks) return null
   return (
@@ -42,15 +44,18 @@ export default function PutSummary({ summary, money, pct, currency = 'USD', infl
       <h2 id={`${id}-put`} className="sr-only">{t('ess.put.title')}</h2>
       {!detailsOnly && <dl className={s.putRow}>
         <div className={s.putCell}>
-          <dt className={s.putLabel}>{t('ess.put.put')}</dt>
+          <dt className={s.putLabel}>{contributed ? t('ess.put.put') : t('ess.put.putInvested')}</dt>
           <dd className={s.putValue}><Money>{money(summary.put)}</Money></dd>
-          <dd className={s.putSub}>{t(summary.basis === 'contributed' ? 'ess.put.putSub.contributed' : 'ess.put.putSub.invested')}</dd>
+          <dd className={s.putSub}>{contributed ? t('ess.put.putSub.contributed') : t('ess.put.putSub.invested')}</dd>
         </div>
         <div className={s.putCell}>
           <dt className={s.putLabel}>{t(lost ? 'ess.put.lost' : 'ess.put.gain')}</dt>
           <dd className={`${s.putValue} ${s.tone}`} data-tone={dirOf(g)}><Arrow n={g} /><Money>{lost ? money(Math.abs(g)) : money(g, true)}</Money></dd>
           <dd className={s.putSub}>
-            {summary.pct != null ? t('ess.put.gainSub', { pct: lost ? pct(Math.abs(summary.pct)) : pct(summary.pct, true) }) : null}
+            {summary.pct != null ? (() => {
+              const v = { pct: lost ? pct(Math.abs(summary.pct)) : pct(summary.pct, true) }
+              return contributed ? t('ess.put.gainSub', v) : t('ess.put.gainSubInvested', v)
+            })() : null}
             {summary.value != null ? <> · <Money>{t('ess.put.value', { v: money(summary.value) })}</Money></> : null}
           </dd>
         </div>

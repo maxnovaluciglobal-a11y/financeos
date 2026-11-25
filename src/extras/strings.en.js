@@ -69,7 +69,7 @@ export default {
   'invite.title': 'moyiq',
   'invite.text': 'I use moyiq to keep my finances in order. Your data stays on your phone and it never asks for your bank password. Try it:',
   'invite.copied': 'Link copied',
-  'invite.failed': 'Could not share. The link is moyiq.app',
+  'invite.failed': 'Could not share. The link is {url}',
 
   'loyalty.title': 'Points and miles',
   'loyalty.sub': 'Balances of points or miles programs. They are not money: they do not add to your net worth unless you turn it on.',

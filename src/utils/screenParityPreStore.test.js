@@ -36,7 +36,7 @@ describe('B3: patrimonio neto con su signo y una sola cifra', () => {
   })
 })
 
-describe('I1/I2: Inversiones del demo, una sola cifra y un solo "Pusiste"', async () => {
+describe('I1/I2: Inversiones del demo, una sola cifra y un solo "Depositado"', async () => {
   const { buildDemoInvestSnapshot } = await import('../demo/demoInvestSnapshot.js')
   const { createSampleMarketApi, createDemoMarketApi } = await import('../demo/demoMarketApi.js')
   const { demoInvestHoldings, demoInvestOps } = await import('../demo/demoInvestBook.js')
@@ -75,7 +75,7 @@ describe('I1/I2: Inversiones del demo, una sola cifra y un solo "Pusiste"', asyn
     expect(snap.valueUsd).toBeCloseTo(12500, 2)
   })
 
-  it('Resumen (Hoy) y Portafolio usan el mismo libro: mismo "Pusiste"', () => {
+  it('Resumen (Hoy) y Portafolio usan el mismo libro: mismo "Depositado"', () => {
     const opts = { ccyOf: () => 'USD', priceOf: () => 100, toUsd: (v) => v }
     const hoy = cashBook(demoOperations(), demoHoldings(), opts)
     const port = book(demoInvestOps(), demoInvestHoldings(), opts)

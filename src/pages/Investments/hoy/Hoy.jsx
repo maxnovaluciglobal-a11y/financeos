@@ -2,7 +2,7 @@
 // llamó "Hoy" hasta el 20-nov-2026, coherencia 360 I-7).
 // Abre con "Depositado frente a ganancia" (DepositGain, Inversiones v2: valor,
 // lo depositado y la ganancia, con la variación de hoy) y debajo el desglose
-// de esencial/PutSummary. Sin datos para eso, "Pusiste" y la banda de valor.
+// de esencial/PutSummary. Sin datos para eso, "Depositado / Ganancia" (PutSummary) y la banda de valor.
 // Después, en el orden de renderDash de Invest:
 // frescura de precios · cinta · aviso de aportes de moyiq · banda de valor ·
 // Tu riesgo hoy · Para revisar hoy · Valor en el tiempo · avisos de tipo de
@@ -583,7 +583,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
     ? { amount: Math.round(contrib.sum * 100) / 100, ccy, n: contrib.count, usd: ccy === 'USD' ? contrib.sum : userRate?.rate > 0 ? Math.round((contrib.sum / userRate.rate) * 100) / 100 : null }
     : null
   const aUsd = aporte ? aporteUsd(aporte) : null
-  // ── Pusiste / El mercado sumó (con el libro si está completo) ──
+  // ── Depositado / Ganancia (con el libro si está completo) ──
   const put = useMemo(() => putAndGain({ ledger: B, totals: T }), [B, T])
   // ── Depositado frente a ganancia: la primera lectura (Inversiones v2) ──
   const dep = useMemo(() => depositGain({ ledger: B, totals: T, opsMissing: !!d.opsMissing }), [B, T, d.opsMissing])
@@ -714,7 +714,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       {banner}
 
       <div className={s.top}>
-        {/* En la esencial, PutSummary ya dice el resultado ("El mercado sumó"): no se repite con otro nombre. */}
+        {/* En la esencial, PutSummary ya dice el resultado ("Ganancia" o "Pérdida"): no se repite con otro nombre. */}
         {!dep && <ValueBand T={T} local={local} money={money} priced={T.priced > 0} showResult={shows(view, 'unrealized') || !put} />}
         {shows(view, 'stop') && <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />}
         {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}

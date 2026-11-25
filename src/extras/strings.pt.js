@@ -69,7 +69,7 @@ export default {
   'invite.title': 'moyiq',
   'invite.text': 'Uso o moyiq para organizar minhas finanças. Seus dados ficam no seu celular e ele não pede a senha do banco. Experimente:',
   'invite.copied': 'Link copiado',
-  'invite.failed': 'Não foi possível compartilhar. O link é moyiq.app',
+  'invite.failed': 'Não foi possível compartilhar. O link é {url}',
 
   'loyalty.title': 'Pontos e milhas',
   'loyalty.sub': 'Saldos de programas de pontos ou milhas. Não são dinheiro: não somam ao seu patrimônio, a menos que você ative.',

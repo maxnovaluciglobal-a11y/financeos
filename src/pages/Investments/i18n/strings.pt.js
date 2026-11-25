@@ -477,7 +477,7 @@ export default {
   "invest.dep.atCostOne": "O depositado inclui 1 posição pelo valor investido nela, porque ela não tem operações registradas.",
   "invest.dep.atCostMany": "O depositado inclui {n} posições pelo valor investido nelas, porque elas não têm operações registradas.",
   "invest.dep.partial": "Há valores sem taxa de câmbio: eles não entram nestes números.",
-  "invest.dep.hint.noDeposits": "Você ainda não registrou depósitos, então a comparação é com o que você pagou, não com o que depositou. Registre seus depósitos para ver o ganho em relação ao que você realmente aplicou.",
+  "invest.dep.hint.noDeposits": "Você ainda não registrou depósitos, então a comparação é com o que você pagou, não com o que depositou. Registre seus depósitos para ver o ganho em relação ao que você realmente depositou.",
   "invest.dep.hint.incomplete": "Você tem depósitos registrados, mas falta a taxa de câmbio de alguns valores. Enquanto isso, a comparação é com o que você pagou pelas suas posições.",
   "invest.dep.hint.opsUnavailable": "Não foi possível ler suas movimentações, então por enquanto a comparação é com o que você pagou pelas suas posições, não com o que depositou.",
   "invest.dep.register": "Lançar depósitos",

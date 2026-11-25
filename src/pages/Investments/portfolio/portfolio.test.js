@@ -256,10 +256,14 @@ describe('pantalla Posiciones', () => {
     const fmt = makeFmt({ disp: { ccy: 'USD', rate: 1 }, currency: 'USD', language: 'es' })
     return renderToStaticMarkup(h(Positions, { pb, fmt, disp: { ccy: 'USD', rate: 1 }, demo, t, actions, targets: null, view }))
   }
-  it('vista esencial: Pusiste y El mercado sumó primero, sin riesgo al stop ni capital de referencia', () => {
+  it('vista esencial: Depositado y Ganancia (o Pérdida) primero, como en Resumen, sin riesgo al stop ni capital de referencia', () => {
     const html = render(false, 'esencial')
-    expect(html.indexOf('Pusiste')).toBeGreaterThan(-1)
-    expect(html.indexOf('Pusiste')).toBeLessThan(html.indexOf('Resumen del portafolio'))
+    // Mismas palabras que Resumen (25-nov-2026): con el libro, "Depositado"; sin él, "Pagado por tus posiciones".
+    const put = Math.max(html.indexOf('Depositado'), html.indexOf('Pagado por tus posiciones'))
+    expect(put).toBeGreaterThan(-1)
+    expect(put).toBeLessThan(html.indexOf('Resumen del portafolio'))
+    expect(html).toMatch(/Ganancia|Pérdida/)
+    expect(html).not.toMatch(/Pusiste|El mercado (sumó|restó)/)
     expect(html).not.toContain('Riesgo al stop')
     expect(html).toContain('Supera tu límite de 25 %') // el peso sigue: no es jerga
   })

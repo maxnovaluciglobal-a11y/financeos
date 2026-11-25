@@ -4,7 +4,7 @@ import { beatChecks, companyBrief, firstSentence, putAndGain, riskWords, sizeBan
 const totals = (over = {}) => ({ value: 12000, cost: 10000, total: 2000, fxEffect: 0, fxKnown: 0, fxUnknown: 0, excluded: 0, ...over })
 const ledger = (over = {}) => ({ complete: true, contributed: 11500, gain: 1200, value: 12700, deposits: 11500, implicit: 0, dividends: 0, ...over })
 
-describe('Pusiste / El mercado sumó', () => {
+describe('Depositado / Ganancia (putAndGain)', () => {
   it('sin operaciones: lo invertido en las posiciones y su resultado', () => {
     const r = putAndGain({ totals: totals() })
     expect(r).toMatchObject({ basis: 'invested', put: 10000, gain: 2000, value: 12000, parts: null })
@@ -40,7 +40,7 @@ describe('Pusiste / El mercado sumó', () => {
 
 describe('¿Le ganaste a la inflación y al dólar?', () => {
   const sum = (gain, put = 1000) => ({ gain, put, pct: gain / put })
-  it('al dólar: solo para quien no usa US$, y le ganó si el mercado sumó', () => {
+  it('al dólar: solo para quien no usa US$, y le ganó si hubo ganancia', () => {
     expect(beatChecks(sum(100), { currency: 'USD' })).toBeNull()
     expect(beatChecks(sum(100), { currency: 'CLP' })).toEqual([{ key: 'usd', beat: true, even: false, pct: 0.1 }])
     expect(beatChecks(sum(-50), { currency: 'ARS' })[0]).toMatchObject({ beat: false, even: false })
