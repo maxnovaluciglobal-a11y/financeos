@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  MKT_SYMS, NEWS_IMG_HOSTS, chartPaths, cleanNews, safeNewsImage, daysAway, earningsUniverse, earningsWindow, feedFreshness, filterNews, fmtChange,
+  MKT_SYMS, NEWS_IMG_HOSTS, chartPaths, cleanNews, newsImageSrc, safeNewsImage, daysAway, earningsUniverse, earningsWindow, feedFreshness, filterNews, fmtChange,
   fmtMarketValue, fxDecimals, fxRows, marketRows, monthCloses, newsAgo, newsCounts, nyseEarlyCloses, nyseHolidays,
   nyseSession, nyWallToMs, periodChange, quoteFreshness, regimeFrom, runLimited, safeLink, spyChartSeries,
   summarizeFreshness, vixFromBar, vixGaugePct, vixZone, whenKey, EARN_MAX_TICKERS, NEWS_MAX,
@@ -187,7 +187,16 @@ describe('noticias', () => {
     ]) {
       expect(safeNewsImage(bad), String(bad)).toBeNull()
       expect(cleanNews([{ title: 'A', link: 'https://x.com/1', image: bad }])[0].image).toBeNull()
+      expect(newsImageSrc(bad)).toBeNull()
     }
+  })
+  it('miniatura: el src va por el proxy de Invest, con la URL codificada', () => {
+    const ok = 'https://media.zenfs.com/en/reuters.com/a b.jpg?x=1&y=2'
+    const src = newsImageSrc(ok)
+    expect(src.startsWith('https://invest.moyiq.app/api/img?u=')).toBe(true)
+    const u = new URL(src)
+    expect([...u.searchParams.keys()]).toEqual(['u'])
+    expect(u.searchParams.get('u')).toBe(new URL(ok).href)
   })
   it('cuenta y filtra por categoría, máximo 30', () => {
     const n = cleanNews(raw)

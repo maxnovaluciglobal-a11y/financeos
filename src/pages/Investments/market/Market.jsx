@@ -366,7 +366,7 @@ export function News({ t, news, filter, setFilter, sample }) {
                   ) : <span className={s.newsTitle} lang={n.sample ? undefined : 'en'}>{n.titleKey ? t(n.titleKey) : n.title}</span>}
                   {meta && <span className={s.note}>{meta}</span>}
                 </div>
-                {n.image && <NewsThumb key={n.image} src={n.image} />}
+                {n.image && <NewsThumb key={n.image} url={n.image} />}
               </li>
             )
           })}

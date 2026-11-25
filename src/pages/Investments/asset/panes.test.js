@@ -34,7 +34,7 @@ describe('NewsPane: miniatura', () => {
   it('pinta la imagen cuando viene de un CDN permitido', () => {
     const img = 'https://s.yimg.com/uu/api/res/1.2/x.jpg'
     const html = pane([{ ...base, image: img }])
-    expect(html).toContain(`src="${img}"`)
+    expect(html).toContain(`src="https://invest.moyiq.app/api/img?u=${encodeURIComponent(img)}"`)
     expect(html).toContain('alt=""')
     expect(html.indexOf('AAPL beats estimates')).toBeLessThan(html.indexOf('<img'))
   })

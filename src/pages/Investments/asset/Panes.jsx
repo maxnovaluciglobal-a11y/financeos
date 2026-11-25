@@ -5,7 +5,6 @@ import { Check, X } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
 import { capParts, earningsSummary, fundMetrics, fundTags, filterNews, hasFundamentals, minePosition, range52, safeLink } from '../../../utils/investAsset.js'
 import { fmtPct } from '../../../utils/index.js'
-import { safeNewsImage } from '../../../utils/investMarket.js'
 import NewsThumb from '../news/NewsThumb.jsx'
 import { useAssetT } from './assetDict.js'
 import { fmtDay, fmtEps, fmtNum, fmtPx, fmtPxSigned, fmtStamp, fmtUnits, isCryptoTicker } from './format.js'
@@ -280,7 +279,6 @@ export function NewsPane({ ticker, news, onRetry }) {
           <ul className={s.news}>
             {items.map(n => {
               const href = safeLink(n.link)
-              const img = safeNewsImage(n.image)
               const meta = [n.source, n.hoursAgo != null ? t('asset.news.ago', { n: n.hoursAgo }) : null].filter(Boolean).join(' · ')
               return (
                 <li key={n.id || n.title}>
@@ -290,7 +288,7 @@ export function NewsPane({ ticker, news, onRetry }) {
                       : <span lang="en" className={s.newsTitle}>{n.title}</span>}
                     {meta && <span className={s.newsMeta}>{meta}</span>}
                   </div>
-                  {img && <NewsThumb key={img} src={img} />}
+                  {n.image && <NewsThumb key={n.image} url={n.image} />}
                 </li>
               )
             })}

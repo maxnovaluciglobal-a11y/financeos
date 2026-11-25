@@ -19,8 +19,10 @@
 // excepción es /api/news: pedir noticias de los tickers propios mandaría la
 // LISTA del portafolio en una sola URL (quedaría en los registros del servidor
 // y del CDN), y el PLAN lo lista entre los errores de Invest que se corrigen.
-// Por eso news() solo pide noticias del mercado general y rechaza `tickers`
-// hasta que invest-web acepte la lista por POST (requisito de F6).
+// Por eso news() sin tickers pide por GET las noticias del mercado general y,
+// con tickers (la ficha de un activo), los manda en el CUERPO de un POST JSON,
+// que invest-web acepta (api/news.js: máx. 12 tickers y 2 KB, mismo control
+// de origen). La URL nunca lleva tickers.
 //
 // El demo (demo.moyiq.app y app.moyiq.app/app/?demo=true) usa este mismo
 // cliente a través de demo/demoMarketApi.js, con respaldo de ejemplo si algo
@@ -32,6 +34,8 @@ export const INVEST_API_ORIGIN = (import.meta.env?.VITE_INVEST_URL || 'https://i
 export const TICKER_RE = /^[\^A-Z0-9.\-=]{1,15}$/
 const CRYPTO_RE = /^[A-Z0-9-]{1,15}$/
 export const QUOTE_BATCH = 10
+// Tope de api/news (MAX_TICKERS en invest-web).
+export const NEWS_MAX_TICKERS = 12
 export const CRYPTO_BATCH = 30
 export const FUND_BATCH = 10
 export const HISTORY_RANGES = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y']
@@ -132,11 +136,35 @@ export function createInvestApi({ fetchImpl = (...a) => fetch(...a), now = () =>
     return p
   }
 
+  // POST JSON (solo /api/news con tickers): mismo tope de tiempo, un solo
+  // pedido en vuelo por cuerpo. null si falla.
+  function postJson(path, body, timeoutMs = TIMEOUT.default) {
+    const url = `${origin}${path}`
+    const payload = JSON.stringify(body)
+    const key = `POST ${url} ${payload}`
+    if (inflight.has(key)) return inflight.get(key)
+    const p = (async () => {
+      stats.requests++
+      const ctrl = typeof AbortController === 'function' ? new AbortController() : null
+      const id = ctrl ? setTimeout(() => ctrl.abort(), timeoutMs) : null
+      try {
+        const res = await fetchImpl(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, ...(ctrl ? { signal: ctrl.signal } : {}) })
+        if (!res || !res.ok) { stats.failures++; return null }
+        return await res.json()
+      } catch { stats.failures++; return null } finally {
+        if (id) clearTimeout(id)
+        inflight.delete(key)
+      }
+    })()
+    inflight.set(key, p)
+    return p
+  }
+
   // Valor único cacheado por clave (marketbar, fx, history, earnings, news).
-  async function cached(key, ttl, path, timeoutMs, map = (d) => d) {
+  async function cached(key, ttl, path, timeoutMs, map = (d) => d, body = undefined) {
     const c = fresh(key, ttl)
     if (c) return c.data
-    const raw = await getJson(path, timeoutMs)
+    const raw = body === undefined ? await getJson(path, timeoutMs) : await postJson(path, body, timeoutMs)
     const data = raw == null ? null : map(raw)
     if (data != null) cache.set(key, { at: now(), data })
     return data
@@ -205,12 +233,16 @@ export function createInvestApi({ fetchImpl = (...a) => fetch(...a), now = () =>
     // Solo noticias del mercado general. Con `tickers` lanza: la lista del
     // portafolio no viaja en la URL (ver el encabezado).
     news(opts = {}) {
-      if (opts && opts.tickers != null) throw new Error('news_tickers_need_post')
-      return cached('news:', TTL.news, '/api/news', TIMEOUT.news, (d) => ({
+      const map = (d) => ({
         items: (d?.items || []).filter(it => it && it.title && /^https?:\/\//.test(String(it.link || ''))),
         fetchedAt: d?.fetchedAt || null,
         fallback: !!d?.fallback,
-      }))
+      })
+      if (opts?.tickers == null) return cached('news:', TTL.news, '/api/news', TIMEOUT.news, map)
+      // Con tickers: POST con la lista en el cuerpo (nunca en la URL).
+      const tickers = [...new Set((Array.isArray(opts.tickers) ? opts.tickers : [opts.tickers]).map(normTicker).filter(Boolean))].slice(0, NEWS_MAX_TICKERS)
+      if (!tickers.length) return Promise.resolve(null)
+      return cached(`news:${tickers.join(',')}`, TTL.news, '/api/news', TIMEOUT.news, map, { tickers })
     },
     earnings(ticker) {
       const t = normTicker(ticker)

@@ -76,7 +76,9 @@ describe('Mercado con datos reales', () => {
     const tags = html.match(/<img[^>]*>/g) || []
     expect(tags).toHaveLength(1)
     const tag = tags[0]
-    for (const a of [`src="${img}"`, 'alt=""', 'width="72"', 'height="54"', 'loading="lazy"', 'decoding="async"', 'referrerPolicy="no-referrer"']) expect(tag, a).toContain(a)
+    const proxied = `https://invest.moyiq.app/api/img?u=${encodeURIComponent(img)}`.replace(/&/g, '&amp;')
+    expect(tag).not.toContain('src="https://media.zenfs.com')
+    for (const a of [`src="${proxied}"`, 'alt=""', 'width="72"', 'height="54"', 'loading="lazy"', 'decoding="async"', 'referrerPolicy="no-referrer"']) expect(tag, a).toContain(a)
     // texto primero, imagen después (a la derecha) dentro del mismo <li>
     const li = html.slice(html.indexOf('Fed holds rates') - 400, html.indexOf(tag) + tag.length)
     expect(li.indexOf('Fed holds rates')).toBeLessThan(li.indexOf('<img'))

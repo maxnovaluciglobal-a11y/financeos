@@ -211,10 +211,6 @@ describe('privacy: alineada con la landing y el código (auditoría 360, 19-nov-
       [/^mindicador\.cl$/, 'mindicador.cl'],
       [/^challenges\.cloudflare\.com$/, 'Turnstile'],
       [/^invest\.moyiq\.app$/, 'invest.moyiq.app'],
-      // Miniaturas de noticias de Mercado (25-nov-2026): cada CDN, con su nombre.
-      [/^media\.zenfs\.com$/, 'media.zenfs.com'],
-      [/^s\.yimg\.com$/, 's.yimg.com'],
-      [/^d29szjachogqwa\.cloudfront\.net$/, 'd29szjachogqwa.cloudfront.net'],
     ]
     expect(hosts.length).toBeGreaterThan(3)
     for (const host of hosts) {
