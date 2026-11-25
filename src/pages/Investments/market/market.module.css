@@ -125,7 +125,8 @@
 .ticker { font-weight: 600; min-width: 4.5em; }
 .when { color: var(--th); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.newsItem { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-bottom: 0.5px solid var(--brd); }
+.newsItem { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--brd); }
+.newsText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .newsItem:last-child { border-bottom: 0; }
 .newsLink, .newsTitle { color: var(--tx); font-size: var(--t-subhead); line-height: var(--t-subhead-lh); font-weight: 600; }
 .newsLink { text-decoration: none; display: inline; }

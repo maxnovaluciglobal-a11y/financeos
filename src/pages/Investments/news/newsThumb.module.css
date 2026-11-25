@@ -1,0 +1,14 @@
+/* Miniatura de noticia: 72×54 (64×48 en móvil), recorte centrado, fondo de
+   relleno mientras carga. Sin foto no ocupa lugar (el <img> no existe). */
+.thumb {
+  flex: none;
+  display: block;
+  width: 72px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--fill);
+}
+@media (max-width: 767px) {
+  .thumb { width: 64px; height: 48px; }
+}

@@ -125,9 +125,37 @@ describe('marketbar, history, news y tipos de cambio', () => {
     const r = await api.news()
     expect(f.calls[0]).toBe(`${INVEST_API_ORIGIN}/api/news`)
     expect(r.items).toHaveLength(1)
-    // La lista del portafolio nunca viaja en la URL (PLAN: errores de Invest).
-    expect(() => api.news({ tickers: ['AAPL'] })).toThrow('news_tickers_need_post')
     expect(f.calls).toHaveLength(1)
+  })
+  it('news con tickers: POST JSON con la lista en el cuerpo, nunca en la URL; caché por lista', async () => {
+    const seen = []
+    const f = vi.fn(async (url, init) => { seen.push({ url: String(url), init }); return json({ items: [{ title: 'AAPL up', link: 'https://a.b/1', tickers: ['AAPL'] }], fetchedAt: 1 }) })
+    const api = createInvestApi({ fetchImpl: f })
+    const r = await api.news({ tickers: ['aapl', 'AAPL', 'bad ticker!', 'MSFT'] })
+    expect(r.items).toHaveLength(1)
+    expect(seen).toHaveLength(1)
+    expect(seen[0].url).toBe(`${INVEST_API_ORIGIN}/api/news`)
+    expect(seen[0].url).not.toContain('AAPL')
+    expect(seen[0].init.method).toBe('POST')
+    expect(seen[0].init.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(JSON.parse(seen[0].init.body)).toEqual({ tickers: ['AAPL', 'MSFT'] })
+    expect(seen[0].init.body.length).toBeLessThan(2048)
+    await api.news({ tickers: ['AAPL', 'MSFT'] })
+    expect(seen).toHaveLength(1) // misma lista: caché
+    await api.news({ tickers: ['NVDA'] })
+    expect(seen).toHaveLength(2)
+  })
+  it('news con tickers: como máximo 12, sin tickers válidos no pide nada, error → null', async () => {
+    const seen = []
+    const f = vi.fn(async (url, init) => { seen.push(init); return seen.length > 1 ? json({}, false) : json({ items: [] }) })
+    const api = createInvestApi({ fetchImpl: f })
+    await api.news({ tickers: Array.from({ length: 20 }, (_, i) => `T${i}`) })
+    expect(JSON.parse(seen[0].body).tickers).toHaveLength(12)
+    expect(await api.news({ tickers: ['bad ticker!'] })).toBeNull()
+    expect(await api.news({ tickers: [] })).toBeNull()
+    expect(seen).toHaveLength(1)
+    expect(await api.news({ tickers: ['AAPL'] })).toBeNull()
+    expect(seen).toHaveLength(2)
   })
   it('fundamentals en lotes de 10 y fx-latam / fx-ars cacheados', async () => {
     const f = fakeFetch((u) => {

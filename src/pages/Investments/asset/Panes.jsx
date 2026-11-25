@@ -5,6 +5,7 @@ import { Check, X } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
 import { capParts, earningsSummary, fundMetrics, fundTags, filterNews, hasFundamentals, minePosition, range52, safeLink } from '../../../utils/investAsset.js'
 import { fmtPct } from '../../../utils/index.js'
+import NewsThumb from '../news/NewsThumb.jsx'
 import { useAssetT } from './assetDict.js'
 import { fmtDay, fmtEps, fmtNum, fmtPx, fmtPxSigned, fmtStamp, fmtUnits, isCryptoTicker } from './format.js'
 import s from './asset.module.css'
@@ -281,10 +282,13 @@ export function NewsPane({ ticker, news, onRetry }) {
               const meta = [n.source, n.hoursAgo != null ? t('asset.news.ago', { n: n.hoursAgo }) : null].filter(Boolean).join(' · ')
               return (
                 <li key={n.id || n.title}>
-                  {href
-                    ? <a href={href} target="_blank" rel="noopener noreferrer" lang="en" className={s.newsLink}>{n.title}<span className="sr-only"> {t('asset.news.newTab')}</span></a>
-                    : <span lang="en" className={s.newsTitle}>{n.title}</span>}
-                  {meta && <span className={s.newsMeta}>{meta}</span>}
+                  <div className={s.newsText}>
+                    {href
+                      ? <a href={href} target="_blank" rel="noopener noreferrer" lang="en" className={s.newsLink}>{n.title}<span className="sr-only"> {t('asset.news.newTab')}</span></a>
+                      : <span lang="en" className={s.newsTitle}>{n.title}</span>}
+                    {meta && <span className={s.newsMeta}>{meta}</span>}
+                  </div>
+                  {n.image && <NewsThumb key={n.image} url={n.image} />}
                 </li>
               )
             })}

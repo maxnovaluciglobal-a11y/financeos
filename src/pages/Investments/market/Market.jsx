@@ -21,6 +21,7 @@ import {
   fmtMarketValue, fxDecimals, fxRows, marketRows, newsAgo, newsCatKey, newsCounts, nyseSession, periodChange,
   regimeFrom, spyChartSeries, symName, vixGaugePct, vixZone, whenKey,
 } from '../../../utils/investMarket.js'
+import NewsThumb from '../news/NewsThumb.jsx'
 import { useMarket } from './useMarket.js'
 import { shows } from '../../../utils/investView.js'
 import s from './market.module.css'
@@ -357,12 +358,15 @@ export function News({ t, news, filter, setFilter, sample }) {
             const meta = [n.sourceKey ? t(n.sourceKey) : n.source, ago && t(ago.key, { n: ago.n }), f === 'all' && t(newsCatKey(n.cat))].filter(Boolean).join(' · ')
             return (
               <li key={n.id} className={s.newsItem}>
-                {n.link ? (
-                  <a href={n.link} target="_blank" rel="noopener noreferrer" lang="en" className={s.newsLink}>
-                    {n.title}<ExternalLink size={13} strokeWidth={2} aria-hidden="true" className={s.ext} /><span className="sr-only"> {t('invest.mkt.news.newTab')}</span>
-                  </a>
-                ) : <span className={s.newsTitle} lang={n.sample ? undefined : 'en'}>{n.titleKey ? t(n.titleKey) : n.title}</span>}
-                {meta && <span className={s.note}>{meta}</span>}
+                <div className={s.newsText}>
+                  {n.link ? (
+                    <a href={n.link} target="_blank" rel="noopener noreferrer" lang="en" className={s.newsLink}>
+                      {n.title}<ExternalLink size={13} strokeWidth={2} aria-hidden="true" className={s.ext} /><span className="sr-only"> {t('invest.mkt.news.newTab')}</span>
+                    </a>
+                  ) : <span className={s.newsTitle} lang={n.sample ? undefined : 'en'}>{n.titleKey ? t(n.titleKey) : n.title}</span>}
+                  {meta && <span className={s.note}>{meta}</span>}
+                </div>
+                {n.image && <NewsThumb key={n.image} url={n.image} />}
               </li>
             )
           })}

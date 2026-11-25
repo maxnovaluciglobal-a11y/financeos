@@ -118,7 +118,8 @@
 .inline { display: flex; gap: 8px; }
 .input { flex: 1; min-width: 0; }
 .news { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.news li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-bottom: 0.5px solid var(--brd); }
+.news li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--brd); }
+.newsText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .newsLink, .newsTitle { display: flex; align-items: center; min-height: 44px; font-size: var(--t-subhead); line-height: 1.4; color: var(--tx); font-weight: 600; }
 .newsLink { text-decoration: underline; text-underline-offset: 3px; }
 .newsMeta { font-size: var(--t-footnote); color: var(--th); }

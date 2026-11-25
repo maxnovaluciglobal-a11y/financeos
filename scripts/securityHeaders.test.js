@@ -48,6 +48,18 @@ describe('cabeceras de seguridad (vercel.json)', () => {
   })
 })
 
+// Miniaturas de noticias (25-nov-2026): se sirven por el proxy propio
+// invest.moyiq.app/api/img; img-src abre solo ese origen (ya declarado en la
+// política) y nunca los CDN de terceros ni https: genérico.
+describe('img-src: miniaturas de noticias por el proxy de Invest', () => {
+  it("es 'self', data:, blob: y https://invest.moyiq.app, nada más", async () => {
+    expect(dir('img-src')).toEqual(["'self'", 'data:', 'blob:', 'https://invest.moyiq.app'])
+    const { NEWS_IMG_HOSTS, newsImageSrc } = await import('../src/utils/investMarket.js')
+    for (const h of NEWS_IMG_HOSTS) expect(csp).not.toContain(h)
+    expect(new URL(newsImageSrc(`https://${NEWS_IMG_HOSTS[0]}/a.jpg`)).origin).toBe('https://invest.moyiq.app')
+  })
+})
+
 // SEG-1 / SEG-7: Cloudflare Turnstile carga api.js y su iframe desde challenges.cloudflare.com.
 describe('Turnstile en la CSP', () => {
   it('script-src y frame-src permiten challenges.cloudflare.com, y nada más se abre', () => {

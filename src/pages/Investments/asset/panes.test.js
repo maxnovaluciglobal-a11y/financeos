@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { IndicatorsPane } from './Panes.jsx'
+import { IndicatorsPane, NewsPane } from './Panes.jsx'
 import es from './strings.es.js'
 import { interpolate } from '../../../i18n/translate.js'
 
@@ -24,5 +24,23 @@ describe('IndicatorsPane', () => {
   })
   it('cargando: estado de carga', () => {
     expect(html({ phase: 'loading' })).toContain(es['asset.ind.loading'])
+  })
+})
+
+// Noticias del activo: la misma miniatura que Mercado, solo con imagen permitida.
+describe('NewsPane: miniatura', () => {
+  const pane = (items) => renderToStaticMarkup(createElement(NewsPane, { ticker: 'AAPL', news: { phase: 'ready', data: { items } }, onRetry: () => {} }))
+  const base = { id: '1', title: 'AAPL beats estimates', link: 'https://news.example/a', source: 'Reuters', hoursAgo: 3 }
+  it('pinta la imagen cuando viene de un CDN permitido', () => {
+    const img = 'https://s.yimg.com/uu/api/res/1.2/x.jpg'
+    const html = pane([{ ...base, image: img }])
+    expect(html).toContain(`src="https://invest.moyiq.app/api/img?u=${encodeURIComponent(img)}"`)
+    expect(html).toContain('alt=""')
+    expect(html.indexOf('AAPL beats estimates')).toBeLessThan(html.indexOf('<img'))
+  })
+  it('sin imagen, o de un host no permitido, no hay <img>', () => {
+    expect(pane([base])).not.toContain('<img')
+    expect(pane([{ ...base, image: 'https://evil.example/x.jpg' }])).not.toContain('<img')
+    expect(pane([{ ...base, image: 'http://media.zenfs.com/x.jpg' }])).not.toContain('<img')
   })
 })

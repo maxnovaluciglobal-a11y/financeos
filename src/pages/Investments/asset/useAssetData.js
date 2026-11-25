@@ -110,7 +110,8 @@ export function useAssetData(ticker, { demo = false, demoApi = demoMarketApi } =
     if (demo) { setNews(READY({ items: sampleNews(ticker), sample: true })); return }
     const gen = alive.current
     setNews(LOADING)
-    // /api/news exige tickers para traer titulares de un activo: va SOLO este.
+    // Titulares de este activo: va SOLO este ticker, en el cuerpo de un POST
+    // (investApi.news con tickers), nunca en la URL.
     investApi.news({ tickers: [ticker] }).then(d => { if (gen === alive.current) setNews(d ? READY(d) : { phase: 'error', data: null }) })
   }, [ticker, demo, news.phase])
 

@@ -15,6 +15,7 @@
 //    URL (riesgo 12). El filtro por categoría es local.
 // Nada de esto se guarda en el dispositivo.
 import { fmtDecimal, fmtNum, MINUS, NNBSP } from './index.js'
+import { INVEST_API_ORIGIN } from '../core/investApi.js'
 
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v)
 const DAY = 86400000
@@ -231,10 +232,29 @@ export function safeLink(u) {
   } catch { return null }
 }
 
+// Miniatura de la noticia (como Invest v1): api/news la toma del thumbnail de
+// Yahoo (bestImage). Solo https y solo de los CDN de imágenes que la API
+// devuelve de verdad (observados el 25-nov-2026). La app NUNCA la pide directo
+// al CDN: pasa por el proxy propio invest.moyiq.app/api/img (misma lista de
+// hosts del lado del servidor), así la CSP solo abre img-src a
+// invest.moyiq.app y el CDN no recibe la IP ni las cabeceras del usuario.
+export const NEWS_IMG_HOSTS = ['media.zenfs.com', 's.yimg.com', 'd29szjachogqwa.cloudfront.net']
+export function safeNewsImage(u) {
+  if (typeof u !== 'string' || !u) return null
+  try {
+    const url = new URL(u.trim())
+    if (url.protocol !== 'https:' || url.username || url.password || url.port) return null
+    return NEWS_IMG_HOSTS.includes(url.hostname) ? url.href : null
+  } catch { return null }
+}
+// src del <img>: la URL validada, servida por el proxy de Invest.
+export function newsImageSrc(u) {
+  const safe = safeNewsImage(u)
+  return safe ? `${INVEST_API_ORIGIN}/api/img?u=${encodeURIComponent(safe)}` : null
+}
+
 // items de investApi.news(): sin título fuera, sin repetir el mismo enlace o
-// titular, cat desconocida → Macro (lo que hace api/news por defecto). La
-// miniatura NO se usa: la CSP de moyiq (img-src 'self' data: blob:) bloquea
-// las imágenes de terceros y no hay proxy propio (ver el informe de F6).
+// titular, cat desconocida → Macro (lo que hace api/news por defecto).
 const hoursOf = (v) => { const h = v == null || v === '' ? NaN : Number(v); return Number.isFinite(h) ? Math.max(0, h) : null }
 export function cleanNews(items) {
   const seen = new Set()
@@ -253,6 +273,7 @@ export function cleanNews(items) {
       source: String(n.source || '').trim() || null,
       hoursAgo: hoursOf(n.hoursAgo),
       cat: newsCatKey(n.cat) && n.cat !== 'all' ? n.cat : 'Macro',
+      image: safeNewsImage(n.image),
       sample: !!n.sample,
       // Demo: el texto se traduce al pintar (cambia con el idioma).
       titleKey: n.sample && n.titleKey ? String(n.titleKey) : null,
