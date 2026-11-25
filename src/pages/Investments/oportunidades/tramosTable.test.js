@@ -1,10 +1,10 @@
 // Tus tramos, rediseño del 24-nov-2026 (opción A, matriz): estructura de la
 // tabla, estados de cada celda, totales = planCapital, lo que sigues, y
 // semántica (caption, th scope, tfoot) en los 4 idiomas.
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement as h } from 'react'
-import TramosTable, { columnTotals, shortAmount } from './TramosTable.jsx'
+import TramosTable, { columnTotals, coveredTop, shortAmount } from './TramosTable.jsx'
 import Oportunidades from './Oportunidades.jsx'
 import { readSignal } from './signals.js'
 import { planCapital } from './capital.js'
@@ -59,7 +59,7 @@ describe('TramosTable: estructura y semántica', () => {
   })
   it('forma ancha: precio y caída desde el máximo; en el teléfono, hoy/espera por activo para el lector', () => {
     expect(text(html)).toContain(es['opp.tbl.price'])
-    expect(text(html)).toContain(es['opp.tbl.ddZero'])
+    expect(text(html)).toContain(text(es['opp.tbl.ddZero']))
     expect(text(html)).toContain(text(interpolate(es['opp.tbl.sr.row'], { a: fmt.money(2250), b: fmt.money(0) })))
   })
   it('columnas 20/50/100/200 con el peso de la escalera', () => {
@@ -216,5 +216,42 @@ describe('textos de Tus tramos en 4 idiomas', () => {
     expect(Object.entries(es).filter(([, v]) => voseo.test(v))).toEqual([])
     expect(Object.entries(de).filter(([, v]) => /\b(du|dein|deine|dir|dich)\b/.test(v))).toEqual([])
     for (const d of [es, en, pt, de]) expect(d['opp.tbl.caption']).toContain('US$')
+  })
+})
+
+describe('encabezado fijo al bajar', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  const box = (top, height, pos = 'static') => ({ pos, getBoundingClientRect: () => ({ top, bottom: top + height, height }) })
+  const dom = ({ padTop, bars }) => {
+    const root = box(56, 788)
+    const parent = { children: [...bars, root] }
+    root.parentElement = parent
+    root.pad = padTop
+    vi.stubGlobal('getComputedStyle', (e) => ({ position: e.pos || 'static', paddingTop: `${e.pad ?? 0}px` }))
+    return { closest: (sel) => (sel === '[data-scroll-root]' ? root : null) }
+  }
+  it('teléfono: la barra flotante tapa 44 px y el contenedor tiene 46 de padding → −2 (pegado a la barra)', () => {
+    expect(coveredTop(dom({ padTop: 46, bars: [box(56, 44, 'absolute')] }))).toBe(-2)
+  })
+  it('escritorio: la barra ocupa su fila (no tapa) → −padding (pegado al borde del contenedor)', () => {
+    expect(coveredTop(dom({ padTop: 14, bars: [box(0, 56, 'static'), box(10, 40, 'absolute')] }))).toBe(-14)
+  })
+  it('fuera de la app (sin contenedor de scroll): 0', () => {
+    expect(coveredTop({ closest: () => null })).toBe(0)
+    expect(coveredTop(null)).toBe(0)
+  })
+  it('markup: sin desplazamiento lateral no lleva data-scroll ni tabindex y expone el desfase como variable', () => {
+    const html = render()
+    expect(html).not.toContain('data-scroll=')
+    expect(html).not.toContain('tabindex')
+    expect(html).toContain('--opp-head-top:0px')
+    expect(html.indexOf('<thead>')).toBeLessThan(html.indexOf('<tbody>'))
+  })
+  it('con muchas filas el encabezado sigue siendo uno solo (no se duplica para fijarlo)', () => {
+    const many = Array.from({ length: 14 }, (_, i) => ({ t: `T${i}` }))
+    const rd = Object.fromEntries(many.map(x => [x.t, readings.B]))
+    const html = renderToStaticMarkup(h(TramosTable, { plan, mine, watch: many, readings: { ...readings, ...rd }, t, fmt, lad: 'half200' }))
+    expect((html.match(/<thead>/g) || []).length).toBe(1)
+    expect((html.match(/<th scope="col"/g) || []).length).toBe(6)
   })
 })

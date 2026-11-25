@@ -13,7 +13,7 @@
 //
 // Componente puro (sin pedidos ni estado): los números salen de planCapital
 // (capital.js) y las distancias de readSignal (signals.js), sin cuentas nuevas.
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Check, Circle, CircleAlert } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import { LADDERS } from '../../../utils/investPlan.js'
@@ -113,8 +113,8 @@ function DistCell({ m, t, fmt }) {
 
 function Ticker({ tk, onOpen, t }) {
   return onOpen
-    ? <button type="button" className={s.tk} onClick={() => onOpen(tk)} aria-label={t('opp.open', { t: tk })}>{tk}</button>
-    : <span className={s.tk}>{tk}</span>
+    ? <button type="button" className={s.tk} data-long={tk.length > 6 || undefined} onClick={() => onOpen(tk)} aria-label={t('opp.open', { t: tk })}>{tk}</button>
+    : <span className={s.tk} data-long={tk.length > 6 || undefined}>{tk}</span>
 }
 
 const rsiSub = (r, t) => (r ? (r.rsi == null ? t('opp.tbl.rsiNone') : t('opp.tbl.rsi', { v: Math.round(r.rsi) })) : null)
@@ -154,19 +154,58 @@ function DistRow({ it, r, loading, t, fmt, onOpen, mine }) {
 }
 
 /**
+ * Cuánto tapa la barra superior de la app el borde de arriba del contenedor de
+ * scroll ([data-scroll-root]) que contiene a `el`: en el teléfono la barra
+ * flota sobre el contenido (position absolute o fixed); en el escritorio
+ * ocupa su propia fila y no tapa nada. El navegador ya deja el sticky debajo
+ * del padding superior del contenedor, así que se descuenta.
+ * → px relativo a ese padding (−padding si no hay nada encima).
+ */
+export function coveredTop(el) {
+  const root = el?.closest?.('[data-scroll-root]')
+  if (!root || typeof getComputedStyle !== 'function') return 0
+  const top = root.getBoundingClientRect().top
+  let cover = 0
+  for (const sib of root.parentElement?.children || []) {
+    if (sib === root) continue
+    const pos = getComputedStyle(sib).position
+    if (pos !== 'absolute' && pos !== 'fixed') continue
+    const r = sib.getBoundingClientRect()
+    if (r.height > 0 && r.top <= top + 1 && r.bottom > top) cover = Math.max(cover, r.bottom - top)
+  }
+  // Suele ser negativo: el encabezado debe quedar pegado al borde de la barra
+  // (o al del contenedor, si nada lo tapa), sin la franja del padding por
+  // donde asomarían las filas al bajar.
+  const pad = parseFloat(getComputedStyle(root).paddingTop) || 0
+  return Math.round(cover - pad)
+}
+
+/**
  * plan: planCapital(...) con ok:true, o null (sin monto: solo distancias).
  * mine / watch: [{ t, name? }] en orden; readings: { t: readSignal | null }.
  */
 export default function TramosTable({ plan, mine, watch, readings, t, fmt, lad = DEFAULT_LADDER, onOpen }) {
   const { m } = useMoney()
   const w = LADDERS[lad] || LADDERS[DEFAULT_LADDER]
-  // La región solo entra al orden de tabulación cuando de verdad se desplaza.
+  // Dos modos, según el ancho:
+  //  · la tabla cabe: la región no se desplaza (overflow visible, sin tabindex)
+  //    y el encabezado de columnas queda fijo al bajar, justo debajo de lo que
+  //    tapa el borde superior del contenedor de scroll de la app (en el
+  //    teléfono, la barra superior flotante; en el escritorio, nada). Se mide.
+  //  · la tabla no cabe (letra grande, 320 px): scroll horizontal con la
+  //    columna del activo fija y la región enfocable; sin encabezado fijo
+  //    (un sticky vertical no funciona dentro de un overflow horizontal).
+  // useLayoutEffect: se decide antes de pintar, sin salto visible.
   const twRef = useRef(null)
   const [scrolls, setScrolls] = useState(false)
-  useEffect(() => {
+  const [headTop, setHeadTop] = useState(0)
+  useLayoutEffect(() => {
     const el = twRef.current
     if (!el) return undefined
-    const check = () => setScrolls(el.scrollWidth > el.clientWidth + 1)
+    const check = () => {
+      setScrolls(el.scrollWidth > el.clientWidth + 1)
+      setHeadTop(coveredTop(el))
+    }
     check()
     if (typeof ResizeObserver !== 'function') return undefined
     const ro = new ResizeObserver(check)
@@ -185,8 +224,9 @@ export default function TramosTable({ plan, mine, watch, readings, t, fmt, lad =
   const pctW = (x) => pctIn(t, Math.round(x * 100))
   return (
     <>
-    {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- only when the table overflows sideways (large text, narrow screens): the region takes focus so keyboard users can scroll it (axe scrollable-region-focusable) */}
-    <div ref={twRef} className={s.tw} tabIndex={scrolls ? 0 : undefined} role="region" aria-labelledby="opp-tbl-cap">
+    <div ref={twRef} className={s.tw} data-scroll={scrolls ? 'x' : undefined} style={{ '--opp-head-top': `${headTop}px` }}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- only when the table overflows sideways (large text, narrow screens): the region takes focus so keyboard users can scroll it (axe scrollable-region-focusable)
+      tabIndex={scrolls ? 0 : undefined} role="region" aria-labelledby="opp-tbl-cap">
       <table className={s.mx}>
         <caption id="opp-tbl-cap">{t(plan ? 'opp.tbl.caption' : 'opp.tbl.captionDist')}</caption>
         <thead>

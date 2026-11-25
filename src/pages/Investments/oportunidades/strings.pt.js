@@ -118,8 +118,8 @@ export default {
   'opp.pct': '{p} %',
   'opp.tbl.loading': 'Lendo as médias…',
   'opp.tbl.price': 'Preço',
-  'opp.tbl.dd': '{p} abaixo da máxima de 1 ano',
-  'opp.tbl.ddZero': 'na máxima de 1 ano',
+  'opp.tbl.dd': '{p} abaixo da máxima de 1 ano',
+  'opp.tbl.ddZero': 'na máxima de 1 ano',
   'opp.tbl.sr.row': 'Hoje {a} · espera {b}',
   'opp.tbl.noDataNote': 'O total inclui {v} de ativos sem histórico suficiente: não entra em nenhuma faixa nem nas colunas.',
 
