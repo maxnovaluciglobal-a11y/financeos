@@ -1,61 +1,127 @@
-/* Planificar › Oportunidades (Inversiones v2). Misma familia que Planificar:
-   tarjetas de 18 px, campos de 44 px, cifras tabulares. El estado de cada
-   tramo va con ícono + palabra (nunca solo color). */
+/* Planificar › Tus tramos (Inversiones v2, rediseño del 24-nov-2026: opción A,
+   matriz). Misma familia que Planificar: tarjetas de 18 px, campos de 44 px,
+   cifras tabulares. El estado de cada tramo va con ícono + palabra o cifra
+   (nunca solo color). La tarjeta es un contenedor: la tabla pasa a su forma
+   ancha (montos con US$, nombres, columna Total) cuando la tarjeta mide
+   720 px o más, no por el ancho de la ventana. */
 .edu { display: flex; gap: 6px; align-items: flex-start; margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--fill); font-size: var(--t-footnote); line-height: 1.5; color: var(--tx); }
 .edu svg { flex: 0 0 auto; margin-top: 3px; }
 
-.group { display: flex; flex-direction: column; gap: 8px; }
-.groupTitle { margin: 4px 0 0; font-size: var(--t-footnote); font-weight: 600; color: var(--th); }
-.assets { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
-.asset { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 0.5px solid var(--brd); }
-.asset:first-child { border-top: 0; padding-top: 4px; }
-.assetHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
-.ticker { padding: 0; border: 0; background: none; font: inherit; font-size: var(--t-callout); font-weight: 700; color: var(--tx); cursor: pointer; min-height: 32px; }
-button.ticker { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-button.ticker:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 4px; }
-span.ticker { cursor: default; min-height: 0; }
-.name { font-size: var(--t-footnote); color: var(--th); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
-.price { margin-left: auto; font-size: var(--t-footnote); color: var(--tm); font-variant-numeric: tabular-nums; }
-.sig { margin: 0; font-size: var(--t-subhead); line-height: 1.45; color: var(--tx); }
-.sigHead { font-weight: 600; }
-.sigTail { color: var(--tm); }
+.card { container: tramos / inline-size; }
 
-/* Escalera: 4 celdas, una por media */
-.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
-.cell { display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 12px; background: var(--fill); border: 1px solid transparent; min-width: 0; }
-.cellTop { display: inline-flex; align-items: center; gap: 4px; font-size: var(--t-footnote); font-weight: 600; color: var(--tm); }
-.cellDist { font-size: var(--t-caption, 12px); color: var(--th); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cell[data-st="hit"] { background: color-mix(in srgb, var(--color-accent) 14%, var(--sur)); border-color: var(--color-accent); }
-.cell[data-st="hit"] .cellTop, .cell[data-st="hit"] .cellDist { color: var(--tx); }
-.cell[data-st="none"] { opacity: .7; border-style: dashed; border-color: var(--brd); background: transparent; }
+/* Atajos del monto */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  min-height: 44px; display: inline-flex; align-items: center; padding: 6px 14px; border: 1px solid var(--brd); border-radius: 999px;
+  background: var(--sur); color: var(--tm); font: inherit; font-size: var(--t-footnote); font-variant-numeric: tabular-nums; cursor: pointer; white-space: nowrap;
+}
+.chip[aria-pressed="true"] { border-color: var(--tx); color: var(--tx); font-weight: 600; background: var(--fill); }
+.chip:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
 
-.how { font-size: var(--t-footnote); color: var(--tm); }
-.how summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--tx); }
-.how summary:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 6px; }
-.how > p, .how > div { margin: 0 0 8px; }
-
+/* Ajustes plegados en una fila */
+.setRow { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; border-radius: 12px; border: 0.5px solid var(--brd); background: var(--sur); }
+.setIc { flex: 0 0 auto; color: var(--tm); }
+.setTxt { flex: 1; min-width: 0; margin: 0; font-size: var(--t-footnote); line-height: 1.45; color: var(--tm); }
+.setTxt b { font-weight: 600; color: var(--tx); }
+.setRow > button { flex: 0 0 auto; }
+.settings { display: flex; flex-direction: column; gap: 12px; padding: 4px 0 4px 12px; border-left: 2px solid var(--brd); }
+.settings[hidden] { display: none; }
 .segSub { font-weight: 400; opacity: .8; font-variant-numeric: tabular-nums; }
 .check { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; font-size: var(--t-footnote); line-height: 1.5; color: var(--tx); cursor: pointer; }
 .check input { margin-top: 3px; accent-color: var(--color-accent); }
 
-/* Resultado */
-.result { display: flex; flex-direction: column; gap: 12px; }
-.statBig { font-family: var(--display); font-size: clamp(20px, 5.5vw, 26px); }
-.num { font-variant-numeric: tabular-nums; }
-.plan { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.planRow { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 14px; border: 0.5px solid var(--brd); }
-.planHead { display: flex; align-items: baseline; gap: 10px; margin: 0; font-size: var(--t-subhead); color: var(--tm); }
-.planHead .num { margin-left: auto; font-weight: 700; color: var(--tx); }
-.tramos { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.tramo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 0; border-top: 0.5px solid var(--brd); font-size: var(--t-footnote); }
-.tramoName { color: var(--tx); }
-.tramo .num { text-align: right; font-weight: 600; color: var(--tx); }
-.tramoState { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 4px; color: var(--th); }
-.tramo[data-st="today"] .tramoState { color: var(--tx); font-weight: 600; }
+/* Resumen (Impulso) */
+.sum { gap: 8px; padding: 14px 16px; }
+.sum > p { margin: 0; }
+.sumKv { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 4px 14px; }
+.statBig { font-family: var(--display); font-size: clamp(20px, 5.5vw, 24px); }
+.lime { color: var(--lime-400, #D0F06E); }
+.bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: rgb(255 255 255 / .22); }
+.bar i { display: block; height: 100%; }
+.bar i[data-k="today"] { background: var(--lime-400, #D0F06E); }
+.bar i[data-k="wait"] { background: rgb(255 255 255 / .55); }
+
+/* Matriz */
+.tw { overflow-x: auto; margin: 0 -4px; padding: 0 4px; -webkit-overflow-scrolling: touch; border-radius: 14px; }
+.tw:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+.mx { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--t-footnote); font-variant-numeric: tabular-nums; background: var(--sur); border: 0.5px solid var(--brd); border-radius: 14px; }
+.mx caption { caption-side: top; text-align: left; padding: 0 0 6px; font-size: var(--t-footnote); line-height: 1.45; color: var(--th); }
+.mx th, .mx td { padding: 8px 4px; border-bottom: 0.5px solid var(--brd); vertical-align: middle; white-space: nowrap; }
+.mx td { text-align: right; color: var(--tx); }
+.mx thead th { font-weight: 600; color: var(--tm); text-align: right; padding-top: 10px; }
+.mx thead th small { display: block; font-size: var(--t-caption, 11px); font-weight: 400; color: var(--th); }
+.mx th:first-child { position: sticky; left: 0; z-index: 1; width: 74px; min-width: 74px; padding-left: 8px; text-align: left; background: var(--sur); }
+.mx tbody tr:last-child > * { border-bottom: 0; }
+
+.tk { display: inline-flex; align-items: center; min-height: 28px; margin: -6px 0; padding: 6px 0; border: 0; background: none; font: inherit; font-size: var(--t-subhead); font-weight: 700; color: var(--tx); white-space: nowrap; }
+button.tk { cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+button.tk:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 4px; }
+.sub { display: block; margin-top: 2px; font-size: var(--t-caption, 11px); font-weight: 400; color: var(--th); }
+
+.amt { display: block; font-weight: 600; }
+.st { display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; margin-top: 2px; font-size: var(--t-caption, 11px); color: var(--th); }
+.st svg { flex: 0 0 auto; }
+.mx td[data-st="today"], .mx td[data-st="hit"] { background: color-mix(in srgb, var(--color-accent) 22%, var(--sur)); box-shadow: inset 3px 0 0 var(--color-accent); }
+.mx td[data-st="today"] .st, .mx td[data-st="hit"] .st, .todayTx { color: var(--pos); font-weight: 600; }
+.mx td[data-st="rsi"] { background: var(--warn-bg, var(--fill)); }
+.mx td[data-st="rsi"] .st, .rsiTx { color: var(--warn); }
+.mx td[data-st="none"] .st { color: var(--th); }
+.noHist { text-align: left !important; color: var(--th) !important; white-space: normal !important; font-size: var(--t-caption, 11px); }
+
+/* Lo que sigues: solo distancia */
+.watch td .st { margin-top: 0; }
+.mx .watch tr:first-child > * { border-top: 0.5px solid var(--brd); }
+.mx .grp th { position: static; padding: 10px 8px 4px; font-size: var(--t-caption, 11px); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--th); background: var(--fill); border-bottom: 0; text-align: left; }
+.mx .grp td { background: var(--fill); border-bottom: 0; }
+
+/* Totales */
+.mx tfoot th, .mx tfoot td, .mx tfoot th:first-child { border-bottom: 0; background: var(--fill); }
+.mx tfoot tr:first-child > * { border-top: 1px solid var(--gray-300, var(--brd)); }
+.mx tfoot tr:last-child th { border-bottom-left-radius: 14px; }
+.hoyRow > * { padding-top: 0 !important; }
+.hoyRow td .amt { color: var(--th); }
+.hoyRow td[data-on] .amt { color: var(--pos); }
+.hoyRow th { font-size: var(--t-caption, 11px); }
+.mx tfoot tr:last-child > td:nth-child(5) { border-bottom-right-radius: 14px; }
+
+/* Tarjeta angosta (360 px, letra alemana o portuguesa): un poco más ceñida
+   para que siga sin scroll horizontal; en 320 px la región se desplaza. */
+@container tramos (max-width: 315px) {
+  .mx th, .mx td { padding-left: 2px; padding-right: 2px; }
+  .mx th:first-child { width: 62px; min-width: 62px; padding-left: 6px; }
+  .tk { font-size: var(--t-footnote); }
+  .mx { font-size: var(--t-caption, 11px); }
+  .amt { font-size: var(--t-footnote); }
+}
+
+/* Formas corta (teléfono) y ancha (tarjeta ≥ 720 px) */
+.w { display: none; }
+.n { display: inline; }
+.sub.n { display: block; }
+.tot { display: none; }
+@container tramos (min-width: 720px) {
+  .w { display: inline; }
+  .n, .sub.n { display: none; }
+  .sub.w { display: inline; margin-left: 6px; }
+  .tot { display: table-cell; }
+  .mx th, .mx td { padding: 10px 12px; }
+  .mx th:first-child { width: 230px; min-width: 200px; }
+  .st { font-size: var(--t-footnote); }
+  .mx thead th small { font-size: var(--t-footnote); }
+  .tot .st[data-on] { color: var(--pos); font-weight: 600; }
+  .mx tfoot tr:last-child > td:nth-child(5) { border-bottom-right-radius: 0; }
+  .mx tfoot tr:last-child > td.tot { border-bottom-right-radius: 14px; }
+}
+
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-size: var(--t-footnote); line-height: 1.5; color: var(--th); }
+.legend > span { display: inline-flex; align-items: center; gap: 5px; }
+
+.foot { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 18px; }
+.how { flex: 1 1 220px; font-size: var(--t-footnote); color: var(--tm); }
+.how summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--tx); }
+.how summary:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 6px; }
+.how > p, .how > div { margin: 0 0 8px; }
+.foot > button { flex: 0 0 auto; }
+
 .math { display: flex; flex-direction: column; gap: 6px; }
 .mathList { margin: 0 0 4px; padding-left: 18px; font-size: var(--t-footnote); line-height: 1.55; color: var(--tm); font-variant-numeric: tabular-nums; }
-
-@media (min-width: 760px) {
-  .tramo { grid-template-columns: minmax(0, 1.2fr) 120px minmax(0, 1.4fr); }
-  .tramoState { grid-column: auto; }
-}

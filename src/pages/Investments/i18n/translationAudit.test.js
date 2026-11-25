@@ -59,7 +59,7 @@ const SAME_OK = {
     'invest.mkt.news.cat.macro', // Macro
     'plan.calc.stop', 'plan.calc.full.stop', 'plan.calc.r.stop', 'pf.f.stop', 'pf.csv.h.stop', // Stop
     'plan.calc.capital', // Capital (US$)
-    'plan.ap.res.total', 'pf.total', 'pf.col.total', // Total
+    'plan.ap.res.total', 'pf.total', 'pf.col.total', 'opp.tbl.total', // Total
     'pf.f.ticker', 'pf.csv.h.ticker', // Ticker
     'pf.freq.irregular', // Irregular
     'pf.csv.preset.fintual', 'pf.csv.preset.racional', // Fintual, Racional (nombres propios)
