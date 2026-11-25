@@ -244,6 +244,8 @@ export function safeNewsImage(u) {
   try {
     const url = new URL(u.trim())
     if (url.protocol !== 'https:' || url.username || url.password || url.port) return null
+    // Igual que el proxy /api/img: sin query ni fragmento.
+    if (url.search || url.hash) return null
     return NEWS_IMG_HOSTS.includes(url.hostname) ? url.href : null
   } catch { return null }
 }

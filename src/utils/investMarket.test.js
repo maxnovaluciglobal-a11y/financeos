@@ -191,7 +191,8 @@ describe('noticias', () => {
     }
   })
   it('miniatura: el src va por el proxy de Invest, con la URL codificada', () => {
-    const ok = 'https://media.zenfs.com/en/reuters.com/a b.jpg?x=1&y=2'
+    const ok = 'https://media.zenfs.com/en/reuters.com/a b.jpg'
+    expect(newsImageSrc(ok + '?x=1&y=2')).toBe(null) // como el proxy: sin query
     const src = newsImageSrc(ok)
     expect(src.startsWith('https://invest.moyiq.app/api/img?u=')).toBe(true)
     const u = new URL(src)

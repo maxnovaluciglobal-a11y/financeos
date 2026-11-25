@@ -207,11 +207,14 @@ export default function TramosTable({ plan, mine, watch, readings, t, fmt, lad =
       setHeadTop(coveredTop(el))
     }
     check()
-    if (typeof ResizeObserver !== 'function') return undefined
+    // La barra superior puede cambiar de alto sin que cambie la tabla
+    // (rotación, safe-area): también se recalcula con la ventana.
+    window.addEventListener('resize', check)
+    if (typeof ResizeObserver !== 'function') return () => window.removeEventListener('resize', check)
     const ro = new ResizeObserver(check)
     ro.observe(el)
     if (el.firstElementChild) ro.observe(el.firstElementChild)
-    return () => ro.disconnect()
+    return () => { ro.disconnect(); window.removeEventListener('resize', check) }
   }, [])
   const loading = (tk) => !(tk in readings)
   const rows = plan?.rows || []
