@@ -48,6 +48,17 @@ describe('cabeceras de seguridad (vercel.json)', () => {
   })
 })
 
+// Miniaturas de noticias (25-nov-2026): img-src abre solo los CDN de imágenes
+// que devuelve api/news, los mismos que acepta safeNewsImage; nada de https: genérico.
+describe('img-src: miniaturas de noticias', () => {
+  it('es self, data:, blob: y exactamente los hosts de NEWS_IMG_HOSTS', async () => {
+    const { NEWS_IMG_HOSTS } = await import('../src/utils/investMarket.js')
+    expect(dir('img-src')).toEqual(["'self'", 'data:', 'blob:', ...NEWS_IMG_HOSTS.map(h => 'https://' + h)])
+    expect(dir('img-src')).not.toContain('https:')
+    expect(dir('img-src')).not.toContain('*')
+  })
+})
+
 // SEG-1 / SEG-7: Cloudflare Turnstile carga api.js y su iframe desde challenges.cloudflare.com.
 describe('Turnstile en la CSP', () => {
   it('script-src y frame-src permiten challenges.cloudflare.com, y nada más se abre', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  MKT_SYMS, chartPaths, cleanNews, daysAway, earningsUniverse, earningsWindow, feedFreshness, filterNews, fmtChange,
+  MKT_SYMS, NEWS_IMG_HOSTS, chartPaths, cleanNews, safeNewsImage, daysAway, earningsUniverse, earningsWindow, feedFreshness, filterNews, fmtChange,
   fmtMarketValue, fxDecimals, fxRows, marketRows, monthCloses, newsAgo, newsCounts, nyseEarlyCloses, nyseHolidays,
   nyseSession, nyWallToMs, periodChange, quoteFreshness, regimeFrom, runLimited, safeLink, spyChartSeries,
   summarizeFreshness, vixFromBar, vixGaugePct, vixZone, whenKey, EARN_MAX_TICKERS, NEWS_MAX,
@@ -167,14 +167,27 @@ describe('noticias', () => {
     { id: 4, title: '', link: 'https://x.com/b' },
     { id: 5, title: 'Chips up', link: 'https://x.com/c', cat: 'IA & Tech', hoursAgo: null },
   ]
-  it('limpia: sin título fuera, sin duplicados, enlaces solo http(s), sin miniatura, categoría desconocida → Macro', () => {
+  it('limpia: sin título fuera, sin duplicados, enlaces solo http(s), miniatura de host no permitido fuera, categoría desconocida → Macro', () => {
     const n = cleanNews(raw)
     expect(n.map(x => x.title)).toEqual(['Fed holds', 'Bad link', 'Chips up'])
     expect(n[1].link).toBeNull()
     expect(n[1].cat).toBe('Macro')
     expect(n[2].hoursAgo).toBeNull()
-    expect(n.every(x => !('image' in x))).toBe(true)
+    expect(n.every(x => x.image === null)).toBe(true)
     expect(safeLink('ftp://x')).toBeNull()
+  })
+  it('miniatura: solo https de los CDN permitidos (los mismos de img-src)', () => {
+    const ok = 'https://media.zenfs.com/en/reuters.com/abc.jpg'
+    expect(cleanNews([{ title: 'A', link: 'https://x.com/1', image: ok }])[0].image).toBe(ok)
+    for (const h of NEWS_IMG_HOSTS) expect(safeNewsImage(`https://${h}/a.jpg`)).toBe(`https://${h}/a.jpg`)
+    for (const bad of [
+      'http://media.zenfs.com/a.jpg', 'https://evil.example/a.jpg', 'https://media.zenfs.com.evil.example/a.jpg',
+      'https://evil.cloudfront.net/a.jpg', 'javascript:alert(1)', 'data:image/png;base64,AAAA', '//media.zenfs.com/a.jpg',
+      'https://user:pw@media.zenfs.com/a.jpg', 'https://media.zenfs.com:8443/a.jpg', '', null, 42, { url: ok },
+    ]) {
+      expect(safeNewsImage(bad), String(bad)).toBeNull()
+      expect(cleanNews([{ title: 'A', link: 'https://x.com/1', image: bad }])[0].image).toBeNull()
+    }
   })
   it('cuenta y filtra por categoría, máximo 30', () => {
     const n = cleanNews(raw)

@@ -231,10 +231,23 @@ export function safeLink(u) {
   } catch { return null }
 }
 
+// Miniatura de la noticia (como Invest v1): api/news la toma del thumbnail de
+// Yahoo (bestImage). Solo https y solo de los CDN de imágenes que la API
+// devuelve de verdad (observados el 25-nov-2026); son los mismos hosts que
+// img-src de la CSP en index.html y vercel.json (securityHeaders.test.js lo
+// exige). Cualquier otro host, http, data: o javascript: → sin imagen.
+export const NEWS_IMG_HOSTS = ['media.zenfs.com', 's.yimg.com', 'd29szjachogqwa.cloudfront.net']
+export function safeNewsImage(u) {
+  if (typeof u !== 'string' || !u) return null
+  try {
+    const url = new URL(u.trim())
+    if (url.protocol !== 'https:' || url.username || url.password || url.port) return null
+    return NEWS_IMG_HOSTS.includes(url.hostname) ? url.href : null
+  } catch { return null }
+}
+
 // items de investApi.news(): sin título fuera, sin repetir el mismo enlace o
-// titular, cat desconocida → Macro (lo que hace api/news por defecto). La
-// miniatura NO se usa: la CSP de moyiq (img-src 'self' data: blob:) bloquea
-// las imágenes de terceros y no hay proxy propio (ver el informe de F6).
+// titular, cat desconocida → Macro (lo que hace api/news por defecto).
 const hoursOf = (v) => { const h = v == null || v === '' ? NaN : Number(v); return Number.isFinite(h) ? Math.max(0, h) : null }
 export function cleanNews(items) {
   const seen = new Set()
@@ -253,6 +266,7 @@ export function cleanNews(items) {
       source: String(n.source || '').trim() || null,
       hoursAgo: hoursOf(n.hoursAgo),
       cat: newsCatKey(n.cat) && n.cat !== 'all' ? n.cat : 'Macro',
+      image: safeNewsImage(n.image),
       sample: !!n.sample,
       // Demo: el texto se traduce al pintar (cambia con el idioma).
       titleKey: n.sample && n.titleKey ? String(n.titleKey) : null,

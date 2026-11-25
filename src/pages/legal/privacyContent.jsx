@@ -154,7 +154,11 @@ function EsBody() {
             sigues, tus alertas de precio (símbolo, condición y umbral, que usamos para avisarte con una
             notificación push cuando se cumplen), tu capital de referencia, tu regla de riesgo y tus
             planes guardados. Solo tú, con tu sesión iniciada, puedes verlos o cambiarlos. Para obtener
-            las cotizaciones, la app envía a la API de Inversiones solo los símbolos de los activos. En
+            las cotizaciones, la app envía a la API de Inversiones solo los símbolos de los activos. Las
+            miniaturas de las noticias de Mercado se cargan directamente desde los servidores de
+            imágenes que indica Yahoo Finance (media.zenfs.com, s.yimg.com y
+            d29szjachogqwa.cloudfront.net): reciben tu dirección IP y datos técnicos del navegador, pero
+            no la página de la app desde la que se piden. En
             tu dispositivo quedan solo los totales que muestra Panorama y el aporte del mes. Tus
             finanzas personales siguen en tu dispositivo (ver el punto 5 sobre la sincronización).
             Puedes descargar una copia (CSV o JSON) o eliminar estos datos desde Más › Ajustes ›
@@ -559,7 +563,10 @@ function EnBody() {
             condition and threshold, which we use to notify you with a push notification when they are
             met), your reference capital, your risk rule and your saved plans. Only you, signed in, can
             see or change them. To get quotes, the app sends only the asset symbols to the Investments
-            API. Only the totals shown in Overview and this month's contribution stay on your device.
+            API. News thumbnails in Market load directly from the image servers that Yahoo Finance
+            points to (media.zenfs.com, s.yimg.com and d29szjachogqwa.cloudfront.net): they receive
+            your IP address and technical data from your browser, but not the app page they are
+            requested from. Only the totals shown in Overview and this month's contribution stay on your device.
             Your personal finances stay on your device (see section 5 about sync). You can download a
             copy (CSV or JSON) or delete this data from More › Settings › Investments without deleting
             your account; deleting the account also deletes it. The app downloaded from Google Play or
@@ -959,7 +966,11 @@ function PtBody() {
             que você segue, seus alertas de preço (símbolo, condição e limite, que usamos para avisar
             você com uma notificação push quando se cumprem), seu capital de referência, sua regra de
             risco e seus planos salvos. Só você, com sua sessão iniciada, pode vê-los ou alterá-los.
-            Para obter as cotações, o app envia à API de Investimentos apenas os símbolos dos ativos. No
+            Para obter as cotações, o app envia à API de Investimentos apenas os símbolos dos ativos. As
+            miniaturas das notícias de Mercado são carregadas diretamente dos servidores de imagens
+            indicados pelo Yahoo Finance (media.zenfs.com, s.yimg.com e d29szjachogqwa.cloudfront.net):
+            eles recebem seu endereço IP e dados técnicos do navegador, mas não a página do app de onde
+            são pedidas. No
             seu dispositivo ficam só os totais que o Panorama mostra e o aporte do mês. Suas finanças
             pessoais continuam no seu dispositivo (veja o item 5 sobre a sincronização). Você pode
             baixar uma cópia (CSV ou JSON) ou excluir esses dados em Mais › Ajustes › Investimentos sem
@@ -1362,7 +1373,11 @@ function DeBody() {
             Ihre Kursalarme (Symbol, Bedingung und Schwelle, mit denen wir Sie per Push-Benachrichtigung
             informieren, wenn sie erreicht werden), Ihr Referenzkapital, Ihre Risikoregel und Ihre
             gespeicherten Pläne. Nur Sie können sie mit Ihrer Anmeldung sehen oder ändern. Für Kurse
-            sendet die App nur die Symbole der Werte an die Investments-API. Auf Ihrem Gerät bleiben nur
+            sendet die App nur die Symbole der Werte an die Investments-API. Vorschaubilder der
+            Nachrichten unter Markt werden direkt von den Bildservern geladen, auf die Yahoo Finance
+            verweist (media.zenfs.com, s.yimg.com und d29szjachogqwa.cloudfront.net): Sie erhalten Ihre
+            IP-Adresse und technische Daten Ihres Browsers, aber nicht die Seite der App, von der aus
+            sie angefordert werden. Auf Ihrem Gerät bleiben nur
             die Summen, die der Überblick zeigt, und die Einzahlung des Monats. Ihre persönlichen
             Finanzen bleiben auf Ihrem Gerät (zur Synchronisierung siehe Abschnitt 5). Unter Mehr ›
             Einstellungen › Investments können Sie eine Kopie (CSV oder JSON) herunterladen oder diese

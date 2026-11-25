@@ -61,13 +61,26 @@ describe('Mercado con datos reales', () => {
     { id: '1', title: 'Fed holds rates', link: 'https://news.example/a', source: 'Reuters', hoursAgo: 2, cat: 'Fed' },
     { id: '2', title: 'Chips rally', link: 'https://news.example/b', source: 'Bloomberg', hoursAgo: 30, cat: 'IA & Tech' },
   ] }
-  it('noticias: enlace externo seguro, en inglés, sin miniaturas y sin tickers propios', () => {
+  it('noticias: enlace externo seguro, en inglés, sin miniatura si no hay imagen y sin tickers propios', () => {
     const html = render(live({ news }), { filter: 'all' })
     expect(html).toContain('href="https://news.example/a" target="_blank" rel="noopener noreferrer" lang="en"')
     expect(html).toContain(t('invest.mkt.news.newTab'))
     expect(html).not.toContain('<img')
     expect(html).toContain(t('invest.mkt.news.foot'))
     expect(html).toContain('Reuters · hace 2 horas · Reserva Federal')
+  })
+  it('noticias con imagen: miniatura decorativa a la derecha del titular, perezosa y sin referer', () => {
+    const img = 'https://media.zenfs.com/en/reuters.com/a.jpg'
+    const withImg = { phase: 'ready', items: [{ ...news.items[0], image: img }, news.items[1]] }
+    const html = render(live({ news: withImg }), { filter: 'all' })
+    const tags = html.match(/<img[^>]*>/g) || []
+    expect(tags).toHaveLength(1)
+    const tag = tags[0]
+    for (const a of [`src="${img}"`, 'alt=""', 'width="72"', 'height="54"', 'loading="lazy"', 'decoding="async"', 'referrerPolicy="no-referrer"']) expect(tag, a).toContain(a)
+    // texto primero, imagen después (a la derecha) dentro del mismo <li>
+    const li = html.slice(html.indexOf('Fed holds rates') - 400, html.indexOf(tag) + tag.length)
+    expect(li.indexOf('Fed holds rates')).toBeLessThan(li.indexOf('<img'))
+    expect(li.slice(li.lastIndexOf('<li'))).toContain('Fed holds rates')
   })
   it('filtro sin titulares: lo dice y ofrece ver todos; chip con 0 deshabilitado', () => {
     const html = render(live({ news }), { filter: 'Earnings' })
