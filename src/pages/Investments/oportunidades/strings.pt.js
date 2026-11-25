@@ -115,6 +115,14 @@ export default {
   'opp.leg.rsi': 'preço na média ou abaixo, RSI fora de 30–45',
   'opp.leg.none': 'sem média (poucos fechamentos)',
 
+  'opp.pct': '{p} %',
+  'opp.tbl.loading': 'Lendo as médias…',
+  'opp.tbl.price': 'Preço',
+  'opp.tbl.dd': '{p} abaixo da máxima de 1 ano',
+  'opp.tbl.ddZero': 'na máxima de 1 ano',
+  'opp.tbl.sr.row': 'Hoje {a} · espera {b}',
+  'opp.tbl.noDataNote': 'O total inclui {v} de ativos sem histórico suficiente: não entra em nenhuma faixa nem nas colunas.',
+
   'opp.teaser.title': 'Suas faixas pelas suas médias',
   'opp.teaser.loading': 'Lendo as médias das suas posições…',
   'opp.teaser.someOne': 'Hoje {n} de suas {m} posições está na média ou abaixo de alguma média de 20, 50, 100 ou 200 dias.',

@@ -115,6 +115,14 @@ export default {
   'opp.leg.rsi': 'Kurs auf oder unter dem Durchschnitt, RSI außerhalb von 30–45',
   'opp.leg.none': 'kein Durchschnitt (wenige Schlusskurse)',
 
+  'opp.pct': '{p} %',
+  'opp.tbl.loading': 'Durchschnitte werden gelesen…',
+  'opp.tbl.price': 'Kurs',
+  'opp.tbl.dd': '{p} unter dem 1-Jahres-Hoch',
+  'opp.tbl.ddZero': 'auf dem 1-Jahres-Hoch',
+  'opp.tbl.sr.row': 'Heute {a} · wartet {b}',
+  'opp.tbl.noDataNote': 'Die Summe enthält {v} von Werten ohne ausreichenden Verlauf: Sie fließen in keine Tranche und keine Spalte ein.',
+
   'opp.teaser.title': 'Ihre Tranchen nach Ihren gleitenden Durchschnitten',
   'opp.teaser.loading': 'Durchschnitte Ihrer Positionen werden gelesen…',
   'opp.teaser.someOne': 'Heute liegt {n} Ihrer {m} Positionen auf oder unter einem ihrer Durchschnitte über 20, 50, 100 oder 200 Tage.',

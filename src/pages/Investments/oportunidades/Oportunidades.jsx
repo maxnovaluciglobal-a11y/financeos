@@ -30,7 +30,7 @@ import { segKeyTarget } from '../planificar/Aportes.jsx'
 import { LADDER_KEYS, DEFAULT_LADDER, DEFAULT_RSI_RULE, driftMath, planCapital, uninvested } from './capital.js'
 import { useReadings } from './useReadings.js'
 import { useOppT } from './dict.js'
-import TramosTable from './TramosTable.jsx'
+import TramosTable, { pctIn } from './TramosTable.jsx'
 import p from '../planificar/planificar.module.css'
 import s from './oportunidades.module.css'
 
@@ -126,7 +126,8 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
   const plan = planCapital({ amount: amt, alloc, readings: rd.readings, ladder: lad, rsiRule })
   const pending = alloc.filter(a => !(a.t in rd.readings)).map(a => a.t)
   const math = method === 'targets' && hasTargets ? driftMath(base, targets) : null
-  const pctTxt = (v) => `${Number(v).toLocaleString(moneyLocale(), { maximumFractionDigits: 1 })}\u00A0%`
+  const numTxt = (v) => Number(v).toLocaleString(moneyLocale(), { maximumFractionDigits: 1 })
+  const pctTxt = (v) => pctIn(t, numTxt(v))
   const wTxt = (k) => (LADDERS[k] || []).map(w => Math.round(w * 100)).join('/')
   const sampleList = rd.sample
   const money = (v) => <Money>{fmt.money(v)}</Money>
@@ -157,7 +158,6 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
         </div>
       )}
       {src === 'arrived' && <p className={p.note}>{t('opp.cap.arrived', { v: m(fmt.money(amt)) })}</p>}
-      {(src === 'free' || src === 'cash') && <p className={p.note}>{t('opp.cap.lumpNote')}</p>}
 
       <div className={s.setRow}>
         <SlidersHorizontal size={18} strokeWidth={2} aria-hidden="true" className={s.setIc} />
@@ -253,7 +253,8 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
       <div className={s.foot}>
         <details className={s.how}>
           <summary>{t('opp.math.title')}</summary>
-          {plan.ok && <MathSteps plan={plan} t={t} fmt={fmt} m={m} pctTxt={pctTxt} lad={lad} rsiRule={rsiRule} method={method} math={math} alloc={alloc} />}
+          <p className={p.note}>{t('opp.cap.lumpNote')}</p>
+          {plan.ok && <MathSteps plan={plan} t={t} fmt={fmt} m={m} pctTxt={pctTxt} numTxt={numTxt} lad={lad} rsiRule={rsiRule} method={method} math={math} alloc={alloc} />}
           {['sma', 'tramo', 'days', 'rsi', 'data'].map(k => <p key={k} className={p.note}>{t(`opp.how.${k}`)}</p>)}
         </details>
         {plan.ok && onDeposit && (
@@ -265,7 +266,7 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
   )
 }
 
-function MathSteps({ plan, t, fmt, m, pctTxt, lad, rsiRule, method, math, alloc }) {
+function MathSteps({ plan, t, fmt, m, pctTxt, numTxt, lad, rsiRule, method, math, alloc }) {
   const byT = Object.fromEntries(plan.rows.map(r => [r.t, r]))
   let step1
   if (method === 'targets' && math) {
@@ -276,7 +277,7 @@ function MathSteps({ plan, t, fmt, m, pctTxt, lad, rsiRule, method, math, alloc 
         <ul className={s.mathList}>
           {math.rows.map(r => {
             const row = byT[r.t]
-            const v = { t: r.t, a: pctTxt(r.actual), g: pctTxt(r.target), d: pctTxt(r.gap).replace('\u00A0%', ''), sum: pctTxt(gapSum).replace('\u00A0%', ''), p: pctTxt(row?.p ?? 0), v: m(fmt.money(row?.amount ?? 0)) }
+            const v = { t: r.t, a: pctTxt(r.actual), g: pctTxt(r.target), d: numTxt(r.gap), sum: numTxt(gapSum), p: pctTxt(row?.p ?? 0), v: m(fmt.money(row?.amount ?? 0)) }
             return <li key={r.t}>{!r.counts ? t('opp.math.skipRow', v) : math.mode === 'gap' ? t('opp.math.gapRow', v) : t('opp.math.targetRow', v)}</li>
           })}
         </ul>

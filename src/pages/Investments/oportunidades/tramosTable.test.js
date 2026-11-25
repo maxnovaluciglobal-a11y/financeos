@@ -45,12 +45,22 @@ describe('TramosTable: estructura y semántica', () => {
     expect(html).toMatch(/<table[^>]*>\s*<caption id="opp-tbl-cap">[^<]*US\$/)
     expect(html).toContain('role="region"')
     expect(html).toContain('aria-labelledby="opp-tbl-cap"')
-    expect(html).toContain('tabindex="0"')
+    // sin desbordar no entra al orden de tabulación (se agrega solo si se desplaza)
+    expect(html).not.toContain('tabindex')
     expect((html.match(/<th scope="col"/g) || []).length).toBe(6) // Activo + 4 medias + Total
     expect((html.match(/<th scope="row"/g) || []).length).toBe(4 + 1 + 2) // 4 tuyos + 1 seguido + Total y Cumple hoy
     expect(html).toContain('<thead>')
     expect(html).toContain('<tfoot>')
     expect(html).toContain('scope="rowgroup"')
+  })
+  it('orden del DOM = orden visual: el pie va después del último tbody', () => {
+    expect(html.lastIndexOf('<tbody')).toBeLessThan(html.indexOf('<tfoot>'))
+    expect(html.indexOf('</tfoot>')).toBe(html.indexOf('</table>') - '</tfoot>'.length)
+  })
+  it('forma ancha: precio y caída desde el máximo; en el teléfono, hoy/espera por activo para el lector', () => {
+    expect(text(html)).toContain(es['opp.tbl.price'])
+    expect(text(html)).toContain(es['opp.tbl.ddZero'])
+    expect(text(html)).toContain(text(interpolate(es['opp.tbl.sr.row'], { a: fmt.money(2250), b: fmt.money(0) })))
   })
   it('columnas 20/50/100/200 con el peso de la escalera', () => {
     const out = text(html)
@@ -140,6 +150,24 @@ describe('TramosTable: lo que sigues y sin monto', () => {
     expect((html.match(/Abrir la ficha de B"/g) || []).length).toBe(1)
     expect(text(html)).toContain(es['opp.tbl.noAmount'])
   })
+  it('cargando no es lo mismo que sin historia', () => {
+    const p = planCapital({ amount: 1000, alloc: [{ t: 'Z', p: 100 }], readings: {} })
+    const html = renderToStaticMarkup(h(TramosTable, { plan: p, mine: [{ t: 'Z' }], watch: [{ t: 'Q' }], readings: {}, t, fmt }))
+    expect(text(html)).toContain(es['opp.tbl.loading'])
+    expect(text(html)).not.toContain(es['opp.tbl.noHistory'])
+  })
+  it('el total con activos sin historia lleva una nota (las columnas no lo suman)', () => {
+    const p = planCapital({ amount: 1000, alloc: [{ t: 'A', p: 60 }, { t: 'Z', p: 40 }], readings: { A: readings.A, Z: null } })
+    const html = renderToStaticMarkup(h(TramosTable, { plan: p, mine: [{ t: 'A' }, { t: 'Z' }], watch: [], readings: { A: readings.A, Z: null }, t, fmt }))
+    expect(text(html)).toContain(text(interpolate(es['opp.tbl.noDataNote'], { v: fmt.money(400) })))
+    expect(text(render())).not.toContain(es['opp.tbl.noDataNote'].slice(0, 20))
+  })
+  it('porcentajes: "10 %" en es/pt/de y "10%" en inglés', () => {
+    const out = (d) => text(renderToStaticMarkup(h(TramosTable, { plan, mine, watch, readings, t: tOf(d), fmt, lad: 'half200' })))
+    expect(out(en)).toContain(' 10% ')
+    expect(out(en)).not.toMatch(/\d %/)
+    for (const d of [es, pt, de]) expect(out(d)).toContain(' 10 % ')
+  })
   it('sin historia: la fila lo dice en vez de tramos', () => {
     const p = planCapital({ amount: 1000, alloc: [{ t: 'Z', p: 100 }], readings: { Z: null } })
     const html = renderToStaticMarkup(h(TramosTable, { plan: p, mine: [{ t: 'Z' }], watch: [], readings: { Z: null }, t, fmt }))
@@ -163,6 +191,11 @@ describe('Tus tramos: una sola tarjeta', () => {
     expect(text(html)).toContain(es['opp.set.m.equal'])
     expect(text(html)).toContain(interpolate(es['opp.set.lad'], { w: '10/15/25/50' }))
     expect(text(html)).toContain(es['opp.set.rsiOn'])
+  })
+  it('la nota del reparto único va dentro de "¿Cómo se calcula?"', () => {
+    const det = html.split('<details')[1]
+    expect(det).toContain(es['opp.cap.lumpNote'])
+    expect(html.split('<details')[0]).not.toContain(es['opp.cap.lumpNote'])
   })
   it('atajos del monto: sin invertir y efectivo', () => {
     expect(text(html)).toContain(text(interpolate(es['opp.cap.fromFree'], { v: fmt.money(4000) })))

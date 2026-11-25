@@ -53,9 +53,11 @@
 .mx th:first-child { position: sticky; left: 0; z-index: 1; width: 74px; min-width: 74px; padding-left: 8px; text-align: left; background: var(--sur); }
 .mx tbody tr:last-child > * { border-bottom: 0; }
 
-.tk { display: inline-flex; align-items: center; min-height: 28px; margin: -6px 0; padding: 6px 0; border: 0; background: none; font: inherit; font-size: var(--t-subhead); font-weight: 700; color: var(--tx); white-space: nowrap; }
+.tk { display: inline-flex; align-items: center; min-height: 44px; margin: -14px 0; padding: 0; border: 0; background: none; font: inherit; font-size: var(--t-subhead); font-weight: 700; color: var(--tx); white-space: nowrap; }
 button.tk { cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 button.tk:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 4px; }
+.wb, .sub.wb { display: none; }
+.tblNote { margin: -4px 0 0; font-size: var(--t-footnote); line-height: 1.5; color: var(--th); }
 .sub { display: block; margin-top: 2px; font-size: var(--t-caption, 11px); font-weight: 400; color: var(--th); }
 
 .amt { display: block; font-weight: 600; }
@@ -71,12 +73,14 @@ button.tk:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-of
 /* Lo que sigues: solo distancia */
 .watch td .st { margin-top: 0; }
 .mx .watch tr:first-child > * { border-top: 0.5px solid var(--brd); }
-.mx .grp th { position: static; padding: 10px 8px 4px; font-size: var(--t-caption, 11px); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--th); background: var(--fill); border-bottom: 0; text-align: left; }
-.mx .grp td { background: var(--fill); border-bottom: 0; }
+.mx .grp th { position: static; padding: 10px 8px 4px; font-size: var(--t-caption, 11px); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--th); background: linear-gradient(var(--fill), var(--fill)), var(--sur); border-bottom: 0; text-align: left; }
+.mx .grp td { background: linear-gradient(var(--fill), var(--fill)), var(--sur); border-bottom: 0; }
 
 /* Totales */
-.mx tfoot th, .mx tfoot td, .mx tfoot th:first-child { border-bottom: 0; background: var(--fill); }
-.mx tfoot tr:first-child > * { border-top: 1px solid var(--gray-300, var(--brd)); }
+/* --fill es translúcido en oscuro: sobre --sur queda opaco, así la columna fija
+   no deja ver las cifras que pasan por debajo al desplazar. */
+.mx tfoot th, .mx tfoot td, .mx tfoot th:first-child { border-bottom: 0; background: linear-gradient(var(--fill), var(--fill)), var(--sur); }
+.mx tfoot tr:first-child > * { border-top: 1px solid var(--brd2, var(--brd)); }
 .mx tfoot tr:last-child th { border-bottom-left-radius: 14px; }
 .hoyRow > * { padding-top: 0 !important; }
 .hoyRow td .amt { color: var(--th); }
@@ -103,6 +107,7 @@ button.tk:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-of
   .w { display: inline; }
   .n, .sub.n { display: none; }
   .sub.w { display: inline; margin-left: 6px; }
+  .sub.wb { display: block; }
   .tot { display: table-cell; }
   .mx th, .mx td { padding: 10px 12px; }
   .mx th:first-child { width: 230px; min-width: 200px; }

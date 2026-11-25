@@ -13,9 +13,11 @@
 //
 // Componente puro (sin pedidos ni estado): los números salen de planCapital
 // (capital.js) y las distancias de readSignal (signals.js), sin cuentas nuevas.
+import { useEffect, useRef, useState } from 'react'
 import { Check, Circle, CircleAlert } from 'lucide-react'
-import Money from '../../../components/Money.jsx'
+import Money, { useMoney } from '../../../components/Money.jsx'
 import { LADDERS } from '../../../utils/investPlan.js'
+import { currencyOf } from '../../../utils/investValuation.js'
 import { moneyLocale } from '../../../utils/index.js'
 import { SMAS } from './signals.js'
 import { DEFAULT_LADDER } from './capital.js'
@@ -44,6 +46,10 @@ export function shortAmount(v) {
   return n.toLocaleString(moneyLocale(), { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 })
 }
 
+// Porcentaje en la convención del idioma (opp.pct): "10 %" en es/pt/de,
+// "10%" en inglés. Recibe la salida de fmt.pct o una cifra sin signo de %.
+export const pctIn = (t, str) => t('opp.pct', { p: String(str).replace(/[\u202F\u00A0 ]?%$/, '') })
+
 function Amt({ v, fmt, wide = false }) {
   if (wide) return <Money>{fmt.money(v)}</Money>
   return (
@@ -64,7 +70,7 @@ function TramoCell({ tr, reading, t, fmt }) {
       </td>
     )
   }
-  const pct = fmt.pct(tr.dist, { signed: true, decimals: 1 })
+  const pct = pctIn(t, fmt.pct(tr.dist, { signed: true, decimals: 1 }))
   let st, sr, key
   if (tr.state === 'today') {
     key = 'today'
@@ -76,7 +82,7 @@ function TramoCell({ tr, reading, t, fmt }) {
     st = <><CircleAlert size={12} strokeWidth={2.4} /><span className={s.n}>{t('opp.tbl.rsiShort')}</span><span className={s.w}>{t(tr.rsiMissing ? 'opp.tbl.rsiMissingWide' : 'opp.tbl.rsiWide')}</span></>
   } else {
     key = 'wait'
-    sr = t('opp.res.st.wait', { p: fmt.pct(Math.abs(tr.dist || 0), { decimals: 1 }) })
+    sr = t('opp.res.st.wait', { p: pctIn(t, fmt.pct(Math.abs(tr.dist || 0), { decimals: 1 })) })
     st = <><span className={s.w}><Circle size={10} strokeWidth={2.4} /></span>{pct}</>
   }
   return (
@@ -93,8 +99,8 @@ function DistCell({ m, t, fmt }) {
   if (!m || m.value == null) {
     return <td data-st="none"><span className={s.st} aria-hidden="true">—</span><span className="sr-only">{t('opp.tbl.sr.none')}</span></td>
   }
-  const pct = fmt.pct(m.dist, { signed: true, decimals: 1 })
-  const abs = fmt.pct(Math.abs(m.dist), { decimals: 1 })
+  const pct = pctIn(t, fmt.pct(m.dist, { signed: true, decimals: 1 }))
+  const abs = pctIn(t, fmt.pct(Math.abs(m.dist), { decimals: 1 }))
   const at = Math.abs(m.dist) < 0.0005
   const sr = at ? t('opp.tbl.sr.at') : m.hit ? t('opp.tbl.sr.below', { p: abs }) : t('opp.tbl.sr.above', { p: abs })
   return (
@@ -113,7 +119,25 @@ function Ticker({ tk, onOpen, t }) {
 
 const rsiSub = (r, t) => (r ? (r.rsi == null ? t('opp.tbl.rsiNone') : t('opp.tbl.rsi', { v: Math.round(r.rsi) })) : null)
 
-function DistRow({ it, r, t, fmt, onOpen, mine }) {
+// Solo en la forma ancha: precio y caída desde el máximo de 1 año.
+function Facts({ it, r, t, fmt }) {
+  if (!r) return null
+  const ccy = currencyOf(it.t, it.ccy)
+  const dd = r.drawdown == null ? null : r.drawdown > -0.0005 ? t('opp.tbl.ddZero') : t('opp.tbl.dd', { p: pctIn(t, fmt.pct(Math.abs(r.drawdown), { decimals: 1 })) })
+  return (
+    <span className={`${s.sub} ${s.wb}`}>
+      {t('opp.tbl.price')} <Money>{ccy ? fmt.native(r.price, ccy) : Number(r.price).toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })}</Money>
+      {dd && <> · {dd}</>}
+    </span>
+  )
+}
+
+// Sin lectura: "Leyendo…" mientras llega la historia; sin historia, solo si de verdad no hay.
+function NoReading({ loading, t }) {
+  return <td colSpan={4} className={s.noHist}>{t(loading ? 'opp.tbl.loading' : 'opp.tbl.noHistory')}</td>
+}
+
+function DistRow({ it, r, loading, t, fmt, onOpen, mine }) {
   return (
     <tr>
       <th scope="row">
@@ -121,9 +145,9 @@ function DistRow({ it, r, t, fmt, onOpen, mine }) {
         {it.name && <span className={`${s.sub} ${s.w}`}>{it.name}</span>}
         {mine && <span className={`${s.sub} ${s.n}`}>{t('opp.tbl.noAmount')}</span>}
         {r && <span className={s.sub}>{rsiSub(r, t)}</span>}
+        <Facts it={it} r={r} t={t} fmt={fmt} />
       </th>
-      {r ? SMAS.map((n, i) => <DistCell key={n} m={r.smas[i]} t={t} fmt={fmt} />)
-        : <td colSpan={4} className={s.noHist}>{t('opp.tbl.noHistory')}</td>}
+      {r ? SMAS.map((n, i) => <DistCell key={n} m={r.smas[i]} t={t} fmt={fmt} />) : <NoReading loading={loading} t={t} />}
       <td className={s.tot}><span className={s.st}>{t('opp.tbl.noAmount')}</span></td>
     </tr>
   )
@@ -134,17 +158,35 @@ function DistRow({ it, r, t, fmt, onOpen, mine }) {
  * mine / watch: [{ t, name? }] en orden; readings: { t: readSignal | null }.
  */
 export default function TramosTable({ plan, mine, watch, readings, t, fmt, lad = DEFAULT_LADDER, onOpen }) {
+  const { m } = useMoney()
   const w = LADDERS[lad] || LADDERS[DEFAULT_LADDER]
+  // La región solo entra al orden de tabulación cuando de verdad se desplaza.
+  const twRef = useRef(null)
+  const [scrolls, setScrolls] = useState(false)
+  useEffect(() => {
+    const el = twRef.current
+    if (!el) return undefined
+    const check = () => setScrolls(el.scrollWidth > el.clientWidth + 1)
+    check()
+    if (typeof ResizeObserver !== 'function') return undefined
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    return () => ro.disconnect()
+  }, [])
+  const loading = (tk) => !(tk in readings)
   const rows = plan?.rows || []
   const inPlan = new Set(rows.map(r => r.t))
+  const info = Object.fromEntries([...mine, ...watch].map(i => [i.t, i]))
   const names = Object.fromEntries([...mine, ...watch].map(i => [i.t, i.name]))
   const mineRest = mine.filter(i => !inPlan.has(i.t))
   const watchRest = watch.filter(i => !inPlan.has(i.t))
   const cols = plan ? columnTotals(plan) : null
-  const pctW = (x) => `${Math.round(x * 100)}\u00A0%`
+  const pctW = (x) => pctIn(t, Math.round(x * 100))
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- with large text or narrow screens the table scrolls sideways; the region takes focus so keyboard users can scroll it (axe scrollable-region-focusable)
-    <div className={s.tw} tabIndex={0} role="region" aria-labelledby="opp-tbl-cap">
+    <>
+    {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- only when the table overflows sideways (large text, narrow screens): the region takes focus so keyboard users can scroll it (axe scrollable-region-focusable) */}
+    <div ref={twRef} className={s.tw} tabIndex={scrolls ? 0 : undefined} role="region" aria-labelledby="opp-tbl-cap">
       <table className={s.mx}>
         <caption id="opp-tbl-cap">{t(plan ? 'opp.tbl.caption' : 'opp.tbl.captionDist')}</caption>
         <thead>
@@ -167,18 +209,26 @@ export default function TramosTable({ plan, mine, watch, readings, t, fmt, lad =
                 {names[r.t] && <span className={`${s.sub} ${s.w}`}>{names[r.t]}</span>}
                 <span className={`${s.sub} ${s.n}`}><Money>{shortAmount(r.amount)}</Money></span>
                 {r.reading && <span className={s.sub}>{rsiSub(r.reading, t)}</span>}
+                <Facts it={info[r.t] || { t: r.t }} r={r.reading} t={t} fmt={fmt} />
+                {r.tramos && <span className={`${s.n} sr-only`}>{t('opp.tbl.sr.row', { a: m(fmt.money(r.today)), b: m(fmt.money(r.wait)) })}</span>}
               </th>
               {r.tramos
                 ? r.tramos.map(tr => <TramoCell key={tr.n} tr={tr} reading={r.reading} t={t} fmt={fmt} />)
-                : <td colSpan={4} className={s.noHist}>{t('opp.tbl.noHistory')}</td>}
+                : <NoReading loading={loading(r.t)} t={t} />}
               <td className={s.tot}>
                 <span className={s.amt}><Money>{fmt.money(r.amount)}</Money></span>
                 {r.tramos && <span className={s.st} data-on={r.today > 0 || undefined}>{t('opp.tbl.hoy')} <Money>{fmt.money(r.today)}</Money></span>}
               </td>
             </tr>
           ))}
-          {mineRest.map(it => <DistRow key={it.t} it={{ ...it, name: names[it.t] }} r={readings[it.t] || null} t={t} fmt={fmt} onOpen={onOpen} mine={!!plan} />)}
+          {mineRest.map(it => <DistRow key={it.t} it={it} r={readings[it.t] || null} loading={loading(it.t)} t={t} fmt={fmt} onOpen={onOpen} mine={!!plan} />)}
         </tbody>
+        {watchRest.length > 0 && (
+          <tbody className={s.watch}>
+            <tr className={s.grp}><th scope="rowgroup" colSpan={5}>{t('opp.tbl.watch')}</th><td className={s.tot}>{' '}</td></tr>
+            {watchRest.map(it => <DistRow key={it.t} it={it} r={readings[it.t] || null} loading={loading(it.t)} t={t} fmt={fmt} onOpen={onOpen} />)}
+          </tbody>
+        )}
         {plan && (
           <tfoot>
             <tr>
@@ -193,13 +243,9 @@ export default function TramosTable({ plan, mine, watch, readings, t, fmt, lad =
             </tr>
           </tfoot>
         )}
-        {watchRest.length > 0 && (
-          <tbody className={s.watch}>
-            <tr className={s.grp}><th scope="rowgroup" colSpan={5}>{t('opp.tbl.watch')}</th><td className={s.tot}>{' '}</td></tr>
-            {watchRest.map(it => <DistRow key={it.t} it={{ ...it, name: names[it.t] }} r={readings[it.t] || null} t={t} fmt={fmt} onOpen={onOpen} />)}
-          </tbody>
-        )}
       </table>
     </div>
+    {plan && plan.noData > 0 && <p className={s.tblNote}>{t('opp.tbl.noDataNote', { v: m(fmt.money(plan.noData)) })}</p>}
+    </>
   )
 }
