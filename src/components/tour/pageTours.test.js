@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { es } from '../../i18n/es.js'
-import { de } from '../../i18n/de.js'
-import { PAGE_TOURS, parseSeen, withSeen, shouldAutoStartTour, readSeen, markSeen, hasTour, TOURS_SEEN_KEY } from './pageTours.js'
+// Los textos de los recorridos viven en la sección diferida src/i18n/help/.
+import { es, de } from '../../i18n/withSections.js'
+import { PAGE_TOURS, parseSeen, withSeen, shouldOfferTour, readSeen, markSeen, hasTour, TOURS_SEEN_KEY } from './pageTours.js'
 
 const memStorage = () => {
   const m = new Map()
@@ -22,16 +22,17 @@ describe('pageTours (R08)', () => {
     expect(PAGE_TOURS.settings.map(s => s.id)).toEqual(['set-search', 'set-groups'])
   })
 
-  it('primera visita arranca sola; la segunda no', () => {
-    expect(shouldAutoStartTour({ page: 'dashboard', seen: [] })).toBe(true)
-    expect(shouldAutoStartTour({ page: 'dashboard', seen: ['dashboard'] })).toBe(false)
-    // El resto de las pestañas ya no arranca solo (19-nov-2026): el "?" lo abre.
-    expect(shouldAutoStartTour({ page: 'movements', seen: [] })).toBe(false)
+  // Ayuda en la app (26-nov-2026): ya no arranca solo; la primera visita pregunta.
+  it('primera visita: se ofrece en cada pantalla con recorrido; la segunda no', () => {
+    expect(shouldOfferTour({ page: 'dashboard', seen: [] })).toBe(true)
+    expect(shouldOfferTour({ page: 'movements', seen: [] })).toBe(true)
+    expect(shouldOfferTour({ page: 'dashboard', seen: ['dashboard'] })).toBe(false)
   })
 
-  it('nunca arranca solo en el demo ni en páginas sin recorrido', () => {
-    expect(shouldAutoStartTour({ page: 'dashboard', seen: [], isDemo: true })).toBe(false)
-    expect(shouldAutoStartTour({ page: 'reports', seen: [] })).toBe(false)
+  it('nunca en el demo, con otra hoja abierta ni en páginas sin recorrido', () => {
+    expect(shouldOfferTour({ page: 'dashboard', seen: [], isDemo: true })).toBe(false)
+    expect(shouldOfferTour({ page: 'dashboard', seen: [], busy: true })).toBe(false)
+    expect(shouldOfferTour({ page: 'privacy', seen: [] })).toBe(false)
   })
 
   it('parseSeen tolera basura y withSeen no duplica', () => {
@@ -64,7 +65,7 @@ describe('recorrido del Inicio v2 (24-nov-2026)', () => {
   it('muestra los botones redondos y "Pregúntale a moyiq", con textos en los 4 idiomas', async () => {
     const ids = PAGE_TOURS.dashboard.map(s => s.id)
     expect(ids).toEqual(['kpi-free', 'home-quick', 'home-ask', 'first-steps', 'home-edit'])
-    const dicts = await Promise.all(['es', 'en', 'pt', 'de'].map(l => import(`../../i18n/${l}.js`).then(m => m[l])))
+    const dicts = await import('../../i18n/withSections.js').then(m => [m.es, m.en, m.pt, m.de])
     for (const d of dicts) for (const s of PAGE_TOURS.dashboard) {
       expect(d[s.title], s.title).toBeTruthy()
       expect(d[s.body], s.body).toBeTruthy()
@@ -72,7 +73,7 @@ describe('recorrido del Inicio v2 (24-nov-2026)', () => {
   })
 })
 
-import { requestTourReplay, takeTourReplay } from './PageTour.jsx'
+import { requestTourReplay, takeTourReplay } from './PageTour.jsx' // reexporta helpCore.js
 describe('volver a ver el recorrido sin la barra superior (Inicio v2)', () => {
   it('requestTourReplay deja el pedido y takeTourReplay lo consume una sola vez, solo para esa página', () => {
     const st = memStorage()

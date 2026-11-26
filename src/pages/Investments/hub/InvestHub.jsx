@@ -91,7 +91,7 @@ export default function InvestHub({ setPage, demo = false }) {
 
   return (
     <div className={s.hub}>
-      <div role="tablist" aria-label={t('invest.hub.tabsLabel')} className={s.tabs}>
+      <div role="tablist" aria-label={t('invest.hub.tabsLabel')} className={s.tabs} data-tour="inv-tabs">
         {INVEST_TABS.map(k => (
           <button key={k} ref={el => { refs.current[k] = el }} type="button" role="tab" id={`invest-tab-${k}`}
             aria-selected={tab === k} aria-controls={`invest-panel-${k}`} tabIndex={tab === k ? 0 : -1}
@@ -101,7 +101,7 @@ export default function InvestHub({ setPage, demo = false }) {
         ))}
       </div>
 
-      <div className={s.toolRow}>
+      <div className={s.toolRow} data-tour="inv-tools">
         <ViewToggle view={view} onChange={setView} />
         <button ref={helpBtn} type="button" className={s.helpBtn} onClick={() => setHelp(true)} aria-label={t('invest.hub.helpLabel')} aria-haspopup="dialog">
           <CircleHelp size={18} strokeWidth={1.8} aria-hidden="true" />{t('invest.hub.help')}

@@ -159,7 +159,7 @@ export default function Coach() {
       </div>
 
       {/* Score + KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
+      <div data-tour="coach-score" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '16px', marginBottom: 20, alignItems: 'center' }}>
         {/* Score circle */}
         <div style={{ textAlign: 'center', padding: '0 12px' }}>
           <div style={{ fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--th)', fontFamily: 'var(--sans)'}}>{t('coach.score.label')}</div>
@@ -204,7 +204,7 @@ export default function Coach() {
 
       {/* Resumen de señales */}
       {signals.length > 0 && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div data-tour="coach-signals" style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           {warnings.length > 0 && (
             <div style={{ padding: '6px 12px', background: 'var(--red-bg)', border: '.5px solid var(--red)', borderRadius: 'var(--rs)', fontSize: 'var(--t-footnote)', color: 'var(--red)', fontFamily: 'var(--sans)' }}>
               <InlineIcon kind="warning" size={13} />{t('coach.badge.review', { n: warnings.length })}
@@ -275,7 +275,7 @@ export default function Coach() {
         ]
         const doneCount = items.filter(i => i.done).length
         return (
-          <div style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px', marginBottom: 16 }}>
+          <div data-tour="coach-check" style={{ background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0, borderRadius: 'var(--r)', padding: '14px 16px', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)'}}>{t('coach.check.title')}</div>
               <span style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: doneCount === items.length ? 'var(--accent)' : 'var(--th)' }}>{doneCount}/{items.length}</span>

@@ -90,6 +90,11 @@
    "service_role": "ar",
    "rls": true
   },
+  "public.help_progress": {
+   "authenticated": "arw",
+   "service_role": "arwd",
+   "rls": true
+  },
   "public.invest_activity_days": {
    "authenticated": "a",
    "service_role": "arwd",
@@ -634,6 +639,12 @@
    "kind": "rpc",
    "anon": "",
    "authenticated": "",
+   "service_role": "X"
+  },
+  "public.merge_help_progress(text[], text[])": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
    "service_role": "X"
   },
   "public.notify_invest_signup(text)": {

@@ -73,7 +73,7 @@ export default function Projects() {
         </Card>
       ) : (
         <>
-          <Card>
+          <Card data-tour="proj-total">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8 }}>
               <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600}}>
                 {groups.length === 1 ? t('projects.totalNet.one', { n: groups.length }) : t('projects.totalNet.many', { n: groups.length })}
@@ -84,7 +84,7 @@ export default function Projects() {
             </div>
           </Card>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 }}>
+          <div data-tour="proj-groups" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 }}>
             {groups.map(g => (
               <Card key={g.name}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>

@@ -183,6 +183,13 @@ function EsBody() {
             que elimines la cuenta). Base: tu solicitud.
           </li>
           <li>
+            <strong>Progreso de la ayuda:</strong> qué recorridos guiados de la app viste o descartaste y
+            qué novedades leíste (solo los nombres de esas pantallas y novedades, sin datos financieros).
+            Se guardan en tu cuenta para no repetírtelos en otro dispositivo, y una copia queda en tu
+            dispositivo. El modo demo no los envía. Base: ejecución de lo que pides. Se borran al eliminar
+            la cuenta.
+          </li>
+          <li>
             <strong>Cancelaciones y consultas:</strong> los datos que nos envías al cancelar en línea o
             escribir a soporte, para tramitarlos y poder probar que los recibimos.
           </li>
@@ -592,6 +599,13 @@ function EnBody() {
             Basis: your request.
           </li>
           <li>
+            <strong>Help progress:</strong> which guided tours of the app you viewed or dismissed and
+            which updates you read (only the names of those screens and updates, no financial data).
+            They are stored in your account so they are not repeated on another device, and a copy stays
+            on your device. Demo mode does not send them. Basis: performance of what you ask for. They
+            are deleted when you delete your account.
+          </li>
+          <li>
             <strong>Cancellations and inquiries:</strong> the data you send us when you cancel online or
             write to support, to process them and to be able to prove we received them.
           </li>
@@ -996,6 +1010,13 @@ function PtBody() {
             podermos responder. No banco de dados guardamos só a data de cada envio, para limitar a
             quantidade (envios de comentários, 30 dias; a pesquisa respondida, até você excluir a
             conta). Base: sua solicitação.
+          </li>
+          <li>
+            <strong>Progresso da ajuda:</strong> quais tours guiados do app você viu ou dispensou e quais
+            novidades leu (apenas os nomes dessas telas e novidades, sem dados financeiros). Ficam
+            salvos na sua conta para não se repetirem em outro dispositivo, e uma cópia fica no seu
+            dispositivo. O modo demo não os envia. Base: execução do que você pede. São apagados ao
+            excluir a conta.
           </li>
           <li>
             <strong>Cancelamentos e consultas:</strong> os dados que você nos envia ao cancelar on-line
@@ -1409,6 +1430,14 @@ function DeBody() {
             speichern wir nur das Datum jeder Übermittlung, um die Anzahl zu begrenzen
             (Feedback-Übermittlungen 30 Tage; die beantwortete Umfrage bis zur Löschung des Kontos).
             Rechtsgrundlage ist Ihre Anfrage (Art. 6 Abs. 1 lit. b DSGVO).
+          </li>
+          <li>
+            <strong>Fortschritt der Hilfe:</strong> welche geführten Rundgänge der App Sie angesehen oder
+            übersprungen und welche Neuigkeiten Sie gelesen haben (nur die Namen dieser Bildschirme und
+            Neuigkeiten, keine Finanzdaten). Sie werden in Ihrem Konto gespeichert, damit sie sich auf
+            einem anderen Gerät nicht wiederholen; eine Kopie bleibt auf Ihrem Gerät. Der Demo-Modus
+            sendet sie nicht. Grundlage: Erfüllung Ihrer Anfrage. Sie werden gelöscht, wenn Sie Ihr Konto
+            löschen.
           </li>
         </ul>
         <p>

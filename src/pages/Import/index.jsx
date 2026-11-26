@@ -268,7 +268,7 @@ export default function ImportMovements({ setPage } = {}) {
       {/* Encabezado único (UI-M8): sin antetítulo. */}
       <PageHeader title={t('imp.title')} sub={t('imp.sub')} />
 
-      <div style={s.steps}>
+      <div style={s.steps} data-tour="imp-steps">
         {STEPS.map((name, i) => (
           <div key={i} style={s.step(step === i, step > i)}>{step > i ? '✓ ' : `${i+1}. `}{t(name)}</div>
         ))}
@@ -279,7 +279,7 @@ export default function ImportMovements({ setPage } = {}) {
       {/* STEP 0 — Importar archivo */}
       {step === 0 && (
         <>
-          <div style={s.card}>
+          <div style={s.card} data-tour="imp-drop">
             <div style={s.cardTitle}>{t('imp.upload.title')}</div>
             <div
               role="button"
@@ -314,7 +314,7 @@ export default function ImportMovements({ setPage } = {}) {
           </div>
 
           {/* Panel bancos soportados */}
-          <div style={s.card}>
+          <div style={s.card} data-tour="imp-banks">
             <div style={s.cardTitle}>{t('imp.banks.title')}</div>
             <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', marginBottom: 14 }}>
               {t('imp.banks.sub')}

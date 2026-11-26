@@ -192,7 +192,7 @@ export default function Reports({ setPage }) {
           </a>
         ) : null}
       </div>
-      <div className="kpi-row">
+      <div className="kpi-row" data-tour="rep-kpis">
         <KPI label={t('reports.kpi.balance')}  value={m(fmtSignedMoney(balance,sym))} color={balance>=0?'green':'red'} alert={balance<0 ? t('ui.state.overdrawn') : undefined} sub={(month.pendingFixed + month.setAside > 0) ? t('reports.kpi.afterFixed', { v: m(fmtSignedMoney(freeFlow,sym)) }) : t('reports.kpi.incMinusExp')} />
         <KPI label={t('reports.kpi.savingRate')}   value={fmtPct(savingRate)} color={atGoal?'green':savingRate>=0?'amber':'red'} sub={t('reports.kpi.goal', { pct: fmtPct(goal, { decimals: 0 }) })} />
         <KPI label={t('reports.kpi.income')}      value={fmtMoney(totalIncome,sym)} />
@@ -200,7 +200,7 @@ export default function Reports({ setPage }) {
         <KPI label={t('reports.kpi.expenses')}        value={fmtMoney(totalExpense,sym)} />
       </div>
       <div className="grid2">
-        <Card>
+        <Card data-tour="rep-flow">
           <CardHeader title={t('reports.chart.flow')} />
           <MoneyFlow flow={flow} sym={sym} />
         </Card>
@@ -323,7 +323,7 @@ export default function Reports({ setPage }) {
           </>
         )}
       </Card>
-      <Card>
+      <Card data-tour="rep-reco">
         <CardHeader title={t('reports.reco.title')} />
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           {totalIncome===0

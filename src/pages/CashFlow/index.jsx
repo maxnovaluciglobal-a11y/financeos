@@ -174,7 +174,7 @@ export default function CashFlow({ setPage }) {
         const barPct    = Math.min(pctMonthElapsed * 100, 100)
         const budgetBarPct = pctBudgetUsed !== null ? Math.min(pctBudgetUsed * 100, 100) : null
         return (
-          <Card>
+          <Card data-tour="cf-eom">
             <CardHeader title={t('cf.eom.title', { month: activeMonth })} />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 16 }}>
               {[
@@ -235,7 +235,7 @@ export default function CashFlow({ setPage }) {
       })()}
 
       {/* KPIs de proyección */}
-      <div className="kpi-row">
+      <div className="kpi-row" data-tour="cf-kpis">
         <KPI label={t('cf.kpi.netFlow')}
           value={fmtSignedMoney(monthlyNetFlow, sym)}
           color={monthlyNetFlow > 0 ? 'green' : monthlyNetFlow < 0 ? 'red' : 'default'}
@@ -246,7 +246,7 @@ export default function CashFlow({ setPage }) {
       </div>
 
       {/* Gráfico de proyección */}
-      <Card>
+      <Card data-tour="cf-chart">
         <CardHeader title={t('cf.chart.title')} />
         {!hasData
           ? <Empty text={t('cf.chart.empty')} cta={setPage ? t('empty.importCta') : undefined} onCta={() => setPage?.('import')} />

@@ -69,9 +69,9 @@ describe('fecha del despliegue del rebranding', () => {
     for (const lang of ['en', 'pt', 'de']) expect(PRIVACY_LAST_UPDATED[lang]).toContain(PRIVACY_PREVIOUS_DATE)
   })
 
-  it('N4 (ronda 3): la política de la app tiene la misma fecha que la landing (26-nov desde el modelo A, reemplaza a 24-nov)', () => {
-    expect(PRIVACY_DEPLOY_DATE).toBe('2026-11-26')
-    expect(PRIVACY_PREVIOUS_DATE).toBe('2026-11-24')
+  it('N4 (ronda 3): la política de la app tiene la misma fecha que la landing (27-nov desde la ayuda en la app, reemplaza a 26-nov)', () => {
+    expect(PRIVACY_DEPLOY_DATE).toBe('2026-11-27')
+    expect(PRIVACY_PREVIOUS_DATE).toBe('2026-11-26')
   })
 
   it('modelo A (26-nov): los Términos de la app tienen la vigencia de la landing (26-nov, reemplaza a 24-nov) en los 4 idiomas', () => {

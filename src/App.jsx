@@ -64,6 +64,7 @@ const License       = lazy(() => import('./pages/legal/License.jsx'))
 const Disclaimer    = lazy(() => import('./pages/legal/Disclaimer.jsx'))
 const More          = lazy(() => import('./pages/More/index.jsx'))
 const Panorama      = lazy(() => import('./pages/Panorama/index.jsx'))
+const HelpCenter    = lazy(() => import('./pages/Help/index.jsx'))
 // AND-5: la compilación de las tiendas no incluye Inversiones (oculta en la app de tienda).
 const Investments   = STORE_BUILD ? null : lazy(() => import('./pages/Investments/index.jsx'))
 const InvestAsset   = STORE_BUILD ? null : lazy(() => import('./pages/Investments/Asset.jsx'))
@@ -328,6 +329,7 @@ function Inner() {
       case 'import':        return <ImportCSV setPage={setPage} />
       case 'more':          return <More setPage={setPage} />
       case 'panorama':      return <Panorama setPage={setPage} />
+      case 'help':          return <HelpCenter setPage={setPage} />
       case 'investments':   return Investments ? <Investments setPage={setPage} /> : <Dashboard setPage={setPage}/>
       case 'investAsset':   return InvestAsset ? <InvestAsset setPage={setPage} /> : <Dashboard setPage={setPage}/>
       default:              return <Dashboard setPage={setPage}/>

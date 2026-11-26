@@ -24,8 +24,13 @@ export const REBRAND_DEPLOY_DATE = '2026-11-18'
 // 26-nov-2026 (modelo A, D1/D2): la privacidad suma el HMAC del correo de la
 // prueba de Pro (una por persona) y el borrado a los 90 días de la copia del
 // sync de una prueba sin compra; reemplaza a la del 24-nov, igual que la landing.
-export const PRIVACY_DEPLOY_DATE = '2026-11-26'
-export const PRIVACY_PREVIOUS_DATE = '2026-11-24'
+// 27-nov-2026 (ayuda en la app, aprobado el 26-nov): suma el progreso de la
+// ayuda guardado en la cuenta (recorridos vistos y novedades leídas); reemplaza
+// a la del 26-nov, igual que la landing (feat/privacidad-ayuda). Fecha prevista:
+// si el despliegue es otro día, `node scripts/setDeployDate.mjs --privacy AAAA-MM-DD`
+// aquí y `node tests/tools/set-vigencia.js --privacidad AAAA-MM-DD` en la landing.
+export const PRIVACY_DEPLOY_DATE = '2026-11-27'
+export const PRIVACY_PREVIOUS_DATE = '2026-11-26'
 
 // Vigencia propia de los Términos de Uso (ronda 4 pre-tiendas, R3-2): su texto
 // cambió en 8d228a6 (sincronización opcional y «datos de la app») y la landing

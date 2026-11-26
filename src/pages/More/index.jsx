@@ -6,8 +6,8 @@
 // cerrar sesión, legales y versión.
 import { Suspense, useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
-import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles, CircleHelp } from 'lucide-react'
-import { requestTourReplay } from '../../components/tour/PageTour.jsx'
+import { Lock, Sun, Moon, LogOut, ChevronRight, Calculator, MessageSquare, CreditCard, ExternalLink, Wrench, Sparkles, CircleHelp, BookOpen } from 'lucide-react'
+import { requestTourReplay } from '../../components/help/helpCore.js'
 import { useT } from '../../i18n/useT.js'
 import { isNativeApp } from '../../native/platform.js'
 import { appHelpHref } from '../../utils/landingUrls.js'
@@ -160,6 +160,10 @@ export default function More({ setPage }) {
           </button>
         )}
         {!settings.isDemo && <Suspense fallback={null}><InviteButton className={s.action} /></Suspense>}
+        {/* Centro de ayuda (26-nov-2026): todas las guías, con buscador, y las novedades. */}
+        <button type="button" onClick={() => setPage('help')} className={s.action}>
+          <BookOpen size={16} strokeWidth={1.7} aria-hidden="true" />{t('help.center.title')}
+        </button>
         {/* Inicio v2: en el teléfono el Inicio no tiene la barra con el "?";
             el recorrido se vuelve a ver desde acá. */}
         <button type="button" onClick={() => { requestTourReplay('dashboard'); setPage('dashboard') }} className={s.action}>

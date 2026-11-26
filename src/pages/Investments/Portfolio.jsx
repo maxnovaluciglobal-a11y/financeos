@@ -132,7 +132,7 @@ export default function Portfolio({ onOpenHere } = {}) {
 
   return (
     <div className={s.page}>
-      <section className={s.hero} aria-labelledby="invest-hero-label">
+      <section className={s.hero} aria-labelledby="invest-hero-label" data-tour="inv-hero">
         <div className={s.heroTop}>
           <span id="invest-hero-label" className={s.heroLabel}>{t('invest.port.value')}</span>
           {!demo && (

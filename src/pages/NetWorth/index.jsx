@@ -43,7 +43,7 @@ export default function NetWorth() {
         </Card>
       ) : (
         <>
-          <Card>
+          <Card data-tour="nw-total">
             <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
               <div style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', fontFamily: 'var(--sans)', fontWeight: 600, marginBottom: 6 }}>
                 {t('networth.headline')}
@@ -57,7 +57,7 @@ export default function NetWorth() {
             </div>
           </Card>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 }}>
+          <div data-tour="nw-split" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 }}>
             <Card>
               <CardHeader title={t('networth.assets')} />
               <Row label={t('networth.savedInGoals')} value={savedInGoals} sym={sym} color="var(--grn)" />

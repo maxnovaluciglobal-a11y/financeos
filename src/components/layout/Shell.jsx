@@ -1,9 +1,10 @@
 // src/components/layout/Shell.jsx — Fase mobile nav
 
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { isNativeApp } from '../../native/platform.js'
+import { STORE_BUILD } from '../../native/storeBuild.js'
 import { appHelpHref } from '../../utils/landingUrls.js'
 import s from './shell.module.css'
 import { BackupStatusBadge } from '../backup/BackupStatus.jsx'
@@ -14,13 +15,16 @@ import Logo, { Monogram } from '../Logo.jsx'
 import { NAV_ICONS } from '../icons/Icons.jsx'
 import { signOutAuth } from '../../core/auth.js'
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen.js'
-import { NAV, pageLabel, showProChip, navItemVisible } from './navConfig.js'
+import { NAV, ALL_ITEMS, pageLabel, showProChip, navItemVisible } from './navConfig.js'
 import TabBar, { AddFab } from './TabBar.jsx'
 import { runViewTransition } from './viewTransition.js'
 import { chromeFor, SUB_BACK_EVENT } from './pageStack.js'
 import { useEdgeSwipeBack } from '../../hooks/useEdgeSwipeBack.js'
 import { QUICK_ADD_EVENT, NAVIGATE_EVENT } from '../quickAddBus.js'
-import PageTour, { usePageTour, PageTourButton } from '../tour/PageTour.jsx'
+import HelpButton from '../help/HelpButton.jsx'
+import { useHelp } from '../help/useHelp.js'
+// Ayuda en la app: panel, primera visita y recorridos, fuera del JS inicial.
+const HelpHost = lazy(() => import('../help/HelpHost.jsx'))
 import UpdateNotice from '../UpdateNotice.jsx'
 // V4: piezas ocasionales fuera del JS inicial.
 const PushAsk = lazy(() => import('../PushAsk.jsx'))
@@ -116,8 +120,12 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
   // iOS instalada (standalone) no tiene gesto atrás propio: borde izquierdo.
   useEdgeSwipeBack({ enabled: chrome.back, onBack: back })
 
-  // Recorrido por pantalla (R08): solo la primera visita; después, el "?".
-  const tour = usePageTour(page, { isDemo: !!settings.isDemo })
+  // Ayuda de la pantalla (26-nov-2026): el "?" abre el panel; la primera visita
+  // pregunta si se quiere ver el recorrido (nunca en el demo).
+  const helpCountry = (settings.country || 'CL').toUpperCase()
+  const investOn = !STORE_BUILD && navItemVisible(ALL_ITEMS.find(it => it.id === 'investments') || {}, helpCountry, settings)
+  const newsFilter = useMemo(() => ({ investments: investOn }), [investOn])
+  const help = useHelp(page, { isDemo: !!settings.isDemo, newsFilter })
 
   // ── Foco al cambiar de página ────────────────────────────────────────────────
   // Sin esto, un lector de pantalla no se entera de que la página cambió: el foco
@@ -294,9 +302,7 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
           {/* El título vive en el PageHead de cada página (UI-M8); acá solo su copia compacta. */}
           <div id="nav-title" className={s.navTitle} aria-hidden="true" />
           <span className={s.topRight}>
-            {tour.available && (
-              <PageTourButton className={s.amountsBtn} onClick={tour.replay} label={t('tour.replay')} />
-            )}
+            <HelpButton className={s.amountsBtn} onClick={help.openPanel} unread={help.unread} open={help.panel} t={t} />
             <button
               type="button"
               className={s.amountsBtn}
@@ -330,7 +336,11 @@ export default function Shell({ page, setPage, onBack, backTo, children }) {
         </div>
       </div>
 
-      <PageTour page={page} open={tour.open} onClose={tour.close} />
+      {help.active && (
+        <Suspense fallback={null}>
+          <HelpHost help={help} page={page} navigate={navigate} country={helpCountry} settings={settings} />
+        </Suspense>
+      )}
       <QuickAdd open={!!quickAdd} defaultType={quickAdd || 'expense'} onClose={() => setQuickAdd(null)} onSaved={() => { setPushCheck(true); window.dispatchEvent(new Event('fos:quickadd-saved')) }} />
       {pushAsk && <Suspense fallback={null}><PushAsk open auto={pushAsk === 'auto'} source={pushAsk} onClose={() => setPushAsk(null)} onResult={pushQueue.settle} /></Suspense>}
       <UpdateNotice />

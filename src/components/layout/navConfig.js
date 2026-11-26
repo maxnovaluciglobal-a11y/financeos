@@ -81,7 +81,8 @@ export function navItemVisible(it, country, settings) {
 // 'more' no vive en NAV (es la página del TabBar que lista todo NAV agrupado, no un destino del árbol).
 // Las legales no viven en NAV (se abren desde el pie del Menú/sidebar).
 // investAsset: ficha del activo de Inversiones completo (pantalla empujada, F0).
-const EXTRA_LABELS = { more: 'nav.menuLabel', privacy: 'nav.legal.privacy', terms: 'nav.legal.terms', disclaimer: 'nav.legal.disclaimer', investAsset: 'invest.asset.label' }
+// help: centro de ayuda (pantalla empujada desde Más y desde el panel de ayuda).
+const EXTRA_LABELS = { more: 'nav.menuLabel', privacy: 'nav.legal.privacy', terms: 'nav.legal.terms', disclaimer: 'nav.legal.disclaimer', investAsset: 'invest.asset.label', help: 'help.center.title' }
 export function pageLabel(id) {
   if (EXTRA_LABELS[id]) return EXTRA_LABELS[id]
   return ALL_ITEMS.find(it => it.id === id)?.lb || id

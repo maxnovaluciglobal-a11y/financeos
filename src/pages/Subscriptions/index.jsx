@@ -254,7 +254,7 @@ export default function Subscriptions() {
       <PageHeader title={t('subs.title')} sub={t('subs.sub')} />
 
       {/* KPIs */}
-      <div className="kpi-row" style={{ marginBottom: 16 }}>
+      <div className="kpi-row" data-tour="subs-kpis" style={{ marginBottom: 16 }}>
         <KPI label={t('subs.kpi.monthly')} value={fmtMoneyFor(totalMonthly, currency, settings.language)} color="green" />
         <KPI label={t('subs.kpi.annual')} value={fmtMoneyFor(totalAnnual, currency, settings.language)} />
         <KPI label={t('subs.kpi.active')} value={activeSubs.length} />
@@ -286,7 +286,7 @@ export default function Subscriptions() {
       )}
 
       {/* ACCIONES */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div data-tour="subs-actions" style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
         <Btn variant="primary" onClick={() => setShowForm(true)}>{t('subs.addBtn')}</Btn>
         {['all', 'active', 'inactive'].map(f => (
           <Btn key={f} variant="ghost" size="sm" aria-pressed={filter === f} onClick={() => setFilter(f)}
@@ -334,7 +334,7 @@ export default function Subscriptions() {
       )}
 
       {/* LISTA / TABLA */}
-      <Card>
+      <Card data-tour="subs-list">
         <CardHeader title={t('subs.title')} />
         {displayed.length === 0 ? (
           <Empty

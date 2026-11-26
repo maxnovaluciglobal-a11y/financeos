@@ -47,6 +47,10 @@ import reglasEs from '../pages/Investments/reglas/strings.es.js'
 import reglasEn from '../pages/Investments/reglas/strings.en.js'
 import reglasPt from '../pages/Investments/reglas/strings.pt.js'
 import reglasDe from '../pages/Investments/reglas/strings.de.js'
+import helpEs from './help/strings.es.js'
+import helpEn from './help/strings.en.js'
+import helpPt from './help/strings.pt.js'
+import helpDe from './help/strings.de.js'
 
 export const SECTION_DICTS = {
   invest: { es: investEs, en: investEn, pt: investPt, de: investDe },
@@ -59,6 +63,7 @@ export const SECTION_DICTS = {
   proTrial: { es: proTrialEs, en: proTrialEn, pt: proTrialPt, de: proTrialDe },
   proTrialUi: { es: proTrialUiEs, en: proTrialUiEn, pt: proTrialUiPt, de: proTrialUiDe },
   reglas: { es: reglasEs, en: reglasEn, pt: reglasPt, de: reglasDe },
+  help: { es: helpEs, en: helpEn, pt: helpPt, de: helpDe },
 }
 
 const merged = (lang, main) => Object.assign({}, main, ...Object.values(SECTION_DICTS).map(d => d[lang]))

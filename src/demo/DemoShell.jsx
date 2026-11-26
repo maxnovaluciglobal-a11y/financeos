@@ -25,6 +25,7 @@ import { STORE_BUILD } from '../native/storeBuild.js'
 // Páginas lazy — mismo patrón que App.jsx para coherencia de chunks
 const Dashboard     = lazy(() => import('../pages/Dashboard/index.jsx'))
 const Panorama      = lazy(() => import('../pages/Panorama/index.jsx'))
+const HelpCenter    = lazy(() => import('../pages/Help/index.jsx'))
 // AND-5: fuera de la compilación de las tiendas (Inversiones está oculta allí).
 const Investments   = STORE_BUILD ? null : lazy(() => import('../pages/Investments/index.jsx'))
 const InvestAsset   = STORE_BUILD ? null : lazy(() => import('../pages/Investments/Asset.jsx'))
@@ -205,6 +206,7 @@ function DemoInner() {
       case 'import':        return <ImportCSV />
       case 'more':          return <More setPage={setPage} />
       case 'panorama':      return <Panorama setPage={setPage} />
+      case 'help':          return <HelpCenter setPage={setPage} />
       case 'investments':   return Investments ? <Investments setPage={setPage} /> : <Dashboard setPage={setPage} />
       case 'investAsset':   return InvestAsset ? <InvestAsset setPage={setPage} /> : <Dashboard setPage={setPage} />
       default:              return <Dashboard setPage={setPage}/>

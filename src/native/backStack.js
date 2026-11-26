@@ -48,6 +48,11 @@ export function handleBack() {
   return 'unhandled'
 }
 
+/** ¿Hay una hoja, diálogo o menú abierto? (la ayuda no pregunta encima de uno) */
+export function hasOpenDismissers() {
+  return dismissers.length > 0
+}
+
 /** Solo para tests. */
 export function _resetBackStack() {
   dismissers.length = 0

@@ -176,7 +176,7 @@ export default function Income({ setPage }) {
             <Btn variant="ghost" onClick={() => { setF({ source: '', amount: '', date: today(), category: 'Salario', recurrence: 'Único', notes: '' }); setErr('') }}>{t('income.form.clear')}</Btn>
           </div>
         </Card>
-        <Card>
+        <Card data-tour="inc-list">
           <CardHeader title={t('income.history', { n: filtered.length })} />
           {filtered.length === 0
             ? /* A9/V2: vacío con el patrón común y la acción como enlace (el

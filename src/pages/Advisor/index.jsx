@@ -481,7 +481,7 @@ export default function Advisor() {
       {!noData && (
         <>
           {/* Score general */}
-          <Card>
+          <Card data-tour="adv-score">
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <div style={{
                 width: 72, height: 72, borderRadius: '50%',
@@ -621,7 +621,7 @@ export default function Advisor() {
       )}
 
       {/* Notas del asesor — siempre visible */}
-      <Card>
+      <Card data-tour="adv-notes">
         <CardHeader title={t('adv.notesTitle')} />
         <AdvisorNotes notes={advisorNotes} onSave={saveNotes} />
       </Card>
@@ -633,7 +633,7 @@ export default function Advisor() {
       </Card>
 
       {/* Preview PDF + CTA */}
-      <div style={{border: 0,borderRadius:10,overflow:'hidden'}}>
+      <div data-tour="adv-pdf" style={{border: 0,borderRadius:10,overflow:'hidden'}}>
         {/* Preview mini del reporte */}
         <div style={{background:'var(--sur)',padding:'16px 20px',borderBottom:'0.5px solid var(--brd)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>

@@ -7,23 +7,24 @@
 // los recorridos por pantalla (PageTour.jsx).
 //
 // steps: [{ id, title, body }] — id = valor de data-tour, title/body = claves i18n.
-// Atrás / Siguiente / Listo, Esc cierra (useDialogA11y), el foco va a
-// "Siguiente" en cada paso y el texto del paso es aria-live. Con
-// prefers-reduced-motion el desplazamiento es instantáneo y sin transiciones.
+// Atrás / Siguiente / Listo y las flechas ← →; Esc cierra (useDialogA11y, que
+// escucha en document y atrapa Tab). El foco va al título de cada paso y "Paso
+// X de Y" se anuncia por aria-live. Si un objetivo desaparece a mitad del
+// recorrido, ese paso se saltea. En el teléfono la tarjeta va abajo (o arriba
+// si el objetivo está abajo), sin tapar el objetivo. Con prefers-reduced-motion
+// el desplazamiento es instantáneo y sin transiciones.
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useT } from '../../i18n/useT.js'
 import { useDialogA11y } from '../../hooks/useDialogA11y.js'
+import { targetEl, isVisible } from '../help/tourTargets.js'
 
 const PAD = 8          // aire alrededor del objetivo
 const CARD_W = 340
 const GAP = 12         // entre el objetivo y la tarjeta
 
-const targetEl = (id) => document.querySelector(`[data-tour="${id}"]`)
-function isVisible(el) {
-  if (!el) return false
-  const r = el.getBoundingClientRect()
-  return r.width > 0 && r.height > 0
-}
+const MOBILE_MAX = 700 // mismo corte que el resto de la app (barra inferior)
+const isMobile = () => typeof window !== 'undefined' && window.innerWidth <= MOBILE_MAX
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
@@ -49,7 +50,8 @@ function bringIntoView(el) {
   const r = el.getBoundingClientRect()
   const vh = window.innerHeight
   const topSafe = (document.querySelector('.demo-banner')?.getBoundingClientRect().bottom || 0) + 16
-  const bottomSafe = vh - 200 // espacio para la tarjeta del recorrido
+  // Espacio para la tarjeta: en el teléfono va abajo, a lo ancho.
+  const bottomSafe = vh - (isMobile() ? 240 : 200)
   if (r.top >= topSafe && r.bottom <= bottomSafe) return
   const behavior = prefersReducedMotion() ? 'auto' : 'smooth'
   const delta = r.top - topSafe
@@ -65,9 +67,10 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
   const [rect, setRect] = useState(null)
   const cardRef = useRef(null)
   const nextRef = useRef(null)
+  const titleRef = useRef(null)
 
   const close = useCallback(() => { onClose?.() }, [onClose])
-  useDialogA11y(open && !!steps?.length, close, cardRef, nextRef)
+  useDialogA11y(open && !!steps?.length, close, cardRef, titleRef)
 
   // Al abrir: espera a que la página (lazy) monte su primer objetivo y arma la lista
   useEffect(() => {
@@ -92,7 +95,12 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
   useLayoutEffect(() => {
     if (!step) return
     const el = targetEl(step.id)
-    if (!el) return
+    // El objetivo ya no está (se cerró una sección, cambió la vista): se saltea.
+    if (!isVisible(el)) {
+      if (i < steps.length - 1) setI(n => n + 1)
+      else close()
+      return
+    }
     bringIntoView(el)
     let raf = 0
     const measure = () => {
@@ -113,10 +121,25 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
       window.removeEventListener('scroll', measure, true)
       window.removeEventListener('resize', measure)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- i/steps/close solo importan cuando cambia el paso
   }, [step])
 
-  // Foco en "Siguiente" en cada paso
-  useEffect(() => { if (step) nextRef.current?.focus({ preventScroll: true }) }, [step])
+  // Foco en el título de cada paso (el lector lo lee entero)
+  useEffect(() => { if (step && rect) titleRef.current?.focus({ preventScroll: true }) }, [step, !!rect]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al cambiar de paso o al aparecer la tarjeta
+
+  // Flechas: → siguiente, ← anterior (fuera de campos de texto)
+  useEffect(() => {
+    if (!open || !steps?.length) return
+    const onKey = (e) => {
+      if (e.defaultPrevented || e.altKey || e.metaKey || e.ctrlKey) return
+      const el = e.target
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return
+      if (e.key === 'ArrowRight') { e.preventDefault(); setI(n => (n < steps.length - 1 ? n + 1 : n)) }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); setI(n => (n > 0 ? n - 1 : n)) }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, steps])
 
   if (!open || !steps?.length || !step || !rect) return null
 
@@ -126,15 +149,26 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
     top: rect.top - PAD, left: rect.left - PAD,
     width: rect.width + PAD * 2, height: rect.height + PAD * 2,
   }
-  // Tarjeta: debajo del objetivo si entra, si no arriba; centrada y dentro de la pantalla
-  const cardW = Math.min(CARD_W, vw - 32)
   const cardH = cardRef.current?.offsetHeight || 190
-  const below = hole.top + hole.height + GAP
-  const above = hole.top - GAP - cardH
-  const top = below + cardH <= vh - 16 ? below : Math.max(16, above)
-  const left = Math.min(Math.max(16, rect.left + rect.width / 2 - cardW / 2), vw - cardW - 16)
+  let cardW, top, left
+  if (vw <= MOBILE_MAX) {
+    // Teléfono: a lo ancho, abajo; si el objetivo cae en esa franja, arriba.
+    cardW = vw - 24
+    left = 12
+    const bottomTop = vh - cardH - 12
+    top = hole.top + hole.height > bottomTop - GAP ? 12 : bottomTop
+  } else {
+    // Escritorio: debajo del objetivo si entra, si no arriba; centrada y dentro de la pantalla
+    cardW = Math.min(CARD_W, vw - 32)
+    const below = hole.top + hole.height + GAP
+    const above = hole.top - GAP - cardH
+    top = below + cardH <= vh - 16 ? below : Math.max(16, above)
+    left = Math.min(Math.max(16, rect.left + rect.width / 2 - cardW / 2), vw - cardW - 16)
+  }
+  const count = t('tour.count', { n: i + 1, total: steps.length })
 
-  return (
+  // En un portal a <body>: un ancestro con transform o backdrop-filter recortaría el fixed.
+  return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 900 }}>
       {/* Capa que bloquea la interacción con la página mientras dura el recorrido */}
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0 }} />
@@ -146,7 +180,7 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
       }} />
       <div
         ref={cardRef}
-        role="dialog" aria-modal="true" aria-labelledby={labelledBy}
+        role="dialog" aria-modal="true" aria-labelledby={labelledBy} aria-describedby={`${labelledBy}-body`}
         className="demo-tour__card"
         style={{
           position: 'absolute', top, left, width: cardW,
@@ -154,14 +188,15 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
           borderRadius: 'var(--rxl)', boxShadow: 'var(--sh-3)', padding: '14px 16px 12px',
         }}
       >
-        <div aria-live="polite">
-          <div className="num" style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)', marginBottom: 6 }}>
-            {t('tour.count', { n: i + 1, total: steps.length })}
+        <span className="sr-only" role="status" aria-live="polite">{count}</span>
+        <div>
+          <div className="num" aria-hidden="true" style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 'var(--t-footnote)', color: 'var(--th)', marginBottom: 6 }}>
+            {count}
           </div>
-          <h2 id={labelledBy} style={{ margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 'var(--t-headline)', fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)' }}>
+          <h2 id={labelledBy} ref={titleRef} tabIndex={-1} style={{ margin: '0 0 4px', fontFamily: 'var(--display)', fontSize: 'var(--t-headline)', fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--tx)', outline: 'none' }}>
             {t(step.title)}
           </h2>
-          <p style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 'var(--t-body)', lineHeight: 1.5, color: 'var(--tm)' }}>{t(step.body)}</p>
+          <p id={`${labelledBy}-body`} style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 'var(--t-body)', lineHeight: 1.5, color: 'var(--tm)' }}>{t(step.body)}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 12 }}>
           <button type="button" className="fos-link" onClick={close} style={{ marginLeft: -4 }}>{t('tour.exit')}</button>
@@ -177,5 +212,7 @@ export default function Tour({ open, steps: allSteps, onClose, labelledBy = 'fos
         </div>
       </div>
     </div>
+    ,
+    document.body,
   )
 }
