@@ -7,7 +7,7 @@ export default {
 
   'hlp.g.nav': 'Wie der Bereich aufgebaut ist',
   'hlp.q.sections': 'Was steht in welchem Tab?',
-  'hlp.a.sections': 'Investments hat fünf Tabs.\n\nÜbersicht: was Ihr Portfolio heute wert ist, wie es sich verändert hat und das Marktumfeld. Portfolio: Ihre Positionen, Bewegungen, Dividenden und Ziele. Verfolgt: Werte, die Sie verfolgen, ohne sie zu besitzen, Ihre Preisalarme, Entdecken und Vergleichen. Planen: der Rechner, die Einzahlungen und Ihre gespeicherten Pläne. Markt: Indizes, Sektoren, Wechselkurse und Nachrichten.',
+  'hlp.a.sections': "Investments hat fünf Tabs.\n\nÜbersicht: der Wert deines Portfolios heute, deine Positionen, wie er sich verändert hat und das Marktumfeld. Portfolio: deine Positionen, Bewegungen, Dividenden und Ziele; tippe auf eine Position, um ihre Seite zu öffnen. Verfolgt: Meine Liste, mit dem Preisalarm jedes Werts und den Schaltflächen zum Folgen, für einen neuen Alarm und zum Vergleichen; und Entdecken. Planen: Deine Tranchen (mit dem Rechner, wie viel du verlieren kannst, unten) und Einzahlungen (mit deinen gespeicherten Plänen). Markt: Indizes, Unternehmensergebnisse, Nachrichten und Wechselkurse.",
   'hlp.q.views': 'Was ändert sich zwischen der Kernansicht und der Vollansicht?',
   'hlp.a.views': 'Die Kernansicht zeigt das Wesentliche mit einer einfachen Kurslinie. Die Vollansicht zeigt zusätzlich Kerzen, Indikatoren (Durchschnitte, RSI, MACD und Bollinger-Bänder), Stops und das Marktband.\n\nSie wechseln sie mit dem Schalter „Vollansicht“ unter den Tabs. Ein Wechsel der Ansicht löscht nichts.',
   'hlp.q.asset': 'Wie öffne ich die Seite eines Werts?',

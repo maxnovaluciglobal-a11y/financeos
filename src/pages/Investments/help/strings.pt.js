@@ -7,7 +7,7 @@ export default {
 
   'hlp.g.nav': 'Como ela está organizada',
   'hlp.q.sections': 'O que há em cada aba?',
-  'hlp.a.sections': 'Investimentos tem cinco abas.\n\nResumo: quanto vale sua carteira hoje, como ela mudou e o contexto do mercado. Carteira: suas posições, movimentos, dividendos e metas. Seguindo: os ativos que você segue sem tê-los, seus alertas de preço, Descobrir e Comparar. Planejar: a calculadora, os aportes e seus planos salvos. Mercado: índices, setores, câmbio e notícias.',
+  'hlp.a.sections': "Investimentos tem cinco abas.\n\nResumo: o valor da sua carteira hoje, suas posições, como mudou e o contexto do mercado. Carteira: suas posições, movimentações, dividendos e objetivos; toque numa posição para abrir a ficha. Seguindo: Minha lista, com o alerta de preço de cada ativo e os botões para seguir, criar um alerta e comparar; e Descobrir. Planejar: Suas faixas (com a calculadora de quanto você pode perder no rodapé) e Aportes (com seus planos salvos). Mercado: índices, resultados de empresas, notícias e câmbio.",
   'hlp.q.views': 'O que muda entre a visão essencial e a completa?',
   'hlp.a.views': 'A visão essencial mostra o básico, com uma linha simples de preço. A visão completa acrescenta velas, indicadores (médias, RSI, MACD e bandas de Bollinger), o stop e a faixa de mercado.\n\nMude com o botão "Visão completa", abaixo das abas. Trocar de visão não apaga nada.',
   'hlp.q.asset': 'Como abro a página de um ativo?',

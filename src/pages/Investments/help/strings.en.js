@@ -7,7 +7,7 @@ export default {
 
   'hlp.g.nav': 'How it is organized',
   'hlp.q.sections': 'What is in each tab?',
-  'hlp.a.sections': 'Investments has five tabs.\n\nSummary: what your portfolio is worth today, how it changed and the market context. Portfolio: your holdings, activity, dividends and targets. Following: assets you follow without owning them, your price alerts, Discover and Compare. Plan: the calculator, contributions and your saved plans. Market: indexes, sectors, exchange rates and news.',
+  'hlp.a.sections': "Investments has five tabs.\n\nSummary: your portfolio value today, your positions, how it changed and the market context. Portfolio: your positions, transactions, dividends and targets; tap a position to open its page. Following: My list, with each asset's price alert and the buttons to follow, create an alert and compare; and Discover. Plan: Your tranches (with the how-much-could-I-lose calculator at the bottom) and Contributions (with your saved plans). Market: indices, company earnings, news and exchange rates.",
   'hlp.q.views': 'What changes between the essential view and the full view?',
   'hlp.a.views': 'The essential view shows the basics, with a simple price line. The full view adds candles, indicators (moving averages, RSI, MACD and Bollinger bands), stops and the market ticker.\n\nSwitch it with the "Full view" toggle below the tabs. Changing the view deletes nothing.',
   'hlp.q.asset': 'How do I open an asset page?',

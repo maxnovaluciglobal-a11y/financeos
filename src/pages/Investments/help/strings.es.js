@@ -11,7 +11,7 @@ export default {
 
   'hlp.g.nav': 'Cómo está ordenada',
   'hlp.q.sections': '¿Qué hay en cada pestaña?',
-  'hlp.a.sections': 'Inversiones tiene cinco pestañas.\n\nResumen: el valor de tu portafolio hoy, cómo cambió y el contexto del mercado. Portafolio: tus posiciones, movimientos, dividendos y objetivos. Siguiendo: los activos que sigues sin tenerlos, tus alertas de precio, Descubrir y Comparar. Planificar: la calculadora, los aportes y tus planes guardados. Mercado: índices, sectores, tipos de cambio y noticias.',
+  'hlp.a.sections': "Inversiones tiene cinco pestañas.\n\nResumen: el valor de tu portafolio hoy, tus posiciones, cómo cambió y el contexto del mercado. Portafolio: tus posiciones, movimientos, dividendos y objetivos; toca una posición para abrir su ficha. Siguiendo: Mi lista, con la alerta de precio de cada activo y los botones para seguir, crear una alerta y comparar; y Descubrir. Planificar: Tus tramos (con la calculadora de cuánto puedes perder al pie) y Aportes (con tus planes guardados). Mercado: índices, resultados de empresas, noticias y tipos de cambio.",
   'hlp.q.views': '¿Qué cambia entre la vista esencial y la completa?',
   'hlp.a.views': 'La vista esencial muestra lo básico, con una línea simple de precio. La vista completa suma velas, indicadores (medias, RSI, MACD y bandas de Bollinger), el stop y la cinta de mercado.\n\nSe cambia con el interruptor "Vista completa", debajo de las pestañas. Cambiar de vista no borra nada.',
   'hlp.q.asset': '¿Cómo abro la ficha de un activo?',
