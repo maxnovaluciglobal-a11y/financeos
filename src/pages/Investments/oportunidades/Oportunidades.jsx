@@ -27,14 +27,14 @@ import { moneyLocale } from '../../../utils/index.js'
 import { num } from '../../../utils/investTrade.js'
 import { logRejection } from '../../../utils/errorLog.js'
 import { segKeyTarget } from '../planificar/Aportes.jsx'
-import { LADDER_KEYS, DEFAULT_LADDER, DEFAULT_RSI_RULE, driftMath, planCapital, uninvested } from './capital.js'
+import { LADDER_KEYS, DEFAULT_LADDER, driftMath, planCapital, uninvested } from './capital.js'
+import { readLadder, readRsiRule, writeLadder, writeRsiRule } from '../reglas/rulePrefs.js'
 import { useReadings } from './useReadings.js'
 import { useOppT } from './dict.js'
 import TramosTable, { pctIn } from './TramosTable.jsx'
 import p from '../planificar/planificar.module.css'
 import s from './oportunidades.module.css'
 
-const LADDER_PREF = 'fos_invest_opp_ladder'
 const safe = {
   get: (k) => { try { return localStorage.getItem(k) } catch { return null } },
   set: (k, v) => { try { localStorage.setItem(k, v) } catch { /* modo privado: vale en esta visita */ } },
@@ -95,11 +95,14 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
   const [src, setSrc] = useState(arriveUsd ? 'arrived' : null)
   const [method, setMethod] = useState(() => (hasTargets ? 'targets' : 'equal'))
   const [manual, setManual] = useState(null) // [{ t, p }] al editar a mano
-  const [lad, setLadState] = useState(() => { const v = safe.get(LADDER_PREF); return LADDERS[v] ? v : DEFAULT_LADDER })
-  const [rsiRule, setRsiRule] = useState(DEFAULT_RSI_RULE)
+  // La escalera y la regla de RSI se recuerdan en el dispositivo (sin tickers):
+  // "Tus reglas hoy" en Resumen las lee para contar tus tramos igual que aquí.
+  const [lad, setLadState] = useState(readLadder)
+  const [rsiRule, setRsiState] = useState(readRsiRule)
+  const setRsiRule = (on) => { setRsiState(on); writeRsiRule(on) }
   const [setOpen, setSetOpen] = useState(false)
   const capRef = useRef(null)
-  const setLad = (v) => { setLadState(v); safe.set(LADDER_PREF, v) }
+  const setLad = (v) => { setLadState(v); writeLadder(v) }
 
   useEffect(() => {
     if (focus === 'split' && capRef.current && typeof capRef.current.scrollIntoView === 'function') {
