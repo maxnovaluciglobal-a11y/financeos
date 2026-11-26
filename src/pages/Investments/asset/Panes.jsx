@@ -32,33 +32,49 @@ function readingValue(r) {
 }
 export function IndicatorsPane({ ticker, ccy, score, phase, onRetry }) {
   const { t } = useAssetT()
+  const id = useId()
+  const [explain, setExplain] = useState(false)
   if (phase === 'loading' || phase === 'idle') return <Loading text={t('asset.ind.loading')} />
   // Falla de carga ≠ falta de datos: se avisa y se ofrece reintentar.
   if (phase === 'error') return <Retry text={t('asset.ind.error', { t: ticker })} onRetry={onRetry} />
   if (!score) return <p className={s.note}>{t('asset.ind.none', { t: ticker })}</p>
+  const rows = score.readings.map(r => {
+    const vars = r.key === 'high52' ? { pct: fmtPct(r.vars.pct, { decimals: 0 }) }
+      : r.key === 'atr' ? { pct: fmtPct(r.vars.pct, { decimals: 1 }), amt: fmtPx(r.vars.amt, ccy, { decimals: 2 }) } : {}
+    const value = r.key === 'macd' ? t(r.value.v === 'above' ? 'asset.macd.above' : 'asset.macd.below') : readingValue(r)
+    return { r, vars, value }
+  })
+  // Grilla como Fundamentales (Walter, 26-nov-2026): nombre, valor y una lectura
+  // corta con un punto de color; las explicaciones largas, plegadas debajo.
   return (
     <div className={s.pane}>
       <div className={s.trendRow}>
         {score.trend && <span className={s.tag} data-tone={score.trend === 'UP' ? 'pos' : score.trend === 'DOWN' ? 'neg' : 'neu'}>{t(`asset.trend.${score.trend}`)}</span>}
         <span className={s.note}>{t('asset.ind.basis')}</span>
       </div>
-      <ul className={s.readings}>
-        {score.readings.map(r => {
-          const vars = r.key === 'high52' ? { pct: fmtPct(r.vars.pct, { decimals: 0 }) }
-            : r.key === 'atr' ? { pct: fmtPct(r.vars.pct, { decimals: 1 }), amt: fmtPx(r.vars.amt, ccy, { decimals: 2 }) } : {}
-          const value = r.key === 'macd' ? t(r.value.v === 'above' ? 'asset.macd.above' : 'asset.macd.below') : readingValue(r)
-          return (
+      <dl className={s.metrics}>
+        {rows.map(({ r, vars, value }) => (
+          <div key={r.key} className={s.metric}>
+            <dt>{t(`asset.rd.${r.key}.label`)}</dt>
+            <dd className={s.indValue} data-tone={r.tone}>{value}</dd>
+            <dd className={s.indShort}><span className={s.indDot} data-tone={r.tone} aria-hidden="true" />{t(`asset.rd.${r.key}.${r.reading}.short`, vars)}</dd>
+          </div>
+        ))}
+      </dl>
+      <button type="button" className={s.indToggle} aria-expanded={explain} aria-controls={`${id}-explain`} onClick={() => setExplain(v => !v)}>
+        {t(explain ? 'asset.ind.explainHide' : 'asset.ind.explain')}
+      </button>
+      {explain && (
+        <ul id={`${id}-explain`} className={s.readings}>
+          {rows.map(({ r, vars }) => (
             <li key={r.key} className={s.reading}>
-              <div className={s.readingHead}>
-                <span className={s.readingLabel}>{t(`asset.rd.${r.key}.label`)}</span>
-                <span className={s.readingValue} data-tone={r.tone}>{value}</span>
-              </div>
+              <div className={s.readingHead}><span className={s.readingLabel}>{t(`asset.rd.${r.key}.label`)}</span></div>
               <p className={s.readingRange}>{t(`asset.rd.${r.key}.range`)}</p>
               <p className={s.readingText}>{t(`asset.rd.${r.key}.${r.reading}`, vars)}</p>
             </li>
-          )
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
       <p className={s.note}>{t('asset.ind.disclaimer')}</p>
     </div>
   )

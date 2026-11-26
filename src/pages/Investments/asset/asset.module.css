@@ -196,3 +196,14 @@
 .menuItem small { font-size: var(--t-footnote); font-weight: 400; color: var(--th); }
 .menuItem:disabled { opacity: .55; cursor: not-allowed; }
 .menuItem:focus-visible { outline: 2px solid var(--focus, var(--color-focus, var(--tx))); outline-offset: 2px; }
+
+/* Indicadores en grilla (26-nov-2026): valor con su tono y lectura corta con punto. */
+.indValue { font-variant-numeric: tabular-nums; }
+.metric dd.indValue[data-tone="pos"] { color: var(--pos); }
+.metric dd.indValue[data-tone="neg"] { color: var(--neg); }
+.metric dd.indShort { display: flex; gap: 6px; align-items: baseline; margin-top: 2px; font-size: var(--t-caption); line-height: var(--t-caption-lh); font-weight: 500; color: var(--th); }
+.indDot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--th); transform: translateY(-1px); }
+.indDot[data-tone="pos"] { background: var(--pos); }
+.indDot[data-tone="neg"] { background: var(--neg); }
+.indDot[data-tone="warn"] { background: var(--warn); }
+.indToggle { display: inline-flex; align-items: center; min-height: 44px; margin: 6px 0 0; padding: 0; border: 0; background: none; color: var(--tx); font: inherit; font-size: var(--t-subhead); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
