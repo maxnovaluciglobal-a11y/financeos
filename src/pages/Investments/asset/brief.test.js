@@ -40,7 +40,7 @@ describe('Esta empresa en 30 segundos', () => {
   })
   it('con fundamentales y un año de precios: qué hace, tamaño, dividendos, el año y el riesgo', () => {
     const fund = { phase: 'ready', data: { source: 'fmp', description: 'Apple Inc. designs and sells phones and computers. Second sentence.', sector: 'Technology', marketCap: 3.4e12, dividendYield: 0.005 } }
-    const out = text(renderToStaticMarkup(h(Brief, { ticker: 'AAPL', quote: null, fund, rows: rows(), rowsPhase: 'ready', type: 'Stock', price: null, now: NOW })))
+    const out = text(renderToStaticMarkup(h(Brief, { ticker: 'AAPL', quote: null, fund, rows: rows(), rowsPhase: 'ready', type: 'Stock', price: null, now: NOW, initialOpen: true })))
     for (const k of ['Esta empresa en 30 segundos', 'Qué hace', 'Apple Inc. designs and sells phones and computers.', 'Rubro: Tecnología', 'Muy grande', '3,4 billones', 'Paga', 'En el año', 'Riesgo']) expect(out, k).toContain(k)
     expect(out).not.toContain('Second sentence')
     expect(out).toMatch(/(Subió|Bajó) .+ Desde el último cierre de 2025/)
@@ -54,6 +54,18 @@ describe('Esta empresa en 30 segundos', () => {
     const raw = text(renderToStaticMarkup(h(Brief, { ticker: 'XX', quote: null, fund: { phase: 'ready', data: { source: 'fmp', sector: 'Technology', industry: 'Consumer Electronics' } }, rows: null, rowsPhase: 'ready', type: 'Stock', now: NOW })))
     expect(raw).toContain('Rubro: Tecnología · Consumer Electronics')
     expect(raw).toContain(es['asset.brief.sourceLang'])
+  })
+  it('abre recortado: 2 datos y "Ver más" (aria-expanded) que despliega el resto', () => {
+    const fund = { phase: 'ready', data: { source: 'fmp', description: 'Apple Inc. designs and sells phones and computers.', sector: 'Technology', marketCap: 3.4e12, dividendYield: 0.005 } }
+    const html = renderToStaticMarkup(h(Brief, { ticker: 'AAPL', quote: null, fund, rows: rows(), rowsPhase: 'ready', type: 'Stock', price: null, now: NOW }))
+    const out = text(html)
+    expect(out).toContain('Muy grande')
+    expect(out).toContain('Paga')
+    expect(out).not.toContain('En el año')
+    expect(out).not.toContain(es['asset.brief.source'])
+    expect(html).toMatch(/aria-expanded="false"[^>]*>Ver más</)
+    const open = renderToStaticMarkup(h(Brief, { ticker: 'AAPL', quote: null, fund, rows: rows(), rowsPhase: 'ready', type: 'Stock', price: null, now: NOW, initialOpen: true }))
+    expect(open).toMatch(/aria-expanded="true"[^>]*>Ver menos</)
   })
   it('tamaño en palabras que sirven para empresa y para fondo', () => {
     for (const k of ['mid', 'small', 'micro']) expect(es[`asset.brief.size.${k}`]).toMatch(/o$/)
@@ -102,5 +114,19 @@ describe('Mi posición en la vista esencial', () => {
     expect(ess).not.toContain(es['asset.mine.stopRisk'])
     const full = text(renderToStaticMarkup(h(MinePane, { ...base, showStop: true })))
     expect(full).toContain(es['asset.mine.stopRisk'])
+  })
+  it('trae lo que mostraba la fila de Portafolio: invertido, efecto del cambio, nota, Editar y Eliminar', () => {
+    const lots = [{ id: 1, t: 'AAPL', sh: 2, cost: 150, stop: 180, fxCost: 950, note: 'Compra de prueba' }]
+    const html = renderToStaticMarkup(h(MinePane, { ...base, lots, weight: { phase: 'ready', data: { weight: 0.1, valueUsd: 400, fxEffectUsd: -12 } }, onEdit: () => {}, onDelete: () => {} }))
+    const out = text(html)
+    for (const k of [es['asset.mine.cost'], es['asset.mine.fxEffect'], es['asset.mine.note'], 'Compra de prueba', es['asset.act.editPos'], es['asset.mine.delete']]) expect(out, k).toContain(k)
+    expect(out).toContain('US$300') // invertido: 2 × 150
+  })
+  it('varios lotes: cada uno con Editar y Eliminar con nombre propio', () => {
+    const lots = [{ id: 1, t: 'AAPL', sh: 2, cost: 150 }, { id: 2, t: 'AAPL', sh: 1, cost: 180 }]
+    const html = renderToStaticMarkup(h(MinePane, { ...base, lots, onEdit: () => {}, onDelete: () => {} }))
+    expect(html).toContain('aria-label="Editar el lote 2 de AAPL"')
+    expect(html).toContain('aria-label="Eliminar el lote 1 de AAPL"')
+    expect(html).not.toContain(es['asset.mine.delete'])
   })
 })

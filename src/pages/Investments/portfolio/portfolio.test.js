@@ -256,30 +256,57 @@ describe('pantalla Posiciones', () => {
     const fmt = makeFmt({ disp: { ccy: 'USD', rate: 1 }, currency: 'USD', language: 'es' })
     return renderToStaticMarkup(h(Positions, { pb, fmt, disp: { ccy: 'USD', rate: 1 }, demo, t, actions, targets: null, view }))
   }
-  it('vista esencial: Depositado y Ganancia (o Pérdida) primero, como en Resumen, sin riesgo al stop ni capital de referencia', () => {
+  it('vista esencial: sin "Depositado frente a ganancia" (queda en Resumen), sin riesgo al stop ni capital de referencia', () => {
     const html = render(false, 'esencial')
-    // Mismas palabras que Resumen (25-nov-2026): con el libro, "Depositado"; sin él, "Pagado por tus posiciones".
-    const put = Math.max(html.indexOf('Depositado'), html.indexOf('Pagado por tus posiciones'))
-    expect(put).toBeGreaterThan(-1)
-    expect(put).toBeLessThan(html.indexOf('Resumen del portafolio'))
-    expect(html).toMatch(/Ganancia|Pérdida/)
-    expect(html).not.toMatch(/Pusiste|El mercado (sumó|restó)/)
+    expect(html).not.toMatch(/Depositado|Pagado por tus posiciones/)
     expect(html).not.toContain('Riesgo al stop')
     expect(html).toContain('Supera tu límite de 25 %') // el peso sigue: no es jerga
+    // El resultado no se pierde: lo dice el total de la lista.
+    expect(html).toContain('Resultado (si vendieras hoy)')
+  })
+  it('orden: banda con la moneda, la lista, el total, Agregar y después la asignación', () => {
+    const html = render(false, 'esencial')
+    const at = (k) => html.indexOf(k)
+    expect(at('Cifras en USD')).toBeGreaterThan(-1)
+    expect(at('Cifras en USD')).toBeLessThan(at('Tus posiciones'))
+    expect(at('Mayor peso')).toBeLessThan(at('Tus posiciones'))
+    expect(at('Tus posiciones')).toBeLessThan(at('>Total<'))
+    expect(at('>Total<')).toBeLessThan(at('>Agregar<'))
+    expect(at('>Agregar<')).toBeLessThan(at('Asignación por tipo'))
+    expect(at('Asignación por tipo')).toBeLessThan(at('Datos y licencias'))
+  })
+  it('cada fila es un botón que abre la ficha en Mi posición, sin desplegable', () => {
+    const calls = []
+    const { t } = ptFor('es')
+    const pb = fakeBook()
+    const fmt = makeFmt({ disp: { ccy: 'USD', rate: 1 }, currency: 'USD', language: 'es' })
+    const acts = new Proxy({ dispCcy: 'USD', openAsset: (...a) => calls.push(a) }, { get: (o, k) => (k in o ? o[k] : () => {}) })
+    const html = renderToStaticMarkup(h(Positions, { pb, fmt, disp: { ccy: 'USD', rate: 1 }, demo: false, t, actions: acts, targets: null, view: 'completa' }))
+    expect(html).toContain('aria-label="Abrir la ficha de AAPL"')
+    expect(html).toContain('aria-label="Abrir la ficha de BTC-USD"')
+    expect(html).toContain('lucide-chevron-right')
+    expect(html).not.toContain('aria-expanded')
+    expect(html).not.toContain('Ver ficha')
+    // Editar, Eliminar y el stop pasaron a la ficha.
+    expect(html).not.toMatch(/>Editar posición<|>Eliminar<|Quitar stop/)
+    // El botón llama a openAsset con la pestaña Mi posición.
+    const src = readFileSync(join(DIR, 'Positions.jsx'), 'utf8')
+    expect(src).toContain("actions.openAsset(r.t, { tab: 'mine' })")
   })
   it('banda, filas con flecha y texto, fuentes con atribución de CoinGecko', () => {
     const html = render(false)
     expect(html).toContain('Riesgo al stop')
-    expect(html).toContain('aria-expanded="false"')
     expect(html).toContain('Precios: Yahoo Finance, CoinGecko')
     expect(html).toContain('Powered by CoinGecko API')
     expect(html).toContain('Datos y licencias')
     expect(html).toContain('no instrucciones de compra o venta')
     expect(html).toContain('Supera tu límite de 25 %') // BTC pesa 6.000 de 7.200
   })
-  it('en el ejemplo no se atribuyen fuentes y dice que no se guarda', () => {
+  it('en el ejemplo no se atribuyen fuentes; un solo aviso corto de ejemplo (en PortfolioTab)', () => {
     const html = render(true)
     expect(html).not.toContain('Precios: Yahoo')
-    expect(html).toContain('ejemplo, no se guarda')
+    expect(ES['pf.sampleShort'].length).toBeLessThan(40)
+    const tab = readFileSync(join(DIR, 'PortfolioTab.jsx'), 'utf8')
+    expect(tab.match(/className=\{s\.sample(Short)?\}/g)).toHaveLength(1)
   })
 })

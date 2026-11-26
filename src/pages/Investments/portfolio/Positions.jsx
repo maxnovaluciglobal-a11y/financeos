@@ -1,14 +1,17 @@
 // src/pages/Investments/portfolio/Positions.jsx — Portafolio › Posiciones (F1).
-// Banda de resumen (riesgo al stop, valor, resultado y mayor peso), avisos de
-// moneda y de capital, barra de acciones (Agregar, Exportar, moneda de las
-// cifras) y una fila por posición que se despliega con su detalle, el stop
-// editable y las acciones. Las filas suman el total (tipo de cambio de compra,
-// utils/investPositions.js). Dirección siempre con flecha + signo + texto.
-// Arriba de todo, "Depositado / Ganancia" (esencial/PutSummary). En la
-// vista esencial (utils/investView.js) no se muestran el riesgo al stop, el
-// stop editable ni el capital de referencia: siguen en Vista completa.
+// Orden (rediseño del 26-nov-2026, propuesta 5): una banda compacta (valor,
+// hoy, mayor peso; en Vista completa también riesgo al stop y resultado) con la
+// moneda de las cifras al lado, "Tus posiciones", el total, la barra Agregar /
+// Exportar / Moneda, la asignación por tipo y al pie las notas y avisos.
+// Cada fila es un botón que abre la ficha del activo en "Mi posición": ahí
+// están el detalle, el stop editable, Registrar operación, Editar y Eliminar
+// (antes un desplegable en la fila). "Depositado frente a ganancia" queda solo
+// en Resumen. Las filas suman el total (tipo de cambio de compra,
+// utils/investPositions.js). Dirección siempre con flecha + signo + texto. En
+// la vista esencial (utils/investView.js) no se muestran el riesgo al stop ni el
+// capital de referencia: siguen en Vista completa.
 import { useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, Equal, Download, Plus, RefreshCw, Upload, FileJson, ListPlus, PlusCircle } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronRight, Equal, Download, Plus, RefreshCw, Upload, FileJson, ListPlus, PlusCircle } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
 import SheetSelect from '../../../components/ui/SheetSelect.jsx'
 import { DISPLAY_CCY } from '../../../utils/investValuation.js'
@@ -18,8 +21,6 @@ import { capitalLine, priceSources, riskShare } from './view.js'
 import { parseInput, toneOf } from './format.js'
 import { ChooserSheet } from './sheets.jsx'
 import Sources from './Sources.jsx'
-import PutSummary from '../esencial/PutSummary.jsx'
-import { putAndGain } from '../../../utils/investEsencial.js'
 import { shows } from '../../../utils/investView.js'
 import s from './portfolio.module.css'
 
@@ -30,42 +31,15 @@ export function Dir({ n, size = 14 }) {
   return <Ic size={size} strokeWidth={2.2} aria-hidden="true" />
 }
 
-function StopEditor({ row, onSave, t, fmt }) {
-  const [v, setV] = useState(row.stop != null ? String(row.stop) : '')
-  const [err, setErr] = useState('')
-  const [busy, setBusy] = useState(false)
-  const id = `pf-stop-${row.id}`
-  async function save(value) {
-    const n = value === '' ? null : parseInput(value)
-    if (n != null && !(n > 0)) { setErr(t('pf.err.stop_invalid')); return }
-    setErr(''); setBusy(true)
-    const r = await onSave(row, n)
-    setBusy(false)
-    if (!r.ok) setV(row.stop != null ? String(row.stop) : '')
-  }
-  return (
-    <form className={s.inline} onSubmit={(e) => { e.preventDefault(); save(v) }} noValidate>
-      <div className={s.field}>
-        <label htmlFor={id} className={s.fieldLabel}>{t('pf.f.stop', { ccy: row.ccy || 'USD' })}</label>
-        <input id={id} className={s.input} value={v} onChange={(e) => { setV(e.target.value); setErr('') }} inputMode="decimal" autoComplete="off"
-          placeholder={t('pf.pos.noStop')} aria-invalid={err ? 'true' : undefined} aria-describedby={err ? `${id}-err` : `${id}-hint`} />
-        {err ? <p id={`${id}-err`} className={s.error} role="alert">{err}</p>
-          : <p id={`${id}-hint`} className={s.hint}>{t('pf.pos.stopRef', { price: fmt.native((row.price ?? row.avgCost) * 0.92, row.ccy) })}</p>}
-      </div>
-      <button type="submit" className={s.btn} disabled={busy}>{t('pf.save')}</button>
-      {row.stop != null && <button type="button" className={s.btn} disabled={busy} onClick={() => { setV(''); save('') }}>{t('pf.pos.clearStop')}</button>}
-    </form>
-  )
-}
-
-function PositionRow({ r, open, onToggle, fmt, t, actions, stopColumn, limit, showStop = true }) {
-  const panelId = `pf-row-${r.id}`
+// Una fila = un botón que abre la ficha en "Mi posición" (un toque).
+function PositionRow({ r, fmt, t, actions, limit }) {
+  const id = `pf-row-${String(r.id ?? r.t).replace(/[^A-Za-z0-9_-]/g, '_')}`
   const excluded = r.status === 'nofx'
   return (
     <li className={s.item}>
-      <button type="button" className={s.rowHead} aria-expanded={open} aria-controls={panelId} onClick={onToggle}>
+      <button type="button" className={`${s.rowHead} ${s.rowOpen}`} aria-label={t('pf.pos.openA', { t: r.t })} aria-describedby={`${id}-m ${id}-r`} onClick={() => actions.openAsset(r.t, { tab: 'mine' })}>
         <span className={s.badge} aria-hidden="true">{r.t.replace(/-USD$/, '').slice(0, 4)}</span>
-        <span className={s.rowMain}>
+        <span className={s.rowMain} id={`${id}-m`}>
           <span className={s.rowTitle}>{r.t}{r.name ? <span className={s.rowSub}> · {r.name}</span> : null}</span>
           <span className={s.rowSub}>
             {t(`pf.type.${r.type}`)} · {t('pf.pos.units', { n: fmt.units(r.sh) })}
@@ -73,7 +47,7 @@ function PositionRow({ r, open, onToggle, fmt, t, actions, stopColumn, limit, sh
           </span>
           {r.overLimit && <span className={s.flag}>{t('pf.pos.overLimit', { limit })}</span>}
         </span>
-        <span className={s.rowRight}>
+        <span className={s.rowRight} id={`${id}-r`}>
           <span className={s.rowValue}><Money>{excluded ? t('pf.noFx') : fmt.money(r.valueUsd)}</Money></span>
           {excluded ? <span className={s.rowMeta}>{t('pf.pos.notCounted')}</span>
             : r.status === 'cost' ? <span className={s.rowMeta}>{t('pf.pos.atCost')}</span>
@@ -83,38 +57,8 @@ function PositionRow({ r, open, onToggle, fmt, t, actions, stopColumn, limit, sh
               </span>
             )}
         </span>
+        <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className={s.chev} />
       </button>
-      {open && (
-        <div id={panelId} className={s.panel}>
-          <dl className={s.grid}>
-            <dt>{t('pf.d.units')}</dt><dd>{fmt.units(r.sh)}</dd>
-            <dt>{t('pf.d.entry')}</dt><dd><Money>{fmt.native(r.avgCost, r.ccy)}</Money></dd>
-            <dt>{t('pf.d.price')}</dt><dd><Money>{r.price != null ? fmt.native(r.price, r.ccy) : t('pf.pos.noPrice')}</Money></dd>
-            {r.changePct != null && <><dt>{t('pf.d.today')}</dt><dd className={s.tone} data-tone={toneOf(r.changePct)}><Dir n={r.changePct} size={12} /> {fmt.pct(r.changePct, { signed: true, decimals: 2 })}</dd></>}
-            {!excluded && <>
-              <dt>{t('pf.d.value', { ccy: fmt.dccy })}</dt><dd><Money>{fmt.money(r.valueUsd)}</Money></dd>
-              <dt>{t('pf.d.cost', { ccy: fmt.dccy })}</dt><dd><Money>{fmt.money(r.costUsd)}</Money></dd>
-              <dt>{t('pf.d.pl', { ccy: fmt.dccy })}</dt>
-              <dd className={s.tone} data-tone={toneOf(r.plUsd)}><Dir n={r.plUsd} size={12} /> <Money>{fmt.money(r.plUsd, { signed: true })}</Money></dd>
-              {r.fxEffectUsd ? <><dt>{t('pf.d.fxEffect')}</dt><dd><Money>{fmt.money(r.fxEffectUsd, { signed: true })}</Money></dd></> : null}
-              <dt>{t('pf.d.weight')}</dt><dd>{fmt.pct(r.weight, { decimals: 1 })}</dd>
-              {showStop && <>
-                <dt>{t('pf.d.risk')}</dt>
-                <dd>{r.riskUsd == null ? t('pf.pos.noStop') : <><Money>{fmt.money(-r.riskUsd)}</Money>{r.riskEstimated ? ` ${t('pf.pos.est')}` : ''}</>}</dd>
-              </>}
-            </>}
-            {r.fxCost != null && <><dt>{t('pf.d.fxCost', { ccy: r.ccy })}</dt><dd>{fmt.units(r.fxCost)}</dd></>}
-            {r.note && <><dt>{t('pf.f.note')}</dt><dd style={{ fontWeight: 400 }}>{r.note}</dd></>}
-          </dl>
-          {showStop && stopColumn && !excluded && <StopEditor row={r} onSave={actions.setStop} t={t} fmt={fmt} />}
-          <div className={s.actionsRow}>
-            <button type="button" className={s.btn} onClick={() => actions.openAsset(r.t)}>{t('pf.pos.openAsset')}</button>
-            <button type="button" className={s.btn} onClick={() => actions.openTrade({ type: 'buy', ticker: r.t, price: r.price != null ? String(r.price) : '' })}>{t('pf.pos.trade')}</button>
-            <button type="button" className={s.btn} onClick={() => actions.editPosition(r)}>{t('pf.pos.edit')}</button>
-            <button type="button" className={`${s.btn} ${s.btnDanger}`} onClick={() => actions.deletePosition(r)}>{t('pf.pos.delete')}</button>
-          </div>
-        </div>
-      )}
     </li>
   )
 }
@@ -157,15 +101,13 @@ function CapitalLine({ pb, fmt, disp, t }) {
   )
 }
 
-export default function Positions({ pb, fmt, disp, demo, t, actions, targets, settings = {}, view = 'esencial' }) {
-  const [openId, setOpenId] = useState(null)
+export default function Positions({ pb, fmt, disp, demo, t, actions, targets, view = 'esencial' }) {
   const [menu, setMenu] = useState(null) // 'add' | 'export'
   const { rows, totals } = pb.positions
   const showStop = shows(view, 'stop')
-  const put = useMemo(() => putAndGain({ ledger: pb.opsState === 'ready' ? pb.ledger : null, totals: { ...totals, total: totals.pl } }), [pb.opsState, pb.ledger, totals])
-  // En la esencial, "Ganancia" (PutSummary) ya cuenta el resultado: la
-  // banda y la fila de totales no lo repiten con otro nombre.
-  const showResult = shows(view, 'unrealized') || !put
+  // "Resultado (si vendieras hoy)" en la banda solo en Vista completa; el total
+  // de la lista lo dice siempre ("Depositado frente a ganancia" está en Resumen).
+  const showResult = shows(view, 'unrealized')
   const share = riskShare(totals.risk, pb.capital, totals.value)
   const base = useMemo(() => rebalanceBase(rows), [rows])
   const drift = targets ? driftHint(base, targets) : null
@@ -248,28 +190,16 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
   const n = rows.length
   return (
     <>
-      <PutSummary summary={put} money={(v, signed) => fmt.money(v, { signed })} pct={(f, signed) => fmt.pct(f, { signed })} currency={settings.currency} />
-      <p className={s.note}>{t(n === 1 ? 'pf.pos.count.one' : 'pf.pos.count.many', { n })} · {t(demo ? 'pf.pos.notSaved' : 'pf.pos.saved')}</p>
-
-      <section className={s.band} aria-label={t('pf.band.label')}>
-        {showStop && <div className={`${s.stat} ${s.bandWide}`}>
-          <span className={s.statLabel}>{t('pf.band.risk')}</span>
-          <span className={`${s.statValue} ${s.statBig}`}><Money>{fmt.money(totals.risk > 0 ? -totals.risk : 0)}</Money></span>
-          <span className={s.statSub}>
-            {share ? t(share.onCapital ? 'pf.band.riskOfCapital' : 'pf.band.riskOfValue', { p: fmt.pct(share.pct, { decimals: 1 }) }) : ''}
-            {totals.estimated ? ` · ${t('pf.band.riskEstimated')}` : totals.noStop > 0 ? ` · ${t(totals.noStop === 1 ? 'pf.band.noStop.one' : 'pf.band.noStop.many', { n: totals.noStop })}` : ''}
-          </span>
-        </div>}
+      <section className={s.band} aria-labelledby="pf-band-title">
+        <div className={s.bandHead}>
+          <h2 id="pf-band-title" className="sr-only">{t('pf.band.label')}</h2>
+          <span className={s.bandCcy}>{t('pf.band.ccy', { ccy: fmt.dccy })}</span>
+        </div>
         <div className={s.stat}>
           <span className={s.statLabel}>{t('pf.band.value')}</span>
           <span className={s.statValue}><Money>{fmt.money(totals.value)}</Money></span>
           {fmt.dccy !== 'USD' && <span className={s.statSub}>≈ <Money>{fmt.inCcy(totals.value, 'USD')}</Money></span>}
         </div>
-        {showResult && <div className={s.stat}>
-          <span className={s.statLabel}>{t('pf.band.pl')}</span>
-          <span className={`${s.statValue} ${s.tone}`} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money></span>
-          <span className={s.statSub}>{t('pf.band.plSub', { p: fmt.pct(totals.plPct, { signed: true }) })}</span>
-        </div>}
         {totals.dayPct != null && (
           <div className={s.stat}>
             <span className={s.statLabel}>{t('pf.band.day')}</span>
@@ -278,7 +208,7 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
           </div>
         )}
         {top && (
-          <div className={s.stat}>
+          <div className={`${s.stat} ${s.bandWide}`}>
             <span className={s.statLabel}>{t('pf.band.top')}</span>
             <span className={s.statValue}>{top.t} · {fmt.pct(top.weight, { decimals: 1 })}</span>
             <span className={s.statSub}>
@@ -288,9 +218,72 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
             </span>
           </div>
         )}
+        {showResult && <div className={s.stat}>
+          <span className={s.statLabel}>{t('pf.band.pl')}</span>
+          <span className={`${s.statValue} ${s.tone}`} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money></span>
+          <span className={s.statSub}>{t('pf.band.plSub', { p: fmt.pct(totals.plPct, { signed: true }) })}</span>
+        </div>}
+        {showStop && <div className={s.stat}>
+          <span className={s.statLabel}>{t('pf.band.risk')}</span>
+          <span className={s.statValue}><Money>{fmt.money(totals.risk > 0 ? -totals.risk : 0)}</Money></span>
+          <span className={s.statSub}>
+            {share ? t(share.onCapital ? 'pf.band.riskOfCapital' : 'pf.band.riskOfValue', { p: fmt.pct(share.pct, { decimals: 1 }) }) : ''}
+            {totals.estimated ? ` · ${t('pf.band.riskEstimated')}` : totals.noStop > 0 ? ` · ${t(totals.noStop === 1 ? 'pf.band.noStop.one' : 'pf.band.noStop.many', { n: totals.noStop })}` : ''}
+          </span>
+        </div>}
       </section>
 
+      <section className={s.section} aria-labelledby="pf-pos-title">
+        <div className={s.sectionHead}>
+          <h2 id="pf-pos-title" className={s.sectionTitle}>{t('pf.pos.title')}</h2>
+          <span className={s.sectionHint}>{t(n === 1 ? 'pf.pos.count.one' : 'pf.pos.count.many', { n })}</span>
+        </div>
+        <ul className={s.list}>
+          {rows.map((r, i) => (
+            // INV-N15: dos lotes del mismo ticker; la key es el id.
+            <PositionRow key={r.id ?? `${r.t}-${i}`} r={r} fmt={fmt} t={t} actions={actions} limit={totals.limit} />
+          ))}
+        </ul>
+        <div className={s.totalRow}>
+          <strong>{t('pf.total')}</strong>
+          <strong><Money>{fmt.money(totals.value)}</Money></strong>
+          <span>{t('pf.band.pl')}</span>
+          <span className={s.tone} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} size={12} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money> ({fmt.pct(totals.plPct, { signed: true })})</span>
+          {showStop && <>
+            <span>{t('pf.band.risk')}</span>
+            <span><Money>{totals.risk > 0 ? fmt.money(-totals.risk) : fmt.money(0)}</Money></span>
+          </>}
+        </div>
+        <p className={s.note}>{t('pf.pos.sumNote')}</p>
+      </section>
+
+      {toolbar}
+
+      {alloc.length > 0 && (
+        <section className={s.section} aria-labelledby="pf-alloc-title">
+          <h2 id="pf-alloc-title" className={s.sectionTitle}>{t('pf.alloc.title')}</h2>
+          <div className={s.allocBar} aria-hidden="true">
+            {alloc.map(a => <span key={a.type} className={s.allocSeg} style={{ flexGrow: a.share, background: TYPE_COLOR[a.type] || TYPE_COLOR.Otro }} />)}
+          </div>
+          <ul className={s.legend}>
+            {alloc.map(a => (
+              <li key={a.type} className={s.legendItem}>
+                <span className={s.dot} style={{ background: TYPE_COLOR[a.type] || TYPE_COLOR.Otro }} aria-hidden="true" />
+                {t(`pf.alloc.${a.type}`)}
+                <span className={s.legendPct}>{fmt.pct(a.share, { decimals: 0 })}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div className={s.notes}>
+        {drift && (
+          <div className={s.notice} data-tone="warn">
+            <span>{t(drift.count === 1 ? 'pf.drift.one' : 'pf.drift.many', { n: drift.count, t: drift.top.t, pts: fmt.pts(drift.top.pts) })}</span>
+            <div className={s.noticeActions}><button type="button" className={s.btn} onClick={actions.goTargets}>{t('pf.drift.cta')}</button></div>
+          </div>
+        )}
         {totals.excluded > 0 && <p className={s.note}>{t(totals.excluded === 1 ? 'pf.note.noFx.one' : 'pf.note.noFx.many', { n: totals.excluded, ccy: totals.excludedCcys.join(', ') })}</p>}
         {Math.abs(totals.fxEffect) >= 0.5 && <p className={s.note}>{t('pf.note.fxEffect', { amount: fmt.money(totals.fxEffect, { signed: true }) })}</p>}
         {totals.fxUnknown > 0 && <p className={s.note}>{t(totals.fxUnknown === 1 ? 'pf.note.fxUnknown.one' : 'pf.note.fxUnknown.many', { n: totals.fxUnknown })}</p>}
@@ -318,62 +311,6 @@ export default function Positions({ pb, fmt, disp, demo, t, actions, targets, se
           </div>
         )}
         {foreign && <p className={s.note}>{t('pf.note.foreign', { ccy: fmt.dccy })}</p>}
-        {drift && (
-          <div className={s.notice} data-tone="warn">
-            <span>{t(drift.count === 1 ? 'pf.drift.one' : 'pf.drift.many', { n: drift.count, t: drift.top.t, pts: fmt.pts(drift.top.pts) })}</span>
-            <div className={s.noticeActions}><button type="button" className={s.btn} onClick={actions.goTargets}>{t('pf.drift.cta')}</button></div>
-          </div>
-        )}
-      </div>
-
-      {toolbar}
-
-      <section className={s.section} aria-labelledby="pf-pos-title">
-        <div className={s.sectionHead}>
-          <h2 id="pf-pos-title" className={s.sectionTitle}>{t('pf.pos.title')}</h2>
-          <span className={s.sectionHint}>{t('pf.pos.tapHint')}</span>
-        </div>
-        <ul className={s.list}>
-          {rows.map((r, i) => (
-            // INV-N15: dos lotes del mismo ticker; la key es el id.
-            <PositionRow key={r.id ?? `${r.t}-${i}`} r={r} open={openId === (r.id ?? `${r.t}-${i}`)} onToggle={() => setOpenId(id => (id === (r.id ?? `${r.t}-${i}`) ? null : (r.id ?? `${r.t}-${i}`)))}
-              fmt={fmt} t={t} actions={actions} stopColumn={pb.columns.stop} limit={totals.limit} showStop={showStop} />
-          ))}
-        </ul>
-        <div className={s.totalRow}>
-          <strong>{t('pf.total')}</strong>
-          <strong><Money>{fmt.money(totals.value)}</Money></strong>
-          {showResult && <>
-            <span>{t('pf.band.pl')}</span>
-            <span className={s.tone} data-tone={toneOf(totals.pl)}><Dir n={totals.pl} size={12} /> <Money>{fmt.money(totals.pl, { signed: true })}</Money> ({fmt.pct(totals.plPct, { signed: true })})</span>
-          </>}
-          {showStop && <>
-            <span>{t('pf.band.risk')}</span>
-            <span><Money>{totals.risk > 0 ? fmt.money(-totals.risk) : fmt.money(0)}</Money></span>
-          </>}
-        </div>
-        <p className={s.note}>{t('pf.pos.sumNote')}</p>
-      </section>
-
-      {alloc.length > 0 && (
-        <section className={s.section} aria-labelledby="pf-alloc-title">
-          <h2 id="pf-alloc-title" className={s.sectionTitle}>{t('pf.alloc.title')}</h2>
-          <div className={s.allocBar} aria-hidden="true">
-            {alloc.map(a => <span key={a.type} className={s.allocSeg} style={{ flexGrow: a.share, background: TYPE_COLOR[a.type] || TYPE_COLOR.Otro }} />)}
-          </div>
-          <ul className={s.legend}>
-            {alloc.map(a => (
-              <li key={a.type} className={s.legendItem}>
-                <span className={s.dot} style={{ background: TYPE_COLOR[a.type] || TYPE_COLOR.Otro }} aria-hidden="true" />
-                {t(`pf.alloc.${a.type}`)}
-                <span className={s.legendPct}>{fmt.pct(a.share, { decimals: 0 })}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <div className={s.notes}>
         {showStop && <p className={s.note}>{t(totals.estimated ? 'pf.pos.footEstimated' : 'pf.pos.foot')}</p>}
         <Sources t={t} src={src} fx={foreign || fmt.dccy !== 'USD'} ars={!!pb.rates.ars} />
       </div>

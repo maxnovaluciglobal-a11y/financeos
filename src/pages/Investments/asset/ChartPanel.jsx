@@ -49,7 +49,8 @@ export function MacdSvg({ values }) {
   )
 }
 
-export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, layers, onLayer, demo, onRetry, simple = false }) {
+export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, layers, onLayer, demo, onRetry, simple = false, demoNoted = false }) {
+  // demoNoted: la cabecera de la ficha ya dice "Datos de ejemplo" (un solo aviso).
   const { t } = useAssetT()
   const r = ASSET_RANGES.find(x => x.key === range) || ASSET_RANGES[2]
   const data = useMemo(() => (rows ? chartData(rows, r.n) : null), [rows, r.n])
@@ -98,7 +99,7 @@ export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, l
         {data && data.candles.length > 1 && (
           <>
             {data.total < r.n && r.n > 21 && <p className={s.note}>{t('asset.chart.short', { n: data.total })}</p>}
-            <p className={s.note}>{t('asset.line.legend')} · {demo ? t('invest.chart.sample') : t('invest.card.source', { source: 'Yahoo Finance' })}</p>
+            <p className={s.note}>{t('asset.line.legend')}{demo && demoNoted ? '' : ` · ${demo ? t('invest.chart.sample') : t('invest.card.source', { source: 'Yahoo Finance' })}`}</p>
           </>
         )}
       </section>
@@ -163,7 +164,7 @@ export default function ChartPanel({ ticker, ccy, rows, phase, range, onRange, l
               <MacdSvg values={data.macdHist} />
             </div>
           )}
-          <p className={s.note}>{t('asset.chart.attr')} {demo ? t('invest.chart.sample') : t('invest.card.source', { source: 'Yahoo Finance' })}</p>
+          <p className={s.note}>{t('asset.chart.attr')}{demo && demoNoted ? '' : ` ${demo ? t('invest.chart.sample') : t('invest.card.source', { source: 'Yahoo Finance' })}`}</p>
         </>
       )}
     </section>

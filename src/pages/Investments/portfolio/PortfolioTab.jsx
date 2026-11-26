@@ -88,14 +88,6 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
       },
     })
   }
-  async function setStop(row, stop) {
-    const prev = pb.holdings.find(h => String(h.id) === String(row.id))
-    if (!prev) return { ok: false, error: 'not_found' }
-    const r = await pb.setStop(prev, stop)
-    if (r.ok) toast(t(stop == null ? 'pf.toast.stopCleared' : 'pf.toast.stopSaved', { t: row.t }))
-    else toast(t('pf.err.stop'), 'error')
-    return r
-  }
 
   // ── Operaciones ──
   async function recordTrade(form) {
@@ -147,16 +139,15 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
   const openTrade = (prefill = {}) => setTrade({ ...prefill })
   const actions = {
     addPosition: (prefill = null) => setPos({ prev: null, prefill }),
-    editPosition: (row) => setPos({ prev: pb.holdings.find(h => String(h.id) === String(row.id)) || null, prefill: null }),
-    deletePosition: (row) => setDel(row),
     openTrade,
     deleteOp: (op) => setDelOp(op),
     // Importar CSV/Excel: Pro cuando los límites de Starter estén encendidos (hoy apagados).
     importCsv: () => (canImportFile() ? setImp('csv') : announceInvestLimit('import')),
     restore: () => setImp('json'),
     exportPositions, exportOperations, exportBackup,
-    setStop,
-    openAsset: (tk) => openAsset(setPage, tk),
+    // Una posición abre su ficha en "Mi posición" (detalle, stop, Editar,
+    // Eliminar); un ticker de Movimientos, en la pestaña útil.
+    openAsset: (tk, opts) => openAsset(setPage, tk, opts),
     goTargets: () => setSub('objetivos'),
     goPositions: () => setSub('posiciones'),
     setDispCcy,
@@ -186,8 +177,8 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
         ))}
       </div>
 
-      {demo && <p className={s.sample}>{t('pf.sample')}</p>}
-      {demo && (pb.market.sample || pb.market.fxSample) && <p className={s.sample} role="note">{t('pf.sampleData')}</p>}
+      {/* Un solo aviso corto de datos de ejemplo (antes dos párrafos). */}
+      {demo && <p className={s.sampleShort} role="note">{t((pb.market.sample || pb.market.fxSample) ? 'pf.sampleShortPrices' : 'pf.sampleShort')}</p>}
 
       <div role="tabpanel" id={`pf-panel-${sub}`} aria-labelledby={`pf-tab-${sub}`} className={s.wrap}>
         {sub === 'posiciones' && <Positions {...common} actions={actions} targets={targets} />}

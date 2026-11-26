@@ -22,18 +22,29 @@
 .day[data-tone="up"] { color: var(--pos); }
 .day[data-tone="down"] { color: var(--neg); }
 
-/* ── Acciones: rejilla de 2 (teléfono) a 3 columnas ── */
-.actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-@media (min-width: 560px) { .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* ── Acciones: una sola fila (26-nov-2026). Registrar operación es la
+   principal y toma el espacio que sobra; Alerta y Seguir van con el ícono sobre
+   la palabra; "Más acciones" es solo el ícono (con nombre accesible). ── */
+.actions { display: flex; align-items: stretch; gap: 6px; }
 .act {
   display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; min-height: 48px; padding: 10px 12px;
   border: 0.5px solid var(--brd); border-radius: 14px; background: var(--sur); color: var(--tx);
   font: inherit; font-size: var(--t-subhead); font-weight: 600; text-align: left; cursor: pointer;
 }
+.actMain {
+  flex: 1 1 auto; min-width: 0; justify-content: center; text-align: center; line-height: 1.2;
+  background: var(--btn-primary-bg, var(--color-brand)); border-color: transparent; color: var(--btn-primary-fg, var(--text-on-brand));
+}
+.actSm {
+  flex: 0 0 auto; flex-direction: column; justify-content: center; gap: 2px; min-width: 64px; padding: 6px 8px;
+  font-size: var(--t-footnote); line-height: 1.15; text-align: center; white-space: nowrap;
+}
+.actIcon { flex: 0 0 auto; justify-content: center; width: 48px; padding: 0; }
+@media (min-width: 560px) { .actSm { flex-direction: row; gap: 6px; padding: 10px 14px; font-size: var(--t-subhead); } }
 .act:active { transform: scale(.98); }
 .act[aria-pressed="true"] { background: var(--seg-on); box-shadow: var(--seg-on-sh); }
 .act:disabled { opacity: .55; cursor: not-allowed; }
-.act:focus-visible, .chip:focus-visible, .btn:focus-visible, .newsLink:focus-visible, .panel:focus-visible, .tableWrap:focus-visible {
+.act:focus-visible, .moreBtn:focus-visible, .chip:focus-visible, .btn:focus-visible, .newsLink:focus-visible, .panel:focus-visible, .tableWrap:focus-visible {
   outline: 2px solid var(--focus, var(--color-focus, var(--tx))); outline-offset: 2px;
 }
 .notice {
@@ -46,6 +57,7 @@
   font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
 }
 .btn:disabled { opacity: .6; cursor: progress; }
+.btnDanger { color: var(--neg); border-color: color-mix(in srgb, var(--neg) 45%, var(--brd)); }
 .stateBox { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 
 /* ── Gráfico ── */
@@ -146,3 +158,41 @@
 }
 .briefWhat { display: flex; flex-direction: column; gap: 4px; }
 .briefK { margin: 0; font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+
+.briefBody { display: flex; flex-direction: column; gap: 10px; }
+.clamp { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.moreBtn {
+  align-self: flex-start; min-height: 44px; padding: 8px 2px; border: 0; background: none; color: var(--tx);
+  font: inherit; font-size: var(--t-subhead); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+
+/* ── Tu posición en una línea, arriba del gráfico ── */
+.posLine {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 10px 14px; border-radius: 14px;
+  background: var(--fill); font-size: var(--t-subhead); color: var(--tx);
+}
+.posLine .day { font-size: var(--t-subhead); }
+
+/* ── Mi posición: acciones y lotes ── */
+.noteText { font-weight: 400 !important; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mineActs { display: flex; flex-wrap: wrap; gap: 8px; }
+.mineActs .btn { flex: 1 1 auto; padding: 10px 12px; }
+.lots { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.lots li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; padding: 8px 0; border-bottom: 0.5px solid var(--brd); font-size: var(--t-subhead); color: var(--tx); }
+.lotActs { display: inline-flex; gap: 6px; }
+
+/* ── Pie: interruptor sin el párrafo (queda como descripción accesible) y aviso ── */
+.foot { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; border-top: 0.5px solid var(--brd); }
+.viewFoot p { display: none; }
+
+/* ── Menú "Más acciones" ── */
+.menu { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.menuItem {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 10px 14px;
+  border: 0.5px solid var(--brd); border-radius: 14px; background: var(--sur); color: var(--tx);
+  font: inherit; font-size: var(--t-subhead); font-weight: 600; text-align: left; cursor: pointer;
+}
+.menuItem span { display: flex; flex-direction: column; gap: 2px; }
+.menuItem small { font-size: var(--t-footnote); font-weight: 400; color: var(--th); }
+.menuItem:disabled { opacity: .55; cursor: not-allowed; }
+.menuItem:focus-visible { outline: 2px solid var(--focus, var(--color-focus, var(--tx))); outline-offset: 2px; }

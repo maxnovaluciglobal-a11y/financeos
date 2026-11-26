@@ -5,22 +5,27 @@
 //    Retraso N min · Mercado cerrado · Retraso no informado) y estado de la
 //    bolsa (Invest: freshTag y marketStatusBadge); sin cotización, el último
 //    cierre de las velas rotulado como tal;
-//  · 6 acciones: agregar o editar la posición, registrar operación, seguir o
-//    dejar de seguir, crear una alerta de precio (follow/AlertSheet.jsx, en el
-//    servidor con push), comparar con SPY (y con hasta 4 en Siguiendo) y
-//    compartir o copiar;
+//  · una fila de acciones (rediseño del 26-nov-2026): Registrar operación
+//    (principal), Alerta (follow/AlertSheet.jsx, en el servidor con push),
+//    Seguir/Siguiendo y "Más acciones" con agregar o editar la posición,
+//    comparar con SPY (y con hasta 4 en Siguiendo) y compartir o copiar;
 //  · gráfico de velas (TradingView Lightweight Charts, diferido) con medias de
 //    20/50/200 días, bandas de Bollinger, volumen y capas RSI y MACD, 5 rangos;
-//  · 4 pestañas: Indicadores, Fundamentales (12 métricas, rango de 52 semanas
-//    y resultados trimestrales), Mi posición y Noticias.
-// Vista esencial (por defecto, utils/investView.js): abre con "Esta empresa en
-// 30 segundos" (asset/Brief.jsx), una línea simple de precio y sin la pestaña
-// Indicadores ni el stop; el interruptor "Vista completa" devuelve todo.
+//  · 4 pestañas: Mi posición (primero si tienes el activo: detalle, stop,
+//    Editar y Eliminar), Indicadores, Fundamentales (12 métricas, rango de 52
+//    semanas y resultados trimestrales) y Noticias. Abre en Mi posición si
+//    tienes el activo y si no en Fundamentales, salvo que el historial o quien
+//    abrió la ficha pida otra (utils/investAsset.js: pickTab).
+// Orden (propuesta 2 del 26-nov-2026): precio y bolsa, tu posición en una
+// línea, gráfico, acciones, pestañas, "Esta empresa en 30 segundos" recortado
+// y al pie el interruptor "Vista completa" y el aviso educativo.
+// Vista esencial (por defecto, utils/investView.js): una línea simple de
+// precio y sin la pestaña Indicadores ni el stop; "Vista completa" devuelve todo.
 // El ticker vive en la entrada del historial (utils/investNav.js); la pestaña y
 // el rango también. Nada de la posición ni del ticker se guarda en el
 // dispositivo. Textos: ./asset/strings.<idioma>.js (cargados con la ficha).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, BarChart3, Bell, Check, ClipboardList, Equal, Pencil, Plus, Scale, Share2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Bell, Check, ClipboardList, Equal, MoreHorizontal, Pencil, Plus, Scale, Share2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/index.jsx'
 import Money from '../../components/Money.jsx'
 import { useApp } from '../../context/AppContext.jsx'
@@ -32,7 +37,7 @@ import { useInvestAccess } from '../../hooks/useInvestAccess.js'
 import { investFullHere } from '../../utils/uiFlags.js'
 import { fmtPct } from '../../utils/index.js'
 import { assetRates, currencyOf, rateOf } from '../../utils/investValuation.js'
-import { DEFAULT_RANGE, compareWith, historyRangeFor, pickTab, rangeOf, scoreAsset, shareParts, visibleTabs } from '../../utils/investAsset.js'
+import { DEFAULT_RANGE, compareWith, historyRangeFor, pickTab, positionLine, rangeOf, scoreAsset, shareParts, visibleTabs } from '../../utils/investAsset.js'
 import { buildTrade } from '../../utils/investTrade.js'
 import { freshnessKey, freshnessTone, isUsEquity, marketStatus, quoteFreshness } from '../../utils/investQuoteMeta.js'
 import { demoRow } from '../../demo/demoInvestAsset.js'
@@ -40,10 +45,10 @@ import { demoMarketApi, isSample } from '../../demo/demoMarketApi.js'
 import { useAssetT } from './asset/assetDict.js'
 import { InvestStringsGate } from './i18n/investStrings.js'
 import { useAssetData } from './asset/useAssetData.js'
-import { errorKey, fmtClock, fmtDay, fmtPx, fmtPxSigned, isCryptoTicker, localDay, pxDecimals } from './asset/format.js'
+import { errorKey, fmtClock, fmtDay, fmtPx, fmtPxSigned, fmtUnits, isCryptoTicker, localDay, pxDecimals } from './asset/format.js'
 import ChartPanel from './asset/ChartPanel.jsx'
 import { FundamentalsPane, IndicatorsPane, MinePane, NewsPane } from './asset/Panes.jsx'
-import { CompareSheet, PositionSheet, TradeSheet } from './asset/Sheets.jsx'
+import { CompareSheet, ConfirmSheet, MenuSheet, PositionSheet, TradeSheet } from './asset/Sheets.jsx'
 import Brief from './asset/Brief.jsx'
 import { EduNotice, ViewToggle } from './esencial/ViewToggle.jsx'
 import { useInvestView } from './esencial/useInvestView.js'
@@ -107,9 +112,12 @@ function InvestAssetPage({ setPage }) {
   const d = useAssetData(ticker, { demo })
   const [mode, setMode] = useInvestView()
   const full = shows(mode, 'indicators')
-  const [view, setView] = useState(() => ({ tab: assetView().tab || 'ind', range: assetView().range || DEFAULT_RANGE }))
+  // tab null = nadie pidió una: se elige con la posición (pickTab).
+  const [view, setView] = useState(() => ({ tab: assetView().tab, range: assetView().range || DEFAULT_RANGE }))
   const [layers, setLayers] = useState({ rsi: false, macd: false })
-  const [sheet, setSheet] = useState(null) // 'pos' | 'trade' | 'cmp'
+  const [sheet, setSheet] = useState(null) // 'pos' | 'trade' | 'cmp' | 'more'
+  const [editLot, setEditLot] = useState(null) // lote que se edita (varios lotes)
+  const [delLot, setDelLot] = useState(null) // lote que se va a eliminar
   const [closeAsk, setCloseAsk] = useState(false)
   const [alertSheet, setAlertSheet] = useState(false)
   const [alerts, setAlerts] = useState([])
@@ -121,8 +129,8 @@ function InvestAssetPage({ setPage }) {
   // Ticker nuevo (o Atrás a otra ficha): la vista de esa entrada del historial.
   useEffect(() => {
     const v = assetView()
-    setView({ tab: v.tab || 'ind', range: v.range || DEFAULT_RANGE })
-    setLayers({ rsi: false, macd: false }); setSheet(null); setCloseAsk(false); setAlertSheet(false)
+    setView({ tab: v.tab, range: v.range || DEFAULT_RANGE })
+    setLayers({ rsi: false, macd: false }); setSheet(null); setCloseAsk(false); setAlertSheet(false); setEditLot(null); setDelLot(null)
     setBench({ phase: 'idle', rows: null, t: null })
   }, [ticker])
   useEffect(() => { rememberAssetView(view) }, [view])
@@ -130,9 +138,12 @@ function InvestAssetPage({ setPage }) {
   const lots = d.lots.data || []
   const hasPos = lots.some(h => h.sh > 0)
   // En la vista esencial no está la pestaña Indicadores (RSI, MACD, medias).
-  const tabs = visibleTabs(hasPos || (d.lots.phase === 'loading' && view.tab === 'mine')).filter(k => full || k !== 'ind')
-  const picked0 = d.lots.phase === 'loading' && view.tab === 'mine' ? 'mine' : pickTab(view.tab, hasPos)
-  const tab = tabs.includes(picked0) ? picked0 : tabs[0]
+  // Mientras llegan los lotes, si se pidió Mi posición (desde Portafolio) se
+  // la muestra; sin pedido, la pestaña espera a saber si tienes el activo.
+  const lotsLoading = d.lots.phase === 'loading'
+  const tabs = visibleTabs(hasPos || (lotsLoading && view.tab === 'mine')).filter(k => full || k !== 'ind')
+  const picked0 = lotsLoading && view.tab === 'mine' ? 'mine' : lotsLoading && !view.tab ? null : pickTab(view.tab, hasPos)
+  const tab = picked0 == null ? null : tabs.includes(picked0) ? picked0 : tabs[0]
   const q = d.quote.data
   const ccy = currencyOf(ticker, q?.currency)
   const rows1y = d.hist1y.data
@@ -162,6 +173,8 @@ function InvestAssetPage({ setPage }) {
     if (tab === 'news') needNews()
     if (tab === 'mine') needMine()
   }, [ticker, tab, needFund, needNews, needMine])
+  // La línea de la posición (arriba del gráfico) también lleva el peso.
+  useEffect(() => { if (ticker && hasPos) needMine() }, [ticker, hasPos, needMine])
 
   const setTab = useCallback((k) => setView(v => ({ ...v, tab: k })), [])
   function onTabKey(e) {
@@ -239,10 +252,10 @@ function InvestAssetPage({ setPage }) {
 
   async function savePosition(value) {
     if (demo) return t('asset.err.demo')
-    const prev = lots.length === 1 ? lots[0] : null
+    const prev = editLot || (lots.length === 1 ? lots[0] : null)
     const r = prev ? await investData.updateHolding(prev, value) : await investData.addHolding(value)
     if (!r.ok) return r.fields ? t('asset.form.errors') : t(errorKey(r.error))
-    setSheet(null)
+    setSheet(null); setEditLot(null)
     toast(t(prev ? 'asset.pos.updated' : 'asset.pos.added', { t: ticker }))
     d.refreshMine()
     return null
@@ -281,6 +294,28 @@ function InvestAssetPage({ setPage }) {
     toast(t(adj.action === 'create' ? 'asset.trade.created' : 'asset.trade.saved', { t: ticker }))
     d.refreshMine()
     return null
+  }
+
+  // Editar desde Mi posición (un lote o uno de varios) y desde "Más acciones".
+  function openEdit(lot = null) { setEditLot(lot); setSheet('pos') }
+  // Eliminar (antes en la fila de Portafolio): confirma y ofrece Deshacer.
+  async function deleteLot() {
+    const lot = delLot
+    if (!lot) return
+    if (demo) { setDelLot(null); toast(t('asset.err.demo')); return }
+    const r = await investData.deleteHolding(lot.id)
+    if (!r.ok) { toast(t(errorKey(r.error)), 'error'); return }
+    setDelLot(null)
+    d.refreshMine()
+    const back = { t: lot.t || ticker, type: lot.type, sh: lot.sh, cost: lot.cost, stop: lot.stop, fxCost: lot.fxCost, note: lot.note }
+    toast(t('asset.del.done', { t: ticker }), 'ok', {
+      label: t('asset.undo'),
+      onAction: async () => {
+        const u = await investData.addHolding(back)
+        if (!u.ok) toast(t(errorKey(u.error)), 'error')
+        d.refreshMine()
+      },
+    })
   }
 
   async function answerClose(remove) {
@@ -340,11 +375,19 @@ function InvestAssetPage({ setPage }) {
   const mktText = mkt ? (exName ? t(mkt.open ? 'asset.mkt.open' : 'asset.mkt.closed', { ex: exName }) : t(mkt.open ? 'asset.mkt.anyOpen' : 'asset.mkt.anyClosed')) : exName
   const lastRow = !q && rows1y?.length ? rows1y[rows1y.length - 1] : null
 
+  // Tu posición en una línea ("Tienes 12 u. · US$6.600 · ↑ +22,2 % · peso 52,8 %").
+  const line = hasPos ? positionLine(lots, q?.price > 0 ? q.price : null, { weight: d.weight.data?.weight ?? null }) : null
+  const LineIc = line?.dir === 'up' ? ArrowUp : line?.dir === 'down' ? ArrowDown : Equal
+  const moreMenu = [
+    { id: 'pos', icon: hasPos ? <Pencil size={20} aria-hidden="true" /> : <BarChart3 size={20} aria-hidden="true" />, label: hasPos ? t('asset.act.editPos') : t('asset.act.addPos'),
+      sub: !canEdit ? t('asset.pos.multi', { n: lots.length, t: ticker }) : null, onPick: () => openEdit(null), disabled: lotsLoading || !canEdit },
+    { id: 'cmp', icon: <Scale size={20} aria-hidden="true" />, label: t('asset.act.compare', { b: benchT }), onPick: openCompare },
+    { id: 'share', icon: <Share2 size={20} aria-hidden="true" />, label: t('asset.act.share'), onPick: share },
+  ]
+
   return (
     <div className={s.page}>
       <PageHeader title={ticker} sub={name || t('invest.asset.label')} />
-      <ViewToggle view={mode} onChange={setMode} />
-      <EduNotice />
 
       <section aria-label={t('invest.asset.price')} className={s.head}>
         {q ? (
@@ -383,58 +426,80 @@ function InvestAssetPage({ setPage }) {
         <p className={s.note}>{quoteSample ? t('asset.sample') : q ? t('asset.priceSource', { source: q.source === 'coingecko' ? 'CoinGecko' : 'Yahoo Finance' }) : lastRow ? t('asset.priceSource', { source: 'Yahoo Finance' }) : null}</p>
       </section>
 
-      <Brief ticker={ticker} quote={q} fund={crypto ? { phase: 'ready', data: null } : d.fund} rows={rows1y} rowsPhase={d.hist1y.phase} type={crypto ? 'Crypto' : type} price={price} now={now} />
+      {line && (
+        <section className={s.posLine} aria-label={t('asset.posLine.label', { t: ticker })}>
+          <span><Money>{t('asset.posLine.units', { n: fmtUnits(line.sh) })}</Money></span>
+          <span aria-hidden="true">·</span>
+          <strong className={s.num}><Money>{fmtPx(line.value, ccy, { decimals: 0 })}</Money></strong>
+          {line.plPct != null && <>
+            <span aria-hidden="true">·</span>
+            <span className={s.day} data-tone={line.dir}><LineIc size={13} strokeWidth={2.2} aria-hidden="true" />{fmtPct(line.plPct, { signed: true })}</span>
+          </>}
+          {line.weight != null && <>
+            <span aria-hidden="true">·</span>
+            <span className={s.muted}>{t('asset.posLine.weight', { p: fmtPct(line.weight, { decimals: 1 }) })}</span>
+          </>}
+        </section>
+      )}
+
+      <ChartPanel ticker={ticker} ccy={ccy} rows={chartRows} phase={chartPhase} range={range.key}
+        onRange={(k) => setView(v => ({ ...v, range: k }))} layers={layers} onLayer={(k) => setLayers(l => ({ ...l, [k]: !l[k] }))} demo={chartSample}
+        onRetry={() => d.retryHistory(long)} simple={!full} demoNoted={quoteSample} />
 
       <section aria-labelledby={actsId}>
         <h2 id={actsId} className="sr-only">{t('asset.act.group', { t: ticker })}</h2>
         <div className={s.actions}>
-          <button type="button" className={s.act} aria-pressed={followed} onClick={toggleFollow} disabled={d.watch.phase === 'loading'}>
+          <button type="button" className={`${s.act} ${s.actMain}`} onClick={() => { setCloseAsk(false); setSheet('trade') }} disabled={lotsLoading}>
+            <ClipboardList size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.trade')}
+          </button>
+          <button type="button" className={`${s.act} ${s.actSm}`} aria-haspopup="dialog" aria-label={t('asset.act.alert')} onClick={openAlert}>
+            <Bell size={18} strokeWidth={2} aria-hidden="true" /><span aria-hidden="true">{t('asset.act.alertShort')}</span>
+          </button>
+          <button type="button" className={`${s.act} ${s.actSm}`} aria-pressed={followed} onClick={toggleFollow} disabled={d.watch.phase === 'loading'}>
             {followed ? <Check size={18} strokeWidth={2} aria-hidden="true" /> : <Plus size={18} strokeWidth={2} aria-hidden="true" />}
             {followed ? t('asset.act.following') : t('asset.act.follow')}
           </button>
-          <button type="button" className={s.act} onClick={() => setSheet('pos')} disabled={d.lots.phase === 'loading' || !canEdit} aria-describedby={!canEdit ? `${actsId}-multi` : undefined}>
-            {hasPos ? <Pencil size={18} strokeWidth={2} aria-hidden="true" /> : <BarChart3 size={18} strokeWidth={2} aria-hidden="true" />}
-            {hasPos ? t('asset.act.editPos') : t('asset.act.addPos')}
-          </button>
-          <button type="button" className={s.act} onClick={() => { setCloseAsk(false); setSheet('trade') }} disabled={d.lots.phase === 'loading'}>
-            <ClipboardList size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.trade')}
-          </button>
-          <button type="button" className={s.act} aria-haspopup="dialog" onClick={openAlert}>
-            <Bell size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.alert')}
-          </button>
-          <button type="button" className={s.act} onClick={openCompare}>
-            <Scale size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.compare', { b: benchT })}
-          </button>
-          <button type="button" className={s.act} onClick={share}>
-            <Share2 size={18} strokeWidth={2} aria-hidden="true" />{t('asset.act.share')}
+          <button type="button" className={`${s.act} ${s.actIcon}`} aria-haspopup="dialog" aria-label={t('asset.act.more')} onClick={() => setSheet('more')}>
+            <MoreHorizontal size={20} strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
-        {!canEdit && <p id={`${actsId}-multi`} className={s.note}>{t('asset.pos.multi', { n: lots.length, t: ticker })}</p>}
       </section>
-
-      <ChartPanel ticker={ticker} ccy={ccy} rows={chartRows} phase={chartPhase} range={range.key}
-        onRange={(k) => setView(v => ({ ...v, range: k }))} layers={layers} onLayer={(k) => setLayers(l => ({ ...l, [k]: !l[k] }))} demo={chartSample}
-        onRetry={() => d.retryHistory(long)} simple={!full} />
 
       <section>
         <div role="tablist" aria-label={t('asset.tabs.label', { t: ticker })} className={hub.tabs}>
           {tabs.map(k => (
             <button key={k} ref={el => { tabRefs.current[k] = el }} type="button" role="tab" id={`asset-tab-${k}`}
-              aria-selected={tab === k} aria-controls="asset-panel" tabIndex={tab === k ? 0 : -1}
+              aria-selected={tab === k} aria-controls="asset-panel" tabIndex={tab === k || (tab == null && k === tabs[0]) ? 0 : -1}
               className={hub.tab} onClick={() => setTab(k)} onKeyDown={onTabKey}>
               {t(`asset.tab.${k}`)}
             </button>
           ))}
         </div>
-        <div role="tabpanel" id="asset-panel" aria-labelledby={`asset-tab-${tab}`} tabIndex={0} className={s.panel}>
+        <div role="tabpanel" id="asset-panel" aria-labelledby={tab ? `asset-tab-${tab}` : undefined} tabIndex={0} className={s.panel}>
+          {tab == null && <p className={s.note} role="status">{t('asset.mine.loading')}</p>}
           {tab === 'ind' && <IndicatorsPane ticker={ticker} ccy={ccy} score={score} phase={d.hist1y.phase} onRetry={() => d.retryHistory(false)} />}
           {tab === 'fund' && <FundamentalsPane ticker={ticker} ccy={ccy} price={price} quote={q} score={score} fund={d.fund} earn={d.earn} fundSample={!!d.fund.sample} earnSample={!!d.earn.sample} type={type} onRetry={() => needFund(true)} />}
-          {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} priceSample={quoteSample} onSaveStop={saveStop} showStop={shows(mode, 'stop')} />}
+          {tab === 'mine' && <MinePane ticker={ticker} ccy={ccy} price={q?.price > 0 ? q.price : null} lots={lots} weight={d.weight} profile={d.profile} cols={d.cols} demo={demo} priceSample={quoteSample} onSaveStop={saveStop} showStop={shows(mode, 'stop')}
+            onEdit={openEdit} onDelete={setDelLot} busy={lotsLoading} />}
           {tab === 'news' && <NewsPane ticker={ticker} news={d.news} onRetry={() => needNews(true)} />}
         </div>
       </section>
 
-      <PositionSheet open={sheet === 'pos'} onClose={() => setSheet(null)} ticker={ticker} ccy={ccy} prev={lots.length === 1 ? lots[0] : null}
+      <Brief ticker={ticker} quote={q} fund={crypto ? { phase: 'ready', data: null } : d.fund} rows={rows1y} rowsPhase={d.hist1y.phase} type={crypto ? 'Crypto' : type} price={price} now={now} />
+
+      {/* Al pie: el interruptor (su explicación queda como descripción accesible,
+          no a la vista) y el aviso educativo. */}
+      <footer className={s.foot}>
+        <div className={s.viewFoot}><ViewToggle view={mode} onChange={setMode} /></div>
+        <EduNotice />
+      </footer>
+
+      <MenuSheet open={sheet === 'more'} onClose={() => setSheet(s0 => (s0 === 'more' ? null : s0))} title={t('asset.act.menuTitle', { t: ticker })} options={moreMenu} closeLabel={t('asset.close')} />
+      <ConfirmSheet open={!!delLot} onClose={() => setDelLot(null)} onConfirm={deleteLot}
+        title={t('asset.del.title', { t: ticker })}
+        body={delLot ? t('asset.del.body', { units: fmtUnits(Number(delLot.sh)), entry: fmtPx(Number(delLot.cost), ccy) }) : ''}
+        confirmLabel={t('asset.del.confirm')} cancelLabel={t('asset.cancel')} />
+      <PositionSheet open={sheet === 'pos'} onClose={() => { setSheet(null); setEditLot(null) }} ticker={ticker} ccy={ccy} prev={editLot || (lots.length === 1 ? lots[0] : null)}
         defaultType={type} price={price} onSave={savePosition} />
       <TradeSheet open={sheet === 'trade'} onClose={() => { setSheet(null); setCloseAsk(false) }} ticker={ticker} ccy={ccy} holding={lots[0] || null}
         price={price} rsi={score?.rsi} onSave={saveTrade} closeAsk={closeAsk} onCloseAnswer={answerClose} />

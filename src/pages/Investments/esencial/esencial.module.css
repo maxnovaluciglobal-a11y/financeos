@@ -47,9 +47,11 @@
 .putCell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .putCell dd { margin: 0; }
 .putLabel { font-size: var(--t-subhead); font-weight: 600; color: var(--tx); }
+/* Una cifra no se corta en dos líneas ("+$6.404.20" / "0", 26-nov-2026): sin
+   saltos dentro y con un tamaño que baja con el ancho de la pantalla. */
 .putValue {
-  font-family: var(--display); font-size: var(--t-title-2); font-weight: 700; letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums; color: var(--tx); overflow-wrap: anywhere;
+  font-family: var(--display); font-size: clamp(17px, 4.8vw, var(--t-title-2)); font-weight: 700; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; color: var(--tx); white-space: nowrap; overflow-wrap: normal;
 }
 .putSub { margin: 0; font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--th); }
 .tone { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
