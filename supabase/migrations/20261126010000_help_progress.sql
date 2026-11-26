@@ -32,7 +32,10 @@ create table if not exists public.help_progress (
   constraint help_progress_tours_max check (cardinality(tours_seen) <= 200),
   constraint help_progress_news_max  check (cardinality(news_read) <= 200),
   constraint help_progress_tours_fmt check (array_to_string(tours_seen, ',') ~ '^([a-z0-9][a-z0-9-]{0,63}(,|$))*$'),
-  constraint help_progress_news_fmt  check (array_to_string(news_read, ',') ~ '^([a-z0-9][a-z0-9-]{0,63}(,|$))*$')
+  constraint help_progress_news_fmt  check (array_to_string(news_read, ',') ~ '^([a-z0-9][a-z0-9-]{0,63}(,|$))*$'),
+  -- El formato se valida sobre el texto unido: estos topes cierran elementos con comas o nulos.
+  constraint help_progress_tours_len check (char_length(array_to_string(tours_seen, ',')) <= 13000 and array_position(tours_seen, null) is null),
+  constraint help_progress_news_len  check (char_length(array_to_string(news_read, ',')) <= 13000 and array_position(news_read, null) is null)
 );
 
 comment on table public.help_progress is

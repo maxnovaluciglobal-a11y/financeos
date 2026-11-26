@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   HELP_OPEN_EVENT, HELP_PROGRESS_EVENT, TOUR_REPLAY_EVENT, TOUR_PAGES,
-  takeTourReplay, readSeen, markSeen, readNewsRead, shouldOfferTour, isUiBusy,
+  takeTourReplay, setHelpDemo, readSeen, markSeen, readNewsRead, shouldOfferTour, isUiBusy,
   helpSyncReady, markHelpSyncReady, initHelpDevice, setHelpUnread,
 } from './helpCore.js'
 import { logRejection } from '../../utils/errorLog.js'
@@ -37,6 +37,7 @@ export function useHelp(page, { isDemo = false, newsFilter } = {}) {
   const [prompt, setPrompt] = useState(null)   // página que pregunta "¿Primera vez…?"
   const [tour, setTour] = useState(null)       // página cuyo recorrido está abierto
   const [unread, setUnread] = useState(0)
+  setHelpDemo(isDemo)
   // Antes de cualquier pregunta: ¿este dispositivo ya tenía datos de la app?
   if (!isDemo && !deviceChecked) { deviceChecked = true; initHelpDevice() }
   // Con un recorrido o el panel abiertos no se pregunta "¿Primera vez…?".

@@ -462,3 +462,20 @@ describe('el "?" en la cabecera del Inicio del teléfono', () => {
     expect(css).toMatch(/@media \(min-width: 701px\) \{ \.helpBtn \{ display: none; \} \}/)
   })
 })
+
+describe('demo: el progreso no toca la cuenta real', () => {
+  it('en el demo se guarda en sessionStorage y no en localStorage', async () => {
+    const mk = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) } }
+    const ls = mk(), ss = mk()
+    vi.stubGlobal('localStorage', ls); vi.stubGlobal('sessionStorage', ss)
+    const core = await import('./helpCore.js')
+    core.setHelpDemo(true)
+    try {
+      core.markSeen('budgets')
+      expect(ls.getItem(core.TOURS_SEEN_KEY)).toBeNull()
+      expect(core.readSeen()).toContain('budgets')
+    } finally { core.setHelpDemo(false) }
+    expect(core.readSeen()).not.toContain('budgets')
+    vi.unstubAllGlobals()
+  })
+})

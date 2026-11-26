@@ -27,7 +27,11 @@ export const TOUR_PAGES = [
 ]
 
 const ID = /^[a-z0-9][a-z0-9-]{0,63}$/
-const local = () => { try { return globalThis.localStorage || null } catch { return null } }
+// En el demo el progreso vive solo en la pestaña (sessionStorage): las claves de
+// localStorage son de la cuenta real del navegador y el demo no debe tocarlas.
+let demoMode = false
+export function setHelpDemo(on) { demoMode = !!on }
+const local = () => { try { return (demoMode ? globalThis.sessionStorage : globalThis.localStorage) || null } catch { return null } }
 const sess = () => { try { return globalThis.sessionStorage || null } catch { return null } }
 
 export function parseList(raw) {

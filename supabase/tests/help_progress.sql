@@ -33,6 +33,19 @@ begin
   exception when check_violation then ok := true;
   end;
   assert ok, 'check de formato';
+  -- Un elemento con comas adentro o un nulo tampoco pasan (el formato se mira sobre el texto unido).
+  ok := false;
+  begin
+    update public.help_progress set tours_seen = array[repeat('a,', 7000) || 'a'] where user_id = a;
+  exception when check_violation then ok := true;
+  end;
+  assert ok, 'check de largo';
+  ok := false;
+  begin
+    update public.help_progress set news_read = array['ok', null] where user_id = a;
+  exception when check_violation then ok := true;
+  end;
+  assert ok, 'check de nulos';
 
   -- A no puede escribir la fila de otra cuenta.
   ok := false;
