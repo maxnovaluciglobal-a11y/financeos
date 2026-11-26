@@ -24,7 +24,7 @@ import { isNativeApp, nativePlatform } from './platform.js'
 export const NATIVE_FLAGS = Object.freeze({
   iapReady: false,     // compra de la tienda integrada (RevenueCat)
   appleSignIn: false,  // proveedor Apple configurado en Supabase Auth
-  investments: false,  // sección Inversiones en la app de tienda (v2)
+  investments: true,   // sección Inversiones en la app de tienda (Walter, 26-nov-2026: se enciende desde la 1.0.6)
 })
 
 /** ¿Se puede mostrar el checkout de Stripe (precio, botón, enlace)? */

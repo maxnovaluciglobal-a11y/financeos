@@ -1,5 +1,5 @@
 // Revisión pre-tiendas (23-nov-2026): lo que la app de tienda v1 no muestra.
-// Inversiones queda fuera (D1, DECISIONES 23-nov), sin chips PRO (NAT-1),
+// Inversiones salió fuera (D1, 23-nov) y se encendió el 26-nov-2026; sin chips PRO (NAT-1),
 // sin widget de Turnstile (V-NAT FN-1) y con textos propios (@native).
 import { describe, it, expect, afterEach } from 'vitest'
 import { NATIVE_FLAGS, investmentsAllowed, canShowInvestments, storePage, canShowProMarketing, INVEST_PAGES } from './storePolicy.js'
@@ -15,45 +15,43 @@ const ON = { modules: { investments: true, properties: true, advisor: true } }
 const setNative = (platform) => { globalThis.Capacitor = cap(platform).Capacitor }
 afterEach(() => { delete globalThis.Capacitor })
 
-describe('Inversiones fuera de la app de tienda v1', () => {
-  it('el flag está apagado', () => {
-    expect(NATIVE_FLAGS.investments).toBe(false)
+describe('Inversiones en la app de tienda (encendida el 26-nov-2026, desde la 1.0.6)', () => {
+  it('el flag está encendido', () => {
+    expect(NATIVE_FLAGS.investments).toBe(true)
   })
-  it('la web siempre la muestra; la app nativa solo con el flag', () => {
+  it('el interruptor sigue funcionando en los dos sentidos', () => {
     expect(investmentsAllowed('web')).toBe(true)
-    expect(investmentsAllowed('ios')).toBe(false)
-    expect(investmentsAllowed('android')).toBe(false)
-    expect(investmentsAllowed('android', { investments: true })).toBe(true)
+    expect(investmentsAllowed('ios')).toBe(true)
+    expect(investmentsAllowed('android')).toBe(true)
+    expect(investmentsAllowed('android', { investments: false })).toBe(false)
+    expect(investmentsAllowed('web', { investments: false })).toBe(true)
     expect(canShowInvestments({})).toBe(true)
-    expect(canShowInvestments(cap('ios'))).toBe(false)
-    expect(canShowInvestments(cap('android'))).toBe(false)
-    expect(canShowInvestments(cap('android'), { investments: true })).toBe(true)
+    expect(canShowInvestments(cap('android'))).toBe(true)
+    expect(canShowInvestments(cap('ios'), { investments: false })).toBe(false)
   })
-  it('una página de Inversiones abre Inicio en la app nativa', () => {
+  it('una página de Inversiones se abre igual en la web y en la app nativa', () => {
     for (const p of INVEST_PAGES) {
       expect(storePage(p, {})).toBe(p)
-      expect(storePage(p, cap('android'))).toBe('dashboard')
+      expect(storePage(p, cap('android'))).toBe(p)
     }
     expect(storePage('budgets', cap('ios'))).toBe('budgets')
   })
-  it('moduleOn: encendido en la cuenta, apagado en la app nativa', () => {
-    expect(moduleOn(ON, 'investments')).toBe(true)
+  it('moduleOn: el módulo encendido en la cuenta también vale en la app nativa', () => {
     setNative('android')
-    expect(moduleOn(ON, 'investments')).toBe(false)
-    expect(moduleOn(ON, 'properties')).toBe(true)
+    expect(moduleOn(ON, 'investments')).toBe(true)
+    expect(moduleOn({ modules: { investments: false } }, 'investments')).toBe(false)
   })
-  it('ni el menú "Más" ni la navegación la muestran en nativo, en ningún país', () => {
-    setNative('ios')
+  it('el menú "Más" la muestra en nativo cuando el módulo está encendido', () => {
+    setNative('android')
     const inv = ALL_ITEMS.find(it => it.id === 'investments')
-    for (const cc of ['CL', 'AR', 'VE', 'MX', 'CO', 'US', 'DE']) {
-      expect(navItemVisible(inv, cc, ON)).toBe(false)
+    for (const cc of ['CL', 'AR', 'MX', 'US']) {
+      expect(navItemVisible(inv, cc, ON)).toBe(true)
       const ids = moreSections(cc, ON).flatMap(g => g.items.flatMap(it => [it.id, ...(it.items || []).map(x => x.id)]))
-      expect(ids).not.toContain('investments')
+      expect(ids).toContain('investments')
     }
   })
-  it('el enlace ?open=invest-* se resuelve a la página, que el render cambia por Inicio', () => {
-    expect(pageFromSearch('?open=invest-resumen')).toBe('investments')
-    expect(storePage(pageFromSearch('?open=invest-resumen'), cap('android'))).toBe('dashboard')
+  it('el enlace ?open=invest-* abre Inversiones también en la app nativa', () => {
+    expect(storePage(pageFromSearch('?open=invest-resumen'), cap('android'))).toBe('investments')
   })
 })
 
