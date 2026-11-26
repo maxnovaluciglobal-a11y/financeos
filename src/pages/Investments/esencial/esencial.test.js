@@ -116,3 +116,15 @@ describe('<PutSummary>, interruptor y aviso', () => {
     expect(renderToStaticMarkup(h(ViewToggle, { view: 'esencial', onChange: () => {} }))).toMatch(/<p id="[^"]+" class="[^"]*">Suma velas/)
   })
 })
+
+// Arreglo 10 (26-nov-2026): la cifra de "Ganancia" no se parte en dos líneas.
+describe('PutSummary: cifras sin cortar', () => {
+  it('la cifra va sin saltos y con un tamaño que se ajusta al ancho', async () => {
+    const { readFileSync } = await import('node:fs')
+    const css = readFileSync(new URL('./esencial.module.css', import.meta.url), 'utf8')
+    const rule = css.match(/\.putValue\s*\{[^}]*\}/)[0]
+    expect(rule).toMatch(/white-space:\s*nowrap/)
+    expect(rule).not.toMatch(/overflow-wrap:\s*anywhere/)
+    expect(rule).toMatch(/font-size:\s*clamp\(/)
+  })
+})

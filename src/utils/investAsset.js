@@ -25,13 +25,28 @@ export const ASSET_TABS = ['ind', 'fund', 'mine', 'news']
 export const rangeOf = (key) => ASSET_RANGES.find(r => r.key === key) || ASSET_RANGES.find(r => r.key === DEFAULT_RANGE)
 export const historyRangeFor = (key) => (rangeOf(key).n > 252 ? '5y' : '1y')
 
-// Pestañas visibles: "Mi posición" solo con unidades (Invest: own.length).
+// Pestañas visibles: "Mi posición" solo con unidades (Invest: own.length), y
+// entonces va primero (rediseño del 26-nov-2026, propuesta 2).
 export function visibleTabs(hasPosition) {
-  return ASSET_TABS.filter(t => t !== 'mine' || hasPosition)
+  return hasPosition ? ['mine', ...ASSET_TABS.filter(t => t !== 'mine')] : ASSET_TABS.filter(t => t !== 'mine')
 }
+// Pestaña con la que abre la ficha si nadie pidió otra (propuesta 11): Mi
+// posición si tienes el activo; si no, Fundamentales.
+export const defaultTab = (hasPosition) => (hasPosition ? 'mine' : 'fund')
+// La pedida (historial invAssetTab o la que eligió quien abrió la ficha) si se
+// ve; si no, la de por defecto.
 export function pickTab(want, hasPosition) {
   const tabs = visibleTabs(hasPosition)
-  return tabs.includes(want) ? want : 'ind'
+  return tabs.includes(want) ? want : defaultTab(hasPosition)
+}
+
+// Línea de la posición arriba del gráfico ("Tienes 12 u. · US$6.600 · ↑ +22,2 %
+// · peso 52,8 %"): lo mismo que Mi posición, en una línea. null sin unidades.
+export function positionLine(lots, price, { weight = null } = {}) {
+  const m = minePosition(lots, price, { weight })
+  if (!m) return null
+  const dir = m.plPct == null ? null : m.plPct > 0.00005 ? 'up' : m.plPct < -0.00005 ? 'down' : 'flat'
+  return { sh: m.sh, value: m.value, plPct: m.plPct, dir, weight: m.weight, priced: m.priced }
 }
 
 // Velas limpias y en orden: fecha AAAA-MM-DD única, OHLC > 0.

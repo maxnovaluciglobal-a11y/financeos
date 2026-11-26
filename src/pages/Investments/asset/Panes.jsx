@@ -1,7 +1,7 @@
 // Pestañas de la ficha: Indicadores, Fundamentales, Mi posición y Noticias
 // (Invest: renderDrawerBody, drawerFundPane, drawerMinePane, drawerNewsPane).
 import { useEffect, useId, useState } from 'react'
-import { Check, X } from 'lucide-react'
+import { Check, Pencil, Trash2, X } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
 import { capParts, earningsSummary, fundMetrics, fundTags, filterNews, hasFundamentals, minePosition, range52, safeLink } from '../../../utils/investAsset.js'
 import { fmtPct } from '../../../utils/index.js'
@@ -188,7 +188,11 @@ export function FundamentalsPane({ ticker, ccy, price, quote, score, fund, earn,
 }
 
 // ── Mi posición ──
-export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo, priceSample = demo, onSaveStop, showStop = true }) {
+// Desde el 26-nov-2026 es el único lugar con el detalle de la posición: lo que
+// mostraba la fila de Portafolio al desplegarse (invertido, resultado, efecto
+// del tipo de cambio, riesgo al stop, tipo de cambio de la compra y nota), el
+// stop editable (vista completa) y Editar / Eliminar, también por lote.
+export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo, priceSample = demo, onSaveStop, showStop = true, onEdit, onDelete, busy: lotsBusy = false }) {
   const { t } = useAssetT()
   const id = useId()
   const limit = profile.data?.limit ?? 25
@@ -210,9 +214,13 @@ export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo
     setBusy(false)
   }
   const plTone = m.pl == null ? undefined : m.pl >= 0 ? 'pos' : 'neg'
+  const own = (lots || []).filter(h => h && Number(h.sh) > 0)
+  const one = own.length === 1 ? own[0] : null
+  const fx = w?.fxEffectUsd
   return (
     <div className={s.pane}>
-      {demo && <p className={s.sampleTag}>{t(priceSample ? 'asset.sample' : 'asset.mine.demo')}</p>}
+      {/* Con el precio de ejemplo, la cabecera de la ficha ya lo dice: un solo aviso. */}
+      {demo && !priceSample && <p className={s.sampleTag}>{t('asset.mine.demo')}</p>}
       <h3 className="sr-only">{t('asset.mine.title', { t: ticker })}</h3>
       <dl className={s.facts}>
         <div><dt>{t('asset.mine.units')}</dt><dd className={s.num}><Money>{fmtUnits(m.sh)}</Money></dd></div>
@@ -233,10 +241,14 @@ export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo
             {!m.priced && <span className={s.factSub}>{t('asset.mine.noPrice')}</span>}
           </dd>
         </div>
+        <div><dt>{t('asset.mine.cost')}</dt><dd className={s.num}><Money>{fmtPx(m.cost, ccy, { decimals: 0 })}</Money></dd></div>
         <div>
           <dt>{t('asset.mine.pl')}</dt>
           <dd className={s.num} data-tone={plTone}>{m.pl == null ? '—' : <><Money>{fmtPxSigned(m.pl, ccy, { decimals: 0 })}</Money>{m.plPct != null ? ` · ${fmtPct(m.plPct, { signed: true })}` : ''}</>}</dd>
         </div>
+        {fx != null && Math.abs(fx) >= 0.5 && (
+          <div><dt>{t('asset.mine.fxEffect')}</dt><dd className={s.num}><Money>{fmtPxSigned(fx, 'USD', { decimals: 0 })}</Money></dd></div>
+        )}
         {showStop && <div>
           <dt>{t('asset.mine.stopRisk')}</dt>
           <dd className={s.num}>
@@ -244,6 +256,10 @@ export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo
             {m.riskKind === 'estimate' && <span className={s.factSub}>{t('asset.mine.stopEst')}</span>}
           </dd>
         </div>}
+        {one?.fxCost != null && Number(one.fxCost) > 0 && (
+          <div><dt>{t('asset.mine.fxCost', { ccy })}</dt><dd className={s.num}><Money>{fmtUnits(Number(one.fxCost))}</Money></dd></div>
+        )}
+        {one?.note && <div><dt>{t('asset.mine.note')}</dt><dd className={s.noteText}>{one.note}</dd></div>}
       </dl>
       {m.lots > 1 && <p className={s.note}>{t('asset.mine.lots', { n: m.lots, t: ticker })}</p>}
       {showStop && m.editableStop && (
@@ -258,6 +274,28 @@ export function MinePane({ ticker, ccy, price, lots, weight, profile, cols, demo
           <p id={`${id}-stop-hint`} className={s.note}>{t('asset.mine.stopHint')}</p>
           {err && <p id={`${id}-stop-err`} className={s.err} role="alert">{err}</p>}
         </form>
+      )}
+      {one && (onEdit || onDelete) && (
+        <div className={s.mineActs}>
+          {onEdit && <button type="button" className={s.btn} onClick={() => onEdit(one)} disabled={lotsBusy}><Pencil size={16} strokeWidth={2} aria-hidden="true" />{t('asset.act.editPos')}</button>}
+          {onDelete && <button type="button" className={`${s.btn} ${s.btnDanger}`} onClick={() => onDelete(one)} disabled={lotsBusy}><Trash2 size={16} strokeWidth={2} aria-hidden="true" />{t('asset.mine.delete')}</button>}
+        </div>
+      )}
+      {own.length > 1 && (onEdit || onDelete) && (
+        <section className={s.block} aria-labelledby={`${id}-lots`}>
+          <h4 id={`${id}-lots`} className={s.label}>{t('asset.mine.lotsTitle', { t: ticker })}</h4>
+          <ul className={s.lots}>
+            {own.map((h, i) => (
+              <li key={h.id ?? i}>
+                <span className={s.num}><Money>{t('asset.mine.lot', { n: i + 1, units: fmtUnits(Number(h.sh)), entry: fmtPx(Number(h.cost), ccy) })}</Money></span>
+                <span className={s.lotActs}>
+                  {onEdit && <button type="button" className={s.btn} aria-label={t('asset.mine.lotEditA', { n: i + 1, t: ticker })} onClick={() => onEdit(h)} disabled={lotsBusy}>{t('asset.mine.editShort')}</button>}
+                  {onDelete && <button type="button" className={`${s.btn} ${s.btnDanger}`} aria-label={t('asset.mine.lotDeleteA', { n: i + 1, t: ticker })} onClick={() => onDelete(h)} disabled={lotsBusy}>{t('asset.mine.deleteShort')}</button>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   )

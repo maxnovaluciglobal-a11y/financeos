@@ -225,3 +225,48 @@ export function CompareSheet({ open, onClose, a, b, rowsA, phaseA = 'ready', row
     </Sheet>
   )
 }
+
+// ── "Más acciones" (rediseño del 26-nov-2026): Editar o agregar la posición,
+// Comparar y Compartir, que antes eran botones grandes en la ficha.
+export function MenuSheet({ open, onClose, title, options, closeLabel }) {
+  const titleRef = useRef(null)
+  return (
+    <Sheet open={open} onClose={onClose} ariaLabel={title} initialFocusRef={titleRef} initialDetent="medium">
+      <div className={s.sheet}>
+        <h2 ref={titleRef} tabIndex={-1} className={s.sheetTitle}>{title}</h2>
+        <ul className={s.menu}>
+          {options.map(o => (
+            <li key={o.id}>
+              <button type="button" className={s.menuItem} onClick={() => { onClose(); o.onPick() }} disabled={o.disabled}>
+                {o.icon}<span>{o.label}{o.sub && <small>{o.sub}</small>}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className={s.sheetActions}><Btn type="button" variant="ghost" onClick={onClose}>{closeLabel}</Btn></div>
+      </div>
+    </Sheet>
+  )
+}
+
+// ── Confirmar (eliminar una posición o un lote, antes en la fila de Portafolio) ──
+export function ConfirmSheet({ open, onClose, title, body, confirmLabel, cancelLabel, onConfirm }) {
+  const titleRef = useRef(null)
+  const [busy, setBusy] = useState(false)
+  async function go() {
+    setBusy(true)
+    try { await onConfirm() } finally { setBusy(false) }
+  }
+  return (
+    <Sheet open={open} onClose={onClose} ariaLabel={title} initialFocusRef={titleRef} initialDetent="medium">
+      <div className={s.sheet}>
+        <h2 ref={titleRef} tabIndex={-1} className={s.sheetTitle}>{title}</h2>
+        {body && <p className={s.body}>{body}</p>}
+        <div className={s.sheetActions}>
+          <button type="button" className={s.btn} onClick={onClose}>{cancelLabel}</button>
+          <button type="button" className={`${s.btn} ${s.btnDanger}`} onClick={go} disabled={busy}>{confirmLabel}</button>
+        </div>
+      </div>
+    </Sheet>
+  )
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  ASSET_RANGES, DEFAULT_RANGE, rangeOf, historyRangeFor, visibleTabs, pickTab, cleanCandles, chartData, rangeSummary,
+  ASSET_RANGES, DEFAULT_RANGE, rangeOf, historyRangeFor, visibleTabs, pickTab, defaultTab, positionLine, cleanCandles, chartData, rangeSummary,
   buildReadings, scoreAsset, normalizeFundamentals, fundTags, hasFundamentals, FUND_METRICS, fundMetrics, capParts,
   range52, earningsSummary, minePosition, DEFAULT_STOP_PCT, filterNews, safeLink, compareStats, corrBand, compareWith, shareParts,
 } from './investAsset.js'
@@ -28,11 +28,25 @@ describe('rangos y pestañas', () => {
     expect(historyRangeFor('1A')).toBe('1y')
     expect(historyRangeFor('3A')).toBe('5y')
   })
-  it('"Mi posición" solo con unidades; una pestaña oculta cae en Indicadores', () => {
+  it('"Mi posición" solo con unidades, y primero; sin pedido abre en la útil', () => {
     expect(visibleTabs(false)).toEqual(['ind', 'fund', 'news'])
-    expect(visibleTabs(true)).toEqual(['ind', 'fund', 'mine', 'news'])
-    expect(pickTab('mine', false)).toBe('ind')
+    expect(visibleTabs(true)).toEqual(['mine', 'ind', 'fund', 'news'])
+    expect(defaultTab(true)).toBe('mine')
+    expect(defaultTab(false)).toBe('fund')
+    expect(pickTab(null, true)).toBe('mine')
+    expect(pickTab(null, false)).toBe('fund')
+    expect(pickTab('mine', false)).toBe('fund')
     expect(pickTab('news', false)).toBe('news')
+    // Lo que guardó el historial (invAssetTab) manda.
+    expect(pickTab('ind', true)).toBe('ind')
+  })
+  it('positionLine: unidades, valor, resultado con dirección y peso', () => {
+    const l = positionLine([{ sh: 12, cost: 450 }], 550, { weight: 0.528 })
+    expect(l).toMatchObject({ sh: 12, value: 6600, dir: 'up', weight: 0.528, priced: true })
+    expect(l.plPct).toBeCloseTo(100 / 450, 6)
+    expect(positionLine([{ sh: 2, cost: 10 }], 8).dir).toBe('down')
+    expect(positionLine([{ sh: 2, cost: 10 }], null)).toMatchObject({ value: 20, plPct: null, dir: null, priced: false })
+    expect(positionLine([], 10)).toBeNull()
   })
 })
 

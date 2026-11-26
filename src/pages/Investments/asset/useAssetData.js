@@ -7,7 +7,8 @@
 //  · Con el rango 3A: cinco años de velas.
 //  · Al abrir Fundamentales: fundamentales y resultados trimestrales.
 //  · Al abrir Noticias: titulares del ticker.
-//  · Al abrir Mi posición: peso en el portafolio y límite de concentración.
+//  · Con posición (línea de arriba y Mi posición): peso en el portafolio,
+//    efecto del tipo de cambio y límite de concentración.
 // En el demo, la posición, la lista y los titulares del activo son de ejemplo
 // (demo/demoInvestAsset.js); cotización, velas, fundamentales y resultados son
 // reales (demo/demoMarketApi.js) y, si no responden, de ejemplo y rotulados
@@ -133,7 +134,7 @@ export function useAssetData(ticker, { demo = false, demoApi = demoMarketApi } =
         const val = (r) => r.sh * (q[r.t]?.price > 0 ? q[r.t].price : r.price)
         const total = rows.reduce((s, r) => s + val(r), 0)
         const row = rows.find(r => r.t === ticker)
-        setWeight(READY(row && total > 0 ? { weight: val(row) / total, valueUsd: val(row), nofx: false } : null))
+        setWeight(READY(row && total > 0 ? { weight: val(row) / total, valueUsd: val(row), fxEffectUsd: 0, nofx: false } : null))
       })
       return
     }
@@ -145,7 +146,10 @@ export function useAssetData(ticker, { demo = false, demoApi = demoMarketApi } =
       const nofx = mine.some(r => r.status === 'nofx')
       const w = mine.reduce((a, r) => a + (r.weight || 0), 0)
       const usd = mine.reduce((a, r) => a + (r.valueUsd || 0), 0)
-      setWeight(READY(mine.length ? { weight: nofx ? null : w, valueUsd: nofx ? null : usd, nofx } : null))
+      // Efecto del tipo de cambio desde la compra (lo que mostraba la fila de
+      // Portafolio al desplegarse): en US$, solo si se conoce.
+      const fx = mine.reduce((a, r) => a + (r.fxEffectUsd || 0), 0)
+      setWeight(READY(mine.length ? { weight: nofx ? null : w, valueUsd: nofx ? null : usd, fxEffectUsd: nofx ? null : fx, nofx } : null))
     }).catch(() => { if (gen === alive.current) setWeight({ phase: 'error', data: null }) })
     setProfile(LOADING)
     investData.getProfile().then(r => { if (gen === alive.current) setProfile(READY({ limit: r.ok ? r.data.rule.limit : RULE_DEFAULTS.limit })) })
