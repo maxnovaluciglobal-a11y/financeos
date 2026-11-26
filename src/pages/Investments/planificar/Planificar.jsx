@@ -272,7 +272,8 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
     e.preventDefault()
     go(next)
   }
-  function changeSub(next) {
+  function changeSub(raw) {
+    const next = normPlanSub(raw).sub
     // Cambiar de parte a mano deja de editar el plan abierto si es de otro tipo.
     if (editing && ((next === 'oportunidades' && editing.k !== 'trade') || (next === 'aportes' && editing.k !== 'aporte'))) setEditing(null)
     setSub(next)

@@ -45,7 +45,7 @@ export function macdText(t, r) {
   return r.macd.fading ? t('fl.macd.fading', { s: sgn }) : sgn
 }
 
-export default function ListPane({ t, d, full, demo = false, push, now = Date.now(), focusAlerts = false, onOpen, onAlert, onNewAlert, onCompare, onSay, onErr }) {
+export default function ListPane({ t, d, full, demo = false, push, now = Date.now(), focusAlerts = false, onFocused, onOpen, onAlert, onNewAlert, onCompare, onSay, onErr }) {
   const id = useId()
   const [adding, setAdding] = useState(false)
   const [input, setInput] = useState('')
@@ -65,7 +65,10 @@ export default function ListPane({ t, d, full, demo = false, push, now = Date.no
   useEffect(() => {
     if (!focusAlerts) return
     focusLater(sumId)
+    // Se consume: volver a Mi lista después no vuelve a saltar a las alertas.
+    onFocused?.()
     try { if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => document.getElementById(sumId)?.scrollIntoView?.({ block: 'center' })) } catch { /* sin DOM */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- onFocused cambia en cada render
   }, [focusAlerts, sumId])
   function toggleAdd() {
     setAdding(v => !v)

@@ -28,6 +28,7 @@
 // pasa por memoria y un evento (aporteStore.js). El evento de analítica
 // bridge_aporte tampoco: la política de privacidad dice que la app no registra
 // eventos ni clics dentro de ella.
+import { EduNotice } from '../esencial/ViewToggle.jsx'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle, ArrowDown, ArrowUp, ChevronDown, ChevronRight, Clock, Equal, FileUp, FlaskConical, Minus, Plus, TrendingDown, TrendingUp, WifiOff } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
@@ -685,6 +686,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       <div className={s.hoy}>
         <p className={s.text} role="alert">{offline ? t('invest.card.errorOffline') : t('invest.card.error')}</p>
         <button type="button" className={s.btn} onClick={d.reload}>{t('invest.card.retry')}</button>
+        <EduNotice />
       </div>
     )
   }

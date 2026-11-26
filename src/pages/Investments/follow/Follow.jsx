@@ -123,7 +123,7 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
 
       <div role="tabpanel" id={`fl-panel-${sub}`} aria-labelledby={`fl-tab-${sub}`}>
         {sub === 'lista' && (
-          <ListPane t={t} d={d} full={full} demo={demo} push={push} focusAlerts={focus === 'alertas'} onOpen={onOpen} onAlert={onBell}
+          <ListPane t={t} d={d} full={full} demo={demo} push={push} focusAlerts={focus === 'alertas'} onFocused={() => setFocus(null)} onOpen={onOpen} onAlert={onBell}
             onNewAlert={(sym) => setSheet({ prev: null, symbol: sym })} onCompare={(list) => setCmp(c => ({ list: compareFromList(list), n: (c?.n || 0) + 1 }))}
             onSay={say} onErr={sayErr} />
         )}

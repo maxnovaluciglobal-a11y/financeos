@@ -311,7 +311,7 @@ function InvestAssetPage({ setPage }) {
     toast(t('asset.del.done', { t: ticker }), 'ok', {
       label: t('asset.undo'),
       onAction: async () => {
-        const u = await investData.addHolding(back)
+        const u = await investData.addHolding(back, { allowZeroCost: Number(back.cost) === 0 })
         if (!u.ok) toast(t(errorKey(u.error)), 'error')
         d.refreshMine()
       },
