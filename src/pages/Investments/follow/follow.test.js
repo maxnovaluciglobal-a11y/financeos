@@ -18,7 +18,8 @@ import { FOLLOW_TABS } from '../../../utils/investNav.js'
 import { DEMO_WATCH, demoAlerts, demoFollowHistory, demoFollowQuotes } from '../../../demo/demoInvestFollow.js'
 import { sampleQuote } from '../../../demo/demoInvestAsset.js'
 import ListPane from './ListPane.jsx'
-import AlertsPane, { PushOffer } from './AlertsPane.jsx'
+import { PushOffer, alertLineText } from './AlertParts.jsx'
+import { compareFromList } from './Follow.jsx'
 import { compareChart } from './ComparePane.jsx'
 import { __resetDemoFollow, demoAlertList, demoSaveAlert } from './useFollowData.js'
 import { alertErrorKey, hasLiveSubscription, pushResultText, pushState } from './shared.js'
@@ -43,7 +44,7 @@ describe('textos de Siguiendo', () => {
     expect(Object.entries(de).filter(([, v]) => /\b(du|dein|deine|deinen|dich|dir)\b/i.test(v)).map(([k]) => k)).toEqual([])
   })
   it('portugués propio (salvo palabras iguales)', () => {
-    const same = new Set(['fl.tab.alertas', 'fl.tab.comparar', 'fl.row.alertOne', 'fl.row.alertMany', 'fl.col.macd', 'fl.col.vol', 'fl.col.range',
+    const same = new Set(['fl.bar.follow', 'fl.bar.compare', 'fl.row.alertOne', 'fl.row.alertMany', 'fl.col.macd', 'fl.col.vol', 'fl.col.range',
       'fl.col.alert', 'fl.al.sum.reachedSub', 'fl.al.edit', 'fl.sheet.cancel', 'fl.sheet.asset', 'fl.disc.lists', 'fl.disc.list.dividends', 'fl.disc.list.chile',
       'fl.disc.list.mexico', 'fl.disc.filters', 'fl.disc.meta', 'fl.cmp.chartSummary', 'fl.cmp.c.pair', 'fl.sugg.pct', 'fl.rsi.mid', 'fl.disc.follow', 'fl.sheet.level',
       'fl.list.addBtn', 'fl.cmp.period', 'fl.al.sum.assets', 'fl.sheet.edit', 'fl.disc.trend', 'fl.col.trend', 'fl.col.asset', 'fl.sheet.existing', 'fl.cmp.c.corr', 'fl.disc.failed',
@@ -123,45 +124,81 @@ describe('piezas de Siguiendo', () => {
     }
   }
   const noop = () => {}
+  const push = { state: 'off', busy: false, error: null, enable: noop }
+  const list = (patch = {}, props = {}) => text(renderToStaticMarkup(h(ListPane, { t, d: data(patch), full: false, demo: true, push, onOpen: noop, onAlert: noop, onNewAlert: noop, onCompare: noop, onSay: noop, onErr: noop, ...props })))
   it('Mi lista esencial: precio y día, sin RSI ni MACD; completa: las lecturas', () => {
-    const ess = text(renderToStaticMarkup(h(ListPane, { t, d: data(), full: false, demo: true, onOpen: noop, onAlert: noop, onSay: noop, onErr: noop })))
+    const ess = list()
     expect(ess).toContain('SPY')
-    expect(ess).toContain(t('fl.list.intro'))
     expect(ess).not.toMatch(/RSI|MACD/)
-    const full = text(renderToStaticMarkup(h(ListPane, { t, d: data(), full: true, demo: true, onOpen: noop, onAlert: noop, onSay: noop, onErr: noop })))
+    const full = list({}, { full: true })
     for (const k of ['fl.col.trend', 'fl.col.rsi', 'fl.col.macd', 'fl.col.vol', 'fl.col.range']) expect(full).toContain(t(k))
     expect(full).toContain(t('fl.filter.label') ? t('fl.trend.all') : '')
   })
   it('Mi lista vacía y sin sesión lo dicen con calma', () => {
-    const empty = text(renderToStaticMarkup(h(ListPane, { t, d: data({ watch: { phase: 'ready', list: [], error: null } }), full: false, onOpen: noop, onAlert: noop, onSay: noop, onErr: noop })))
+    const empty = list({ watch: { phase: 'ready', list: [], error: null } })
     expect(empty).toContain(t('fl.list.empty.title'))
-    const anon = text(renderToStaticMarkup(h(ListPane, { t, d: data({ watch: { phase: 'error', list: [], error: 'session_required' } }), full: false, onOpen: noop, onAlert: noop, onSay: noop, onErr: noop })))
+    // Sin activos, el campo para seguir uno queda abierto.
+    expect(empty).toContain(t('fl.list.addLabel'))
+    const anon = list({ watch: { phase: 'error', list: [], error: 'session_required' } })
     expect(anon).toContain(t('fl.list.session'))
   })
-  it('Alertas: resumen, condiciones en palabras, lo que falta y el aviso de push', () => {
-    const push = { state: 'off', busy: false, error: null, enable: noop }
-    const html = text(renderToStaticMarkup(h(AlertsPane, { t, d: data(), demo: true, push, onNew: noop, onEdit: noop, onSay: noop, onErr: noop })))
-    expect(html).toContain(t('fl.al.sum.active'))
-    expect(html).toContain('Sube a')
-    expect(html).toContain('Baja a')
-    expect(html).toContain('Falta')
+  it('Mi lista: arriba "+ Seguir", "Nueva alerta" y "Comparar"; el campo de seguir se abre con el botón', () => {
+    const html = list()
+    for (const k of ['fl.bar.follow', 'fl.al.new', 'fl.bar.compare']) expect(html).toContain(t(k))
+    expect(html).not.toContain(t('fl.list.addLabel'))
+    const raw = renderToStaticMarkup(h(ListPane, { t, d: data(), full: false, demo: true, push, onOpen: noop, onAlert: noop, onNewAlert: noop, onCompare: noop, onSay: noop, onErr: noop }))
+    expect(raw).toMatch(/aria-expanded="false"/)
+    // Cada fila que abre la ficha es un botón con nombre.
+    expect(raw).toContain(`aria-label="${t('fl.row.open', { t: 'SPY' })}"`)
+    // La campana con alerta edita; el nombre lo dice.
+    expect(raw).toContain(`aria-label="${t('fl.row.alertSee', { t: 'SPY', n: 1 })}"`)
+  })
+  it('Mi lista: cada activo con su alerta debajo, el resumen en una línea y los avisos', () => {
+    const html = list()
+    // SPY: baja a US$484,45, a 5 % del precio.
+    expect(html).toMatch(/Alerta: baja a US\$\s?484,45 · falta 5,0\s?%/)
+    expect(html).toMatch(/Alerta: sube a US\$/)
+    expect(html).toMatch(/Alerta: se mueve 3,0\s?% en el día · avisada el/)
+    expect(html).toContain(t('fl.sum.line', { active: 3, reached: 0, assets: 3 }))
+    expect(html).toContain(t('fl.push.title'))
     expect(html).toContain(t('fl.push.enable'))
     // En el demo no se ofrece importar.
     expect(html).not.toContain(t('fl.imp.pick'))
-    const missing = text(renderToStaticMarkup(h(AlertsPane, { t, d: data({ alerts: { phase: 'error', list: [], error: 'table_missing' } }), demo: false, push, onNew: noop, onEdit: noop, onSay: noop, onErr: noop })))
-    expect(missing).toContain(t('fl.al.missing'))
-    expect(missing).not.toContain(t('fl.al.new'))
+    // Sin la vieja sub-pestaña: nada de párrafos largos arriba.
+    expect(html).not.toContain(t('fl.list.intro'))
   })
-  it('Alertas sin cotización: la moneda sale del sufijo y nunca se supone US$', () => {
-    const push = { state: 'off', busy: false, error: null, enable: noop }
-    const list = [
+  it('Mi lista sin alertas lo dice en una línea; sin la tabla de alertas no ofrece crearlas', () => {
+    expect(list({ alerts: { phase: 'ready', list: [], error: null } })).toContain(t('fl.sum.none'))
+    const raw = renderToStaticMarkup(h(ListPane, { t, d: data({ alerts: { phase: 'error', list: [], error: 'table_missing' } }), full: false, demo: false, push, onOpen: noop, onAlert: noop, onNewAlert: noop, onCompare: noop, onSay: noop, onErr: noop }))
+    expect(text(raw)).toContain(t('fl.al.missing'))
+    expect(raw).toMatch(new RegExp(`<button[^>]*disabled[^>]*>${t('fl.al.new')}</button>`))
+  })
+  it('dos alertas del mismo activo: "2 alertas"; en pausa y cumplida se dicen', () => {
+    const q = { price: 100, currency: 'USD', changePct: 0.01 }
+    const a = (id, condition, threshold, active = true) => ({ id, symbol: 'SPY', condition, threshold, active, lastTriggeredAt: null })
+    expect(alertLineText(t, [a('1', 'above', 120), a('2', 'below', 80)], q)).toMatchObject({ lead: t('fl.row.alertMany', { n: 2 }), rest: '' })
+    expect(alertLineText(t, [a('1', 'above', 90), a('2', 'below', 80)], q).rest).toBe(t('fl.row.reachedN', { n: 1 }))
+    expect(alertLineText(t, [a('1', 'above', 120, false)], q).rest).toMatch(new RegExp(`${t('fl.row.paused')}$`))
+    expect(alertLineText(t, [a('1', 'above', 90)], q)).toMatchObject({ reached: true })
+    expect(alertLineText(t, [], q)).toBeNull()
+  })
+  it('alertas de activos que no sigues: siguen a la vista; sin cotización la moneda sale del sufijo y nunca se supone US$', () => {
+    const al = [
       { id: 'x1', symbol: 'PETR4.SA', condition: 'above', threshold: 38, active: true, last_triggered_at: null, created_at: '2026-11-20T00:00:00Z' },
       { id: 'x2', symbol: 'ABC.ZZ', condition: 'below', threshold: 12.5, active: true, last_triggered_at: null, created_at: '2026-11-20T00:00:00Z' },
     ]
-    const html = text(renderToStaticMarkup(h(AlertsPane, { t, d: data({ alerts: { phase: 'ready', list, error: null }, quotes: {}, quotesFailed: true }), demo: false, push, onNew: noop, onEdit: noop, onSay: noop, onErr: noop })))
-    expect(html).toMatch(/PETR4\.SA · Sube a BRL\s?38/)
-    expect(html).toMatch(/ABC\.ZZ · Baja a 12[,.]50/)
+    const html = list({ watch: { phase: 'ready', list: [], error: null }, alerts: { phase: 'ready', list: al, error: null }, quotes: {}, quotesFailed: true }, { demo: false })
+    expect(html).toContain(t('fl.orph.title'))
+    expect(html).toMatch(/PETR4\.SA Alerta: sube a BRL\s?38/)
+    expect(html).toMatch(/ABC\.ZZ Alerta: baja a 12[,.]50/)
     expect(html).not.toContain('US$')
+    // Con cuenta (fuera del demo) se ofrece traer las alertas de la versión anterior.
+    expect(html).toContain(t('fl.imp.title'))
+  })
+  it('Comparar desde Mi lista: los activos de la lista (hasta 4), o la comparación de siempre', () => {
+    expect(compareFromList(['SPY', 'QQQ', 'NVDA'])).toEqual(['SPY', 'QQQ', 'NVDA'])
+    expect(compareFromList(['A', 'B', 'C', 'D', 'E'])).toEqual(['A', 'B', 'C', 'D'])
+    expect(compareFromList(['SPY']).length).toBeGreaterThanOrEqual(2)
   })
   it('el estado de push sigue el flujo de Ajustes (licencia, navegador, demo)', () => {
     expect(pushState({ demo: true })).toBe('demo')
@@ -173,6 +210,7 @@ describe('piezas de Siguiendo', () => {
     expect(pushState({ supported: true, hasKey: true, on: true, permission: 'denied' })).toBe('off')
     expect(pushState({ supported: true, hasKey: true, on: true, permission: 'default' })).toBe('off')
     const on = text(renderToStaticMarkup(h(PushOffer, { t, push: { state: 'on', enable: noop } })))
+    expect(on).toContain(t('fl.push.title'))
     expect(on).toContain(t('fl.push.on'))
   })
   it('la suscripción borrada en el servidor o en el navegador apaga el estado', async () => {

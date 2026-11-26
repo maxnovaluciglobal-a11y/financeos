@@ -1,5 +1,7 @@
 // Hoja de alerta de precio (F4): crear o editar una alerta, desde Siguiendo
-// (Mi lista, Alertas) y desde la ficha del activo. Muestra el precio de ahora,
+// (la campana de cada fila de Mi lista, "Nueva alerta") y desde la ficha del
+// activo. Desde Mi lista (onToggle, onDelete, onPick) además se pausa, se
+// elimina y se pasa a otra alerta del mismo activo o a una nueva. Muestra el precio de ahora,
 // lo que falta, niveles sugeridos con tus datos (Invest alSugerencias) y las
 // otras alertas del mismo activo. Guarda con onSave(prev, input), que llega
 // a core/investAlerts.js (o al estado del demo).
@@ -21,7 +23,7 @@ const condLabel = (t, a, ccy) => (a.condition === 'pct_move'
   : t(`fl.al.cond.${a.condition}`, { lvl: pxOrPlain(a.threshold, ccy) }))
 export { condLabel }
 
-export default function AlertSheet({ open, onClose, prev = null, symbol = '', lockSymbol = false, quoteOf, avgCost = null, alerts = [], onSave, onSaved, pushState = null }) {
+export default function AlertSheet({ open, onClose, prev = null, symbol = '', lockSymbol = false, quoteOf, avgCost = null, alerts = [], onSave, onSaved, pushState = null, onToggle = null, onDelete = null, onPick = null }) {
   const { t } = useFollowT()
   const id = useId()
   const titleRef = useRef(null)
@@ -148,8 +150,24 @@ export default function AlertSheet({ open, onClose, prev = null, symbol = '', lo
           <div className={s.field}>
             <span className={s.fieldLabel}>{t('fl.sheet.existing', { t: sym })}</span>
             <ul className={s.preview}>
-              {others.map(a => <li key={a.id}><span>{condLabel(t, a, ccy)}</span>{!a.active && <span>{t('fl.al.paused')}</span>}</li>)}
+              {others.map(a => (
+                <li key={a.id} style={{ alignItems: 'center' }}>
+                  <span>{condLabel(t, a, ccy)}{!a.active && <> · {t('fl.al.paused')}</>}</span>
+                  {onPick && <button type="button" className={s.btn} onClick={() => onPick(a)} aria-label={`${t('fl.al.edit')} · ${condLabel(t, a, ccy)}`}>{t('fl.al.edit')}</button>}
+                </li>
+              ))}
             </ul>
+          </div>
+        )}
+        {prev && onPick && SYMBOL_RE.test(sym) && (
+          <div className={s.actionsRow}>
+            <button type="button" className={s.btn} onClick={() => onPick(null)}>{t('fl.sheet.another', { t: sym })}</button>
+          </div>
+        )}
+        {prev && (onToggle || onDelete) && (
+          <div className={s.actionsRow}>
+            {onToggle && <button type="button" className={s.btn} onClick={() => onToggle(prev)}>{prev.active ? t('fl.al.pause') : t('fl.al.resume')}</button>}
+            {onDelete && <button type="button" className={`${s.btn} ${s.btnDanger}`} onClick={() => onDelete(prev)}>{t('fl.al.delete')}</button>}
           </div>
         )}
 

@@ -13,15 +13,18 @@
 // cuenta, core/deviceOwner.js); el ticker de la ficha NO se guarda en el
 // dispositivo.
 // Enlaces: ?open=invest-resumen | invest-portafolio | invest-siguiendo |
-// invest-planificar | invest-mercado | invest-alertas (Siguiendo › Alertas,
-// el aviso push de una alerta) (utils/deepLink.js). Los viejos
+// invest-planificar | invest-mercado | invest-alertas (Siguiendo › Mi lista
+// con las alertas a la vista: el aviso push de una alerta) (utils/deepLink.js). Los viejos
 // invest-hoy e invest-lista redirigen a Resumen y Siguiendo (LEGACY_TABS). La search que se
 // lee es la que resolvió deepLink.initialSearch() al arrancar, así el enlace
 // sobrevive a la vuelta de OAuth o del correo de confirmación.
 // F1: Portafolio tiene 4 sub-pestañas (invSub en la misma entrada del
 // historial y `fos_invest_port_tab`, también clave de la cuenta).
-// F4: Siguiendo tiene 4 (invFollow y `fos_invest_follow_tab`). Desde la ficha
-// se puede pedir "Comparar" con ese activo (queueFollow, una vez, en memoria).
+// F4: Siguiendo tiene 2 desde el 26-nov-2026, Mi lista (con las alertas en
+// cada fila) y Descubrir (invFollow y `fos_invest_follow_tab`). Las viejas
+// Alertas y Comparar caen en Mi lista (LEGACY_FOLLOW). Desde la ficha se puede
+// pedir "Comparar" con ese activo (queueFollow, una vez, en memoria): abre la
+// hoja de Comparar sobre Mi lista.
 import { bootInitialSearch } from './deepLink.js'
 
 export const INVEST_TABS = ['resumen', 'portafolio', 'siguiendo', 'planificar', 'mercado']
@@ -38,10 +41,17 @@ export const PORT_TABS = ['posiciones', 'movimientos', 'dividendos', 'objetivos'
 export const DEFAULT_PORT_TAB = 'posiciones'
 export const PORT_TAB_KEY = 'fos_invest_port_tab'
 
-export const FOLLOW_TABS = ['lista', 'alertas', 'descubrir', 'comparar']
+export const FOLLOW_TABS = ['lista', 'descubrir']
 export const DEFAULT_FOLLOW_TAB = 'lista'
 export const FOLLOW_TAB_KEY = 'fos_invest_follow_tab'
 export const isFollowTab = (t) => FOLLOW_TABS.includes(t)
+// Sub-pestañas de antes del 26-nov-2026 (enlaces, historial, lo guardado):
+// abren Mi lista, que ahora tiene las alertas y el botón Comparar.
+export const LEGACY_FOLLOW = { alertas: 'lista', comparar: 'lista' }
+export function normFollowTab(t) {
+  if (isFollowTab(t)) return t
+  return Object.prototype.hasOwnProperty.call(LEGACY_FOLLOW, t) ? LEGACY_FOLLOW[t] : null
+}
 
 export const isTab = (t) => INVEST_TABS.includes(t)
 // Pestaña con su nombre actual: la vieja se traduce; cualquier otra cosa, null.
@@ -56,7 +66,8 @@ export function normAssetTicker(t) {
 }
 
 // Enlaces a una sub-pestaña: ?open=invest-alertas (el aviso push de una
-// alerta de precio) abre Siguiendo › Alertas.
+// alerta de precio) abre Siguiendo › Mi lista con las alertas a la vista.
+// El nombre del enlace no cambia: lo usan los avisos ya enviados.
 export const OPEN_SUBS = { alertas: { tab: 'siguiendo', follow: 'alertas' } }
 const openName = (open) => /^invest-([a-z]+)$/.exec(String(open || ''))?.[1] ?? null
 
@@ -66,7 +77,8 @@ export function tabFromOpen(open) {
   if (!m) return null
   return Object.prototype.hasOwnProperty.call(OPEN_SUBS, m) ? OPEN_SUBS[m].tab : normTab(m)
 }
-// ?open=invest-<sub> → sub-pestaña de Siguiendo pedida por el enlace, o null.
+// ?open=invest-<sub> → lo pedido en Siguiendo por el enlace ('alertas'), o null.
+// bootFollowTab lo traduce a la sub-pestaña de hoy (Mi lista).
 export function followFromOpen(open) {
   const m = openName(open)
   return m && Object.prototype.hasOwnProperty.call(OPEN_SUBS, m) ? OPEN_SUBS[m].follow : null
@@ -162,7 +174,8 @@ export function rememberPortTab(sub, storage = null) {
 let followQueued = null
 export function queueFollow({ sub = null, compare = null } = {}) {
   const list = Array.isArray(compare) ? compare.map(normAssetTicker).filter(Boolean).slice(0, 4) : null
-  followQueued = { sub: isFollowTab(sub) ? sub : null, compare: list && list.length ? list : null }
+  // La sub-pestaña puede venir con su nombre viejo ('alertas', 'comparar').
+  followQueued = { sub: normFollowTab(sub) ? sub : null, compare: list && list.length ? list : null, focus: null }
   queueInvestTab('siguiendo')
 }
 // Planificar › Aportes pedido desde Resumen ("Repartir" el aporte del mes):
@@ -185,12 +198,25 @@ export function takeQueuedCompare() {
   return c
 }
 export function bootFollowTab({ storage = null } = {}) {
-  if (followQueued?.sub) { const sub = followQueued.sub; followQueued = { ...followQueued, sub: null }; mergeHistoryState({ invFollow: sub }); return sub }
-  const st = readHistoryState()?.invFollow
-  if (isFollowTab(st)) return st
+  if (followQueued?.sub) {
+    const want = followQueued.sub
+    const sub = normFollowTab(want)
+    // 'alertas' (aviso push, Ajustes): Mi lista, con las alertas enfocadas una vez.
+    followQueued = { ...followQueued, sub: null, focus: want === 'alertas' ? 'alertas' : null }
+    mergeHistoryState({ invFollow: sub })
+    return sub
+  }
+  const st = normFollowTab(readHistoryState()?.invFollow)
+  if (st) return st
   let saved = null
   try { saved = storage?.getItem(FOLLOW_TAB_KEY) ?? null } catch { saved = null }
-  return isFollowTab(saved) ? saved : DEFAULT_FOLLOW_TAB
+  return normFollowTab(saved) || DEFAULT_FOLLOW_TAB
+}
+// Lo que hay que mostrar al abrir Mi lista ('alertas' o null), una sola vez.
+export function takeFollowFocus() {
+  const f = followQueued?.focus || null
+  if (followQueued) followQueued = { ...followQueued, focus: null }
+  return f
 }
 export function rememberFollowTab(sub, storage = null) {
   if (!isFollowTab(sub)) return

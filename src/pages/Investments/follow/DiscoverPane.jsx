@@ -166,7 +166,7 @@ export default function DiscoverPane({ t, full, demo, watch, onOpen, onFollow, o
             </div>
           ) : <p className={s.note}>{t('fl.disc.none')}</p>}
           {failed.length > 0 && <p className={s.note}>{t('fl.disc.failed', { list: failed.join(', ') })}</p>}
-          {dz.sample && <p className={s.note} role="note">{t('fl.sampleData')}</p>}
+          {dz.sample && !demo && <p className={s.note} role="note">{t('fl.sampleLive')}</p>}
           <p className={s.note}>{t('fl.disc.yearHint')} {t('fl.source')}</p>
         </>
       )}
