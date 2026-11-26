@@ -1,15 +1,20 @@
 // Mi lista (F4): los activos que sigues (tabla watchlist, RLS por cuenta) con
-// precio y cambio del día. En Vista completa, además tendencia, RSI, MACD,
-// volumen y rango de 52 semanas, con un año de cierres diarios (Invest
-// renderWatch, :4379) y el filtro por tendencia.
-import { useId, useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, Bell, BellRing, Equal, X } from 'lucide-react'
+// precio y cambio del día, y debajo de cada uno su alerta de precio (desde el
+// 26-nov-2026 las alertas ya no son otra sub-pestaña). Arriba, una fila con
+// "+ Seguir", "Nueva alerta" y "Comparar". La campana abre la hoja de alerta de
+// ese activo con el símbolo puesto; tocar la fila (o su alerta) abre la ficha.
+// En Vista completa, además tendencia, RSI, MACD, volumen y rango de 52
+// semanas, con un año de cierres diarios (Invest renderWatch, :4379) y el
+// filtro por tendencia.
+import { useEffect, useId, useMemo, useState } from 'react'
+import { ArrowDown, ArrowUp, Equal, Plus, X } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
 import { TICKER_RE, TREND_FILTERS, byTrend, followRow, trendCounts } from '../../../utils/investFollow.js'
 import { alertsBySymbol } from '../../../utils/investAlerts.js'
 import { fmtDecimal } from '../../../utils/index.js'
 import { fmtPx } from '../asset/format.js'
 import { dirOf, focusLater, pctOrDash } from './shared.js'
+import { AlertLine, AlertsBar, BellBtn, ImportOld, OrphanAlerts } from './AlertParts.jsx'
 import s from '../portfolio/portfolio.module.css'
 import f from './follow.module.css'
 
@@ -40,8 +45,9 @@ export function macdText(t, r) {
   return r.macd.fading ? t('fl.macd.fading', { s: sgn }) : sgn
 }
 
-export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) {
+export default function ListPane({ t, d, full, demo = false, push, now = Date.now(), focusAlerts = false, onOpen, onAlert, onNewAlert, onCompare, onSay, onErr }) {
   const id = useId()
+  const [adding, setAdding] = useState(false)
   const [input, setInput] = useState('')
   const [err, setErr] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -50,6 +56,21 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
   const rows = useMemo(() => d.watch.list.map(tk => followRow(tk, d.quotes[tk] || null, full ? d.hist[tk] || null : null)), [d.watch.list, d.quotes, d.hist, full])
   const counts = trendCounts(rows)
   const shown = full ? byTrend(rows, trend) : rows
+  const empty = d.watch.phase !== 'loading' && d.watch.phase !== 'error' && !rows.length
+  // Sin activos, el campo para seguir uno queda abierto.
+  const formOpen = adding || empty
+  const alertsOff = d.alerts.phase === 'error' && d.alerts.error === 'table_missing'
+  const sumId = `${id}-al`
+  // Llegada desde el aviso de una alerta (o Ajustes): las alertas a la vista.
+  useEffect(() => {
+    if (!focusAlerts) return
+    focusLater(sumId)
+    try { if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => document.getElementById(sumId)?.scrollIntoView?.({ block: 'center' })) } catch { /* sin DOM */ }
+  }, [focusAlerts, sumId])
+  function toggleAdd() {
+    setAdding(v => !v)
+    if (!adding) focusLater(`${id}-add`)
+  }
 
   async function add(e) {
     e.preventDefault()
@@ -61,6 +82,7 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
     setBusy(false)
     if (!r.ok) { onErr(r.error); return }
     setInput('')
+    setAdding(false)
     onSay(t(r.data?.existed ? 'fl.list.exists' : 'fl.list.added', { t: tk }))
   }
   async function remove(tk) {
@@ -74,16 +96,8 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
     onSay(t('fl.list.removed', { t: tk }), { label: t('fl.undo'), onAction: () => d.refollow(tk, idx) })
   }
 
-  const bell = (tk) => {
-    const n = (bySym.get(tk) || []).length
-    const Ic = n ? BellRing : Bell
-    return (
-      <button type="button" className={s.iconBtn} onClick={() => onAlert(tk, n > 0)}
-        aria-label={n ? t('fl.row.alertSee', { t: tk, n }) : t('fl.row.alertCreate', { t: tk })} title={n ? t(n === 1 ? 'fl.row.alertOne' : 'fl.row.alertMany', { n }) : undefined}>
-        <Ic size={18} strokeWidth={2} aria-hidden="true" />{n > 0 && <span className={f.count} aria-hidden="true">{n}</span>}
-      </button>
-    )
-  }
+  const bell = (tk) => <BellBtn t={t} tk={tk} n={(bySym.get(tk) || []).length} onClick={() => onAlert(tk)} />
+  const line = (tk) => <AlertLine t={t} list={bySym.get(tk)} quote={d.quotes[tk] || null} now={now} />
   const rmId = (tk) => `${id}-rm-${tk}`
   const removeBtn = (tk) => (
     <button type="button" id={rmId(tk)} className={s.iconBtn} onClick={() => remove(tk)} aria-label={t('fl.row.remove', { t: tk })}>
@@ -97,9 +111,16 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
       <div className={s.sectionHead}>
         <h2 id={`${id}-h`} className={s.sectionTitle} tabIndex={-1}>{t('fl.list.title')}</h2>
       </div>
-      <p className={s.note}>{full ? t('fl.list.introFull') : t('fl.list.intro')}</p>
+      <div className={s.actionsRow} role="group" aria-label={t('fl.bar.label')}>
+        <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={toggleAdd} aria-expanded={formOpen} aria-controls={`${id}-form`} disabled={empty}>
+          <Plus size={16} strokeWidth={2.4} aria-hidden="true" />{t('fl.bar.follow')}
+        </button>
+        <button type="button" className={s.btn} onClick={() => onNewAlert('')} disabled={alertsOff || d.alerts.phase === 'loading'}>{t('fl.al.new')}</button>
+        <button type="button" className={s.btn} onClick={() => onCompare(d.watch.list)}>{t('fl.bar.compare')}</button>
+      </div>
 
-      <form className={s.inline} onSubmit={add} noValidate>
+      {formOpen && <>
+      <form id={`${id}-form`} className={s.inline} onSubmit={add} noValidate>
         <div className={s.field}>
           <label htmlFor={`${id}-add`} className={s.fieldLabel}>{t('fl.list.addLabel')}</label>
           <input id={`${id}-add`} className={s.input} value={input} onChange={e => { setInput(e.target.value); setErr(null) }}
@@ -110,6 +131,7 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
       </form>
       <p id={`${id}-add-hint`} className={s.hint}>{t('fl.list.addHint')}</p>
       {err && <p id={`${id}-add-err`} className={s.error} role="alert">{err}</p>}
+      </>}
 
       {d.watch.phase === 'loading' && <p className={s.note} role="status">{t('fl.loading')}</p>}
       {d.watch.phase === 'error' && (
@@ -140,11 +162,12 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
         <ul className={s.list}>
           {shown.map(r => (
             <li key={r.t} className={`${s.item} ${f.listRow}`}>
-              <button type="button" className={s.rowHead} onClick={() => onOpen(r.t)} aria-label={t('fl.row.open', { t: r.t })}>
+              <button type="button" className={`${s.rowHead} ${f.rowHead2}`} onClick={() => onOpen(r.t)} aria-label={t('fl.row.open', { t: r.t })}>
                 <span className={s.badge} aria-hidden="true">{r.t.slice(0, 4)}</span>
                 <span className={s.rowMain}>
                   <span className={s.rowTitle}>{r.t}</span>
                   {r.name && r.name !== r.t && <span className={s.rowSub}>{r.name}</span>}
+                  {line(r.t)}
                 </span>
                 <span className={s.rowRight}>
                   <span className={s.rowValue}>{price(r)}</span>
@@ -175,7 +198,11 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
                 const missing = d.hist[r.t] === null
                 return (
                   <tr key={r.t}>
-                    <th scope="row"><button type="button" className={s.link} onClick={() => onOpen(r.t)} aria-label={t('fl.row.open', { t: r.t })}>{r.t}</button></th>
+                    <th scope="row">
+                      <button type="button" className={`${s.link} ${f.cellOpen}`} onClick={() => onOpen(r.t)} aria-label={t('fl.row.open', { t: r.t })}>
+                        <span>{r.t}</span>{line(r.t)}
+                      </button>
+                    </th>
                     <td>{price(r)}</td>
                     <td><Day v={r.changePct} /></td>
                     <td><Cell t={t} scored={r.scored} missing={missing}>{r.trend ? t(`fl.trend.${r.trend}`) : t('fl.cell.na')}</Cell></td>
@@ -209,7 +236,13 @@ export default function ListPane({ t, d, full, onOpen, onAlert, onSay, onErr }) 
         </dl>
       )}
 
-      {rows.length > 0 && <p className={s.note}>{full ? t('fl.list.footFull') : t('fl.list.foot')} {t('fl.source')}</p>}
+      <AlertsBar t={t} d={d} push={push || { state: demo ? 'demo' : 'off', enable: () => {} }} now={now} sumId={sumId} />
+      <OrphanAlerts t={t} d={d} watch={d.watch.list} now={now} onOpen={onOpen} onBell={onAlert} />
+
+      <p className={s.note}>
+        {full && `${t('fl.list.introFull')} `}{t('fl.list.foot2')} {d.alerts.list.length > 0 && `${t('fl.al.how')} ${t('fl.al.foot')} `}{t('fl.source')}
+      </p>
+      {!demo && !alertsOff && d.alerts.phase === 'ready' && <ImportOld t={t} d={d} onErr={onErr} />}
     </section>
   )
 }

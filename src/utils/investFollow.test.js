@@ -10,7 +10,7 @@ import {
   roundLevel, suggestLevels, validateAlert,
 } from './investAlerts.js'
 import { createInvestAlerts } from '../core/investAlerts.js'
-import { FOLLOW_TABS, FOLLOW_TAB_KEY, bootFollowTab, bootTab, queueFollow, rememberFollowTab, takeQueuedCompare, __resetInvestNav } from './investNav.js'
+import { FOLLOW_TABS, FOLLOW_TAB_KEY, bootFollowTab, bootTab, queueFollow, rememberFollowTab, takeFollowFocus, takeQueuedCompare, __resetInvestNav } from './investNav.js'
 
 // Velas diarias de días hábiles terminando el 2026-11-20, con un paso por día.
 function candles(n, { start = 100, step = 0.001, wave = 0, end = '2026-11-20' } = {}) {
@@ -251,20 +251,39 @@ describe('core/investAlerts (invest_alerts con RLS)', () => {
 describe('navegación a Siguiendo', () => {
   const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)) } }
   beforeEach(() => __resetInvestNav())
-  it('4 sub-pestañas; la guardada vale y una rara cae en Mi lista', () => {
-    expect(FOLLOW_TABS).toEqual(['lista', 'alertas', 'descubrir', 'comparar'])
+  it('2 sub-pestañas; la guardada vale y una rara cae en Mi lista', () => {
+    expect(FOLLOW_TABS).toEqual(['lista', 'descubrir'])
     const st = mem()
     expect(bootFollowTab({ storage: st })).toBe('lista')
-    rememberFollowTab('alertas', st)
-    expect(st.getItem(FOLLOW_TAB_KEY)).toBe('alertas')
-    expect(bootFollowTab({ storage: st })).toBe('alertas')
+    rememberFollowTab('descubrir', st)
+    expect(st.getItem(FOLLOW_TAB_KEY)).toBe('descubrir')
+    expect(bootFollowTab({ storage: st })).toBe('descubrir')
     st.setItem(FOLLOW_TAB_KEY, 'toString')
     expect(bootFollowTab({ storage: st })).toBe('lista')
+    // Lo que no es una sub-pestaña no se guarda.
+    rememberFollowTab('alertas', st)
+    expect(st.getItem(FOLLOW_TAB_KEY)).toBe('toString')
   })
-  it('desde la ficha: "Comparar" abre Siguiendo › Comparar con esos activos, una sola vez', () => {
+  it('las sub-pestañas viejas (Alertas, Comparar) guardadas o en el historial abren Mi lista', () => {
+    for (const old of ['alertas', 'comparar']) {
+      const st = mem(); st.setItem(FOLLOW_TAB_KEY, old)
+      expect(bootFollowTab({ storage: st })).toBe('lista')
+      globalThis.history = { state: { invFollow: old }, replaceState(s) { this.state = s } }
+      expect(bootFollowTab({ storage: mem() })).toBe('lista')
+      delete globalThis.history
+    }
+    // Ajustes › "Ver mis alertas" (queueFollow con el nombre viejo): Mi lista con las alertas enfocadas, una vez.
+    queueFollow({ sub: 'alertas' })
+    expect(bootTab({ search: '' })).toBe('siguiendo')
+    expect(bootFollowTab({ storage: mem() })).toBe('lista')
+    expect(takeFollowFocus()).toBe('alertas')
+    expect(takeFollowFocus()).toBeNull()
+  })
+  it('desde la ficha: "Comparar" abre Mi lista con la hoja de Comparar y esos activos, una sola vez', () => {
     queueFollow({ sub: 'comparar', compare: ['aapl', 'SPY', 'x y', 'MSFT', 'QQQ', 'VOO'] })
     expect(bootTab({ search: '' })).toBe('siguiendo')
-    expect(bootFollowTab({ storage: mem() })).toBe('comparar')
+    expect(bootFollowTab({ storage: mem() })).toBe('lista')
+    expect(takeFollowFocus()).toBeNull()
     expect(takeQueuedCompare()).toEqual(['AAPL', 'SPY', 'MSFT', 'QQQ'])
     expect(takeQueuedCompare()).toBeNull()
   })

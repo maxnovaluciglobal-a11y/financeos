@@ -2,7 +2,7 @@
 // mensaje (public/push-sw.js) y la app va ahí sin recargar.
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { listenSwOpen, openFromMessage, OPEN_MESSAGE } from './swOpen.js'
-import { OPEN_EVENT, __resetInvestNav, bootFollowTab, bootTab } from './investNav.js'
+import { OPEN_EVENT, __resetInvestNav, bootFollowTab, bootTab, takeFollowFocus } from './investNav.js'
 
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)) } }
 
@@ -11,7 +11,7 @@ describe('openFromMessage', () => {
     __resetInvestNav()
     globalThis.history = { state: { invTab: 'planificar', invFollow: 'lista' }, replaceState(s) { this.state = s } }
   })
-  it('invest-alertas: va a Inversiones › Siguiendo › Alertas aunque la entrada del historial tenga otra pestaña', async () => {
+  it('invest-alertas: va a Inversiones › Siguiendo › Mi lista (alertas a la vista) aunque la entrada del historial tenga otra pestaña', async () => {
     const setPage = vi.fn()
     const seen = []
     const on = (e) => seen.push(e.detail)
@@ -22,7 +22,8 @@ describe('openFromMessage', () => {
     // investNav llega con import(): la página cambia recién con la pestaña en cola.
     await vi.waitFor(() => expect(setPage).toHaveBeenCalledWith('investments'))
     expect(bootTab({ storage: mem() })).toBe('siguiendo')
-    expect(bootFollowTab({ storage: mem() })).toBe('alertas')
+    expect(bootFollowTab({ storage: mem() })).toBe('lista')
+    expect(takeFollowFocus()).toBe('alertas')
     window.removeEventListener(OPEN_EVENT, on)
     globalThis.window = prev
     expect(seen).toEqual([{ tab: 'siguiendo', follow: 'alertas' }])
