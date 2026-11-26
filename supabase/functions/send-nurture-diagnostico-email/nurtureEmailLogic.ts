@@ -95,7 +95,7 @@ export function pickLang(lang: unknown): EmailLang {
 // Un label "Crítico" o "Regular" es, en la enorme mayoría de los casos que
 // arma este cálculo (pesos: flujo 30, emergencia 20, deuda 20, metas 15),
 // resultado de un flujo de caja negativo o ajustado — así que se apunta al
-// mismo feature que el email 2 profundiza (Dashboard + Movimientos). No es
+// mismo feature que el email 2 profundiza (Inicio + Movimientos). No es
 // tan preciso como saber el factor exacto, pero es consistente con lo que
 // la app puede después mostrar con datos reales (regla explícita del .md:
 // no prometer una recomendación que la app no pueda sostener).

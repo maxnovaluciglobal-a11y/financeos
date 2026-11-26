@@ -67,11 +67,11 @@ describe('renderEmail', () => {
     expect(r.subject).toContain('presupuesto')
   })
 
-  it('day5 ofrece la prueba de 14 días de Pro y dice que pide tarjeta (COM-11, C-03)', () => {
+  it('day5 ofrece la prueba de 14 días de Pro sin tarjeta, que empieza la persona (modelo A, 26-nov-2026)', () => {
     const r = renderEmail('day5', LEAD, CONFIG)
     expect(r.html.toLowerCase()).not.toContain('trial')
-    expect(r.html).toContain('Pruébalo 14 días gratis')
-    expect(r.html).toContain('se pide una tarjeta')
+    expect(r.html).toContain('Puedes probarlo 14 días gratis y sin tarjeta: la prueba la empiezas tú')
+    expect(r.html).not.toContain('se pide una tarjeta')
     expect(r.html).toContain('Probar Pro 14 días gratis')
     expect(r.html).toContain('ref=diagnostico-d5')
   })

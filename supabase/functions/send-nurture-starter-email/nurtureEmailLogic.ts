@@ -5,7 +5,7 @@
 // 14-sep-2026, calcado del patrón de send-nurture-diagnostico-email/. La
 // diferencia de fondo con esa secuencia: quien recibe esto YA ES usuario
 // Starter con cuenta activa, no un lead que "podría" registrarse. El
-// objetivo es activación (que use Dashboard/Movimientos/Presupuestos con
+// objetivo es activación (que use Inicio/Movimientos/Presupuestos con
 // datos reales) y, en el email 3, upsell a Pro — nunca "crea tu cuenta".
 //
 // Separada de index.ts por el mismo motivo que en send-nurture-diagnostico-

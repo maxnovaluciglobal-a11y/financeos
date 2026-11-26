@@ -94,32 +94,32 @@ function scoreText(lang: EmailLang, score: number | null): string {
 // por qué el label se usa como proxy del hallazgo dominante.
 const ACTION_BLOCKS: Record<EmailLang, Record<string, string> & { _default: string }> = {
   es: {
-    "Crítico": "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en moyiq: el Dashboard te va a mostrar exactamente en qué categoría se te va el dinero, sin que tengas que armar una planilla.",
+    "Crítico": "Con tu resultado, lo más probable es que el problema esté en el flujo de caja del mes a mes — más sale de lo que entra, o casi. Registra tus movimientos de esta semana en moyiq: el Inicio te va a mostrar exactamente en qué categoría se te va el dinero, sin que tengas que armar una planilla.",
     "Regular": "Tu resultado está en la zona donde un cambio chico rinde mucho: ordenar el colchón de emergencia o la carga de deuda. Con tus movimientos reales cargados, moyiq te muestra cuál de los dos te conviene atacar primero según tu propio flujo de caja.",
-    "Bueno": "Ya estás manejando bien lo básico. El siguiente paso es que ese resultado no dependa de que te acuerdes de revisarlo — con tus movimientos importados, el Dashboard te avisa solo cuando algo se corre de lo normal.",
-    "Excelente": "Tu resultado ya está en el nivel donde el foco pasa de \"ordenar\" a \"optimizar\" — metas en paralelo, proyección de decisiones grandes. Eso es exactamente lo que hace Goals y Advisor con tus datos reales.",
-    _default: "Registra tus movimientos de esta semana en moyiq. El Dashboard te muestra en qué categoría se te va más dinero cada mes, sin que tengas que actualizar nada a mano.",
+    "Bueno": "Ya estás manejando bien lo básico. El siguiente paso es que ese resultado no dependa de que te acuerdes de revisarlo — con tus movimientos importados, el Inicio te muestra cuánto te queda del mes sin que tengas que calcularlo.",
+    "Excelente": "Tu resultado ya está en el nivel donde el foco pasa de \"ordenar\" a \"optimizar\" — metas en paralelo, proyección de decisiones grandes. Eso es lo que hacen Metas y la Proyección de flujo de Pro con tus datos reales.",
+    _default: "Registra tus movimientos de esta semana en moyiq. El Inicio te muestra en qué categoría se te va más dinero cada mes, sin que tengas que actualizar nada a mano.",
   },
   en: {
-    "Crítico": "With your result, the problem is most likely in month-to-month cash flow — more goes out than comes in, or nearly. Record this week's transactions in moyiq: the Dashboard shows exactly which category your money goes to, without you having to build a spreadsheet.",
+    "Crítico": "With your result, the problem is most likely in month-to-month cash flow — more goes out than comes in, or nearly. Record this week's transactions in moyiq: Home shows exactly which category your money goes to, without you having to build a spreadsheet.",
     "Regular": "Your result is in the zone where a small change goes a long way: sorting out your emergency fund or your debt load. With your real transactions loaded, moyiq shows which of the two to tackle first based on your own cash flow.",
-    "Bueno": "You already handle the basics well. The next step is for that result not to depend on you remembering to check it — with your transactions imported, the Dashboard flags it when something moves away from normal.",
-    "Excelente": "Your result is already at the level where the focus shifts from \"organizing\" to \"optimizing\" — parallel goals, projecting big decisions. That is exactly what Goals and Advisor do with your real data.",
-    _default: "Record this week's transactions in moyiq. The Dashboard shows which category takes the most money each month, without you having to update anything by hand.",
+    "Bueno": "You already handle the basics well. The next step is for that result not to depend on you remembering to check it — with your transactions imported, Home shows how much you have left this month without you having to work it out.",
+    "Excelente": "Your result is already at the level where the focus shifts from \"organizing\" to \"optimizing\" — parallel goals, projecting big decisions. That is what Goals and Pro's Cash-flow projection do with your real data.",
+    _default: "Record this week's transactions in moyiq. Home shows which category takes the most money each month, without you having to update anything by hand.",
   },
   pt: {
-    "Crítico": "Com o seu resultado, o mais provável é que o problema esteja no fluxo de caixa do dia a dia — sai mais do que entra, ou quase. Registre os movimentos desta semana no moyiq: o Painel mostra exatamente em qual categoria o seu dinheiro vai, sem que você precise montar uma planilha.",
+    "Crítico": "Com o seu resultado, o mais provável é que o problema esteja no fluxo de caixa do dia a dia — sai mais do que entra, ou quase. Registre os movimentos desta semana no moyiq: o Início mostra exatamente em qual categoria o seu dinheiro vai, sem que você precise montar uma planilha.",
     "Regular": "Seu resultado está na faixa em que uma mudança pequena rende muito: organizar a reserva de emergência ou o peso da dívida. Com seus movimentos reais carregados, o moyiq mostra qual dos dois atacar primeiro de acordo com o seu próprio fluxo de caixa.",
-    "Bueno": "Você já administra bem o básico. O próximo passo é que esse resultado não dependa de você se lembrar de revisá-lo — com seus movimentos importados, o Painel avisa quando algo sai do normal.",
-    "Excelente": "Seu resultado já está no nível em que o foco passa de \"organizar\" para \"otimizar\" — metas em paralelo, projeção de decisões grandes. É exatamente isso que Goals e Advisor fazem com seus dados reais.",
-    _default: "Registre os movimentos desta semana no moyiq. O Painel mostra em qual categoria vai mais dinheiro a cada mês, sem que você precise atualizar nada à mão.",
+    "Bueno": "Você já administra bem o básico. O próximo passo é que esse resultado não dependa de você se lembrar de revisá-lo — com seus movimentos importados, o Início mostra quanto ainda resta do mês sem que você precise calcular.",
+    "Excelente": "Seu resultado já está no nível em que o foco passa de \"organizar\" para \"otimizar\" — metas em paralelo, projeção de decisões grandes. É isso que Metas e a Projeção de fluxo do Pro fazem com seus dados reais.",
+    _default: "Registre os movimentos desta semana no moyiq. O Início mostra em qual categoria vai mais dinheiro a cada mês, sem que você precise atualizar nada à mão.",
   },
   de: {
-    "Crítico": "Bei Ihrem Ergebnis liegt das Problem sehr wahrscheinlich im monatlichen Cashflow — es geht mehr hinaus als hereinkommt, oder fast. Erfassen Sie die Buchungen dieser Woche in moyiq: Das Dashboard zeigt genau, in welche Kategorie Ihr Geld fließt, ohne dass Sie eine Tabelle anlegen müssen.",
+    "Crítico": "Bei Ihrem Ergebnis liegt das Problem sehr wahrscheinlich im monatlichen Cashflow — es geht mehr hinaus als hereinkommt, oder fast. Erfassen Sie die Buchungen dieser Woche in moyiq: Der Start zeigt genau, in welche Kategorie Ihr Geld fließt, ohne dass Sie eine Tabelle anlegen müssen.",
     "Regular": "Ihr Ergebnis liegt in dem Bereich, in dem eine kleine Änderung viel bewirkt: den Notgroschen oder die Schuldenlast ordnen. Mit Ihren echten Buchungen zeigt moyiq, welches der beiden Themen Sie nach Ihrem eigenen Cashflow zuerst angehen sollten.",
-    "Bueno": "Die Grundlagen haben Sie bereits im Griff. Der nächste Schritt: Dieses Ergebnis soll nicht davon abhängen, dass Sie daran denken, es zu prüfen — mit importierten Buchungen meldet das Dashboard, wenn etwas vom Normalen abweicht.",
-    "Excelente": "Ihr Ergebnis liegt bereits auf dem Niveau, auf dem sich der Fokus von \"Ordnen\" zu \"Optimieren\" verschiebt — parallele Ziele, Projektion großer Entscheidungen. Genau das leisten Goals und Advisor mit Ihren echten Daten.",
-    _default: "Erfassen Sie die Buchungen dieser Woche in moyiq. Das Dashboard zeigt, in welche Kategorie jeden Monat das meiste Geld fließt, ohne dass Sie etwas von Hand aktualisieren müssen.",
+    "Bueno": "Die Grundlagen haben Sie bereits im Griff. Der nächste Schritt: Dieses Ergebnis soll nicht davon abhängen, dass Sie daran denken, es zu prüfen — mit importierten Buchungen zeigt der Start, wie viel Ihnen in diesem Monat noch bleibt, ohne dass Sie es ausrechnen müssen.",
+    "Excelente": "Ihr Ergebnis liegt bereits auf dem Niveau, auf dem sich der Fokus von \"Ordnen\" zu \"Optimieren\" verschiebt — parallele Ziele, Projektion großer Entscheidungen. Das leisten Ziele und die Cashflow-Prognose von Pro mit Ihren echten Daten.",
+    _default: "Erfassen Sie die Buchungen dieser Woche in moyiq. Der Start zeigt, in welche Kategorie jeden Monat das meiste Geld fließt, ohne dass Sie etwas von Hand aktualisieren müssen.",
   },
 };
 
@@ -165,10 +165,10 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Hola,</p>
       <p>Como prometí, aquí va el dato que se repite en las encuestas de capacidad financiera de la región: la mayoría de las personas que arman un presupuesto lo dejan de actualizar antes de los 60 días. No por falta de disciplina — porque mantenerlo a mano en una hoja de cálculo es trabajo, y ese trabajo compite con todo lo demás.</p>
       <p>El problema no es el presupuesto. Es que depende de que alguien lo teclee.</p>
-      <p>Cuando importas tus movimientos en moyiq, no armas el presupuesto — se arma solo a partir de lo que ya gastaste. La sección de Movimientos categoriza automáticamente cada transacción, y el Dashboard te muestra en qué categoría se te fue más dinero este mes comparado con el anterior. No hay que actualizar nada a mano para verlo.</p>
+      <p>Cuando importas tus movimientos en moyiq, no tecleas el presupuesto movimiento por movimiento: subes el archivo de tu banco, las reglas de categoría que creas se aplican solas y el resto llega con una categoría sugerida que confirmas. Con eso, el Inicio te muestra en qué categoría se te va el dinero y Presupuestos cuánto llevas frente a cada límite.</p>
       <p>Si tu diagnóstico marcó un puntaje bajo, es probablemente esto: no falta de ingreso, falta de visibilidad de a dónde va.</p>
       ${emailButton(appLink("signup", "diagnostico-d2"), `Crear mi cuenta gratis →`)}
-      <p style="${EMAIL_MUTED_STYLE}">Starter incluye Dashboard, Movimientos y Presupuestos sin costo.</p>
+      <p style="${EMAIL_MUTED_STYLE}">Starter incluye Inicio, Movimientos y Presupuestos sin costo.</p>
       `,
     }),
     day5: () => ({
@@ -179,10 +179,10 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Hola,</p>
       <p>Sin testimonio inventado de "Fulano ahorró X% en 3 meses" — no tenemos ese caso documentado, y prometer un resultado que no podemos mostrar con datos reales no ayuda a nadie.</p>
       <p>La diferencia real entre lo que ya puedes usar gratis y lo que suma Pro:</p>
-      <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Dashboard con IQ Score, Movimientos y categorización automática, Presupuestos básicos, Metas simples.</p>
-      <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Coach (recomendaciones que se ajustan con cada movimiento nuevo, no una vez al armar el presupuesto), Advisor (proyecta un escenario antes de tomar una decisión grande, no después), Goals con múltiples objetivos en simultáneo, Reports exportables si necesitas mostrarle tus números a otra persona.</p>
-      <p>Si tu situación es simple, Starter alcanza. Si tienes varias metas corriendo o una decisión grande cerca, ahí es donde Pro paga solo.</p>
-      <p>Pruébalo 14 días gratis: se pide una tarjeta y, si cancelas antes de que termine la prueba, no se cobra nada.</p>
+      <p><strong>Starter (gratis, sin fecha de vencimiento):</strong> Inicio con IQ Score, Movimientos e importación de extractos, Presupuestos, Deudas y Metas.</p>
+      <p><strong>Pro (US$4.99/mes o US$39.99/año):</strong> Modo Asesor (el diagnóstico del mes, exportable en PDF si necesitas mostrarle tus números a otra persona), Proyección de flujo (ves el escenario antes de una decisión grande, no después), Simulador de deudas, herramientas fiscales de tu país y sincronización cifrada entre tus dispositivos.</p>
+      <p>Si tu situación es simple, Starter alcanza. Si tienes una decisión grande cerca o quieres usar las herramientas fiscales de tu país, ahí es donde Pro suma.</p>
+      <p>Puedes probarlo 14 días gratis y sin tarjeta: la prueba la empiezas tú y, al terminar, vuelves a Starter sin que se cobre nada.</p>
       ${emailButton(appLink("upgrade", "diagnostico-d5"), `Probar Pro 14 días gratis →`)}
       <p style="${EMAIL_MUTED_STYLE}">Si no es para ti ahora, sigues en Starter sin perder nada de lo que ya armaste.</p>
       `,
@@ -229,10 +229,10 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Hello,</p>
       <p>As promised, here is the finding that repeats across financial capability surveys: most people who set up a budget stop updating it within 60 days. Not for lack of discipline — because keeping it up by hand in a spreadsheet is work, and that work competes with everything else.</p>
       <p>The problem is not the budget. It is that it depends on someone typing it in.</p>
-      <p>When you import your transactions into moyiq, you don't build the budget — it builds itself from what you already spent. The Transactions section categorizes each transaction automatically, and the Dashboard shows which category took the most money this month compared with the last. Nothing has to be updated by hand to see it.</p>
+      <p>When you import your transactions into moyiq, you don't type the budget one entry at a time: you upload your bank's file, the category rules you create are applied on their own and everything else comes with a suggested category that you confirm. With that, Home shows which category your money goes to and Budgets shows how you stand against each limit.</p>
       <p>If your diagnosis showed a low score, this is probably why: not a lack of income, a lack of visibility into where it goes.</p>
-      ${emailButton(appLink("signup", "diagnostico-d2"), `See my dashboard →`)}
-      <p style="${EMAIL_MUTED_STYLE}">Starter includes Dashboard, Transactions and Budgets at no cost.</p>
+      ${emailButton(appLink("signup", "diagnostico-d2"), `Create my free account →`)}
+      <p style="${EMAIL_MUTED_STYLE}">Starter includes Home, Transactions and Budgets at no cost.</p>
       `,
     }),
     day5: () => ({
@@ -243,10 +243,11 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Hello,</p>
       <p>No made-up testimonial like "So-and-so saved X% in 3 months" — we don't have that case documented, and promising a result we can't show with real data doesn't help anyone.</p>
       <p>The real difference between what you can already use for free and what Pro adds:</p>
-      <p><strong>Starter (free, with no expiry date):</strong> Dashboard with IQ Score, Transactions and automatic categorization, basic Budgets, simple Goals.</p>
-      <p><strong>Pro (US$4.99/month or US$39.99/year):</strong> Coach (recommendations that adjust with every new transaction, not once when the budget is set up), Advisor (projects a scenario before a big decision, not after), Goals with multiple objectives at the same time, exportable Reports if you need to show your numbers to someone else.</p>
-      <p>If your situation is simple, Starter is enough. If you have several goals running or a big decision coming up, that is where Pro pays for itself.</p>
-      ${emailButton(appLink("upgrade", "diagnostico-d5"), `Upgrade to Pro →`)}
+      <p><strong>Starter (free, with no expiry date):</strong> Home with IQ Score, Transactions and statement import, Budgets, Debts and Goals.</p>
+      <p><strong>Pro (US$4.99/month or US$39.99/year):</strong> Advisor Mode (the month's diagnosis, exportable as PDF if you need to show your numbers to someone else), Cash-flow projection (you see the scenario before a big decision, not after), Debt simulator, tax tools for your country and encrypted sync across your devices.</p>
+      <p>If your situation is simple, Starter is enough. If you have a big decision coming up or want to use the tax tools for your country, that is where Pro adds something.</p>
+      <p>You can try it free for 14 days with no card: you start the trial yourself and, when it ends, you go back to Starter with nothing charged.</p>
+      ${emailButton(appLink("upgrade", "diagnostico-d5"), `Try Pro free for 14 days →`)}
       <p style="${EMAIL_MUTED_STYLE}">If it's not for you right now, you stay on Starter without losing anything you have set up.</p>
       `,
     }),
@@ -292,10 +293,10 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Olá,</p>
       <p>Como prometido, aqui vai o dado que se repete nas pesquisas de capacidade financeira da região: a maioria das pessoas que monta um orçamento deixa de atualizá-lo antes dos 60 dias. Não por falta de disciplina — porque mantê-lo à mão em uma planilha dá trabalho, e esse trabalho compete com todo o resto.</p>
       <p>O problema não é o orçamento. É que ele depende de alguém digitá-lo.</p>
-      <p>Quando você importa seus movimentos no moyiq, não monta o orçamento — ele se monta sozinho a partir do que você já gastou. A seção de Movimentos categoriza automaticamente cada transação, e o Painel mostra em qual categoria foi mais dinheiro este mês em comparação com o anterior. Não é preciso atualizar nada à mão para ver isso.</p>
+      <p>Quando você importa seus movimentos no moyiq, não digita o orçamento lançamento por lançamento: você envia o arquivo do seu banco, as regras de categoria que você cria são aplicadas sozinhas e o resto chega com uma categoria sugerida que você confirma. Com isso, o Início mostra em qual categoria vai o seu dinheiro e Orçamentos mostra como você está frente a cada limite.</p>
       <p>Se o seu diagnóstico marcou uma pontuação baixa, provavelmente é isto: não falta de renda, falta de visibilidade de para onde ela vai.</p>
-      ${emailButton(appLink("signup", "diagnostico-d2"), `Ver meu painel →`)}
-      <p style="${EMAIL_MUTED_STYLE}">O Starter inclui Painel, Movimentos e Orçamentos sem custo.</p>
+      ${emailButton(appLink("signup", "diagnostico-d2"), `Criar minha conta grátis →`)}
+      <p style="${EMAIL_MUTED_STYLE}">O Starter inclui Início, Movimentos e Orçamentos sem custo.</p>
       `,
     }),
     day5: () => ({
@@ -306,10 +307,11 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Olá,</p>
       <p>Sem depoimento inventado do tipo "Fulano economizou X% em 3 meses" — não temos esse caso documentado, e prometer um resultado que não podemos mostrar com dados reais não ajuda ninguém.</p>
       <p>A diferença real entre o que você já pode usar grátis e o que o Pro acrescenta:</p>
-      <p><strong>Starter (grátis, sem data de vencimento):</strong> Painel com IQ Score, Movimentos e categorização automática, Orçamentos básicos, Metas simples.</p>
-      <p><strong>Pro (US$4.99/mês ou US$39.99/ano):</strong> Coach (recomendações que se ajustam a cada novo movimento, não uma vez ao montar o orçamento), Advisor (projeta um cenário antes de uma decisão grande, não depois), Goals com vários objetivos ao mesmo tempo, Relatórios exportáveis se você precisar mostrar seus números a outra pessoa.</p>
-      <p>Se a sua situação é simples, o Starter basta. Se você tem várias metas em andamento ou uma decisão grande por perto, é aí que o Pro se paga.</p>
-      ${emailButton(appLink("upgrade", "diagnostico-d5"), `Atualizar para o Pro →`)}
+      <p><strong>Starter (grátis, sem data de vencimento):</strong> Início com IQ Score, Movimentos e importação de extratos, Orçamentos, Dívidas e Metas.</p>
+      <p><strong>Pro (US$4.99/mês ou US$39.99/ano):</strong> Modo Consultor (o diagnóstico do mês, exportável em PDF se você precisar mostrar seus números a outra pessoa), Projeção de fluxo (você vê o cenário antes de uma decisão grande, não depois), Simulador de dívidas, ferramentas fiscais do seu país e sincronização criptografada entre seus dispositivos.</p>
+      <p>Se a sua situação é simples, o Starter basta. Se você tem uma decisão grande por perto ou quer usar as ferramentas fiscais do seu país, é aí que o Pro soma.</p>
+      <p>Você pode testá-lo por 14 dias grátis e sem cartão: você mesmo começa o teste e, ao terminar, volta ao Starter sem nenhuma cobrança.</p>
+      ${emailButton(appLink("upgrade", "diagnostico-d5"), `Testar o Pro grátis por 14 dias →`)}
       <p style="${EMAIL_MUTED_STYLE}">Se não for para você agora, você continua no Starter sem perder nada do que já montou.</p>
       `,
     }),
@@ -355,10 +357,10 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Guten Tag,</p>
       <p>Wie angekündigt, hier der Befund, der sich in Erhebungen zur finanziellen Kompetenz wiederholt: Die meisten Menschen, die ein Budget anlegen, hören vor Ablauf von 60 Tagen auf, es zu aktualisieren. Nicht aus Mangel an Disziplin — sondern weil die Pflege von Hand in einer Tabelle Arbeit ist, und diese Arbeit mit allem anderen konkurriert.</p>
       <p>Das Problem ist nicht das Budget. Sondern dass es davon abhängt, dass jemand es eintippt.</p>
-      <p>Wenn Sie Ihre Buchungen in moyiq importieren, legen Sie das Budget nicht an — es entsteht aus dem, was Sie bereits ausgegeben haben. Der Bereich Buchungen ordnet jede Transaktion automatisch einer Kategorie zu, und das Dashboard zeigt, in welche Kategorie in diesem Monat im Vergleich zum Vormonat am meisten Geld geflossen ist. Dafür muss nichts von Hand aktualisiert werden.</p>
+      <p>Wenn Sie Ihre Buchungen in moyiq importieren, tippen Sie das Budget nicht Buchung für Buchung ein: Sie laden die Datei Ihrer Bank hoch, die Kategorieregeln, die Sie anlegen, werden von selbst angewendet, und alles andere kommt mit einer vorgeschlagenen Kategorie, die Sie bestätigen. Damit zeigt der Start, wohin Ihr Geld fließt, und Budgets, wo Sie gegenüber jedem Limit stehen.</p>
       <p>Wenn Ihre Auswertung einen niedrigen Score ergeben hat, liegt es wahrscheinlich daran: nicht an fehlendem Einkommen, sondern an fehlendem Überblick, wohin es geht.</p>
-      ${emailButton(appLink("signup", "diagnostico-d2"), `Mein Dashboard ansehen →`)}
-      <p style="${EMAIL_MUTED_STYLE}">Starter enthält Dashboard, Buchungen und Budgets ohne Kosten.</p>
+      ${emailButton(appLink("signup", "diagnostico-d2"), `Mein kostenloses Konto erstellen →`)}
+      <p style="${EMAIL_MUTED_STYLE}">Starter enthält Start, Buchungen und Budgets ohne Kosten.</p>
       `,
     }),
     day5: () => ({
@@ -369,10 +371,11 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       <p>Guten Tag,</p>
       <p>Kein erfundener Erfahrungsbericht wie "Person X hat in 3 Monaten X % gespart" — einen solchen Fall haben wir nicht dokumentiert, und ein Ergebnis zu versprechen, das wir nicht mit echten Daten belegen können, hilft niemandem.</p>
       <p>Der tatsächliche Unterschied zwischen dem, was Sie bereits kostenlos nutzen können, und dem, was Pro ergänzt:</p>
-      <p><strong>Starter (kostenlos, ohne Ablaufdatum):</strong> Dashboard mit IQ Score, Buchungen und automatische Kategorisierung, einfache Budgets, einfache Ziele.</p>
-      <p><strong>Pro (US$4.99/Monat oder US$39.99/Jahr):</strong> Coach (Empfehlungen, die sich mit jeder neuen Buchung anpassen, nicht nur einmal beim Anlegen des Budgets), Advisor (rechnet ein Szenario vor einer großen Entscheidung durch, nicht danach), Goals mit mehreren Zielen gleichzeitig, exportierbare Berichte, falls Sie Ihre Zahlen jemand anderem zeigen müssen.</p>
-      <p>Wenn Ihre Situation einfach ist, reicht Starter. Wenn mehrere Ziele laufen oder eine große Entscheidung bevorsteht, rechnet sich Pro.</p>
-      ${emailButton(appLink("upgrade", "diagnostico-d5"), `Auf Pro upgraden →`)}
+      <p><strong>Starter (kostenlos, ohne Ablaufdatum):</strong> Start mit IQ Score, Buchungen und Import von Kontoauszügen, Budgets, Schulden und Ziele.</p>
+      <p><strong>Pro (US$4.99/Monat oder US$39.99/Jahr):</strong> Beratermodus (die Diagnose des Monats, als PDF exportierbar, falls Sie Ihre Zahlen jemand anderem zeigen müssen), Cashflow-Prognose (Sie sehen das Szenario vor einer großen Entscheidung, nicht danach), Schulden-Simulator, Steuerwerkzeuge für Ihr Land und verschlüsselte Synchronisierung zwischen Ihren Geräten.</p>
+      <p>Wenn Ihre Situation einfach ist, reicht Starter. Wenn eine große Entscheidung bevorsteht oder Sie die Steuerwerkzeuge für Ihr Land nutzen möchten, bringt Pro etwas.</p>
+      <p>Sie können Pro 14 Tage kostenlos und ohne Karte testen: Sie starten den Test selbst, und danach wechseln Sie zu Starter zurück, ohne dass etwas berechnet wird.</p>
+      ${emailButton(appLink("upgrade", "diagnostico-d5"), `Pro 14 Tage kostenlos testen →`)}
       <p style="${EMAIL_MUTED_STYLE}">Wenn es gerade nicht passt, bleiben Sie bei Starter, ohne etwas von dem zu verlieren, was Sie bereits eingerichtet haben.</p>
       `,
     }),

@@ -44,7 +44,8 @@ describe('renderEmail', () => {
   it('day5 ofrece la prueba de 14 días de Pro, en español neutro (COM-11)', () => {
     const r = renderEmail('day5', LEAD, CONFIG)
     expect(r.html.toLowerCase()).not.toContain('trial')
-    expect(r.html).toContain('Pruébalo 14 días gratis')
+    expect(r.html).toContain('Puedes probarlo 14 días gratis y sin tarjeta')
+    expect(r.html).not.toContain('se pide una tarjeta')
     expect(r.html).toContain('ref=starter-d5')
     expect(r.html).not.toContain('podemos ser específicos es en')
     expect(r.html).not.toContain('seguir en Starter no te falta nada')
