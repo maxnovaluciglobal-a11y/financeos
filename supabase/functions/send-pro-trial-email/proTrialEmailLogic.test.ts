@@ -46,7 +46,33 @@ describe("send-pro-trial-email: copy (D3)", () => {
     const r = renderProTrialEmail("ended", { lang: "en", ends_at: "2026-12-05T12:00:00Z" }, NOW);
     expect(r.subject).toBe(PRO_TRIAL_TEMPLATES.en.ended.subject);
     expect(r.text).toMatch(/web version of the app/);
-    expect(r.html).toContain("https://app.moyiq.app/app/?open=upgrade&amp;ref=pro-trial-ended".replace("&amp;", "&"));
+    expect(r.html).toContain("https://app.moyiq.app/app/?open=plan&ref=pro-trial-ended");
+  });
+  it("un solo botón por paso, que dice adónde lleva y abre ese destino (26-nov-2026)", () => {
+    const want = {
+      welcome: ["upgrade", "Abrir Modo Asesor"],
+      day10: ["plan", "Elegir mi plan"],
+      ended: ["plan", "Ver los planes de Pro"],
+    } as const;
+    for (const step of PRO_TRIAL_STEPS) {
+      const r = renderProTrialEmail(step, { lang: "es", ends_at: "2026-12-10T12:00:00Z" }, NOW);
+      expect((r.html.match(/<td class="mq-btn"/g) ?? []).length).toBe(1);
+      expect(r.html).toContain(`?open=${want[step][0]}&ref=pro-trial-${step}`);
+      expect(r.html).toContain(`>${want[step][1]}</a>`);
+      expect(r.text).toContain(`${want[step][1]} (https://app.moyiq.app/app/?open=${want[step][0]}&ref=pro-trial-${step})`);
+    }
+  });
+  it("preheader en los 4 idiomas, con la fecha, fuera del texto plano", () => {
+    for (const lang of ["es", "en", "pt", "de"] as const) {
+      for (const step of PRO_TRIAL_STEPS) {
+        const r = renderProTrialEmail(step, { lang, ends_at: "2026-12-10T12:00:00Z" }, NOW);
+        const pre = r.html.match(/<div style="display:none;[^"]*">([^&<]+)/)?.[1] ?? "";
+        expect(pre.length, `${lang}/${step}`).toBeGreaterThan(20);
+        expect(pre).not.toMatch(/[¡!]/);
+        if (step !== "ended") expect(pre, `${lang}/${step}`).toMatch(/2026/);
+        expect(r.text).not.toContain(pre.trim());
+      }
+    }
   });
   it("idioma desconocido cae a español", () => {
     expect(renderProTrialEmail("welcome", { lang: "fr", ends_at: "2026-12-10T12:00:00Z" }, NOW).subject).toBe("Tu prueba de moyiq Pro está activa");

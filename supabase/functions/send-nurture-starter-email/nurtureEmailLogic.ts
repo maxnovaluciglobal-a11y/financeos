@@ -5,7 +5,7 @@
 // 14-sep-2026, calcado del patrón de send-nurture-diagnostico-email/. La
 // diferencia de fondo con esa secuencia: quien recibe esto YA ES usuario
 // Starter con cuenta activa, no un lead que "podría" registrarse. El
-// objetivo es activación (que use Dashboard/Movimientos/Presupuestos con
+// objetivo es activación (que use Inicio/Movimientos/Presupuestos con
 // datos reales) y, en el email 3, upsell a Pro — nunca "crea tu cuenta".
 //
 // Separada de index.ts por el mismo motivo que en send-nurture-diagnostico-
@@ -42,6 +42,7 @@ import { welcomeGate, releaseWelcome } from "../_shared/welcomeGuard.ts";
 import { type EmailLang, pickLang as pickFromCandidates } from "../_shared/emailLang.ts";
 import { STARTER_TEMPLATES, UNSUBSCRIBE_LABEL } from "./nurtureTemplates.ts";
 import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketingEmail.ts";
+import { SUPPORT_REPLY_TO } from "../_shared/emailSender.ts";
 import { emailLayout } from "../_shared/emailLayout.ts";
 import { htmlToText } from "../_shared/emailText.ts";
 
@@ -80,10 +81,11 @@ export function unsubscribeUrl(config: NurtureEmailConfig, leadId: string): stri
   return `${config.landingUrl.replace(/\/$/, "")}/unsubscribe.html?id=${encodeURIComponent(leadId)}&t=starter`;
 }
 
-function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es"): string {
+function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang = "es", preheader?: string): string {
   return emailLayout({
     lang,
     bodyHtml,
+    preheader,
     footerHtml: `moyiq · ${COMPANY_POSTAL_HTML}.
         <a href="${unsubUrl}">${UNSUBSCRIBE_LABEL[lang]}</a>.`,
   });
@@ -100,7 +102,7 @@ export interface RenderedEmail {
 export function renderEmail(mode: NurtureMode, lead: StarterLead, config: NurtureEmailConfig): RenderedEmail {
   const lang = pickLang(lead.lang);
   const copy = STARTER_TEMPLATES[lang][mode];
-  const html = wrapHtml(copy.body, unsubscribeUrl(config, lead.id), lang);
+  const html = wrapHtml(copy.body, unsubscribeUrl(config, lead.id), lang, copy.preheader);
   return {
     subject: copy.subject,
     html,
@@ -118,7 +120,7 @@ export async function sendViaResend(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), ...(rendered.headers ? { headers: rendered.headers } : {}) };
+  const body = { from: config.fromEmail, to, reply_to: SUPPORT_REPLY_TO, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), ...(rendered.headers ? { headers: rendered.headers } : {}) };
   const attempt = () =>
     fetch("https://api.resend.com/emails", {
       method: "POST",

@@ -16,6 +16,11 @@
       "permanent": true
     },
     {
+      "source": "/plan",
+      "destination": "/app/?open=plan",
+      "permanent": true
+    },
+    {
       "source": "/upgrade",
       "destination": "/app/?open=upgrade",
       "permanent": true

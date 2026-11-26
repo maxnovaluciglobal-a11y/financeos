@@ -571,8 +571,11 @@ export function renderKeyEmail(
       <p>${T.keyLabel}</p>
       ${emailCode(displayLicenseKey(key))}
       <p>${(attachedToAccount ? T.activatedOnAccount : T.activate)(`<a href="${appUrl}">${appUrl}</a>`)}</p>
+      ${emailButton(appLink("dashboard", trial ? "license-trial" : "license"), T.openAppButton)}
       ${billingNote}`,
     footerHtml: billingFooter(T.privacy),
+    preheader: trial ? T.trialPreheader(formatDateFor(trial.endsAt, lang)) : T.licensePreheader,
+    title: subject,
   });
   return { subject, html, text: htmlToText(html) };
 }
@@ -603,7 +606,7 @@ export async function sendKeyEmail(
   const attempt = async () => fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: config.fromEmail, to, subject, html, text }),
+    body: JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_EMAIL, subject, html, text }),
   });
   let res = await attempt();
   if (!res.ok) {
@@ -761,6 +764,15 @@ interface MailText {
   proEndedBack: string;
   proEndedButton: string;
   questions: (support: string) => string;
+  // 26-nov-2026: preheader de cada correo (suma al asunto, no lo repite) y los
+  // botones que faltaban (una sola acción principal por correo).
+  licensePreheader: string;
+  trialPreheader: (date: string) => string;
+  trialEndingPreheader: string;
+  paymentFailedPreheader: string;
+  proEndedPreheader: string;
+  openAppButton: string;
+  paymentFailedButton: string;
 }
 const MAIL: Record<EmailLang, MailText> = {
   es: {
@@ -792,6 +804,13 @@ const MAIL: Record<EmailLang, MailText> = {
     proEndedBack: "Si quieres volver a Pro, puedes hacerlo cuando quieras desde la app.",
     proEndedButton: "Volver a Pro",
     questions: (sup) => `Si tienes dudas, escribe a ${sup}.`,
+    licensePreheader: "Tu clave de acceso y cómo activarla.",
+    trialPreheader: (d) => `Termina el ${d}. Qué se cobra después y cómo cancelar antes.`,
+    trialEndingPreheader: "La fecha, el monto y cómo cancelar si no quieres seguir.",
+    paymentFailedPreheader: "Actualiza tu método de pago para que Pro siga activo.",
+    proEndedPreheader: "No se borró nada y Starter sigue gratis.",
+    openAppButton: "Abrir moyiq",
+    paymentFailedButton: "Actualizar mi método de pago",
   },
   en: {
     licenseSubject: "Your moyiq license",
@@ -822,6 +841,13 @@ const MAIL: Record<EmailLang, MailText> = {
     proEndedBack: "If you want to go back to Pro, you can do it at any time from the app.",
     proEndedButton: "Go back to Pro",
     questions: (sup) => `If you have questions, write to ${sup}.`,
+    licensePreheader: "Your access key and how to activate it.",
+    trialPreheader: (d) => `It ends on ${d}. What is charged afterwards and how to cancel before.`,
+    trialEndingPreheader: "The date, the amount and how to cancel if you don't want to continue.",
+    paymentFailedPreheader: "Update your payment method to keep Pro active.",
+    proEndedPreheader: "Nothing was deleted and Starter is still free.",
+    openAppButton: "Open moyiq",
+    paymentFailedButton: "Update my payment method",
   },
   pt: {
     licenseSubject: "Sua licença do moyiq",
@@ -852,6 +878,13 @@ const MAIL: Record<EmailLang, MailText> = {
     proEndedBack: "Se quiser voltar ao Pro, pode fazer isso quando quiser pelo app.",
     proEndedButton: "Voltar ao Pro",
     questions: (sup) => `Se tiver dúvidas, escreva para ${sup}.`,
+    licensePreheader: "Sua chave de acesso e como ativá-la.",
+    trialPreheader: (d) => `Termina em ${d}. O que é cobrado depois e como cancelar antes.`,
+    trialEndingPreheader: "A data, o valor e como cancelar se não quiser continuar.",
+    paymentFailedPreheader: "Atualize sua forma de pagamento para que o Pro continue ativo.",
+    proEndedPreheader: "Nada foi apagado e o Starter continua gratuito.",
+    openAppButton: "Abrir o moyiq",
+    paymentFailedButton: "Atualizar minha forma de pagamento",
   },
   de: {
     licenseSubject: "Ihre moyiq-Lizenz",
@@ -882,6 +915,13 @@ const MAIL: Record<EmailLang, MailText> = {
     proEndedBack: "Wenn Sie zu Pro zurückkehren möchten, können Sie das jederzeit in der App tun.",
     proEndedButton: "Zurück zu Pro",
     questions: (sup) => `Bei Fragen schreiben Sie an ${sup}.`,
+    licensePreheader: "Ihr Zugangsschlüssel und wie Sie ihn aktivieren.",
+    trialPreheader: (d) => `Sie endet am ${d}. Was danach berechnet wird und wie Sie vorher kündigen.`,
+    trialEndingPreheader: "Datum, Betrag und wie Sie kündigen, wenn Sie nicht weitermachen möchten.",
+    paymentFailedPreheader: "Aktualisieren Sie Ihre Zahlungsmethode, damit Pro aktiv bleibt.",
+    proEndedPreheader: "Nichts wurde gelöscht, und Starter bleibt kostenlos.",
+    openAppButton: "moyiq öffnen",
+    paymentFailedButton: "Zahlungsmethode aktualisieren",
   },
 };
 
@@ -959,6 +999,8 @@ export function renderTrialEndingEmail(billing: TrialBilling, config: WebhookCon
       ${cancelSentence(config, lang)}
       <p>${T.staySame}</p>`,
     footerHtml: billingFooter(T.privacy),
+    preheader: T.trialEndingPreheader,
+    title: T.trialEndingSubject,
   });
   return { subject: T.trialEndingSubject, html, text: htmlToText(html) };
 }
@@ -977,7 +1019,7 @@ export async function sendTrialEndingEmail(to: string, billing: TrialBilling, co
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: config.fromEmail, to, subject, html, text }),
+      body: JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_EMAIL, subject, html, text }),
     });
     if (!res.ok) {
       console.error(`sendTrialEndingEmail: Resend error ${res.status} ${await res.text()}`);
@@ -1024,8 +1066,11 @@ export function renderPaymentFailedEmail(config: WebhookConfig, lang: EmailLang 
     bodyHtml: `${emailHeading(T.paymentFailedSubject)}
       <p>${T.paymentFailedIntro}</p>
       <p>${config.portalUrl ? T.paymentFailedPortal(config.portalUrl, support) : T.paymentFailedNoPortal(support)}</p>
+      ${config.portalUrl ? emailButton(config.portalUrl, T.paymentFailedButton) : ""}
       <p>${T.paymentFailedAfter}</p>`,
     footerHtml: billingFooter(T.privacy),
+    preheader: T.paymentFailedPreheader,
+    title: T.paymentFailedSubject,
   });
   return { subject: T.paymentFailedSubject, html, text: htmlToText(html) };
 }
@@ -1041,6 +1086,8 @@ export function renderProEndedEmail(lang: EmailLang = "es"): { subject: string; 
       <p>${T.proEndedBack}</p>
       ${emailButton(appLink("upgrade", "pro-ended"), T.proEndedButton)}`,
     footerHtml: billingFooter(T.questions(support)),
+    preheader: T.proEndedPreheader,
+    title: T.proEndedSubject,
   });
   return { subject: T.proEndedSubject, html, text: htmlToText(html) };
 }

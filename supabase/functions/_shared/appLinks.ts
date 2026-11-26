@@ -8,7 +8,10 @@
 export const APP_URL = "https://app.moyiq.app/app/";
 
 // "delete-account" (C-22): enlace público de borrado de cuenta que piden las tiendas.
-export const APP_DESTINATIONS = ["import", "dashboard", "upgrade", "signup", "delete-account"] as const;
+// "plan" (26-nov-2026): Ajustes, donde está "Suscripción y plan" (aviso de los
+// 10 días de la prueba de Pro sin tarjeta: elegir un plan). "upgrade" abre Modo
+// Asesor, que para quien ya es Pro (en prueba) no muestra los planes.
+export const APP_DESTINATIONS = ["import", "dashboard", "upgrade", "signup", "delete-account", "plan"] as const;
 
 export type AppDestination = typeof APP_DESTINATIONS[number];
 
