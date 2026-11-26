@@ -334,6 +334,8 @@ export default {
     'tour.adv.pdf.body': "A preview and the PDF download.",
 
     // ── Novedades (lo más nuevo primero) ──
+    'help.news.n2611bar.title': "The \"+\" in the middle of the bar",
+    'help.news.n2611bar.text': "Adding an expense or income now sits in the middle of the bottom bar, bigger. Budgets has its own tab again.",
     'help.news.n2611help.title': "Help on every screen",
     'help.news.n2611help.text': "The help button opens a short guide to the screen, the tour and the updates. The help center gathers every guide, with a search box.",
     'help.news.n2611trial.title': "14 days of Pro without a card",

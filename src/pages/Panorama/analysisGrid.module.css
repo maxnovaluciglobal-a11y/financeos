@@ -16,7 +16,7 @@
 .head { display: flex; align-items: center; gap: 6px; width: 100%; margin-bottom: 2px; }
 .icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--bg); color: var(--accent); }
 .chev { margin-left: auto; color: var(--th); }
-.pro { font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.pro { font-size: 12px; font-weight: 700; letter-spacing: .04em; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
 .label { font-size: var(--t-subhead); font-weight: 600; color: var(--tx); line-height: 1.3; }
 .figure { font-size: var(--t-headline); font-weight: 700; line-height: 1.2; color: var(--tx); overflow-wrap: anywhere; }
 .figure[data-tone="pos"] { color: var(--pos); }

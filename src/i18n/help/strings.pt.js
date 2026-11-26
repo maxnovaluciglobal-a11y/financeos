@@ -334,6 +334,8 @@ export default {
     'tour.adv.pdf.body': "Uma prévia e o download em PDF.",
 
     // ── Novedades (lo más nuevo primero) ──
+    'help.news.n2611bar.title': "O \"+\" no centro da barra",
+    'help.news.n2611bar.text': "Registrar um gasto ou uma receita fica no centro da barra de baixo, maior. Orçamentos volta a ter sua aba.",
     'help.news.n2611help.title': "Ajuda em cada tela",
     'help.news.n2611help.text': "O botão de ajuda abre um guia curto da tela, o tour e as novidades. A central de ajuda reúne todos os guias, com uma busca.",
     'help.news.n2611trial.title': "14 dias de Pro sem cartão",

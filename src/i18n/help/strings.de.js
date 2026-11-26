@@ -334,6 +334,8 @@ export default {
     'tour.adv.pdf.body': "Eine Vorschau und der Download als PDF.",
 
     // ── Novedades (lo más nuevo primero) ──
+    'help.news.n2611bar.title': "Das „+“ in der Mitte der Leiste",
+    'help.news.n2611bar.text': "Eine Ausgabe oder Einnahme erfassen liegt jetzt größer in der Mitte der unteren Leiste. Budgets hat wieder einen eigenen Tab.",
     'help.news.n2611help.title': "Hilfe auf jedem Bildschirm",
     'help.news.n2611help.text': "Die Hilfe-Schaltfläche öffnet eine kurze Anleitung zum Bildschirm, den Rundgang und die Neuigkeiten. Das Hilfecenter enthält alle Anleitungen mit einer Suche.",
     'help.news.n2611trial.title': "14 Tage Pro ohne Karte",

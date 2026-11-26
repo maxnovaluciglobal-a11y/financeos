@@ -222,13 +222,13 @@ function AdvisorNotes({ notes, onSave }) {
   const ta = {
     width: '100%', minHeight: 80, resize: 'vertical',
     background: 'var(--box-bg)', boxShadow: 'var(--box-sh)', border: 0,
-    borderRadius: 6, padding: '10px 12px', fontSize: 'var(--t-footnote)',
+    borderRadius: 6, padding: '10px 12px', fontSize: 'var(--t-callout)',
     color: 'var(--tx)', fontFamily: 'var(--sans)',
     lineHeight: 1.6,
   }
   const inp = {
     width: '100%', background: 'var(--sur)', border: '0.5px solid var(--brd2)',
-    borderRadius: 6, padding: '8px 12px', fontSize: 'var(--t-footnote)',
+    borderRadius: 6, padding: '8px 12px', fontSize: 'var(--t-callout)',
     color: 'var(--tx)', fontFamily: 'var(--sans)',
   }
   const lbl = { fontSize: 'var(--t-footnote)', fontWeight: 600, color: 'var(--tx)', marginBottom: 5, display: 'block' }
@@ -683,7 +683,7 @@ export default function Advisor() {
               onChange={e => { setEmailTo(e.target.value); if (emailStatus === 'error') setEmailStatus('idle') }}
               placeholder={t('adv.pdf.emailPlaceholder')}
               disabled={noData}
-              style={{flex:'1 1 200px',fontSize:'var(--t-footnote)',padding:'9px 12px',borderRadius:6,border:'0.5px solid var(--brd2)',background:'var(--sur)',color:'var(--tx)',fontFamily:'var(--sans)'}}
+              style={{flex:'1 1 200px',fontSize:'var(--t-callout)',padding:'9px 12px',borderRadius:6,border:'0.5px solid var(--brd2)',background:'var(--sur)',color:'var(--tx)',fontFamily:'var(--sans)'}}
             />
             <button
               onClick={handleSendEmail}

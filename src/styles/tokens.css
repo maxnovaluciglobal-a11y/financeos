@@ -305,7 +305,8 @@
   --t-callout:     1rem;      --t-callout-lh:     1.3125rem;  /* 16/21 400 · campos (16 evita el zoom de iOS) */
   --t-subhead:     .9375rem;  --t-subhead-lh:     1.25rem;    /* 15/20 400 · secundario de fila, descripciones */
   --t-footnote:    .8125rem;  --t-footnote-lh:    1.125rem;   /* 13/18 400 · fechas, notas, ayudas (piso) */
-  --t-caption:     .6875rem;  --t-caption-lh:     .8125rem;   /* 11/13 500 · solo pestañas, insignias, ejes */
+  --t-caption:     .75rem;    --t-caption-lh:     1rem;       /* 12/16 500 · pestañas, insignias, ejes. Era 11: la revisión de
+                                                              geometría del 26-nov-2026 pide 12 como piso de lectura */
   --t-hero:        3.5rem;    --t-hero-lh:        3.5rem;     /* 56/56 600 · cifra del Inicio */
   --fw-bold: 700;
 }

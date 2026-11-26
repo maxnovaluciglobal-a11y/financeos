@@ -13,8 +13,8 @@
 // La pestaña activa sale de activeTabFor(page) (R04): las páginas internas
 // encienden su pestaña madre, así la barra nunca queda sin activo.
 import { useLayoutEffect, useRef, useState } from 'react'
-import { Home, ArrowLeftRight, LayoutGrid, Plus } from 'lucide-react'
-import { activeTabFor, TAB_HOME, TAB_MOVEMENTS, TAB_MENU } from './navConfig.js'
+import { Home, ArrowLeftRight, LayoutGrid, Plus, Wallet } from 'lucide-react'
+import { activeTabFor, TAB_HOME, TAB_MOVEMENTS, TAB_BUDGETS, TAB_MENU } from './navConfig.js'
 import { tabPress } from './pageStack.js'
 import s from './shell.module.css'
 
@@ -24,11 +24,16 @@ const solid = (d) => function SolidIcon() {
 }
 const HomeOn = solid('M12 2.6 3.3 9.8c-.2.2-.3.4-.3.7V20c0 .6.4 1 1 1h5.2v-6.4c0-.3.2-.6.6-.6h4.4c.4 0 .6.3.6.6V21H20c.6 0 1-.4 1-1v-9.5c0-.3-.1-.5-.3-.7L12 2.6Z')
 const MovementsOn = solid('M8 3 2.6 8.2 8 13.4V10h13.4V6.5H8V3Zm8 7.6V14H2.6v3.5H16V21l5.4-5.2L16 10.6Z')
+const WalletOn = solid('M5 4h12a2 2 0 0 1 2 2v1.2H6a1 1 0 0 0 0 2h13A2 2 0 0 1 21 11v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm11.5 9.2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z')
 const GridOn = solid('M4.5 3h4A1.5 1.5 0 0 1 10 4.5v4A1.5 1.5 0 0 1 8.5 10h-4A1.5 1.5 0 0 1 3 8.5v-4A1.5 1.5 0 0 1 4.5 3Zm11 0h4A1.5 1.5 0 0 1 21 4.5v4a1.5 1.5 0 0 1-1.5 1.5h-4A1.5 1.5 0 0 1 14 8.5v-4A1.5 1.5 0 0 1 15.5 3Zm-11 11h4a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 8.5 21h-4A1.5 1.5 0 0 1 3 19.5v-4A1.5 1.5 0 0 1 4.5 14Zm11 0h4a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5Z')
+
+// Índice de la pestaña que va justo después del "+" (2 a cada lado).
+const ADD_AT = 2
 
 export const TABS = [
   { id: TAB_HOME,      Ic: Home,           On: HomeOn,      lb: 'nav.dashboard' },
   { id: TAB_MOVEMENTS, Ic: ArrowLeftRight, On: MovementsOn, lb: 'nav.sec.movements' },
+  { id: TAB_BUDGETS,   Ic: Wallet,         On: WalletOn,    lb: 'nav.budgets' },
   { id: TAB_MENU,      Ic: LayoutGrid,     On: GridOn,      lb: 'nav.menuLabel' },
 ]
 
@@ -80,10 +85,10 @@ export default function TabBar({ page, onNavigate, onReselect, onAdd, t }) {
   return (
     <nav className={s.tabbar} aria-label={t('nav.tabsLabel')} data-tabbar data-labels={compact ? 'off' : undefined}>
       <div className={s.tabPill} ref={pillRef}>
-      {TABS.map((tab) => {
+      {TABS.map((tab, i) => {
         const { id, Ic, On, lb } = tab
         const on = active === id
-        return (
+        const btn = (
           <button
             key={id}
             type="button"
@@ -99,13 +104,18 @@ export default function TabBar({ page, onNavigate, onReselect, onAdd, t }) {
             <span className={s.tabLb} data-tab-label>{t(lb)}</span>
           </button>
         )
+        // Opción D: el "+" va en el centro de la cápsula, entre las dos mitades.
+        if (i !== ADD_AT || !onAdd) return btn
+        return [
+          <span key="add" className={s.tabAddSlot}>
+            <button type="button" className={s.tabAdd} aria-label={t('qa.title')} data-tour="tab-add" onClick={onAdd}>
+              <Plus size={30} strokeWidth={2.2} aria-hidden="true" />
+            </button>
+          </span>,
+          btn,
+        ]
       })}
       </div>
-      {onAdd && (
-        <button type="button" className={s.tabAdd} aria-label={t('qa.title')} data-tour="tab-add" onClick={onAdd}>
-          <Plus size={26} strokeWidth={2.2} aria-hidden="true" />
-        </button>
-      )}
     </nav>
   )
 }

@@ -9,6 +9,7 @@
 import { canShowProMarketing } from '../../native/storePolicy.js'
 
 export const NEWS = [
+  { id: 'n2611bar',    date: '2026-11-26', page: 'budgets' },
   { id: 'n2611help',   date: '2026-11-26', page: 'help' },
   { id: 'n2611trial',  date: '2026-11-26', pro: true },
   { id: 'n2611rules',  date: '2026-11-26', page: 'investments' },
@@ -23,7 +24,6 @@ export const NEWS = [
   { id: 'n2311left',   date: '2026-11-23', page: 'dashboard' },
   { id: 'n2311invest', date: '2026-11-23', page: 'settings' },
   { id: 'n2011aside',  date: '2026-11-20', page: 'goals' },
-  { id: 'n1911voice',  date: '2026-11-19', page: 'movements' },
 ]
 
 // Novedades de Inversiones: solo si la sección existe para esta persona.

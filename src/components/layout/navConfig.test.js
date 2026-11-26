@@ -13,9 +13,9 @@ describe('activeTabFor (R04, Inicio v2): cada página enciende una de las 3 pest
     }
   })
 
-  it('tres pestañas: Inicio · Movimientos · Más; Presupuestos y Metas encienden Más (Inicio v2)', () => {
-    expect(TAB_IDS).toEqual(['dashboard', 'movements', 'more'])
-    expect(activeTabFor('budgets')).toBe('more')
+  it('cuatro pestañas (opción D, 26-nov-2026): Inicio · Movimientos · Presupuestos · Más; Metas enciende Más', () => {
+    expect(TAB_IDS).toEqual(['dashboard', 'movements', 'budgets', 'more'])
+    expect(activeTabFor('budgets')).toBe('budgets')
     expect(activeTabFor('goals')).toBe('more')
   })
 
@@ -29,8 +29,8 @@ describe('activeTabFor (R04, Inicio v2): cada página enciende una de las 3 pest
     for (const it_ of ALL_ITEMS) expect(TAB_IDS).toContain(activeTabFor(it_.id))
   })
 
-  it('Presupuestos y Metas siguen alcanzables: primeras filas de Más en todo país', () => {
-    for (const cc of COUNTRIES) expect(moreSections(cc)[0].items.slice(0, 2).map(i => i.id), cc).toEqual(['budgets', 'goals'])
+  it('Metas sigue alcanzable: primera fila de Más en todo país; Presupuestos, pestaña, no se repite', () => {
+    for (const cc of COUNTRIES) expect(moreSections(cc)[0].items.slice(0, 2).map(i => i.id), cc).toEqual(['goals', 'debts'])
   })
 
   it('Ajustes sigue alcanzable desde el Menú (vive en NAV)', () => {
@@ -46,7 +46,7 @@ const flat = (secs) => secs.flatMap(g => g.items.flatMap(i => [i.id, ...(i.items
 describe('"Más" (poda P1, Inicio v2): 4 grupos, ≤ 12 filas, nada inalcanzable', () => {
   it('4 grupos en orden: Mi dinero · Análisis · Herramientas · Cuenta', () => {
     expect(moreSections('CL').map(g => g.sec)).toEqual(['more.sec.money', 'more.sec.panorama', 'nav.sec.tools', 'nav.sec.account'])
-    expect(moreSections('CL')[0].items.map(i => i.id)).toEqual(['budgets', 'goals', 'debts', 'recurring', 'income', 'import'])
+    expect(moreSections('CL')[0].items.map(i => i.id)).toEqual(['goals', 'debts', 'recurring', 'income', 'import'])
   })
 
   it('como mucho 12 filas en cualquier país, con todos los módulos encendidos', () => {
@@ -149,19 +149,15 @@ describe('módulo Inversiones en "Más"', () => {
       }
     }
   })
-  it('AR con todo encendido: calculadora a un toque, Inflación directa, Modo asesor y Propiedades en "Más herramientas"', () => {
+  it('AR con todo encendido: calculadora a un toque, Inflación, Propiedades y Modo asesor directos (opción D liberó la fila de Presupuestos)', () => {
     const tools = moreSections('AR', on).find(g => g.sec === 'nav.sec.tools').items
-    expect(tools.map(i => i.id)).toEqual(['multidolar', 'inflacion', 'moreTools', 'investments'])
-    const sheet = tools.find(i => i.id === 'moreTools')
-    expect(sheet).toMatchObject({ sheet: true, lb: 'more.moreTools', proOnly: true })
-    expect(sheet.items.map(i => i.id)).toEqual(['projects', 'advisor'])
+    expect(tools.map(i => i.id)).toEqual(['multidolar', 'inflacion', 'projects', 'advisor', 'investments'])
     expect(rowsOf('AR', on)).toBe(12)
   })
-  it('AR sin Propiedades: Modo asesor y "Activar más funciones" van juntos a la hoja; Inflación sigue directa', () => {
+  it('AR sin Propiedades: Modo asesor y "Activar más funciones" quedan directos; Inflación sigue directa', () => {
     const st = { modules: { properties: false, advisor: true, investments: true } }
     const tools = moreSections('AR', st).find(g => g.sec === 'nav.sec.tools').items
-    expect(tools.map(i => i.id)).toEqual(['multidolar', 'inflacion', 'moreTools', 'investments'])
-    expect(tools.find(i => i.id === 'moreTools').items.map(i => i.id)).toEqual(['advisor', 'modules'])
+    expect(tools.map(i => i.id)).toEqual(['multidolar', 'inflacion', 'advisor', 'investments', 'modules'])
   })
   it('AR: Inflación es fila directa con cualquier combinación de módulos', () => {
     for (const st of STATES) {

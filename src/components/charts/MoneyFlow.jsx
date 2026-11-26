@@ -155,7 +155,7 @@ export default function MoneyFlow({ flow, sym = '$' }) {
       </svg>
 
       {/* Mobile fallback — lista simple */}
-      <div style={{ marginTop:4, fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.5, display:'flex', flexWrap:'wrap', gap:'4px 16px' }}>
+      <div style={{ marginTop:4, fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)', lineHeight:1.5, display:'flex', flexWrap:'wrap', gap:'4px 16px' }}>
         {items.map(it => (
           <span key={it.key} style={{ display:'flex', alignItems:'center', gap:4 }}>
             <span style={{ width:8, height:8, borderRadius:'50%', background:it.color.fill, display:'inline-block' }}/>
@@ -164,7 +164,7 @@ export default function MoneyFlow({ flow, sym = '$' }) {
         ))}
       </div>
 
-      <div style={{ marginTop:8, fontSize:11, color:'var(--th)', fontFamily: 'var(--sans)' }}>
+      <div style={{ marginTop:8, fontSize:12, color:'var(--th)', fontFamily: 'var(--sans)' }}>
         {t('chart.flow.disclaimer')}
       </div>
     </div>

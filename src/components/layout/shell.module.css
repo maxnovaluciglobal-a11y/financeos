@@ -299,6 +299,9 @@
 .tabActive { color: var(--tabbar-fg-active); background: var(--tabbar-active-bg); }
 .tabActive .tabLb { font-weight: 600; color: var(--tabbar-label-active); }
 .tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+/* Con el "+" al centro (opción D) y la letra de 12 px, en teléfonos de 341–379 px
+   "Presupuestos" pedía 2 px más: menos aire lateral en las pestañas. */
+@media (max-width: 379px) { .tab { padding: 0 2px; } }
 /* 340 px o menos (Android chico, iPhone SE con Zoom de pantalla): no entran
    las 5 etiquetas sin tocarse ("Movimientos" y "Presupuestos"). Solo íconos;
    la etiqueta sigue en el DOM como nombre accesible del botón. */
@@ -331,25 +334,23 @@
 }
 .tabbar[data-labels="off"] .tab { padding: 0; }
 
-/* 341–379 px (Galaxy de 360, iPhone SE y mini de 375): con el "+" al lado, a
-   las etiquetas en español les sobran 11 px y "Movimientos" y "Presupuestos"
-   quedan pegadas. La cápsula toma el ancho completo y el "+" flota encima de
-   su extremo derecho (globals.css suma su aire con --fab-clear). */
-@media (min-width: 341px) and (max-width: 379px) {
-  .tabbar { flex-direction: column-reverse; align-items: flex-end; gap: 12px; height: auto; }
-  .tabPill { flex: none; width: 100%; height: var(--tabbar-content-h); }
-  .tabbar .tabAdd { width: var(--fab-size); height: var(--fab-size); }
-}
-
-/* ── "+" al lado de la cápsula ──
-   Botón redondo del alto de la cápsula, violeta de acción con ícono blanco
-   (6,02; en oscuro violeta 400, 3,93): es la acción, no un destino. */
-.tabAdd {
-  flex: 0 0 auto;
+/* ── "+" en el centro de la cápsula (opción D, 26-nov-2026, elegida por Walter) ──
+   Dos destinos a cada lado y la acción al medio, un poco más grande que la
+   cápsula y levantado sobre su borde, con un aro del color del fondo que lo
+   separa del material. Violeta de acción con ícono blanco (6,02; en oscuro
+   violeta 400, 3,93): es la acción, no un destino. */
+.tabAddSlot {
+  flex: 0 0 var(--tabadd-slot, 68px); position: relative;
   display: flex; align-items: center; justify-content: center;
-  width: var(--tabbar-content-h); height: var(--tabbar-content-h);
+}
+.tabAdd {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--tabadd-size, 62px); height: var(--tabadd-size, 62px);
+  margin: calc(var(--tabadd-size, 62px) / -2) 0 0 calc(var(--tabadd-size, 62px) / -2);
+  translate: 0 calc(-1 * var(--tabadd-lift, 12px));
+  display: flex; align-items: center; justify-content: center;
   border: 0; border-radius: 50%; background: var(--action-bg); color: var(--action-fg); cursor: pointer;
-  box-shadow: var(--action-shadow), var(--tabbar-shadow);
+  box-shadow: 0 0 0 4px var(--color-bg), var(--action-shadow), var(--tabbar-shadow);
   pointer-events: auto;
   view-transition-name: tabbar-add;
   -webkit-tap-highlight-color: transparent; transition: transform var(--dur-press) var(--ease-out);
@@ -399,6 +400,9 @@
   font: 600 var(--t-footnote)/1 var(--sans); letter-spacing: 0; text-transform: none;
   transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
+/* Dos botones seguidos (el "?" y el ojo): sin el margen negativo se tocaban 2 px
+   (revisión de geometría, 26-nov-2026). */
+.topRight .amountsBtn + .amountsBtn { margin-left: 0; }
 .amountsBtn:hover { color: var(--tx); background: var(--sur2); }
 .amountsBtn[aria-pressed="true"] { color: var(--tx); background: var(--grn-lt); }
 

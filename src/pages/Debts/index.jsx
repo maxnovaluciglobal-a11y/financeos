@@ -130,7 +130,7 @@ function DebtPayoffSimulator({ debts, sym }) {
           type="number" inputMode="decimal" min="0" value={extra}
           onChange={e => setExtra(e.target.value)}
           placeholder={t('debts.sim.extraPh')}
-          style={{width:'100%',maxWidth:240,padding:'7px 10px',borderRadius:7,border:'.5px solid var(--brd)',background:'var(--sur)',color:'var(--tx)',fontFamily: 'var(--sans)',fontSize:'var(--t-subhead)'}}
+          style={{width:'100%',maxWidth:240,padding:'7px 10px',borderRadius:7,border:'.5px solid var(--brd)',background:'var(--sur)',color:'var(--tx)',fontFamily: 'var(--sans)',fontSize:'var(--t-callout)'}}
         />
       </div>
 

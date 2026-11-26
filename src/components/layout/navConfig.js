@@ -105,7 +105,9 @@ export const TAB_MOVEMENTS = 'movements'
 export const TAB_BUDGETS = 'budgets'
 export const TAB_GOALS = 'goals'
 export const TAB_MENU = 'more'
-export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_MENU]
+// Opción D (26-nov-2026, elegida por Walter): Inicio · Movimientos · [+] · Presupuestos · Más.
+// Presupuestos vuelve a ser pestaña; el "+" va al centro de la cápsula (TabBar.jsx).
+export const TAB_IDS = [TAB_HOME, TAB_MOVEMENTS, TAB_BUDGETS, TAB_MENU]
 
 const MOVEMENT_PAGES = new Set(
   (NAV.find(g => g.sec === 'nav.sec.movements')?.items || []).map(it => it.id)
@@ -121,6 +123,7 @@ export function tabMotion(from, to, slide = true) {
 export function activeTabFor(page) {
   if (!page || page === TAB_HOME) return TAB_HOME
   if (page === TAB_MOVEMENTS || MOVEMENT_PAGES.has(page)) return TAB_MOVEMENTS
+  if (page === TAB_BUDGETS) return TAB_BUDGETS
   return TAB_MENU
 }
 
@@ -160,9 +163,8 @@ export function moreSections(country, settings = {}) {
   const countryItems = (NAV.find(g => g.sec === 'nav.sec.country')?.items || [])
     .filter(it => navItemVisible(it, cc, settings) && it.id !== tool)
 
-  // Inicio v2: Presupuestos y Metas dejaron de ser pestañas; van primeros.
+  // Presupuestos es pestaña desde la opción D (26-nov-2026): ya no se repite aquí.
   const money = [
-    item('budgets'),
     item('goals'),
     { ...item('debts'), lb: 'more.debts' },
     { ...item('recurring'), lb: 'more.recurringSubs' },

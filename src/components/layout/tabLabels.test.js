@@ -28,9 +28,9 @@ import { en } from '../../i18n/en.js'
 import { pt } from '../../i18n/pt.js'
 import { de } from '../../i18n/de.js'
 
-describe('barra de 3 pestañas (Inicio v2)', () => {
-  it('Inicio · Movimientos · Más, en ese orden', () => {
-    expect(TABS.map(t => t.id)).toEqual(['dashboard', 'movements', 'more'])
+describe('barra de 4 pestañas con el "+" al centro (opción D, 26-nov-2026)', () => {
+  it('Inicio · Movimientos · [+] · Presupuestos · Más, en ese orden', () => {
+    expect(TABS.map(t => t.id)).toEqual(['dashboard', 'movements', 'budgets', 'more'])
   })
   it('ninguna etiqueta pasa de 13 caracteres en ningún idioma (no se corta en 360 px)', () => {
     for (const dict of [es, en, pt, de]) for (const tab of TABS) {

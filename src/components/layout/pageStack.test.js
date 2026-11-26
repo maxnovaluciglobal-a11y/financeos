@@ -20,8 +20,9 @@ describe('chromeFor (R14): qué páginas llevan barra, "‹" y "+"', () => {
     }
   })
 
-  it('Inicio v2: Presupuestos y Metas se abren empujadas desde Más, con "‹" y sin barra', () => {
-    for (const p of ['budgets', 'goals']) expect(chromeFor(p)).toMatchObject({ tabBar: false, back: true, parent: 'more' })
+  it('Metas se abre empujada desde Más, con "‹" y sin barra; Presupuestos es raíz (opción D)', () => {
+    expect(chromeFor('goals')).toMatchObject({ tabBar: false, back: true, parent: 'more' })
+    expect(chromeFor('budgets')).toMatchObject({ root: true, tabBar: true, back: false })
   })
 
   it('toda otra página se abre empujada: sin barra y con "‹"', () => {
@@ -63,8 +64,8 @@ describe('navAction: qué se apila en el historial', () => {
     expect(navAction('more', 'debts')).toBe('push')
     expect(navAction('dashboard', 'reports')).toBe('push')
     expect(navAction('debts', 'settings')).toBe('push')
-    // Inicio v2: Presupuestos y Metas ya no son pestañas, se abren empujadas.
-    expect(navAction('dashboard', 'budgets')).toBe('push')
+    // Metas no es pestaña: se abre empujada. Presupuestos es pestaña desde la opción D.
+    expect(navAction('dashboard', 'budgets')).toBe('replace')
     expect(navAction('more', 'goals')).toBe('push')
   })
   it('ir a una raíz desde una pantalla empujada también apila (sidebar, enlaces internos)', () => {
@@ -107,7 +108,7 @@ describe('backAction / backTarget', () => {
   it('isRootPage / isStackState', () => {
     expect(isRootPage('more')).toBe(true)
     expect(isRootPage('goals')).toBe(false)
-    expect(isRootPage('budgets')).toBe(false)
+    expect(isRootPage('budgets')).toBe(true)
     expect(isRootPage('debts')).toBe(false)
     expect(isStackState({ fosPage: 'goals' })).toBe(true)
     expect(isStackState({ usr: 1 })).toBe(false)
