@@ -92,3 +92,22 @@
 .planTitle { margin: 0; font-size: var(--t-callout); font-weight: 600; color: var(--tx); overflow-wrap: anywhere; }
 .planLine { margin: 0; font-size: var(--t-footnote); color: var(--tm); line-height: 1.5; font-variant-numeric: tabular-nums; }
 .editing { padding: 10px 14px; border-radius: 14px; background: var(--fill); font-size: var(--t-footnote); color: var(--tx); }
+
+/* 26-nov-2026: secciones plegables (calculadora en Tus tramos; proyección y
+   planes guardados en Aportes) y la regla de riesgo dentro de la calculadora. */
+.wrap[hidden] { display: none; }
+.fold { gap: 0; padding: 0 16px; }
+.fold > .wrap { padding: 4px 0 16px; }
+.foldH { margin: 0; }
+.foldBtn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 56px; padding: 8px 0;
+  border: 0; background: none; color: var(--tx); font: inherit; font-family: var(--display); font-size: var(--t-headline); font-weight: 600;
+  letter-spacing: -0.01em; text-align: left; cursor: pointer;
+}
+.foldBtn:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 8px; }
+.foldCount { font-weight: 400; color: var(--tm); font-variant-numeric: tabular-nums; }
+.foldIc { flex: 0 0 auto; color: var(--tm); transition: transform .2s ease; }
+.foldIc[data-open] { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .foldIc { transition: none; } }
+.inner { background: var(--fill); border: 0; }
+.subTitle { margin: 0; font-size: var(--t-callout); font-weight: 600; color: var(--tx); }

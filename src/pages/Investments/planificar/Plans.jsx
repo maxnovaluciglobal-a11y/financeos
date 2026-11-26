@@ -1,7 +1,8 @@
 // src/pages/Investments/planificar/Plans.jsx — Planificar › Planes guardados (F5).
 // Invest: renderPlans (app/index.html:7806-7848), que los guardaba solo en el
 // navegador. Aquí viven en la cuenta (metadatos invest_plans): abrir (y
-// editar), cambiar el nombre y borrar con Deshacer.
+// editar), cambiar el nombre y borrar con Deshacer. Desde el 26-nov-2026 vive
+// al pie de Aportes, dentro de una sección plegable con el título (embedded).
 import { useState } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useMoney } from '../../../components/Money.jsx'
@@ -19,15 +20,17 @@ function dateOf(ts) {
   try { return new Date(ts).toLocaleDateString(moneyLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return '' }
 }
 
-export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, onDelete, onGoCalc, onRetry }) {
+export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, onDelete, onGoCalc, onRetry, embedded = false }) {
+  const Box = embedded ? EmbeddedBox : CardBox
   const { m } = useMoney()
   const [renaming, setRenaming] = useState(null) // { id, name }
 
   if (plans.phase === 'loading') return <p className={s.note} role="status">{t('plan.pl.loading')}</p>
   const head = (
     <>
-      <h2 id="plan-pl-title" className={s.title}>{t('plan.pl.title')}</h2>
-      <p className={s.note}>{demo ? t('plan.pl.whereDemo') : t('plan.pl.where', { n: MAX_PLANS })}</p>
+      {!embedded && <h2 id="plan-pl-title" className={s.title}>{t('plan.pl.title')}</h2>}
+      {/* En el demo, Planificar ya dice arriba que nada se guarda (un solo aviso por pantalla). */}
+      {!(demo && embedded) && <p className={s.note}>{demo ? t('plan.pl.whereDemo') : t('plan.pl.where', { n: MAX_PLANS })}</p>}
       {plans.phase === 'error' && (
         <div role="alert">
           <p className={s.error}>{t('plan.pl.err.load')}</p>
@@ -38,7 +41,7 @@ export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, on
   )
   if (!plans.list.length) {
     return (
-      <section className={s.card} aria-labelledby="plan-pl-title">
+      <Box>
         {head}
         {plans.phase !== 'error' && (
           <>
@@ -47,7 +50,7 @@ export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, on
             <div className={s.row}><button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={onGoCalc}>{t('plan.pl.openCalc')}</button></div>
           </>
         )}
-      </section>
+      </Box>
     )
   }
 
@@ -58,7 +61,7 @@ export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, on
   }
 
   return (
-    <section className={s.card} aria-labelledby="plan-pl-title">
+    <Box>
       {head}
       <ul className={s.plans}>
         {plans.list.map(p => {
@@ -102,6 +105,9 @@ export default function Plans({ plans, fmt, t, demo, rates, onOpen, onRename, on
         })}
       </ul>
       <p className={s.note}>{t('plan.pl.foot')}</p>
-    </section>
+    </Box>
   )
 }
+
+const CardBox = ({ children }) => <section className={s.card} aria-labelledby="plan-pl-title">{children}</section>
+const EmbeddedBox = ({ children }) => <div className={s.wrap}>{children}</div>

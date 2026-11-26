@@ -25,7 +25,7 @@ export default {
 
   'hlp.g.risk': 'Risiko und Planung',
   'hlp.q.calc': 'Was macht der Rechner?',
-  'hlp.a.calc': 'Unter Planen › Rechner geben Sie ein, was Sie kaufen möchten, zu welchem Kurs und wo Ihr Stop liegen würde. Mit Ihrem Referenzkapital und Ihrer Risikoregel berechnet er, wie viele Einheiten passen, damit der Verlust beim Erreichen des Stops nicht über dem gewählten Prozentsatz liegt.\n\nEr rechnet nur: Er kauft nichts und verbindet sich mit keinem Broker.',
+  'hlp.a.calc': 'Unter Planen › Ihre Tranchen öffnen Sie unten mit einem Tipp „Wie viel kann ich verlieren, wenn es schiefgeht?“: Dort geben Sie ein, was Sie kaufen möchten, zu welchem Kurs und wo Ihr Stop liegen würde. Mit Ihrem Referenzkapital und Ihrer Risikoregel berechnet er, wie viele Einheiten passen, damit der Verlust beim Erreichen des Stops nicht über dem gewählten Prozentsatz liegt.\n\nEr rechnet nur: Er kauft nichts und verbindet sich mit keinem Broker.',
   'hlp.q.stop': 'Was ist das Risiko bis zum Stop?',
   'hlp.a.stop': 'Der Stop ist der Kurs, zu dem Sie verkaufen würden, um einen Verlust zu begrenzen. Das Risiko bis zum Stop ist, was Sie verlieren würden, wenn der Kurs dort ankommt: (Einstieg − Stop) × Einheiten.\n\nIhre Risikoregel legt fest, welchen Prozentsatz Ihres Kapitals Sie pro Transaktion zu verlieren bereit sind (1 %, solange Sie ihn nicht ändern). Ohne eingegebenen Stop nimmt der Rechner einen geschätzten, 8 % unter dem Einstieg.',
   'hlp.q.cash': 'Was ist Bargeld?',

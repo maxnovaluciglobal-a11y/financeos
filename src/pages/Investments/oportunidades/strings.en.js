@@ -1,6 +1,6 @@
 export default {
   'opp.title': 'Your tranches',
-  'opp.lead': 'Your amount, split across your assets and into 4 tranches by their 20, 50, 100 and 200-day averages.',
+  'opp.foot.edu': 'Educational information, not a recommendation',
   'opp.edu': 'Educational information, not an investment recommendation. It is a calculation with your own rules on public data that may be delayed.',
   'opp.loading': 'Reading the averages…',
   'opp.error': 'The price histories could not be read.',

@@ -1,6 +1,6 @@
 export default {
   'opp.title': 'Suas faixas',
-  'opp.lead': 'Seu valor, distribuído entre seus ativos e em 4 faixas pelas médias de 20, 50, 100 e 200 dias.',
+  'opp.foot.edu': 'Informação educativa, não é recomendação',
   'opp.edu': 'Informação educativa, não é recomendação de investimento. É um cálculo com as suas próprias regras sobre dados públicos que podem ter atraso.',
   'opp.loading': 'Lendo as médias…',
   'opp.error': 'Não foi possível ler os históricos de preço.',

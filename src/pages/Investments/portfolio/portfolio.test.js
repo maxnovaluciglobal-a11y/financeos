@@ -310,3 +310,24 @@ describe('pantalla Posiciones', () => {
     expect(tab.match(/className=\{s\.sample(Short)?\}/g)).toHaveLength(1)
   })
 })
+
+describe('Dividendos: etiquetas del gráfico de 12 meses (26-nov-2026)', async () => {
+  const { compactMoney, pickBarLabels } = await import('./Dividends.jsx')
+  it('monto corto que no se corta', () => {
+    expect(compactMoney('$352.430')).toBe('$352K')
+    expect(compactMoney('$49.120')).toBe('$49K')
+    expect(compactMoney('$8.120.000')).toBe('$8,1M')
+    expect(compactMoney('US$1.234,56')).toBe('US$1,2K')
+    expect(compactMoney('US$88,40')).toBe('US$88')
+    expect(compactMoney('—')).toBe('—')
+  })
+  it('solo barras altas y nunca dos vecinas con etiqueta', () => {
+    const v = [5, 0, 88, 5, 0, 88, 5, 0, 88, 5, 0, 88]
+    expect([...pickBarLabels(v)].sort((a, b) => a - b)).toEqual([2, 5, 8, 11])
+    const monthly = [10, 10, 10, 10]
+    const got = [...pickBarLabels(monthly)].sort((a, b) => a - b)
+    expect(got).toEqual([0, 2])
+    for (const i of got) expect(got.includes(i + 1)).toBe(false)
+    expect(pickBarLabels([0, 0]).size).toBe(0)
+  })
+})

@@ -29,7 +29,7 @@ export default {
 
   'hlp.g.risk': 'Riesgo y planificación',
   'hlp.q.calc': '¿Qué hace la calculadora?',
-  'hlp.a.calc': 'En Planificar › Calculadora escribes qué quieres comprar, a qué precio y dónde pondrías tu stop. Con tu capital de referencia y tu regla de riesgo, calcula cuántas unidades caben para que, si el precio llega al stop, la pérdida no pase del porcentaje que elegiste.\n\nSolo calcula: no compra nada ni se conecta a ningún bróker.',
+  'hlp.a.calc': 'En Planificar › Tus tramos, al pie, «¿Cuánto puedo perder si sale mal?» se abre con un toque: escribes qué quieres comprar, a qué precio y dónde pondrías tu stop. Con tu capital de referencia y tu regla de riesgo, calcula cuántas unidades caben para que, si el precio llega al stop, la pérdida no pase del porcentaje que elegiste.\n\nSolo calcula: no compra nada ni se conecta a ningún bróker.',
   'hlp.q.stop': '¿Qué es el riesgo al stop?',
   'hlp.a.stop': 'El stop es el precio al que venderías para cortar una pérdida. El riesgo al stop es lo que perderías si el precio llega ahí: (entrada − stop) × unidades.\n\nTu regla de riesgo dice qué porcentaje de tu capital aceptas perder en una operación (1 % si no la cambias). Si no escribes un stop, la calculadora usa uno estimado, 8 % bajo la entrada.',
   'hlp.q.cash': '¿Qué es el efectivo?',

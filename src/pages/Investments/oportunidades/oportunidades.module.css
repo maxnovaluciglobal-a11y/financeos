@@ -135,12 +135,19 @@ button.tk:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-of
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-size: var(--t-footnote); line-height: 1.5; color: var(--th); }
 .legend > span { display: inline-flex; align-items: center; gap: 5px; }
 
-.foot { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 18px; }
-.how { flex: 1 1 220px; font-size: var(--t-footnote); color: var(--tm); }
-.how summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--tx); }
-.how summary:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 6px; }
-.how > p, .how > div { margin: 0 0 8px; }
-.foot > button { flex: 0 0 auto; }
 
 .math { display: flex; flex-direction: column; gap: 6px; }
 .mathList { margin: 0 0 4px; padding-left: 18px; font-size: var(--t-footnote); line-height: 1.55; color: var(--tm); font-variant-numeric: tabular-nums; }
+
+/* 26-nov-2026: el monto va después de la tabla; al pie, una sola línea con el
+   aviso educativo y "¿Cómo se calcula?", que se abre con un toque. */
+.split { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 96px; }
+.how { font-size: var(--t-footnote); color: var(--tm); }
+.how summary { display: flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; list-style: none; color: var(--th); }
+.how summary::-webkit-details-marker { display: none; }
+.how summary svg { flex: 0 0 auto; }
+.howTxt { line-height: 1.45; }
+.howLink { font-weight: 600; color: var(--tx); text-decoration: underline; text-underline-offset: 2px; }
+.how summary:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; border-radius: 6px; }
+.how > p, .how > div { margin: 0 0 8px; }
+.how[open] > summary { margin-bottom: 4px; }
