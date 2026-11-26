@@ -145,7 +145,7 @@ export default function DiscoverPane({ t, full, demo, watch, onOpen, onFollow, o
                     const pending = !(r.t in dz.hist)
                     return (
                       <tr key={r.t}>
-                        <th scope="row"><button type="button" className={s.link} onClick={() => onOpen(r.t)} aria-label={t('fl.row.open', { t: r.t })}>{r.t}</button></th>
+                        <th scope="row"><button type="button" className={s.link} style={{ minWidth: 44 }} onClick={() => onOpen(r.t)} aria-label={t('fl.row.open', { t: r.t })}>{r.t}</button></th>
                         <td>{r.price != null ? <Money>{fmtPx(r.price, r.ccy || 'USD')}</Money> : '—'}</td>
                         <td><Day v={r.changePct} /></td>
                         <td>{pending ? <span className={s.rowSub}>{t('fl.cell.calc')}</span> : <Day v={r.yearPct} />}</td>
