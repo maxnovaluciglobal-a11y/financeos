@@ -15,10 +15,16 @@ import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRPFEmpleado, calcIRPFAutonomo, TRAMOS_IRPF_2026 } from '../../utils/irpfES.js'
 import { fmtFixed, fmtPctPoints } from '../../utils/index.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
 const fmtEUR = (n) => fmtFixed(n, 'es-ES', '€')
 
-export default function IRPFEspana() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function IRPFEspana(props) {
+  return <CountryToolsStringsGate><IRPFEspanaScreen {...props} /></CountryToolsStringsGate>
+}
+
+function IRPFEspanaScreen() {
   const { settings } = useApp()
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()

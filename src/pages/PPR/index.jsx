@@ -21,6 +21,7 @@ import SignalIcon, { InlineIcon } from '../../components/icons/SignalIcon.jsx'
 import { useT } from '../../i18n/useT.js'
 import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, KPI } from '../../components/ui/index.jsx'
 import ProGate from '../../components/ui/ProGate.jsx'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
 const fmtEur = (n) => '€' + (Number(n) || 0).toLocaleString('pt-PT', { maximumFractionDigits: 0 })
 
@@ -33,7 +34,12 @@ function deductionCap(age) {
   return { cap: 300, maxContribution: 1500, bracketKey: 'over50' }
 }
 
-export default function PPRPage() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function PPRPage(props) {
+  return <CountryToolsStringsGate><PPRPageScreen {...props} /></CountryToolsStringsGate>
+}
+
+function PPRPageScreen() {
   const { t } = useT()
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
 

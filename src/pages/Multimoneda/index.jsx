@@ -23,10 +23,16 @@ import Money, { useMoney } from '../../components/Money.jsx'
 import { fmtRef, fmtDay, rateSourceText, FreshRate } from '../Dashboard/RefCurrency.jsx'
 import { SOURCE_LABEL, resolveRefRate, rateOptions, fresherRate, ratePatch } from '../../utils/refRate.js'
 import { fmtPctPoints, currencySymbol } from '../../utils/index.js'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
 const CONFIGS = { VE: veConfig }
 
-export default function Multimoneda() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function Multimoneda(props) {
+  return <CountryToolsStringsGate><MultimonedaScreen {...props} /></CountryToolsStringsGate>
+}
+
+function MultimonedaScreen() {
   const { settings, updateSettings, showToast } = useApp()
   const { t, lang } = useT()
   const { m } = useMoney()
