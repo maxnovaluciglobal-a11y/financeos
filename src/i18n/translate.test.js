@@ -459,16 +459,22 @@ describe('paridad de las claves de la oferta de Pro con prueba (es/en/pt/de)', (
     }
   })
 
-  it('las notas dicen que se pide tarjeta, cuándo es el primer cobro y que se puede cancelar', () => {
-    expect(es['billing.trialNote']).toMatch(/tarjeta/i)
-    expect(en['billing.trialNote']).toMatch(/card/i)
-    expect(pt['billing.trialNote']).toMatch(/cartão/i)
-    expect(de['billing.trialNote']).toMatch(/Karte/)
-    for (const d of [es, en, pt, de]) expect(d['billing.trialNote']).toContain('{next}')
+  it('modelo A: la nota de la prueba dice que no se pide tarjeta ni se cobra; la compra se puede cancelar', () => {
+    expect(es['billing.trialNote']).toMatch(/Sin tarjeta/)
+    expect(en['billing.trialNote']).toMatch(/No card/)
+    expect(pt['billing.trialNote']).toMatch(/Sem cartão/)
+    expect(de['billing.trialNote']).toMatch(/Ohne Karte/)
+    for (const d of [es, en, pt, de]) expect(d['billing.trialNote']).not.toContain('{next}')
+    for (const k of ['billing.renewal.monthly', 'billing.renewal.annual']) {
+      expect(es[k]).not.toMatch(/prueba/)
+      expect(en[k]).not.toMatch(/trial/)
+    }
     expect(es['billing.then.annual']).toMatch(/Cancela cuando quieras/)
     expect(en['billing.then.monthly']).toMatch(/Cancel anytime/)
     expect(pt['billing.then.annual']).toMatch(/Cancele quando quiser/)
     expect(de['billing.then.annual']).toMatch(/kündbar/)
+    // "multimoneda" genérico fuera de la descripción de Pro (inconsistencia 1c).
+    for (const d of [es, en, pt, de]) expect(d['licenseGate.planProDesc']).not.toMatch(/multi/i)
   })
 
   it('sin voseo, exclamaciones, "por favor" ni "please"; el alemán va de Sie', () => {
@@ -532,7 +538,7 @@ describe('paridad de proTrial. y pro.demo. (es/en/pt/de)', () => {
   const pick = (dict) => Object.keys(dict).filter(k => !k.endsWith('@native') && (k.startsWith('proTrial.') || k.startsWith('pro.demo.') || k.startsWith('pro.gate.preview'))).sort()
   it('las 4 lenguas tienen las mismas claves y variables', () => {
     const base = pick(es)
-    expect(base.length).toBe(13)
+    expect(base.length).toBe(44) // 13 + 31 de la prueba sin tarjeta (modelo A, 26-nov-2026; 24 de los avisos viven en components/proTrial/)
     for (const d of [en, pt, de]) expect(pick(d)).toEqual(base)
     const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
     for (const k of base) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))

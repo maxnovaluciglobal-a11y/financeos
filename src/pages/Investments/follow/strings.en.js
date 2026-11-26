@@ -117,7 +117,7 @@ export default {
   'fl.push.busy': 'Turning on…',
   'fl.push.on': 'Notifications are on for this device.',
   'fl.push.ok': 'Done: alerts will reach this device.',
-  'fl.push.noLicense': 'Notifications on this device need an active moyiq license. Without one, your alerts are still saved and you can see here which ones are met.',
+  'fl.push.noLicense': 'Browser notifications are part of Pro. Without Pro, your alerts are still saved and you can see here which ones are met.',
   'fl.push.unsupported': 'This browser cannot receive notifications. Your alerts are still saved and you can see here which ones are met.',
   'fl.push.demo': 'Notifications are not turned on in the demo.',
 

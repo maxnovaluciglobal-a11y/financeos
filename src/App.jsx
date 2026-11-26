@@ -22,6 +22,8 @@ import { markInternalUser, trackOAuthSignupDone } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
+// Prueba de Pro sin tarjeta: fuera del JS inicial (se pide después del primer pintado).
+const loadProTrial = () => import('./core/proTrial.js')
 import { useState, useEffect } from 'react'
 import { listenSwOpen } from './utils/swOpen.js'
 import { logClientError, logRejection } from './utils/errorLog.js'
@@ -68,6 +70,8 @@ const Panorama      = lazy(() => import('./pages/Panorama/index.jsx'))
 const Investments   = STORE_BUILD ? null : lazy(() => import('./pages/Investments/index.jsx'))
 const InvestAsset   = STORE_BUILD ? null : lazy(() => import('./pages/Investments/Asset.jsx'))
 const NpsPrompt     = lazy(() => import('./components/NpsPrompt.jsx'))
+// Avisos de la prueba de 14 días de Pro sin tarjeta (oferta, días 10 y 13, fin).
+const ProTrialNotices = lazy(() => import('./components/ProTrialNotices.jsx'))
 // V4 (30-oct-2026): el onboarding solo lo ve una cuenta nueva: fuera del JS inicial.
 const Onboarding    = lazy(() => import('./components/Onboarding.jsx'))
 // V4: caminos que casi nadie recorre al abrir la app. El demo trae los datos de
@@ -108,6 +112,7 @@ function Inner() {
     if (!isPro || isDemoMode()) return
     startChecklist()
     markPageVisited(page)
+    loadProTrial().then(m => m.markTrialFeatureUsed(page)).catch(logRejection('App:trialUse'))
   }, [page, isPro])
   const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
   // undefined = todavía verificando sesión, null = sin sesión, objeto = autenticado.
@@ -236,6 +241,16 @@ function Inner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ownerOk])
 
+  // Prueba de Pro sin tarjeta (migración 20261126000000): una vez por sesión,
+  // con la cuenta ya confirmada en este dispositivo y el plan elegido, el
+  // servidor dice si la cuenta puede empezarla, si está en curso (empezada en
+  // otro dispositivo: se toma su licencia) o si terminó (vuelta a Starter).
+  useEffect(() => {
+    if (isDemo || !ownerOk || !licensed) return
+    loadProTrial().then(m => m.refreshProTrial({ userId: session?.user?.id })).catch(logRejection('App:proTrial'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerOk, licensed])
+
   useEffect(() => {
     if (isDemo) return
     const timer = setTimeout(() => setBootTimedOut(true), 12000)
@@ -350,6 +365,9 @@ function Inner() {
       </Suspense>
       {session?.user && !isDemo && (
         <Suspense fallback={null}><NpsPrompt createdAt={session.user.created_at} /></Suspense>
+      )}
+      {session?.user && !isDemo && (
+        <Suspense fallback={null}><ProTrialNotices setPage={setPage} /></Suspense>
       )}
       <Toast />
     </Shell>

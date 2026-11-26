@@ -20,7 +20,7 @@
 // Diseño, migración y rollback: docs/sync-frase-de-paso.md.
 
 import { exportAllData, importAllData, DATA_STORES, savePreSyncSnapshot } from './db/index.js'
-import { getLicenseKey } from '../utils/licenseValidator.js'
+import { getLicenseKey, hasProEntitlement } from '../utils/licenseValidator.js'
 import {
   encryptData, decryptData, licenseKeyHash, LICENSE_HASH_RE,
   isV2Blob, parseV2Envelope, deriveV2KeyBytes, encryptV2, decryptV2, newV2Salt,
@@ -87,7 +87,9 @@ export function syncErrorCode(e) {
 
 export function syncAvailable() {
   const { url, anon } = env()
-  return !!(url && anon && getLicenseKey())
+  // Sync es de Pro (pagado o la prueba de 14 días sin tarjeta, que también es
+  // una licencia de la cuenta). El servidor vuelve a validar cada llamada.
+  return !!(url && anon && getLicenseKey() && hasProEntitlement())
 }
 
 function v2Key() {

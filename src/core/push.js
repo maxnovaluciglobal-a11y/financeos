@@ -2,7 +2,7 @@
 // Notificaciones push opcionales (recordatorios de sistema — nunca datos financieros).
 // Ligadas a la licencia, igual patrón que el sync. Apagado por defecto (opt-in).
 
-import { getLicenseKey } from '../utils/licenseValidator.js'
+import { getLicenseKey, hasProEntitlement } from '../utils/licenseValidator.js'
 import { licenseKeyHash } from '../utils/syncCrypto.js'
 import { authClient } from './authClient.js'
 import { logClientError, logRejection } from '../utils/errorLog.js'
@@ -46,7 +46,8 @@ async function rpc(fn, body) {
 // Pide permiso al usuario, suscribe el navegador y guarda la suscripción en el servidor.
 export async function enablePush() {
   if (!pushSupported()) return { ok: false, error: 'unsupported' }
-  const key = getLicenseKey()
+  // Avisos del navegador: Pro (pagado o la prueba sin tarjeta).
+  const key = hasProEntitlement() ? getLicenseKey() : ''
   if (!key || !SUPABASE_URL || !SUPABASE_ANON) return { ok: false, error: 'no_license' }
 
   const permission = await Notification.requestPermission()
@@ -80,7 +81,7 @@ export async function refreshPushOnOpen() {
       permission: () => (typeof Notification !== 'undefined' ? Notification.permission : 'default'),
       getSubscription: async () => (await navigator.serviceWorker.ready).pushManager.getSubscription(),
       save: async (json) => {
-        const key = getLicenseKey()
+        const key = hasProEntitlement() ? getLicenseKey() : ''
         if (!key || !SUPABASE_URL || !SUPABASE_ANON) return { ok: false, error: 'no_license' }
         return rpc('save_push_subscription', {
           p_key: await licenseKeyHash(key), p_endpoint: json.endpoint, p_p256dh: json.keys.p256dh, p_auth: json.keys.auth,

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { helpUrl, landingLang, pricingUrl, isPricingUrl, PRICING_URLS } from './landingUrls.js'
 import { cancelUrl } from './cancelUrl.js'
-import { withCheckoutLang, checkoutFor, proCta } from './pricing.js'
+import { withCheckoutLang, checkoutFor } from './pricing.js'
 
 describe('landingLang', () => {
   it('es y de tienen landing propia; en y pt van a la inglesa; lo desconocido, a la española', () => {
@@ -45,12 +45,12 @@ describe('pricingUrl y helpUrl', () => {
 })
 
 describe('withCheckoutLang con la página de planes', () => {
-  const off = { trialEnabled: false }
-  it('sin prueba, el fallback de checkoutFor/proCta sale en el idioma de la interfaz', () => {
+  const off = { checkoutUrl: '', checkoutUrlAnnual: '' }
+  it('sin links de pago (compilación de tienda), el fallback de checkoutFor sale en el idioma de la interfaz', () => {
     expect(withCheckoutLang(checkoutFor('annual', off).href, 'en')).toBe('https://moyiq.app/en/#pricing')
     expect(withCheckoutLang(checkoutFor('monthly', off).href, 'de')).toBe('https://moyiq.app/de/#pricing')
-    expect(withCheckoutLang(proCta(off).href, 'pt')).toBe('https://moyiq.app/en/#pricing')
-    expect(withCheckoutLang(proCta(off).href, 'es')).toBe('https://moyiq.app/#pricing')
+    expect(withCheckoutLang(checkoutFor('annual', off).href, 'pt')).toBe('https://moyiq.app/en/#pricing')
+    expect(withCheckoutLang(checkoutFor('annual', off).href, 'es')).toBe('https://moyiq.app/#pricing')
   })
   it('una URL de planes de otro idioma también se corrige', () => {
     expect(withCheckoutLang('https://moyiq.app/de/#pricing', 'es')).toBe('https://moyiq.app/#pricing')

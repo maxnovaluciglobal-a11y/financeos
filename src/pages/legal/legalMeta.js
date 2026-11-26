@@ -1,7 +1,7 @@
 // src/pages/legal/legalMeta.js
 // Datos comunes de las páginas legales (es/en/pt/de). Sin React ni hooks: lo
 // importan los módulos de contenido y legal.test.js en node.
-import { PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE, TERMS_DEPLOY_DATE, TERMS_PREVIOUS_DATE } from '../../data/deployDate.js'
+import { LICENSE_DEPLOY_DATE, PRIVACY_DEPLOY_DATE, PRIVACY_PREVIOUS_DATE, REBRAND_DEPLOY_DATE, TERMS_DEPLOY_DATE, TERMS_PREVIOUS_DATE } from '../../data/deployDate.js'
 import { STORE_BUILD } from '../../native/storeBuild.js'
 
 export const OPERATOR = 'MAXNOVA & LUCI Global LLC'
@@ -59,6 +59,10 @@ export const TERMS_EFFECTIVE_DATE = TERMS_DEPLOY_DATE
 export const TERMS_VERSION = TERMS_EFFECTIVE_DATE
 export const TERMS_REPLACES = TERMS_PREVIOUS_DATE
 export const TERMS_LAST_UPDATED = datedLabels(TERMS_EFFECTIVE_DATE, TERMS_REPLACES)
+// Licencia por plan: vigencia propia desde el modelo A (data/deployDate.js,
+// LICENSE_DEPLOY_DATE); reemplaza a la versión del rebranding.
+export const LICENSE_EFFECTIVE_DATE = LICENSE_DEPLOY_DATE
+export const LICENSE_LAST_UPDATED = datedLabels(LICENSE_EFFECTIVE_DATE, REBRAND_DEPLOY_DATE)
 
 // Aviso del cambio de nombre, al inicio de las cuatro páginas legales.
 // "MOY IQ" aparece aquí a propósito (alias permitido en copyLint.test.js).

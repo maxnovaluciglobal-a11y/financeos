@@ -2,7 +2,7 @@
 // del JS inicial: el Shell lo carga con import() después de guardar desde el
 // Registro rápido. Las reglas están en core/pushAsk.js.
 import { pushSupported, isPushEnabled } from './push.js'
-import { getLicenseKey } from '../utils/licenseValidator.js'
+import { hasProEntitlement } from '../utils/licenseValidator.js'
 import { isNativeApp } from '../native/platform.js'
 import { shouldAskPush, loadPushAsk } from './pushAsk.js'
 
@@ -12,6 +12,6 @@ export function autoPushAsk({ isDemo = false, movementCount = 0 } = {}) {
   const blocked = typeof Notification !== 'undefined' && Notification.permission === 'denied'
   return shouldAskPush({
     supported: pushSupported() && !blocked, enabled: isPushEnabled(), native: isNativeApp(),
-    hasLicense: !!getLicenseKey(), isDemo, movementCount, asked: loadPushAsk(),
+    hasLicense: hasProEntitlement(), isDemo, movementCount, asked: loadPushAsk(),
   })
 }

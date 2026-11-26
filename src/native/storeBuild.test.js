@@ -7,7 +7,8 @@ import config from '../config.js'
 describe('compilación de las tiendas', () => {
   it('en la web y en los tests no está activa: la web conserva sus enlaces de pago', () => {
     expect(STORE_BUILD).toBe(false)
-    expect(config.pricing.trialCheckoutUrl).toMatch(/^https:\/\/buy\.stripe\.com\//)
+    expect(config.pricing.checkoutUrl).toMatch(/^https:\/\/buy\.stripe\.com\//)
+    expect(config.pricing.checkoutUrlAnnual).toMatch(/^https:\/\/buy\.stripe\.com\//)
   })
   it('vite.config.js define __STORE_BUILD__ desde MOYIQ_STORE_BUILD=1', () => {
     const src = readFileSync(new URL('../../vite.config.js', import.meta.url), 'utf8')

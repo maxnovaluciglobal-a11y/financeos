@@ -16,10 +16,9 @@
 // navegación en la misma pestaña deja a la persona fuera de la app sin forma
 // de volver.
 //
-// T10 (08-oct-2026): si config.pricing.trialEnabled === true y hay
-// trialCheckoutUrl, el CTA pasa a "Probar 14 días" y abre el Payment Link de
-// prueba, con la nota de cobro debajo (tarjeta requerida, cuándo se cobra).
-// Con el flag apagado o sin URL, todo queda como antes (utils/pricing.js, proCta).
+// Modelo A (26-nov-2026): la prueba de 14 días es SIN tarjeta y se empieza acá
+// mismo (TrialStartButton → start_pro_trial) si la cuenta todavía puede. Comprar
+// va siempre a los Payment Links sin prueba, con la elección anual/mensual.
 
 import { useMemo, useState } from 'react'
 import { ProStripSlot } from './proStripSlot.js'
@@ -29,7 +28,9 @@ import PeriodToggle from './PeriodToggle.jsx'
 import RenewalNote from './RenewalNote.jsx'
 import { useT } from '../../i18n/useT.js'
 import config from '../../config.js'
-import { proPriceVars, proCta, withCheckoutLang, checkoutFor, checkoutPlanForHref, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
+import { proPriceVars, withCheckoutLang, checkoutFor, checkoutPlanForHref, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
+import TrialStartButton from './TrialStartButton.jsx'
+import { useProTrial } from '../../core/proTrial.js'
 import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { trackEvent } from '../../utils/webAnalytics.js'
 import { IconIQScore } from '../icons/Icons.jsx'
@@ -64,6 +65,7 @@ function DemoProStrip({ t, days }) {
 // eslint-disable-next-line no-unused-vars
 export default function ProGate({ children, feature, featureKey, benefits = DEFAULT_PRO_BENEFITS, feminine, preview = true }) {
   const { isPro } = usePlan()
+  const trialState = useProTrial()
   const { t, lang } = useT()
   const account = useAccount()
   // APP-N3 (C-39): la misma elección anual/mensual que LicenseGate y Ajustes.
@@ -84,12 +86,12 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
 
   const featureName = featureKey ? t(featureKey) : (feature || t('pro.gate.featureDefault'))
   const list = Array.isArray(benefits) && benefits.length ? benefits : DEFAULT_PRO_BENEFITS
-  const base = proCta(config.pricing)
-  const periodCta = checkoutFor(period)
-  const cta = base.trial && periodCta.trial ? { ...base, href: periodCta.href } : base
+  const cta = checkoutFor(period)
   const trialDays = config.pricing.trialDays
   const priceVars = proPriceVars(lang)
-  const ctaLabel = t(cta.labelKey, { days: trialDays })
+  const ctaLabel = t('menu.upgrade.title')
+  // La cuenta todavía puede empezar los 14 días sin tarjeta (lo dice el servidor).
+  const canTrial = config.pricing.noCardTrial === true && trialState.status?.eligible === true
   // App de tienda: sin precio ni enlace al checkout web (native/storePolicy.js).
   const webPay = canShowWebCheckout()
 
@@ -134,18 +136,24 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         {t('pro.gate.price', priceVars)}
       </p>
 
-      {cta.trial && (
-        <div style={{ maxWidth: 320, margin: '0 auto 16px' }}>
-          <PeriodToggle value={period} onChange={setPeriod} />
+      {canTrial && (
+        <div style={{ maxWidth: 360, margin: '0 auto 18px' }}>
+          <TrialStartButton style={{ fontSize: 'var(--t-headline)', fontWeight: 700, padding: '10px 24px', minHeight: 48, width: '100%' }} source="gate" />
+          <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 10, lineHeight: 1.5 }}>{t('billing.trialNote')}</p>
+          <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', margin: '16px 0 0' }}>{t('proTrial.orBuy')}</p>
         </div>
       )}
 
+      <div style={{ maxWidth: 320, margin: '0 auto 16px' }}>
+        <PeriodToggle value={period} onChange={setPeriod} />
+      </div>
+
       <a
         href={withCheckoutLang(cta.href, lang, account)}
-        onClick={() => { if (cta.trial) trackEvent('checkout_start', { plan: checkoutPlanForHref(cta.href) || 'trial' }) }}
+        onClick={() => trackEvent('checkout_start', { plan: checkoutPlanForHref(cta.href) || period })}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${styles.btn} ${styles.btn_primary}`}
+        className={`${styles.btn} ${canTrial ? styles.btn_ghost : styles.btn_primary}`}
         aria-label={`${ctaLabel} (${t('pro.gate.ctaHint')})`}
         title={t('pro.gate.ctaHint')}
         style={{ fontSize: 'var(--t-headline)', fontWeight: 700, padding: '10px 24px', minHeight: 48, textDecoration: 'none' }}
@@ -153,17 +161,9 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
         {ctaLabel}
       </a>
 
-      {cta.trial && (
-        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
-          {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', priceVars)} {t('billing.trialNote', { next: trialDays + 1 })}{' '}
-          <RenewalNote period={period} />
-        </p>
-      )}
-      {!cta.trial && (
-        <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
-          <RenewalNote trial={false} />
-        </p>
-      )}
+      <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 12, lineHeight: 1.5 }}>
+        <RenewalNote period={period} />
+      </p>
       </>}
       {preview && webPay && (
         <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', marginTop: 16, lineHeight: 1.5 }}>

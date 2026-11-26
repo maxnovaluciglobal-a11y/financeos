@@ -141,6 +141,11 @@
    "service_role": "arwd",
    "rls": true
   },
+  "public.pro_trials": {
+   "authenticated": "",
+   "service_role": "arwd",
+   "rls": true
+  },
   "public.profiles": {
    "authenticated": "r",
    "service_role": "arwd",
@@ -303,6 +308,12 @@
    "authenticated": "",
    "service_role": "X"
   },
+  "public.carry_pro_trial_to_license()": {
+   "kind": "trigger",
+   "anon": "",
+   "authenticated": "",
+   "service_role": ""
+  },
   "public.confirm_marketing_consent(uuid)": {
    "kind": "rpc",
    "anon": "X",
@@ -423,6 +434,18 @@
    "authenticated": "",
    "service_role": "X"
   },
+  "public.fnos_end_pro_trial(uuid)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_epoch_ms(timestamp with time zone)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
   "public.fnos_has_legacy_sync_blob(text)": {
    "kind": "rpc",
    "anon": "",
@@ -442,6 +465,12 @@
    "service_role": "X"
   },
   "public.fnos_license_upgrade(text)": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
+  "public.fnos_pro_trial_eligible(uuid)": {
    "kind": "rpc",
    "anon": "",
    "authenticated": "",
@@ -585,6 +614,18 @@
    "authenticated": "",
    "service_role": "X"
   },
+  "public.pro_trial_status()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
+  },
+  "public.pro_trials_expire_due()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "",
+   "service_role": "X"
+  },
   "public.protect_trial_reuse()": {
    "kind": "trigger",
    "anon": "",
@@ -686,6 +727,12 @@
    "anon": "",
    "authenticated": "",
    "service_role": ""
+  },
+  "public.start_pro_trial()": {
+   "kind": "rpc",
+   "anon": "",
+   "authenticated": "X",
+   "service_role": "X"
   },
   "public.submit_cancellation_request(text, text, text, text, text, text, date, text, text)": {
    "kind": "rpc",

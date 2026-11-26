@@ -18,7 +18,7 @@ import { pushOfferable } from '../../core/pushAsk.js'
 import { requestPushPermission } from '../../core/pushPrimer.js'
 import { localAlertsSupported, requestLocalAlerts } from '../../core/localAlerts/primer.js'
 import { isNativeApp } from '../../native/platform.js'
-import { getLicenseKey } from '../../utils/licenseValidator.js'
+import { hasProEntitlement } from '../../utils/licenseValidator.js'
 import { currentMonth } from '../../utils/index.js'
 import { focusAfter } from '../../utils/focusAfter.js'
 import { firstStepsProgress, firstStepsVisible, nextFirstStepsState, readFirstStepsState, FIRST_STEPS_HIDDEN_KEY, FIRST_STEPS_STATE_KEY } from './firstSteps.js'
@@ -52,7 +52,7 @@ export function useFirstSteps() {
   // puede cumplir: el quinto pasa a ser el respaldo.
   const blocked = typeof Notification !== 'undefined' && Notification.permission === 'denied'
   const localOffered = local && localPerm !== 'denied' && localPerm !== 'unsupported'
-  const webOffered = pushOfferable({ supported: pushSupported() && !blocked, hasLicense: !!getLicenseKey(), isDemo: !!settings.isDemo, native: isNativeApp() })
+  const webOffered = pushOfferable({ supported: pushSupported() && !blocked, hasLicense: hasProEntitlement(), isDemo: !!settings.isDemo, native: isNativeApp() })
   const pushOffered = webOffered || localOffered
   const alertsOn = webOffered ? isPushEnabled() : localOffered && localPerm === 'granted'
   const data = { incomes: ctx.incomes, expenses: ctx.expenses, budgets: ctx.budgets, recurring: ctx.recurring, lastBackupAt: settings.lastBackupAt }

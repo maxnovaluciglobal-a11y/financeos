@@ -12,10 +12,10 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { PRIVACY_CONTENT } from './privacyContent.jsx'
 import { TERMS_CONTENT } from './termsContent.jsx'
-import { LICENSE_CONTENT } from './licenseContent.jsx'
+import { LICENSE_CONTENT, PLANS as LICENSE_PLANS } from './licenseContent.jsx'
 import { DISCLAIMER_CONTENT } from './disclaimerContent.jsx'
 import { sanitizeLogMessage } from '../../core/feedback.js'
-import { COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, PRIVACY_LAST_UPDATED, TERMS_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
+import { COMPANY, LAST_UPDATED, LEGAL_EFFECTIVE_DATE, LEGAL_LANGS, LICENSE_LAST_UPDATED, PRIVACY_LAST_UPDATED, TERMS_LAST_UPDATED, pickLang, REBRAND_NOTICE, STRIPE_PORTAL_URL, SUPPORT_EMAIL } from './legalMeta.js'
 import { DE_LEGAL_PUBLISHED, DE_LEGAL_URLS, deLegalRef } from './deLegal.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -58,7 +58,7 @@ describe('legal pages × languages', () => {
 
         it('renders non-empty content with the last-updated date', () => {
           expect(text.length).toBeGreaterThan(800)
-          expect(text).toContain((page === 'privacy' ? PRIVACY_LAST_UPDATED : page === 'terms' ? TERMS_LAST_UPDATED : LAST_UPDATED)[lang])
+          expect(text).toContain((page === 'privacy' ? PRIVACY_LAST_UPDATED : page === 'terms' ? TERMS_LAST_UPDATED : page === 'license' ? LICENSE_LAST_UPDATED : LAST_UPDATED)[lang])
         })
 
         it('has no exclamation marks and no emoji', () => {
@@ -71,15 +71,33 @@ describe('legal pages × languages', () => {
           expect(text).toContain(SUPPORT_EMAIL)
         })
 
-        it('never claims there are no accounts; a trial appears only as a conditional clause in the terms', () => {
+        it('never claims there are no accounts; the trial is the no-card 14-day one, only in terms and license', () => {
           expect(text).not.toMatch(NO_ACCOUNTS)
-          const TRIAL = /\btrial\b|prueba gratis|prueba gratuita|teste gratuito|período de teste|periodo de teste|Testphase|kostenlos testen|Probezeit/i
-          if (page === 'terms') {
-            expect(text).toMatch(/si se ofrece|if offered|se oferecido|falls angeboten/)
+          const TRIAL = /\btrial\b|prueba gratis|prueba gratuita|prueba de Pro|teste gratuito|teste do Pro|período de teste|periodo de teste|Testphase|kostenlos testen|Probezeit/i
+          // Modelo A (26-nov-2026): sin tarjeta y sin cobro; ya no es "si se ofrece".
+          const NO_CARD = { es: /sin tarjeta|No se pide tarjeta/, en: /no card|No card/, pt: /sem cartão|Não é pedido cartão/, de: /ohne Karte|keine Karte/ }
+          expect(text).not.toMatch(/si se ofrece|if offered|se oferecido|falls angeboten/)
+          if (page === 'terms' || page === 'license') {
+            expect(text).toMatch(TRIAL)
+            expect(text).toMatch(NO_CARD[lang])
+            expect(text).not.toMatch(/se convierte automáticamente|converts automatically|se converte automaticamente|wird das Abo ab dem 15/)
           } else {
             expect(text).not.toMatch(TRIAL)
           }
         })
+
+        if (page === 'license') {
+          it('lists sync and browser notifications under Pro, not Starter, and no generic multi-currency claim', () => {
+            const plans = LICENSE_PLANS[lang]
+            const starter = plans[0].allowed.join(' ')
+            const pro = plans[1].allowed.join(' ')
+            expect(starter).not.toMatch(/sincroniz|sync|Synchronis/i)
+            expect(pro).toMatch(/sincroniz|sync|Synchronis/i)
+            expect(pro).toMatch(/navegador|browser|Browser/)
+            expect(pro).not.toMatch(/^Multi-?moeda$|^Multi-?moneda$|^Multi-currency$|^Multiwährung$/m)
+            for (const item of plans[1].allowed) expect(item).not.toMatch(/^(Multi-moneda|Multi-currency|Multimoeda|Multiwährung)$/)
+          })
+        }
 
         it('uses moyiq as product name (MOY IQ and FinanceOS only as former names)', () => {
           expect(text).toContain('moyiq')
@@ -311,7 +329,7 @@ describe('LEG-12: portal de Stripe en el Menú', () => {
   it('el Menú lo ofrece solo con Pro, en una pestaña nueva y con su explicación', async () => {
     const { readFileSync } = await import('node:fs')
     const src = readFileSync(new URL('../More/index.jsx', import.meta.url), 'utf8')
-    expect(src).toMatch(/isPro && STRIPE_PORTAL_URL/)
+    expect(src).toMatch(/isPro && !noCardTrial && STRIPE_PORTAL_URL/)
     expect(src).toMatch(/target="_blank" rel="noopener noreferrer"/)
     expect(src).toContain("t('menu.manageSubHint')")
   })

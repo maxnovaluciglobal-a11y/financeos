@@ -7,16 +7,27 @@
 // Reemplaza la lógica vieja que leía settings.licenseKey (nunca se seteaba) y
 // derivaba el plan del prefijo de la clave (imposible con FNOS-XXXX-XXXX-XXXX).
 
-import { getLicensePlan } from '../utils/licenseValidator.js'
+import { useEffect, useReducer } from 'react'
+import { getLicensePlan, PLAN_EVENT } from '../utils/licenseValidator.js'
 import config from '../config.js'
+import { isPaidPlan } from '../utils/plans.js'
 
 export function usePlan() {
+  // Empezar o terminar la prueba cambia el plan sin recargar: se vuelve a leer.
+  const [, refresh] = useReducer(x => x + 1, 0)
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    window.addEventListener(PLAN_EVENT, refresh)
+    return () => window.removeEventListener(PLAN_EVENT, refresh)
+  }, [])
   const isDemo = typeof window !== 'undefined' && window.location.search.includes('demo=true')
-  const plan = isDemo ? 'pro' : (getLicensePlan() || config.plan || 'personal')
+  const plan = isDemo ? 'pro' : (getLicensePlan() || config.plan || 'starter')
 
   return {
     plan,
-    isPro: plan === 'pro' || plan === 'enterprise',
+    // Pro pagado, Enterprise, la licencia de pago único de antes y la prueba de
+    // 14 días sin tarjeta (una licencia Pro con vencimiento) abren lo mismo.
+    isPro: isPaidPlan(plan),
     isEnterprise: plan === 'enterprise',
     isStarter: plan === 'starter',
   }

@@ -29,6 +29,7 @@ import { logRejection } from '../../../utils/errorLog.js'
 import { segKeyTarget } from '../planificar/Aportes.jsx'
 import { LADDER_KEYS, DEFAULT_LADDER, DEFAULT_RSI_RULE, driftMath, planCapital, uninvested } from './capital.js'
 import { useReadings } from './useReadings.js'
+import { currentInvestLimits, splitForTramos, announceInvestLimit } from '../../../utils/investLimits.js'
 import { useOppT } from './dict.js'
 import TramosTable, { pctIn } from './TramosTable.jsx'
 import p from '../planificar/planificar.module.css'
@@ -87,7 +88,11 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
   const rd = useReadings({ demo, items })
 
   // ── Reparto ──
-  const base = useMemo(() => rebalanceBase(pb.positions.rows), [pb.positions.rows])
+  // Límites de Starter (apagados por defecto: limits = null y no cambia nada).
+  const limits = currentInvestLimits()
+  const baseAll = useMemo(() => rebalanceBase(pb.positions.rows), [pb.positions.rows])
+  const base = useMemo(() => splitForTramos(baseAll, limits).shown, [baseAll, limits])
+  const lockedN = limits ? Math.max(0, baseAll.length - limits.tramos) : 0
   const hasTargets = !!targets && Object.keys(targets).length > 0
   const free = uninvested(capital, pb.positions.totals?.cost)
   const cash = pb.ledger?.usesCash && pb.ledger.cash > 0 ? pb.ledger.cash : null
@@ -115,13 +120,13 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
     if (method === 'equal') return equalAlloc(base.map(b => b.t))
     return null
   }, [method, hasTargets, base, targets])
-  const alloc = (method === 'manual' ? manual || [] : autoAlloc || []).filter(a => Number(a.p) > 0)
+  const alloc = splitForTramos((method === 'manual' ? manual || [] : autoAlloc || []).filter(a => Number(a.p) > 0), limits).shown
   function pickMethod(v) {
     if (v === 'manual' && !manual) setManual((autoAlloc && autoAlloc.length ? autoAlloc : equalAlloc(base.map(b => b.t))).map(a => ({ ...a })))
     setMethod(v)
   }
   const setPct = (tk, v) => setManual(list => (list || []).map(a => (a.t === tk ? { ...a, p: v === '' ? '' : num(v) } : a)))
-  const addable = items.map(i => i.t).filter(x => !(manual || []).some(a => a.t === x)).slice(0, 8)
+  const addable = limits && (manual || []).length >= limits.tramos ? [] : items.map(i => i.t).filter(x => !(manual || []).some(a => a.t === x)).slice(0, 8)
 
   const plan = planCapital({ amount: amt, alloc, readings: rd.readings, ladder: lad, rsiRule })
   const pending = alloc.filter(a => !(a.t in rd.readings)).map(a => a.t)
@@ -237,6 +242,12 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
         )}
       </div>
       {showTable && <TramosTable plan={plan.ok ? plan : null} mine={mine} watch={watchItems} readings={rd.readings} t={t} fmt={fmt} lad={lad} onOpen={onOpen} />}
+      {lockedN > 0 && (
+        <div className={p.row}>
+          <p className={p.note}>{t('invest.limit.lockedRow', { n: lockedN })}</p>
+          <button type="button" className={p.btn} onClick={() => announceInvestLimit('tramos')}>{t('invest.limit.cta')}</button>
+        </div>
+      )}
 
       {/* 4 · Leyenda, cuentas, depósito y aviso */}
       {showTable && (

@@ -4,7 +4,7 @@
 // Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
 // Mismos hechos que ../financeos-landing/terms.html, en/terms.html y de/agb.html (rama
 // i18n/landing-de): identificación de la LLC, renovación automática y cancelación en línea,
-// prueba gratuita condicional ("si se ofrece"), garantía técnica de 14 días, desistimiento UE,
+// prueba de Pro de 14 días sin tarjeta y sin cobro (modelo A, 26-nov-2026), garantía técnica de 14 días, desistimiento UE,
 // Florida + Miami-Dade con salvedad de consumo. El bloque alemán sigue las AGB (derecho alemán,
 // Jahresabo nach der ersten Laufzeit monatlich kündbar, § 356a BGB).
 // Riesgos residuales: IVA UE/OSS sin registrar, sales tax EE. UU., sin representante art. 27
@@ -116,9 +116,9 @@ function EsBody({ store = false } = {}) {
         </p>
       </div>
       <div className={s.section}>
-        <h2>7. Prueba gratuita (si se ofrece)</h2>
+        <h2>7. Prueba gratuita de Pro</h2>
         <p>
-          Si en algún momento ofrecemos una prueba gratuita de Pro, dura 14 días y se pide un medio de pago al empezar; durante la prueba no se cobra nada. Si el usuario no cancela antes de que termine, el día 15 se convierte automáticamente en una suscripción Pro de pago al plan elegido (US$4.99 al mes o US$39.99 al año), con renovación automática según el punto 6. Unos 3 días antes del final de la prueba enviamos un email con la fecha del primer cobro, el importe y cómo cancelar. Se puede cancelar en cualquier momento de la prueba, por los mismos medios del punto 6, sin ningún cobro. Una prueba por persona; la garantía técnica se cuenta desde el primer cobro.
+          Al crear su cuenta, el usuario puede empezar una prueba gratuita de Pro de 14 días desde que la activa en la app. No se pide tarjeta ni ningún otro medio de pago, y no se cobra nada durante la prueba ni al terminarla: la prueba no se convierte sola en una suscripción de pago. Al terminar, la cuenta vuelve automáticamente al plan Starter y conserva sus datos; solo deja de tener las funciones de Pro. Hay una prueba por cuenta y no se ofrece a quien ya tuvo una prueba o una suscripción Pro. Si el usuario contrata Pro durante la prueba o después, la suscripción de pago empieza en ese momento, sin otra prueba, y se rige por el punto 6. Una prueba con medio de pago iniciada antes de esta versión sigue las condiciones aceptadas al iniciarla.
         </p>
       </div>
       <div className={s.section}>
@@ -338,9 +338,9 @@ function EnBody({ store = false } = {}) {
         </p>
       </div>
       <div className={s.section}>
-        <h2>7. Free trial (if offered)</h2>
+        <h2>7. Free Pro trial</h2>
         <p>
-          If we offer a free trial of Pro, it lasts 14 days and a payment method is required to start; nothing is charged during the trial. Unless the user cancels before it ends, on day 15 it converts automatically into a paid Pro subscription on the chosen plan (US$4.99 per month or US$39.99 per year), renewing automatically under section 6. About 3 days before the trial ends we email the date of the first charge, the amount, and how to cancel. The trial can be cancelled at any time, using the same methods as in section 6, with no charge. One trial per person; the technical guarantee runs from the first charge.
+          When creating an account, the user can start a free 14-day Pro trial from the moment it is activated in the app. No card or other payment method is requested, and nothing is charged during the trial or when it ends: the trial never turns into a paid subscription on its own. When it ends, the account returns automatically to the Starter plan and keeps its data; only the Pro features stop being available. There is one trial per account, and it is not offered to anyone who already had a Pro trial or a Pro subscription. If the user buys Pro during or after the trial, the paid subscription starts at that moment, with no further trial, and is governed by section 6. A trial with a payment method started before this version follows the conditions accepted when it was started.
         </p>
       </div>
       <div className={s.section}>
@@ -558,9 +558,9 @@ function PtBody({ store = false } = {}) {
         </p>
       </div>
       <div className={s.section}>
-        <h2>7. Teste gratuito (se oferecido)</h2>
+        <h2>7. Teste gratuito do Pro</h2>
         <p>
-          Se oferecermos um teste gratuito do Pro, ele dura 14 dias e é preciso informar um meio de pagamento para começar; nada é cobrado durante o teste. Se o usuário não cancelar antes do fim, no dia 15 ele se converte automaticamente em uma assinatura Pro paga no plano escolhido (US$4.99 por mês ou US$39.99 por ano), com renovação automática conforme o item 6. Cerca de 3 dias antes do fim do teste enviamos um email com a data da primeira cobrança, o valor e como cancelar. É possível cancelar a qualquer momento do teste, pelos mesmos meios do item 6, sem nenhuma cobrança. Um teste por pessoa; a garantia técnica conta a partir da primeira cobrança.
+          Ao criar a conta, o usuário pode começar um teste gratuito do Pro de 14 dias a partir do momento em que o ativa no app. Não é pedido cartão nem outro meio de pagamento, e nada é cobrado durante o teste nem ao final: o teste não se converte sozinho em uma assinatura paga. Ao terminar, a conta volta automaticamente ao plano Starter e mantém seus dados; apenas as funções do Pro deixam de estar disponíveis. Há um teste por conta, e ele não é oferecido a quem já teve um teste ou uma assinatura Pro. Se o usuário assinar o Pro durante o teste ou depois, a assinatura paga começa nesse momento, sem outro teste, e segue o item 6. Um teste com meio de pagamento iniciado antes desta versão segue as condições aceitas ao iniciá-lo.
         </p>
       </div>
       <div className={s.section}>
@@ -809,15 +809,18 @@ function DeBody({ store = false } = {}) {
       </div>
 
       <div className={s.section}>
-        <h2>§ 5a Kostenlose Testphase (falls angeboten)</h2>
+        <h2>§ 5a Kostenlose Testphase von Pro</h2>
         <p>
-          Bieten wir Pro mit einer kostenlosen Testphase an, beträgt diese 14 Tage ab
-          Vertragsschluss; für den Start ist ein Zahlungsmittel anzugeben, während der Testphase
-          wird nichts berechnet. Kündigen Sie nicht vor Ablauf, wird das Abo ab dem 15. Tag
-          kostenpflichtig zum gewählten Tarif (US$ 4,99 pro Monat oder US$ 39,99 pro Jahr) und
-          läuft nach § 6 weiter. Etwa drei Tage vor Ablauf erinnern wir Sie per E-Mail an Datum und
-          Höhe der ersten Zahlung. Sie können während der Testphase jederzeit kostenfrei kündigen.
-          Pro Person ist eine Testphase möglich; die Garantie nach § 8 läuft ab der ersten Zahlung.
+          Mit einem Benutzerkonto können Sie Pro 14 Tage lang kostenlos testen, ab dem Zeitpunkt, an
+          dem Sie den Test in der App starten. Wir verlangen dafür keine Karte und kein anderes
+          Zahlungsmittel. Während und nach der Testphase wird nichts berechnet; der Test wird nicht
+          automatisch zu einem kostenpflichtigen Abo. Nach Ablauf wechselt Ihr Konto automatisch zu
+          Starter, Ihre Daten bleiben erhalten; nur die Pro-Funktionen stehen nicht mehr zur
+          Verfügung. Pro Konto ist eine Testphase möglich; sie wird nicht angeboten, wenn Sie bereits
+          einen Pro-Test oder ein Pro-Abo hatten. Schließen Sie während oder nach der Testphase ein
+          Pro-Abo ab, beginnt es sofort ohne weitere Testphase und richtet sich nach § 6. Eine vor
+          dieser Fassung mit Zahlungsmittel begonnene Testphase folgt den damals akzeptierten
+          Bedingungen.
         </p>
       </div>
 

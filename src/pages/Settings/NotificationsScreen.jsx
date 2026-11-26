@@ -7,7 +7,7 @@ import { Suspense, useState } from 'react'
 import { Btn } from '../../components/ui/index.jsx'
 import StateTag from '../../components/ledger/StateTag.jsx'
 import { useT } from '../../i18n/useT.js'
-import { getLicenseKey } from '../../utils/licenseValidator.js'
+import { hasProEntitlement } from '../../utils/licenseValidator.js'
 import { pushSupported, isPushEnabled, disablePush } from '../../core/push.js'
 import { requestPushPermission } from '../../core/pushPrimer.js'
 import { markPushAskDone } from '../../core/pushAsk.js'
@@ -21,7 +21,7 @@ export default function NotificationsScreen() {
   const [on, setOn]     = useState(isPushEnabled())
   const [busy, setBusy] = useState(false)
   const [msg, setMsg]   = useState('')
-  const hasKey    = !!getLicenseKey()
+  const hasKey    = hasProEntitlement()
   const supported = pushSupported()
 
   async function toggle() {

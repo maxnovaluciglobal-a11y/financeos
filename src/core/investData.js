@@ -28,6 +28,7 @@ import { authClient } from './authClient.js'
 import { holdingFromRowFull } from '../utils/investValuation.js'
 import { logRejection } from '../utils/errorLog.js'
 import { investApi } from './investApi.js'
+import { currentInvestLimits, canAddMore, announceInvestLimit } from '../utils/investLimits.js'
 import { PLANS_KEY, applyPlanChange, plansPayload, readPlans, validatePlans } from '../utils/investPlan.js'
 
 export const TICKER_RE = /^[A-Z0-9.\-^=]{1,15}$/
@@ -189,7 +190,9 @@ function withTimeout(promise, ms) {
 const isDemoUrl = () => { try { return /[?&]demo=true\b/.test(window.location.search) } catch { return false } }
 const refreshSnapshot = () => import('./investBridge.js').then(m => m.loadSnapshot({ force: true })).catch(logRejection('investData:snapshot'))
 
-export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHoldingsChange = refreshSnapshot, timeoutMs = TIMEOUT_MS, now = () => Date.now() } = {}) {
+// limits: límites de Starter (utils/investLimits.js; apagados por defecto, null =
+// sin límite). onLimit: aviso contextual cuando un alta choca con el límite.
+export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHoldingsChange = refreshSnapshot, timeoutMs = TIMEOUT_MS, now = () => Date.now(), limits = currentInvestLimits, onLimit = announceInvestLimit } = {}) {
   let mem = { uid: null, holdings: null, holdingsAt: 0, watch: null, ops: null }
   const cols = { stop: true, fx: true }
   const run = (q) => withTimeout(q, timeoutMs)
@@ -228,6 +231,28 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
   }
   const changed = () => { mem.holdings = null; try { onHoldingsChange?.() } catch { /* el snapshot se actualiza en la próxima carga */ } }
 
+  // Límite de Starter para un alta nueva (posiciones o Siguiendo). Sin límites
+  // (lo normal hoy) no consulta nada. Si no se puede contar, deja pasar: el
+  // límite es de la app, no una barrera de seguridad.
+  async function overStarterLimit(kind, uid, ticker = null) {
+    const lim = limits?.()
+    if (!lim) return null
+    let count = null
+    try {
+      if (kind === 'positions') {
+        const res = await selectHoldings(uid)
+        if (!res.error) count = (res.data || []).length
+      } else {
+        const res = await run(client.from('watchlist').select('ticker').eq('user_id', uid))
+        const set = new Set((res.data || []).map(r => normTicker(r.ticker)))
+        if (!res.error) count = ticker && set.has(ticker) ? 0 : set.size
+      }
+    } catch { count = null }
+    if (count == null || canAddMore(kind, count, lim)) return null
+    try { onLimit?.(kind) } catch { /* el aviso es opcional */ }
+    return fail('starter_limit', { kind, limit: kind === 'positions' ? lim.positions : lim.watchlist })
+  }
+
   return {
     columns: () => ({ ...cols }),
     async listHoldings({ force = false } = {}) {
@@ -247,6 +272,8 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
       if (!v.ok) return v
       const s = await guardWrite()
       if (s.error) return fail(s.error)
+      const limited = await overStarterLimit('positions', s.uid)
+      if (limited) return limited
       try {
         const res = await writeHolding((row) => client.from('portfolio_holdings').insert({ ...row, user_id: s.uid }).select(HOLDING_BASE_COLUMNS).single(), v.value)
         if (res.error) return fail('save_failed')
@@ -351,6 +378,8 @@ export function createInvestData({ client = authClient, isDemo = isDemoUrl, onHo
       if (mem.watch?.includes(t)) return { ok: true, data: { ticker: t, existed: true } }
       const s = await guardWrite()
       if (s.error) return fail(s.error)
+      const limited = await overStarterLimit('watchlist', s.uid, t)
+      if (limited) return limited
       try {
         const res = await run(client.from('watchlist').insert({ user_id: s.uid, ticker: t }))
         if (res.error && res.error.code !== '23505') return fail('save_failed')

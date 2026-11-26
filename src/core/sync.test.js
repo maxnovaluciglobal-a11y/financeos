@@ -27,7 +27,7 @@ vi.mock('./db/index.js', () => ({
   savePreSyncSnapshot: async (data) => { if (failSnapshot) throw new Error('QuotaExceededError'); preSync = JSON.parse(JSON.stringify(data)) },
 }))
 let license = 'FNOS-AAAA-BBBB-CCCC'
-vi.mock('../utils/licenseValidator.js', () => ({ getLicenseKey: () => license }))
+vi.mock('../utils/licenseValidator.js', () => ({ getLicenseKey: () => license, hasProEntitlement: () => !!license }))
 vi.mock('./authClient.js', () => ({ authClient: { auth: { getSession: async () => ({ data: { session: { access_token: 'jwt' } } }) } } }))
 
 // Servidor: una fila por hash de licencia.

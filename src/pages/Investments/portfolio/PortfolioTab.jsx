@@ -21,6 +21,7 @@ import Movements from './Movements.jsx'
 import Dividends from './Dividends.jsx'
 import Targets from './Targets.jsx'
 import s from './portfolio.module.css'
+import { canImportFile, announceInvestLimit } from '../../../utils/investLimits.js'
 
 const safeStorage = {
   getItem: (k) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -150,7 +151,8 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
     deletePosition: (row) => setDel(row),
     openTrade,
     deleteOp: (op) => setDelOp(op),
-    importCsv: () => setImp('csv'),
+    // Importar CSV/Excel: Pro cuando los límites de Starter estén encendidos (hoy apagados).
+    importCsv: () => (canImportFile() ? setImp('csv') : announceInvestLimit('import')),
     restore: () => setImp('json'),
     exportPositions, exportOperations, exportBackup,
     setStop,
@@ -166,7 +168,7 @@ export default function PortfolioTab({ setPage, demo = false, view = 'esencial' 
   useEffect(() => {
     const it = takePortIntent()
     if (it === 'deposit') { setSub('movimientos'); setTrade({ type: 'deposit' }) }
-    else if (it === 'import') setImp('csv')
+    else if (it === 'import') { if (canImportFile()) setImp('csv'); else announceInvestLimit('import') }
     else if (it === 'add') setPos({ prev: null, prefill: null })
   }, [])
 

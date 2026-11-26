@@ -185,6 +185,13 @@ const config = {
     darkMode:     true,  // Toggle de tema oscuro
     demoData:     true,  // Botón "Cargar demo" en Ajustes
     onboarding:   true,  // Pantalla de bienvenida al primer uso
+    // Límites de Inversiones en Starter (decisión del 26-nov-2026): construidos y
+    // APAGADOS hasta tener la licencia comercial de los datos de precios y 100
+    // usuarios activos por semana. Con true, Starter queda en 1 portafolio de
+    // hasta 10 posiciones, 10 activos en Siguiendo, Tus tramos para 3 activos,
+    // alertas de precio solo dentro de la app e importar CSV/Excel solo en Pro
+    // (utils/investLimits.js). Con false (hoy) nada cambia para nadie.
+    investStarterLimits: false,
   },
 
   // ── ONBOARDING ─────────────────────────────────────────────────────────────
@@ -216,22 +223,20 @@ const config = {
   // (vía utils/pricing.js). Deben coincidir con los Payment Links de Stripe y
   // con la landing (repo aparte: financeos-landing, no lee este archivo).
   //
-  // Prueba de Pro (T10, fase 4): trialEnabled se deja en false hasta que los
-  // Payment Links de prueba existan en Stripe, sus ids estén en el webhook y
-  // la migración esté aplicada (docs/billing-trial-runbook.md). Con true y
-  // trialCheckoutUrl cargado, ProGate muestra "Probar 14 días" y abre ese
-  // link; si falta cualquiera de los dos, ProGate sigue como antes.
-  // trialCheckoutUrl / trialCheckoutUrlAnnual: URL https://buy.stripe.com/... de los
-  // Payment Links de Pro CON prueba de 14 días (mensual plink_1UOR0c…, anual
-  // plink_1UOR1S…): los mismos que la landing. Los links sin prueba (…O00 / …O01)
-  // ya no se ofrecen desde la app (auditoría 360, C-03 / COM-3), pero el webhook
-  // los sigue reconociendo.
+  // Prueba de Pro (modelo A, decisión del 26-nov-2026): 14 días de Pro SIN
+  // tarjeta que la cuenta empieza en la app (core/proTrial.js → RPC
+  // start_pro_trial). Ya no hay prueba con tarjeta: comprar durante o después de
+  // la prueba va directo a los Payment Links sin prueba.
+  // checkoutUrl / checkoutUrlAnnual: Payment Links de Pro SIN prueba (mensual
+  // …fnO00 = plink_1UEgvJ…, anual …fnO01 = plink_1UEgve…). Los links con prueba
+  // de 14 días con tarjeta (…fnO04 / …fnO05) ya no se ofrecen, pero
+  // stripe-webhook los sigue reconociendo (quien tenga uno abierto o guardado).
   pricing: {
     proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
-    trialEnabled: true,
+    noCardTrial: true,
     // AND-5: la compilación de las tiendas no vende ni enlaza a Stripe (storeBuild.js).
-    trialCheckoutUrl: STORE_BUILD ? '' : 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
-    trialCheckoutUrlAnnual: STORE_BUILD ? '' : 'https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05',
+    checkoutUrl: STORE_BUILD ? '' : 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00',
+    checkoutUrlAnnual: STORE_BUILD ? '' : 'https://buy.stripe.com/3cI14gbTF7qwbeYaz7fnO01',
   },
 
 }

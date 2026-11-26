@@ -1,4 +1,12 @@
 // supabase/functions/send-trial-activation-email/trialActivationLogic.ts
+// TODO(modelo A, 26-nov-2026): esta secuencia (días 1, 3 y 10) es de la prueba
+// CON tarjeta: sus textos dicen que al terminar "se cobra el plan que elegiste" y
+// cómo cancelar. La prueba de 14 días SIN tarjeta (start_pro_trial, migración
+// 20261126000000) no crea fila en trial_activation_emails, así que no recibe
+// estos correos; sus avisos (días 10 y 13 y vuelta a Starter) los muestra la app
+// (components/ProTrialNotices.jsx). Si se quieren correos para la prueba sin
+// tarjeta, hacen falta plantillas nuevas (sin cobro, "vuelves a Starter") y una
+// fila por prueba con consentimiento; no reutilizar estas.
 //
 // Secuencia de activación durante la prueba de 14 días de Pro (auditoría 360,
 // C-35 / COM-10): correos de los días 1, 3 y 10. La licencia queda marcada como

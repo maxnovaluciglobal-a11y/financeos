@@ -13,11 +13,15 @@ import { condLabel, pxOrPlain } from './AlertSheet.jsx'
 import { focusLater, pctOrDash } from './shared.js'
 import s from '../portfolio/portfolio.module.css'
 import f from './follow.module.css'
+import { canPushAlerts } from '../../../utils/investLimits.js'
 
 export function PushOffer({ t, push }) {
   const { state, busy, error, enable } = push
   if (state === 'on') return <p className={s.note}>{t('fl.push.on')}</p>
-  const text = state === 'demo' ? t('fl.push.demo') : state === 'unsupported' ? t('fl.push.unsupported') : state === 'noLicense' ? t('fl.push.noLicense') : t('fl.push.off')
+  // Límites de Starter encendidos (hoy apagados): las alertas se ven en la app y
+  // el aviso push es de Pro, con el camino gratis dicho.
+  const noLicense = state === 'noLicense' ? (canPushAlerts() ? t('fl.push.noLicense') : `${t('invest.limit.alerts')} ${t('invest.limit.free.alerts')}`) : null
+  const text = state === 'demo' ? t('fl.push.demo') : state === 'unsupported' ? t('fl.push.unsupported') : noLicense || t('fl.push.off')
   return (
     <div className={s.notice} role="region" aria-label={t('fl.push.title')}>
       <strong>{t('fl.push.title')}</strong>

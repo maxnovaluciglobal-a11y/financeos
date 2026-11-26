@@ -19,9 +19,6 @@ export function proPriceVars(lang = 'es', pricing = config.pricing) {
   return { m: formatPrice(pricing.proMonthly, lang), y: formatPrice(pricing.proAnnual, lang) }
 }
 
-// CTA de Pro (ProGate): la prueba solo se ofrece si está habilitada Y hay una
-// URL de checkout https real. Con cualquiera de las dos faltando se mantiene
-// el CTA de siempre ("Ver planes" hacia la landing).
 // Idioma del correo de licencia: el Payment Link de Stripe no acepta un
 // parámetro de idioma, pero sí client_reference_id (documentado en
 // https://docs.stripe.com/payment-links/url-parameters) y Stripe lo devuelve
@@ -53,18 +50,9 @@ export function withCheckoutLang(url, lang, account = null) {
   } catch { return url }
 }
 
-export function proCta(pricing = config.pricing, fallbackUrl = PRICING_URLS.es) {
-  const url = typeof pricing?.trialCheckoutUrl === 'string' ? pricing.trialCheckoutUrl.trim() : ''
-  if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) {
-    return { trial: true, href: url, labelKey: 'pro.gate.trialCta' }
-  }
-  return { trial: false, href: fallbackUrl, labelKey: 'pro.gate.cta' }
-}
-
 // ── Períodos de facturación de Pro (auditoría 360, C-03 / COM-3) ─────────────
-// LicenseGate y Ajustes ofrecen Pro con la prueba de 14 días y la elección
-// anual/mensual, igual que la landing (moyiq.app/#pricing): el anual va primero
-// y preseleccionado.
+// LicenseGate, ProGate y Ajustes ofrecen la elección anual/mensual, igual que la
+// landing (moyiq.app/#pricing): el anual va primero y preseleccionado.
 export const BILLING_PERIODS = ['annual', 'monthly']
 export const DEFAULT_BILLING_PERIOD = 'annual'
 
@@ -78,30 +66,29 @@ export function annualSavingPct(pricing = config.pricing) {
   return Math.round((1 - pricing.proAnnual / (pricing.proMonthly * 12)) * 100)
 }
 
-// Payment Link de Pro para el período elegido (cualquier valor que no sea
-// 'monthly' cuenta como anual). Con la prueba habilitada y un link https real es
-// el link CON prueba; si no, la página de precios de la landing y sin promesa de
-// prueba (mismo criterio que proCta).
+// Payment Link de Pro (sin prueba: la prueba de 14 días se empieza en la app,
+// sin tarjeta) para el período elegido; cualquier valor que no sea 'monthly'
+// cuenta como anual. Sin un link https (compilación de tienda), la página de
+// precios de la landing. `trial` queda en false siempre: ningún checkout
+// promete una prueba.
 export function checkoutFor(period, pricing = config.pricing, fallbackUrl = PRICING_URLS.es) {
-  const raw = period === 'monthly' ? pricing?.trialCheckoutUrl : pricing?.trialCheckoutUrlAnnual
+  const raw = period === 'monthly' ? pricing?.checkoutUrl : pricing?.checkoutUrlAnnual
   const url = typeof raw === 'string' ? raw.trim() : ''
-  if (pricing?.trialEnabled === true && /^https:\/\//.test(url)) return { trial: true, href: url }
+  if (/^https:\/\//.test(url)) return { trial: false, href: url }
   return { trial: false, href: fallbackUrl }
 }
 
-// Etiqueta del plan para el evento checkout_start (sin datos de la cuenta):
-// 'annual_trial', 'monthly_trial', o sin '_trial' si la prueba está apagada.
-export function checkoutPlan(period, pricing = config.pricing) {
-  const p = period === 'monthly' ? 'monthly' : 'annual'
-  return checkoutFor(period, pricing).trial ? `${p}_trial` : p
+// Etiqueta del plan para el evento checkout_start (sin datos de la cuenta).
+export function checkoutPlan(period) {
+  return period === 'monthly' ? 'monthly' : 'annual'
 }
 
-// La misma etiqueta, sacada del enlace que realmente se abre (ProGate cae al
-// link mensual con prueba si falta el anual): null si no es un link con prueba.
+// La misma etiqueta, sacada del enlace que realmente se abre: null si no es uno
+// de los dos Payment Links de Pro.
 export function checkoutPlanForHref(href, pricing = config.pricing) {
-  if (pricing?.trialEnabled !== true || typeof href !== 'string' || !href) return null
+  if (typeof href !== 'string' || !href) return null
   const clean = (u) => (typeof u === 'string' ? u.trim() : '')
-  if (href === clean(pricing.trialCheckoutUrlAnnual)) return 'annual_trial'
-  if (href === clean(pricing.trialCheckoutUrl)) return 'monthly_trial'
+  if (clean(pricing?.checkoutUrlAnnual) && href === clean(pricing.checkoutUrlAnnual)) return 'annual'
+  if (clean(pricing?.checkoutUrl) && href === clean(pricing.checkoutUrl)) return 'monthly'
   return null
 }

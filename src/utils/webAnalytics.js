@@ -92,7 +92,7 @@ export function applyInternalParam(search, storage) {
 // Evento de conversión. Solo existe window.va en los dominios de producción
 // (installWebAnalytics), y beforeSend aplica las mismas exclusiones que a las
 // visitas. `detail` es un objeto con UNA propiedad corta ({ plan: 'annual' }).
-export const EVENTS = ['signup_start', 'signup_done', 'checkout_start', 'demo_click', 'demo_gate_pass']
+export const EVENTS = ['signup_start', 'signup_done', 'checkout_start', 'trial_start', 'demo_click', 'demo_gate_pass']
 export function trackEvent(name, detail = {}, win = typeof window !== 'undefined' ? window : null) {
   if (!win || typeof win.va !== 'function' || !EVENTS.includes(name)) return false
   if (isOptedOut({ nav: win.navigator, win, storage: lsStorage(win) })) return false

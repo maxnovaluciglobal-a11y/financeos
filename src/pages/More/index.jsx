@@ -18,7 +18,8 @@ import { NAV_ICONS } from '../../components/icons/Icons.jsx'
 import CountryBadge from '../../components/CountryBadge.jsx'
 import Sheet from '../../components/ui/Sheet.jsx'
 import { getSession, signOutAuth } from '../../core/auth.js'
-import { getLicensePlan } from '../../utils/licenseValidator.js'
+import { getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
+import { isPaidPlan } from '../../utils/plans.js'
 import FeedbackSheet from '../../components/FeedbackSheet.jsx'
 import { STRIPE_PORTAL_URL } from '../legal/legalMeta.js'
 import { canShowWebCheckout } from '../../native/storePolicy.js'
@@ -42,7 +43,9 @@ function AccountHeader({ setPage }) {
     return () => { alive = false }
   }, [isDemo])
 
-  const isPro = getLicensePlan() === 'pro'
+  const isPro = isPaidPlan(getLicensePlan())
+  // Prueba de 14 días sin tarjeta: Pro, pero sin suscripción que gestionar.
+  const noCardTrial = isPro && !!getLicenseInfo()?.noCard
   const name = isDemo ? t('menu.account.demo') : (email || t('menu.account.local'))
   const initial = (isDemo ? 'D' : (email || 'M')).trim().charAt(0).toUpperCase()
 
@@ -53,8 +56,8 @@ function AccountHeader({ setPage }) {
         <div className={s.accountBody}>
           <div className={s.accountName}>{name}</div>
           <div className={s.accountMeta}>
-            {!isDemo && <span className={isPro ? s.planPro : s.plan}>{t(isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
-            {!isDemo && isPro && STRIPE_PORTAL_URL && canShowWebCheckout() && (
+            {!isDemo && <span className={isPro ? s.planPro : s.plan}>{t(noCardTrial ? 'menu.plan.trial' : isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
+            {!isDemo && isPro && !noCardTrial && STRIPE_PORTAL_URL && canShowWebCheckout() && (
               <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className={s.manage}>
                 <CreditCard size={14} strokeWidth={1.7} aria-hidden="true" />{t('menu.manageSub')}
                 <ExternalLink size={12} strokeWidth={1.8} aria-hidden="true" />
@@ -64,7 +67,7 @@ function AccountHeader({ setPage }) {
           </div>
         </div>
       </div>
-      {!isDemo && !isPro && (
+      {!isDemo && (!isPro || noCardTrial) && (
         <button type="button" className={s.upgrade} onClick={() => { requestSettingsSub('plan'); setPage('settings') }}>
           <span>
             <span className={s.upgradeTitle}>{t('menu.upgrade.title')}</span>

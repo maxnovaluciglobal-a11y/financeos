@@ -160,18 +160,15 @@ describe('Eventos de conversión sin datos personales (WEB-N1, V-WEB-FN1)', () =
     expect(calls).toEqual([['event', { name: 'signup_done', data: { src: 'directo', method: 'google' } }]])
     expect(typeof bootIsAuthReturn()).toBe('boolean')
   })
-  it('la etiqueta del plan dice si el checkout lleva la prueba', () => {
-    const on = { trialEnabled: true, trialCheckoutUrl: 'https://buy.stripe.com/m', trialCheckoutUrlAnnual: 'https://buy.stripe.com/a' }
-    expect(checkoutPlan('annual', on)).toBe('annual_trial')
-    expect(checkoutPlan('monthly', on)).toBe('monthly_trial')
-    expect(checkoutPlan('monthly', { ...on, trialEnabled: false })).toBe('monthly')
+  it('la etiqueta del plan es el periodo (desde el modelo A ningún checkout lleva prueba)', () => {
+    expect(checkoutPlan('annual')).toBe('annual')
+    expect(checkoutPlan('monthly')).toBe('monthly')
   })
-  it('ProGate: la etiqueta sale del enlace que se abre (sin anual cae al mensual)', () => {
-    const on = { trialEnabled: true, trialCheckoutUrl: 'https://buy.stripe.com/m', trialCheckoutUrlAnnual: '' }
-    expect(checkoutPlan('annual', on)).toBe('annual')
-    expect(checkoutPlanForHref('https://buy.stripe.com/m', on)).toBe('monthly_trial')
-    expect(checkoutPlanForHref('https://buy.stripe.com/a', { ...on, trialCheckoutUrlAnnual: ' https://buy.stripe.com/a ' })).toBe('annual_trial')
+  it('ProGate: la etiqueta sale del enlace que se abre', () => {
+    const on = { checkoutUrl: 'https://buy.stripe.com/m', checkoutUrlAnnual: ' https://buy.stripe.com/a ' }
+    expect(checkoutPlanForHref('https://buy.stripe.com/m', on)).toBe('monthly')
+    expect(checkoutPlanForHref('https://buy.stripe.com/a', on)).toBe('annual')
     expect(checkoutPlanForHref('https://moyiq.app/#pricing', on)).toBe(null)
-    expect(checkoutPlanForHref('https://buy.stripe.com/m', { ...on, trialEnabled: false })).toBe(null)
+    expect(checkoutPlanForHref('', on)).toBe(null)
   })
 })

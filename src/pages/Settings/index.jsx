@@ -38,7 +38,9 @@ import { SETTINGS_SECTIONS, SETTINGS_GROUPS, groupById, searchSettings, subFromS
 import { wantsDeleteAccount, initialSearch } from '../../utils/deepLink.js'
 import { announceSubBack } from '../../components/layout/pageStack.js'
 import { getSession } from '../../core/auth.js'
-import { getLicensePlan } from '../../utils/licenseValidator.js'
+import { getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
+import { isPaidPlan } from '../../utils/plans.js'
+import { useProTrial } from '../../core/proTrial.js'
 import config from '../../config.js'
 import { useT } from '../../i18n/useT.js'
 import { helpUrl } from '../../utils/landingUrls.js'
@@ -183,6 +185,9 @@ export default function Settings({ setPage } = {}) {
     return () => clearTimeout(id)
   }, [sub, focusItem, autoOpenDelete])
 
+  // Antes de cualquier return (reglas de hooks): si la cuenta puede empezar la prueba.
+  const trialState = useProTrial()
+
   if (sub) {
     const g = groupById(sub)
     return (
@@ -239,7 +244,8 @@ export default function Settings({ setPage } = {}) {
     // "Instalar como app" es de la PWA: en la app de tienda no está (I11).
     .map(g => (!isNativeApp() || g.id !== 'advanced' ? g : { ...g, items: g.items.filter(it => it.id !== 'install') }))
   const results = searchSettings(query, t, searchGroups)
-  const showUpgradeHint = !isDemo && getLicensePlan() !== 'pro'
+  const showUpgradeHint = !isDemo && (!isPaidPlan(getLicensePlan()) || !!getLicenseInfo()?.noCard)
+  const upgradeHint = trialState.status?.eligible ? t('settings.upgrade.title', { days: config.pricing.trialDays }) : t('menu.upgrade.title')
 
   return (
     <div className="stack">
@@ -295,7 +301,7 @@ export default function Settings({ setPage } = {}) {
               <div className={m.list}>
                 {sec.groups.filter(visibleGroup).map(id => {
                   const g = groupById(id)
-                  const desc = id === 'plan' && showUpgradeHint ? t('settings.upgrade.title', { days: config.pricing.trialDays }) : t(g.desc)
+                  const desc = id === 'plan' && showUpgradeHint ? upgradeHint : t(g.desc)
                   return <GroupRow key={id} id={id} title={t(g.title)} desc={desc} onClick={() => openSub(id)} danger={id === 'danger'} />
                 })}
               </div>

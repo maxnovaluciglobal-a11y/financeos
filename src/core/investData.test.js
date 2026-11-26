@@ -326,3 +326,50 @@ describe('cambio de cuenta', () => {
     expect(bindAccountReset({ client: null })).toBeTypeOf('function')
   })
 })
+
+// Límites de Starter (modelo A, 26-nov-2026): construidos y apagados.
+describe('límites de Starter en Inversiones', () => {
+  const LIM = { positions: 10, watchlist: 10, tramos: 3, importFile: false, alertPush: false, portfolios: 1 }
+  const holdings = (n) => Array.from({ length: n }, (_, i) => ({ id: i + 1, ticker: `T${i}`, asset_type: 'Stock', shares: 1, avg_cost: 1, note: null, stop: null, fx_at_cost: null }))
+  const reply = (nHold, nWatch) => (q) => {
+    if (q.verb === 'select' && q.table === 'portfolio_holdings') return { data: holdings(nHold), error: null }
+    if (q.verb === 'select' && q.table === 'watchlist') return { data: Array.from({ length: nWatch }, (_, i) => ({ ticker: `W${i}` })), error: null }
+    if (q.verb === 'insert') return { data: { id: 99 }, error: null }
+    return { data: [], error: null }
+  }
+
+  it('apagados (por defecto): la posición 11 y el activo 11 se guardan como siempre', async () => {
+    const onLimit = vi.fn()
+    const c = fakeClient(reply(10, 10))
+    const d = mk(c, { limits: () => null, onLimit })
+    expect((await d.addHolding({ t: 'NEW', sh: 1, cost: 1 })).ok).toBe(true)
+    expect((await d.addWatch('NEW')).ok).toBe(true)
+    expect(onLimit).not.toHaveBeenCalled()
+    // Sin límites no hay consulta extra antes de guardar.
+    expect(c.log.filter(q => q.verb === 'select')).toHaveLength(0)
+  })
+
+  it('encendidos para Starter: la posición 11 no se guarda y avisa', async () => {
+    const onLimit = vi.fn()
+    const c = fakeClient(reply(10, 0))
+    const d = mk(c, { limits: () => LIM, onLimit })
+    const r = await d.addHolding({ t: 'NEW', sh: 1, cost: 1 })
+    expect(r).toMatchObject({ ok: false, error: 'starter_limit', kind: 'positions', limit: 10 })
+    expect(onLimit).toHaveBeenCalledWith('positions')
+    expect(c.log.some(q => q.verb === 'insert')).toBe(false)
+  })
+
+  it('encendidos: hasta la décima posición se guarda', async () => {
+    const d = mk(fakeClient(reply(9, 0)), { limits: () => LIM, onLimit: vi.fn() })
+    expect((await d.addHolding({ t: 'NEW', sh: 1, cost: 1 })).ok).toBe(true)
+  })
+
+  it('encendidos: el activo 11 de Siguiendo no se suma, pero volver a seguir uno que ya está sí', async () => {
+    const onLimit = vi.fn()
+    const d = mk(fakeClient(reply(0, 10)), { limits: () => LIM, onLimit })
+    expect((await d.addWatch('NEW')).error).toBe('starter_limit')
+    expect(onLimit).toHaveBeenCalledWith('watchlist')
+    const d2 = mk(fakeClient(reply(0, 10)), { limits: () => LIM, onLimit: vi.fn() })
+    expect((await d2.addWatch('W3')).ok).toBe(true)
+  })
+})

@@ -17,23 +17,23 @@ import { nativePlatform } from '../native/platform.js'
 import { webCheckoutAllowed } from '../native/storePolicy.js'
 import { trackEvent } from '../utils/webAnalytics.js'
 
-// Pro se ofrece con la prueba de 14 días y la elección anual/mensual, igual que la
-// landing (auditoría 360, C-03 / COM-3). Anual preseleccionado: el precio grande es
-// el mensual equivalente (US$ 3,33) y el cobro real va en la nota de abajo. Si la
-// prueba estuviera apagada en la config, vuelve la tarjeta de siempre (mensual, sin
-// selector ni promesa de prueba).
+// Pro se ofrece con la elección anual/mensual, igual que la landing (auditoría
+// 360, C-03 / COM-3). Anual preseleccionado: el precio grande es el mensual
+// equivalente (US$ 3,33) y el cobro real va en la nota de abajo. Modelo A
+// (26-nov-2026): la compra va a los Payment Links sin prueba; la prueba de 14
+// días es sin tarjeta y se ofrece dentro de la app después del onboarding
+// (components/ProTrialNotices.jsx), así que quien elige Starter acá no pierde nada.
 function usePlans(t, lang, period) {
-  const trial = checkoutFor(period).trial
-  const proPrice = trial && period === 'annual' ? annualPerMonth() : config.pricing.proMonthly
+  const proPrice = period === 'annual' ? annualPerMonth() : config.pricing.proMonthly
   return [
     { name: 'Starter', price: t('licenseGate.free'), suffix: '',                     desc: t('licenseGate.planStarterDesc'), product: 'starter', highlight: false },
-    { name: 'Pro',      price: `US$ ${formatPrice(proPrice, lang)}`, suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc'), badge: trial ? t('billing.trialBadge', { days: config.pricing.trialDays }) : null, product: 'pro', highlight: true },
+    { name: 'Pro',      price: `US$ ${formatPrice(proPrice, lang)}`, suffix: t('licenseGate.perMonth'), desc: t('licenseGate.planProDesc'), badge: null, product: 'pro', highlight: true },
   ]
 }
 
 async function startCheckout(product, lang, period, account) {
   const url = product === 'pro' ? checkoutFor(period).href : pricingUrl(lang)
-  if (product === 'pro' && checkoutFor(period).trial) trackEvent('checkout_start', { plan: checkoutPlan(period) })
+  if (product === 'pro') trackEvent('checkout_start', { plan: checkoutPlan(period) })
   window.location.href = withCheckoutLang(url, lang, account)
 }
 
@@ -45,7 +45,6 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
   // la tienda (native/storePolicy.js).
   const webPay = webCheckoutAllowed(nativePlatform())
   const PLANS = usePlans(t, lang, period).filter(p => webPay || p.product === 'starter')
-  const trialOn = webPay && checkoutFor(period).trial
   const [key, setKey]           = useState('')
   const [loading, setLoading]   = useState(false)
   const [buying, setBuying]     = useState(null)
@@ -241,20 +240,21 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         </div>
 
         {/* App de tienda: solo Starter, sin texto sobre Pro (NAT-1, B2). */}
+        {/* Modelo A: quien vino por "14 días gratis" sabe que empieza con Starter y
+            que la prueba sin tarjeta se ofrece al terminar la configuración. */}
+        {webPay && config.pricing.noCardTrial === true && (
+          <p style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, margin: '-6px 0 16px' }}>
+            {t('proTrial.gateHint', { days: config.pricing.trialDays })}
+          </p>
+        )}
 
-        {trialOn && (
+        {webPay && (
           <div style={{ marginBottom: 18 }}>
             <PeriodToggle value={period} onChange={setPeriod} />
             <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginTop: 8 }}>
               {t(period === 'monthly' ? 'billing.then.monthly' : 'billing.then.annual', proPriceVars(lang))}{' '}
-              {t('billing.trialNote', { next: config.pricing.trialDays + 1 })}{' '}
               <RenewalNote period={period} />
             </div>
-          </div>
-        )}
-        {webPay && !trialOn && (
-          <div style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, marginBottom: 18 }}>
-            <RenewalNote trial={false} />
           </div>
         )}
 

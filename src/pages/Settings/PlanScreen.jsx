@@ -5,7 +5,9 @@
 import { useState } from 'react'
 import { Btn } from '../../components/ui/index.jsx'
 import { useT } from '../../i18n/useT.js'
-import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan } from '../../utils/licenseValidator.js'
+import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
+import { isPaidPlan, planLabel } from '../../utils/plans.js'
+import { usePlan } from '../../hooks/usePlan.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 import UpgradeCard from './UpgradeCard.jsx'
 import { isNativeApp } from '../../native/platform.js'
@@ -14,7 +16,15 @@ import { srow, slbl, ssub, Setting } from './settingsUi.jsx'
 export default function PlanScreen({ isDemo, accountUserId }) {
   const { t, lang } = useT()
   const [confirming, setConfirming] = useState(false)
-  const isPro = getLicensePlan() === 'pro'
+  usePlan() // vuelve a pintar si el plan cambia (empezar la prueba desde la tarjeta)
+  const plan = getLicensePlan()
+  const isPro = isPaidPlan(plan)
+  // Prueba de 14 días sin tarjeta: es Pro, pero no hay suscripción que cancelar
+  // ni licencia que desactivar; se puede comprar durante la prueba.
+  const info = getLicenseInfo()
+  const noCardTrial = isPro && !!info?.noCard
+  const trialEnds = noCardTrial ? (info.trialEnds || info.exp) : null
+  const label = planLabel(plan)
 
   async function handleDeactivate() {
     setConfirming(false)
@@ -36,7 +46,7 @@ export default function PlanScreen({ isDemo, accountUserId }) {
     return (
       <div>
         <Setting id="license" style={isPro ? srow : { ...srow, borderBottom: 'none' }}>
-          <div><div style={slbl}>{t('settings.license.label', { plan: isPro ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
+          <div><div style={slbl}>{t('settings.license.label', { plan: label })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
         </Setting>
         {isPro && (
           <Setting id="cancel" style={{ ...srow, borderBottom: 'none' }}>
@@ -44,6 +54,19 @@ export default function PlanScreen({ isDemo, accountUserId }) {
             <Btn variant="ghost" size="sm" onClick={() => window.open(cancelUrl(lang), '_blank', 'noopener,noreferrer')}>{t('settings.cancelSub.btn')}</Btn>
           </Setting>
         )}
+      </div>
+    )
+  }
+
+  if (noCardTrial) {
+    let date = ''
+    try { date = new Date(trialEnds).toLocaleDateString(lang, { day: 'numeric', month: 'long' }) } catch { date = '' }
+    return (
+      <div>
+        <Setting id="license" style={srow}>
+          <div><div style={slbl}>{t('proTrial.plan.label', { date })}</div><div style={ssub}>{t('proTrial.plan.sub')}</div></div>
+        </Setting>
+        <Setting id="upgrade" style={{ borderBottom: 'none' }}><UpgradeCard subStyle={ssub} /></Setting>
       </div>
     )
   }
@@ -62,7 +85,7 @@ export default function PlanScreen({ isDemo, accountUserId }) {
           </div>
         ) : (
           <div style={srow}>
-            <div><div style={slbl}>{t('settings.license.label', { plan: isPro ? 'Pro' : 'Starter' })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
+            <div><div style={slbl}>{t('settings.license.label', { plan: label })}</div><div style={ssub}>{t('settings.license.sub')}</div></div>
             <Btn variant="ghost" size="sm" onClick={()=>setConfirming(true)}>{t('settings.license.btn')}</Btn>
           </div>
         )}

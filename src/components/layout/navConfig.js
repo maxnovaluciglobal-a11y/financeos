@@ -1,3 +1,4 @@
+import { isPaidPlan } from '../../utils/plans.js'
 import { canShowProMarketing } from '../../native/storePolicy.js'
 import { moduleOn, promptableModulesOff } from '../../utils/modules.js'
 
@@ -214,10 +215,10 @@ export function moreSections(country, settings = {}) {
 // H22 (ola A3, 30-oct-2026): la etiqueta PRO solo se muestra a quien no tiene
 // Pro. Recibe el plan de la LICENCIA (getLicensePlan()), no el de usePlan():
 // en la demo usePlan() dice 'pro' y los chips son parte de lo que se muestra.
-export const PAID_PLANS = ['pro', 'enterprise']
+export { PAID_PLANS } from '../../utils/plans.js'
 // En la app de tienda sin compra integrada (NAT-1) no hay chip: anunciar un
 // plan que la app no vende es una llamada a comprar fuera.
 export function showProChip(item, plan, win = globalThis) {
   if (!canShowProMarketing(win)) return false
-  return !!item?.proOnly && !PAID_PLANS.includes(String(plan || '').toLowerCase())
+  return !!item?.proOnly && !isPaidPlan(plan)
 }

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 
 let enabled = false
 vi.mock('./push.js', () => ({ pushSupported: () => true, isPushEnabled: () => enabled }))
-vi.mock('../utils/licenseValidator.js', () => ({ getLicenseKey: () => 'k' }))
+vi.mock('../utils/licenseValidator.js', () => ({ getLicenseKey: () => 'k', hasProEntitlement: () => true }))
 vi.mock('../native/platform.js', () => ({ isNativeApp: () => false }))
 
 const { autoPushAsk } = await import('./pushAutoAsk.js')

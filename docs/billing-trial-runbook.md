@@ -1,5 +1,7 @@
 # Runbook · Prueba de Pro por 14 días con tarjeta (T10, fase 4)
 
+> **Desde el 26-nov-2026 (modelo A, DECISIONES.md): la prueba con tarjeta ya no se ofrece.** La prueba es de 14 días de Pro SIN tarjeta y se empieza en la app (RPC `start_pro_trial`, migración `20261126000000_reverse_trial.sql`, `src/core/proTrial.js`). La app y la landing compran Pro con los Payment Links sin prueba (`config.pricing.checkoutUrl` / `checkoutUrlAnnual`). Los dos links con prueba siguen existiendo en Stripe y `stripe-webhook` los sigue reconociendo (quien tenga uno guardado), así que este runbook queda como referencia histórica de ese camino. `trialEnabled` y `trialCheckoutUrl*` ya no existen en `config.pricing`.
+
 Rama `ux/f4-billing`. Decisión D2 (07-oct-2026): prueba de 14 días **con tarjeta**, se mantiene la "garantía técnica".
 
 > **Estado al 19-oct-2026 (verificado contra el repo y producción).** El texto de abajo es el runbook original del 08-oct y ya no es cierto que el código esté "listo pero apagado": la prueba está encendida.

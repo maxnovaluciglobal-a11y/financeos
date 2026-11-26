@@ -6,6 +6,7 @@ import { withLeadLang } from './leadsLang.js'
 import { withStarterConsent, shouldRequestOptin } from './marketingConsent.js'
 import { logRejection } from './errorLog.js'
 import { leadSubmitBody } from '../core/turnstile.js'
+import { isPaidPlan } from './plans.js'
 // Valida la clave contra la RPC `validate_license` de Supabase y cachea en localStorage
 // (fnos_license_v2). VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY están en Vercel.
 //
@@ -27,7 +28,13 @@ const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 function readCache()  { try { return JSON.parse(localStorage.getItem(LS_V2) || 'null') } catch { return null } }
-function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
+// El plan cambió en este dispositivo (activar, prueba, vencer): quien muestra el
+// plan puede volver a leerlo (usePlan escucha este evento).
+export const PLAN_EVENT = 'fnos:plan-change'
+function notifyPlan() {
+  try { if (typeof window !== 'undefined') window.dispatchEvent(new Event(PLAN_EVENT)) } catch { /* sin window: nada que avisar */ }
+}
+function writeCache(o) { try { localStorage.setItem(LS_V2, JSON.stringify(o)) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } notifyPlan() }
 
 // Sin esto, una llamada colgada (red rara, Supabase caído) deja a quien la
 // espera sin resolver nunca — App.jsx usa el resultado para decidir si
@@ -50,6 +57,19 @@ function withTimeout(promiseLike, ms) {
   } catch { /* sin almacenamiento o clave v1 ilegible: no hay nada que migrar */ }
 })()
 
+// Lo que la app guarda de la respuesta de validate_license. trial / noCard
+// (migración 20261126000000): la licencia es la prueba de 14 días; noCard, la
+// que se empieza en la app sin tarjeta (reverse trial).
+export function licenseFields(data) {
+  return {
+    plan: data?.plan || 'personal',
+    exp: data?.expires_at ? Number(data.expires_at) : null,
+    trial: data?.trial === true,
+    trialEnds: data?.trial_ends_at ? Number(data.trial_ends_at) : null,
+    noCard: data?.no_card_trial === true,
+  }
+}
+
 async function verifyOnline(key) {
   if (!SUPABASE_URL || !SUPABASE_ANON) return { offline: true }
   try {
@@ -65,7 +85,7 @@ async function verifyOnline(key) {
     if (!res) return { offline: true } // timeout: mismo criterio que el catch de abajo, tratar como sin red
     if (!res.ok) return { offline: true, httpError: res.status } // RPC 404 / red → tratar como offline
     const data = await res.json()
-    if (data && data.valid) return { valid: true, plan: data.plan || 'personal', exp: data.expires_at ? Number(data.expires_at) : null }
+    if (data && data.valid) return { valid: true, ...licenseFields(data) }
     return { valid: false }
   } catch { return { offline: true } }
 }
@@ -83,13 +103,17 @@ export function normalizeLicenseInput(key) {
 }
 export function isLicenseHash(key) { return LICENSE_HASH_RE.test(String(key || '').trim()) }
 
+function cacheEntry(key, r) {
+  return { key, plan: r.plan, exp: r.exp ?? null, ts: Date.now(), trial: !!r.trial, trialEnds: r.trialEnds ?? null, noCard: !!r.noCard }
+}
+
 export async function validateLicense(key) {
   if (!key) return false
   const clean = normalizeLicenseInput(key)
   if (!clean) return false
 
   const r = await verifyOnline(clean)
-  if (r.valid) { writeCache({ key: clean, plan: r.plan, exp: r.exp ?? null, ts: Date.now() }); return true }
+  if (r.valid) { writeCache(cacheEntry(clean, r)); return true }
   if (r.offline) {
     // Sin red / RPC caída: aceptar SOLO si coincide con la clave ya activada (no "hay cualquier cache")
     const c = readCache()
@@ -107,7 +131,7 @@ export function isLicenseActive() {
   // Re-validación silenciosa en background si venció el TTL (no bloquea el arranque)
   if (Date.now() - (c.ts || 0) > REVALIDATE_MS) {
     verifyOnline(c.key).then(r => {
-      if (r.valid) writeCache({ key: c.key, plan: r.plan, exp: r.exp ?? null, ts: Date.now() })
+      if (r.valid) writeCache(cacheEntry(c.key, r))
       else if (r.valid === false) clearLicense() // revocada o vencida → desloguear
       // offline: dejar la cache como está
     }).catch(logRejection('licenseValidator:105'))
@@ -118,7 +142,24 @@ export function isLicenseActive() {
 export function saveLicense(_key) {}                       // no-op: validateLicense persiste
 export function getLicenseKey()  { return readCache()?.key  || '' }
 export function getLicensePlan() { return readCache()?.plan || 'starter' }
-export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } }
+export function clearLicense()   { try { localStorage.removeItem(LS_V2) } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ } notifyPlan() }
+// Datos de la licencia activa en este dispositivo (sin la clave).
+export function getLicenseInfo() {
+  const c = readCache()
+  if (!c || !c.key) return null
+  return { plan: c.plan || 'starter', exp: c.exp ?? null, trial: !!c.trial, trialEnds: c.trialEnds ?? null, noCard: !!c.noCard }
+}
+// ¿Esta cuenta tiene Pro en este dispositivo? Una licencia validada por el
+// servidor con un plan pago: Pro comprado, Enterprise, la de pago único de antes
+// o la prueba de 14 días sin tarjeta (que también es una licencia, emitida por
+// start_pro_trial y atada a la cuenta). Sync, avisos del navegador y el reporte
+// por correo se apoyan en esto; el servidor vuelve a validar cada llamada.
+export function hasProEntitlement() {
+  const c = readCache()
+  if (!c || !c.key) return false
+  if (c.exp && Date.now() > c.exp) return false
+  return isPaidPlan(c.plan)
+}
 
 // Starter (gratis, sin clave): un flag propio, separado de fnos_license_v2 a
 // propósito — isLicenseActive() exige un `key` real y no debe empezar a

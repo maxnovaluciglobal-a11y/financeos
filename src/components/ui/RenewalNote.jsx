@@ -1,10 +1,11 @@
 // src/components/ui/RenewalNote.jsx — aviso de renovación automática junto al
-// botón de la prueba de Pro (LEG-N5, auditoría 360 del 19-nov-2026). California
+// botón de compra de Pro (LEG-N5, auditoría 360 del 19-nov-2026). California
 // ARL y ROSCA piden decir antes del pago, de forma visible, que el plan se
 // renueva hasta que lo canceles y cómo se cancela. El enlace va a la baja en
 // línea de la landing en el idioma del usuario (utils/cancelUrl.js).
-// Sin prueba (trial=false) el botón lleva a los precios de la landing, donde se
-// elige el periodo: el aviso dice que los planes de pago se renuevan solos.
+// Desde el modelo A (26-nov-2026) la compra no trae prueba (la prueba de 14 días
+// es sin tarjeta y no se renueva): el texto es el del periodo elegido. Con
+// trial=false (sin periodo elegido) dice que los planes de pago se renuevan solos.
 import { useT } from '../../i18n/useT.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 

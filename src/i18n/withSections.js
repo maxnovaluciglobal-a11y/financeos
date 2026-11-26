@@ -28,6 +28,10 @@ import aheadEn from './ahead/strings.en.js'
 import aheadPt from './ahead/strings.pt.js'
 import aheadDe from './ahead/strings.de.js'
 import categoriesEs from './categories/strings.es.js'
+import proTrialEs from '../components/proTrial/strings.es.js'
+import proTrialEn from '../components/proTrial/strings.en.js'
+import proTrialPt from '../components/proTrial/strings.pt.js'
+import proTrialDe from '../components/proTrial/strings.de.js'
 import categoriesEn from './categories/strings.en.js'
 import categoriesPt from './categories/strings.pt.js'
 import categoriesDe from './categories/strings.de.js'
@@ -39,6 +43,7 @@ export const SECTION_DICTS = {
   extras: { es: extrasEs, en: extrasEn, pt: extrasPt, de: extrasDe },
   ahead: { es: aheadEs, en: aheadEn, pt: aheadPt, de: aheadDe },
   categories: { es: categoriesEs, en: categoriesEn, pt: categoriesPt, de: categoriesDe },
+  proTrial: { es: proTrialEs, en: proTrialEn, pt: proTrialPt, de: proTrialDe },
 }
 
 const merged = (lang, main) => Object.assign({}, main, ...Object.values(SECTION_DICTS).map(d => d[lang]))

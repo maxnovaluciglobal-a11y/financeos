@@ -1,7 +1,9 @@
-// LicenseGate (primera pantalla de plan de cada alta nueva) y la tarjeta de Ajustes
-// ofrecen Pro con la prueba de 14 días y el selector anual/mensual, igual que la
-// landing (auditoría 360, C-03 / COM-3). Se renderizan con renderToStaticMarkup, sin
-// DOM: useT se reemplaza por el traductor real fijado a un idioma.
+// LicenseGate (primera pantalla de plan de cada alta nueva), la tarjeta de Ajustes y
+// ProGate ofrecen Pro con el selector anual/mensual, igual que la landing (auditoría
+// 360, C-03 / COM-3). Modelo A (26-nov-2026): la compra no trae prueba; la prueba de
+// 14 días es sin tarjeta y se ofrece (botón propio) solo si el servidor dice que la
+// cuenta puede empezarla. Se renderizan con renderToStaticMarkup, sin DOM: useT se
+// reemplaza por el traductor real fijado a un idioma.
 import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -17,13 +19,17 @@ vi.mock('../i18n/useT.js', async () => {
 })
 // ProGate solo muestra la oferta a quien no es Pro.
 vi.mock('../hooks/usePlan.js', () => ({ usePlan: () => ({ isPro: false }) }))
+// Estado de la prueba sin tarjeta (lo da el servidor en la app real).
+vi.mock('../core/proTrial.js', () => ({
+  useProTrial: () => ({ status: globalThis.__TRIAL_ELIGIBLE ? { eligible: true } : { eligible: false }, seen: {}, used: [] }),
+  startProTrial: async () => ({ ok: true }),
+}))
 
 const { loadLang } = await import('../i18n/langCache.js')
 const { translate } = await import('../i18n/translate.js')
 const { default: LicenseGate } = await import('./LicenseGate.jsx')
 const { default: UpgradeCard } = await import('../pages/Settings/UpgradeCard.jsx')
 const { default: ProGate } = await import('./ui/ProGate.jsx')
-const { default: config } = await import('../config.js')
 
 const LANGS = ['es', 'en', 'pt', 'de']
 const PERIOD_PRICE = { es: '3,33', en: '3.33', pt: '3,33', de: '3,33' }
@@ -48,11 +54,11 @@ const t = (lang, key, vars) => translate(lang, key, vars)
 beforeAll(async () => { await Promise.all(['en', 'pt', 'de'].map(loadLang)) })
 
 describe.each(LANGS)('LicenseGate · %s', (lang) => {
-  it('ofrece Pro con la prueba de 14 días: insignia, cobro del anual y primer cobro el día 15', () => {
+  it('ofrece Pro sin prueba con tarjeta: cobro del anual, sin insignia ni "requiere tarjeta"', () => {
     const out = text(renderGate(lang))
-    expect(out).toContain(t(lang, 'billing.trialBadge', { days: 14 }))
     expect(out).toContain(t(lang, 'billing.then.annual', { y: ANNUAL_PRICE[lang], m: MONTHLY_PRICE[lang] }))
-    expect(out).toContain(t(lang, 'billing.trialNote', { next: 15 }))
+    expect(out).not.toContain(t(lang, 'billing.trialBadge', { days: 14 }))
+    expect(out).not.toMatch(/Requiere tarjeta|Card required|Exige cartão|Karte erforderlich/)
   })
 
   it('el anual viene preseleccionado y el precio grande es el mensual equivalente (US$ 3,33)', () => {
@@ -71,47 +77,49 @@ describe.each(LANGS)('LicenseGate · %s', (lang) => {
   })
 })
 
-describe.each(LANGS)('Tarjeta "Probar Pro" de Ajustes · %s', (lang) => {
-  it('título, botón y notas hablan de la prueba de 14 días con el anual preseleccionado', () => {
-    const html = renderCard(lang)
-    const out = text(html)
-    expect(out).toContain(t(lang, 'settings.upgrade.title', { days: 14 }))
-    expect(out).toContain(t(lang, 'settings.upgrade.btn', { days: 14 }))
-    expect(out).toContain(t(lang, 'billing.then.annual', { y: ANNUAL_PRICE[lang], m: MONTHLY_PRICE[lang] }))
-    expect(out).toContain(t(lang, 'billing.trialNote', { next: 15 }))
-    expect(html).toMatch(/aria-pressed="true"/)
-    expect(out).not.toMatch(/\b(billing|licenseGate|settings)\.[a-zA-Z]+/)
+describe.each(LANGS)('Tarjeta de Pro en Ajustes · %s', (lang) => {
+  it('si la cuenta puede, primero los 14 días sin tarjeta y también la compra', () => {
+    globalThis.__TRIAL_ELIGIBLE = true
+    try {
+      const html = renderCard(lang)
+      const out = text(html)
+      expect(out).toContain(t(lang, 'settings.upgrade.title', { days: 14 }))
+      expect(out).toContain(t(lang, 'settings.upgrade.btn', { days: 14 }))
+      expect(out).toContain(t(lang, 'billing.trialNote'))
+      expect(out).toContain(t(lang, 'menu.upgrade.title'))
+      expect(html).toMatch(/aria-pressed="true"/)
+      expect(out).not.toMatch(/\b(billing|licenseGate|settings|proTrial)\.[a-zA-Z]+/)
+    } finally { globalThis.__TRIAL_ELIGIBLE = false }
+  })
+  it('si ya usó la prueba (o pagó), solo la compra, sin prometer prueba', () => {
+    const out = text(renderCard(lang))
+    expect(out).toContain(t(lang, 'menu.upgrade.title'))
+    expect(out).not.toContain(t(lang, 'settings.upgrade.title', { days: 14 }))
+    expect(out).not.toContain(t(lang, 'billing.trialNote'))
   })
 })
 
-describe('sin prueba en la config', () => {
-  it('LicenseGate no promete prueba ni muestra el selector (tarjeta mensual de siempre)', () => {
-    const saved = { ...config.pricing }
-    config.pricing.trialEnabled = false
+describe.each(LANGS)('ProGate · %s', (lang) => {
+  it('con la prueba disponible: botón de 14 días sin tarjeta y la compra como alternativa', () => {
+    globalThis.__TRIAL_ELIGIBLE = true
     try {
-      const html = renderGate('es')
-      const out = text(html)
-      expect(out).toContain(`US$ ${MONTHLY_PRICE.es}`)
-      expect(out).not.toContain(t('es', 'billing.trialBadge', { days: 14 }))
-      expect(out).not.toContain(t('es', 'billing.trialNote', { next: 15 }))
-      expect(html).not.toContain('aria-pressed')
-    } finally { Object.assign(config.pricing, saved) }
+      const out = text(renderProGate(lang))
+      expect(out).toContain(t(lang, 'settings.upgrade.btn', { days: 14 }))
+      expect(out).toContain(t(lang, 'billing.trialNote'))
+      expect(out).toContain(t(lang, 'proTrial.orBuy'))
+      expect(out).toContain(t(lang, 'menu.upgrade.title'))
+    } finally { globalThis.__TRIAL_ELIGIBLE = false }
   })
-
-  it('la tarjeta de Ajustes vuelve al título y botón genéricos', () => {
-    const saved = { ...config.pricing }
-    config.pricing.trialEnabled = false
-    try {
-      const out = text(renderCard('es'))
-      expect(out).toContain(t('es', 'menu.upgrade.title'))
-      expect(out).not.toContain(t('es', 'settings.upgrade.title', { days: 14 }))
-    } finally { Object.assign(config.pricing, saved) }
+  it('sin prueba disponible: solo la compra', () => {
+    const out = text(renderProGate(lang))
+    expect(out).not.toContain(t(lang, 'settings.upgrade.btn', { days: 14 }))
+    expect(out).toContain(t(lang, 'menu.upgrade.title'))
   })
 })
 
 // LEG-N5 (auditoría 360, 19-nov-2026): junto al botón de la prueba se dice que el plan
 // se renueva solo hasta que se cancele, cómo se cancela, y se enlaza la baja en línea.
-describe.each(LANGS)('aviso de renovación y baja junto a la prueba · %s', (lang) => {
+describe.each(LANGS)('aviso de renovación y baja junto a la compra · %s', (lang) => {
   const CANCEL = { es: 'https://moyiq.app/cancelar.html', en: 'https://moyiq.app/en/cancel.html', pt: 'https://moyiq.app/en/cancel.html', de: 'https://moyiq.app/en/cancel.html' }
   for (const [name, render] of [['LicenseGate', renderGate], ['Ajustes', renderCard], ['ProGate', renderProGate]]) {
     it(`${name}: renovación anual hasta cancelar y enlace a la baja en línea`, () => {
@@ -122,20 +130,9 @@ describe.each(LANGS)('aviso de renovación y baja junto a la prueba · %s', (lan
       expect(out).toContain(t(lang, 'billing.cancelLink'))
     })
 
-    it(`${name}: sin prueba en la config igual avisa que el plan se renueva solo, con el enlace a la baja`, () => {
-      const saved = { ...config.pricing }
-      config.pricing.trialEnabled = false
-      try {
-        const html = render(lang)
-        const out = text(html)
-        expect(out).toContain(t(lang, 'billing.renewal.noTrial'))
-        expect(out).not.toContain(t(lang, 'billing.renewal.annual'))
-        expect(html).toContain(`href="${CANCEL[lang]}"`)
-      } finally { Object.assign(config.pricing, saved) }
-    })
   }
 
-  it('con prueba, «cancela cuando quieras» se dice una sola vez (billing.then.*), no también en el aviso', () => {
+  it('«cancela cuando quieras» se dice una sola vez (billing.then.*), no también en el aviso', () => {
     const out = text(renderGate(lang))
     const once = t(lang, 'billing.then.annual', { y: ANNUAL_PRICE[lang], m: MONTHLY_PRICE[lang] }).split('. ').pop()
     expect(out.split(once).length - 1).toBe(1)

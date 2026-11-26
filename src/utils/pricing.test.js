@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import config from '../config.js'
-import { formatPrice, proPriceVars, proCta, withCheckoutLang, checkoutFor, annualPerMonth, annualSavingPct, BILLING_PERIODS, DEFAULT_BILLING_PERIOD } from './pricing.js'
+import { formatPrice, proPriceVars, withCheckoutLang, checkoutFor, checkoutPlan, checkoutPlanForHref, annualPerMonth, annualSavingPct, BILLING_PERIODS, DEFAULT_BILLING_PERIOD } from './pricing.js'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -9,9 +9,9 @@ describe('pricing', () => {
   it('config.pricing es la fuente única de los precios de Pro', () => {
     expect(config.pricing).toEqual({
       proMonthly: 4.99, proAnnual: 39.99, currency: 'USD', trialDays: 14,
-      trialEnabled: true,
-      trialCheckoutUrl: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04',
-      trialCheckoutUrlAnnual: 'https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05',
+      noCardTrial: true,
+      checkoutUrl: 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00',
+      checkoutUrlAnnual: 'https://buy.stripe.com/3cI14gbTF7qwbeYaz7fnO01',
     })
   })
 
@@ -32,27 +32,6 @@ describe('pricing', () => {
     expect(formatPrice(4.99, 'xx')).toBe('4,99')
   })
 
-  describe('proCta (T10)', () => {
-    const base = { proMonthly: 4.99, proAnnual: 39.99, trialDays: 14 }
-    it('con trialEnabled false el CTA es el de siempre', () => {
-      expect(proCta({ ...config.pricing, trialEnabled: false })).toEqual({ trial: false, href: 'https://moyiq.app/#pricing', labelKey: 'pro.gate.cta' })
-    })
-    it('la config de producción ofrece la prueba con el link mensual de 14 días', () => {
-      expect(proCta(config.pricing)).toEqual({ trial: true, href: 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04', labelKey: 'pro.gate.trialCta' })
-    })
-    it('con la prueba habilitada pero sin URL, cae al CTA de siempre', () => {
-      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: null }).trial).toBe(false)
-      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: '' }).trial).toBe(false)
-      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: 'http://inseguro' }).trial).toBe(false)
-    })
-    it('solo trialEnabled === true habilita la prueba (no un valor truthy cualquiera)', () => {
-      expect(proCta({ ...base, trialEnabled: 'true', trialCheckoutUrl: 'https://buy.stripe.com/x' }).trial).toBe(false)
-    })
-    it('habilitada y con URL https: "Probar 14 días" hacia el checkout de prueba', () => {
-      expect(proCta({ ...base, trialEnabled: true, trialCheckoutUrl: 'https://buy.stripe.com/x' }))
-        .toEqual({ trial: true, href: 'https://buy.stripe.com/x', labelKey: 'pro.gate.trialCta' })
-    })
-  })
 })
 
 describe('withCheckoutLang (idioma del correo de licencia vía client_reference_id)', () => {
@@ -68,21 +47,21 @@ describe('withCheckoutLang (idioma del correo de licencia vía client_reference_
   })
 })
 
-// Auditoría 360, C-03 / COM-3: LicenseGate (primera pantalla de plan de cada alta
-// nueva) y Ajustes abrían el Payment Link SIN prueba de 14 días y sin opción
-// anual. Los links con prueba son los mismos que la landing (moyiq.app/#pricing).
-describe('checkoutFor (Pro con prueba, mensual o anual)', () => {
-  const MONTHLY = 'https://buy.stripe.com/fZudR2f5R26c96Qaz7fnO04'
-  const ANNUAL = 'https://buy.stripe.com/cNi4gs8Ht8uAfvecHffnO05'
+// Modelo A (26-nov-2026): la prueba de 14 días es sin tarjeta y se empieza en la
+// app; comprar Pro abre los Payment Links SIN prueba (los con prueba con tarjeta,
+// …fnO04/…fnO05, ya no se ofrecen; stripe-webhook los sigue reconociendo).
+describe('checkoutFor (Pro sin prueba, mensual o anual)', () => {
+  const MONTHLY = 'https://buy.stripe.com/6oU9AM8Ht3aggzi8qZfnO00'
+  const ANNUAL = 'https://buy.stripe.com/3cI14gbTF7qwbeYaz7fnO01'
 
   it('el anual es el período por defecto, como en la landing', () => {
     expect(BILLING_PERIODS).toEqual(['annual', 'monthly'])
     expect(DEFAULT_BILLING_PERIOD).toBe('annual')
   })
 
-  it('cada período abre su Payment Link CON prueba', () => {
-    expect(checkoutFor('monthly')).toEqual({ trial: true, href: MONTHLY })
-    expect(checkoutFor('annual')).toEqual({ trial: true, href: ANNUAL })
+  it('cada período abre su Payment Link sin prueba; ningún checkout promete prueba', () => {
+    expect(checkoutFor('monthly')).toEqual({ trial: false, href: MONTHLY })
+    expect(checkoutFor('annual')).toEqual({ trial: false, href: ANNUAL })
   })
 
   it('un período desconocido cuenta como anual (nunca queda sin link)', () => {
@@ -90,19 +69,25 @@ describe('checkoutFor (Pro con prueba, mensual o anual)', () => {
     expect(checkoutFor('weekly').href).toBe(ANNUAL)
   })
 
-  it('con la prueba apagada o sin link https real cae a la página de precios, sin prometer prueba', () => {
+  it('sin link https real (compilación de tienda) cae a la página de precios', () => {
     const base = { ...config.pricing }
     const fallback = { trial: false, href: 'https://moyiq.app/#pricing' }
-    expect(checkoutFor('annual', { ...base, trialEnabled: false })).toEqual(fallback)
-    expect(checkoutFor('annual', { ...base, trialEnabled: 'true' })).toEqual(fallback)
-    expect(checkoutFor('annual', { ...base, trialCheckoutUrlAnnual: '' })).toEqual(fallback)
-    expect(checkoutFor('monthly', { ...base, trialCheckoutUrl: 'http://inseguro' })).toEqual(fallback)
-    expect(checkoutFor('annual', { ...base, trialCheckoutUrlAnnual: undefined })).toEqual(fallback)
+    expect(checkoutFor('annual', { ...base, checkoutUrlAnnual: '' })).toEqual(fallback)
+    expect(checkoutFor('monthly', { ...base, checkoutUrl: 'http://inseguro' })).toEqual(fallback)
+    expect(checkoutFor('annual', { ...base, checkoutUrlAnnual: undefined })).toEqual(fallback)
   })
 
   it('el link lleva el idioma del correo de licencia (client_reference_id)', () => {
     expect(withCheckoutLang(checkoutFor('annual').href, 'de')).toBe(`${ANNUAL}?client_reference_id=lang_de`)
     expect(withCheckoutLang(checkoutFor('monthly').href, 'en')).toBe(`${MONTHLY}?client_reference_id=lang_en`)
+  })
+
+  it('etiqueta del evento: mensual o anual, sin "_trial"', () => {
+    expect(checkoutPlan('monthly')).toBe('monthly')
+    expect(checkoutPlan('annual')).toBe('annual')
+    expect(checkoutPlanForHref(MONTHLY)).toBe('monthly')
+    expect(checkoutPlanForHref(ANNUAL)).toBe('annual')
+    expect(checkoutPlanForHref('https://moyiq.app/#pricing')).toBe(null)
   })
 })
 
@@ -120,7 +105,7 @@ describe('precios del selector anual/mensual (coherentes con la landing)', () =>
   })
 })
 
-describe('la app solo ofrece Payment Links con prueba', () => {
+describe('la app solo ofrece los Payment Links sin prueba', () => {
   const SRC = join(dirname(fileURLToPath(import.meta.url)), '..')
   const files = []
   const walk = (dir) => {
@@ -133,10 +118,10 @@ describe('la app solo ofrece Payment Links con prueba', () => {
   walk(SRC)
   const source = files.map((f) => [f, readFileSync(f, 'utf8')])
 
-  it('los únicos Payment Links en src/ son los dos con prueba de 14 días', () => {
+  it('los únicos Payment Links en src/ son los dos sin prueba (mensual y anual)', () => {
     const found = new Set()
     for (const [, text] of source) for (const m of text.matchAll(/buy\.stripe\.com\/([A-Za-z0-9]+)/g)) found.add(m[1])
-    expect([...found].sort()).toEqual(['cNi4gs8Ht8uAfvecHffnO05', 'fZudR2f5R26c96Qaz7fnO04'])
+    expect([...found].sort()).toEqual(['3cI14gbTF7qwbeYaz7fnO01', '6oU9AM8Ht3aggzi8qZfnO00'])
   })
 
   it('PRO_CHECKOUT_URL (el link mensual sin prueba) ya no existe', () => {

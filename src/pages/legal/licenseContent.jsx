@@ -6,10 +6,14 @@
 // Reemplazó al modelo de pago único (Personal US$19 / Pro US$29) vigente hasta
 // 2026-09-11 — 0 clientes reales confirmados bajo esos términos (auditoría del 11-sep).
 // ACTUALIZADO 2026-10: cuenta gratuita obligatoria, garantía técnica de 14 días referida a
-// los Términos de Uso (no a la landing), sin prueba gratuita (apagada, ver
-// docs/billing-trial-runbook.md) y nota "antes FinanceOS": las claves siguen teniendo el
+// los Términos de Uso (no a la landing) y nota "antes FinanceOS": las claves siguen teniendo el
 // formato FNOS-… y cualquier licencia emitida con el nombre anterior tiene que seguir
 // reconociéndose como válida.
+// ACTUALIZADO 2026-11-26 (modelo A): sincronización y avisos del navegador son de Pro (como
+// en el código), la lista de Pro dice lo que Pro abre de verdad (sin la "multimoneda"
+// genérica: la de Venezuela y Multidólar/Inflación de Argentina son herramientas del país),
+// y se suma la prueba de 14 días de Pro sin tarjeta. Mismos hechos que license.html de la
+// landing. Las licencias del modelo de pago único conservan todo Pro.
 // Enterprise / white-label: bajo contacto directo.
 // Revisión legal completada 2026-10-08 (investigación con fuentes, sin abogado colegiado).
 
@@ -17,7 +21,7 @@
 // clásico (React.createElement), así que React tiene que estar en scope.
 import React from 'react'
 import s from './legal.module.css'
-import { LAST_UPDATED, OPERATOR } from './legalMeta.js'
+import { LICENSE_LAST_UPDATED, OPERATOR } from './legalMeta.js'
 import { deLegalRef } from './deLegal.js'
 import { withRebrandNotice } from './companyBlock.jsx'
 
@@ -28,7 +32,7 @@ export const PLANS = {
       allowed: [
         'Uso personal ilimitado, sin costo y sin límite de tiempo (requiere una cuenta gratuita)',
         'Presupuesto, ingresos, gastos, seguimiento de deudas y metas',
-        'Sincronización cifrada opcional entre tus propios dispositivos',
+        'Avisos locales en tu teléfono, importación de archivos del banco y conversor de tasa',
         'Exportación completa de tus datos (JSON/CSV) en cualquier momento',
       ],
       notAllowed: [
@@ -43,10 +47,14 @@ export const PLANS = {
         'Todo lo del plan Starter',
         'Uso profesional con hasta 30 clientes mientras la suscripción esté activa',
         'Modo Asesor: semáforo, alertas y reporte PDF profesional para trabajar con clientes',
+        'Sincronización cifrada opcional entre tus propios dispositivos',
+        'Avisos en el navegador, también los de alertas de precio',
         'Exportación de reportes PDF',
-        'Multi-moneda',
-        'Módulos fiscales por país (APV Chile, PPR Portugal, deducciones, etc.)',
+        'Proyección de flujo',
+        'Módulos fiscales por país (APV Chile, PPR Portugal, deducciones, Multimoneda en Venezuela, Multidólar e Inflación en Argentina, etc.)',
         'Simulador de liquidación de deudas (Avalanche/Snowball)',
+        'Propiedades',
+        'Inversiones completo cuando termine la beta',
       ],
       notAllowed: [
         'Compartir la clave de licencia con terceros (cada asesor necesita su propia licencia)',
@@ -61,7 +69,7 @@ export const PLANS = {
       allowed: [
         'Unlimited personal use, at no cost and with no time limit (requires a free account)',
         'Budget, income, expenses, debt tracking, and goals',
-        'Optional encrypted sync across your own devices',
+        'Local reminders on your phone, bank file import, and the rate converter',
         'Full export of your data (JSON/CSV) at any time',
       ],
       notAllowed: [
@@ -76,10 +84,14 @@ export const PLANS = {
         'Everything in the Starter plan',
         'Professional use with up to 30 clients while the subscription is active',
         'Advisor Mode: status signals, alerts, and a professional PDF report for client work',
+        'Optional encrypted sync across your own devices',
+        'Browser notifications, including price alerts',
         'PDF report export',
-        'Multi-currency',
-        'Country-specific tax modules (APV Chile, PPR Portugal, deductions, etc.)',
+        'Cash-flow projection',
+        'Country-specific tax modules (APV Chile, PPR Portugal, deductions, Multimoneda for Venezuela, Multidólar and Inflation for Argentina, etc.)',
         'Debt payoff simulator (Avalanche/Snowball)',
+        'Properties',
+        'Full Investments when the beta ends',
       ],
       notAllowed: [
         'Sharing the license key with third parties (each advisor needs their own license)',
@@ -94,7 +106,7 @@ export const PLANS = {
       allowed: [
         'Uso pessoal ilimitado, sem custo e sem limite de tempo (requer uma conta gratuita)',
         'Orçamento, receitas, despesas, acompanhamento de dívidas e metas',
-        'Sincronização criptografada opcional entre seus próprios dispositivos',
+        'Lembretes locais no seu celular, importação de arquivos do banco e conversor de taxa',
         'Exportação completa dos seus dados (JSON/CSV) a qualquer momento',
       ],
       notAllowed: [
@@ -109,10 +121,14 @@ export const PLANS = {
         'Tudo do plano Starter',
         'Uso profissional com até 30 clientes enquanto a assinatura estiver ativa',
         'Modo Consultor: semáforo, alertas e relatório PDF profissional para trabalhar com clientes',
+        'Sincronização criptografada opcional entre seus próprios dispositivos',
+        'Avisos no navegador, inclusive os de alertas de preço',
         'Exportação de relatórios PDF',
-        'Multimoeda',
-        'Módulos fiscais por país (APV Chile, PPR Portugal, deduções etc.)',
+        'Projeção de fluxo',
+        'Módulos fiscais por país (APV Chile, PPR Portugal, deduções, Multimoneda na Venezuela, Multidólar e Inflação na Argentina etc.)',
         'Simulador de quitação de dívidas (Avalanche/Snowball)',
+        'Propriedades',
+        'Investimentos completo quando terminar a beta',
       ],
       notAllowed: [
         'Compartilhar a chave de licença com terceiros (cada consultor precisa da sua própria licença)',
@@ -127,7 +143,7 @@ export const PLANS = {
       allowed: [
         'Unbegrenzte private Nutzung, ohne Entgelt und ohne zeitliche Begrenzung (kostenloses Benutzerkonto erforderlich)',
         'Budget, Einnahmen, Ausgaben, Schulden und Ziele',
-        'Optionale verschlüsselte Synchronisierung zwischen Ihren eigenen Geräten',
+        'Lokale Erinnerungen auf dem Telefon, Import von Bankdateien und Kursrechner',
         'Vollständiger Export Ihrer Daten (JSON/CSV) jederzeit',
       ],
       notAllowed: [
@@ -142,10 +158,14 @@ export const PLANS = {
         'Alle Funktionen von Starter',
         'Berufliche Nutzung mit bis zu 30 Klientinnen und Klienten, solange das Abo aktiv ist',
         'Beratermodus: Ampel, Hinweise und professioneller PDF-Bericht für die Arbeit mit Klienten',
+        'Optionale verschlüsselte Synchronisierung zwischen Ihren eigenen Geräten',
+        'Benachrichtigungen im Browser, auch für Preisalarme',
         'Export von PDF-Berichten',
-        'Multiwährung',
-        'Länderspezifische Steuerwerkzeuge (z. B. „Steuer Deutschland“, APV Chile, PPR Portugal)',
+        'Cashflow-Prognose',
+        'Länderspezifische Steuerwerkzeuge (z. B. „Steuer Deutschland“, APV Chile, PPR Portugal, Multimoneda für Venezuela, Multidólar und Inflation für Argentinien)',
         'Schulden-Simulator (Lawinen- und Schneeballmethode)',
+        'Immobilien',
+        'Investments vollständig nach Ende der Beta',
       ],
       notAllowed: [
         'Weitergabe des Lizenzschlüssels an Dritte (jede Beraterin und jeder Berater benötigt eine eigene Lizenz)',
@@ -162,6 +182,8 @@ export const COPY = {
     intro: 'El plan que uses determina cómo puedes usar moyiq. Para usar la app necesitas una cuenta gratuita. Starter es gratis, de uso personal y no vence; Pro es una suscripción con renovación automática que permite uso profesional con hasta 30 clientes.',
     allowed: '✓ Permitido',
     notAllowed: '✗ No permitido',
+    trialTitle: 'Prueba de Pro',
+    trialText: 'Al crear tu cuenta puedes usar Pro gratis durante 14 días, sin tarjeta y sin cobro automático. Al terminar, la cuenta vuelve sola al plan Starter y conservas tus datos. Hay una prueba por cuenta (detalle en los Términos de Uso, punto 7).',
     billingTitle: 'Suscripción Pro: renovación y cancelación',
     billing1: 'Al contratar Pro, eliges facturación mensual (US$4.99) o anual (US$39.99). El cobro se repite automáticamente al final de cada período (cada mes o cada año, según lo elegido) hasta que canceles.',
     billing2: 'Puedes cancelar en línea cuando quieras en moyiq.app/cancelar.html (cuando esté disponible, también en Cuenta → Gestionar suscripción) o escribiendo a support@moyiq.app. La cancelación rige al final del período ya pagado y hasta entonces conservas Pro. No se hacen reembolsos parciales por el tiempo no usado, salvo la garantía técnica de 14 días, el derecho de desistimiento de los consumidores de la UE y lo que exija la ley imperativa de tu país, según los Términos de Uso.',
@@ -181,6 +203,8 @@ export const COPY = {
     intro: 'The plan you use determines how you may use moyiq. You need a free account to use the app. Starter is free, for personal use, and never expires; Pro is an automatically renewing subscription that allows professional use with up to 30 clients.',
     allowed: '✓ Allowed',
     notAllowed: '✗ Not allowed',
+    trialTitle: 'Pro trial',
+    trialText: 'When you create your account you can use Pro free for 14 days, with no card and no automatic charge. When it ends, the account returns to the Starter plan on its own and you keep your data. There is one trial per account (details in the Terms of Use, section 7).',
     billingTitle: 'Pro subscription: renewal and cancellation',
     billing1: 'When you subscribe to Pro, you choose monthly (US$4.99) or annual (US$39.99) billing. The charge repeats automatically at the end of each period (every month or every year, as chosen) until you cancel.',
     billing2: 'You can cancel online anytime at moyiq.app/en/cancel.html (when available, also under Account → Manage subscription) or by writing to support@moyiq.app. Cancellation takes effect at the end of the period already paid, and you keep Pro until then. There are no partial refunds for unused time, except under the 14-day technical guarantee, the EU consumer right of withdrawal, and where mandatory law in your country requires one, as set out in the Terms of Use.',
@@ -200,6 +224,8 @@ export const COPY = {
     intro: 'O plano que você usa determina como pode usar o moyiq. Para usar o app você precisa de uma conta gratuita. O Starter é gratuito, de uso pessoal e não vence; o Pro é uma assinatura com renovação automática que permite uso profissional com até 30 clientes.',
     allowed: '✓ Permitido',
     notAllowed: '✗ Não permitido',
+    trialTitle: 'Teste do Pro',
+    trialText: 'Ao criar sua conta, você pode usar o Pro grátis por 14 dias, sem cartão e sem cobrança automática. Ao terminar, a conta volta sozinha ao plano Starter e você mantém seus dados. Há um teste por conta (detalhes nos Termos de Uso, item 7).',
     billingTitle: 'Assinatura Pro: renovação e cancelamento',
     billing1: 'Ao assinar o Pro, você escolhe cobrança mensal (US$4.99) ou anual (US$39.99). A cobrança se repete automaticamente ao final de cada período (a cada mês ou a cada ano, conforme escolhido) até você cancelar.',
     billing2: 'Você pode cancelar online quando quiser em moyiq.app/cancelar.html (quando estiver disponível, também em Conta → Gerenciar assinatura) ou escrevendo para support@moyiq.app. O cancelamento vale ao final do período já pago e até lá você mantém o Pro. Não há reembolso parcial pelo tempo não utilizado, exceto pela garantia técnica de 14 dias, pelo direito de arrependimento dos consumidores da UE e pelo que a lei imperativa do seu país exigir, conforme os Termos de Uso.',
@@ -220,6 +246,8 @@ export const COPY = {
     intro: 'Der Tarif, den Sie nutzen, bestimmt, wie Sie moyiq verwenden dürfen. Für die Nutzung benötigen Sie ein kostenloses Benutzerkonto. Starter ist kostenlos, für private Zwecke und unbefristet; Pro ist ein Abo, das sich automatisch verlängert und die berufliche Nutzung mit bis zu 30 Klientinnen und Klienten erlaubt.',
     allowed: '✓ Erlaubt',
     notAllowed: '✗ Nicht erlaubt',
+    trialTitle: 'Testphase von Pro',
+    trialText: 'Mit Ihrem Benutzerkonto können Sie Pro 14 Tage lang kostenlos nutzen, ohne Karte und ohne automatische Abbuchung. Danach wechselt das Konto von selbst zu Starter, Ihre Daten bleiben erhalten. Pro Konto ist eine Testphase möglich (Einzelheiten in den AGB, § 5a).',
     billingTitle: 'Pro-Abo: Verlängerung und Kündigung',
     billing1: 'Bei Pro wählen Sie monatliche (US$ 4,99) oder jährliche (US$ 39,99) Abrechnung. Das Monatsabo verlängert sich jeweils um einen Monat. Das Jahresabo hat eine erste Laufzeit von zwölf Monaten und verlängert sich danach auf unbestimmte Zeit; es kann dann jederzeit mit einer Frist von einem Monat gekündigt werden, im Voraus gezahlte Entgelte für die Zeit danach erstatten wir anteilig.',
     billing2: (
@@ -270,6 +298,11 @@ function LicenseBody({ c, plans }) {
       ))}
 
       <div className={s.section}>
+        <h2>{c.trialTitle}</h2>
+        <p>{c.trialText}</p>
+      </div>
+
+      <div className={s.section}>
         <h2>{c.billingTitle}</h2>
         <p>{c.billing1}</p>
         <p>{c.billing2}</p>
@@ -305,7 +338,7 @@ function entry(lang) {
   const c = COPY[lang]
   return {
     title: c.title,
-    sub: `${LAST_UPDATED[lang]} · ${OPERATOR}`,
+    sub: `${LICENSE_LAST_UPDATED[lang]} · ${OPERATOR}`,
     Body: withRebrandNotice(() => <LicenseBody c={c} plans={PLANS[lang]} />, lang),
   }
 }

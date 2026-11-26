@@ -15,7 +15,7 @@ vi.mock('../../context/AppContext.jsx', () => ({ useApp: () => app }))
 vi.mock('../../core/sync.js', () => ({ isSyncEnabled: () => false, syncAvailable: () => false }))
 vi.mock('../../core/push.js', () => ({ pushSupported: () => false, isPushEnabled: () => false }))
 vi.mock('../../core/pushPrimer.js', () => ({ requestPushPermission: async () => ({ ok: false }) }))
-vi.mock('../../utils/licenseValidator.js', () => ({ getLicenseKey: () => 'k' }))
+vi.mock('../../utils/licenseValidator.js', () => ({ getLicenseKey: () => 'k', hasProEntitlement: () => true }))
 vi.mock('../../native/platform.js', () => ({ isNativeApp: () => true }))
 
 const { default: FirstSteps, useFirstSteps } = await import('./FirstSteps.jsx')

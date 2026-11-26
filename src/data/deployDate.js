@@ -21,7 +21,10 @@ export const REBRAND_DEPLOY_DATE = '2026-11-18'
 // 24-nov-2026 (ronda 3 pre-tiendas, N4): la versión con Inversiones, copias del
 // sistema y Turnstile se publicó en la landing el 24-nov y reemplaza a la del
 // 20-nov; la de la app tiene que decir lo mismo (fecha y versión reemplazada).
-export const PRIVACY_DEPLOY_DATE = '2026-11-24'
+// 26-nov-2026 (modelo A): la landing vuelve a fechar la privacidad junto con
+// los términos (su regla: la privacidad no puede ser anterior a los otros
+// legales); el texto no cambió y sigue reemplazando a la del 20-nov.
+export const PRIVACY_DEPLOY_DATE = '2026-11-26'
 export const PRIVACY_PREVIOUS_DATE = '2026-11-20'
 
 // Vigencia propia de los Términos de Uso (ronda 4 pre-tiendas, R3-2): su texto
@@ -29,5 +32,12 @@ export const PRIVACY_PREVIOUS_DATE = '2026-11-20'
 // los publica con vigencia 24-nov-2026 «· reemplaza a la versión 2026-11-18»
 // (financeos-landing 93ce24e). La app tiene que decir lo mismo. Licencia y
 // descargo siguen con REBRAND_DEPLOY_DATE (no cambiaron dentro de la app).
-export const TERMS_DEPLOY_DATE = '2026-11-24'
-export const TERMS_PREVIOUS_DATE = REBRAND_DEPLOY_DATE
+// 26-nov-2026 (modelo A): la cláusula de la prueba pasa a 14 días de Pro sin
+// tarjeta ni cobro (punto 7 / § 5a), igual que la landing (vigencia 2026-11-26).
+export const TERMS_DEPLOY_DATE = '2026-11-26'
+export const TERMS_PREVIOUS_DATE = '2026-11-24'
+
+// Vigencia propia de la Licencia (modelo A, 26-nov-2026): sincronización y avisos
+// del navegador pasan a Pro, la lista de Pro se corrige y se suma la prueba sin
+// tarjeta. El descargo sigue con REBRAND_DEPLOY_DATE.
+export const LICENSE_DEPLOY_DATE = '2026-11-26'

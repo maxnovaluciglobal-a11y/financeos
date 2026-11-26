@@ -7,7 +7,8 @@ import { useApp } from '../../context/AppContext.jsx'
 import { useT } from '../../i18n/useT.js'
 import { getSession, signOutAuth } from '../../core/auth.js'
 import { requestAccountDeletion, wipeAccountFromDevice } from '../../core/deleteAccount.js'
-import { getLicensePlan } from '../../utils/licenseValidator.js'
+import { getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
+import { isPaidPlan } from '../../utils/plans.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 import { logClientError } from '../../utils/errorLog.js'
 
@@ -28,7 +29,8 @@ export default function DeleteAccountSection({ autoOpen = false }) {
   const inputRef = useRef(null)
   const cardRef = useRef(null)
   const word = t('deleteAccount.confirmWord')
-  const isPro = getLicensePlan() === 'pro'
+  // Suscripción que cancelar aparte: Pro pagado o Enterprise (no la prueba sin tarjeta).
+  const isPro = isPaidPlan(getLicensePlan()) && !getLicenseInfo()?.noCard
   const ready = confirmMatches(typed, word) && !busy
 
   useEffect(() => { if (open && !autoOpen) inputRef.current?.focus() }, [open, autoOpen])

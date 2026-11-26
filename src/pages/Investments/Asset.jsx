@@ -54,6 +54,7 @@ import { demoAlertList, demoSaveAlert } from './follow/useFollowData.js'
 import { pushResultText, usePushOffer } from './follow/shared.js'
 import hub from './hub/hub.module.css'
 import s from './asset/asset.module.css'
+import InvestLimitSheet from './InvestLimitSheet.jsx'
 
 // Qué muestra la ficha: 'ready' con un ticker y acceso, 'loading' mientras se
 // revisa la cuenta (antes decía por un instante "No hay un activo elegido") y
@@ -441,6 +442,7 @@ function InvestAssetPage({ setPage }) {
         n={range.n} rangeLabel={t(`asset.range.long.${range.key}`)} demo={chartSample || !!bench.sample} onMore={compareMore} />
       <AlertSheet open={alertSheet} onClose={() => setAlertSheet(false)} symbol={ticker} lockSymbol quoteOf={quoteOf}
         avgCost={hasPos && lots.length === 1 ? lots[0].cost : null} alerts={alerts} onSave={saveAlert} onSaved={onAlertSaved} pushState={push.state} />
+      <InvestLimitSheet setPage={setPage} />
     </div>
   )
 }

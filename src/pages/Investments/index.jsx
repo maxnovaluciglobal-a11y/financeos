@@ -18,6 +18,7 @@ import { queueInvestTab } from '../../utils/investNav.js'
 import Portfolio from './Portfolio.jsx'
 import InvestHub from './hub/InvestHub.jsx'
 import ProfileSheet from './ProfileSheet.jsx'
+import InvestLimitSheet from './InvestLimitSheet.jsx'
 import s from './investments.module.css'
 import { InvestStringsGate } from './i18n/investStrings.js'
 
@@ -85,6 +86,7 @@ function InvestmentsPage({ setPage }) {
       <PageHeader title={t('nav.investments')} sub={t('invest.page.sub')} />
       {body}
       {status === 'needs-profile' && <ProfileSheet open={asking} onClose={() => setAsking(false)} onSave={save} />}
+      <InvestLimitSheet setPage={setPage} />
     </div>
   )
 }

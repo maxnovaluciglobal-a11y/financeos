@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { fmtPct } from '../../../utils/index.js'
 import { isPushEnabled, pushSupported } from '../../../core/push.js'
 import { requestPushPermission } from '../../../core/pushPrimer.js'
-import { getLicenseKey } from '../../../utils/licenseValidator.js'
+import { hasProEntitlement } from '../../../utils/licenseValidator.js'
 import { ALERT_LIMIT } from '../../../utils/investAlerts.js'
 
 export const safeStorage = {
@@ -42,7 +42,7 @@ export function notifPermission() {
 // Estado de los avisos en este dispositivo:
 // 'demo' | 'unsupported' | 'noLicense' | 'on' | 'off'. 'on' exige además el
 // permiso del navegador: si se revocó, vuelve a ofrecerse "Activar avisos".
-export function pushState({ demo = false, supported = pushSupported(), hasKey = !!getLicenseKey(), on = isPushEnabled(), permission = notifPermission() } = {}) {
+export function pushState({ demo = false, supported = pushSupported(), hasKey = hasProEntitlement(), on = isPushEnabled(), permission = notifPermission() } = {}) {
   if (demo) return 'demo'
   if (!supported) return 'unsupported'
   if (!hasKey) return 'noLicense'

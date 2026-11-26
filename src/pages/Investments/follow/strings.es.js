@@ -119,7 +119,7 @@ export default {
   'fl.push.busy': 'Activando…',
   'fl.push.on': 'Los avisos están activados en este dispositivo.',
   'fl.push.ok': 'Listo: las alertas te van a llegar a este dispositivo.',
-  'fl.push.noLicense': 'Los avisos en este dispositivo necesitan una licencia activa de moyiq. Sin ella, tus alertas igual se guardan y aquí ves cuáles se cumplen.',
+  'fl.push.noLicense': 'Los avisos en el navegador son parte de Pro. Sin Pro, tus alertas igual se guardan y aquí ves cuáles se cumplen.',
   'fl.push.unsupported': 'Este navegador no puede recibir avisos. Tus alertas igual se guardan y aquí ves cuáles se cumplen.',
   'fl.push.demo': 'En el demo no se activan avisos.',
 

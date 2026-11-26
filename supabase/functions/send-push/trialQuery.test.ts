@@ -12,6 +12,9 @@ describe('send-push: solo licencias en prueba (BIZ-N4)', () => {
     expect(path).toContain('trial_ends_at=lte.2026-11-22T12:00:00.000Z')
     expect(path).not.toContain('expires_at')
   })
+  it('modelo A: deja afuera la prueba sin tarjeta (sin suscripción de Stripe)', () => {
+    expect(expiringTrialsPath(now)).toContain('stripe_subscription_id=not.is.null')
+  })
   it('días restantes, mínimo 1', () => {
     expect(trialDaysLeft('2026-11-21T11:00:00.000Z', now)).toBe(2)
     expect(trialDaysLeft('2026-11-19T13:00:00.000Z', now)).toBe(1)
