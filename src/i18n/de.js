@@ -766,6 +766,8 @@ export const de = {
     'income.form.clear': "Leeren",
     'income.err.name': "Name ist erforderlich",
     'income.err.amount': "Bitte gültigen Betrag eingeben",
+    'income.history.all': "Alle anzeigen ({n})",
+    'income.history.less': "Weniger anzeigen",
     'income.history': "Verlauf ({n})",
     'income.emptyText': "Sie haben noch keine Einnahmen erfasst.",
     'income.emptyBtn': "+ Einnahme hinzufügen",

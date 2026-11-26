@@ -19,6 +19,7 @@
 // mensual y el reparto de tu capital disponible; stop, R, límite por posición
 // y la escalera de medias móviles, solo en Vista completa. "Repartir" en
 // Resumen abre Aportes con el monto (investNav.queuePlanAporte).
+import { INVEST_ORIGIN } from '../../../core/investBridge.js'
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useApp } from '../../../context/AppContext.jsx'
 import { makeFmt } from '../portfolio/format.js'
@@ -347,6 +348,11 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
           </>
         )}
       </div>
+
+      {/* Pie: fuentes y licencias, como en Resumen, Portafolio y Mercado. */}
+      <p className={s.sourcesFoot}>
+        <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer" className={s.link}>{t('plan.sources')}</a>
+      </p>
 
       <TradeSheet open={!!trade} onClose={() => setTrade(null)} prefill={trade} onSave={recordTrade}
         tickers={knownTickers} knownTickers={knownTickers} hasDeposits={pb.ops.some(o => o.type === 'deposit')} />

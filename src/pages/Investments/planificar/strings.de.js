@@ -3,6 +3,7 @@ export default {
   'plan.loading': 'Planen wird geladen…',
   'plan.error': 'Ihre Investments-Daten konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
   'plan.retry': 'Erneut versuchen',
+  'plan.sources': 'Quellen und Lizenzen',
   'plan.sample': 'Beispieldaten · nichts wird gespeichert',
   'plan.sampleData': 'Beispieldaten: Der Live-Kurs hat nicht geantwortet.',
   'plan.subLabel': 'Bereiche von Planen',

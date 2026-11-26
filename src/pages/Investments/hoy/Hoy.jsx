@@ -114,7 +114,7 @@ function stripValue(sym, price) {
   if (f.kind === 'usd') return `${currencySymbol('USD')}${n}`
   return n
 }
-function Strip({ market, sparks, sample, onTab }) {
+function Strip({ market, sparks, sample, pageSample = false, onTab }) {
   const { t } = useT()
   const items = STRIP_SYMS.map(sym => (market.items || []).find(it => it.sym === sym)).filter(it => it && it.price != null)
   const ref = useRef(null)
@@ -154,7 +154,7 @@ function Strip({ market, sparks, sample, onTab }) {
           )
         })}
       </ul>
-      <p className={s.muted}>{sample ? t('invest.state.sample') : market.fetchedAt ? t('invest.hoy.strip.delay', { at: hhmm(Date.parse(market.fetchedAt) || market.fetchedAt) }) : t('invest.hoy.strip.delayNoTime')}</p>
+      {!(sample && pageSample) && <p className={s.muted}>{sample ? t('invest.state.sample') : market.fetchedAt ? t('invest.hoy.strip.delay', { at: hhmm(Date.parse(market.fetchedAt) || market.fetchedAt) }) : t('invest.hoy.strip.delayNoTime')}</p>}
     </section>
   )
 }
@@ -583,7 +583,9 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const chartNotes = []
   if (chart.state === 'ready' || chart.state === 'short') {
     chartNotes.push(t('invest.hoy.pvh.note.what'))
-    chartNotes.push(histSample ? t('invest.chart.sample') : t('invest.hoy.pvh.note.source'))
+    // Si arriba ya dice "Datos de ejemplo", el gráfico no lo repite (un aviso por pantalla).
+    if (!histSample) chartNotes.push(t('invest.hoy.pvh.note.source'))
+    else if (!pricesSample) chartNotes.push(t('invest.chart.sample'))
     chartNotes.push(t('invest.hoy.pvh.note.usd'))
     if (chart.series?.fxApprox?.length) chartNotes.push(t('invest.hoy.pvh.note.fxApprox', { list: chart.series.fxApprox.join(', ') }))
     if (chart.series?.missing?.length) chartNotes.push(t('invest.hoy.pvh.note.missing', { list: chart.series.missing.join(', ') }))
@@ -793,8 +795,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
         ) : null} />
 
       {/* 5. Mercado: la cinta (Vista completa) y el contexto. */}
-      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} onTab={onTab} />}
-      <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} sample={ctxSample} />
+      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} pageSample={pricesSample} onTab={onTab} />}
+      <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} sample={ctxSample && !pricesSample} />
       {footer}
     </div>
   )

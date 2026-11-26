@@ -766,6 +766,8 @@ export const en = {
     'income.form.clear': "Clear",
     'income.err.name': "Name is required",
     'income.err.amount': "Enter a valid amount",
+    'income.history.all': "See all ({n})",
+    'income.history.less': "See less",
     'income.history': "History ({n})",
     'income.emptyText': "You haven't recorded any income yet.",
     'income.emptyBtn': "+ Add income",

@@ -1,7 +1,10 @@
 /* src/components/ui/swipeRow.module.css — fila deslizable. pan-y: el scroll sigue
    siendo del navegador; lo horizontal llega a la fila. */
 .root { position: relative; overflow: hidden; touch-action: pan-y; }
-.fg { position: relative; background: var(--bg); }
+/* El frente tapa las acciones con el color de lo que la contiene: el fondo de la
+   página, o el de la tarjeta (--swipe-bg en .card). Con var(--bg) fijo, dentro de
+   una tarjeta en modo oscuro quedaba un bloque negro (26-nov-2026). */
+.fg { position: relative; background: var(--swipe-bg, var(--bg)); }
 .actions { position: absolute; top: 0; right: 0; bottom: 0; display: flex; }
 .action {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;

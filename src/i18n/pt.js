@@ -766,6 +766,8 @@ export const pt = {
     'income.form.clear': "Limpar",
     'income.err.name': "O nome é obrigatório",
     'income.err.amount': "Insira um valor válido",
+    'income.history.all': "Mostrar todos ({n})",
+    'income.history.less': "Mostrar menos",
     'income.history': "Histórico ({n})",
     'income.emptyText': "Você ainda não registrou receitas.",
     'income.emptyBtn': "+ Adicionar receita",

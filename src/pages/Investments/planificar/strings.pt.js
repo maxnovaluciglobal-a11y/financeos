@@ -3,6 +3,7 @@ export default {
   'plan.loading': 'Carregando Planejar…',
   'plan.error': 'Não foi possível carregar seus dados de Investimentos. Confira sua conexão e tente de novo.',
   'plan.retry': 'Tentar de novo',
+  'plan.sources': 'Fontes e licenças',
   'plan.sample': 'Dados de exemplo · nada fica salvo',
   'plan.sampleData': 'Dados de exemplo: o preço ao vivo não respondeu.',
   'plan.subLabel': 'Partes de Planejar',

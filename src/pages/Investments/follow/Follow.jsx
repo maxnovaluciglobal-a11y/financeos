@@ -89,6 +89,14 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
     if (!r.ok) { sayErr(r.error); return }
     say(t(r.data?.existed ? 'fl.list.exists' : 'fl.list.added', { t: tk }))
   }
+  // Si al borrar desaparece el botón que abrió la hoja (la única alerta de un
+  // activo que no sigues), el foco vuelve a la sub-pestaña en vez de perderse.
+  function keepFocus() {
+    setTimeout(() => {
+      const a = typeof document !== 'undefined' ? document.activeElement : null
+      if (!a || a === document.body) refs.current[sub]?.focus()
+    }, 400)
+  }
   function onSaved(r, prev, value) {
     setSheet(null)
     if (prev) { say(t('fl.sheet.updated')); return }
@@ -133,7 +141,7 @@ export default function Follow({ demo = false, view = 'esencial', onOpen }) {
       <AlertSheet open={!!sheet} onClose={() => setSheet(null)} prev={sheet?.prev || null} symbol={sheet?.symbol || ''}
         quoteOf={quoteOf} alerts={d.alerts.list} onSave={d.saveAlert} onSaved={onSaved} pushState={push.state}
         onToggle={(a) => { setSheet(null); acts.toggle(a) }}
-        onDelete={(a) => { setSheet(null); acts.del(a) }}
+        onDelete={(a) => { setSheet(null); acts.del(a); keepFocus() }}
         onPick={(a) => setSheet(cur => ({ prev: a, symbol: a?.symbol || cur?.symbol || '' }))} />
 
       <Sheet open={!!cmp} onClose={() => setCmp(null)} ariaLabel={t('fl.cmp.title')} maxWidth={640}>

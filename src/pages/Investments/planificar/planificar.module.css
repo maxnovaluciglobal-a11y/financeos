@@ -111,3 +111,4 @@
 @media (prefers-reduced-motion: reduce) { .foldIc { transition: none; } }
 .inner { background: var(--fill); border: 0; }
 .subTitle { margin: 0; font-size: var(--t-callout); font-weight: 600; color: var(--tx); }
+.sourcesFoot { margin: 16px 0 0; font-size: var(--t-footnote); }

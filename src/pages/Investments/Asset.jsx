@@ -307,6 +307,12 @@ function InvestAssetPage({ setPage }) {
     if (!r.ok) { toast(t(errorKey(r.error)), 'error'); return }
     setDelLot(null)
     d.refreshMine()
+    // Borrado el último lote, el botón que abrió la confirmación ya no existe:
+    // el foco va a la pestaña activa de la ficha en vez de perderse.
+    setTimeout(() => {
+      const a = typeof document !== 'undefined' ? document.activeElement : null
+      if (!a || a === document.body) document.querySelector('#asset-panel')?.closest('section')?.querySelector('[role=tab][aria-selected=true]')?.focus()
+    }, 400)
     const back = { t: lot.t || ticker, type: lot.type, sh: lot.sh, cost: lot.cost, stop: lot.stop, fxCost: lot.fxCost, note: lot.note }
     toast(t('asset.del.done', { t: ticker }), 'ok', {
       label: t('asset.undo'),

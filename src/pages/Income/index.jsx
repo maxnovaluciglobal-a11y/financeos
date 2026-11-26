@@ -14,6 +14,12 @@ import rs from '../../components/recurring/recurring.module.css'
 import { logClientError } from '../../utils/errorLog.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 
+
+// Historial: cuántos se ven sin desplegar.
+const HISTORY_PREVIEW = 8
+// La categoría ya dice "Inversión": no se repite la marca al final de la línea.
+const isInvestCategory = (c) => /^inversi[oó]n/i.test(String(c || ''))
+
 export default function Income({ setPage }) {
   const { incomes, expenses, addIncome, updateIncome, settings, deleteWithUndo, addWithRule } = useApp()
   const { t, lang } = useT()
@@ -21,6 +27,7 @@ export default function Income({ setPage }) {
   const projectOptions = useMemo(() => [...new Set([...(incomes||[]), ...(expenses||[])].map(r => r?.project).filter(Boolean))], [incomes, expenses])
   const [f, setF]       = useState({ source: '', amount: '', date: today(), category: 'Salario', recurrence: 'Único', notes: '' })
   const [err, setErr]   = useState('')
+  const [showAll, setShowAll] = useState(false)
   // "Se repite" crea un movimiento fijo (regla) con este ingreso como primera
   // ocurrencia; reemplaza al viejo selector de recurrencia, que era solo una etiqueta.
   const [repeat, setRepeat] = useState(false)
@@ -183,8 +190,10 @@ export default function Income({ setPage }) {
                  primario de la pantalla es "Guardar" del formulario). */
               <EmptyState compact title={t('income.emptyText')}
                 secondary={{ label: t('income.emptyBtn'), onClick: () => setRepeat(true) }} />
-            : <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-                {filtered.map(r => editingId === r.id ? (
+            : <div>
+                {/* Sin caja con scroll propio dentro de la tarjeta (26-nov-2026): se ven
+                    los últimos 8 y "Ver todos" despliega el resto. */}
+                {(showAll ? filtered : filtered.slice(0, HISTORY_PREVIEW)).map(r => editingId === r.id ? (
                   <div key={r.id} style={{padding:'10px 12px',borderRadius:8,border: 0,background:'rgba(10,92,62,.04)',marginBottom:6}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
                       <div style={{gridColumn:'1/-1'}}>
@@ -218,11 +227,16 @@ export default function Income({ setPage }) {
                 ) : (
                     <TxRow key={r.id} category={r.category}
                       name={<>{r.inv && <InlineIcon kind="investment" size={11} />}{r.source}</>} label={r.source}
-                      meta={`${catName(r.category, lang)} · ${fmtDayMonth(r.date)}${r.recurrence!=='Único'?' · '+recurrenceLabel(r.recurrence, lang):''}${r.inv?' · '+t('income.row.investment'):''}`}
+                      meta={`${catName(r.category, lang)} · ${fmtDayMonth(r.date)}${r.recurrence!=='Único'?' · '+recurrenceLabel(r.recurrence, lang):''}${r.inv && !isInvestCategory(r.category) ? ' · '+t('income.row.investment') : ''}`}
                       value={r.amount} sym={sym} isIncome
                       onDelete={()=>deleteWithUndo('incomes', r, t('common.deleted'), t('common.undo'))}
                       onEdit={()=>{setEditingId(r.id);setEditForm({source:r.source,amount:r.amount,date:r.date,category:r.category,recurrence:r.recurrence,notes:r.notes||''})}} />
                 ))}
+                {filtered.length > HISTORY_PREVIEW && (
+                  <Btn variant="ghost" size="sm" aria-expanded={showAll} onClick={() => setShowAll(v => !v)} style={{ marginTop: 8 }}>
+                    {showAll ? t('income.history.less') : t('income.history.all', { n: filtered.length })}
+                  </Btn>
+                )}
               </div>
           }
         </Card>

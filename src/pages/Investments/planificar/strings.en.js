@@ -3,6 +3,7 @@ export default {
   'plan.loading': 'Loading Plan…',
   'plan.error': 'Your Investments data could not be loaded. Check your connection and try again.',
   'plan.retry': 'Try again',
+  'plan.sources': 'Sources and licenses',
   'plan.sample': 'Sample data · not saved',
   'plan.sampleData': 'Sample data: the live price did not respond.',
   'plan.subLabel': 'Parts of Plan',

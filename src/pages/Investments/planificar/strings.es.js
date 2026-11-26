@@ -5,6 +5,7 @@ export default {
   'plan.loading': 'Cargando Planificar…',
   'plan.error': 'No se pudieron cargar tus datos de Inversiones. Revisa tu conexión y vuelve a intentarlo.',
   'plan.retry': 'Reintentar',
+  'plan.sources': 'Fuentes y licencias',
   'plan.sample': 'Datos de ejemplo · no se guardan',
   'plan.sampleData': 'Datos de ejemplo: el precio en vivo no respondió.',
   'plan.subLabel': 'Partes de Planificar',

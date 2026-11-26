@@ -25,6 +25,7 @@
 
 /* CARD */
 .card {
+  --swipe-bg: var(--box-bg);
   background: var(--box-bg); border: 0;
   border-radius: var(--rl); padding: 16px;
   box-shadow: var(--box-sh);
