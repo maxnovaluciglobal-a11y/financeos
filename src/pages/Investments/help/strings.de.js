@@ -11,7 +11,7 @@ export default {
   'hlp.q.views': 'Was ändert sich zwischen der Kernansicht und der Vollansicht?',
   'hlp.a.views': 'Die Kernansicht zeigt das Wesentliche mit einer einfachen Kurslinie. Die Vollansicht zeigt zusätzlich Kerzen, Indikatoren (Durchschnitte, RSI, MACD und Bollinger-Bänder), Stops und das Marktband.\n\nSie wechseln sie mit dem Schalter „Vollansicht“ unter den Tabs. Ein Wechsel der Ansicht löscht nichts.',
   'hlp.q.asset': 'Wie öffne ich die Seite eines Werts?',
-  'hlp.a.asset': 'Geben Sie sein Symbol in die Suche unter den Tabs ein oder tippen Sie in einer Liste auf ein Symbol. Die Seite zeigt den Kurs, das Diagramm, die Indikatoren, Unternehmensdaten, Ihre Position, falls Sie eine haben, und Nachrichten. Dort können Sie den Wert verfolgen, einen Alarm dafür anlegen oder eine Transaktion erfassen.',
+  'hlp.a.asset': 'Tippen Sie auf die Lupe unter den Tabs und geben Sie sein Symbol ein, oder tippen Sie in einer Liste auf ein Symbol. Die Seite zeigt den Kurs, das Diagramm, die Indikatoren, Unternehmensdaten, Ihre Position, falls Sie eine haben, und Nachrichten. Dort können Sie den Wert verfolgen, einen Alarm dafür anlegen oder eine Transaktion erfassen.',
 
   'hlp.g.data': 'Daten und Indikatoren',
   'hlp.q.fresh': 'Wie aktuell sind die Kurse?',

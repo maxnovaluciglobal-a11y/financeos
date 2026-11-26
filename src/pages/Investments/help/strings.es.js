@@ -15,7 +15,7 @@ export default {
   'hlp.q.views': '¿Qué cambia entre la vista esencial y la completa?',
   'hlp.a.views': 'La vista esencial muestra lo básico, con una línea simple de precio. La vista completa suma velas, indicadores (medias, RSI, MACD y bandas de Bollinger), el stop y la cinta de mercado.\n\nSe cambia con el interruptor "Vista completa", debajo de las pestañas. Cambiar de vista no borra nada.',
   'hlp.q.asset': '¿Cómo abro la ficha de un activo?',
-  'hlp.a.asset': 'Escribe su símbolo en el buscador, debajo de las pestañas, o toca un símbolo en cualquier lista. La ficha muestra el precio, el gráfico, los indicadores, los datos de la empresa, tu posición si la tienes y noticias. Desde ahí puedes seguir el activo, crearle una alerta o registrar una operación.',
+  'hlp.a.asset': 'Toca la lupa, debajo de las pestañas, y escribe su símbolo, o toca un símbolo en cualquier lista. La ficha muestra el precio, el gráfico, los indicadores, los datos de la empresa, tu posición si la tienes y noticias. Desde ahí puedes seguir el activo, crearle una alerta o registrar una operación.',
 
   'hlp.g.data': 'Datos e indicadores',
   'hlp.q.fresh': '¿Qué tan al día están los precios?',

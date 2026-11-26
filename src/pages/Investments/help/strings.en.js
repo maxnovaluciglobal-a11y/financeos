@@ -11,7 +11,7 @@ export default {
   'hlp.q.views': 'What changes between the essential view and the full view?',
   'hlp.a.views': 'The essential view shows the basics, with a simple price line. The full view adds candles, indicators (moving averages, RSI, MACD and Bollinger bands), stops and the market ticker.\n\nSwitch it with the "Full view" toggle below the tabs. Changing the view deletes nothing.',
   'hlp.q.asset': 'How do I open an asset page?',
-  'hlp.a.asset': 'Type its symbol in the search box below the tabs, or tap a symbol in any list. The asset page shows the price, the chart, the indicators, company data, your holding if you have one, and news. From there you can follow the asset, create an alert for it or record a trade.',
+  'hlp.a.asset': 'Tap the magnifier below the tabs and type its symbol, or tap a symbol in any list. The asset page shows the price, the chart, the indicators, company data, your holding if you have one, and news. From there you can follow the asset, create an alert for it or record a trade.',
 
   'hlp.g.data': 'Data and indicators',
   'hlp.q.fresh': 'How current are the prices?',

@@ -7,10 +7,15 @@
 // planificar/Planificar.jsx: calculadora, aportes y planes guardados) también,
 // cada una en su chunk.
 // La pestaña vive en la entrada del historial y en fos_invest_tab (investNav).
-// Arriba, el interruptor "Vista completa" (esencial por defecto,
-// utils/investView.js) y el aviso educativo.
+// Encabezado de una fila (26-nov-2026, propuesta 3 del flujo de Inversiones):
+// el interruptor "Vista completa" (esencial por defecto, utils/investView.js;
+// su explicación queda para el lector de pantalla y en la ayuda) y la lupa,
+// que despliega el buscador debajo con el foco en el campo y, al cerrarlo,
+// devuelve el foco a la lupa. El "?" de la barra de arriba es la ayuda de la
+// pantalla; la ayuda propia de Inversiones (help/InvestHelp.jsx) queda en el
+// pie de cada pestaña, junto al aviso educativo (Resumen ya trae el suyo).
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
-import { CircleHelp, Hammer } from 'lucide-react'
+import { CircleHelp, Hammer, Search, X } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
 import { INVEST_TABS, OPEN_EVENT, bootTab, isTab, normTab, openAsset, rememberTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
@@ -53,6 +58,9 @@ export default function InvestHub({ setPage, demo = false }) {
   const [view, setView] = useInvestView()
   const [help, setHelp] = useState(false)
   const helpBtn = useRef(null)
+  const [search, setSearch] = useState(false)
+  const searchBtn = useRef(null)
+  const closeSearch = useCallback(() => { setSearch(false); searchBtn.current?.focus() }, [])
   const refs = useRef({})
 
   useEffect(() => { rememberTab(tab, safeStorage) }, [tab])
@@ -102,19 +110,15 @@ export default function InvestHub({ setPage, demo = false }) {
       </div>
 
       <div className={s.toolRow} data-tour="inv-tools">
-        <ViewToggle view={view} onChange={setView} />
-        <button ref={helpBtn} type="button" className={s.helpBtn} onClick={() => setHelp(true)} aria-label={t('invest.hub.helpLabel')} aria-haspopup="dialog">
-          <CircleHelp size={18} strokeWidth={1.8} aria-hidden="true" />{t('invest.hub.help')}
+        <ViewToggle view={view} onChange={setView} compact />
+        <button ref={searchBtn} type="button" className={s.searchBtn} onClick={() => (search ? closeSearch() : setSearch(true))}
+          aria-label={t('invest.search.label')} title={t('invest.search.label')} aria-expanded={search} aria-controls="invest-search">
+          {search ? <X size={20} strokeWidth={2} aria-hidden="true" /> : <Search size={20} strokeWidth={2} aria-hidden="true" />}
         </button>
       </div>
-      <EduNotice />
-      {help && (
-        <Suspense fallback={null}>
-          <InvestHelp open={help} onClose={() => { setHelp(false); helpBtn.current?.focus() }} />
-        </Suspense>
-      )}
-
-      <TickerSearch onOpen={open} demo={demo} demoTickers={demo ? demoInvestRows().map(r => r.t) : []} />
+      <div id="invest-search" hidden={!search}>
+        {search && <TickerSearch onOpen={open} demo={demo} demoTickers={demo ? demoInvestRows().map(r => r.t) : []} focusOnMount onClose={closeSearch} hideLabel />}
+      </div>
 
       <div role="tabpanel" id={`invest-panel-${tab}`} aria-labelledby={`invest-tab-${tab}`} tabIndex={0}>
         {tab === 'resumen'
@@ -129,6 +133,19 @@ export default function InvestHub({ setPage, demo = false }) {
                   ? <Suspense fallback={<p className={s.wipBody} role="status">{t('invest.card.loading')}</p>}><Planificar demo={demo} view={view} onTab={go} onOpen={open} /></Suspense>
                   : <Wip id={tab} text={t(`invest.hub.soon.${tab}`)} />}
       </div>
+
+      {/* Pie común: el aviso educativo (Resumen ya lo trae en su pie) y la ayuda de Inversiones. */}
+      <div className={s.foot}>
+        {tab !== 'resumen' && <EduNotice />}
+        <button ref={helpBtn} type="button" className={s.helpLink} onClick={() => setHelp(true)} aria-haspopup="dialog">
+          <CircleHelp size={16} strokeWidth={1.8} aria-hidden="true" />{t('invest.hub.helpLabel')}
+        </button>
+      </div>
+      {help && (
+        <Suspense fallback={null}>
+          <InvestHelp open={help} onClose={() => { setHelp(false); helpBtn.current?.focus() }} />
+        </Suspense>
+      )}
     </div>
   )
 }

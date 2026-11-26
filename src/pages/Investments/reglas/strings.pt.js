@@ -38,6 +38,8 @@ export default {
   'rul.noneMany': '{n} ativos sem leitura das médias: não entram na conta.',
   'rul.sample': 'Históricos de exemplo: a fonte ao vivo não respondeu.',
   'rul.see': 'Ver suas faixas',
+  'rul.more': 'Ver os detalhes',
+  'rul.less': 'Ocultar os detalhes',
   'rul.edit': 'Mudar sua regra em Suas faixas',
 
   'rul.mkt.both': 'Mercado: {spy}; {vix}.',

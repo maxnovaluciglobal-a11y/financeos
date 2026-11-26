@@ -89,3 +89,8 @@
 
 .edu { display: flex; gap: 6px; align-items: flex-start; margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--fill); font-size: var(--t-footnote); line-height: 1.5; color: var(--tx); }
 .edu svg { flex: 0 0 auto; margin-top: 3px; }
+
+/* Detalle plegable (26-nov-2026): la tarjeta abre en una línea. */
+.detail { display: flex; flex-direction: column; gap: 10px; }
+.detail[hidden] { display: none; }
+.sumChev[data-open] { transform: rotate(180deg); }

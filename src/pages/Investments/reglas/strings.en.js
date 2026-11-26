@@ -38,6 +38,8 @@ export default {
   'rul.noneMany': '{n} assets have no reading of the averages and are not counted.',
   'rul.sample': 'Sample histories: the live source did not respond.',
   'rul.see': 'See your tranches',
+  'rul.more': 'Show details',
+  'rul.less': 'Hide details',
   'rul.edit': 'Change your rule in Your tranches',
 
   'rul.mkt.both': 'Market: {spy}; {vix}.',

@@ -8,6 +8,16 @@
 // Tu riesgo hoy · Para revisar hoy · Valor en el tiempo · avisos de tipo de
 // cambio · tus 5 posiciones · efectivo y aportes · aporte del mes · régimen y VIX.
 // Sin posiciones: estado vacío con 3 caminos (agregar, importar, ver un ejemplo).
+// Orden desde el 26-nov-2026 (propuesta 4 del flujo de Inversiones): la
+// cabecera morada (valor, Depositado, Ganancia, Hoy) con dos enlaces cortos
+// ("US$… sin invertir · Repartir", que lleva a Planificar › Aportes con ese
+// monto, y "¿De dónde viene la ganancia?", que despliega Precio, Dividendos y
+// "¿Le ganaste al dólar?"), tus posiciones, valor en el tiempo, "Tus reglas
+// hoy" en una línea (desplegable), el contexto de mercado y el pie. Salen las
+// tarjetas repetidas "Tus tramos" (sus accesos quedan en "Tus reglas hoy"),
+// "Efectivo y aportes" (sus cifras quedan en la cabecera y sus avisos debajo
+// de ella) y "¿Cuánto puedes aportar este mes?" (el enlace "Repartir"; el
+// monto se ajusta en Planificar › Aportes).
 // Vista esencial (por defecto, utils/investView.js): sin cinta, sin "Tu riesgo
 // hoy", sin "Para revisar hoy" (medias y RSI) y sin riesgo al stop en las
 // filas. Todo sigue en Vista completa.
@@ -19,7 +29,7 @@
 // bridge_aporte tampoco: la política de privacidad dice que la app no registra
 // eventos ni clics dentro de ella.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, ArrowDown, ArrowUp, ChevronRight, Clock, Equal, FileUp, FlaskConical, Minus, Plus, TrendingDown, TrendingUp, WifiOff } from 'lucide-react'
+import { AlertTriangle, ArrowDown, ArrowUp, ChevronDown, ChevronRight, Clock, Equal, FileUp, FlaskConical, Minus, Plus, TrendingDown, TrendingUp, WifiOff } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
 import Sparkline from '../../../components/charts/Sparkline.jsx'
 import { EmptyChoice, EmptyChoices } from '../../../components/ui/index.jsx'
@@ -29,7 +39,7 @@ import { INVEST_ORIGIN } from '../../../core/investBridge.js'
 import { cashBook } from '../../../utils/investCash.js'
 import {
   VIX_SYM, STRIP_SYMS, aportePending, assetSpark, historySymbol, aporteUsd, buildSeries, computeRiskAtStop, fetchRangeOf, fxSymbol, heaviest,
-  rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFadeOf, stripFormat, summarizeFreshness, topPositions, validateAporte,
+  rebase, regimeOf, reviewToday, scoreCloses, sliceRange, stripFadeOf, stripFormat, summarizeFreshness, topPositions,
   vixLevel, withLivePoint, PVH_CMP, PVH_RANGES, pvhCmpFor, REVIEW_MAX_CHIPS,
 } from '../../../utils/investHoy.js'
 import { convertHoldings, currencyOf, holdingRows, portfolioTotals, toUsd } from '../../../utils/investValuation.js'
@@ -37,7 +47,7 @@ import { monthContributions, resolveUserRate } from '../../../utils/investNetWor
 import { currencySymbol, currentMonth, dateLocale, fmtAmount, fmtMoney, fmtPct, moneyLocale } from '../../../utils/index.js'
 import { putAndGain } from '../../../utils/investEsencial.js'
 import { costResult, depositGain } from '../../../utils/investDeposit.js'
-import DepositGain from './DepositGain.jsx'
+import DepositGain, { putExplainKey } from './DepositGain.jsx'
 import { queuePortIntent } from '../portfolio/intentQueue.js'
 import { shows } from '../../../utils/investView.js'
 import PutSummary from '../esencial/PutSummary.jsx'
@@ -46,7 +56,6 @@ import { queuePlanAporte } from '../../../utils/investNav.js'
 import { isSample } from '../../../demo/demoMarketApi.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
-import OppTeaser from '../oportunidades/OppTeaser.jsx'
 import TusReglasHoy from '../reglas/TusReglasHoy.jsx'
 import { queueOpp } from '../oportunidades/queue.js'
 import { uninvested } from '../oportunidades/capital.js'
@@ -173,7 +182,7 @@ function AporteBanner({ a, usd, pending, onGo, onClose, sym, noRate }) {
 }
 
 // ── Banda de valor ────────────────────────────────────────────────
-function ValueBand({ T, local, money, priced, showResult = true }) {
+function ValueBand({ T, local, money, priced, showResult = true, links = null }) {
   const { t } = useT()
   const sub = T.missing > 0
     ? t(T.missing === 1 ? 'invest.hoy.band.loadingOne' : 'invest.hoy.band.loadingMany', { n: T.missing })
@@ -197,6 +206,7 @@ function ValueBand({ T, local, money, priced, showResult = true }) {
           </dd>
         </div>}
       </dl>
+      {links}
     </section>
   )
 }
@@ -337,6 +347,26 @@ function TopPositions({ top, total, money, onOpen, onTab, showRisk = true, spark
 }
 
 // ── Efectivo y aportes ────────────────────────────────────────────
+// Avisos del libro de efectivo (sin tipo de cambio, saldo negativo, unidades
+// sin posición, sin precio de hoy): debajo de la cabecera y en CashBlock.
+function CashNotes({ B }) {
+  const { t } = useT()
+  if (!B) return null
+  const ccys = Object.keys(B.cashByCcy)
+  const excl = [...B.excludedCcys.map(c => (c === '?' ? t('invest.hoy.cash.unknownCcy') : c)), ...B.excludedPositions]
+  const neg = ccys.filter(c => B.cashByCcy[c] < -0.005).map(c => (c === '?' ? t('invest.hoy.cash.unknownCcy') : c))
+  return (
+    <>
+      {(excl.length > 0 || B.excludedOps > 0) && <p className={s.note} role="note"><AlertTriangle size={14} aria-hidden="true" />{excl.length ? t('invest.hoy.cash.exclFor', { list: excl.join(', ') }) : t('invest.hoy.cash.excl')}</p>}
+      {neg.length > 0 && <p className={s.note} role="note"><AlertTriangle size={14} aria-hidden="true" />{t('invest.hoy.cash.negative', { list: neg.join(', ') })}</p>}
+      {B.orphans.map(o => (
+        <p key={o.t} className={s.note} role="note"><AlertTriangle size={14} aria-hidden="true" />{t('invest.hoy.cash.orphan', { n: o.sh.toLocaleString(moneyLocale(), { maximumFractionDigits: 8 }), t: o.t })}</p>
+      ))}
+      {B.unpriced.length > 0 && <p className={s.note} role="note">{t('invest.hoy.cash.unpriced', { list: B.unpriced.join(', ') })}</p>}
+    </>
+  )
+}
+// La tarjeta completa queda solo para el estado sin posiciones (no hay cabecera).
 function CashBlock({ B, money, onTab }) {
   const { t } = useT()
   const r = B.returnPct
@@ -348,8 +378,6 @@ function CashBlock({ B, money, onTab }) {
   if (B.deposits || B.withdrawals) sub.push(t('invest.hoy.cash.depMinusWd'))
   if (B.implicit > 0) sub.push(t('invest.hoy.cash.outside'))
   if (B.opening > 0) sub.push(t(B.openingCount === 1 ? 'invest.hoy.cash.openingOne' : 'invest.hoy.cash.openingMany', { n: B.openingCount }))
-  const excl = [...B.excludedCcys.map(c => (c === '?' ? t('invest.hoy.cash.unknownCcy') : c)), ...B.excludedPositions]
-  const neg = ccys.filter(c => B.cashByCcy[c] < -0.005).map(c => (c === '?' ? t('invest.hoy.cash.unknownCcy') : c))
   return (
     <section className={s.card} aria-labelledby="hoy-cash-title">
       <div className={s.cardHead}>
@@ -366,43 +394,33 @@ function CashBlock({ B, money, onTab }) {
           <dd className={s.muted}>{r != null ? <Money>{t('invest.hoy.cash.gain', { v: money(B.gain, true) })}</Money> : B.complete ? t('invest.hoy.cash.noContribYet') : t('invest.hoy.cash.missingFx')}</dd>
         </div>
       </dl>
-      {(excl.length > 0 || B.excludedOps > 0) && <p className={s.note} role="note"><AlertTriangle size={14} aria-hidden="true" />{excl.length ? t('invest.hoy.cash.exclFor', { list: excl.join(', ') }) : t('invest.hoy.cash.excl')}</p>}
-      {neg.length > 0 && <p className={s.note} role="note"><AlertTriangle size={14} aria-hidden="true" />{t('invest.hoy.cash.negative', { list: neg.join(', ') })}</p>}
-      {B.orphans.map(o => (
-        <p key={o.t} className={s.note} role="note"><AlertTriangle size={14} aria-hidden="true" />{t('invest.hoy.cash.orphan', { n: o.sh.toLocaleString(moneyLocale(), { maximumFractionDigits: 8 }), t: o.t })}</p>
-      ))}
-      {B.unpriced.length > 0 && <p className={s.note} role="note">{t('invest.hoy.cash.unpriced', { list: B.unpriced.join(', ') })}</p>}
+      <CashNotes B={B} />
     </section>
   )
 }
 
-// ── ¿Cuánto puedes aportar este mes? ─────────────────────────────
-function AporteForm({ initial, hasMoyiq, onDone }) {
+// ── Enlaces de la cabecera (26-nov-2026) ─────────────────────────
+// "US$… sin invertir · Repartir" (Planificar › Aportes con ese monto, como el
+// formulario "¿Cuánto puedes aportar?" de antes) y "¿De dónde viene la
+// ganancia?", que despliega el detalle debajo de la cabecera.
+function BandLinks({ cash, money, onSplit, why, whyOpen, onWhy, whyId }) {
   const { t } = useT()
-  const [value, setValue] = useState(initial ? String(initial) : '')
-  const [err, setErr] = useState(null)
-  useEffect(() => { if (initial) setValue(String(initial)) }, [initial])
-  function submit(e) {
-    e.preventDefault()
-    const v = validateAporte(value)
-    if (!v.ok) { setErr(v.error); document.getElementById('hoy-aporte-in')?.focus(); return }
-    setErr(null)
-    onDone(v.value)
-  }
+  const has = cash > 0.5
   return (
-    <form className={s.card} noValidate onSubmit={submit} aria-labelledby="hoy-aporte-title">
-      <h2 id="hoy-aporte-title" className={s.cardTitle}>{t('invest.hoy.aporte.title')}</h2>
-      <p className={s.text}>{hasMoyiq ? t('invest.hoy.aporte.bodyMoyiq') : t('invest.hoy.aporte.body')}</p>
-      <div className={s.formRow}>
-        <label htmlFor="hoy-aporte-in" className="sr-only">{t('invest.hoy.aporte.label')}</label>
-        <input id="hoy-aporte-in" className={s.input} type="text" inputMode="decimal" autoComplete="off"
-          placeholder={t('invest.hoy.aporte.placeholder')} value={value}
-          onChange={e => { setValue(e.target.value); if (err) setErr(null) }}
-          aria-invalid={err ? 'true' : undefined} aria-describedby={err ? 'hoy-aporte-err' : undefined} />
-        <button type="submit" className={`${s.btn} ${s.btnPrimary}`}>{t('invest.hoy.aporte.go')}</button>
-      </div>
-      {err && <p id="hoy-aporte-err" className={s.fieldErr} role="alert"><AlertTriangle size={14} aria-hidden="true" />{t(err === 'empty' ? 'invest.hoy.aporte.errEmpty' : 'invest.hoy.aporte.errInvalid')}</p>}
-    </form>
+    <div className={s.bandLinks}>
+      <p className={s.bandLine}>
+        {has && <><span><Money>{t('invest.hoy.band.uninvested', { v: money(cash) })}</Money></span><span aria-hidden="true">{'\u00a0·\u00a0'}</span></>}
+        <button type="button" className={s.bandBtn} onClick={onSplit}
+          aria-label={has ? t('invest.hoy.band.splitAria', { v: money(cash) }) : undefined}>
+          {t(has ? 'invest.hoy.band.split' : 'invest.hoy.band.splitAny')}
+        </button>
+      </p>
+      {why && (
+        <button type="button" className={s.bandBtn} aria-expanded={whyOpen} aria-controls={whyId} onClick={onWhy}>
+          {why}<ChevronDown size={14} className={s.bandChev} data-open={whyOpen || undefined} aria-hidden="true" />
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -463,6 +481,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const cmpOptions = pvhCmpFor(settings.country)
   const [cmp, setCmp] = useState(() => (cmpOptions.includes(readKey(CMP_KEY)) ? readKey(CMP_KEY) : ''))
   const [bannerOff, setBannerOff] = useState(false)
+  const [whyOpen, setWhyOpen] = useState(false)
   const [noRate, setNoRate] = useState(null)
   // Aportes marcados en moyiq este mes (no dependen de Inversiones): si están
   // en otra moneda, Hoy necesita la tasa aunque no haya posiciones.
@@ -673,7 +692,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
   const footer = (
     <div className={s.footer}>
       {demo && !pricesSample && !stripSample && <p className={s.muted}>{t('invest.demo.live')}</p>}
-      {fake && pricesSample && <p className={s.muted}>{t('invest.chart.sample')}</p>}
+      {/* "Datos de ejemplo" va una sola vez, arriba (Freshness): no se repite al pie. */}
       <div className={s.links}>
         <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer">{t('invest.card.sourcesLink')}</a>
         {!pricesSample && hasCrypto && <a href="https://www.coingecko.com/en/api" target="_blank" rel="noopener noreferrer">Powered by CoinGecko API</a>}
@@ -699,6 +718,19 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
     )
   }
 
+  // ── Cabecera: efectivo sin invertir y de dónde viene la ganancia ──
+  const cashFree = B?.usesCash ? B.cash : dep?.cash || 0
+  const splitCash = () => {
+    if (cashFree > 0.5) goAporte(Math.round(cashFree * 100) / 100)
+    else if (initialAporte) goAporte(initialAporte)
+    else onTab('planificar')
+  }
+  const whyText = dep ? t(dep.gain < -0.005 ? 'invest.hoy.band.whyLoss' : 'invest.hoy.band.why') : null
+  const contribLine = dep && dep.basis !== 'deposits' && B?.usesCash && B.contributed > 0.005
+    ? t('invest.hoy.band.contrib', { v: money(B.contributed), pct: B.returnPct == null ? '—' : fmtPct(B.returnPct, { signed: true }) })
+    : null
+  const links = <BandLinks cash={cashFree} money={money} onSplit={splitCash} why={whyText} whyOpen={whyOpen} onWhy={() => setWhyOpen(o => !o)} whyId="hoy-why" />
+
   return (
     <div className={s.hoy}>
       {sample && (
@@ -707,23 +739,37 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
           <button type="button" className={s.btn} onClick={() => setSample(false)}>{t('invest.hoy.sample.exit')}</button>
         </div>
       )}
+      {/* 1. Valor: la cabecera morada con sus dos enlaces. */}
       {dep
-        ? <DepositGain dep={dep} sub={bandSub} money={money} costRes={costRes} onRegister={() => intent('deposit')} />
+        ? (
+          <DepositGain dep={dep} sub={bandSub} money={money} costRes={costRes} onRegister={() => intent('deposit')} compact>
+            {contribLine && <p className={s.bandSub}><Money>{contribLine}</Money></p>}
+            {links}
+          </DepositGain>
+        )
         : <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} />}
-      {dep && <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} detailsOnly />}
-      {/* Tus reglas hoy (26-nov-2026): justo debajo de la primera lectura (Depositado frente a ganancia). */}
-      <TusReglasHoy items={oppItems} spyRows={spy} vix={vix} demo={demo} sample={fake || histSample} onSee={() => goOpp(false)} onRetry={d.retryHistory} />
+      {dep && (
+        <div id="hoy-why" className={s.why} hidden={!whyOpen}>
+          <p className={s.muted}>{t(putExplainKey(dep))}</p>
+          <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} detailsOnly />
+        </div>
+      )}
+      <CashNotes B={B?.usesCash ? B : null} />
+      {!dep && <ValueBand T={T} local={local} money={money} priced={T.priced > 0} showResult={shows(view, 'unrealized') || !put} links={links} />}
       <Freshness sample={pricesSample} fresh={fresh} hasCrypto={hasCrypto} hasStocks={hasStocks} />
-      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} onTab={onTab} />}
       {banner}
 
-      <div className={s.top}>
-        {/* En la esencial, PutSummary ya dice el resultado ("Ganancia" o "Pérdida"): no se repite con otro nombre. */}
-        {!dep && <ValueBand T={T} local={local} money={money} priced={T.priced > 0} showResult={shows(view, 'unrealized') || !put} />}
-        {shows(view, 'stop') && <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />}
-        {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}
-      </div>
+      {/* 2. Tus posiciones. */}
+      <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')}
+        sparks={Object.keys(topSparks).length ? topSparks : null} rangeName={t(`invest.hoy.pvh.rangeName.${range}`)} />
+      {(shows(view, 'stop') || shows(view, 'review')) && (
+        <div className={s.top}>
+          {shows(view, 'stop') && <RiskCard rs={rs} limit={limit} real={realStops} money={money} onTab={onTab} />}
+          {shows(view, 'review') && <ReviewCard review={review} onOpen={openReview} onRetry={d.retryHistory} labelOf={(x) => ownTicker.get(x) || x} />}
+        </div>
+      )}
 
+      {/* 3. Valor en el tiempo. */}
       <ValueChart points={chart.pts} index={chart.index} invested={chart.invested} range={range} cmp={cmp} cmpOptions={cmpOptions}
         onRange={pickRange} onCmp={pickCmp} state={chart.state} notes={chartNotes} money={money} money0={money0}
         onRetry={chart.state === 'error' || chart.state === 'short' ? d.retryHistory : null} />
@@ -736,11 +782,16 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
       {Math.abs(T.fxEffect) >= 0.5 && <p className={s.note} role="note"><Money>{t('invest.hoy.fx.effect', { v: money(T.fxEffect, true) })}</Money></p>}
       {T.fxUnknown > 0 && <p className={s.note} role="note">{t(T.fxUnknown === 1 ? 'invest.hoy.fx.unknownOne' : 'invest.hoy.fx.unknownMany', { n: T.fxUnknown })}</p>}
 
-      <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')}
-        sparks={Object.keys(topSparks).length ? topSparks : null} rangeName={t(`invest.hoy.pvh.rangeName.${range}`)} />
-      <OppTeaser compact items={oppItems} free={oppFree} money={money} onSee={() => goOpp(false)} onSplit={() => goOpp(true)} />
-      {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
-      <AporteForm initial={initialAporte} hasMoyiq={!!aUsd} onDone={goAporte} />
+      {/* 4. Tus reglas hoy, en una línea (el detalle se despliega). */}
+      <TusReglasHoy items={oppItems} spyRows={spy} vix={vix} demo={demo} sample={fake || histSample} onSee={() => goOpp(false)} onRetry={d.retryHistory}
+        split={oppItems.length ? (
+          <button type="button" className={s.link} onClick={() => goOpp(true)}>
+            <Money>{oppFree > 0 ? t('invest.hoy.opp.split', { v: money(oppFree) }) : t('invest.hoy.opp.splitAny')}</Money><ChevronRight size={14} aria-hidden="true" />
+          </button>
+        ) : null} />
+
+      {/* 5. Mercado: la cinta (Vista completa) y el contexto. */}
+      {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} onTab={onTab} />}
       <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} sample={ctxSample} />
       {footer}
     </div>

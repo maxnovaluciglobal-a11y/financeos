@@ -88,8 +88,41 @@ describe('<Hoy> en la vista esencial (por defecto)', () => {
     expect(out.split('Valor de tu portafolio')).toHaveLength(2)
     expect(out).not.toMatch(/Pusiste|El mercado (sumó|restó)/)
     for (const k of ['Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Riesgo al stop', 'Resultado sobre el costo']) expect(out, k).not.toContain(k)
-    // Lo demás sigue: gráfico de valor, posiciones, efectivo.
-    for (const k of ['Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes']) expect(out, k).toContain(k)
+    // Lo demás sigue: gráfico de valor y posiciones; el efectivo, en la cabecera.
+    for (const k of ['Valor en el tiempo', 'Tus posiciones', 'US$1.062,00 sin invertir']) expect(out, k).toContain(k)
+  })
+  it('orden de Resumen (propuesta 4): valor, tus posiciones, valor en el tiempo, tus reglas, mercado y pie', () => {
+    const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
+    const order = ['Valor de tu portafolio', 'sin invertir', '¿De dónde viene la ganancia?', 'Tus posiciones', 'Valor en el tiempo', 'Tus reglas hoy', 'Ver mercado', 'Fuentes y licencias']
+    let at = -1
+    for (const k of order) {
+      const i = out.indexOf(k)
+      expect(i, k).toBeGreaterThan(at)
+      at = i
+    }
+    // Salen las tarjetas repetidas: sus datos y accesos quedan en la cabecera y en "Tus reglas hoy".
+    for (const k of ['Efectivo y aportes', '¿Cuánto puedes aportar este mes?']) expect(out, k).not.toContain(k)
+    expect(out).not.toMatch(/<h2[^>]*>Tus tramos</)
+    // El pie no repite "Datos de ejemplo" (queda el indicador de arriba y la nota del gráfico).
+    expect(out.split('Datos de ejemplo: no son precios reales.').length - 1).toBeLessThanOrEqual(1)
+  })
+  it('la cabecera trae "sin invertir · Repartir" y "¿De dónde viene la ganancia?" plegado, con el detalle debajo', () => {
+    const html = render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial')
+    expect(html).toMatch(/aria-label="Repartir US\$1\.062,00 en Planificar › Aportes"/)
+    expect(html).toMatch(/aria-expanded="false" aria-controls="hoy-why"[^>]*>¿De dónde viene la ganancia\?/)
+    expect(html).toMatch(/id="hoy-why"[^>]*hidden=""/)
+    // El detalle (antes una tarjeta aparte) sigue en la página, plegado.
+    const why = html.slice(html.indexOf('id="hoy-why"'))
+    expect(text(why)).toContain('tus depósitos menos tus retiros')
+    expect(text(why)).toContain('Precio')
+    expect(text(why)).toContain('Dividendos')
+    // Los dos párrafos largos ya no van dentro de la banda.
+    expect(text(html)).not.toContain('El valor incluye US$1.062,00 de efectivo sin invertir.')
+  })
+  it('con pérdida, el enlace pregunta de dónde viene la pérdida', () => {
+    const q = demo.demoQuotes()
+    const low = Object.fromEntries(Object.entries(q).map(([k, v]) => [k, { ...v, price: v.price * 0.5 }]))
+    expect(text(render(sampleData({ quotes: low }), { currency: 'USD', language: 'es' }, 'esencial'))).toContain('¿De dónde viene la pérdida?')
   })
   it('con el libro de ejemplo, Depositado es lo aportado (12.000, igual que Portafolio) y la ganancia es valor − aportado', () => {
     const out = text(render(sampleData(), { currency: 'USD', language: 'es' }, 'esencial'))
@@ -119,9 +152,9 @@ describe('<Hoy> en la vista esencial (por defecto)', () => {
 })
 
 describe('<Hoy>', () => {
-  it('arma la pantalla completa en el orden de Invest, rotulada como ejemplo', () => {
+  it('arma la pantalla completa en el orden de la propuesta 4, rotulada como ejemplo', () => {
     const out = text(render(sampleData()))
-    const order = ['Depositado frente a ganancia', 'Valor de tu portafolio', 'Datos de ejemplo', 'Dow 30', 'Tu riesgo hoy', 'Para revisar hoy', 'Valor en el tiempo', 'Tus posiciones', 'Efectivo y aportes', '¿Cuánto puedes aportar este mes?', 'Ver mercado']
+    const order = ['Depositado frente a ganancia', 'Valor de tu portafolio', 'Datos de ejemplo', 'Tus posiciones', 'Tu riesgo hoy', 'Para revisar hoy', 'Valor en el tiempo', 'Tus reglas hoy', 'Dow 30', 'Ver mercado']
     let at = -1
     for (const k of order) {
       const i = out.indexOf(k)

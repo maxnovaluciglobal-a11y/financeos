@@ -38,6 +38,8 @@ export default {
   'rul.noneMany': '{n} Werte ohne Auswertung der Durchschnitte: Sie zählen nicht mit.',
   'rul.sample': 'Beispielverläufe: Die Live-Quelle hat nicht geantwortet.',
   'rul.see': 'Ihre Tranchen ansehen',
+  'rul.more': 'Details anzeigen',
+  'rul.less': 'Details ausblenden',
   'rul.edit': 'Ihre Regel unter Ihre Tranchen ändern',
 
   'rul.mkt.both': 'Markt: {spy}; {vix}.',

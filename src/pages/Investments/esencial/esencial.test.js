@@ -106,4 +106,13 @@ describe('<PutSummary>, interruptor y aviso', () => {
     expect(text(renderToStaticMarkup(h(ViewToggle, { view: 'completa', onChange: () => {} })))).toContain('Encendida')
     expect(renderToStaticMarkup(h(EduNotice))).toMatch(/role="note"[^>]*>.*Información educativa, no es recomendación de inversión\./)
   })
+  it('compacto (encabezado de Inversiones): sin el párrafo visible; la explicación queda en aria-describedby y title', () => {
+    const html = renderToStaticMarkup(h(ViewToggle, { view: 'esencial', onChange: () => {}, compact: true }))
+    expect(html).not.toContain('<p ')
+    const id = html.match(/aria-describedby="([^"]+)"/)[1]
+    expect(html).toMatch(new RegExp(`<span id="${id.replace(/[:]/g, '\\$&')}" class="sr-only">Suma velas`))
+    expect(html).toMatch(/title="Suma velas/)
+    // Sin compact, igual que antes (la ficha del activo).
+    expect(renderToStaticMarkup(h(ViewToggle, { view: 'esencial', onChange: () => {} }))).toMatch(/<p id="[^"]+" class="[^"]*">Suma velas/)
+  })
 })

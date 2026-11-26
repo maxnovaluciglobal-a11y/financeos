@@ -69,17 +69,24 @@
   font: inherit; font-size: var(--t-subhead); font-weight: 600; cursor: pointer; align-self: flex-start;
 }
 
-/* ── Fila de vista y Ayuda (F7) ──
-   El interruptor y "Ayuda" en la misma fila; la explicación del interruptor
-   (el <p> de ViewToggle) debajo, a todo el ancho. */
-.toolRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; }
-.toolRow > :first-child { display: contents; }
-.toolRow > :first-child > button { grid-column: 1; grid-row: 1; justify-self: start; }
-.toolRow > :first-child > p { grid-column: 1 / -1; grid-row: 2; }
-.helpBtn {
-  grid-column: 2; grid-row: 1;
-  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px;
-  border: 0; border-radius: var(--r-pill, 999px); background: var(--fill); color: var(--tx); font: inherit;
-  font-size: var(--t-subhead); font-weight: 600; cursor: pointer;
+/* ── Encabezado de una fila (26-nov-2026) ──
+   El interruptor "Vista completa" a la izquierda y la lupa (44 px, redonda) a
+   la derecha. La explicación del interruptor no se ve: va en aria-describedby
+   y en la ayuda de Inversiones. */
+.toolRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toolRow > :first-child { min-width: 0; }
+.searchBtn {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 50%; background: var(--fill); color: var(--tx); cursor: pointer;
 }
-.helpBtn:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+.searchBtn[aria-expanded="true"] { background: var(--seg-on, var(--sur)); box-shadow: var(--seg-on-sh, none); }
+.searchBtn:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }
+
+/* ── Pie común: aviso educativo y ayuda de Inversiones ── */
+.foot { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.helpLink {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; background: none;
+  color: var(--tx); font: inherit; font-size: var(--t-footnote); font-weight: 600; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.helpLink:focus-visible { outline: 2px solid var(--focus, var(--tx)); outline-offset: 2px; }

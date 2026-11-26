@@ -356,6 +356,31 @@ describe('TusReglasHoy: estructura y accesibilidad', () => {
     expect(partial).toContain('1 activo sin lectura de medias')
     expect(partial).toContain('Se cumplen')
   })
+  it('abre en una línea (cuenta + "Ver tus tramos") y el detalle se despliega sin perder nada', () => {
+    const html = render({ items: [{ t: 'AAPL', rows: rowsOf(withLast(250, 100, 90)) }], spyRows: rowsOf(withLast(250, 100, 120)), vix: 18 })
+    // La cuenta y "Ver tus tramos" quedan a la vista, antes del detalle.
+    const detailAt = html.indexOf('hidden=""')
+    expect(detailAt).toBeGreaterThan(0)
+    expect(html.search(/Se cumple[n]? \d+ de \d+ tramos/)).toBeLessThan(detailAt)
+    expect(html.indexOf('>Ver tus tramos<')).toBeLessThan(detailAt)
+    // El botón dice si está desplegado y qué controla.
+    const btn = html.match(/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^>]*>Ver el detalle/)
+    expect(btn).not.toBeNull()
+    expect(html).toMatch(new RegExp(`id="${btn[1].replace(/[:]/g, '\\$&')}"[^>]*hidden=""`))
+    // Lista, avisos de tu regla y aviso educativo siguen en el detalle (plegado).
+    const detail = html.slice(detailAt)
+    expect(detail).toContain('aria-label="Tus activos frente a tu regla"')
+    expect(detail).toContain(es['rul.al.title'])
+    expect(detail).toContain('no es una recomendación de inversión')
+    // Desplegado de entrada (defaultOpen), sin hidden y con "Ocultar el detalle".
+    const open = render({ items: [{ t: 'AAPL', rows: rowsOf(withLast(250, 100, 90)) }], defaultOpen: true })
+    expect(open).toMatch(/aria-expanded="true"[^>]*>Ocultar el detalle/)
+    expect(open).not.toContain('hidden=""')
+  })
+  it('el acceso "Repartir" (split) va dentro del detalle', () => {
+    const html = render({ items: [{ t: 'AAPL', rows: rowsOf(flat(250)) }], split: createElement('button', { type: 'button' }, 'Repartir tus US$9.000 sin invertir') })
+    expect(html.indexOf('Repartir tus US$9.000 sin invertir')).toBeGreaterThan(html.indexOf('hidden=""'))
+  })
   it('sin licencia: dice por qué el aviso queda solo en la app', () => {
     const html = render({ items: [{ t: 'A', rows: rowsOf(flat(250)) }], pushState: 'noLicense' })
     expect(html).toContain(es['rul.al.ch.noLicense'])

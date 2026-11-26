@@ -8,8 +8,14 @@
 // frente a sus medias de 50 y 200 días, VIX con la zona de Mercado) y los
 // avisos de regla (ruleAlerts.js). Usa las historias de 1 año que Resumen ya
 // pidió: sin pedidos nuevos.
-import { useEffect, useMemo, useState } from 'react'
-import { Bell, ChevronRight, Circle, CircleCheck, CircleDashed, CircleDot, Info, X } from 'lucide-react'
+// Desde el 26-nov-2026 (propuesta 4 del flujo de Inversiones) la tarjeta es de
+// una línea: la cuenta de tramos y "Ver tus tramos". "Ver el detalle" despliega
+// todo lo demás (tu regla, la lista por activo, el mercado, los avisos de tu
+// regla y el aviso educativo): nada se pierde. Los avisos de regla que llegan
+// (notices) se ven siempre, aun plegada. `split` (opcional) agrega el acceso
+// "Repartir tus US$… sin invertir" dentro del detalle.
+import { useEffect, useId, useMemo, useState } from 'react'
+import { Bell, ChevronDown, ChevronRight, Circle, CircleCheck, CircleDashed, CircleDot, Info, X } from 'lucide-react'
 import { fmtDayMonth, fmtDecimal, fmtPct } from '../../../utils/index.js'
 import { vixLevel } from '../../../utils/investHoy.js'
 import { isNativeApp } from '../../../native/platform.js'
@@ -71,8 +77,10 @@ function marketLine(m, t) {
  * demo / sample: las preferencias de aviso quedan en memoria y no hay
  * notificación del sistema. rule: { ladder, rsiRule } (por defecto, la de Tus tramos).
  */
-export default function TusReglasHoy({ items = [], spyRows, vix = null, demo = false, sample = false, rule = null, onSee, onRetry, pushState = null, native = null, store = null, now = null }) {
+export default function TusReglasHoy({ items = [], spyRows, vix = null, demo = false, sample = false, rule = null, onSee, onRetry, pushState = null, native = null, store = null, now = null, split = null, defaultOpen = false }) {
   const { t, ready } = useReglasT()
+  const detailId = useId()
+  const [open, setOpen] = useState(defaultOpen)
   const { ladder, rsiRule } = useMemo(() => rule || readRule(), [rule])
   const sum = useMemo(() => summarizeRules(items, { ladder, rsiRule }), [items, ladder, rsiRule])
   const mkt = useMemo(() => marketFacts(spyRows || null, vix, vixZoneOf), [spyRows, vix])
@@ -137,63 +145,69 @@ export default function TusReglasHoy({ items = [], spyRows, vix = null, demo = f
       )}
 
       <div aria-live="polite">{body}</div>
-      {owned > 0 && <p className={s.muted}>{t('rul.rule', { lad: t(`rul.lad.${ladder}`), rsi: t(rsiRule ? 'rul.rsiOn' : 'rul.rsiOff') })}</p>}
 
-      {owned > 0 && (sum.read > 0 || sum.loading > 0) && (
-        <ul className={s.list} aria-label={t('rul.list')}>
-          {sum.rows.map(r => {
-            const label = t(`rul.st.${r.state}`)
-            const fact = factText(r, t)
-            return (
-              <li key={r.t} className={s.item}>
-                <button type="button" className={s.row} onClick={onSee} aria-label={t('rul.row.aria', { t: r.label, state: label, fact })}>
-                  <span className={s.tk}>{r.label}</span>
-                  <span className={s.fact}>{fact}</span>
-                  <StatePill state={r.state} label={label} />
-                  <ChevronRight size={16} className={s.chev} aria-hidden="true" />
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-      {sum.none > 0 && sum.read > 0 && <p className={s.muted}>{t(sum.none === 1 ? 'rul.noneOne' : 'rul.noneMany', { n: sum.none })}</p>}
-      {sample && sum.read > 0 && <p className={s.muted}>{t('rul.sample')}</p>}
+      <div className={s.links}>
+        {owned > 0 && onSee && <button type="button" className={s.link} onClick={onSee}>{t('rul.see')}<ChevronRight size={14} aria-hidden="true" /></button>}
+        <button type="button" className={s.link} aria-expanded={open} aria-controls={detailId} onClick={() => setOpen(o => !o)}>
+          {t(open ? 'rul.less' : 'rul.more')}<ChevronDown size={14} className={s.sumChev} data-open={open || undefined} aria-hidden="true" />
+        </button>
+      </div>
 
-      {owned > 0 && onSee && (
-        <div className={s.links}>
-          <button type="button" className={s.link} onClick={onSee}>{t('rul.see')}<ChevronRight size={14} aria-hidden="true" /></button>
-        </div>
-      )}
+      <div id={detailId} className={s.detail} hidden={!open}>
+        {owned > 0 && <p className={s.muted}>{t('rul.rule', { lad: t(`rul.lad.${ladder}`), rsi: t(rsiRule ? 'rul.rsiOn' : 'rul.rsiOff') })}</p>}
 
-      <p className={s.market}>{marketLine(mkt, t)} <span className={s.muted}>{t('rul.mkt.note')}</span></p>
+        {owned > 0 && (sum.read > 0 || sum.loading > 0) && (
+          <ul className={s.list} aria-label={t('rul.list')}>
+            {sum.rows.map(r => {
+              const label = t(`rul.st.${r.state}`)
+              const fact = factText(r, t)
+              return (
+                <li key={r.t} className={s.item}>
+                  <button type="button" className={s.row} onClick={onSee} aria-label={t('rul.row.aria', { t: r.label, state: label, fact })}>
+                    <span className={s.tk}>{r.label}</span>
+                    <span className={s.fact}>{fact}</span>
+                    <StatePill state={r.state} label={label} />
+                    <ChevronRight size={16} className={s.chev} aria-hidden="true" />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {sum.none > 0 && sum.read > 0 && <p className={s.muted}>{t(sum.none === 1 ? 'rul.noneOne' : 'rul.noneMany', { n: sum.none })}</p>}
+        {sample && sum.read > 0 && <p className={s.muted}>{t('rul.sample')}</p>}
 
-      {owned > 0 && (
-        <div className={s.alerts} role="group" aria-labelledby="hoy-rules-al">
-          <h3 id="hoy-rules-al" className={s.subTitle}>{t('rul.al.title')}</h3>
-          <label className={s.check}>
-            <input type="checkbox" checked={prefs.all} onChange={e => setPrefs(setAll(prefs, e.target.checked))} aria-describedby="hoy-rules-al-help" />
-            <span>{t('rul.al.all')}</span>
-          </label>
-          <p id="hoy-rules-al-help" className={s.muted}>{t('rul.al.allHelp')}</p>
-          <details className={s.pick}>
-            <summary className={s.link}>{t('rul.al.pick')}<ChevronRight size={14} className={s.sumChev} aria-hidden="true" /></summary>
-            <fieldset className={s.fieldset}>
-              <legend className={s.muted}>{t('rul.al.pickLegend')}</legend>
-              {sum.rows.map(r => (
-                <label key={r.t} className={s.check}>
-                  <input type="checkbox" checked={wantsAlert(prefs, r.t)} disabled={prefs.all}
-                    onChange={e => setPrefs(toggleAsset(prefs, r.t, e.target.checked))} aria-label={t('rul.al.asset', { t: r.label })} />
-                  <span>{r.label}</span>
-                </label>
-              ))}
-            </fieldset>
-          </details>
-          <p className={s.muted}>{t('rul.al.how')} {t(`rul.al.ch.${chKey}`)} {t('rul.al.closed')}</p>
-        </div>
-      )}
+        {split && <div className={s.links}>{split}</div>}
 
-      <p className={s.edu} role="note"><Info size={14} strokeWidth={2} aria-hidden="true" />{t('rul.edu')}</p>
+        <p className={s.market}>{marketLine(mkt, t)} <span className={s.muted}>{t('rul.mkt.note')}</span></p>
+
+        {owned > 0 && (
+          <div className={s.alerts} role="group" aria-labelledby="hoy-rules-al">
+            <h3 id="hoy-rules-al" className={s.subTitle}>{t('rul.al.title')}</h3>
+            <label className={s.check}>
+              <input type="checkbox" checked={prefs.all} onChange={e => setPrefs(setAll(prefs, e.target.checked))} aria-describedby="hoy-rules-al-help" />
+              <span>{t('rul.al.all')}</span>
+            </label>
+            <p id="hoy-rules-al-help" className={s.muted}>{t('rul.al.allHelp')}</p>
+            <details className={s.pick}>
+              <summary className={s.link}>{t('rul.al.pick')}<ChevronRight size={14} className={s.sumChev} aria-hidden="true" /></summary>
+              <fieldset className={s.fieldset}>
+                <legend className={s.muted}>{t('rul.al.pickLegend')}</legend>
+                {sum.rows.map(r => (
+                  <label key={r.t} className={s.check}>
+                    <input type="checkbox" checked={wantsAlert(prefs, r.t)} disabled={prefs.all}
+                      onChange={e => setPrefs(toggleAsset(prefs, r.t, e.target.checked))} aria-label={t('rul.al.asset', { t: r.label })} />
+                    <span>{r.label}</span>
+                  </label>
+                ))}
+              </fieldset>
+            </details>
+            <p className={s.muted}>{t('rul.al.how')} {t(`rul.al.ch.${chKey}`)} {t('rul.al.closed')}</p>
+          </div>
+        )}
+
+        <p className={s.edu} role="note"><Info size={14} strokeWidth={2} aria-hidden="true" />{t('rul.edu')}</p>
+      </div>
     </section>
   )
 }

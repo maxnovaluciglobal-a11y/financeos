@@ -4,6 +4,10 @@
 // siempre con qué se compara (utils/investDeposit.js): si no hay depósitos
 // registrados, lo dice y ofrece registrarlos en Portafolio › Movimientos.
 // Reemplaza a la banda de valor en Resumen (con la variación de hoy adentro).
+// `compact` (26-nov-2026, propuesta 4): sin los dos párrafos de abajo; la
+// explicación de "Depositado" va en el detalle "¿De dónde viene la ganancia?"
+// (Hoy.jsx, con putExplainKey) y el efectivo sin invertir en los enlaces que
+// Hoy pasa como `children`, al pie de la banda.
 import { ArrowDown, ArrowUp, Equal, Info } from 'lucide-react'
 import Money from '../../../components/Money.jsx'
 import { useT } from '../../../i18n/useT.js'
@@ -17,16 +21,20 @@ function Arrow({ n }) {
   return <Ic size={12} strokeWidth={2.4} aria-hidden="true" />
 }
 
+const putKeyOf = (dep) => (dep.basis === 'deposits' ? 'deposited' : dep.basis === 'purchases' ? 'paid' : 'cost')
+/** Clave del texto que explica con qué se compara ("Depositado: tus depósitos…"). */
+export const putExplainKey = (dep) => `invest.dep.${putKeyOf(dep)}Sub`
+
 // dep: depositGain(); sub: equivalente en la moneda de la persona o "precios
 // cargando"; costRes: costResult() en la Vista completa (o null).
-export default function DepositGain({ dep, sub, money, costRes = null, onRegister = null }) {
+export default function DepositGain({ dep, sub, money, costRes = null, onRegister = null, compact = false, children = null }) {
   const { t } = useT()
   if (!dep) return null
   const lost = dep.gain < -0.005
-  const putKey = dep.basis === 'deposits' ? 'deposited' : dep.basis === 'purchases' ? 'paid' : 'cost'
+  const putKey = putKeyOf(dep)
   const pctKey = dep.basis === 'deposits' ? 'invest.dep.gainSub' : 'invest.dep.gainSubCost'
   const notes = []
-  if (dep.basis !== 'cost' && dep.cash > 0.5) notes.push(t('invest.dep.cashIn', { v: money(dep.cash) }))
+  if (!compact && dep.basis !== 'cost' && dep.cash > 0.5) notes.push(t('invest.dep.cashIn', { v: money(dep.cash) }))
   if (dep.atCost > 0) notes.push(t(dep.atCost === 1 ? 'invest.dep.atCostOne' : 'invest.dep.atCostMany', { n: dep.atCost }))
   if (dep.partial) notes.push(t('invest.dep.partial'))
   return (
@@ -62,7 +70,7 @@ export default function DepositGain({ dep, sub, money, costRes = null, onRegiste
           </div>
         )}
       </dl>
-      <p className={s.bandSub}>{t(`invest.dep.${putKey}Sub`)}</p>
+      {!compact && <p className={s.bandSub}>{t(putExplainKey(dep))}</p>}
       {notes.map((n, i) => <p key={i} className={s.bandSub}><Money>{n}</Money></p>)}
       {dep.hint && (
         <div className={s.depHint} role="note">
@@ -73,6 +81,7 @@ export default function DepositGain({ dep, sub, money, costRes = null, onRegiste
           )}
         </div>
       )}
+      {children}
     </section>
   )
 }

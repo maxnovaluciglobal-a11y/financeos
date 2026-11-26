@@ -43,6 +43,8 @@ export default {
   'rul.noneMany': '{n} activos sin lectura de medias: no entran en la cuenta.',
   'rul.sample': 'Historias de ejemplo: la fuente en vivo no respondió.',
   'rul.see': 'Ver tus tramos',
+  'rul.more': 'Ver el detalle',
+  'rul.less': 'Ocultar el detalle',
   'rul.edit': 'Cambiar tu regla en Tus tramos',
 
   'rul.mkt.both': 'En el mercado: {spy}; {vix}.',

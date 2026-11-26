@@ -4,6 +4,9 @@
 // más los tickers conocidos de tickerSearch.js. Vista previa del precio con
 // /api/quote (investApi, caché en memoria). En el demo, la misma cotización
 // real (demo/demoMarketApi.js); si solo hay la de ejemplo, no se muestra.
+// En el encabezado de Inversiones (26-nov-2026) se despliega desde la lupa:
+// `focusOnMount` pone el foco en el campo y Esc con el campo vacío llama a
+// `onClose` (InvestHub devuelve el foco a la lupa).
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import { useT } from '../../../i18n/useT.js'
@@ -22,7 +25,7 @@ export function priceText(q) {
   return `${ccy === 'USD' ? 'US$' : `${ccy} `}${fmtAmount(q.price, decimalsFor(ccy))}`
 }
 
-export default function TickerSearch({ onOpen, demo = false, demoTickers = [] }) {
+export default function TickerSearch({ onOpen, demo = false, demoTickers = [], focusOnMount = false, onClose = null, hideLabel = false }) {
   const { t } = useT()
   const { m } = useMoney()
   const id = useId()
@@ -33,6 +36,8 @@ export default function TickerSearch({ onOpen, demo = false, demoTickers = [] })
   const [mine, setMine] = useState({ portfolio: [], watch: [] })
   const [preview, setPreview] = useState(null) // { t, phase: 'loading'|'ok'|'none'|'demo'|'offline', q }
   const loaded = useRef(false)
+  const inputRef = useRef(null)
+  useEffect(() => { if (focusOnMount) inputRef.current?.focus() }, [focusOnMount])
 
   function loadMine() {
     if (loaded.current) return
@@ -81,7 +86,7 @@ export default function TickerSearch({ onOpen, demo = false, demoTickers = [] })
       if (active >= 0 && results[active]) choose(results[active].t)
       else if (SEARCH_TICKER_RE.test(typed)) choose(typed)
     } else if (e.key === 'Escape') {
-      if (query) { setQuery(''); setActive(-1) } else setOpen(false)
+      if (query) { setQuery(''); setActive(-1) } else { setOpen(false); onClose?.() }
     }
   }
 
@@ -100,11 +105,11 @@ export default function TickerSearch({ onOpen, demo = false, demoTickers = [] })
   const showList = open && results.length > 0
   return (
     <div className={s.search}>
-      <label htmlFor={`${id}-input`} className={s.searchLabel}>{t('invest.search.label')}</label>
+      <label htmlFor={`${id}-input`} className={hideLabel ? 'sr-only' : s.searchLabel}>{t('invest.search.label')}</label>
       <div className={s.searchField}>
         <Search size={18} strokeWidth={2} aria-hidden="true" className={s.searchIcon} />
         <input
-          id={`${id}-input`} className={s.searchInput} type="text" role="combobox" autoComplete="off" autoCapitalize="characters" spellCheck={false}
+          ref={inputRef} id={`${id}-input`} className={s.searchInput} type="text" role="combobox" autoComplete="off" autoCapitalize="characters" spellCheck={false}
           aria-autocomplete="list" aria-expanded={showList} aria-controls={listId}
           aria-activedescendant={showList && active >= 0 ? `${id}-opt-${active}` : undefined}
           aria-invalid={invalid || undefined} aria-describedby={`${id}-note`}

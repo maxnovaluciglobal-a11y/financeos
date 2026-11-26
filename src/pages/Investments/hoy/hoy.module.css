@@ -217,3 +217,21 @@
 /* Minigráfico de cada posición, en el período del gráfico de valor. */
 .topHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
 .topSpark { display: inline-flex; align-items: center; gap: 6px; flex: none; font-size: var(--t-footnote); font-variant-numeric: tabular-nums; }
+
+/* ── Enlaces de la cabecera y detalle de la ganancia (26-nov-2026) ── */
+.bandLinks { display: flex; flex-direction: column; align-items: flex-start; margin-top: 8px; padding-top: 6px; border-top: 0.5px solid var(--on-grad-track); }
+.bandLine {
+  display: flex; flex-wrap: wrap; align-items: center; margin: 0; min-height: 44px;
+  font-size: var(--t-footnote); color: var(--on-grad-text-2); font-variant-numeric: tabular-nums;
+}
+.bandBtn {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 2px; border: 0; background: none;
+  color: var(--on-grad-text); font: inherit; font-size: var(--t-footnote); font-weight: 600; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.bandBtn:focus-visible { outline: 2px solid var(--on-grad-text); outline-offset: 2px; border-radius: 6px; }
+.bandChev { transition: transform .15s ease; }
+.bandChev[data-open] { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .bandChev { transition: none; } }
+.why { display: flex; flex-direction: column; gap: 8px; }
+.why[hidden] { display: none; }

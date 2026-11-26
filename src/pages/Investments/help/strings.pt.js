@@ -11,7 +11,7 @@ export default {
   'hlp.q.views': 'O que muda entre a visão essencial e a completa?',
   'hlp.a.views': 'A visão essencial mostra o básico, com uma linha simples de preço. A visão completa acrescenta velas, indicadores (médias, RSI, MACD e bandas de Bollinger), o stop e a faixa de mercado.\n\nMude com o botão "Visão completa", abaixo das abas. Trocar de visão não apaga nada.',
   'hlp.q.asset': 'Como abro a página de um ativo?',
-  'hlp.a.asset': 'Digite o símbolo na busca, abaixo das abas, ou toque em um símbolo em qualquer lista. A página mostra o preço, o gráfico, os indicadores, os dados da empresa, sua posição se você tiver uma e notícias. Dali você pode seguir o ativo, criar um alerta ou registrar uma operação.',
+  'hlp.a.asset': 'Toque na lupa, abaixo das abas, e digite o símbolo, ou toque em um símbolo em qualquer lista. A página mostra o preço, o gráfico, os indicadores, os dados da empresa, sua posição se você tiver uma e notícias. Dali você pode seguir o ativo, criar um alerta ou registrar uma operação.',
 
   'hlp.g.data': 'Dados e indicadores',
   'hlp.q.fresh': 'Quão atualizados estão os preços?',
