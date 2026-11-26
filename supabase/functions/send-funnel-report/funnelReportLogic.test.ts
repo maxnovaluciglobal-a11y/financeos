@@ -52,7 +52,7 @@ describe("send-funnel-report (EST-9)", () => {
     expect(html.match(/Meta al 17-ene-2027/g)).toHaveLength(7);
     expect(html).toContain("+1 (+50 %)");
     expect(html).toContain("s/d");
-    expect(html).toContain("background:#3C2282");
+    expect(html).toContain("background-color:#3C2282;background-image:linear-gradient(74deg");
     expect(html).not.toMatch(/\bvos\b|tenés|podés|querés/);
     expect(renderReport(DATA, { preview: true }).subject.startsWith("[Vista previa]")).toBe(true);
   });

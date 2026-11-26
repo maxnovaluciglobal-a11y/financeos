@@ -87,7 +87,7 @@ describe('parte de texto plano en los 11 tipos de correo', () => {
       expect(r.text, r.name).not.toMatch(/&(amp|lt|gt|quot|nbsp);/)
       expect(r.text, r.name).not.toMatch(/MOY\sIQ/)
       // Todo enlace del cuerpo (salvo el del logo) aparece en el texto.
-      const body = r.html.split('<tr><td lang=')[1] ?? r.html
+      const body = r.html.split(/<td class="mq-body[^"]*" lang=/)[1] ?? r.html
       for (const href of body.matchAll(/href="(https?:[^"]+)"/g)) {
         expect(r.text, `${r.name} ${href[1]}`).toContain(href[1].replace(/&amp;/g, '&'))
       }

@@ -157,6 +157,14 @@ function escapeHtml(s: string): string {
 
 const FOOTER = "moyiq · MAXNOVA & LUCI Global LLC · support@moyiq.app";
 
+// Preheader (línea junto al asunto en la bandeja).
+const PREHEADER: Record<EmailLang, string> = {
+  es: "Un clic para confirmar. Si no fuiste tú, ignora este correo.",
+  en: "One click to confirm. If it wasn't you, ignore this email.",
+  pt: "Um clique para confirmar. Se não foi você, ignore este e-mail.",
+  de: "Ein Klick zur Bestätigung. Wenn Sie das nicht waren, ignorieren Sie diese E-Mail.",
+};
+
 export function renderOptinEmail(row: OptinRow, config: OptinConfig, source: OptinSource = "starter"): RenderedEmail {
   const lang = pickLang(row.lang);
   const c = COPY[lang];
@@ -177,6 +185,8 @@ ${emailButton(u, escapeHtml(c.button))}
 <p style="${EMAIL_MUTED_STYLE}">${escapeHtml(c.ignore)}</p>
 <p style="${EMAIL_MUTED_STYLE}">${escapeHtml(c.unsubscribe)}</p>`,
     footerHtml: escapeHtml(FOOTER),
+    preheader: PREHEADER[lang] ?? PREHEADER.es,
+    title: subject,
   });
   const text = [intro, "", c.cta, `${c.button}: ${url}`, "", c.ignore, c.unsubscribe, "", FOOTER].join("\n");
   return { subject, html, text };

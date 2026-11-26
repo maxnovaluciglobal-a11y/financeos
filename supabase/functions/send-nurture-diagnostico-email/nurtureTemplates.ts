@@ -35,6 +35,7 @@ export interface DiagnosticoCopyContext {
 
 export interface DiagnosticoCopy {
   subject: string;
+  preheader?: string; // línea junto al asunto en la bandeja; suma un dato, no repite
   body: string; // HTML interno, sin el wrapper ni el footer
 }
 
@@ -141,6 +142,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       const label = displayLabel("es", c.label, c.score);
       return {
         subject: "Tu diagnóstico completo (y el dato que se quedó afuera)",
+        preheader: "Tu puntaje y un paso concreto para esta semana, según tu resultado.",
         body: `
       <h2>Tu diagnóstico completo</h2>
       <p>Hola,</p>
@@ -157,6 +159,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     },
     day2: () => ({
       subject: "El presupuesto no falló. El método, sí.",
+      preheader: "Por qué los presupuestos a mano se abandonan antes de los 60 días.",
       body: `
       <h2>El problema no es cuánto ganas</h2>
       <p>Hola,</p>
@@ -170,6 +173,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day5: () => ({
       subject: "Starter o Pro: la diferencia en concreto",
+      preheader: "Qué incluye cada plan, con precios, sin testimonios inventados.",
       body: `
       <h2>Sin testimonios inventados</h2>
       <p>Hola,</p>
@@ -185,6 +189,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day12: (c) => ({
       subject: "Tu diagnóstico sigue guardado (no venció)",
+      preheader: "Si algo cambió en estos 12 días, vale la pena volver a correrlo.",
       body: `
     <h2>Tu diagnóstico sigue guardado</h2>
     <p>Hola,</p>
@@ -201,6 +206,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       const label = displayLabel("en", c.label, c.score);
       return {
         subject: "Your full diagnosis (and the figure that was left out)",
+        preheader: "Your score and one concrete step for this week, based on your result.",
         body: `
       <h2>Here is your full diagnosis</h2>
       <p>Hello,</p>
@@ -217,6 +223,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     },
     day2: () => ({
       subject: "The budget didn't fail. The method did.",
+      preheader: "Why hand-kept budgets get dropped before 60 days.",
       body: `
       <h2>The problem is not how much you earn</h2>
       <p>Hello,</p>
@@ -230,6 +237,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day5: () => ({
       subject: "Starter or Pro: the difference, plainly",
+      preheader: "What each plan includes, with prices, and no made-up testimonials.",
       body: `
       <h2>No made-up testimonials</h2>
       <p>Hello,</p>
@@ -244,6 +252,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day12: (c) => ({
       subject: "Your diagnosis is still saved (it didn't expire)",
+      preheader: "If something changed in these 12 days, it is worth running it again.",
       body: `
     <h2>Your diagnosis is still saved</h2>
     <p>Hello,</p>
@@ -260,6 +269,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       const label = displayLabel("pt", c.label, c.score);
       return {
         subject: "Seu diagnóstico completo (e o dado que ficou de fora)",
+        preheader: "Sua pontuação e um passo concreto para esta semana, de acordo com seu resultado.",
         body: `
       <h2>Aqui está seu diagnóstico completo</h2>
       <p>Olá,</p>
@@ -276,6 +286,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     },
     day2: () => ({
       subject: "O orçamento não falhou. O método, sim.",
+      preheader: "Por que os orçamentos feitos à mão são abandonados antes de 60 dias.",
       body: `
       <h2>O problema não é quanto você ganha</h2>
       <p>Olá,</p>
@@ -289,6 +300,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day5: () => ({
       subject: "Starter ou Pro: a diferença, sem rodeios",
+      preheader: "O que cada plano inclui, com preços, sem depoimentos inventados.",
       body: `
       <h2>Sem depoimentos inventados</h2>
       <p>Olá,</p>
@@ -303,6 +315,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day12: (c) => ({
       subject: "Seu diagnóstico continua salvo (não venceu)",
+      preheader: "Se algo mudou nestes 12 dias, vale a pena refazê-lo.",
       body: `
     <h2>Seu diagnóstico continua salvo</h2>
     <p>Olá,</p>
@@ -319,6 +332,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
       const label = displayLabel("de", c.label, c.score);
       return {
         subject: "Ihre vollständige Auswertung (und die Angabe, die gefehlt hat)",
+        preheader: "Ihre Punktzahl und ein konkreter Schritt für diese Woche, passend zu Ihrem Ergebnis.",
         body: `
       <h2>Hier ist Ihre vollständige Auswertung</h2>
       <p>Guten Tag,</p>
@@ -335,6 +349,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     },
     day2: () => ({
       subject: "Nicht das Budget hat versagt. Die Methode schon.",
+      preheader: "Warum von Hand geführte Budgets vor 60 Tagen aufgegeben werden.",
       body: `
       <h2>Das Problem ist nicht, wie viel Sie verdienen</h2>
       <p>Guten Tag,</p>
@@ -348,6 +363,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day5: () => ({
       subject: "Starter oder Pro: der Unterschied, ohne Umschweife",
+      preheader: "Was jeder Tarif enthält, mit Preisen, ohne erfundene Erfahrungsberichte.",
       body: `
       <h2>Keine erfundenen Erfahrungsberichte</h2>
       <p>Guten Tag,</p>
@@ -362,6 +378,7 @@ export const DIAGNOSTICO_TEMPLATES: Record<EmailLang, Record<DiagnosticoStep, Re
     }),
     day12: (c) => ({
       subject: "Ihre Auswertung ist noch gespeichert (sie ist nicht abgelaufen)",
+      preheader: "Wenn sich in diesen 12 Tagen etwas geändert hat, lohnt sich ein neuer Durchlauf.",
       body: `
     <h2>Ihre Auswertung ist noch gespeichert</h2>
     <p>Guten Tag,</p>

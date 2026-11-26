@@ -151,7 +151,7 @@ describe('renderEmail por idioma (user_metadata.lang)', () => {
     for (const lang of ['es', 'en', 'pt', 'de'] as const) {
       for (const type of ['recovery', 'signup', 'magiclink', 'email_change', 'invite'] as const) {
         const { subject, html } = renderEmail('moyiq', type, url, lang)
-        expect(subject + html).not.toMatch(/¡|!(?!doctype html>)/)
+        expect(subject + html).not.toMatch(/¡|!(?!doctype html>|important)/)
         if (lang === 'de') expect(subject + html).not.toMatch(/\b(du|dein|deine|dich|dir)\b/i)
       }
     }

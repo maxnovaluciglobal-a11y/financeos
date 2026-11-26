@@ -74,7 +74,7 @@ describe('renderEmail por idioma', () => {
 
   it('sin "!" ni "¡" en ningún idioma', () => {
     for (const l of LANGS) for (const m of NURTURE_MODES) {
-      expect(text(renderEmail(m, lead(l), CONFIG))).not.toMatch(/¡|!(?!doctype html>)/)
+      expect(text(renderEmail(m, lead(l), CONFIG))).not.toMatch(/¡|!(?!doctype html>|important)/)
     }
   })
 

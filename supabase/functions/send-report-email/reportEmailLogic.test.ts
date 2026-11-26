@@ -116,7 +116,7 @@ describe('C-20 · sesión de la cuenta dueña y tope diario', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(body.reply_to).toBe('ase<sor>@x.com')
     expect(body.html).toContain('Enviado por ase&lt;sor&gt;@x.com con moyiq')
-    expect(body.html).not.toMatch(/¡|!(?!doctype html>)/)
+    expect(body.html).not.toMatch(/¡|!(?!doctype html>|important)/)
   })
 
   it('sin senderEmail no agrega reply_to ni pie', async () => {

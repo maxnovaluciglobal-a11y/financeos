@@ -45,7 +45,8 @@ describe('renderEmail', () => {
     const r = renderEmail('welcome', LEAD, CONFIG)
     expect(r.html).toContain(EMAIL_LOGO_URL)
     expect(r.html).toContain(`background:${EMAIL_BRAND.accent}`)
-    expect(r.html).toContain(`color:${EMAIL_BRAND.accent}">Inversiones<`)
+    expect(r.html).toContain(`color:#FFFFFF">Inversiones<`)
+    expect(r.html).not.toContain(`color:${EMAIL_BRAND.accent}`)
     expect(r.html).not.toContain('#12161F')
   })
 
@@ -96,7 +97,7 @@ describe('renderEmail', () => {
   })
 
   it('ningún correo usa claims prohibidos por el relanzamiento', () => {
-    const banned = [/tiempo real/i, /\bPro\b/, /trial/i, /prueba gratis/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /óptimo/i, /¡|!(?!doctype html>)/, /\bpodés\b|\btenés\b|\bquerés\b/]
+    const banned = [/tiempo real/i, /\bPro\b/, /trial/i, /prueba gratis/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /óptimo/i, /¡|!(?!doctype html>|important)/, /\bpodés\b|\btenés\b|\bquerés\b/]
     for (const mode of MODES) {
       for (const perfil of ['conservador', 'moderado', 'agresivo'] as const) {
         const r = renderEmail(mode, { ...LEAD, perfil }, CONFIG)
@@ -372,7 +373,7 @@ describe('idiomas y nombre de la sección (auditoría de correos 18-nov-2026)', 
   })
 
   it('los claims prohibidos tampoco aparecen en en/pt/de', () => {
-    const banned = [/real[- ]time/i, /tempo real/i, /Echtzeit/i, /\bPro\b/, /trial/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /optimal|ótimo|optimal/i, /¡|!(?!doctype html>)/]
+    const banned = [/real[- ]time/i, /tempo real/i, /Echtzeit/i, /\bPro\b/, /trial/i, /US\$/, /\$\d/, /\/100/, /AI Advisor/i, /optimal|ótimo|optimal/i, /¡|!(?!doctype html>|important)/]
     for (const lang of ['en', 'pt', 'de'] as const) {
       for (const mode of MODES) {
         const r = renderEmail(mode, { ...LEAD, lang, perfil: 'agresivo' }, CONFIG)

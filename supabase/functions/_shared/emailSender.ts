@@ -9,6 +9,11 @@
 import type { EmailLang } from "./emailLang.ts";
 
 export const SENDER_NAME = "moyiq";
+
+// Reply-To de los correos a usuarios (servicio y marketing): una respuesta llega
+// a soporte, no a la casilla de envío (hola@, licencias@, invest@). No se usa en
+// el reporte del Modo Asesor ni en el feedback, que responden a otra persona.
+export const SUPPORT_REPLY_TO = "support@moyiq.app";
 // Sitio externo de inversiones (invest.moyiq.app), "moyiq · Inversiones". En el
 // nombre del remitente va sin el punto medio para no depender de cómo cada
 // cliente de correo muestra un nombre con caracteres especiales.

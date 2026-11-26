@@ -22,6 +22,7 @@ import { appLink } from "../_shared/appLinks.ts";
 import { COMPANY_POSTAL_HTML } from "../_shared/marketingEmail.ts";
 import { emailButton, emailLayout } from "../_shared/emailLayout.ts";
 import { htmlToText } from "../_shared/emailText.ts";
+import { SUPPORT_REPLY_TO } from "../_shared/emailSender.ts";
 import { TRIAL_TEMPLATES, type TrialStep } from "./trialTemplates.ts";
 import {
   PRO_LIST_PRICE_CENTS, renderKeyEmail, renderPaymentFailedEmail, renderProEndedEmail, renderTrialEndingEmail,
@@ -111,6 +112,8 @@ export function renderTrialEmail(step: TrialStep, row: TrialRow, config: TrialCo
       ${cancel}`,
     footerHtml: `${T.why} moyiq · ${COMPANY_POSTAL_HTML}.
         <a href="${footerUnsubscribeUrl(appUrl, row.id)}">${T.unsubscribe}</a>.`,
+    preheader: copy.preheader,
+    title: copy.subject,
   });
   return {
     subject: copy.subject,
@@ -136,7 +139,7 @@ async function rpc<T>(name: string, body: unknown, config: TrialConfig, fetchImp
 
 export async function sendViaResend(to: string, rendered: RenderedEmail, config: TrialConfig, fetchImpl: typeof fetch = fetch): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
-  const body = JSON.stringify({ from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), headers: rendered.headers });
+  const body = JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_REPLY_TO, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), headers: rendered.headers });
   const attempt = () => fetchImpl("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },

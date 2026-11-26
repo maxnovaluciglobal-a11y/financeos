@@ -19,6 +19,7 @@ import { appLink } from "../_shared/appLinks.ts";
 import { COMPANY_POSTAL_HTML } from "../_shared/marketingEmail.ts";
 import { emailButton, emailLayout } from "../_shared/emailLayout.ts";
 import { htmlToText } from "../_shared/emailText.ts";
+import { SUPPORT_REPLY_TO } from "../_shared/emailSender.ts";
 import { PRO_TRIAL_STEPS, PRO_TRIAL_TEMPLATES, type ProTrialStep } from "./proTrialTemplates.ts";
 
 export type { ProTrialStep };
@@ -54,7 +55,10 @@ export function daysLeft(endsAt: string, now: number = Date.now()): number {
   return Math.max(1, Math.ceil((new Date(endsAt).getTime() - now) / DAY_MS));
 }
 
-const STEP_LINK: Record<ProTrialStep, Parameters<typeof appLink>[0]> = { welcome: "dashboard", day10: "upgrade", ended: "upgrade" };
+// welcome: "upgrade" abre Modo Asesor, que con Pro activo es la propia
+// herramienta (el texto invita a abrirla). day10/ended: "plan" abre Ajustes,
+// donde está "Suscripción y plan", que es lo que nombra el texto.
+const STEP_LINK: Record<ProTrialStep, Parameters<typeof appLink>[0]> = { welcome: "upgrade", day10: "plan", ended: "plan" };
 
 export function renderProTrialEmail(step: ProTrialStep, row: Pick<ProTrialRow, "lang" | "ends_at">, now: number = Date.now()): RenderedEmail {
   const lang = pickLang(row.lang);
@@ -66,6 +70,7 @@ export function renderProTrialEmail(step: ProTrialStep, row: Pick<ProTrialRow, "
     bodyHtml: `${copy.paragraphs.map((p) => `<p>${p}</p>`).join("\n      ")}
       ${emailButton(appLink(STEP_LINK[step], `pro-trial-${step}`), copy.cta)}`,
     footerHtml: `${T.why} moyiq · ${COMPANY_POSTAL_HTML}.`,
+    preheader: copy.preheader,
     title: copy.subject,
   });
   return { subject: copy.subject, html, text: htmlToText(html) };
@@ -84,7 +89,7 @@ async function rpc<T>(name: string, body: unknown, config: ProTrialConfig, fetch
 
 export async function sendViaResend(to: string, rendered: RenderedEmail, config: ProTrialConfig, fetchImpl: typeof fetch = fetch): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
-  const body = JSON.stringify({ from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text });
+  const body = JSON.stringify({ from: config.fromEmail, to, reply_to: SUPPORT_REPLY_TO, subject: rendered.subject, html: rendered.html, text: rendered.text });
   const attempt = () => fetchImpl("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${config.resendApiKey}`, "Content-Type": "application/json" },

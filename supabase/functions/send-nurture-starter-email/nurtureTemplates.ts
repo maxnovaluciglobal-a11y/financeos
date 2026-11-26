@@ -17,6 +17,7 @@ export type StarterStep = "welcome" | "day2" | "day5";
 
 export interface StarterCopy {
   subject: string;
+  preheader: string; // línea junto al asunto en la bandeja; suma un dato, no repite
   body: string; // HTML interno, sin el wrapper ni el footer
 }
 
@@ -33,6 +34,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
   es: {
     welcome: {
       subject: "Lo primero que conviene hacer con tu cuenta",
+      preheader: "Con el último mes importado ya hay algo real que ver.",
       body: `
       <h2>Tu cuenta ya está activa</h2>
       <p>Hola,</p>
@@ -45,6 +47,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day2: {
       subject: "El IQ Score no es un número decorativo",
+      preheader: "Cinco factores, cada uno con su peso: cómo leer el desglose.",
       body: `
       <h2>Lo que la mayoría no descubre solo</h2>
       <p>Hola,</p>
@@ -57,6 +60,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day5: {
       subject: "Qué diferencia a Starter de Pro en la práctica",
+      preheader: "Lo que suma Pro sobre Starter, sin rodeos, y la prueba de 14 días.",
       body: `
     <h2>Sin testimonios inventados</h2>
     <p>Hola,</p>
@@ -83,6 +87,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
   en: {
     welcome: {
       subject: "The first thing worth doing with your account",
+      preheader: "With last month imported there is already something real to see.",
       body: `
       <h2>Your account is active</h2>
       <p>Hello,</p>
@@ -95,6 +100,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day2: {
       subject: "The IQ Score is not a decorative number",
+      preheader: "Five factors, each with its own weight: how to read the breakdown.",
       body: `
       <h2>What most people don't find on their own</h2>
       <p>Hello,</p>
@@ -107,6 +113,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day5: {
       subject: "What separates Starter from Pro in practice",
+      preheader: "What Pro adds to Starter, plainly, and the 14-day trial.",
       body: `
     <h2>No made-up testimonials</h2>
     <p>Hello,</p>
@@ -132,6 +139,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
   pt: {
     welcome: {
       subject: "A primeira coisa que vale a pena fazer com sua conta",
+      preheader: "Com o último mês importado já há algo real para ver.",
       body: `
       <h2>Sua conta já está ativa</h2>
       <p>Olá,</p>
@@ -144,6 +152,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day2: {
       subject: "O IQ Score não é um número decorativo",
+      preheader: "Cinco fatores, cada um com seu peso: como ler o detalhamento.",
       body: `
       <h2>O que a maioria não descobre sozinha</h2>
       <p>Olá,</p>
@@ -156,6 +165,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day5: {
       subject: "O que diferencia o Starter do Pro na prática",
+      preheader: "O que o Pro soma ao Starter, sem rodeios, e o teste de 14 dias.",
       body: `
     <h2>Sem depoimentos inventados</h2>
     <p>Olá,</p>
@@ -181,6 +191,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
   de: {
     welcome: {
       subject: "Der erste sinnvolle Schritt mit Ihrem Konto",
+      preheader: "Mit dem importierten letzten Monat gibt es schon etwas Echtes zu sehen.",
       body: `
       <h2>Ihr Konto ist aktiv</h2>
       <p>Guten Tag,</p>
@@ -193,6 +204,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day2: {
       subject: "Der IQ Score ist keine Dekoration",
+      preheader: "Fünf Faktoren, jeder mit eigenem Gewicht: so lesen Sie die Aufschlüsselung.",
       body: `
       <h2>Was die meisten nicht von selbst entdecken</h2>
       <p>Guten Tag,</p>
@@ -205,6 +217,7 @@ export const STARTER_TEMPLATES: Record<EmailLang, Record<StarterStep, StarterCop
     },
     day5: {
       subject: "Was Starter und Pro in der Praxis unterscheidet",
+      preheader: "Was Pro gegenüber Starter bietet, ohne Umschweife, und der 14-tägige Test.",
       body: `
     <h2>Keine erfundenen Erfahrungsberichte</h2>
     <p>Guten Tag,</p>

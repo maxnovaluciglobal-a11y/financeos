@@ -303,8 +303,16 @@ function table(rows: [string, string][]): string {
     .join("")}</table>`;
 }
 
-function wrap(inner: string, lang: EmailLang): string {
-  return emailLayout({ lang, bodyHtml: inner, footerHtml: "moyiq · MAXNOVA &amp; LUCI Global LLC · support@moyiq.app" });
+// Preheader del correo al cliente (línea junto al asunto en la bandeja).
+const CUSTOMER_PREHEADER: Record<EmailLang, string> = {
+  es: "Guarda este correo: es el comprobante de tu solicitud.",
+  en: "Keep this email: it is the receipt for your request.",
+  pt: "Guarde este e-mail: é o comprovante da sua solicitação.",
+  de: "Bewahren Sie diese E-Mail auf: Sie ist die Bestätigung Ihrer Anfrage.",
+};
+
+function wrap(inner: string, lang: EmailLang, preheader?: string): string {
+  return emailLayout({ lang, bodyHtml: inner, footerHtml: "moyiq · MAXNOVA &amp; LUCI Global LLC · support@moyiq.app", preheader });
 }
 
 export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
@@ -316,6 +324,7 @@ export function renderCustomerEmail(row: CancellationRow): RenderedEmail {
   const html = wrap(
     `<p>${escapeHtml(c.intro(ts))}</p>${table(rows)}<p>${escapeHtml(c.outro(row.id))}</p>`,
     lang,
+    CUSTOMER_PREHEADER[lang] ?? CUSTOMER_PREHEADER.es,
   );
   const text = [c.intro(ts), "", ...rows.map(([k, v]) => `${k}: ${v}`), "", c.outro(row.id), "", "moyiq · MAXNOVA & LUCI Global LLC · support@moyiq.app"].join("\n");
   return { subject: c.subject, html, text };

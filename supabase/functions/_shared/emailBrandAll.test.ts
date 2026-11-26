@@ -1,9 +1,10 @@
 // Auditoría 360, BRD-5: todos los correos que mandan las Edge Functions usan
 // el mismo layout de marca (_shared/emailLayout.ts). Renderiza al menos un
 // correo de cada función migrada con sus funciones puras y comprueba la
-// cabecera con el logo, la franja Latón y que no queda ningún wrapper viejo.
+// cabecera Impulso con el logo blanco, la línea lima, el preheader, un solo
+// botón y que no queda ningún wrapper viejo (26-nov-2026).
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { EMAIL_LOGO_URL } from "./emailLayout.ts";
+import { EMAIL_LOGO_URL, IMPULSO_GRADIENT } from "./emailLayout.ts";
 import {
   renderKeyEmail, renderTrialEndingEmail, renderPaymentFailedEmail, renderProEndedEmail, notifyNewProPurchase,
 } from "../stripe-webhook/webhookLogic.ts";
@@ -55,24 +56,42 @@ afterEach(() => { vi.unstubAllGlobals(); });
 
 function expectBrand(html: string) {
   expect(html).toContain(EMAIL_LOGO_URL);
-  // Logo nuevo en su propia URL: el viejo (/app/email/moyiq-logo.png) queda
-  // intacto para los correos ya enviados con cabecera Navy.
-  expect(html).toContain("/app/email/moyiq-logo-v2.png");
-  expect(html).not.toContain("/app/email/moyiq-logo.png");
-  expect(html).toContain("background:#3C2282");
+  // Logo v3 (blanco sobre transparente) en su propia URL: v2 y el viejo quedan
+  // intactos para los correos ya enviados.
+  expect(html).toContain("/app/email/moyiq-logo-v3.png");
+  expect(html).not.toMatch(/\/app\/email\/moyiq-logo(-v2)?\.png/);
+  // Banda Impulso con el morado plano de respaldo.
+  expect(html).toContain(`bgcolor="#3C2282" style="background-color:#3C2282;background-image:${IMPULSO_GRADIENT}`);
   expect(html).toContain("background:#D0F06E");
+  // La lima nunca es color de texto.
+  expect(html).not.toMatch(/(^|[^-])color:#D0F06E/i);
   // Ningún rastro de la paleta ni de la tipografía anteriores (Navy/Latón/Papel, Plex/Instrument)
   // ni el nombre viejo en el HTML.
   expect(html).not.toMatch(/#14213D|#B8863B|#8A6329|#CC9A52|#F1EEE6|IBM Plex|Instrument Sans/i);
   expect(html).not.toContain("MOY IQ");
   // Ni los grises sueltos de antes.
   expect(html).not.toMatch(/#999\b|#888\b|#666\b|#1a1a1a|#8B7A55/i);
+  // Como mucho una acción principal (botón) por correo.
+  expect((html.match(/<td class="mq-btn"/g) ?? []).length).toBeLessThanOrEqual(1);
 }
+
+// Los correos internos (aviso de cancelación a soporte, alta nueva, compra Pro)
+// no necesitan preheader; todo lo que recibe una persona usuaria sí.
+const INTERNAL = /interno|notify-admin/;
 
 describe("todos los correos de la app usan el layout de marca (BRD-5)", () => {
   for (const [name, html] of SAMPLES) {
     it(name, () => expectBrand(html));
   }
+
+  it("cada correo a una persona usuaria trae preheader (texto oculto junto al asunto)", () => {
+    for (const [name, html] of SAMPLES) {
+      if (INTERNAL.test(name)) continue;
+      const pre = html.match(/<div style="display:none;[^"]*">([^&<]+)/)?.[1]?.trim() ?? "";
+      expect(pre.length, name).toBeGreaterThan(15);
+      expect(pre.length, name).toBeLessThan(120);
+    }
+  });
 
   it("stripe-webhook · aviso interno al admin (compra Pro)", async () => {
     const fetchMock = vi.fn(async () => ({ ok: true, status: 200, text: async () => "" }));

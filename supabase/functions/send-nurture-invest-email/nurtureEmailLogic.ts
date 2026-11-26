@@ -108,11 +108,12 @@ const UNSUBSCRIBE: Record<EmailLang, string> = {
 
 // Sistema visual único de los correos (BRD-5): el layout de marca de moyiq
 // con la etiqueta de la sección ("Inversiones", "Investments"…) junto al logo.
-function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang): string {
+function wrapHtml(bodyHtml: string, unsubUrl: string, lang: EmailLang, preheader?: string): string {
   return emailLayout({
     lang,
     tag: INVEST_LABEL[lang],
     bodyHtml,
+    preheader,
     footerHtml: `${DISCLAIMERS[lang]}<br>
           ${investSiteName(lang)} · ${COMPANY_POSTAL_HTML}.
           <a href="${unsubUrl}">${UNSUBSCRIBE[lang]}</a>.`,
@@ -294,6 +295,15 @@ const COPY: Record<EmailLang, InvestCopy> = {
   },
 };
 
+// Preheader de cada correo (línea junto al asunto en la bandeja). Mismas reglas
+// de claims que el resto de la secuencia: beta gratuita, sin precios ni Pro.
+const PREHEADER: Record<EmailLang, Record<NurtureMode, string>> = {
+  es: { welcome: "Qué significa tu perfil y por dónde empezar en la beta.", day2: "Cuánto arriesgar en cada operación según tu propia regla.", day5: "Lo que incluye hoy, sin costo, y lo que no hace." },
+  en: { welcome: "What your profile means and where to start in the beta.", day2: "How much to risk on each trade, based on your own rule.", day5: "What it includes today, at no cost, and what it does not do." },
+  pt: { welcome: "O que seu perfil significa e por onde começar na beta.", day2: "Quanto arriscar em cada operação, segundo sua própria regra.", day5: "O que inclui hoje, sem custo, e o que não faz." },
+  de: { welcome: "Was Ihr Profil bedeutet und wo Sie in der Beta anfangen.", day2: "Wie viel Sie pro Trade riskieren, nach Ihrer eigenen Regel.", day5: "Was es heute kostenlos enthält und was es nicht tut." },
+};
+
 export function renderEmail(mode: NurtureMode, lead: InvestLead, config: NurtureEmailConfig): RenderedEmail {
   const lang = pickLang(lead.lang);
   const T = COPY[lang];
@@ -301,7 +311,7 @@ export function renderEmail(mode: NurtureMode, lead: InvestLead, config: Nurture
   const profile = PROFILE_COPY[lang][lead.perfil ?? "moderado"];
   const headers = listUnsubscribeHeaders(config.supabaseUrl, "invest", lead.id);
   const done = (subject: string, body: string): RenderedEmail => {
-    const html = wrapHtml(body, unsub, lang);
+    const html = wrapHtml(body, unsub, lang, PREHEADER[lang][mode]);
     return { subject, html, text: htmlToText(html), headers };
   };
 
@@ -350,7 +360,7 @@ export async function sendViaResend(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!config.resendApiKey) return { ok: false, error: "resend_not_configured" };
 
-  const body = { from: config.fromEmail, to, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), ...(rendered.headers ? { headers: rendered.headers } : {}) };
+  const body = { from: config.fromEmail, to, reply_to: SUPPORT_REPLY_TO, subject: rendered.subject, html: rendered.html, text: rendered.text ?? htmlToText(rendered.html), ...(rendered.headers ? { headers: rendered.headers } : {}) };
   const attempt = () =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -512,4 +522,4 @@ import { COMPANY_POSTAL_HTML, listUnsubscribeHeaders } from "../_shared/marketin
 import { emailButton, emailLayout, EMAIL_MUTED_STYLE } from "../_shared/emailLayout.ts";
 import { htmlToText } from "../_shared/emailText.ts";
 import { type EmailLang, pickLang } from "../_shared/emailLang.ts";
-import { INVEST_LABEL, investSiteName } from "../_shared/emailSender.ts";
+import { INVEST_LABEL, SUPPORT_REPLY_TO, investSiteName } from "../_shared/emailSender.ts";

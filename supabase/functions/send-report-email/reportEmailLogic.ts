@@ -180,6 +180,14 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
+// Preheader (línea junto al asunto en la bandeja).
+const REPORT_PREHEADER: Record<EmailLang, string> = {
+  es: "El reporte va adjunto en PDF.",
+  en: "The report is attached as a PDF.",
+  pt: "O relatório vai anexado em PDF.",
+  de: "Der Bericht ist als PDF angehängt.",
+};
+
 // Render puro del correo (BRD-5: layout de marca compartido). El aviso de
 // privacidad va en el pie, con la línea legal (quién opera moyiq y soporte).
 export function renderReportEmail(params: SendReportParams): { subject: string; html: string; text: string } {
@@ -192,6 +200,8 @@ export function renderReportEmail(params: SendReportParams): { subject: string; 
       <p>${T.body(escapeHtml(month))}</p>
       ${params.senderEmail ? `<p style="${EMAIL_MUTED_STYLE}">${T.sentBy(escapeHtml(params.senderEmail))}</p>` : ""}`,
     footerHtml: `${T.notice}<br>${EMAIL_LEGAL_LINE}`,
+    preheader: REPORT_PREHEADER[lang] ?? REPORT_PREHEADER.es,
+    title: T.subject(month),
   });
   return { subject: T.subject(month), html, text: htmlToText(html) };
 }
