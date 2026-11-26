@@ -157,7 +157,8 @@ describe('I8: Proyección dice de dónde sale el flujo mensual y el % real del p
 })
 
 describe('I5: el tour describe la cifra que señala', async () => {
-  const dicts = { es: (await import('../i18n/es.js')).es, en: (await import('../i18n/en.js')).en, pt: (await import('../i18n/pt.js')).pt, de: (await import('../i18n/de.js')).de }
+  // Diccionario principal + secciones diferidas (los textos de Ahorro fiscal viven en i18n/countryTools).
+  const dicts = await import('../i18n/withSections.js').then(m => ({ es: m.es, en: m.en, pt: m.pt, de: m.de }))
   it('"Te queda" ya descuenta los fijos por pagar (UX-N2): el tour no dice que van aparte', () => {
     expect(dicts.en['demo.tour.kpiFree.body']).not.toMatch(/shown separately/)
     expect(dicts.es['demo.tour.kpiFree.body']).not.toMatch(/se muestran aparte/)
@@ -168,7 +169,8 @@ describe('I5: el tour describe la cifra que señala', async () => {
 
 describe('I9: Ahorro fiscal EE. UU. en el idioma de la interfaz', async () => {
   const us = (await import('../config/aporte/us.js')).default
-  const dicts = { es: (await import('../i18n/es.js')).es, en: (await import('../i18n/en.js')).en, pt: (await import('../i18n/pt.js')).pt, de: (await import('../i18n/de.js')).de }
+  // Diccionario principal + secciones diferidas (los textos de Ahorro fiscal viven en i18n/countryTools).
+  const dicts = await import('../i18n/withSections.js').then(m => ({ es: m.es, en: m.en, pt: m.pt, de: m.de }))
   it('todo texto visible del config de EE. UU. es una clave presente en los 4 idiomas', () => {
     for (const f of ['titulo', 'subtitulo', 'disclaimer', 'ingresoLabel', 'aporteLabel', 'resumenTope', 'resumen']) {
       const key = us.i18n[f]

@@ -20,6 +20,7 @@ import { currentMonth, fmtPctPoints } from '../../utils/index.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
 import { saveBlob } from '../../native/saveFile.js'
 import { logRejection } from '../../utils/errorLog.js'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
 const fmtEUR = (n) => `€${(Number(n) || 0).toLocaleString('de-DE', { maximumFractionDigits: 0 })}`
 
@@ -36,7 +37,12 @@ const ELSTER_SECCIONES = {
   bewerbung: 'Bewerbungskosten',
 }
 
-export default function Steuer() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function Steuer(props) {
+  return <CountryToolsStringsGate><SteuerScreen {...props} /></CountryToolsStringsGate>
+}
+
+function SteuerScreen() {
   const { settings, expenses } = useApp()
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()

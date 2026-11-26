@@ -13,10 +13,16 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader, SegmentedContr
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcIRSEmpregado, calcIRSRecibosVerdes, ESCALOES_IRS_2026, MINIMO_EXISTENCIA } from '../../utils/irsPT.js'
 import { fmtFixed, fmtPct, fmtPctPoints } from '../../utils/index.js'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
 const fmtEUR = (n) => fmtFixed(n, 'pt-PT', '€')
 
-export default function IRSPortugal() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function IRSPortugal(props) {
+  return <CountryToolsStringsGate><IRSPortugalScreen {...props} /></CountryToolsStringsGate>
+}
+
+function IRSPortugalScreen() {
   const { settings } = useApp()
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()

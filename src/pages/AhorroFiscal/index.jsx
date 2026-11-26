@@ -16,8 +16,14 @@ import {
   limite401k, limiteIRA, limiteHSA, LIMITES_2026,
 } from '../../utils/taxCalcUS.js'
 import SheetSelect from '../../components/ui/SheetSelect.jsx'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
-export default function AhorroFiscal() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function AhorroFiscal(props) {
+  return <CountryToolsStringsGate><AhorroFiscalScreen {...props} /></CountryToolsStringsGate>
+}
+
+function AhorroFiscalScreen() {
   const { settings, incomes } = useApp()
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()

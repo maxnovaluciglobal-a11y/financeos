@@ -12,6 +12,7 @@ import { Card, CardHeader, FormRow, FormGroup, Alert, PageHeader } from '../../c
 import ProGate from '../../components/ui/ProGate.jsx'
 import { calcResico, TRAMOS_RESICO, TOPE_ANUAL_RESICO, RETENCION_PERSONA_MORAL } from '../../utils/resicoMX.js'
 import { fmtFixed, currentMonth, fmtPctPoints } from '../../utils/index.js'
+import { CountryToolsStringsGate } from '../../i18n/countryTools/index.js'
 
 const fmtMXN = (n) => fmtFixed(n, 'es-MX')
 
@@ -24,7 +25,12 @@ const CATEGORIAS_RESICO = ['Freelance', 'Negocio propio', 'Arriendo', 'Honorario
 const esIngresoResico = (r) =>
   CATEGORIAS_RESICO.some(c => (r?.category || '').toLowerCase().includes(c.toLowerCase()))
 
-export default function ResicoMX() {
+// Textos fuera del diccionario principal (i18n/countryTools): se cargan con esta pantalla.
+export default function ResicoMX(props) {
+  return <CountryToolsStringsGate><ResicoMXScreen {...props} /></CountryToolsStringsGate>
+}
+
+function ResicoMXScreen() {
   const { settings, incomes } = useApp()
   const { t } = useT()
   const country = (settings.country || 'CL').toUpperCase()
