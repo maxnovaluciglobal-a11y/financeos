@@ -10,7 +10,37 @@ import Money, { useMoney } from '../../../components/Money.jsx'
 import { projectDividends } from '../../../utils/investDividends.js'
 import { fundamentalSources, monthsSummary } from './view.js'
 import Sources from './Sources.jsx'
+import { moneyLocale } from '../../../utils/index.js'
 import s from './portfolio.module.css'
+
+// Etiquetas del gráfico de 12 meses (arreglo del 26-nov-2026: se cortaban,
+// "$8…"). Monto corto ($352K, $8,1M) y solo en las barras altas que no
+// tienen vecina con etiqueta, así cada una puede ocupar el ancho de dos
+// columnas sin pisarse. Los montos exactos siguen en la lista de abajo y en
+// la descripción del gráfico para lectores de pantalla.
+export function compactMoney(full) {
+  const m = /^([^\d]*)([\d.,\s\u00a0\u202f]*\d)(.*)$/.exec(String(full || ''))
+  if (!m) return full
+  const [, pre, body, post] = m
+  const groups = body.split(/[.,\s\u00a0\u202f]/)
+  const dec = groups.length > 1 && groups[groups.length - 1].length === 2 ? groups.pop() : ''
+  const n = Number(`${groups.join('')}${dec ? `.${dec}` : ''}`)
+  if (!Number.isFinite(n)) return full
+  const loc = moneyLocale()
+  const short = (v, suf) => `${pre}${v.toLocaleString(loc, { maximumFractionDigits: v < 10 ? 1 : 0 })}${suf}${post}`
+  if (n >= 1e9) return short(n / 1e9, 'B')
+  if (n >= 1e6) return short(n / 1e6, 'M')
+  if (n >= 1e3) return short(n / 1e3, 'K')
+  return `${pre}${Math.round(n).toLocaleString(loc)}${post}`
+}
+export function pickBarLabels(values, minShare = 0.35) {
+  const max = Math.max(0, ...values)
+  const out = new Set()
+  if (!(max > 0)) return out
+  const order = values.map((v, i) => i).filter(i => values[i] >= max * minShare).sort((a, b) => values[b] - values[a] || a - b)
+  for (const i of order) if (!out.has(i - 1) && !out.has(i + 1)) out.add(i)
+  return out
+}
 
 export default function Dividends({ pb, fmt, demo, t, actions }) {
   const { m } = useMoney()
@@ -55,6 +85,7 @@ export default function Dividends({ pb, fmt, demo, t, actions }) {
     return base
   }
   const summary = monthsSummary(proj.months, fmt.monthLong, (usd) => m(fmt.money(usd)))
+  const labeled = pickBarLabels(proj.months.map(x => x.usd))
   return (
     <>
       <p className={s.note}>{t('pf.div.sub')}</p>
@@ -86,9 +117,9 @@ export default function Dividends({ pb, fmt, demo, t, actions }) {
         <h2 id="pf-div-months" className={s.sectionTitle}>{t('pf.div.months')}</h2>
         {proj.scheduledUsd > 0 ? (
           <div className={s.bars} role="img" aria-label={t('pf.div.monthsAria', { list: summary })}>
-            {proj.months.map(x => (
+            {proj.months.map((x, i) => (
               <div key={x.ym} className={s.bar}>
-                <span className={s.barAmt} aria-hidden="true">{x.usd > 0 ? m(fmt.money(x.usd)) : ''}</span>
+                <span className={s.barAmt} aria-hidden="true" data-edge={i === 0 ? 'start' : i === proj.months.length - 1 ? 'end' : undefined}>{x.usd > 0 && labeled.has(i) ? m(compactMoney(fmt.money(x.usd))) : ''}</span>
                 <span className={s.barFill} data-empty={x.usd > 0 ? undefined : 'true'} style={{ height: x.usd > 0 ? Math.max(6, Math.round((x.usd / max) * 90)) : 3 }} aria-hidden="true" />
                 <span className={s.barLabel} aria-hidden="true">{fmt.monthShort(x.ym)}</span>
               </div>

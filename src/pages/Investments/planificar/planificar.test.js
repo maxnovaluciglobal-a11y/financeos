@@ -22,7 +22,8 @@ import { RULE_DEFAULTS } from '../../../core/investData.js'
 import Calculator, { calcInputs, ruleDecimals } from './Calculator.jsx'
 import Aportes, { segKeyTarget } from './Aportes.jsx'
 import Plans from './Plans.jsx'
-import { RuleCard, PLAN_SUBS } from './Planificar.jsx'
+import { RuleCard, PLAN_SUBS, normPlanSub } from './Planificar.jsx'
+import Fold from './Fold.jsx'
 
 const L = { es, en, pt, de }
 const vars = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort()
@@ -287,5 +288,55 @@ describe('revisión 23-nov (ronda 2)', () => {
       expect(vars(l['plan.calc.err.no-ccy'])).toEqual(['t'])
       expect(l['plan.calc.ccyUnknown']).toBeTruthy()
     }
+  })
+})
+
+describe('Planificar en dos partes (26-nov-2026)', () => {
+  const fmt = makeFmt({ disp: { ccy: 'USD', rate: 1 }, currency: 'USD', language: 'es' })
+  const pb = {
+    holdings: demoInvestHoldings(), market: { quotes: demoInvestQuotes() }, rates: { rates: {} },
+    positions: { rows: [], totals: { cost: 11000, value: 12500 } }, ledger: { usesCash: true, cash: 380 },
+  }
+  it('solo Tus tramos y Aportes; las partes viejas caen en la nueva con su sección abierta', () => {
+    expect(PLAN_SUBS).toEqual(['oportunidades', 'aportes'])
+    expect(normPlanSub('calc')).toEqual({ sub: 'oportunidades', calc: true, plans: false })
+    expect(normPlanSub('planes')).toEqual({ sub: 'aportes', calc: false, plans: true })
+    expect(normPlanSub('aportes')).toEqual({ sub: 'aportes', calc: false, plans: false })
+    expect(normPlanSub(undefined).sub).toBe('oportunidades')
+    expect(normPlanSub('cualquiera').sub).toBe('oportunidades')
+    for (const l of [es, en, pt, de]) {
+      expect(l['plan.sub.calc']).toBeUndefined()
+      expect(l['plan.sub.planes']).toBeUndefined()
+    }
+  })
+  it('aportes: una sola "Cómo lo repartes", sin la regla de riesgo, y "¿Cuánto podrías tener?" plegada', () => {
+    const html = renderToStaticMarkup(h(Aportes, { pb, fmt, t: tOf(es), demo: true, view: 'esencial', capital: 20000, targets: null, onSavePlan: () => {}, onDeposit: () => {}, onTab: () => {}, onGoOpp: () => {} }))
+    expect((text(html).match(/Cómo lo repartes/g) || []).length).toBe(1)
+    expect(html).not.toContain('Tu regla de riesgo')
+    expect(html).toMatch(/aria-expanded="false" aria-controls="plan-proj-body"/)
+    expect(html).toMatch(/id="plan-proj-body"[^>]*hidden/)
+    expect(text(html)).toContain('¿Cuánto podrías tener?')
+  })
+  it('sección plegable: botón con aria-expanded, el contenido montado y oculto, y el conteo', () => {
+    const closed = renderToStaticMarkup(h(Fold, { id: 'x', title: 'Planes guardados', count: 2, open: false, onToggle: () => {} }, h('p', null, 'adentro')))
+    expect(closed).toMatch(/<h2 id="x-h"[^>]*><button[^>]*aria-expanded="false" aria-controls="x-body"/)
+    expect(text(closed)).toContain('Planes guardados (2)')
+    expect(closed).toMatch(/id="x-body"[^>]*hidden=""[^>]*><p>adentro<\/p>/)
+    const open = renderToStaticMarkup(h(Fold, { id: 'x', title: 'T', open: true, onToggle: () => {} }, 'c'))
+    expect(open).toContain('aria-expanded="true"')
+    expect(open).not.toMatch(/id="x-body"[^>]*hidden/)
+  })
+  it('planes dentro de Aportes: sin título propio ni segundo aviso de ejemplo; Abrir, Cambiar nombre y Borrar siguen', () => {
+    const base = { fmt, t: tOf(es), rates: {}, onOpen: () => {}, onRename: async () => true, onDelete: () => {}, onGoCalc: () => {} }
+    const html = renderToStaticMarkup(h(Plans, { ...base, demo: true, embedded: true, plans: { phase: 'ready', list: demoInvestPlans(Date.UTC(2026, 10, 20)) } }))
+    expect(html).not.toContain('<h2')
+    expect(html).not.toContain('Planes de ejemplo')
+    for (const w of ['Abrir', 'Cambiar nombre', 'Borrar']) expect(text(html)).toContain(w)
+  })
+  it('la calculadora dentro de Tus tramos: sin título propio (lo lleva la sección)', () => {
+    const html = renderToStaticMarkup(h(Calculator, { pb, fmt, t: tOf(es), demo: true, view: 'esencial', rule: { risk: 1, limit: 25 }, capital: 20000, onSavePlan: () => {}, onAddToPortfolio: () => {}, embedded: true }))
+    expect(html).not.toContain('<h2')
+    expect(html).not.toContain('<section')
+    expect(text(html)).toContain('Cuánto aceptas que baje (%)')
   })
 })

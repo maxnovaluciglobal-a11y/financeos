@@ -1,13 +1,20 @@
 // src/pages/Investments/planificar/Planificar.jsx — pestaña Planificar (F5).
-// Tres partes, como Planificar de Invest (DEST en app/index.html:3503-3506):
-// Calculadora (pb), Aportes (capital) y Planes guardados (plans). Arriba, tu
-// regla de riesgo y tu capital de referencia (Invest los tenía en Ajustes):
-//  · la regla va en los metadatos de la cuenta (invest_risk_rule, decisión de
-//    Walter del 20-nov-2026), 1 % por defecto;
-//  · el capital, en profiles.capital (core/investData.js);
-//  · los planes, en los metadatos de la cuenta (invest_plans, con topes).
-// En el demo todo vive en memoria (demo/demoInvestBook.js). Nada de esto se
-// guarda en el dispositivo: llevan tickers.
+// Dos partes (rediseño del 26-nov-2026, propuesta 9 de la auditoría del flujo
+// de Inversiones): Tus tramos (oportunidades) y Aportes.
+//  · Tus tramos: la tabla de distancias y el reparto (../oportunidades) y, al
+//    pie, la calculadora "¿Cuánto puedo perder si sale mal?" plegada, con tu
+//    regla de riesgo adentro (antes era su propia sub-pestaña).
+//  · Aportes: el aporte, cómo lo repartes y, al pie, "¿Cuánto podrías tener?"
+//    y los planes guardados, plegados (antes Planes guardados era otra
+//    sub-pestaña).
+// Lo que pedía una parte vieja cae en la nueva (normPlanSub): 'calc' abre
+// Tus tramos con la calculadora desplegada; 'planes', Aportes con los planes.
+// La regla va en los metadatos de la cuenta (invest_risk_rule, decisión de
+// Walter del 20-nov-2026), 1 % por defecto; el capital, en profiles.capital
+// (core/investData.js); los planes, en los metadatos de la cuenta
+// (invest_plans, con topes). En el demo todo vive en memoria
+// (demo/demoInvestBook.js). Nada de esto se guarda en el dispositivo: llevan
+// tickers.
 // Vista esencial: "¿Cuánto puedo perder si sale mal?" en palabras, el aporte
 // mensual y el reparto de tu capital disponible; stop, R, límite por posición
 // y la escalera de medias móviles, solo en Vista completa. "Repartir" en
@@ -26,6 +33,7 @@ import { takePlanQueue } from '../../../utils/investNav.js'
 import Calculator, { ruleDecimals } from './Calculator.jsx'
 import Aportes from './Aportes.jsx'
 import Plans, { planLabel } from './Plans.jsx'
+import Fold from './Fold.jsx'
 import { usePlanT } from './dict.js'
 import s from './planificar.module.css'
 import { takeOppQueue } from '../oportunidades/queue.js'
@@ -33,10 +41,19 @@ import { takeOppQueue } from '../oportunidades/queue.js'
 // Oportunidades (Inversiones v2): su propio chunk, con sus textos.
 const Oportunidades = lazy(() => import('../oportunidades/Oportunidades.jsx'))
 
-export const PLAN_SUBS = ['calc', 'oportunidades', 'aportes', 'planes']
+export const PLAN_SUBS = ['oportunidades', 'aportes']
+export const DEFAULT_PLAN_SUB = 'oportunidades'
+// Partes de antes del 26-nov-2026 → la nueva y qué sección se despliega.
+export function normPlanSub(sub) {
+  if (sub === 'calc') return { sub: 'oportunidades', calc: true, plans: false }
+  if (sub === 'planes') return { sub: 'aportes', calc: false, plans: true }
+  return { sub: PLAN_SUBS.includes(sub) ? sub : DEFAULT_PLAN_SUB, calc: false, plans: false }
+}
+
 const USD = { ccy: 'USD', rate: 1, fallback: false, missing: false }
 
-export function RuleCard({ t, fmt, rule, capital, view, demo, onSaveRule, onSaveCapital }) {
+export function RuleCard({ t, fmt, rule, capital, view, demo, onSaveRule, onSaveCapital, flat = false }) {
+  const H = flat ? 'h3' : 'h2'
   const full = shows(view, 'riskR')
   const [open, setOpen] = useState(false)
   const [f, setF] = useState({ risk: '', limit: '' })
@@ -69,9 +86,9 @@ export function RuleCard({ t, fmt, rule, capital, view, demo, onSaveRule, onSave
   }
 
   return (
-    <section className={s.card} aria-labelledby="plan-rule-title">
+    <section className={flat ? `${s.card} ${s.inner}` : s.card} aria-labelledby="plan-rule-title">
       <div className={s.between}>
-        <h2 id="plan-rule-title" className={s.title}>{t('plan.rule.title')}</h2>
+        <H id="plan-rule-title" className={s.title}>{t('plan.rule.title')}</H>
         {!open && <button type="button" className={s.link} onClick={start}>{t('plan.rule.edit')}</button>}
       </div>
       {!open && <p className={s.lead}>{full ? t('plan.rule.lineFull', { pct: pct(rule.risk), limit: pct(rule.limit) }) : t('plan.rule.line', { pct: pct(rule.risk) })}</p>}
@@ -133,8 +150,13 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
   const [targets] = useTargets()
   // Lo pedido desde Resumen: Oportunidades (queue.js) o Aportes (investNav).
   const [arrival] = useState(() => { const o = takeOppQueue(); const a = takePlanQueue(); return o || a })
-  const [sub, setSub] = useState(() => arrival?.sub || 'calc')
+  const [boot] = useState(() => normPlanSub(arrival?.sub))
+  const [sub, setSub] = useState(boot.sub)
+  const [calcOpen, setCalcOpen] = useState(boot.calc)
+  const [plansOpen, setPlansOpen] = useState(boot.plans)
   const refs = useRef({})
+  const calcHead = useRef(null)
+  const plansHead = useRef(null)
   const [rule, setRule] = useState(pb.rule)
   const ruleTouched = useRef(false)
   const [plans, setPlans] = useState({ phase: 'loading', list: [] })
@@ -209,7 +231,7 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
 
   function openPlan(p) {
     setEditing({ id: p.id, k: p.k, name: p.name, ts: p.ts, label: planLabel(p, t, fmt) })
-    if (p.k === 'trade') { setCalcSeed({ ...p }); go('calc') } else { setApSeed({ ...p }); go('aportes') }
+    if (p.k === 'trade') { setCalcSeed({ ...p }); go('calc') } else { setApSeed({ ...p }); go('aportes', { top: true }) }
   }
   async function renamePlan(p, name) {
     const ok = await persist({ op: 'upsert', plan: { ...p, name: String(name || '').trim() } })
@@ -227,9 +249,19 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
     })
   }
 
-  function go(next) {
-    setSub(next)
-    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => refs.current[next]?.focus())
+  // go('calc') y go('planes') siguen valiendo: abren la sección en su parte.
+  function go(next, { top = false } = {}) {
+    const n = normPlanSub(next)
+    setSub(n.sub)
+    if (n.calc) setCalcOpen(true)
+    if (n.plans) setPlansOpen(true)
+    const target = n.calc ? calcHead : n.plans ? plansHead : null
+    const run = () => {
+      const el = target?.current || refs.current[n.sub]
+      if (target?.current || top) el?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+      el?.focus?.({ preventScroll: !!(target?.current || top) })
+    }
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run)
   }
   function onSubKey(e) {
     const i = PLAN_SUBS.indexOf(sub)
@@ -242,7 +274,7 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
   }
   function changeSub(next) {
     // Cambiar de parte a mano deja de editar el plan abierto si es de otro tipo.
-    if (editing && ((next === 'calc' && editing.k !== 'trade') || (next === 'aportes' && editing.k !== 'aporte'))) setEditing(null)
+    if (editing && ((next === 'oportunidades' && editing.k !== 'trade') || (next === 'aportes' && editing.k !== 'aporte'))) setEditing(null)
     setSub(next)
   }
 
@@ -270,6 +302,10 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
 
   const knownTickers = [...new Set(pb.holdings.map(h => h.t))]
   const common = { pb, fmt, t, view, demo }
+  const stopEditing = (k) => editing?.k === k && (
+    <div className={s.row}><button type="button" className={s.link} onClick={() => setEditing(null)}>{t('plan.pl.stopEditing')}</button></div>
+  )
+  const full = shows(view, 'riskR')
   return (
     <div className={s.wrap}>
       {demo && <p className={s.sample}>{t('plan.sample')}</p>}
@@ -284,27 +320,30 @@ export default function Planificar({ demo = false, view, onTab, onOpen }) {
       </div>
 
       <div role="tabpanel" id={`plan-panel-${sub}`} aria-labelledby={`plan-sub-${sub}`} className={s.wrap}>
-        {sub !== 'planes' && sub !== 'oportunidades' && <RuleCard t={t} fmt={fmt} rule={rule} capital={pb.capital} view={view} demo={demo} onSaveRule={saveRule} onSaveCapital={saveCapital} />}
-        {editing && sub !== 'planes' && sub !== 'oportunidades' && (
-          <div className={s.row}><button type="button" className={s.link} onClick={() => setEditing(null)}>{t('plan.pl.stopEditing')}</button></div>
-        )}
-        {sub === 'calc' && (
-          <Calculator {...common} rule={rule} capital={pb.capital} seed={calcSeed} editing={editing?.k === 'trade' ? editing : null}
-            onSavePlan={saveTradePlan} onAddToPortfolio={(prefill) => setTrade(prefill)} />
-        )}
         {sub === 'oportunidades' && (
-          <Suspense fallback={<p className={s.note} role="status">{t('plan.loading')}</p>}>
-            <Oportunidades pb={pb} fmt={fmt} demo={demo} capital={pb.capital} targets={targets} arriveUsd={arrival?.sub === 'oportunidades' ? arrival.usd : null}
-              focus={arrival?.sub === 'oportunidades' ? arrival.focus : null} onTab={onTab} onOpen={onOpen} onDeposit={(prefill) => setTrade(prefill)} />
-          </Suspense>
+          <>
+            <Suspense fallback={<p className={s.note} role="status">{t('plan.loading')}</p>}>
+              <Oportunidades pb={pb} fmt={fmt} demo={demo} capital={pb.capital} targets={targets} arriveUsd={arrival?.sub === 'oportunidades' ? arrival.usd : null}
+                focus={arrival?.sub === 'oportunidades' ? arrival.focus : null} onTab={onTab} onOpen={onOpen} onDeposit={(prefill) => setTrade(prefill)} />
+            </Suspense>
+            <Fold id="plan-calc" title={t(full ? 'plan.calc.titleFull' : 'plan.calc.title')} open={calcOpen} onToggle={() => setCalcOpen(o => !o)} headRef={calcHead}>
+              <RuleCard t={t} fmt={fmt} rule={rule} capital={pb.capital} view={view} demo={demo} onSaveRule={saveRule} onSaveCapital={saveCapital} flat />
+              {stopEditing('trade')}
+              <Calculator {...common} rule={rule} capital={pb.capital} seed={calcSeed} editing={editing?.k === 'trade' ? editing : null}
+                onSavePlan={saveTradePlan} onAddToPortfolio={(prefill) => setTrade(prefill)} embedded />
+            </Fold>
+          </>
         )}
         {sub === 'aportes' && (
-          <Aportes {...common} capital={pb.capital} targets={targets} seed={apSeed} editing={editing?.k === 'aporte' ? editing : null}
-            onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} onGoOpp={() => go('oportunidades')} arriveUsd={arrival?.sub === 'aportes' ? arrival.usd || null : null} />
-        )}
-        {sub === 'planes' && (
-          <Plans plans={plans} fmt={fmt} t={t} demo={demo} rates={pb.rates.rates}
-            onOpen={openPlan} onRename={renamePlan} onDelete={deletePlan} onGoCalc={() => go('calc')} onRetry={loadPlans} />
+          <>
+            {stopEditing('aporte')}
+            <Aportes {...common} capital={pb.capital} targets={targets} seed={apSeed} editing={editing?.k === 'aporte' ? editing : null}
+              onSavePlan={saveAportePlan} onDeposit={(prefill) => setTrade(prefill)} onTab={onTab} onGoOpp={() => go('oportunidades')} arriveUsd={arrival?.sub === 'aportes' ? arrival.usd || null : null} />
+            <Fold id="plan-pl" title={t('plan.pl.title')} count={plans.phase === 'ready' ? plans.list.length : null} open={plansOpen} onToggle={() => setPlansOpen(o => !o)} headRef={plansHead}>
+              <Plans plans={plans} fmt={fmt} t={t} demo={demo} rates={pb.rates.rates} embedded
+                onOpen={openPlan} onRename={renamePlan} onDelete={deletePlan} onGoCalc={() => go('calc')} onRetry={loadPlans} />
+            </Fold>
+          </>
         )}
       </div>
 

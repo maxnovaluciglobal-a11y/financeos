@@ -25,7 +25,7 @@ export default {
 
   'hlp.g.risk': 'Risk and planning',
   'hlp.q.calc': 'What does the calculator do?',
-  'hlp.a.calc': 'In Plan › Calculator you enter what you want to buy, at what price and where you would put your stop. Using your reference capital and your risk rule, it works out how many units fit so that, if the price reaches the stop, the loss stays within the percentage you chose.\n\nIt only calculates: it buys nothing and does not connect to any broker.',
+  'hlp.a.calc': 'In Plan › Your tranches, at the bottom, tap “How much could I lose if it goes wrong?” to open it: you enter what you want to buy, at what price and where you would put your stop. Using your reference capital and your risk rule, it works out how many units fit so that, if the price reaches the stop, the loss stays within the percentage you chose.\n\nIt only calculates: it buys nothing and does not connect to any broker.',
   'hlp.q.stop': 'What is the risk at the stop?',
   'hlp.a.stop': 'The stop is the price at which you would sell to cut a loss. The risk at the stop is what you would lose if the price gets there: (entry − stop) × units.\n\nYour risk rule says what percentage of your capital you accept to lose on one trade (1 % unless you change it). If you do not enter a stop, the calculator uses an estimated one, 8 % below the entry.',
   'hlp.q.cash': 'What is cash?',

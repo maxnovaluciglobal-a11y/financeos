@@ -6,11 +6,16 @@
 // de 10 índices y materias primas con sparkline mensual, próximos resultados,
 // noticias con 6 filtros y tipos de cambio LatAm (ARS oficial y MEP).
 // Se carga con lazy() desde el hub: nada de esto entra al JS inicial.
+// Orden del 26-nov-2026 (propuesta 10 de la auditoría del flujo de
+// Inversiones): estado de la bolsa con "Actualizar", contexto, 5 índices con
+// "Ver los 10" (cada fila abre la ficha de su ETF), próximos resultados, 3
+// noticias con "Ver las N" y tipos de cambio plegados. Al pie, una línea con el
+// aviso y "Fuentes y licencias"; "Ver lo que sigues" abre Siguiendo › Mi lista.
 //
 // `MarketView` es solo presentación (se prueba con renderToStaticMarkup); el
 // componente por defecto le pasa los datos de useMarket.
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowDown, ArrowLeftRight, ArrowUp, Equal, ExternalLink, RefreshCw, TrendingDown, TrendingUp, TriangleAlert } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, Equal, ExternalLink, RefreshCw, TrendingDown, TrendingUp, TriangleAlert } from 'lucide-react'
 import Sparkline from '../../../components/charts/Sparkline.jsx'
 import { ChoiceGroup } from '../../../components/ui/index.jsx'
 import { useT } from '../../../i18n/useT.js'
@@ -23,6 +28,8 @@ import {
 } from '../../../utils/investMarket.js'
 import NewsThumb from '../news/NewsThumb.jsx'
 import { useMarket } from './useMarket.js'
+import { INVEST_ORIGIN } from '../../../core/investBridge.js'
+import { rememberFollowTab } from '../../../utils/investNav.js'
 import { shows } from '../../../utils/investView.js'
 import s from './market.module.css'
 
@@ -53,6 +60,17 @@ const safeStore = {
   get: (k) => { try { return localStorage.getItem(k) } catch { return null } },
   set: (k, v) => { try { localStorage.setItem(k, v) } catch { /* modo privado: vale para esta visita */ } },
 }
+const followStore = { setItem: (k, v) => safeStore.set(k, v) }
+
+// Cada índice o materia prima abre la ficha del ETF que lo sigue (decisión del
+// 26-nov-2026). Euro/dólar queda sin enlace: no hay un ETF claro en la app (FXE
+// no existe en ninguna lista de moyiq) y abrir uno al azar confundiría.
+export const INDEX_ETF = {
+  '^GSPC': 'SPY', '^DJI': 'DIA', '^IXIC': 'QQQ', '^RUT': 'IWM',
+  'GC=F': 'GLD', 'SI=F': 'SLV', 'CL=F': 'USO', '^TNX': 'IEF', 'BTC-USD': 'BTC-USD',
+}
+export const IDX_SHOWN = 5
+export const NEWS_SHOWN = 3
 
 function Change({ frac }) {
   const c = fmtChange(frac)
@@ -227,12 +245,14 @@ export function Context({ t, m, essential = false }) {
 }
 
 // ── Índices y materias primas ──
-export function Indices({ t, rows, sparks, phase, f }) {
+// Las 5 primeras a la vista; "Ver los 10" despliega el resto (quedan en el
+// DOM, ocultas, para que la cinta pueda saltar a cualquiera).
+export function Indices({ t, rows, sparks, phase, all = false, onAll = () => {}, onOpen }) {
   const loading = phase === 'loading'
+  const extra = rows.length - IDX_SHOWN
   return (
     <section className={s.sec} aria-labelledby="mkt-idx-h">
       <h2 id="mkt-idx-h" className={s.h2}>{t('invest.mkt.idx.title')}</h2>
-      <p className={s.note}>{freshText(t, f)}</p>
       <div className={s.tableWrap}>
         <table className={s.table}>
           <thead>
@@ -243,14 +263,23 @@ export function Indices({ t, rows, sparks, phase, f }) {
               <th scope="col"><abbr title={t('invest.mkt.idx.monthHint')} className={s.abbr}>{t('invest.mkt.idx.col.month')}</abbr></th>
             </tr>
           </thead>
-          <tbody>
-            {rows.map(r => {
+          <tbody id="mkt-idx-rows">
+            {rows.map((r, i) => {
               const name = symName(r, t)
               const sp = sparks?.[r.sym]
               const pc = periodChange(sp)
+              const etf = onOpen ? INDEX_ETF[r.sym] : null
               return (
-                <tr key={r.sym} id={`mkt-row-${r.sym.replace(/[^A-Z0-9]/gi, '')}`} tabIndex={-1}>
-                  <th scope="row">{name}</th>
+                <tr key={r.sym} id={`mkt-row-${r.sym.replace(/[^A-Z0-9]/gi, '')}`} tabIndex={-1} hidden={!all && i >= IDX_SHOWN}
+                  className={etf ? s.idxLink : undefined} onClick={etf ? () => onOpen(etf) : undefined}>
+                  <th scope="row">
+                    {etf ? (
+                      <button type="button" className={s.idxBtn} onClick={(e) => { e.stopPropagation(); onOpen(etf) }}
+                        aria-label={etf === r.sym ? t('invest.mkt.idx.openSelf', { name }) : t('invest.mkt.idx.open', { name, t: etf })}>
+                        {name}
+                      </button>
+                    ) : name}
+                  </th>
                   <td className={`${s.r} ${s.num}`}>{r.price != null ? fmtMarketValue(r.sym, r.price) : <span className={s.muted}>{loading ? t('invest.mkt.idx.loading') : t('invest.mkt.idx.none')}</span>}</td>
                   <td className={s.r}>{r.price != null ? <Change frac={r.changePct} /> : <span className={s.muted}>—</span>}</td>
                   <td>
@@ -263,13 +292,18 @@ export function Indices({ t, rows, sparks, phase, f }) {
           </tbody>
         </table>
       </div>
-      <p className={s.note}>{t('invest.mkt.idx.monthHint')}</p>
+      {all && <p className={s.note}>{t('invest.mkt.idx.monthHint')}</p>}
+      {extra > 0 && (
+        <button type="button" className={s.link} aria-expanded={all} aria-controls="mkt-idx-rows" onClick={() => onAll(!all)}>
+          {all ? t('invest.mkt.idx.fewer') : t('invest.mkt.idx.all', { n: rows.length })}
+        </button>
+      )}
     </section>
   )
 }
 
 // ── Próximos resultados ──
-export function Earnings({ t, earn, onOpen, sample }) {
+export function Earnings({ t, earn, onOpen, sample, quiet = false }) {
   const head = <h2 id="mkt-earn-h" className={s.h2}>{t('invest.mkt.earn.title')}</h2>
   if (earn.phase === 'loading' || !earn.result) {
     return <section className={s.sec} aria-labelledby="mkt-earn-h">{head}<p className={s.note} role="status">{t('invest.mkt.earn.loading')}</p></section>
@@ -306,14 +340,14 @@ export function Earnings({ t, earn, onOpen, sample }) {
       {r.failed > 0 && r.failed < r.total && <p className={s.note}>{t('invest.mkt.earn.partial', { n: r.failed, total: r.total })}</p>}
       {u?.capped && <p className={s.note}>{t('invest.mkt.earn.capped', { n: EARN_MAX_TICKERS })}</p>}
       {body}
-      {src && <p className={s.note}>{t('invest.mkt.earn.source', { source: src })}</p>}
+      {src && !(sample && quiet) && <p className={s.note}>{t('invest.mkt.earn.source', { source: src })}</p>}
       {!sample && !u?.defaults && <p className={s.note}>{t('invest.mkt.earn.privacy')}</p>}
     </section>
   )
 }
 
 // ── Noticias ──
-export function News({ t, news, filter, setFilter, sample }) {
+export function News({ t, news, filter, setFilter, sample, quiet = false, all: expanded = false, onAll = () => {} }) {
   const all = news.items || []
   const head = (
     <div className={s.secHead}>
@@ -352,12 +386,12 @@ export function News({ t, news, filter, setFilter, sample }) {
           <button type="button" className={s.link} onClick={() => setFilter('all')}>{t('invest.mkt.news.seeAll')}</button>
         </p>
       ) : (
-        <ul className={s.news}>
-          {shown.map(n => {
+        <ul className={s.news} id="mkt-news-list">
+          {shown.map((n, i) => {
             const ago = newsAgo(n.hoursAgo)
             const meta = [n.sourceKey ? t(n.sourceKey) : n.source, ago && t(ago.key, { n: ago.n }), f === 'all' && t(newsCatKey(n.cat))].filter(Boolean).join(' · ')
             return (
-              <li key={n.id} className={s.newsItem}>
+              <li key={n.id} className={s.newsItem} hidden={!expanded && i >= NEWS_SHOWN}>
                 <div className={s.newsText}>
                   {n.link ? (
                     <a href={n.link} target="_blank" rel="noopener noreferrer" lang="en" className={s.newsLink}>
@@ -372,24 +406,40 @@ export function News({ t, news, filter, setFilter, sample }) {
           })}
         </ul>
       )}
-      <p className={s.note}>{sample ? t('invest.mkt.news.footSample') : t('invest.mkt.news.foot')}</p>
+      {shown.length > NEWS_SHOWN && (
+        <button type="button" className={s.link} aria-expanded={expanded} aria-controls="mkt-news-list" onClick={() => onAll(!expanded)}>
+          {expanded ? t('invest.mkt.news.fewer') : t('invest.mkt.news.all', { n: shown.length })}
+        </button>
+      )}
+      {!(sample && quiet) && <p className={s.note}>{sample ? t('invest.mkt.news.footSample') : t('invest.mkt.news.foot')}</p>}
     </section>
   )
 }
 
 // ── Tipos de cambio ──
 const FX_SRC = { mindicador: 'invest.mkt.fx.src.mindicador', yahoo: 'invest.mkt.fx.src.yahoo', dolarapi: 'invest.mkt.fx.src.dolarapi', sample: 'invest.mkt.sampleShort' }
-export function Fx({ t, lang, fx, sample, kind, setKind }) {
-  const head = <h2 id="mkt-fx-h" className={s.h2}>{t('invest.mkt.fx.title')}</h2>
-  if (fx.phase === 'loading') return <section className={s.sec} aria-labelledby="mkt-fx-h">{head}<p className={s.note} role="status">{t('invest.mkt.fx.loading')}</p></section>
-  if (fx.phase === 'error') return <section className={s.sec} aria-labelledby="mkt-fx-h">{head}<p className={s.body}>{t('invest.mkt.fx.failed')}</p></section>
-  const rows = fxRows(fx.latam, fx.ars, { sample })
+// Plegado: el título es un botón que despliega la tabla y la elección del
+// dólar argentino (MEP u oficial), que se recuerda igual que antes.
+export function Fx({ t, lang, fx, sample, kind, setKind, open = false, onToggle = () => {} }) {
+  const rows = fx.phase === 'loading' || fx.phase === 'error' ? [] : fxRows(fx.latam, fx.ars, { sample })
+  const n = new Set(rows.map(r => r.ccy)).size
+  const head = (
+    <h2 id="mkt-fx-h" className={s.h2}>
+      <button type="button" className={s.foldBtn} aria-expanded={open} aria-controls="mkt-fx-body" onClick={() => onToggle(!open)}>
+        <span>{t('invest.mkt.fx.title')}{n > 0 && <span className={s.foldCount}> {t('invest.mkt.fx.count', { n })}</span>}</span>
+        <ChevronDown size={18} strokeWidth={2} aria-hidden="true" className={s.foldIc} data-open={open || undefined} />
+      </button>
+    </h2>
+  )
+  if (fx.phase === 'loading') return <section className={s.sec} aria-labelledby="mkt-fx-h">{head}<div id="mkt-fx-body" hidden={!open}><p className={s.note} role="status">{t('invest.mkt.fx.loading')}</p></div></section>
+  if (fx.phase === 'error') return <section className={s.sec} aria-labelledby="mkt-fx-h">{head}<div id="mkt-fx-body" hidden={!open}><p className={s.body}>{t('invest.mkt.fx.failed')}</p></div></section>
   const oficial = rows.find(r => r.id === 'ARS-Oficial')?.rate ?? null
   const choice = arsRateFor(kind, fx.ars?.mep, oficial)
   const usesDolarApi = rows.some(r => r.source === 'dolarapi')
   return (
     <section className={s.sec} aria-labelledby="mkt-fx-h">
       {head}
+      <div id="mkt-fx-body" className={s.foldBody} hidden={!open}>
       <p className={s.note}>{t('invest.mkt.fx.sub')}</p>
       <div className={s.tableWrap}>
         <table className={s.table}>
@@ -420,6 +470,7 @@ export function Fx({ t, lang, fx, sample, kind, setKind }) {
       </div>
       <p className={s.note}>{t('invest.mkt.fx.note')}</p>
       {usesDolarApi && <p className={s.note}>{t('invest.mkt.fx.citeDolarApi')} <a href="https://dolarapi.com" target="_blank" rel="noopener noreferrer" className={s.link}>dolarapi.com<span className="sr-only"> {t('invest.mkt.news.newTab')}</span></a></p>}
+      </div>
     </section>
   )
 }
@@ -428,34 +479,52 @@ export function Fx({ t, lang, fx, sample, kind, setKind }) {
 // API no responde (useMarket → parts); sin `parts`, todo o nada.
 export const samplePart = (m, k) => !!m.sample && (m.parts ? !!m.parts[k] : true)
 
+// ¿Todo es de ejemplo? Entonces basta un aviso corto arriba (la frescura de
+// la cabecera ya dice "Datos de ejemplo"): las secciones no lo repiten.
+export const allSample = (m) => !!m.sample && (!m.parts || Object.values(m.parts).every(Boolean))
+
 // ── Vista completa ──
-export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab, filter = 'all', setFilter = () => {}, kind = 'MEP', setKind = () => {}, view = 'completa' }) {
+export function MarketView({ t, lang = 'es', m, now = Date.now(), onOpen, onTab, filter = 'all', setFilter = () => {}, kind = 'MEP', setKind = () => {}, view = 'completa',
+  idxAll: idxAllProp, setIdxAll: setIdxAllProp, newsAll = false, setNewsAll = () => {}, fxOpen = false, setFxOpen = () => {} }) {
   const essential = !shows(view, 'strip')
   const rows = marketRows(m.bar.data)
   const loading = m.bar.phase === 'loading'
-  const f = feedFreshness({ at: m.bar.at, loading, failed: m.bar.phase === 'error' || m.bar.phase === 'stale', offline: m.offline, sample: samplePart(m, 'bar') })
+  const [idxAllOwn, setIdxAllOwn] = useState(false)
+  const idxAll = idxAllProp ?? idxAllOwn
+  const setIdxAll = setIdxAllProp ?? setIdxAllOwn
+  const quiet = allSample(m)
   const pick = useCallback((sym) => {
-    const el = typeof document !== 'undefined' ? document.getElementById(`mkt-row-${sym.replace(/[^A-Z0-9]/gi, '')}`) : null
-    if (el) { el.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); el.focus?.({ preventScroll: true }) }
-  }, [])
+    const i = rows.findIndex(r => r.sym === sym)
+    if (i >= IDX_SHOWN) setIdxAll(true)
+    const go = () => {
+      const el = typeof document !== 'undefined' ? document.getElementById(`mkt-row-${sym.replace(/[^A-Z0-9]/gi, '')}`) : null
+      if (el) { el.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); el.focus?.({ preventScroll: true }) }
+    }
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go); else go()
+  }, [rows, setIdxAll])
+  const toList = () => { rememberFollowTab('lista', followStore); onTab?.('siguiendo') }
   return (
     <div className={s.market}>
-      {/* Solo si todo lo que enumera es real; si no, cada sección se rotula sola. */}
+      {/* Un solo aviso corto: en vivo en el demo, o que una parte cayó al ejemplo. */}
       {m.demo && !m.sample && m.bar.phase !== 'loading' && <p className={s.sample} role="note">{t('invest.mkt.demoLive')}</p>}
-      {m.sample && <p className={s.sample} role="note">{t('invest.mkt.sample')}</p>}
-      {!essential && <Strip t={t} rows={rows} sparks={m.sparks} loading={loading} onPick={pick} />}
+      {m.sample && !quiet && <p className={s.sample} role="note">{t('invest.mkt.sample')}</p>}
       <Head t={t} m={m} now={now} />
-      <p className={s.body}>{t('invest.mkt.sub')}</p>
+      {!essential && <Strip t={t} rows={rows} sparks={m.sparks} loading={loading} onPick={pick} />}
       <Context t={t} m={m} essential={essential} />
-      <Indices t={t} rows={rows} sparks={m.sparks} phase={m.bar.phase} f={f} />
-      <Earnings t={t} earn={m.earn} onOpen={onOpen} sample={samplePart(m, 'earn')} />
-      <News t={t} news={m.news} filter={filter} setFilter={setFilter} sample={samplePart(m, 'news')} />
-      <Fx t={t} lang={lang} fx={m.fx} sample={samplePart(m, 'fx')} kind={kind} setKind={setKind} />
+      <Indices t={t} rows={rows} sparks={m.sparks} phase={m.bar.phase} all={idxAll} onAll={setIdxAll} onOpen={onOpen} />
+      <Earnings t={t} earn={m.earn} onOpen={onOpen} sample={samplePart(m, 'earn')} quiet={quiet} />
+      <News t={t} news={m.news} filter={filter} setFilter={(f) => { setFilter(f); setNewsAll(false) }} sample={samplePart(m, 'news')} quiet={quiet} all={newsAll} onAll={setNewsAll} />
+      <Fx t={t} lang={lang} fx={m.fx} sample={samplePart(m, 'fx')} kind={kind} setKind={setKind} open={fxOpen} onToggle={setFxOpen} />
       <section className={s.foot} aria-label={t('invest.mkt.sources.label')}>
-        <p className={s.note}>{m.sample ? t('invest.mkt.sources.sample') : t('invest.mkt.sources')}</p>
-        <p className={s.note}>{t('invest.mkt.disclaimer')}</p>
-        <p className={s.body}>{t('invest.mkt.foot')}</p>
-        <button type="button" className={s.btn} onClick={() => onTab?.('siguiendo')}>{t('invest.mkt.toList')}</button>
+        <details className={s.srcLine}>
+          <summary>{t('invest.mkt.disclaimer')} · <span className={s.srcLink}>{t('invest.card.sourcesLink')}</span></summary>
+          <p className={s.note}>{m.sample ? t('invest.mkt.sources.sample') : t('invest.mkt.sources')}</p>
+          <a href={`${INVEST_ORIGIN}/datos-y-licencias.html`} target="_blank" rel="noopener noreferrer" className={s.link}>
+            {t('invest.mkt.sources.page')}<ExternalLink size={13} strokeWidth={2} aria-hidden="true" className={s.ext} /><span className="sr-only"> {t('invest.mkt.news.newTab')}</span>
+          </a>
+        </details>
+        <button type="button" className={s.btn} onClick={toList} aria-describedby="mkt-to-list">{t('invest.mkt.toList')}</button>
+        <span id="mkt-to-list" className="sr-only">{t('invest.mkt.foot')}</span>
       </section>
     </div>
   )
@@ -465,6 +534,9 @@ export default function Market({ demo = false, onOpen, onTab, view = 'esencial' 
   const { t, lang } = useT()
   const m = useMarket({ demo, t })
   const [filter, setFilter] = useState('all')
+  const [idxAll, setIdxAll] = useState(false)
+  const [newsAll, setNewsAll] = useState(false)
+  const [fxOpen, setFxOpen] = useState(false)
   const [kind, setKindState] = useState(() => readArsKind(safeStore.get))
   const setKind = useCallback((k) => { setKindState(k); safeStore.set(ARS_KIND_KEY, k) }, [])
   // Reloj de la cabecera: el horario de la bolsa ("abre a las…") se recalcula
@@ -474,5 +546,6 @@ export default function Market({ demo = false, onOpen, onTab, view = 'esencial' 
     const id = setInterval(() => setNow(Date.now()), 60000)
     return () => clearInterval(id)
   }, [])
-  return <MarketView t={t} lang={lang} m={m} now={now} onOpen={onOpen} onTab={onTab} filter={filter} setFilter={setFilter} kind={kind} setKind={setKind} view={view} />
+  return <MarketView t={t} lang={lang} m={m} now={now} onOpen={onOpen} onTab={onTab} filter={filter} setFilter={setFilter} kind={kind} setKind={setKind} view={view}
+    idxAll={idxAll} setIdxAll={setIdxAll} newsAll={newsAll} setNewsAll={setNewsAll} fxOpen={fxOpen} setFxOpen={setFxOpen} />
 }

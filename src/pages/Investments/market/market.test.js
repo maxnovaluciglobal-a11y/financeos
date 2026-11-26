@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { createElement as h } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { translate } from '../../../i18n/translate.js'
-import { MarketView, freshText, sessionText } from './Market.jsx'
+import { MarketView, freshText, sessionText, INDEX_ETF, allSample } from './Market.jsx'
 import { INITIAL, barState, demoState, fxState, loadEarningsWith, newsState, spyState, vixOf } from './useMarket.js'
 import { DEMO_BAR, demoMonth, demoSpyHistory } from '../../../demo/demoMarket.js'
 import { demoInvestRows } from '../../../demo/demoInvest.js'
@@ -15,6 +15,7 @@ import { regimeFrom, vixZone, nyseSession } from '../../../utils/investMarket.js
 
 const DIR = dirname(fileURLToPath(import.meta.url))
 const t = (k, v) => translate('es', k, v)
+const text = (x) => x.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ')
 const NOW = Date.parse('2026-11-20T15:00:00Z')
 const render = (m, props = {}) => renderToStaticMarkup(h(MarketView, { t, lang: 'es', m, now: NOW, ...props }))
 const live = (patch = {}) => ({ ...demoState(t, NOW), offline: false, refreshing: false, refresh: () => {}, sample: false, ...patch })
@@ -39,7 +40,10 @@ describe('demo de Mercado: coherente y rotulado', () => {
   })
   it('se pinta completo y dice que son datos de ejemplo, sin enlaces externos a noticias', () => {
     const html = render({ ...demoState(t, NOW), offline: false, refreshing: false, refresh: () => {}, sample: true })
-    expect(html).toContain(t('invest.mkt.sample'))
+    // Todo de ejemplo: un solo aviso corto (la frescura de la cabecera), sin repetirlo en cada sección.
+    expect(html).not.toContain(t('invest.mkt.sample'))
+    expect((html.match(/Datos de ejemplo ·/g) || []).length).toBe(1)
+    expect(html).not.toContain(t('invest.mkt.news.footSample'))
     expect(html).toContain(t('invest.mkt.regime.up'))
     expect(html).toContain(t('invest.mkt.meaning.q'))
     expect(html).toContain(t('invest.mkt.spy.ma'))
@@ -47,11 +51,12 @@ describe('demo de Mercado: coherente y rotulado', () => {
     expect(html).toContain(t('invest.mkt.sym.oil'))
     expect(html).toContain(t('invest.mkt.earn.inPortfolio'))
     expect(html).toContain(t('invest.mkt.demo.news.1'))
-    expect(html).toContain(t('invest.mkt.news.footSample'))
     expect(html).toContain(t('invest.mkt.sources.sample'))
     expect((html.match(/<tr id="mkt-row-/g) || []).length).toBe(10)
     expect((html.match(/aria-pressed=/g) || []).length).toBe(6)
-    expect(html).not.toMatch(/href="https?:\/\/(?!dolarapi)/)
+    // Solo la página de fuentes y licencias de Invest (y DolarApi, si se usa).
+    expect(html).not.toMatch(/href="https?:\/\/(?!dolarapi)(?![^"]*\/datos-y-licencias\.html")/)
+    expect(html).toMatch(/href="[^"]*\/datos-y-licencias\.html"/)
     expect(html).not.toContain('Yahoo Finance)')
   })
 })
@@ -148,7 +153,11 @@ describe('privacidad de Mercado', () => {
     const writes = [...view.matchAll(/localStorage\.setItem\(([^,]+),/g)].map(m => m[1].trim())
     expect(writes).toEqual(['k'])
     expect(view).toMatch(/safeStore\.set\(ARS_KIND_KEY, k\)/)
-    expect((view.match(/safeStore\.set\(/g) || []).length).toBe(1)
+    // La otra escritura: la sub-pestaña de Siguiendo ("Ver lo que sigues" → Mi lista), sin tickers.
+    expect((view.match(/safeStore\.set\(/g) || []).length).toBe(2)
+    expect(view).toMatch(/followStore = \{ setItem: \(k, v\) => safeStore\.set\(k, v\) \}/)
+    expect([...view.matchAll(/followStore\b/g)].length).toBe(2)
+    expect(view).toMatch(/rememberFollowTab\('lista', followStore\)/)
   })
 })
 
@@ -221,5 +230,57 @@ describe('Mercado en la vista esencial', () => {
     for (const k of ['meaning.up.simple', 'meaning.down.simple', 'meaning.mixed.simple', 'regime.shortSimple', 'spy.shortSimple']) {
       expect(t(`invest.mkt.${k}`), k).not.toMatch(/\bstops?\b|\bmedias?\b|200/i)
     }
+  })
+})
+
+describe('Mercado ordenado y compacto (26-nov-2026)', () => {
+  const html = render(live({}))
+  const pos = (needle) => html.indexOf(needle)
+  it('orden: bolsa, contexto, índices, resultados, noticias, tipos de cambio; sin el párrafo de introducción', () => {
+    const order = [t('invest.mkt.refresh'), 'id="mkt-ctx-h"', 'id="mkt-idx-h"', 'id="mkt-earn-h"', 'id="mkt-news-h"', 'id="mkt-fx-h"']
+    const at = order.map(pos)
+    expect(at.every(x => x > -1)).toBe(true)
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    expect(t('invest.mkt.sub')).toBe('invest.mkt.sub')
+  })
+  it('5 índices a la vista y "Ver los 10"; cada fila con ETF abre su ficha con un botón con nombre', () => {
+    const rows = [...html.matchAll(/<tr id="mkt-row-[^"]*"[^>]*>/g)].map(m => m[0])
+    expect(rows).toHaveLength(10)
+    expect(rows.filter(r => r.includes('hidden')).length).toBe(5)
+    expect(html).toContain(t('invest.mkt.idx.all', { n: 10 }))
+    expect(INDEX_ETF).toEqual({ '^GSPC': 'SPY', '^DJI': 'DIA', '^IXIC': 'QQQ', '^RUT': 'IWM', 'GC=F': 'GLD', 'SI=F': 'SLV', 'CL=F': 'USO', '^TNX': 'IEF', 'BTC-USD': 'BTC-USD' })
+    const withOpen = renderToStaticMarkup(h(MarketView, { t, lang: 'es', m: live({}), now: NOW, onOpen: () => {} }))
+    expect(withOpen).toContain(`aria-label="${t('invest.mkt.idx.open', { name: 'S&amp;P 500', t: 'SPY' })}"`)
+    expect(withOpen).toContain(`aria-label="${t('invest.mkt.idx.openSelf', { name: 'Bitcoin' })}"`)
+    // Euro/dólar sin ETF claro: sin botón.
+    expect(withOpen).not.toMatch(/ficha de [^"]*Euro/)
+    const table = withOpen.slice(withOpen.indexOf('id="mkt-idx-rows"'), withOpen.indexOf('id="mkt-earn-h"'))
+    expect((table.match(/<button[^>]*aria-label="Abrir la ficha de/g) || []).length).toBe(9)
+  })
+  it('noticias: 3 a la vista y "Ver las 6 noticias"', () => {
+    const items = [...html.matchAll(/<li class="[^"]*newsItem[^"]*"[^>]*>/g)].map(m => m[0])
+    expect(items.length).toBe(6)
+    expect(items.filter(x => x.includes('hidden')).length).toBe(3)
+    expect(html).toContain(t('invest.mkt.news.all', { n: 6 }))
+  })
+  it('tipos de cambio plegados, con la elección del dólar adentro', () => {
+    expect(html).toMatch(/aria-expanded="false" aria-controls="mkt-fx-body"/)
+    expect(html).toMatch(/id="mkt-fx-body"[^>]*hidden/)
+    expect(html.split('id="mkt-fx-body"')[1]).toContain('role="radiogroup"')
+  })
+  it('pie en una línea con el aviso y "Fuentes y licencias"; "Ver lo que sigues" sigue', () => {
+    const foot = html.slice(html.indexOf(t('invest.mkt.sources.label')))
+    const summary = foot.split('<summary>')[1].split('</summary>')[0]
+    expect(text(summary)).toContain(t('invest.mkt.disclaimer'))
+    expect(text(summary)).toContain(t('invest.card.sourcesLink'))
+    expect(foot).toContain(t('invest.mkt.toList'))
+  })
+  it('un solo aviso corto de ejemplo: si todo es de ejemplo, no se repite en cada sección', () => {
+    expect(allSample({ sample: true })).toBe(true)
+    expect(allSample({ sample: true, parts: { bar: true, news: false } })).toBe(false)
+    const partial = render(live({ sample: true, parts: { bar: false, spy: false, earn: false, news: true, fx: false } }))
+    expect(partial).toContain(t('invest.mkt.sample'))
+    expect(partial).toContain(t('invest.mkt.news.footSample'))
+    for (const l of ['es', 'en', 'pt', 'de']) expect(translate(l, 'invest.mkt.sample').length).toBeLessThan(100)
   })
 })

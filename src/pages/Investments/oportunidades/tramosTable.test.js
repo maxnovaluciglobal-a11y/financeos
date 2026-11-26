@@ -192,6 +192,16 @@ describe('Tus tramos: una sola tarjeta', () => {
     expect(text(html)).toContain(interpolate(es['opp.set.lad'], { w: '10/15/25/50' }))
     expect(text(html)).toContain(es['opp.set.rsiOn'])
   })
+  it('orden del 26-nov-2026: la tabla primero, después el monto; sin el párrafo repetido; aviso y cuentas en una línea al pie', () => {
+    const iTable = html.indexOf('<table'), iAmount = html.indexOf(es['opp.cap.amount'])
+    expect(iTable).toBeGreaterThan(-1)
+    expect(iTable).toBeLessThan(iAmount)
+    expect(es['opp.lead']).toBeUndefined()
+    const sum = html.split('<details')[1].split('</summary>')[0]
+    expect(text(sum)).toContain(es['opp.foot.edu'])
+    expect(text(sum)).toContain(es['opp.math.title'])
+    expect(html.lastIndexOf('<details')).toBeGreaterThan(iAmount)
+  })
   it('la nota del reparto único va dentro de "¿Cómo se calcula?"', () => {
     const det = html.split('<details')[1]
     expect(det).toContain(es['opp.cap.lumpNote'])

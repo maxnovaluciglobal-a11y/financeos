@@ -4,7 +4,7 @@
 // de la persona (Chile, CMF: la recomendación habitual es asesoría).
 export default {
   'opp.title': 'Tus tramos',
-  'opp.lead': 'Tu monto, repartido entre tus activos y en 4 tramos por sus medias de 20, 50, 100 y 200 días.',
+  'opp.foot.edu': 'Información educativa, no es recomendación',
   'opp.edu': 'Información educativa, no es una recomendación de inversión. Es un cálculo con tus propias reglas sobre datos públicos con posible retraso.',
   'opp.loading': 'Leyendo las medias…',
   'opp.error': 'No se pudieron leer las historias de precio.',

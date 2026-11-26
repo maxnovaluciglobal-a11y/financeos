@@ -8,6 +8,9 @@
 // La escalera por tramos sobre las medias de 20, 50, 100 y 200 días vive solo
 // en Planificar › Oportunidades (decisión de Walter del 24-nov-2026): aquí, un
 // enlace "Repartir por tramos según tus medias →" en las dos vistas.
+// 26-nov-2026: una sola tarjeta "Cómo lo repartes" (símbolos, reparto, guardar
+// y el enlace a Tus tramos), sin la regla de riesgo (está en la calculadora de
+// Tus tramos) y "¿Cuánto podrías tener?" plegada.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import Money, { useMoney } from '../../../components/Money.jsx'
@@ -20,6 +23,7 @@ import {
 import { rememberPortTab, tabKeyTarget } from '../../../utils/investNav.js'
 import { moneyLocale } from '../../../utils/index.js'
 import { APORTE_EVENT, readAporte } from '../hoy/aporteStore.js'
+import Fold from './Fold.jsx'
 import s from './planificar.module.css'
 
 const readKey = (k) => { try { return localStorage.getItem(k) } catch { return null } }
@@ -71,6 +75,7 @@ export default function Aportes({ pb, fmt, t, capital, targets, seed, editing, o
   // El monto que trae "Repartir" de Resumen manda sobre el guardado (en el
   // ejemplo no se guarda: solo viaja así).
   const [monthAporte, setMonthAporte] = useState(() => arriveUsd || readAporte(readKey))
+  const [projOpen, setProjOpen] = useState(false)
 
   // El aporte del mes que Resumen pasa a Planificar (hoy/aporteStore.js).
   useEffect(() => {
@@ -138,7 +143,6 @@ export default function Aportes({ pb, fmt, t, capital, targets, seed, editing, o
     <>
       <section className={s.card} aria-labelledby="plan-ap-title">
         <h2 id="plan-ap-title" className={s.title}>{t('plan.ap.title')}</h2>
-        <p className={s.lead}>{t('plan.ap.intro')}</p>
         {editing && <p className={s.editing}>{t('plan.pl.editing', { name: editing.label })}</p>}
 
         <label className={s.field}>
@@ -199,21 +203,23 @@ export default function Aportes({ pb, fmt, t, capital, targets, seed, editing, o
           <button type="submit" className={s.btn}>{t('plan.ap.alloc.add')}</button>
         </form>
         {add.err && <p className={s.error} role="alert">{t(`plan.ap.alloc.err.${add.err}`)}</p>}
-      </section>
 
-      <section className={s.card} aria-labelledby="plan-res-title" aria-live="polite">
-        <h2 id="plan-res-title" className={s.title}>{split.ok ? t('plan.ap.res.title', { v: m(fmt.money(split.total)) }) : t('plan.ap.alloc.title')}</h2>
-        {!split.ok ? (
-          <p className={s.note}>{split.error === 'sum' ? t('plan.ap.res.sum', { sum: pctTxt(sum) }) : t('plan.ap.res.none')}</p>
-        ) : (
-          <div className={s.tableWrap}>
-            <table className={s.table}>
-              <thead><tr><th scope="col">{t('plan.ap.res.col.ticker')}</th><th scope="col">{t('plan.ap.res.col.pct')}</th><th scope="col">{t('plan.ap.res.col.amount')}</th></tr></thead>
-              <tbody>{split.rows.map(r => <tr key={r.t}><th scope="row">{r.t}</th><td>{pctTxt(r.p)}</td><td><Money>{fmt.money(r.amount)}</Money></td></tr>)}</tbody>
-              <tfoot><tr><td colSpan={2}>{t('plan.ap.res.total')}</td><td><Money>{fmt.money(split.total)}</Money></td></tr></tfoot>
-            </table>
-          </div>
-        )}
+        <div className={s.wrap} aria-live="polite">
+          {!split.ok ? (
+            alloc.length > 0 && <p className={s.note}>{split.error === 'sum' ? t('plan.ap.res.sum', { sum: pctTxt(sum) }) : t('plan.ap.res.none')}</p>
+          ) : (
+            <>
+              <h3 className={s.subTitle}>{t('plan.ap.res.title', { v: m(fmt.money(split.total)) })}</h3>
+              <div className={s.tableWrap}>
+                <table className={s.table}>
+                  <thead><tr><th scope="col">{t('plan.ap.res.col.ticker')}</th><th scope="col">{t('plan.ap.res.col.pct')}</th><th scope="col">{t('plan.ap.res.col.amount')}</th></tr></thead>
+                  <tbody>{split.rows.map(r => <tr key={r.t}><th scope="row">{r.t}</th><td>{pctTxt(r.p)}</td><td><Money>{fmt.money(r.amount)}</Money></td></tr>)}</tbody>
+                  <tfoot><tr><td colSpan={2}>{t('plan.ap.res.total')}</td><td><Money>{fmt.money(split.total)}</Money></td></tr></tfoot>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
         {split.ok && (
           <div className={s.row}>
             <button type="button" className={`${s.btn} ${s.btnPrimary}`} disabled={!!saveBlock} aria-describedby={saveBlock ? 'plan-ap-save-block' : undefined} onClick={() => onSavePlan(planInput)}>{editing ? t('plan.pl.update') : t('plan.ap.savePlan')}</button>
@@ -222,15 +228,13 @@ export default function Aportes({ pb, fmt, t, capital, targets, seed, editing, o
           </div>
         )}
         {split.ok && saveBlock && <p id="plan-ap-save-block" className={s.error}>{t(`plan.ap.saveBlock.${saveBlock}`)}</p>}
-        <p className={s.note}>{t('plan.ap.foot')}</p>
         {onGoOpp
           ? <button type="button" className={s.link} onClick={onGoOpp}>{t('plan.ap.ladderHint')}</button>
           : <p className={s.note}>{t('plan.ap.ladderHint')}</p>}
+        <p className={s.note}>{t('plan.ap.foot')}</p>
       </section>
 
-
-      <section className={s.card} aria-labelledby="plan-proj-title">
-        <h2 id="plan-proj-title" className={s.title}>{t('plan.proj.title')}</h2>
+      <Fold id="plan-proj" title={t('plan.proj.title')} open={projOpen} onToggle={() => setProjOpen(o => !o)}>
         <div className={s.grid}>
           <label className={s.field}>
             <span className={s.fieldLabel}>{t('plan.proj.years')}</span>
@@ -262,7 +266,7 @@ export default function Aportes({ pb, fmt, t, capital, targets, seed, editing, o
           ) : prErr ? <p className={s.error}>{t(`plan.proj.err.${prErr[1]}`)}</p> : null}
         </div>
         <p className={s.warn} role="note">{t('plan.proj.warn')}</p>
-      </section>
+      </Fold>
     </>
   )
 }

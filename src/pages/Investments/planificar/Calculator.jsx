@@ -56,7 +56,9 @@ export function calcInputs(form, { full, capital, rule }) {
   }
 }
 
-export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed, editing, onSavePlan, onAddToPortfolio }) {
+// embedded: dentro de la sección plegable de Tus tramos (Planificar.jsx), que
+// ya lleva el título; aquí van el resto de la calculadora sin tarjeta propia.
+export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed, editing, onSavePlan, onAddToPortfolio, embedded = false }) {
   const full = shows(view, 'riskR')
   const { m } = useMoney()
   const [form, setForm] = useState({ ticker: '', entry: '', stop: '', drop: '', capital: '', risk: '' })
@@ -153,8 +155,8 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
     : null
 
   return (
-    <section className={s.card} aria-labelledby="plan-calc-title">
-      <h2 id="plan-calc-title" className={s.title}>{t(full ? 'plan.calc.titleFull' : 'plan.calc.title')}</h2>
+    <Wrap embedded={embedded}>
+      {!embedded && <h2 id="plan-calc-title" className={s.title}>{t(full ? 'plan.calc.titleFull' : 'plan.calc.title')}</h2>}
       <p className={s.lead}>{t(full ? 'plan.calc.introFull' : 'plan.calc.intro')}</p>
       {editing && <p className={s.editing}>{t('plan.pl.editing', { name: editing.label })}</p>}
 
@@ -287,6 +289,12 @@ export default function Calculator({ pb, fmt, t, view, demo, rule, capital, seed
         </div>
       )}
       <p className={s.note}>{t('plan.calc.foot')} {t('plan.dataNote')}</p>
-    </section>
+    </Wrap>
   )
+}
+
+function Wrap({ embedded, children }) {
+  return embedded
+    ? <div className={s.wrap}>{children}</div>
+    : <section className={s.card} aria-labelledby="plan-calc-title">{children}</section>
 }

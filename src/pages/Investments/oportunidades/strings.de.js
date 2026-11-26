@@ -1,6 +1,6 @@
 export default {
   'opp.title': 'Ihre Tranchen',
-  'opp.lead': 'Ihr Betrag, aufgeteilt auf Ihre Werte und in 4 Tranchen nach den Durchschnitten über 20, 50, 100 und 200 Tage.',
+  'opp.foot.edu': 'Bildungsinformation, keine Empfehlung',
   'opp.edu': 'Bildungsinformation, keine Anlageempfehlung. Es ist eine Rechnung mit Ihren eigenen Regeln auf öffentlichen Daten, die verzögert sein können.',
   'opp.loading': 'Durchschnitte werden gelesen…',
   'opp.error': 'Die Kursverläufe konnten nicht gelesen werden.',

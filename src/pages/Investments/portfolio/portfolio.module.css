@@ -142,8 +142,13 @@
 .bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; min-width: 0; }
 .barFill { width: 100%; max-width: 28px; border-radius: 6px 6px 2px 2px; background: var(--color-accent-strong, #7A21FF); }
 .barFill[data-empty="true"] { background: var(--fill); }
-.barLabel { font-size: 11px; color: var(--th); white-space: nowrap; }
-.barAmt { font-size: 11px; color: var(--tm); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.barLabel { font-size: 12px; color: var(--th); white-space: nowrap; }
+/* Monto corto y solo en barras altas sin vecina con etiqueta (Dividends.jsx
+   pickBarLabels): puede salirse de su columna, centrado, sin cortarse. */
+.barAmt { min-height: 16px; font-size: 12px; font-weight: 600; color: var(--tm); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: visible; }
+/* En los bordes, la etiqueta se abre hacia adentro para no salirse de la tarjeta. */
+.barAmt[data-edge="start"] { align-self: flex-start; }
+.barAmt[data-edge="end"] { align-self: flex-end; }
 
 /* Objetivos */
 .target { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 12px 0; border-bottom: 0.5px solid var(--brd); }

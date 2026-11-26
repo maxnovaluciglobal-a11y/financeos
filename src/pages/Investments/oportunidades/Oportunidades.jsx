@@ -3,15 +3,20 @@
 //
 // Una sola tarjeta, lo del Plan de Capital de Invest (app/index.html
 // renderCapital, CAP_LADDERS, repartoPorDesvio) llevado a algo que se lee sin
-// saber de bolsa y sin repetir cada activo:
-//  1. Arriba, el monto (o el capital sin invertir, o el efectivo) y una fila que
+// saber de bolsa y sin repetir cada activo. Orden del 26-nov-2026 (propuesta 9
+// de la auditoría del flujo de Inversiones): lo principal primero.
+//  1. La matriz activos × tramos (TramosTable.jsx), justo bajo el título: su
+//     leyenda corta hace de bajada (sin un párrafo que diga lo mismo). Con
+//     monto, el reparto y el estado de cada tramo; sin monto, la distancia del
+//     precio a cada media. Aparte, lo que sigues (signals.js). Y la leyenda.
+//  2. El monto (o el capital sin invertir, o el efectivo) y una fila que
 //     resume cómo se reparte (entre activos · escalera · regla de RSI), con
 //     "Cambiar" que abre los controles en el lugar.
-//  2. El resumen: qué parte cumple HOY tu regla y cuál espera (capital.js).
-//  3. La matriz activos × tramos (TramosTable.jsx): monto y estado de cada
-//     tramo, totales por columna y, aparte, lo que sigues con su distancia a
-//     cada media (signals.js).
-//  4. Leyenda, "¿Cómo se calcula?" con las cuentas, depósito y un solo aviso.
+//  3. El resumen: qué parte cumple HOY tu regla y cuál espera (capital.js).
+//  4. Al pie, una línea: el aviso educativo y "¿Cómo se calcula?", que se
+//     abre con un toque (las cuentas y el aviso completo adentro).
+// La calculadora "¿Cuánto puedo perder si sale mal?" va debajo de esta
+// tarjeta, plegada (planificar/Planificar.jsx).
 // Encuadre (Chile, CMF): información educativa; un cálculo con las reglas de la
 // persona, nunca "compra" ni un orden de conveniencia (la lista sigue el orden
 // del portafolio, por valor).
@@ -146,26 +151,53 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
   const showTable = !loadingNow && rd.phase !== 'error' && items.length > 0
   const bar = (v) => (plan.ok && plan.total > 0 ? `${(v / plan.total) * 100}%` : '0%')
   return (
-    <section ref={capRef} className={`${p.card} ${s.card}`} aria-labelledby="opp-title">
+    <section className={`${p.card} ${s.card}`} aria-labelledby="opp-title">
       <h2 id="opp-title" className={p.title}>{t('opp.title')}</h2>
-      <p className={p.lead}>{t('opp.lead')}</p>
 
-      {/* 1 · Monto y cómo se reparte */}
-      <label className={p.field}>
-        <span className={p.fieldLabel}>{t('opp.cap.amount')}</span>
-        <input className={p.input} value={raw} onChange={e => { setRaw(e.target.value); setSrc(null) }} inputMode="decimal" autoComplete="off"
-          aria-invalid={amountErr || undefined} aria-describedby={amountErr ? 'opp-amount-err' : undefined} />
-      </label>
-      {amountErr && <p id="opp-amount-err" className={p.error}>{t('opp.cap.err.amount')}</p>}
-      {(free > 0 || cash > 0) && (
-        <div className={s.chips}>
-          {free > 0 && <button type="button" className={s.chip} aria-pressed={src === 'free'} aria-label={t('opp.cap.fromFreeAria', { v: m(fmt.money(free)) })}
-            onClick={() => { setRaw(String(free)); setSrc('free') }}>{t('opp.cap.fromFree', { v: m(fmt.money(free)) })}</button>}
-          {cash > 0 && <button type="button" className={s.chip} aria-pressed={src === 'cash'} aria-label={t('opp.cap.fromCashAria', { v: m(fmt.money(cash)) })}
-            onClick={() => { setRaw(String(Math.round(cash * 100) / 100)); setSrc('cash') }}>{t('opp.cap.fromCash', { v: m(fmt.money(cash)) })}</button>}
+      {/* 1 · Matriz y leyenda */}
+      <div aria-live="polite">
+        {!items.length && <p className={p.note}>{t('opp.empty')}</p>}
+        {loadingNow && <p className={p.note} role="status">{t('opp.loading')}</p>}
+        {rd.phase === 'error' && (
+          <div className={p.row}><p className={p.error}>{t('opp.error')}</p><button type="button" className={p.btn} onClick={rd.reload}>{t('opp.retry')}</button></div>
+        )}
+      </div>
+      {showTable && <TramosTable plan={plan.ok ? plan : null} mine={mine} watch={watchItems} readings={rd.readings} t={t} fmt={fmt} lad={lad} onOpen={onOpen} />}
+      {lockedN > 0 && (
+        <div className={p.row}>
+          <p className={p.note}>{t('invest.limit.lockedRow', { n: lockedN })}</p>
+          <button type="button" className={p.btn} onClick={() => announceInvestLimit('tramos')}>{t('invest.limit.cta')}</button>
         </div>
       )}
-      {src === 'arrived' && <p className={p.note}>{t('opp.cap.arrived', { v: m(fmt.money(amt)) })}</p>}
+      {showTable && (
+        <p className={s.legend}>
+          <span className={s.todayTx}><Check size={13} strokeWidth={2.8} aria-hidden="true" />{t('opp.leg.today')}</span>
+          <span><Circle size={11} strokeWidth={2.4} aria-hidden="true" />{t('opp.leg.wait')}</span>
+          {rsiRule && <span className={s.rsiTx}><CircleAlert size={13} strokeWidth={2.4} aria-hidden="true" />{t('opp.leg.rsi')}</span>}
+          <span><span aria-hidden="true">—</span>{t('opp.leg.none')}</span>
+        </p>
+      )}
+      {/* Un solo aviso de ejemplo por pantalla: en el demo ya lo dice Planificar arriba. */}
+      {!demo && sampleList.length > 0 && <p className={p.note}>{t('opp.sample', { list: sampleList.join(', ') })}</p>}
+
+      {/* 2 · Monto y cómo se reparte */}
+      <div ref={capRef} className={s.split}>
+        <label className={p.field}>
+          <span className={p.fieldLabel}>{t('opp.cap.amount')}</span>
+          <input className={p.input} value={raw} onChange={e => { setRaw(e.target.value); setSrc(null) }} inputMode="decimal" autoComplete="off"
+            aria-invalid={amountErr || undefined} aria-describedby={amountErr ? 'opp-amount-err' : undefined} />
+        </label>
+        {amountErr && <p id="opp-amount-err" className={p.error}>{t('opp.cap.err.amount')}</p>}
+        {(free > 0 || cash > 0) && (
+          <div className={s.chips}>
+            {free > 0 && <button type="button" className={s.chip} aria-pressed={src === 'free'} aria-label={t('opp.cap.fromFreeAria', { v: m(fmt.money(free)) })}
+              onClick={() => { setRaw(String(free)); setSrc('free') }}>{t('opp.cap.fromFree', { v: m(fmt.money(free)) })}</button>}
+            {cash > 0 && <button type="button" className={s.chip} aria-pressed={src === 'cash'} aria-label={t('opp.cap.fromCashAria', { v: m(fmt.money(cash)) })}
+              onClick={() => { setRaw(String(Math.round(cash * 100) / 100)); setSrc('cash') }}>{t('opp.cap.fromCash', { v: m(fmt.money(cash)) })}</button>}
+          </div>
+        )}
+        {src === 'arrived' && <p className={p.note}>{t('opp.cap.arrived', { v: m(fmt.money(amt)) })}</p>}
+      </div>
 
       <div className={s.setRow}>
         <SlidersHorizontal size={18} strokeWidth={2} aria-hidden="true" className={s.setIc} />
@@ -218,7 +250,7 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
         <p className={allocReady(alloc) ? p.ok : p.error} aria-live="polite">{allocReady(alloc) ? t('opp.cap.sumOk') : t('opp.cap.sumBad', { sum: pctTxt(pctSum(alloc)) })}</p>
       )}
 
-      {/* 2 · Resumen */}
+      {/* 3 · Resumen del reparto */}
       <div aria-live="polite">
         {plan.ok ? (
           <div className={`${p.result} ${s.sum}`} role="group" aria-label={t('opp.res.title', { v: m(fmt.money(plan.total)) })}>
@@ -231,51 +263,28 @@ export default function Oportunidades({ pb, fmt, demo, capital, targets, arriveU
             <div className={s.bar} aria-hidden="true"><i data-k="today" style={{ width: bar(plan.today) }} /><i data-k="wait" style={{ width: bar(plan.wait) }} /></div>
           </div>
         ) : (
-          <p className={p.note}>{plan.error === 'sum' ? t('opp.res.sum') : t('opp.res.none')}</p>
+          // Sin monto, la leyenda de la tabla ya pide escribirlo: aquí solo si falta la tabla o los % no suman.
+          (plan.error === 'sum' || !showTable) && <p className={p.note}>{plan.error === 'sum' ? t('opp.res.sum') : t('opp.res.none')}</p>
         )}
         {plan.ok && pending.length > 0 && <p className={p.note} role="status">{t('opp.res.pending', { list: pending.join(', ') })}</p>}
       </div>
-
-      {/* 3 · Matriz */}
-      <div aria-live="polite">
-        {!items.length && <p className={p.note}>{t('opp.empty')}</p>}
-        {loadingNow && <p className={p.note} role="status">{t('opp.loading')}</p>}
-        {rd.phase === 'error' && (
-          <div className={p.row}><p className={p.error}>{t('opp.error')}</p><button type="button" className={p.btn} onClick={rd.reload}>{t('opp.retry')}</button></div>
-        )}
-      </div>
-      {showTable && <TramosTable plan={plan.ok ? plan : null} mine={mine} watch={watchItems} readings={rd.readings} t={t} fmt={fmt} lad={lad} onOpen={onOpen} />}
-      {lockedN > 0 && (
-        <div className={p.row}>
-          <p className={p.note}>{t('invest.limit.lockedRow', { n: lockedN })}</p>
-          <button type="button" className={p.btn} onClick={() => announceInvestLimit('tramos')}>{t('invest.limit.cta')}</button>
-        </div>
-      )}
-
-      {/* 4 · Leyenda, cuentas, depósito y aviso */}
-      {showTable && (
-        <p className={s.legend}>
-          <span className={s.todayTx}><Check size={13} strokeWidth={2.8} aria-hidden="true" />{t('opp.leg.today')}</span>
-          <span><Circle size={11} strokeWidth={2.4} aria-hidden="true" />{t('opp.leg.wait')}</span>
-          {rsiRule && <span className={s.rsiTx}><CircleAlert size={13} strokeWidth={2.4} aria-hidden="true" />{t('opp.leg.rsi')}</span>}
-          <span><span aria-hidden="true">—</span>{t('opp.leg.none')}</span>
-        </p>
-      )}
       {plan.ok && plan.reassigned && <p className={p.note}>{t('opp.res.reassigned')}</p>}
-      {sampleList.length > 0 && <p className={p.note}>{t('opp.sample', { list: sampleList.join(', ') })}</p>}
-      {demo && !sampleList.length && rd.phase === 'ready' && items.length > 0 && <p className={p.note}>{t('opp.live')}</p>}
-      <div className={s.foot}>
-        <details className={s.how}>
-          <summary>{t('opp.math.title')}</summary>
-          <p className={p.note}>{t('opp.cap.lumpNote')}</p>
-          {plan.ok && <MathSteps plan={plan} t={t} fmt={fmt} m={m} pctTxt={pctTxt} numTxt={numTxt} lad={lad} rsiRule={rsiRule} method={method} math={math} alloc={alloc} />}
-          {['sma', 'tramo', 'days', 'rsi', 'data'].map(k => <p key={k} className={p.note}>{t(`opp.how.${k}`)}</p>)}
-        </details>
-        {plan.ok && onDeposit && (
-          <button type="button" className={p.link} onClick={() => onDeposit({ type: 'deposit', amount: String(amt), currency: 'USD', source: null })}>{t('opp.res.deposit')}</button>
-        )}
-      </div>
-      <p className={s.edu} role="note"><Info size={14} strokeWidth={2} aria-hidden="true" />{t('opp.edu')} {t('opp.res.moves')}</p>
+      {plan.ok && onDeposit && (
+        <button type="button" className={p.link} onClick={() => onDeposit({ type: 'deposit', amount: String(amt), currency: 'USD', source: null })}>{t('opp.res.deposit')}</button>
+      )}
+
+      {/* 4 · Al pie, en una línea: aviso educativo y "¿Cómo se calcula?" */}
+      <details className={s.how}>
+        <summary>
+          <Info size={14} strokeWidth={2} aria-hidden="true" />
+          <span className={s.howTxt}>{t('opp.foot.edu')} · <span className={s.howLink}>{t('opp.math.title')}</span></span>
+        </summary>
+        <p className={s.edu} role="note">{t('opp.edu')} {t('opp.res.moves')}</p>
+        {demo && !sampleList.length && rd.phase === 'ready' && items.length > 0 && <p className={p.note}>{t('opp.live')}</p>}
+        <p className={p.note}>{t('opp.cap.lumpNote')}</p>
+        {plan.ok && <MathSteps plan={plan} t={t} fmt={fmt} m={m} pctTxt={pctTxt} numTxt={numTxt} lad={lad} rsiRule={rsiRule} method={method} math={math} alloc={alloc} />}
+        {['sma', 'tramo', 'days', 'rsi', 'data'].map(k => <p key={k} className={p.note}>{t(`opp.how.${k}`)}</p>)}
+      </details>
     </section>
   )
 }

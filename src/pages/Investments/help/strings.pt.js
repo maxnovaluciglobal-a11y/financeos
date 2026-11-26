@@ -25,7 +25,7 @@ export default {
 
   'hlp.g.risk': 'Risco e planejamento',
   'hlp.q.calc': 'O que a calculadora faz?',
-  'hlp.a.calc': 'Em Planejar › Calculadora você informa o que quer comprar, a que preço e onde colocaria o stop. Com seu capital de referência e sua regra de risco, ela calcula quantas unidades cabem para que, se o preço chegar ao stop, a perda não passe da porcentagem que você escolheu.\n\nEla só calcula: não compra nada nem se conecta a nenhuma corretora.',
+  'hlp.a.calc': 'Em Planejar › Suas faixas, no fim, «Quanto posso perder se der errado?» abre com um toque: você informa o que quer comprar, a que preço e onde colocaria o stop. Com seu capital de referência e sua regra de risco, ela calcula quantas unidades cabem para que, se o preço chegar ao stop, a perda não passe da porcentagem que você escolheu.\n\nEla só calcula: não compra nada nem se conecta a nenhuma corretora.',
   'hlp.q.stop': 'O que é o risco até o stop?',
   'hlp.a.stop': 'O stop é o preço em que você venderia para cortar uma perda. O risco até o stop é o que você perderia se o preço chegasse lá: (entrada − stop) × unidades.\n\nSua regra de risco diz que porcentagem do seu capital você aceita perder em uma operação (1 % se você não mudar). Se você não informar um stop, a calculadora usa um estimado, 8 % abaixo da entrada.',
   'hlp.q.cash': 'O que é o caixa?',

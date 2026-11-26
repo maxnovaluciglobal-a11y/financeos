@@ -137,3 +137,32 @@
 .kind { display: flex; flex-direction: column; gap: 6px; }
 
 .foot { display: flex; flex-direction: column; gap: 8px; padding: 0 4px; }
+
+/* ── 26-nov-2026: filas que abren su ETF, secciones plegables y pie en una línea ── */
+.idxLink { cursor: pointer; }
+.idxLink:hover th, .idxLink:hover td { background: var(--fill); }
+.idxBtn {
+  display: inline-flex; align-items: center; gap: 2px; min-height: 44px; margin: -8px 0; padding: 0; border: 0; background: none;
+  color: var(--tx); font: inherit; text-align: left; cursor: pointer;
+  text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--th); text-underline-offset: 3px;
+}
+.idxBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
+.table tbody tr[hidden] { display: none; }
+.newsItem[hidden] { display: none; }
+.foldBtn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; margin: -8px 0; padding: 0;
+  border: 0; background: none; color: var(--tx); font: inherit; font-weight: 600; text-align: left; cursor: pointer;
+}
+.foldBtn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 6px; }
+.foldCount { font-weight: 400; color: var(--th); font-size: var(--t-footnote); }
+.foldIc { flex: 0 0 auto; color: var(--th); transition: transform .2s ease; }
+.foldIc[data-open] { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .foldIc { transition: none; } }
+.foldBody { display: flex; flex-direction: column; gap: 10px; }
+.foldBody[hidden] { display: none; }
+.srcLine { font-size: var(--t-footnote); line-height: var(--t-footnote-lh); color: var(--th); }
+.srcLine summary { display: block; min-height: 44px; padding: 12px 0; cursor: pointer; list-style: none; }
+.srcLine summary::-webkit-details-marker { display: none; }
+.srcLine summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 6px; }
+.srcLink { font-weight: 600; color: var(--info); text-decoration: underline; text-underline-offset: 2px; }
+.srcLine > p { margin: 0 0 6px; }
