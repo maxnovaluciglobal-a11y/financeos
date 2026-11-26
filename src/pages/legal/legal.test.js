@@ -77,7 +77,11 @@ describe('legal pages × languages', () => {
           // Modelo A (26-nov-2026): sin tarjeta y sin cobro; ya no es "si se ofrece".
           const NO_CARD = { es: /sin tarjeta|No se pide tarjeta/, en: /no card|No card/, pt: /sem cartão|Não é pedido cartão/, de: /ohne Karte|keine Karte/ }
           expect(text).not.toMatch(/si se ofrece|if offered|se oferecido|falls angeboten/)
-          if (page === 'terms' || page === 'license') {
+          if (page === 'privacy') {
+            // D1/D2: el HMAC del correo de la prueba y el borrado de la copia a los 90 días.
+            expect(text).toMatch(/HMAC/)
+            expect(text).toMatch(/90/)
+          } else if (page === 'terms' || page === 'license') {
             expect(text).toMatch(TRIAL)
             expect(text).toMatch(NO_CARD[lang])
             expect(text).not.toMatch(/se convierte automáticamente|converts automatically|se converte automaticamente|wird das Abo ab dem 15/)

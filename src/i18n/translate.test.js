@@ -440,7 +440,7 @@ describe('paridad de las claves de la oferta de Pro con prueba (es/en/pt/de)', (
 
   it('las 4 lenguas tienen exactamente las mismas claves', () => {
     const base = pick(es)
-    expect(base.length).toBe(16) // 11 + billing.renewal.monthly, billing.renewal.noTrial, billing.renewal.annual, billing.cancelLink (LEG-N5) + billing.native.unavailable (app de tienda, 19-nov-2026)
+    expect(base.length).toBe(14) // 9 (sin billing.trialBadge ni billing.trialNote desde el modelo A) + billing.renewal.monthly, billing.renewal.noTrial, billing.renewal.annual, billing.cancelLink (LEG-N5) + billing.native.unavailable (app de tienda, 19-nov-2026)
     expect(pick(en)).toEqual(base)
     expect(pick(pt)).toEqual(base)
     expect(pick(de)).toEqual(base)
@@ -460,11 +460,12 @@ describe('paridad de las claves de la oferta de Pro con prueba (es/en/pt/de)', (
   })
 
   it('modelo A: la nota de la prueba dice que no se pide tarjeta ni se cobra; la compra se puede cancelar', () => {
-    expect(es['billing.trialNote']).toMatch(/Sin tarjeta/)
-    expect(en['billing.trialNote']).toMatch(/No card/)
-    expect(pt['billing.trialNote']).toMatch(/Sem cartão/)
-    expect(de['billing.trialNote']).toMatch(/Ohne Karte/)
-    for (const d of [es, en, pt, de]) expect(d['billing.trialNote']).not.toContain('{next}')
+    // La nota vive en components/proTrial/ui.*.js (fuera del JS inicial) como proTrial.note.
+    expect(es['proTrial.note']).toMatch(/Sin tarjeta/)
+    expect(en['proTrial.note']).toMatch(/No card/)
+    expect(pt['proTrial.note']).toMatch(/Sem cartão/)
+    expect(de['proTrial.note']).toMatch(/Ohne Karte/)
+    for (const d of [es, en, pt, de]) expect(d['billing.trialNote']).toBeUndefined()
     for (const k of ['billing.renewal.monthly', 'billing.renewal.annual']) {
       expect(es[k]).not.toMatch(/prueba/)
       expect(en[k]).not.toMatch(/trial/)
@@ -538,7 +539,7 @@ describe('paridad de proTrial. y pro.demo. (es/en/pt/de)', () => {
   const pick = (dict) => Object.keys(dict).filter(k => !k.endsWith('@native') && (k.startsWith('proTrial.') || k.startsWith('pro.demo.') || k.startsWith('pro.gate.preview'))).sort()
   it('las 4 lenguas tienen las mismas claves y variables', () => {
     const base = pick(es)
-    expect(base.length).toBe(44) // 13 + 31 de la prueba sin tarjeta (modelo A, 26-nov-2026; 24 de los avisos viven en components/proTrial/)
+    expect(base.length).toBe(46) // 13 + 33 de la prueba sin tarjeta (modelo A, 26-nov-2026; viven en components/proTrial/)
     for (const d of [en, pt, de]) expect(pick(d)).toEqual(base)
     const vars = (s) => (String(s).match(/\{\w+\}/g) || []).sort().join(',')
     for (const k of base) for (const d of [en, pt, de]) expect(vars(d[k]), k).toBe(vars(es[k]))

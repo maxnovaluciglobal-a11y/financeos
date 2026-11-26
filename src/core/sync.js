@@ -193,6 +193,8 @@ export async function pushNow() {
     await rawPush(blob, updatedAt)
     writeMeta({ lastPushedAt: updatedAt, lastSyncedAt: Date.now() })
     setStatus(hasPendingChanges() ? 'pending' : 'ok')
+    // Resumen de la prueba sin tarjeta (días 10 y 13): usó la sincronización.
+    import('./proTrial.js').then(m => m.markTrialFeatureUsed('sync')).catch(logRejection('sync:trialUse'))
     return { ok: true, updatedAt }
   } catch (e) {
     setStatus('error', syncErrorCode(e))

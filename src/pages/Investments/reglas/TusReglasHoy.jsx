@@ -104,7 +104,8 @@ export default function TusReglasHoy({ items = [], spyRows, vix = null, demo = f
 
   let body
   if (!owned) body = <p className={s.text}>{t('rul.empty.noPositions')}</p>
-  else if (sum.loading && !sum.read) body = <p className={s.muted} role="status">{t('rul.loading')}</p>
+  // Sin role="status": ya va dentro del <div aria-live="polite"> de abajo (I6).
+  else if (sum.loading && !sum.read) body = <p className={s.muted}>{t('rul.loading')}</p>
   else if (!sum.read) {
     const failed = items.some(i => i.rows === null) && items.every(i => i.rows === null)
     body = (
@@ -176,7 +177,7 @@ export default function TusReglasHoy({ items = [], spyRows, vix = null, demo = f
           </label>
           <p id="hoy-rules-al-help" className={s.muted}>{t('rul.al.allHelp')}</p>
           <details className={s.pick}>
-            <summary className={s.link}>{t('rul.al.pick')}</summary>
+            <summary className={s.link}>{t('rul.al.pick')}<ChevronRight size={14} className={s.sumChev} aria-hidden="true" /></summary>
             <fieldset className={s.fieldset}>
               <legend className={s.muted}>{t('rul.al.pickLegend')}</legend>
               {sum.rows.map(r => (

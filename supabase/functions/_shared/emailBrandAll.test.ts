@@ -13,6 +13,7 @@ import { renderEmail as renderDiagnostico } from "../send-nurture-diagnostico-em
 import { renderEmail as renderInvest } from "../send-nurture-invest-email/nurtureEmailLogic.ts";
 import { renderCustomerEmail, renderInternalEmail } from "../send-cancellation-confirmation/cancellationLogic.ts";
 import { renderTrialEmail } from "../send-trial-activation-email/trialActivationLogic.ts";
+import { renderProTrialEmail } from "../send-pro-trial-email/proTrialEmailLogic.ts";
 import { renderReportEmail } from "../send-report-email/reportEmailLogic.ts";
 import { renderEmail as renderAuth } from "../auth-email-hook/emailHookLogic.ts";
 import { renderNotifyEmail } from "../notify-admin-signup/notifyLogic.ts";
@@ -41,6 +42,9 @@ const SAMPLES: [string, string][] = [
   ["send-cancellation-confirmation · cliente", renderCustomerEmail(CANCEL_ROW).html],
   ["send-cancellation-confirmation · interno", renderInternalEmail(CANCEL_ROW).html],
   ["send-trial-activation-email", renderTrialEmail("day10", TRIAL_ROW, { ...NURTURE, portalUrl: "https://billing.example/p" }).html],
+  ["send-pro-trial-email · bienvenida", renderProTrialEmail("welcome", { lang: "es", ends_at: "2026-12-10T12:00:00Z" }).html],
+  ["send-pro-trial-email · día 10", renderProTrialEmail("day10", { lang: "de", ends_at: "2026-12-10T12:00:00Z" }).html],
+  ["send-pro-trial-email · fin", renderProTrialEmail("ended", { lang: "pt", ends_at: "2026-12-10T12:00:00Z" }).html],
   ["send-report-email", renderReportEmail({ to: "c@x.com", clientName: "Ana", month: "2026-09", pdfBase64: "", filename: "r.pdf", lang: "es", senderEmail: "asesor@x.com" }).html],
   ["auth-email-hook · moyiq", renderAuth("moyiq", "recovery", "https://x.test/verify", "es").html],
   ["auth-email-hook · invest", renderAuth("invest", "signup", "https://x.test/verify", "en").html],

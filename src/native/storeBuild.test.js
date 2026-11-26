@@ -19,4 +19,12 @@ describe('compilación de las tiendas', () => {
       expect(readFileSync(new URL(f, import.meta.url), 'utf8'), f).toContain('STORE_BUILD')
     }
   })
+  it('B2: en la app de tienda ni Más ni Ajustes ofrecen la prueba o "Pasar a Pro" (canShowProMarketing)', () => {
+    const more = readFileSync(new URL('../pages/More/index.jsx', import.meta.url), 'utf8')
+    expect(more).toMatch(/\(!isPro \|\| noCardTrial\) && canShowProMarketing\(\) &&/)
+    const settings = readFileSync(new URL('../pages/Settings/index.jsx', import.meta.url), 'utf8')
+    expect(settings).toMatch(/const showUpgradeHint = !isDemo && canShowProMarketing\(\) &&/)
+    const notices = readFileSync(new URL('../components/ProTrialNotices.jsx', import.meta.url), 'utf8')
+    expect(notices).toMatch(/const web = canShowWebCheckout\(\) && canShowProMarketing\(\)/)
+  })
 })

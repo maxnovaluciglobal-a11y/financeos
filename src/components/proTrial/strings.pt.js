@@ -3,7 +3,7 @@ export default {
   "proTrial.offer.body": "Use todo o Pro com os seus dados. Ao terminar, você volta ao Starter: nada é cobrado e seus dados continuam aqui.",
   "proTrial.offer.includes": "O Pro inclui",
   "proTrial.offer.starter": "Continuar no Starter",
-  "proTrial.offer.later": "Se preferir, você pode começar depois em Ajustes › Assinatura e plano.",
+  "proTrial.offer.later": "Se preferir, você pode começar depois em Configurações › Assinatura e plano.",
   "proTrial.feature.sync": "Sincronização criptografada entre seus dispositivos",
   "proTrial.feature.push": "Avisos no navegador",
   "proTrial.feature.advisor": "Modo Consultor",

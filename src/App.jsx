@@ -22,8 +22,6 @@ import { markInternalUser, trackOAuthSignupDone } from './utils/webAnalytics.js'
 import { usePageStack } from './hooks/usePageStack.js'
 import { usePlan } from './hooks/usePlan.js'
 import { startChecklist, markPageVisited } from './utils/proChecklist.js'
-// Prueba de Pro sin tarjeta: fuera del JS inicial (se pide después del primer pintado).
-const loadProTrial = () => import('./core/proTrial.js')
 import { useState, useEffect } from 'react'
 import { listenSwOpen } from './utils/swOpen.js'
 import { logClientError, logRejection } from './utils/errorLog.js'
@@ -112,7 +110,6 @@ function Inner() {
     if (!isPro || isDemoMode()) return
     startChecklist()
     markPageVisited(page)
-    loadProTrial().then(m => m.markTrialFeatureUsed(page)).catch(logRejection('App:trialUse'))
   }, [page, isPro])
   const [licensed, setLicensed] = useState(isLicenseActive() || isStarterAcknowledged())
   // undefined = todavía verificando sesión, null = sin sesión, objeto = autenticado.
@@ -241,16 +238,6 @@ function Inner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ownerOk])
 
-  // Prueba de Pro sin tarjeta (migración 20261126000000): una vez por sesión,
-  // con la cuenta ya confirmada en este dispositivo y el plan elegido, el
-  // servidor dice si la cuenta puede empezarla, si está en curso (empezada en
-  // otro dispositivo: se toma su licencia) o si terminó (vuelta a Starter).
-  useEffect(() => {
-    if (isDemo || !ownerOk || !licensed) return
-    loadProTrial().then(m => m.refreshProTrial({ userId: session?.user?.id })).catch(logRejection('App:proTrial'))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownerOk, licensed])
-
   useEffect(() => {
     if (isDemo) return
     const timer = setTimeout(() => setBootTimedOut(true), 12000)
@@ -366,8 +353,10 @@ function Inner() {
       {session?.user && !isDemo && (
         <Suspense fallback={null}><NpsPrompt createdAt={session.user.created_at} /></Suspense>
       )}
+      {/* Prueba de Pro sin tarjeta: el estado con el servidor, lo usado y los avisos
+          viven en ese chunk diferido (fuera del JS inicial). */}
       {session?.user && !isDemo && (
-        <Suspense fallback={null}><ProTrialNotices setPage={setPage} /></Suspense>
+        <Suspense fallback={null}><ProTrialNotices setPage={setPage} page={page} userId={session.user.id} /></Suspense>
       )}
       <Toast />
     </Shell>

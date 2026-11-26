@@ -187,6 +187,9 @@ function EsBody() {
             escribir a soporte, para tramitarlos y poder probar que los recibimos.
           </li>
         </ul>
+        <p>
+          <strong>Prueba de Pro (una por persona):</strong> Para que la prueba gratuita de Pro sea una por persona, cuando empiezas la prueba (y, si tuviste una prueba o Pro, al borrar tu cuenta) guardamos un código irreversible calculado a partir de tu correo (HMAC con una clave secreta). No guarda tu correo ni permite recuperarlo: solo sirve para saber si ese correo ya usó la prueba. Se conserva aunque borres tu cuenta, como dato mínimo para evitar abusos (interés legítimo), mientras ofrezcamos la prueba.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -207,6 +210,9 @@ function EsBody() {
           Si prefieres que tus datos no salgan de tu dispositivo, deja la sincronización
           desactivada. Desactivarla detiene las subidas, pero no borra la copia ya guardada: para
           borrarla, escribe a support@moyiq.app o elimina la cuenta desde Ajustes.
+        </p>
+        <p>
+          Si la prueba de Pro termina sin que contrates Pro, la copia cifrada de la sincronización se borra del servidor 90 días después del fin de la prueba. Lo que está en tu dispositivo no se toca.
         </p>
       </div>
 
@@ -590,6 +596,9 @@ function EnBody() {
             write to support, to process them and to be able to prove we received them.
           </li>
         </ul>
+        <p>
+          <strong>Pro trial (one per person):</strong> So that the free Pro trial is one per person, when you start the trial (and, if you had a trial or Pro, when you delete your account) we store an irreversible code calculated from your email address (an HMAC with a secret key). It does not store your email address or allow it to be recovered: it only tells us whether that address has already used the trial. It is kept even if you delete your account, as minimal data to prevent abuse (legitimate interest), for as long as we offer the trial.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -610,6 +619,9 @@ function EnBody() {
           leaves the device can keep sync turned off. Turning it off stops uploads but does not
           delete the copy already stored: to delete it, write to support@moyiq.app or delete the
           account from Settings.
+        </p>
+        <p>
+          If the Pro trial ends without you subscribing to Pro, the encrypted sync copy is deleted from the server 90 days after the trial ends. What is on your device is not touched.
         </p>
       </div>
 
@@ -990,6 +1002,9 @@ function PtBody() {
             ou escrever ao suporte, para processá-los e poder provar que os recebemos.
           </li>
         </ul>
+        <p>
+          <strong>Teste do Pro (um por pessoa):</strong> Para que o teste gratuito do Pro seja um por pessoa, quando você começa o teste (e, se você teve um teste ou o Pro, ao excluir sua conta) guardamos um código irreversível calculado a partir do seu email (HMAC com uma chave secreta). Ele não guarda seu email nem permite recuperá-lo: serve apenas para saber se esse email já usou o teste. É mantido mesmo que você exclua sua conta, como dado mínimo para evitar abusos (legítimo interesse), enquanto oferecermos o teste.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -1010,6 +1025,9 @@ function PtBody() {
           não saiam do dispositivo pode manter a sincronização desativada. Desativá-la interrompe os
           envios, mas não apaga a cópia já armazenada: para apagá-la, escreva para
           support@moyiq.app ou exclua a conta em Configurações.
+        </p>
+        <p>
+          Se o teste do Pro terminar sem que você assine o Pro, a cópia criptografada da sincronização é apagada do servidor 90 dias após o fim do teste. O que está no seu dispositivo não é tocado.
         </p>
       </div>
 
@@ -1414,6 +1432,9 @@ function DeBody() {
           eigenen Richtlinien; wir erhalten sie nicht und können sie nicht lesen. Sie können sie in den
           Einstellungen des Telefons ausschalten.
         </p>
+        <p>
+          <strong>Pro-Test (einer pro Person):</strong> Damit der kostenlose Pro-Test einmal pro Person möglich ist, speichern wir beim Start des Tests (und, falls Sie einen Test oder Pro hatten, beim Löschen Ihres Kontos) einen nicht umkehrbaren Code, der aus Ihrer E-Mail-Adresse berechnet wird (HMAC mit einem geheimen Schlüssel). Er enthält Ihre E-Mail-Adresse nicht und erlaubt keine Wiederherstellung: Er zeigt nur, ob diese Adresse den Test schon genutzt hat. Er bleibt auch nach dem Löschen Ihres Kontos gespeichert, als minimales Datum zur Missbrauchsvermeidung (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO), solange wir den Test anbieten.
+        </p>
       </div>
 
       <div className={s.section}>
@@ -1437,6 +1458,9 @@ function DeBody() {
           stoppt neue Uploads, löscht aber die bereits gespeicherte Kopie nicht; zur Löschung
           schreiben Sie an support@moyiq.app oder löschen Sie das Konto in den Einstellungen.
           Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.
+        </p>
+        <p>
+          Endet der Pro-Test, ohne dass Sie Pro abschließen, wird die verschlüsselte Kopie der Synchronisierung 90 Tage nach dem Ende des Tests vom Server gelöscht. Was auf Ihrem Gerät gespeichert ist, bleibt unberührt.
         </p>
       </div>
 

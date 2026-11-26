@@ -22,7 +22,8 @@ import { getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
 import { isPaidPlan } from '../../utils/plans.js'
 import FeedbackSheet from '../../components/FeedbackSheet.jsx'
 import { STRIPE_PORTAL_URL } from '../legal/legalMeta.js'
-import { canShowWebCheckout } from '../../native/storePolicy.js'
+import { canShowWebCheckout, canShowProMarketing } from '../../native/storePolicy.js'
+import { useTrialUiT } from '../../components/proTrial/uiDict.js'
 import s from './more.module.css'
 import { logRejection } from '../../utils/errorLog.js'
 import { useResolvedTheme } from '../../hooks/useResolvedTheme.js'
@@ -32,6 +33,7 @@ const SHOW_FIRMA = true
 import InviteButton from '../../extras/InviteButton.jsx'
 
 function AccountHeader({ setPage }) {
+  const { t: tt } = useTrialUiT()
   const { settings } = useApp()
   const { t } = useT()
   const isDemo = !!settings.isDemo
@@ -56,7 +58,7 @@ function AccountHeader({ setPage }) {
         <div className={s.accountBody}>
           <div className={s.accountName}>{name}</div>
           <div className={s.accountMeta}>
-            {!isDemo && <span className={isPro ? s.planPro : s.plan}>{t(noCardTrial ? 'menu.plan.trial' : isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
+            {!isDemo && <span className={isPro ? s.planPro : s.plan}>{noCardTrial ? tt('menu.plan.trial') : t(isPro ? 'menu.plan.pro' : 'menu.plan.starter')}</span>}
             {!isDemo && isPro && !noCardTrial && STRIPE_PORTAL_URL && canShowWebCheckout() && (
               <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className={s.manage}>
                 <CreditCard size={14} strokeWidth={1.7} aria-hidden="true" />{t('menu.manageSub')}
@@ -67,11 +69,12 @@ function AccountHeader({ setPage }) {
           </div>
         </div>
       </div>
-      {!isDemo && (!isPro || noCardTrial) && (
+      {/* App de tienda: sin "Pasar a Pro" (NAT-1, canShowProMarketing). */}
+      {!isDemo && (!isPro || noCardTrial) && canShowProMarketing() && (
         <button type="button" className={s.upgrade} onClick={() => { requestSettingsSub('plan'); setPage('settings') }}>
           <span>
             <span className={s.upgradeTitle}>{t('menu.upgrade.title')}</span>
-            <span className={s.upgradeSub}>{t('settings.upgrade.sub')}</span>
+            <span className={s.upgradeSub}>{tt('settings.upgrade.sub')}</span>
           </span>
           <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true" />
         </button>

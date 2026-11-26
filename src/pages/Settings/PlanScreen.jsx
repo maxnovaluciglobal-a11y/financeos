@@ -8,6 +8,7 @@ import { useT } from '../../i18n/useT.js'
 import { clearLicense, clearStarterAck, clearServerEntitlement, getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
 import { isPaidPlan, planLabel } from '../../utils/plans.js'
 import { usePlan } from '../../hooks/usePlan.js'
+import { useTrialUiT } from '../../components/proTrial/uiDict.js'
 import { cancelUrl } from '../../utils/cancelUrl.js'
 import UpgradeCard from './UpgradeCard.jsx'
 import { isNativeApp } from '../../native/platform.js'
@@ -16,6 +17,7 @@ import { srow, slbl, ssub, Setting } from './settingsUi.jsx'
 export default function PlanScreen({ isDemo, accountUserId }) {
   const { t, lang } = useT()
   const [confirming, setConfirming] = useState(false)
+  const { t: tt } = useTrialUiT()
   usePlan() // vuelve a pintar si el plan cambia (empezar la prueba desde la tarjeta)
   const plan = getLicensePlan()
   const isPro = isPaidPlan(plan)
@@ -60,11 +62,11 @@ export default function PlanScreen({ isDemo, accountUserId }) {
 
   if (noCardTrial) {
     let date = ''
-    try { date = new Date(trialEnds).toLocaleDateString(lang, { day: 'numeric', month: 'long' }) } catch { date = '' }
+    if (trialEnds) try { date = new Date(trialEnds).toLocaleDateString(lang, { day: 'numeric', month: 'long' }) } catch { date = '' }
     return (
       <div>
         <Setting id="license" style={srow}>
-          <div><div style={slbl}>{t('proTrial.plan.label', { date })}</div><div style={ssub}>{t('proTrial.plan.sub')}</div></div>
+          <div><div style={slbl}>{tt('proTrial.plan.label', { date })}</div><div style={ssub}>{tt('proTrial.plan.sub')}</div></div>
         </Setting>
         <Setting id="upgrade" style={{ borderBottom: 'none' }}><UpgradeCard subStyle={ssub} /></Setting>
       </div>

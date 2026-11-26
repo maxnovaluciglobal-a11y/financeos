@@ -1,5 +1,5 @@
 // src/components/LicenseGate.jsx
-import { useState, useRef } from 'react'
+import { useState, useRef, lazy, Suspense } from 'react'
 import { InlineIcon } from './icons/SignalIcon.jsx'
 import { validateLicense, normalizeLicenseInput, setLicenseEmail, acknowledgeStarter, registerStarterLead, setServerEntitlement } from '../utils/licenseValidator.js'
 import { useT } from '../i18n/useT.js'
@@ -16,6 +16,8 @@ import { logRejection } from '../utils/errorLog.js'
 import { nativePlatform } from '../native/platform.js'
 import { webCheckoutAllowed } from '../native/storePolicy.js'
 import { trackEvent } from '../utils/webAnalytics.js'
+// Pista de la prueba sin tarjeta (solo si la cuenta puede empezarla): diferida, fuera del JS inicial.
+const TrialGateHint = lazy(() => import('./proTrial/TrialGateHint.jsx'))
 
 // Pro se ofrece con la elección anual/mensual, igual que la landing (auditoría
 // 360, C-03 / COM-3). Anual preseleccionado: el precio grande es el mensual
@@ -242,10 +244,10 @@ export default function LicenseGate({ onActivate, userEmail, userId }) {
         {/* App de tienda: solo Starter, sin texto sobre Pro (NAT-1, B2). */}
         {/* Modelo A: quien vino por "14 días gratis" sabe que empieza con Starter y
             que la prueba sin tarjeta se ofrece al terminar la configuración. */}
-        {webPay && config.pricing.noCardTrial === true && (
-          <p style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, margin: '-6px 0 16px' }}>
-            {t('proTrial.gateHint', { days: config.pricing.trialDays })}
-          </p>
+        {webPay && userId && config.pricing.noCardTrial === true && (
+          <Suspense fallback={null}>
+            <TrialGateHint style={{ fontFamily: 'var(--sans)', fontSize: 'var(--t-footnote)', color: 'var(--tm)', lineHeight: 1.5, margin: '-6px 0 16px' }} />
+          </Suspense>
         )}
 
         {webPay && (

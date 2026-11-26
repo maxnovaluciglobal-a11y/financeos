@@ -17,12 +17,14 @@ import { useAccount } from '../../hooks/useAccount.js'
 import { nativePlatform } from '../../native/platform.js'
 import { webCheckoutAllowed } from '../../native/storePolicy.js'
 import { useProTrial } from '../../core/proTrial.js'
+import { useTrialUiT } from '../../components/proTrial/uiDict.js'
 
 export default function UpgradeCard({ subStyle }) {
   const { t, lang } = useT()
   const [period, setPeriod] = useState(DEFAULT_BILLING_PERIOD)
   const account = useAccount()
   const trial = useProTrial()
+  const { t: tt } = useTrialUiT()
   const { href } = checkoutFor(period)
   const { trialDays } = config.pricing
   const canTrial = config.pricing.noCardTrial === true && trial.status?.eligible === true
@@ -41,10 +43,10 @@ export default function UpgradeCard({ subStyle }) {
   return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'12px 14px',margin:'11px 0',background:'var(--color-brand-subtle)',border: 0,borderRadius:'var(--r)'}}>
       <div style={{flex:'1 1 240px',minWidth:0}}>
-        <div style={{fontSize:'var(--t-subhead)',fontWeight:600,color:'var(--tx)'}}>{canTrial ? t('settings.upgrade.title', { days: trialDays }) : t('menu.upgrade.title')}</div>
-        <div style={subStyle}>{t('settings.upgrade.sub')}</div>
+        <div style={{fontSize:'var(--t-subhead)',fontWeight:600,color:'var(--tx)'}}>{canTrial ? tt('settings.upgrade.title', { days: trialDays }) : t('menu.upgrade.title')}</div>
+        <div style={subStyle}>{tt('settings.upgrade.sub')}</div>
         <div style={{...subStyle,marginTop:6}}>
-          {canTrial ? <>{t('billing.trialNote')} </> : null}
+          {canTrial ? <>{tt('proTrial.note')} </> : null}
           <RenewalNote period={period} />
         </div>
       </div>

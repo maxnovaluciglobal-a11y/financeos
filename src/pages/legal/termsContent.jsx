@@ -118,7 +118,7 @@ function EsBody({ store = false } = {}) {
       <div className={s.section}>
         <h2>7. Prueba gratuita de Pro</h2>
         <p>
-          Al crear su cuenta, el usuario puede empezar una prueba gratuita de Pro de 14 días desde que la activa en la app. No se pide tarjeta ni ningún otro medio de pago, y no se cobra nada durante la prueba ni al terminarla: la prueba no se convierte sola en una suscripción de pago. Al terminar, la cuenta vuelve automáticamente al plan Starter y conserva sus datos; solo deja de tener las funciones de Pro. Hay una prueba por cuenta y no se ofrece a quien ya tuvo una prueba o una suscripción Pro. Si el usuario contrata Pro durante la prueba o después, la suscripción de pago empieza en ese momento, sin otra prueba, y se rige por el punto 6. Una prueba con medio de pago iniciada antes de esta versión sigue las condiciones aceptadas al iniciarla.
+          Después de crear su cuenta, el usuario puede empezar en la app (versión web) una prueba gratuita de Pro de 14 días, que corre desde que la activa. No se pide tarjeta ni ningún otro medio de pago, y no se cobra nada durante la prueba ni al terminarla: la prueba no se convierte sola en una suscripción de pago. Al terminar, la cuenta vuelve automáticamente al plan Starter y conserva sus datos; solo deja de tener las funciones de Pro. Hay una prueba por cuenta y no se ofrece a quien ya tuvo una prueba o una suscripción Pro. Si el usuario contrata Pro durante la prueba o después, la suscripción de pago empieza en ese momento, sin otra prueba, y se rige por el punto 6. Una prueba con medio de pago iniciada antes de esta versión sigue las condiciones aceptadas al iniciarla.
         </p>
       </div>
       <div className={s.section}>
@@ -340,7 +340,7 @@ function EnBody({ store = false } = {}) {
       <div className={s.section}>
         <h2>7. Free Pro trial</h2>
         <p>
-          When creating an account, the user can start a free 14-day Pro trial from the moment it is activated in the app. No card or other payment method is requested, and nothing is charged during the trial or when it ends: the trial never turns into a paid subscription on its own. When it ends, the account returns automatically to the Starter plan and keeps its data; only the Pro features stop being available. There is one trial per account, and it is not offered to anyone who already had a Pro trial or a Pro subscription. If the user buys Pro during or after the trial, the paid subscription starts at that moment, with no further trial, and is governed by section 6. A trial with a payment method started before this version follows the conditions accepted when it was started.
+          After creating an account, the user can start a free 14-day Pro trial in the app (web version), running from the moment it is activated. No card or other payment method is requested, and nothing is charged during the trial or when it ends: the trial never turns into a paid subscription on its own. When it ends, the account returns automatically to the Starter plan and keeps its data; only the Pro features stop being available. There is one trial per account, and it is not offered to anyone who already had a Pro trial or a Pro subscription. If the user buys Pro during or after the trial, the paid subscription starts at that moment, with no further trial, and is governed by section 6. A trial with a payment method started before this version follows the conditions accepted when it was started.
         </p>
       </div>
       <div className={s.section}>
@@ -560,7 +560,7 @@ function PtBody({ store = false } = {}) {
       <div className={s.section}>
         <h2>7. Teste gratuito do Pro</h2>
         <p>
-          Ao criar a conta, o usuário pode começar um teste gratuito do Pro de 14 dias a partir do momento em que o ativa no app. Não é pedido cartão nem outro meio de pagamento, e nada é cobrado durante o teste nem ao final: o teste não se converte sozinho em uma assinatura paga. Ao terminar, a conta volta automaticamente ao plano Starter e mantém seus dados; apenas as funções do Pro deixam de estar disponíveis. Há um teste por conta, e ele não é oferecido a quem já teve um teste ou uma assinatura Pro. Se o usuário assinar o Pro durante o teste ou depois, a assinatura paga começa nesse momento, sem outro teste, e segue o item 6. Um teste com meio de pagamento iniciado antes desta versão segue as condições aceitas ao iniciá-lo.
+          Depois de criar a conta, o usuário pode começar no app (versão web) um teste gratuito do Pro de 14 dias, contado a partir do momento em que o ativa. Não é pedido cartão nem outro meio de pagamento, e nada é cobrado durante o teste nem ao final: o teste não se converte sozinho em uma assinatura paga. Ao terminar, a conta volta automaticamente ao plano Starter e mantém seus dados; apenas as funções do Pro deixam de estar disponíveis. Há um teste por conta, e ele não é oferecido a quem já teve um teste ou uma assinatura Pro. Se o usuário assinar o Pro durante o teste ou depois, a assinatura paga começa nesse momento, sem outro teste, e segue o item 6. Um teste com meio de pagamento iniciado antes desta versão segue as condições aceitas ao iniciá-lo.
         </p>
       </div>
       <div className={s.section}>
@@ -811,8 +811,8 @@ function DeBody({ store = false } = {}) {
       <div className={s.section}>
         <h2>§ 5a Kostenlose Testphase von Pro</h2>
         <p>
-          Mit einem Benutzerkonto können Sie Pro 14 Tage lang kostenlos testen, ab dem Zeitpunkt, an
-          dem Sie den Test in der App starten. Wir verlangen dafür keine Karte und kein anderes
+          Nach dem Anlegen eines Benutzerkontos können Sie Pro in der App (Webversion) 14 Tage lang
+          kostenlos testen, ab dem Zeitpunkt, an dem Sie den Test starten. Wir verlangen dafür keine Karte und kein anderes
           Zahlungsmittel. Während und nach der Testphase wird nichts berechnet; der Test wird nicht
           automatisch zu einem kostenpflichtigen Abo. Nach Ablauf wechselt Ihr Konto automatisch zu
           Starter, Ihre Daten bleiben erhalten; nur die Pro-Funktionen stehen nicht mehr zur

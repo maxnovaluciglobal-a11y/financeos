@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import { Check, ChevronRight } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
-import { useT } from '../../i18n/useT.js'
+import { useTrialUiT } from '../../components/proTrial/uiDict.js'
 import { usePlan } from '../../hooks/usePlan.js'
 import Sheet from '../../components/ui/Sheet.jsx'
 import { PRO_STEPS, readChecklist, startChecklist, dismissChecklist, isChecklistVisible } from '../../utils/proChecklist.js'
@@ -16,7 +16,8 @@ import s from './Home.module.css'
 // `suppressed` (A8): el Inicio lo calla mientras "Primeros pasos" esté a medias.
 export default function ProChecklist({ setPage, suppressed = false }) {
   const ctx = useApp() || {}
-  const { t } = useT()
+  // Textos fuera del JS inicial (components/proTrial/ui.*.js).
+  const { t } = useTrialUiT()
   const { isPro } = usePlan()
   const isDemo = !!ctx.settings?.isDemo
   const [state, setState] = useState(() => readChecklist())

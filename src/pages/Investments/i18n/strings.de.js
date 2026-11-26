@@ -484,7 +484,7 @@ export default {
   "invest.limit.title": "Starter-Grenze",
   "invest.limit.positions": "In Starter umfasst das Portfolio bis zu {n} Positionen.",
   "invest.limit.watchlist": "In Starter können Sie bis zu {n} Werte beobachten.",
-  "invest.limit.tramos": "In Starter berechnet Ihre Tranchen bis zu {n} Werte.",
+  "invest.limit.tramos": "In Starter berechnet „Ihre Tranchen“ bis zu {n} Werte.",
   "invest.limit.import": "Positionen aus CSV oder Excel importieren ist Teil von Pro.",
   "invest.limit.alerts": "In Starter erscheinen Preisalarme in der App. Benachrichtigungen im Browser sind Teil von Pro.",
   "invest.limit.pro": "Mit Pro gibt es keine Grenzen.",

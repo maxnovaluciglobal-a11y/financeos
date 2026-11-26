@@ -31,6 +31,7 @@ import config from '../../config.js'
 import { proPriceVars, withCheckoutLang, checkoutFor, checkoutPlanForHref, DEFAULT_BILLING_PERIOD } from '../../utils/pricing.js'
 import TrialStartButton from './TrialStartButton.jsx'
 import { useProTrial } from '../../core/proTrial.js'
+import { useTrialUiT } from '../proTrial/uiDict.js'
 import { canShowWebCheckout } from '../../native/storePolicy.js'
 import { trackEvent } from '../../utils/webAnalytics.js'
 import { IconIQScore } from '../icons/Icons.jsx'
@@ -66,6 +67,7 @@ function DemoProStrip({ t, days }) {
 export default function ProGate({ children, feature, featureKey, benefits = DEFAULT_PRO_BENEFITS, feminine, preview = true }) {
   const { isPro } = usePlan()
   const trialState = useProTrial()
+  const { t: tt } = useTrialUiT()
   const { t, lang } = useT()
   const account = useAccount()
   // APP-N3 (C-39): la misma elección anual/mensual que LicenseGate y Ajustes.
@@ -139,8 +141,8 @@ export default function ProGate({ children, feature, featureKey, benefits = DEFA
       {canTrial && (
         <div style={{ maxWidth: 360, margin: '0 auto 18px' }}>
           <TrialStartButton style={{ fontSize: 'var(--t-headline)', fontWeight: 700, padding: '10px 24px', minHeight: 48, width: '100%' }} source="gate" />
-          <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 10, lineHeight: 1.5 }}>{t('billing.trialNote')}</p>
-          <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', margin: '16px 0 0' }}>{t('proTrial.orBuy')}</p>
+          <p style={{ fontSize: 'var(--t-footnote)', color: 'var(--th)', marginTop: 10, lineHeight: 1.5 }}>{tt('proTrial.note')}</p>
+          <p style={{ fontSize: 'var(--t-subhead)', color: 'var(--tm)', margin: '16px 0 0' }}>{tt('proTrial.orBuy')}</p>
         </div>
       )}
 

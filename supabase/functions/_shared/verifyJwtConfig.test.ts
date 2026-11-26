@@ -31,6 +31,7 @@ const EXPECTED_VERIFY_JWT: Record<string, boolean> = {
   'send-nurture-invest-email': false,
   'send-nurture-starter-email': false,
   'send-optin-confirmation': false,
+  'send-pro-trial-email': false,
   'send-push': true,
   'send-report-email': false,
   'send-trial-activation-email': false,

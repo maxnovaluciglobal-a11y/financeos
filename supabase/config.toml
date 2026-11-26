@@ -74,6 +74,9 @@ verify_jwt = false
 verify_jwt = false
 
 # pg_cron diario (header x-cron-secret): secuencia de activación de la prueba (C-35, 20-oct-2026).
+[functions.send-pro-trial-email]
+verify_jwt = false
+
 [functions.send-trial-activation-email]
 verify_jwt = false
 

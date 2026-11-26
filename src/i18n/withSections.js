@@ -32,6 +32,10 @@ import proTrialEs from '../components/proTrial/strings.es.js'
 import proTrialEn from '../components/proTrial/strings.en.js'
 import proTrialPt from '../components/proTrial/strings.pt.js'
 import proTrialDe from '../components/proTrial/strings.de.js'
+import proTrialUiEs from '../components/proTrial/ui.es.js'
+import proTrialUiEn from '../components/proTrial/ui.en.js'
+import proTrialUiPt from '../components/proTrial/ui.pt.js'
+import proTrialUiDe from '../components/proTrial/ui.de.js'
 import categoriesEn from './categories/strings.en.js'
 import categoriesPt from './categories/strings.pt.js'
 import categoriesDe from './categories/strings.de.js'
@@ -48,6 +52,7 @@ export const SECTION_DICTS = {
   ahead: { es: aheadEs, en: aheadEn, pt: aheadPt, de: aheadDe },
   categories: { es: categoriesEs, en: categoriesEn, pt: categoriesPt, de: categoriesDe },
   proTrial: { es: proTrialEs, en: proTrialEn, pt: proTrialPt, de: proTrialDe },
+  proTrialUi: { es: proTrialUiEs, en: proTrialUiEn, pt: proTrialUiPt, de: proTrialUiDe },
   reglas: { es: reglasEs, en: reglasEn, pt: reglasPt, de: reglasDe },
 }
 

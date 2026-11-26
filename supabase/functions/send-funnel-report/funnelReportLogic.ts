@@ -17,7 +17,7 @@ export const REPORT_TO = "maxnovaluciglobal@gmail.com";
 export const REPORT_TZ = "America/Santiago";
 export const REPORT_HOUR = 12;
 
-export type MetricKey = "visitas" | "altas" | "activas" | "pruebas" | "pagos" | "bajas";
+export type MetricKey = "visitas" | "altas" | "activas" | "pruebas" | "pruebas_sin_tarjeta" | "pagos" | "bajas";
 export type Metrics = Record<MetricKey, number | null>;
 
 export interface LeadRow { etapa: string; emails: number; confirmados: number }
@@ -48,7 +48,10 @@ export const METRIC_ROWS: { key: MetricKey; label: string; help: string; goal: s
   { key: "visitas", label: "Visitas a la landing", help: "Vercel Web Analytics; la base no las ve", goal: "sin número: encontrar un canal que traiga ≥ 30 % de las altas, con sus horas medidas" },
   { key: "altas", label: "Altas", help: "cuentas nuevas (moyiq e Invest comparten cuentas)", goal: "300 cuentas Starter reales (≈ 23 por semana)" },
   { key: "activas", label: "Activas", help: "cuentas con sesión iniciada en la semana", goal: "40 % de las cuentas nuevas con ≥ 10 movimientos en sus primeros 7 días" },
-  { key: "pruebas", label: "Pruebas Pro iniciadas", help: "licencias de prueba emitidas", goal: "sin número: el camino a los 10 pagos" },
+  { key: "pruebas", label: "Pruebas Pro con tarjeta", help: "pruebas de Stripe (links con prueba, ya no se ofrecen desde el 26-nov)", goal: "sin número: el camino a los 10 pagos" },
+  // Modelo A (26-nov-2026): la prueba de 14 días sin tarjeta que se empieza en la app.
+  // Las semanas viejas (foto sin esta clave) la muestran sin dato.
+  { key: "pruebas_sin_tarjeta", label: "Pruebas Pro sin tarjeta", help: "14 días de Pro empezados en la app (start_pro_trial)", goal: "sin número: cuántas llegan a pago" },
   { key: "pagos", label: "Pagos", help: "compras directas y pruebas que pasaron a pago", goal: "10 suscriptores Pro con al menos un cobro (con menos de 5, moyiq pasa a mantenimiento)" },
   { key: "bajas", label: "Bajas", help: "pedidos de cancelación recibidos", goal: "sin número: conocer el motivo de cada baja" },
 ];

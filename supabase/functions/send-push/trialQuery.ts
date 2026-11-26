@@ -14,7 +14,9 @@ export function expiringTrialsPath(now: Date, hours = 72): string {
   const from = now.toISOString();
   const cutoff = new Date(now.getTime() + hours * 3600 * 1000).toISOString();
   return `licenses?select=key_hash,trial_ends_at&status=eq.active&is_trial=eq.true&stripe_subscription_id=not.is.null` +
-    `&trial_ends_at=not.is.null&trial_ends_at=lte.${cutoff}&trial_ends_at=gt.${from}`;
+    `&trial_ends_at=not.is.null&trial_ends_at=lte.${cutoff}&trial_ends_at=gt.${from}` +
+    // Una licencia ya vencida (o revocada a mano con expires_at en el pasado) no recibe avisos.
+    `&or=(expires_at.is.null,expires_at.gt.${from})`;
 }
 
 export function trialDaysLeft(trialEndsAt: string, now: Date): number {

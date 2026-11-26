@@ -4,13 +4,14 @@ import { expiringTrialsPath, trialDaysLeft } from './trialQuery.ts'
 
 describe('send-push: solo licencias en prueba (BIZ-N4)', () => {
   const now = new Date('2026-11-19T12:00:00.000Z')
-  it('filtra por is_trial y por trial_ends_at, no por expires_at', () => {
+  it('filtra por is_trial y por trial_ends_at; expires_at solo para dejar afuera las vencidas', () => {
     const path = expiringTrialsPath(now)
     expect(path).toContain('is_trial=eq.true')
     expect(path).toContain('status=eq.active')
     expect(path).toContain('trial_ends_at=gt.2026-11-19T12:00:00.000Z')
     expect(path).toContain('trial_ends_at=lte.2026-11-22T12:00:00.000Z')
-    expect(path).not.toContain('expires_at')
+    expect(path).not.toContain('expires_at=lte')
+    expect(path).toContain('or=(expires_at.is.null,expires_at.gt.2026-11-19T12:00:00.000Z)')
   })
   it('modelo A: deja afuera la prueba sin tarjeta (sin suscripción de Stripe)', () => {
     expect(expiringTrialsPath(now)).toContain('stripe_subscription_id=not.is.null')

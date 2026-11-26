@@ -18,7 +18,7 @@ import CurrencyScreen from './CurrencyScreen.jsx'
 import AppearanceScreen from './AppearanceScreen.jsx'
 import FeaturesScreen from './FeaturesScreen.jsx'
 import InvestScreen from './InvestScreen.jsx'
-import { canShowInvestments } from '../../native/storePolicy.js'
+import { canShowInvestments, canShowProMarketing } from '../../native/storePolicy.js'
 import { isNativeApp } from '../../native/platform.js'
 import AutoEntryScreen from './AutoEntryScreen.jsx'
 import { registroAutomaticoHere } from '../../utils/uiFlags.js'
@@ -41,6 +41,7 @@ import { getSession } from '../../core/auth.js'
 import { getLicensePlan, getLicenseInfo } from '../../utils/licenseValidator.js'
 import { isPaidPlan } from '../../utils/plans.js'
 import { useProTrial } from '../../core/proTrial.js'
+import { useTrialUiT } from '../../components/proTrial/uiDict.js'
 import config from '../../config.js'
 import { useT } from '../../i18n/useT.js'
 import { helpUrl } from '../../utils/landingUrls.js'
@@ -187,6 +188,7 @@ export default function Settings({ setPage } = {}) {
 
   // Antes de cualquier return (reglas de hooks): si la cuenta puede empezar la prueba.
   const trialState = useProTrial()
+  const { t: tt } = useTrialUiT()
 
   if (sub) {
     const g = groupById(sub)
@@ -244,8 +246,9 @@ export default function Settings({ setPage } = {}) {
     // "Instalar como app" es de la PWA: en la app de tienda no está (I11).
     .map(g => (!isNativeApp() || g.id !== 'advanced' ? g : { ...g, items: g.items.filter(it => it.id !== 'install') }))
   const results = searchSettings(query, t, searchGroups)
-  const showUpgradeHint = !isDemo && (!isPaidPlan(getLicensePlan()) || !!getLicenseInfo()?.noCard)
-  const upgradeHint = trialState.status?.eligible ? t('settings.upgrade.title', { days: config.pricing.trialDays }) : t('menu.upgrade.title')
+  // App de tienda: sin oferta de prueba ni "Pasar a Pro" en la descripción (NAT-1).
+  const showUpgradeHint = !isDemo && canShowProMarketing() && (!isPaidPlan(getLicensePlan()) || !!getLicenseInfo()?.noCard)
+  const upgradeHint = trialState.status?.eligible ? tt('settings.upgrade.title', { days: config.pricing.trialDays }) : t('menu.upgrade.title')
 
   return (
     <div className="stack">

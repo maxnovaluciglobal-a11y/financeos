@@ -68,6 +68,8 @@ export async function enablePush() {
   if (!(r && r.ok)) return { ok: false, error: r?.error || 'save_failed' }
 
   try { localStorage.setItem(LS_ON, '1') } catch { /* almacenamiento o API del navegador no disponible: se sigue sin ello */ }
+  // Resumen de la prueba sin tarjeta (días 10 y 13): activó los avisos del navegador.
+  import('./proTrial.js').then(m => m.markTrialFeatureUsed('push')).catch(logRejection('push:trialUse'))
   return { ok: true }
 }
 

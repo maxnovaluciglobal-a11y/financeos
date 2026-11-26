@@ -13,6 +13,8 @@ import { getLicensePlan } from '../utils/licenseValidator.js'
 import { npsTrigger, closeNps } from '../utils/npsPrompt.js'
 import { logClientError } from '../utils/errorLog.js'
 import config from '../config.js'
+import { useProTrial, dueTrialNotice } from '../core/proTrial.js'
+import { canShowWebCheckout, canShowProMarketing } from '../native/storePolicy.js'
 
 const SCORES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 const SHOW_DELAY_MS = 4000
@@ -28,6 +30,9 @@ export default function NpsPrompt({ createdAt }) {
   const [state, setState] = useState('idle') // idle | sending | sent | error
   const firstRef = useRef(null)
   const movements = expenses.length + incomes.length
+  // I3: una hoja a la vez. Mientras haya un aviso de la prueba de Pro pendiente
+  // (ProTrialNotices), la encuesta espera.
+  const trialPending = !!dueTrialNotice(useProTrial(), { web: canShowWebCheckout() && canShowProMarketing() })
 
   useEffect(() => {
     if (loading || trigger || settings?.isDemo) return
@@ -63,6 +68,7 @@ export default function NpsPrompt({ createdAt }) {
   }
 
   if (!trigger || trigger === 'closed') return null
+  if (trialPending && state === 'idle') return null
   const label = { display: 'block', fontSize: 'var(--t-subhead)', fontWeight: 600, color: 'var(--tx)', marginBottom: 6 }
   return (
     <Sheet open onClose={dismiss} ariaLabel={t('nps.title')} maxWidth={480} initialFocusRef={firstRef}>

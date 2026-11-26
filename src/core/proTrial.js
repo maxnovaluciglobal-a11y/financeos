@@ -12,7 +12,7 @@
 // restaura al cambiar de cuenta), nunca del dispositivo.
 import { useSyncExternalStore } from 'react'
 import { authClient } from './authClient.js'
-import { validateLicense, acknowledgeStarter, getLicenseKey, getLicenseInfo, clearLicense, getServerEntitlement } from '../utils/licenseValidator.js'
+import { validateLicense, acknowledgeStarter, getLicenseKey, clearLicense, getServerEntitlement, hasProEntitlement, getLicenseInfo } from '../utils/licenseValidator.js'
 
 export const TRIAL_STATE_KEY = 'fos_pro_trial_v1'
 export const TRIAL_DAYS = 14
@@ -94,7 +94,7 @@ export function dueTrialNotice(state, { now = Date.now(), web = true } = {}) {
   const seen = state?.seen || {}
   if (!st) return null
   if (st.eligible && web && !seen.offer) return 'offer'
-  if (st.active && web && st.startedAt) {
+  if (st.active && web && st.startedAt && st.endsAt) {
     const d = trialDay(st.startedAt, now)
     if (d >= 13 && !seen.day13) return 'day13'
     if (d >= 10 && d < 13 && !seen.day10) return 'day10'
@@ -140,18 +140,34 @@ export async function refreshProTrial({ userId = null, rpc = defaultRpc, validat
   writeTrialState({ ...cur, status }, store)
 
   let changed = false
-  if (status.active && r.license_key && getLicenseKey() !== r.license_key) {
+  if (status.converted) {
+    // B1: compró Pro (en otro dispositivo o en la web). Se decide por el estado del
+    // servidor, no por lo que hay guardado acá: este dispositivo puede haber
+    // soltado ya la licencia de prueba (venció en la caché) y quedar en Starter.
+    // Si todavía no tiene la pagada, se toma la de la cuenta. Si esa consulta
+    // falla, no se toca nada: la próxima sesión vuelve a intentar.
+    if (!hasProEntitlement() || getLicenseInfo()?.noCard) {
+      const ent = userId ? await entitlement(userId) : null
+      if (ent?.plan === 'pro' && ent.license_key && await validate(ent.license_key)) { acknowledgeStarter(); changed = true }
+    }
+  } else if (status.active && r.license_key && getLicenseKey() !== r.license_key) {
     // Empezó la prueba en otro dispositivo: misma credencial de la cuenta.
     if (await validate(r.license_key)) { acknowledgeStarter(); changed = true }
   } else if (!status.active && getLicenseInfo()?.noCard) {
-    // Compró Pro (en otro dispositivo o en la web): la cuenta ya tiene la
-    // licencia pagada. Si no, la prueba terminó: Starter.
-    const ent = status.converted && userId ? await entitlement(userId) : null
-    const paid = ent?.plan === 'pro' && ent.license_key && await validate(ent.license_key)
-    if (!paid) { clearLicense(); acknowledgeStarter() }
+    // La prueba terminó sin compra: Starter.
+    clearLicense()
+    acknowledgeStarter()
     changed = true
   }
   return { status, changed }
+}
+
+// ¿La cuenta de la sesión puede empezar la prueba? Solo para mostrar o no la
+// pista de LicenseGate; no toca la licencia de este dispositivo.
+export async function fetchTrialEligibility({ rpc = defaultRpc } = {}) {
+  let r = null
+  try { r = await rpc('pro_trial_status') } catch { r = null }
+  return r?.ok === true && r.eligible === true
 }
 
 // La persona aceptó la oferta. El servidor decide si puede y pone las fechas.

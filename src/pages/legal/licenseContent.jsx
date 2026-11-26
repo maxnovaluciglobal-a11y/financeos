@@ -34,6 +34,7 @@ export const PLANS = {
         'Presupuesto, ingresos, gastos, seguimiento de deudas y metas',
         'Avisos locales en tu teléfono, importación de archivos del banco y conversor de tasa',
         'Exportación completa de tus datos (JSON/CSV) en cualquier momento',
+        'Inversiones, gratis mientras está en beta (en la versión web; la app de tienda todavía no lo incluye)',
       ],
       notAllowed: [
         'Uso comercial con clientes (requiere plan Pro)',
@@ -54,7 +55,7 @@ export const PLANS = {
         'Módulos fiscales por país (APV Chile, PPR Portugal, deducciones, Multimoneda en Venezuela, Multidólar e Inflación en Argentina, etc.)',
         'Simulador de liquidación de deudas (Avalanche/Snowball)',
         'Propiedades',
-        'Inversiones completo cuando termine la beta',
+        'Inversiones completo cuando termine la beta (hoy Inversiones es gratis, en beta, para todos los planes)',
       ],
       notAllowed: [
         'Compartir la clave de licencia con terceros (cada asesor necesita su propia licencia)',
@@ -71,6 +72,7 @@ export const PLANS = {
         'Budget, income, expenses, debt tracking, and goals',
         'Local reminders on your phone, bank file import, and the rate converter',
         'Full export of your data (JSON/CSV) at any time',
+        'Investments, free while it is in beta (in the web version; the store app does not include it yet)',
       ],
       notAllowed: [
         'Commercial use with clients (requires the Pro plan)',
@@ -91,7 +93,7 @@ export const PLANS = {
         'Country-specific tax modules (APV Chile, PPR Portugal, deductions, Multimoneda for Venezuela, Multidólar and Inflation for Argentina, etc.)',
         'Debt payoff simulator (Avalanche/Snowball)',
         'Properties',
-        'Full Investments when the beta ends',
+        'Full Investments when the beta ends (today Investments is free, in beta, on every plan)',
       ],
       notAllowed: [
         'Sharing the license key with third parties (each advisor needs their own license)',
@@ -108,6 +110,7 @@ export const PLANS = {
         'Orçamento, receitas, despesas, acompanhamento de dívidas e metas',
         'Lembretes locais no seu celular, importação de arquivos do banco e conversor de taxa',
         'Exportação completa dos seus dados (JSON/CSV) a qualquer momento',
+        'Investimentos, grátis enquanto estiver em beta (na versão web; o app das lojas ainda não o inclui)',
       ],
       notAllowed: [
         'Uso comercial com clientes (requer o plano Pro)',
@@ -128,7 +131,7 @@ export const PLANS = {
         'Módulos fiscais por país (APV Chile, PPR Portugal, deduções, Multimoneda na Venezuela, Multidólar e Inflação na Argentina etc.)',
         'Simulador de quitação de dívidas (Avalanche/Snowball)',
         'Propriedades',
-        'Investimentos completo quando terminar a beta',
+        'Investimentos completo quando terminar a beta (hoje Investimentos é grátis, em beta, em todos os planos)',
       ],
       notAllowed: [
         'Compartilhar a chave de licença com terceiros (cada consultor precisa da sua própria licença)',
@@ -145,6 +148,7 @@ export const PLANS = {
         'Budget, Einnahmen, Ausgaben, Schulden und Ziele',
         'Lokale Erinnerungen auf dem Telefon, Import von Bankdateien und Kursrechner',
         'Vollständiger Export Ihrer Daten (JSON/CSV) jederzeit',
+        'Investments, kostenlos während der Beta (in der Webversion; die App aus dem Store enthält es noch nicht)',
       ],
       notAllowed: [
         'Berufliche Nutzung mit Klientinnen und Klienten (erfordert Pro)',
@@ -165,7 +169,7 @@ export const PLANS = {
         'Länderspezifische Steuerwerkzeuge (z. B. „Steuer Deutschland“, APV Chile, PPR Portugal, Multimoneda für Venezuela, Multidólar und Inflation für Argentinien)',
         'Schulden-Simulator (Lawinen- und Schneeballmethode)',
         'Immobilien',
-        'Investments vollständig nach Ende der Beta',
+        'Investments vollständig nach Ende der Beta (derzeit ist Investments in allen Tarifen kostenlos, in der Beta)',
       ],
       notAllowed: [
         'Weitergabe des Lizenzschlüssels an Dritte (jede Beraterin und jeder Berater benötigt eine eigene Lizenz)',
@@ -183,7 +187,7 @@ export const COPY = {
     allowed: '✓ Permitido',
     notAllowed: '✗ No permitido',
     trialTitle: 'Prueba de Pro',
-    trialText: 'Al crear tu cuenta puedes usar Pro gratis durante 14 días, sin tarjeta y sin cobro automático. Al terminar, la cuenta vuelve sola al plan Starter y conservas tus datos. Hay una prueba por cuenta (detalle en los Términos de Uso, punto 7).',
+    trialText: 'Después de crear tu cuenta puedes empezar en la app (versión web) una prueba gratuita de Pro de 14 días, sin tarjeta y sin cobro automático. Al terminar, la cuenta vuelve sola al plan Starter y conservas tus datos. Hay una prueba por cuenta (detalle en los Términos de Uso, punto 7).',
     billingTitle: 'Suscripción Pro: renovación y cancelación',
     billing1: 'Al contratar Pro, eliges facturación mensual (US$4.99) o anual (US$39.99). El cobro se repite automáticamente al final de cada período (cada mes o cada año, según lo elegido) hasta que canceles.',
     billing2: 'Puedes cancelar en línea cuando quieras en moyiq.app/cancelar.html (cuando esté disponible, también en Cuenta → Gestionar suscripción) o escribiendo a support@moyiq.app. La cancelación rige al final del período ya pagado y hasta entonces conservas Pro. No se hacen reembolsos parciales por el tiempo no usado, salvo la garantía técnica de 14 días, el derecho de desistimiento de los consumidores de la UE y lo que exija la ley imperativa de tu país, según los Términos de Uso.',
@@ -204,7 +208,7 @@ export const COPY = {
     allowed: '✓ Allowed',
     notAllowed: '✗ Not allowed',
     trialTitle: 'Pro trial',
-    trialText: 'When you create your account you can use Pro free for 14 days, with no card and no automatic charge. When it ends, the account returns to the Starter plan on its own and you keep your data. There is one trial per account (details in the Terms of Use, section 7).',
+    trialText: 'After creating your account you can start a free 14-day Pro trial in the app (web version), with no card and no automatic charge. When it ends, the account returns to the Starter plan on its own and you keep your data. There is one trial per account (details in the Terms of Use, section 7).',
     billingTitle: 'Pro subscription: renewal and cancellation',
     billing1: 'When you subscribe to Pro, you choose monthly (US$4.99) or annual (US$39.99) billing. The charge repeats automatically at the end of each period (every month or every year, as chosen) until you cancel.',
     billing2: 'You can cancel online anytime at moyiq.app/en/cancel.html (when available, also under Account → Manage subscription) or by writing to support@moyiq.app. Cancellation takes effect at the end of the period already paid, and you keep Pro until then. There are no partial refunds for unused time, except under the 14-day technical guarantee, the EU consumer right of withdrawal, and where mandatory law in your country requires one, as set out in the Terms of Use.',
@@ -225,7 +229,7 @@ export const COPY = {
     allowed: '✓ Permitido',
     notAllowed: '✗ Não permitido',
     trialTitle: 'Teste do Pro',
-    trialText: 'Ao criar sua conta, você pode usar o Pro grátis por 14 dias, sem cartão e sem cobrança automática. Ao terminar, a conta volta sozinha ao plano Starter e você mantém seus dados. Há um teste por conta (detalhes nos Termos de Uso, item 7).',
+    trialText: 'Depois de criar sua conta, você pode começar no app (versão web) um teste gratuito do Pro de 14 dias, sem cartão e sem cobrança automática. Ao terminar, a conta volta sozinha ao plano Starter e você mantém seus dados. Há um teste por conta (detalhes nos Termos de Uso, item 7).',
     billingTitle: 'Assinatura Pro: renovação e cancelamento',
     billing1: 'Ao assinar o Pro, você escolhe cobrança mensal (US$4.99) ou anual (US$39.99). A cobrança se repete automaticamente ao final de cada período (a cada mês ou a cada ano, conforme escolhido) até você cancelar.',
     billing2: 'Você pode cancelar online quando quiser em moyiq.app/cancelar.html (quando estiver disponível, também em Conta → Gerenciar assinatura) ou escrevendo para support@moyiq.app. O cancelamento vale ao final do período já pago e até lá você mantém o Pro. Não há reembolso parcial pelo tempo não utilizado, exceto pela garantia técnica de 14 dias, pelo direito de arrependimento dos consumidores da UE e pelo que a lei imperativa do seu país exigir, conforme os Termos de Uso.',
@@ -247,7 +251,7 @@ export const COPY = {
     allowed: '✓ Erlaubt',
     notAllowed: '✗ Nicht erlaubt',
     trialTitle: 'Testphase von Pro',
-    trialText: 'Mit Ihrem Benutzerkonto können Sie Pro 14 Tage lang kostenlos nutzen, ohne Karte und ohne automatische Abbuchung. Danach wechselt das Konto von selbst zu Starter, Ihre Daten bleiben erhalten. Pro Konto ist eine Testphase möglich (Einzelheiten in den AGB, § 5a).',
+    trialText: 'Nach dem Anlegen Ihres Benutzerkontos können Sie in der App (Webversion) einen kostenlosen 14-tägigen Test von Pro starten, ohne Karte und ohne automatische Abbuchung. Danach wechselt das Konto von selbst zu Starter, Ihre Daten bleiben erhalten. Pro Konto ist eine Testphase möglich (Einzelheiten in den AGB, § 5a).',
     billingTitle: 'Pro-Abo: Verlängerung und Kündigung',
     billing1: 'Bei Pro wählen Sie monatliche (US$ 4,99) oder jährliche (US$ 39,99) Abrechnung. Das Monatsabo verlängert sich jeweils um einen Monat. Das Jahresabo hat eine erste Laufzeit von zwölf Monaten und verlängert sich danach auf unbestimmte Zeit; es kann dann jederzeit mit einer Frist von einem Monat gekündigt werden, im Voraus gezahlte Entgelte für die Zeit danach erstatten wir anteilig.',
     billing2: (

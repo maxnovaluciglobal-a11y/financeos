@@ -6,7 +6,7 @@
 // centrado. Sin "se ve a web": ni el corte seco al cerrar ni el modal de
 // escritorio en el celular.
 //
-// API de siempre: open, onClose, ariaLabel, maxWidth, initialFocusRef. Nuevo:
+// API de siempre: open, onClose, ariaLabel (o ariaLabelledby: el id del título visible), maxWidth, initialFocusRef. Nuevo:
 // initialDetent ('full' por defecto, para que un formulario abra entero;
 // 'medium' en listas largas). data-sheet-nodrag en un hijo lo excluye del gesto.
 // Los hijos se conservan durante la salida: el padre puede poner open=false y
@@ -36,7 +36,7 @@ function gestureBlocked(target, sheet, dy) {
   return false
 }
 
-export default function Sheet({ open, onClose, children, ariaLabel, maxWidth = 460, initialFocusRef, initialDetent = 'full' }) {
+export default function Sheet({ open, onClose, children, ariaLabel, ariaLabelledby, maxWidth = 460, initialFocusRef, initialDetent = 'full' }) {
   const sheetRef = useRef(null)
   const bodyRef = useRef(null)
   const scrimRef = useRef(null)
@@ -215,7 +215,7 @@ export default function Sheet({ open, onClose, children, ariaLabel, maxWidth = 4
   const node = (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop click-to-close is a mouse shortcut; Escape already closes the sheet via useDialogA11y
     <div
-      role="dialog" aria-modal="true" aria-label={ariaLabel}
+      role="dialog" aria-modal="true" aria-label={ariaLabelledby ? undefined : ariaLabel} aria-labelledby={ariaLabelledby}
       className={[s.root, isDesktop ? s.desktop : '', closing ? s.closing : ''].filter(Boolean).join(' ')}
       onClick={(e) => { e.stopPropagation(); onClose?.() }}
     >

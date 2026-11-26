@@ -10,6 +10,10 @@ create or replace function auth.jwt() returns jsonb language sql stable as $$
   )::jsonb
 $$;
 grant execute on function auth.jwt() to anon, authenticated, service_role;
+-- Columns GoTrue adds in production that the image's older auth schema lacks
+-- (the reverse trial checks a confirmed, non-anonymous email).
+alter table auth.users add column if not exists email_confirmed_at timestamptz;
+alter table auth.users add column if not exists is_anonymous boolean not null default false;
 
 -- Simulate Supabase from 2026-10-30: new objects in `public` get NO automatic privileges for
 -- anon, authenticated or service_role. A missing explicit GRANT then shows up as a "faltante".

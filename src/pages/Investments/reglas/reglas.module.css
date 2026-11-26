@@ -81,6 +81,9 @@
 .check input:disabled + span { color: var(--th); }
 .pick > summary { list-style: none; width: fit-content; }
 .pick > summary::-webkit-details-marker { display: none; }
+.sumChev { transition: transform .15s ease; }
+.pick[open] > summary .sumChev { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .sumChev { transition: none; } }
 .fieldset { display: flex; flex-wrap: wrap; gap: 0 18px; margin: 4px 0 0; padding: 0; border: 0; }
 .fieldset legend { padding: 0; margin-bottom: 2px; }
 

@@ -79,6 +79,9 @@ function DebtPayoffSimulator({ debts, sym }) {
   const { t } = useT()
   const [method, setMethod]   = useState('avalanche')
   const [extra, setExtra]     = useState(0)
+  // Resumen de la prueba sin tarjeta (días 10 y 13): abrió el simulador (solo se
+  // monta con Pro, dentro de ProGate).
+  useEffect(() => { import('../../core/proTrial.js').then(m => m.markTrialFeatureUsed('debtSim')).catch(logRejection('Debts:trialUse')) }, [])
   const activeDebts = debts.filter(d => d.balance > 0 && d.minPayment > 0)
 
   const base     = useMemo(() => calcPayoffPlan(activeDebts, 0, method), [activeDebts, method])

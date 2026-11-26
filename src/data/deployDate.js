@@ -21,11 +21,11 @@ export const REBRAND_DEPLOY_DATE = '2026-11-18'
 // 24-nov-2026 (ronda 3 pre-tiendas, N4): la versión con Inversiones, copias del
 // sistema y Turnstile se publicó en la landing el 24-nov y reemplaza a la del
 // 20-nov; la de la app tiene que decir lo mismo (fecha y versión reemplazada).
-// 26-nov-2026 (modelo A): la landing vuelve a fechar la privacidad junto con
-// los términos (su regla: la privacidad no puede ser anterior a los otros
-// legales); el texto no cambió y sigue reemplazando a la del 20-nov.
+// 26-nov-2026 (modelo A, D1/D2): la privacidad suma el HMAC del correo de la
+// prueba de Pro (una por persona) y el borrado a los 90 días de la copia del
+// sync de una prueba sin compra; reemplaza a la del 24-nov, igual que la landing.
 export const PRIVACY_DEPLOY_DATE = '2026-11-26'
-export const PRIVACY_PREVIOUS_DATE = '2026-11-20'
+export const PRIVACY_PREVIOUS_DATE = '2026-11-24'
 
 // Vigencia propia de los Términos de Uso (ronda 4 pre-tiendas, R3-2): su texto
 // cambió en 8d228a6 (sincronización opcional y «datos de la app») y la landing

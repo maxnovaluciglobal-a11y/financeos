@@ -116,6 +116,21 @@ describe('refreshProTrial', () => {
     expect(getLicenseKey()).toBe(PAID)
     expect(getLicenseInfo().noCard).toBe(false)
   })
+  it('B1: compró en otro dispositivo y este ya había soltado la prueba (caché vencida): toma la pagada', async () => {
+    const PAID = 'c'.repeat(64)
+    const validate = vi.fn(async (k) => { write({ key: k, plan: 'pro', exp: null, ts: 3 }); return true })
+    const r = await refreshProTrial({ userId: 'u1', rpc: async () => ({ ok: true, converted: true, started_at: T0, ends_at: T0 + 14 * DAY }), validate, entitlement: async () => ({ plan: 'pro', license_key: PAID }) })
+    expect(r.changed).toBe(true)
+    expect(getLicenseKey()).toBe(PAID)
+    expect(hasProEntitlement()).toBe(true)
+  })
+  it('B1: si falla la consulta del plan de la cuenta, no lo pasa a Starter (reintenta en la próxima sesión)', async () => {
+    write({ key: KEY, plan: 'pro', exp: Date.now() + DAY, ts: 1, noCard: true })
+    const r = await refreshProTrial({ userId: 'u1', rpc: async () => ({ ok: true, converted: true, started_at: T0, ends_at: T0 + 14 * DAY }), validate: vi.fn(), entitlement: async () => null })
+    expect(r.changed).toBe(false)
+    expect(getLicenseKey()).toBe(KEY)
+    expect(isStarterAcknowledged()).toBe(false)
+  })
   it('una licencia pagada no se toca aunque la cuenta no tenga prueba', async () => {
     write({ key: KEY, plan: 'pro', exp: null, ts: 1 })
     const r = await refreshProTrial({ rpc: async () => ({ ok: true, eligible: false, active: false, ended: false }), validate: vi.fn() })
