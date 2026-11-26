@@ -2,6 +2,9 @@
 // están hoy en o bajo alguna de sus medias, con un acceso a Planificar ›
 // Oportunidades y a "Repartir mi capital". Usa las historias de 1 año que
 // Resumen ya pidió (useHoyData: historyPlan), sin pedidos nuevos.
+// `compact` (desde el 26-nov-2026): Resumen ya muestra arriba "Tus reglas hoy"
+// con la cuenta de tramos según tu regla; aquí quedan solo los accesos, para
+// no repetir una cifra distinta (esta ignora la condición de RSI).
 import { ChevronRight, Info } from 'lucide-react'
 import { joinList, readSignal, summarize } from './signals.js'
 import { useMoney } from '../../../components/Money.jsx'
@@ -12,10 +15,21 @@ import s from './oportunidades.module.css'
 const MAX_CHIPS = 4
 
 // items: [{ t, label, rows (undefined = cargando, null = falló), crypto }]
-export default function OppTeaser({ items, free, money, onSee, onSplit }) {
+export default function OppTeaser({ items, free, money, onSee, onSplit, compact = false }) {
   const { t, ready } = useOppT()
   const { m } = useMoney()
   if (!ready || !items.length) return null
+  if (compact) {
+    return (
+      <section className={h.card} aria-labelledby="hoy-opp-title">
+        <div className={h.cardHead}><h2 id="hoy-opp-title" className={h.cardTitle}>{t('opp.title')}</h2></div>
+        <div className={h.links} style={{ flexWrap: 'wrap', gap: '4px 16px' }}>
+          <button type="button" className={h.link} onClick={onSee}>{t('opp.teaser.see')}<ChevronRight size={14} aria-hidden="true" /></button>
+          <button type="button" className={h.link} onClick={onSplit}>{free > 0 ? t('opp.teaser.split', { v: m(money(free)) }) : t('opp.teaser.splitAny')}<ChevronRight size={14} aria-hidden="true" /></button>
+        </div>
+      </section>
+    )
+  }
   const loading = items.some(i => i.rows === undefined)
   const read = items.map(i => ({ t: i.t, label: i.label || i.t, reading: i.rows ? readSignal(i.rows.map(r => r.close), { crypto: i.crypto }) : null }))
   const sum = summarize(read)

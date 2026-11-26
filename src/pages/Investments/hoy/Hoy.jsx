@@ -47,6 +47,7 @@ import { isSample } from '../../../demo/demoMarketApi.js'
 import ValueChart from './ValueChart.jsx'
 import { useHoyData } from './useHoyData.js'
 import OppTeaser from '../oportunidades/OppTeaser.jsx'
+import TusReglasHoy from '../reglas/TusReglasHoy.jsx'
 import { queueOpp } from '../oportunidades/queue.js'
 import { uninvested } from '../oportunidades/capital.js'
 import s from './hoy.module.css'
@@ -692,6 +693,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
         {banner}
         {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
         <EmptyHoy onAdd={() => intent('add')} onImport={() => intent('import')} onSample={() => setSample(true)} />
+        <TusReglasHoy items={[]} spyRows={spy} vix={vix} demo={demo} sample={fake} />
         {footer}
       </div>
     )
@@ -709,6 +711,8 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
         ? <DepositGain dep={dep} sub={bandSub} money={money} costRes={costRes} onRegister={() => intent('deposit')} />
         : <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} />}
       {dep && <PutSummary summary={put} money={money} pct={pctFmt} currency={currency} detailsOnly />}
+      {/* Tus reglas hoy (26-nov-2026): justo debajo de la primera lectura (Depositado frente a ganancia). */}
+      <TusReglasHoy items={oppItems} spyRows={spy} vix={vix} demo={demo} sample={fake || histSample} onSee={() => goOpp(false)} onRetry={d.retryHistory} />
       <Freshness sample={pricesSample} fresh={fresh} hasCrypto={hasCrypto} hasStocks={hasStocks} />
       {shows(view, 'strip') && <Strip market={d.market} sparks={d.sparks} sample={stripSample} onTab={onTab} />}
       {banner}
@@ -734,7 +738,7 @@ function HoyView({ demo, sample, setSample, onOpen, onTab, useData, view }) {
 
       <TopPositions top={top} total={rows.filter(r => r.valueUsd != null).length} money={money} onOpen={onOpen} onTab={onTab} showRisk={shows(view, 'stop')}
         sparks={Object.keys(topSparks).length ? topSparks : null} rangeName={t(`invest.hoy.pvh.rangeName.${range}`)} />
-      <OppTeaser items={oppItems} free={oppFree} money={money} onSee={() => goOpp(false)} onSplit={() => goOpp(true)} />
+      <OppTeaser compact items={oppItems} free={oppFree} money={money} onSee={() => goOpp(false)} onSplit={() => goOpp(true)} />
       {B?.usesCash && <CashBlock B={B} money={money} onTab={onTab} />}
       <AporteForm initial={initialAporte} hasMoyiq={!!aUsd} onDone={goAporte} />
       <ContextLine regime={regime} vix={vix} done={ctxDone} onTab={onTab} sample={ctxSample} />
