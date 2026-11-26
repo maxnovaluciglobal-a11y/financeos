@@ -8,12 +8,14 @@ import Tour from '../tour/Tour.jsx'
 import { PAGE_TOURS } from '../tour/pageTours.js'
 import HelpPanel from './HelpPanel.jsx'
 import FirstVisitPrompt from './FirstVisitPrompt.jsx'
-import { HELP_BUTTON_ID } from './HelpButton.jsx'
 import { anyTargetVisible } from './tourTargets.js'
 
-// Al terminar un recorrido o la pregunta, el foco vuelve al "?" (si está en la
-// pantalla; en el Inicio del teléfono no hay barra superior).
-const focusHelpButton = () => setTimeout(() => document.getElementById(HELP_BUTTON_ID)?.focus({ preventScroll: true }), 80)
+// Al terminar un recorrido o la pregunta, el foco vuelve al "?" que se ve: el
+// de la barra superior o, en el Inicio del teléfono, el de su cabecera.
+const focusHelpButton = () => setTimeout(() => {
+  const btn = [...document.querySelectorAll('[data-help-btn]')].find(el => el.getClientRects().length > 0)
+  btn?.focus({ preventScroll: true })
+}, 80)
 
 function PromptGate({ page, onAccept, onDismiss, onSkip }) {
   // Sin ningún objetivo a la vista (pantalla vacía, sin el plan) no se pregunta

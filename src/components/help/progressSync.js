@@ -16,7 +16,7 @@
 // El demo nunca llama a este módulo (useHelp.js).
 import {
   TOURS_SEEN_KEY, NEWS_READ_KEY, HELP_DIRTY_KEY, HELP_PROGRESS_EVENT,
-  readList, markHelpSyncReady,
+  readList, markHelpSyncReady, isPreReleaseAccount, seedAllToursSeen,
 } from './helpCore.js'
 
 const ID = /^[a-z0-9][a-z0-9-]{0,63}$/
@@ -77,6 +77,7 @@ export function startHelpSync({
   anonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY,
 } = {}) {
   let token = null
+  let user = null
   let timer = null
   let stopped = false
   let inFlight = null
@@ -95,6 +96,7 @@ export function startHelpSync({
     try {
       const { data } = await client.auth.getSession()
       token = data?.session?.access_token || null
+      user = data?.session?.user || null
     } catch { token = null }
     return token
   }
@@ -147,6 +149,8 @@ export function startHelpSync({
   const ready = (async () => {
     try {
       if (!client || !(await refreshToken())) return
+      // Cuenta de antes de la ayuda: todos los recorridos vistos (helpCore.js).
+      if (isPreReleaseAccount(user?.created_at)) seedAllToursSeen(storage)
       const { data, error } = await client.from('help_progress').select('tours_seen, news_read').maybeSingle()
       if (error) { if (dirty()) schedule(); return }
       const merged = mergeProgress(local(), fromRow(data))

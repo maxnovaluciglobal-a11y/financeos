@@ -28,6 +28,8 @@ import { toRef } from '../../../utils/refRate.js'
 import { useSceneChrome } from '../../../components/layout/useSceneChrome.js'
 import Sheet from '../../../components/ui/Sheet.jsx'
 import { Isotipo, Logotipo } from '../../../components/Logo.jsx'
+import HelpButton, { useHelpUnread } from '../../../components/help/HelpButton.jsx'
+import { openHelp } from '../../../components/help/helpCore.js'
 import { SCORE_LEVELS } from '../../../utils/financialScore.js'
 import { prevMonthOf } from '../dashboardModel.js'
 import { monthLabel } from '../../shared/constants.js'
@@ -119,6 +121,7 @@ function MonthSheet({ open, onClose, activeMonth, onPick, t }) {
 export default function InicioScene({ series, pace: paceData, kpis, activeMonth, sym, incomes, expenses, pending, pulse, daysLeft, refc, dualOn, toUSD, onOpen, onReviewPending,
   healthScore, actions = [], onAsk, amountsHidden = false, onToggleAmounts, onPickMonth }) {
   const { t, lang } = useT()
+  const helpUnread = useHelpUnread()
   const { m } = useMoney()
   const sceneRef = useRef(null)
   const chartRef = useRef(null)
@@ -207,12 +210,18 @@ export default function InicioScene({ series, pace: paceData, kpis, activeMonth,
                 <span className={s.label} data-lupa="label">{label}</span>
                 {!looking && <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" className={s.labelChevron} />}
               </button>
+              {/* Ayuda de la pantalla (26-nov-2026): solo en el teléfono, donde el Inicio no
+                  tiene barra superior. En la fila de la cabecera (mes · logo · IQ · asistente)
+                  no entra a 390 px sin montarse sobre el logo: va junto al ojo. */}
+              <span className={s.labelTools}>
+              <HelpButton id="fos-help-btn-home" className={s.helpBtn} size={20} unread={helpUnread} onClick={() => openHelp('dashboard')} t={t} />
               {onToggleAmounts && (
                 <button type="button" className={s.eye} aria-pressed={amountsHidden} aria-label={t('money.toggle')}
                   onClick={() => { setAmountsMsg(t(amountsHidden ? 'money.announce.shown' : 'money.announce.hidden')); onToggleAmounts() }}>
                   {amountsHidden ? <EyeOff size={18} strokeWidth={1.8} aria-hidden="true" /> : <Eye size={18} strokeWidth={1.8} aria-hidden="true" />}
                 </button>
               )}
+              </span>
               <span className={`sr-only ${s.eyeStatus}`} role="status" aria-live="polite">{amountsMsg}</span>
             </div>
             {hasData

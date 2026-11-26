@@ -57,14 +57,61 @@ export const markSeen = (page, storage) => addToList(TOURS_SEEN_KEY, [page], sto
 export const readNewsRead = (storage) => readList(NEWS_READ_KEY, storage)
 export const markNewsRead = (ids, storage) => addToList(NEWS_READ_KEY, ids, storage)
 
+// ── Cuentas de antes de la ayuda (decisión del 26-nov-2026) ──
+// A quien ya usaba la app no se le pregunta "¿Primera vez en X?": todos los
+// recorridos cuentan como vistos. Dos señales, cualquiera alcanza:
+//  1. la cuenta se creó antes del lanzamiento (created_at del usuario de la
+//     sesión, progressSync.js), que vale en cualquier dispositivo;
+//  2. la primera vez que este código corre en este dispositivo y cuenta, ya
+//     había datos de la app de antes (el "visto" de R08 o la marca de la hoja
+//     de Novedades): sirve sin red.
+// Las novedades siguen sin leer para todos. La unión con la cuenta se mantiene.
+// HELP_RELEASE_AT: fin del día del despliegue (26-nov-2026) en Chile; una
+// cuenta nueva creada ese mismo día después del despliegue tampoco ve la pregunta.
+export const HELP_RELEASE_AT = '2026-11-27T03:00:00Z'
+export const HELP_INIT_KEY = 'fos_help_init'
+const PRIOR_KEYS = [TOURS_SEEN_KEY, 'fos_release_seen']
+
+export function isPreReleaseAccount(createdAt, releaseAt = HELP_RELEASE_AT) {
+  const t = Date.parse(createdAt || '')
+  return Number.isFinite(t) && t < Date.parse(releaseAt)
+}
+export const seedAllToursSeen = (storage = local()) => addToList(TOURS_SEEN_KEY, TOUR_PAGES, storage)
+
+/** Una vez por cuenta y dispositivo: si ya había datos de la app, todo visto. */
+export function initHelpDevice(storage = local()) {
+  try {
+    if (!storage || storage.getItem(HELP_INIT_KEY)) return false
+    const prior = PRIOR_KEYS.some(k => storage.getItem(k) != null)
+    storage.setItem(HELP_INIT_KEY, '1')
+    if (prior) seedAllToursSeen(storage)
+    return prior
+  } catch { return false }
+}
+
+// Contador de novedades sin leer, compartido entre el "?" de la barra y el del
+// Inicio del teléfono (useHelp lo escribe).
+let unreadValue = 0
+const unreadListeners = new Set()
+export const getHelpUnread = () => unreadValue
+export function setHelpUnread(n) {
+  if (n === unreadValue) return
+  unreadValue = n
+  unreadListeners.forEach(f => f())
+}
+export function subscribeHelpUnread(f) { unreadListeners.add(f); return () => unreadListeners.delete(f) }
+
 // El guardado en la cuenta avisa cuando terminó de traer lo de otros
 // dispositivos: la pregunta de la primera visita espera eso (con tope), para no
 // ofrecer un recorrido que la persona ya vio en el teléfono.
+// Si no termina a tiempo, la pregunta no se hace esta vez (se ofrece en otra
+// visita): mejor eso que preguntarle a alguien que ya lo vio.
 let readyResolve
 let readyPromise = new Promise(r => { readyResolve = r })
-export function markHelpSyncReady() { readyResolve?.() }
+export function markHelpSyncReady() { readyResolve?.(true) }
+/** true si el guardado en la cuenta ya trajo lo suyo; false si venció el tope. */
 export function helpSyncReady(timeoutMs = 2500) {
-  return Promise.race([readyPromise, new Promise(r => setTimeout(r, timeoutMs))])
+  return Promise.race([readyPromise, new Promise(r => setTimeout(() => r(false), timeoutMs))])
 }
 /** Solo para tests. */
 export function _resetHelpSync() { readyPromise = new Promise(r => { readyResolve = r }) }

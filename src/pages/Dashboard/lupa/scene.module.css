@@ -154,6 +154,15 @@
   display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-right: -6px;
   border: 0; border-radius: 50%; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
+.labelTools { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.helpBtn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; flex-shrink: 0;
+  border: 0; border-radius: 50%; background: none; color: var(--on-grad-text); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.helpBtn:active { background: var(--on-grad-chip); }
+.helpBtn:focus-visible { outline: 2px solid var(--on-grad-accent); outline-offset: 2px; }
+/* En escritorio el "?" está en la barra superior. */
+@media (min-width: 701px) { .helpBtn { display: none; } }
 .askAvatar { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--on-grad-text); box-shadow: 0 0 0 3px var(--on-grad-track); }
 
 .labelRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }

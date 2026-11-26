@@ -13,12 +13,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   HELP_OPEN_EVENT, HELP_PROGRESS_EVENT, TOUR_REPLAY_EVENT, TOUR_PAGES,
   takeTourReplay, readSeen, markSeen, readNewsRead, shouldOfferTour, isUiBusy,
-  helpSyncReady, markHelpSyncReady,
+  helpSyncReady, markHelpSyncReady, initHelpDevice, setHelpUnread,
 } from './helpCore.js'
 import { logRejection } from '../../utils/errorLog.js'
 
 const idle = (fn) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 1200))
 
+let deviceChecked = false
 let syncStarted = false
 function startSync() {
   if (syncStarted) return
@@ -36,6 +37,8 @@ export function useHelp(page, { isDemo = false, newsFilter } = {}) {
   const [prompt, setPrompt] = useState(null)   // página que pregunta "¿Primera vez…?"
   const [tour, setTour] = useState(null)       // página cuyo recorrido está abierto
   const [unread, setUnread] = useState(0)
+  // Antes de cualquier pregunta: ¿este dispositivo ya tenía datos de la app?
+  if (!isDemo && !deviceChecked) { deviceChecked = true; initHelpDevice() }
   // Con un recorrido o el panel abiertos no se pregunta "¿Primera vez…?".
   const busyRef = useRef(false)
   busyRef.current = panel || !!tour
@@ -72,8 +75,8 @@ export function useHelp(page, { isDemo = false, newsFilter } = {}) {
     if (isDemo || !TOUR_PAGES.includes(page)) return
     let cancelled = false
     const id = setTimeout(async () => {
-      await helpSyncReady()
-      if (cancelled || busyRef.current) return
+      const ready = await helpSyncReady()
+      if (!ready || cancelled || busyRef.current) return
       if (!shouldOfferTour({ page, seen: readSeen(), isDemo, busy: isUiBusy() })) return
       setPrompt(p => p || page)
     }, 900)
@@ -84,7 +87,10 @@ export function useHelp(page, { isDemo = false, newsFilter } = {}) {
   useEffect(() => {
     let alive = true
     const count = () => import('./news.js').then(({ visibleNews, unreadCount }) => {
-      if (alive) setUnread(unreadCount(visibleNews(newsFilter || {}), readNewsRead()))
+      if (!alive) return
+      const n = unreadCount(visibleNews(newsFilter || {}), readNewsRead())
+      setUnread(n)
+      setHelpUnread(n)
     }).catch(logRejection('help:news'))
     const id = idle(count)
     window.addEventListener(HELP_PROGRESS_EVENT, count)

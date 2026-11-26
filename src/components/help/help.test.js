@@ -379,3 +379,86 @@ describe('política de privacidad (app)', () => {
     for (const s of ['sin datos financieros', 'no financial data', 'sem dados financeiros', 'keine Finanzdaten']) expect(src).toContain(s)
   })
 })
+
+describe('cuentas de antes de la ayuda: sin "¿Primera vez…?" (decisión del 26-nov)', () => {
+  it('isPreReleaseAccount: creada antes del cierre del día del despliegue', async () => {
+    const { isPreReleaseAccount, HELP_RELEASE_AT } = await import('./helpCore.js')
+    expect(HELP_RELEASE_AT).toBe('2026-11-27T03:00:00Z')
+    expect(isPreReleaseAccount('2026-10-01T10:00:00Z')).toBe(true)
+    expect(isPreReleaseAccount('2026-11-26T20:00:00-03:00')).toBe(true)
+    expect(isPreReleaseAccount('2026-11-28T09:00:00Z')).toBe(false)
+    expect(isPreReleaseAccount(null)).toBe(false)
+    expect(isPreReleaseAccount('basura')).toBe(false)
+  })
+
+  it('initHelpDevice: con datos de antes en el dispositivo, todos los recorridos vistos; una sola vez', async () => {
+    const { initHelpDevice, HELP_INIT_KEY } = await import('./helpCore.js')
+    const old = memStorage({ fos_release_seen: '2026-11-18' })
+    expect(initHelpDevice(old)).toBe(true)
+    expect([...readSeen(old)].sort()).toEqual([...TOUR_PAGES].sort())
+    expect(old.getItem(HELP_INIT_KEY)).toBe('1')
+    expect(readList(NEWS_READ_KEY, old)).toEqual([]) // las novedades siguen sin leer
+    const oldTour = memStorage({ [TOURS_SEEN_KEY]: '["dashboard"]' })
+    expect(initHelpDevice(oldTour)).toBe(true)
+    expect(readSeen(oldTour)).toHaveLength(TOUR_PAGES.length)
+  })
+
+  it('initHelpDevice: cuenta o dispositivo nuevo conserva la pregunta, y no se repite el chequeo', async () => {
+    const { initHelpDevice } = await import('./helpCore.js')
+    const fresh = memStorage()
+    expect(initHelpDevice(fresh)).toBe(false)
+    expect(readSeen(fresh)).toEqual([])
+    expect(shouldOfferTour({ page: 'movements', seen: readSeen(fresh) })).toBe(true)
+    // La hoja de Novedades marca su clave después: no convierte a la cuenta en "vieja".
+    fresh.setItem('fos_release_seen', '2026-11-18')
+    expect(initHelpDevice(fresh)).toBe(false)
+    expect(readSeen(fresh)).toEqual([])
+  })
+
+  it('helpSyncReady: false si la cuenta no respondió a tiempo (no se pregunta esa vez)', async () => {
+    const { helpSyncReady, markHelpSyncReady, _resetHelpSync } = await import('./helpCore.js')
+    _resetHelpSync()
+    expect(await helpSyncReady(10)).toBe(false)
+    markHelpSyncReady()
+    expect(await helpSyncReady(10)).toBe(true)
+  })
+
+  describe('progressSync con el usuario de la sesión', () => {
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+    const win = () => ({ navigator: { onLine: true }, document: { addEventListener() {}, removeEventListener() {} }, addEventListener() {}, removeEventListener() {} })
+    const client = (createdAt) => ({
+      auth: { getSession: async () => ({ data: { session: { access_token: 'tok', user: { id: 'u', created_at: createdAt } } } }) },
+      from: () => ({ select: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+    })
+    it('cuenta creada antes del lanzamiento: todo visto en este dispositivo y se guarda en la cuenta', async () => {
+      const storage = memStorage()
+      const fetchImpl = vi.fn(async () => ({ ok: true, json: async () => ({}) }))
+      const sync = startHelpSync({ client: client('2026-09-12T12:00:00Z'), storage, fetchImpl, win: win(), url: 'https://x', anonKey: 'k' })
+      await sync.ready
+      expect(readSeen(storage)).toHaveLength(TOUR_PAGES.length)
+      expect(readList(NEWS_READ_KEY, storage)).toEqual([])
+      await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS + 10)
+      await sync.inFlight
+      expect(JSON.parse(fetchImpl.mock.calls[0][1].body).p_tours).toHaveLength(TOUR_PAGES.length)
+      sync.stop()
+    })
+    it('cuenta nueva: nada marcado, la primera visita pregunta', async () => {
+      const storage = memStorage()
+      const sync = startHelpSync({ client: client('2026-12-01T12:00:00Z'), storage, fetchImpl: vi.fn(), win: win(), url: 'https://x', anonKey: 'k' })
+      await sync.ready
+      expect(readSeen(storage)).toEqual([])
+      sync.stop()
+    })
+  })
+})
+
+describe('el "?" en la cabecera del Inicio del teléfono', () => {
+  it('InicioScene muestra el botón de ayuda que abre el panel del Inicio, oculto en escritorio', () => {
+    const src = readFileSync(join(SRC, 'pages/Dashboard/lupa/InicioScene.jsx'), 'utf8')
+    expect(src).toMatch(/<HelpButton id="fos-help-btn-home"[^\n]*openHelp\('dashboard'\)/)
+    const css = readFileSync(join(SRC, 'pages/Dashboard/lupa/scene.module.css'), 'utf8')
+    expect(css).toMatch(/\.helpBtn \{[^}]*width: 44px; height: 44px/)
+    expect(css).toMatch(/@media \(min-width: 701px\) \{ \.helpBtn \{ display: none; \} \}/)
+  })
+})
